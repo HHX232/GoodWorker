@@ -1,0 +1,36 @@
+@import '/src/global.scss';
+.user_box{
+   display: flex;
+   gap: 4px;
+   padding: 2px 4px;
+   @include roboto_p4;
+   align-items: center;
+   border-radius: 16px;
+}
+.user_image{
+   aspect-ratio: 1/1;
+   width: 10px;
+}
+.vipBox{
+   background-color: #ffcb22d2;
+}
+.vipText{
+   color: #fff !important;
+   margin-left: 4px;
+   margin-right: 4px;
+}
+.adminBox{
+   background-color: #F5F5F5;
+}
+.adminText{
+   color: #868897 ;
+}
+.defaultBox{
+   background-color: transparent !important;;
+}
+.defaultText{
+   color: #868897 ;
+}
+.blurBg{
+   backdrop-filter: blur(20px);
+}

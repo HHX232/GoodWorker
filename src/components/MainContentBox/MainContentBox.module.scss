@@ -1,0 +1,102 @@
+@import '/src/global.scss';
+.main_box{
+   display: grid;
+   grid-template-columns: repeat(auto-fill, minmax(370px, 1fr)); /* Автоматически заполняет колонки с минимальной шириной 770px */
+   gap: 16px; /* Промежуток между элементами */
+   width: 100%; /* Ширина контейнера */
+   grid-template-rows: min-content;
+   flex: 1 1 770px;
+
+}
+.skeleton_card_2{width: 100%;
+   display: flex;
+   flex-direction: column;
+   padding: 16px;
+   background-color: #fff;
+   border-radius: 12px;
+   gap: 12px;
+   max-height: fit-content;}
+
+.skeleton_card{
+   display: flex;
+   aspect-ratio: 19/20;
+   width: 100%;
+   flex-direction: column;
+   padding: 24px;
+   max-height: 400px;
+   background-position: center;
+   background-repeat: no-repeat;
+   background-size: cover;
+   border-radius: 12px;
+}
+.main_content_box{
+   width: 100%;
+   display: flex;
+   flex-direction: column;
+   gap: 24px;
+   flex: 1 1 770px;
+}
+.main_content_title{
+  @include roboto_h2_30;
+  white-space: nowrap;
+}
+.title_box{
+   display: flex;
+   width: 100%;
+   align-items: center;
+//   position: sticky;
+//   top: 0;
+//   z-index: 100;
+  background-color: #EEEFF8;
+}
+.title_line{
+   width: 100%;
+   margin-left: 12px;
+   height: 1px;
+   background-color: #DADCEB;
+
+}
+.highlighted_box{
+   display: grid;
+   grid-template-columns: repeat(auto-fill, minmax(370px, 1fr)); /* Автоматически заполняет колонки с минимальной шириной 770px */
+   gap: 16px; /* Промежуток между элементами */
+   width: 100%; /* Ширина контейнера */
+   // overflow: hidden;
+   max-width: 791px;
+   grid-template-rows: min-content;
+   flex: 1 1 770px;
+}
+.swiper_box{
+   // display: flex;
+   max-width: 796px;
+}
+.custom_box_right, .custom_box_left{
+   padding: 9px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   aspect-ratio: 1/1;
+   max-width: fit-content;
+   border-radius: 50%;
+   backdrop-filter: blur(50px);
+   // background-color: red;
+   position: absolute;
+   content: "";
+cursor: pointer;
+   z-index: 100;
+}
+.custom_box_right{
+   top: 30%;
+   right: 23px;
+}
+.custom_box_left{
+   top: 30%;
+   left: 23px;
+   transform: rotate(180deg);
+}
+.image_tag{
+   width: 24px;
+   height: 24px;
+   aspect-ratio: 1/1;
+  transform: translateX(2px);
+}

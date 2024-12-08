@@ -1,0 +1,168 @@
+$color-dark: #141416;
+$color-light-gray: #868D97;
+$color-gray: #868897;
+$color-white: #fff;
+$color-white-gray: #F7F7F7;
+
+// Миксины для текстовых стилей
+@mixin roboto_h2_20{
+line-height: 150%;
+font-size: 20px;
+font-weight: 500;
+}
+@mixin roboto_h2_30{
+line-height: 150%;
+font-size: 30px;
+font-weight: 500;
+}
+@mixin roboto_h2_24{
+    line-height: 150%;
+    font-size: 24px;
+    font-weight: 400;
+    }
+@mixin roboto_h5_18_mid {
+    color: $color-dark;
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 150%;
+}
+@mixin roboto_h5_20_mid {
+    color: $color-dark;
+    font-weight: 500;
+    font-size: 20px;
+    line-height: 150%;
+}
+@mixin roboto_h5_18_regular {
+    color: $color-dark;
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 150%;
+}
+
+@mixin roboto_h5_20_regular {
+    color: $color-dark;
+    font-weight: 400;
+    font-size: 20px;
+    line-height: 150%;
+}
+
+
+@mixin roboto_p2_14_regular {
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 150%;
+    color: $color-light-gray;
+}
+
+@mixin roboto_p1_16_regular {
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 150%;
+    color: $color-dark;
+}
+@mixin roboto_p1_16_regular_gray {
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 150%;
+    color: $color-gray;
+}
+
+@mixin roboto_p1_16_mid {
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 150%;
+    color: $color-dark;
+}
+
+@mixin roboto_p2_14_regular_light {
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 150%;
+    color: $color-light-gray;
+}
+@mixin roboto_p2_12_regular_light {
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 150%;
+    color: $color-light-gray;
+}
+
+@mixin roboto_p3_12_mid {
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 150%;
+    color: $color-dark;
+}
+
+@mixin roboto_p3_12_regular {
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 150%;
+    color: $color-white;
+}
+@mixin roboto_p3_12_regular_gray {
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 150%;
+    color: $color-gray;
+}
+
+@mixin roboto_p4 {
+    font-weight: 400;
+    font-size: 10px;
+    line-height: 150%;
+    color: $color-white;
+}
+
+@mixin flash_text_active_mixin {
+    font-size: 17px;
+    font-weight: 400;
+    color: $color-white;
+}
+@mixin flash_text_disactive_mixin {
+    font-size: 17px;
+    font-weight: 400;
+    color: $color-light-gray;
+}
+
+// Применение миксинов к классам
+.roboto_h5_18_mid {
+    @include roboto_h5_18_mid;
+}
+
+.roboto_p2_14_regular {
+    @include roboto_p2_14_regular;
+}
+
+.roboto_p1_16_reg {
+    @include roboto_p1_16_regular;
+}
+
+.roboto_p1_16_mid {
+    @include roboto_p1_16_mid;
+}
+
+.roboto_p2_14_reg {
+    @include roboto_p2_14_regular_light;
+}
+
+.roboto_p3_12_mid {
+    @include roboto_p3_12_mid;
+}
+
+.roboto_p3_12_reg {
+    @include roboto_p3_12_regular;
+}
+
+.roboto_p4 {
+    @include roboto_p4;
+}
+
+
+
+.flash_text_active {
+    @include flash_text_active_mixin;
+}
+.flash_text_disactive {
+    @include flash_text_disactive_mixin ;
+}

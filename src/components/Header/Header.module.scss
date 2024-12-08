@@ -1,0 +1,253 @@
+@import '/src/global.scss';
+
+.big_main_logo{
+   max-width: 190px;
+   max-height: 50px;
+   width: 100%;
+}
+.header{
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   background-color: #fff;
+   padding: 24px 18px;
+}
+.search__box{
+   display: flex;
+   max-width: 770px;
+   width: 100%;
+}
+.user__data_box, .user__box{
+   display: flex;
+   align-items: center;
+}
+.user__data_box{
+   gap: 8px;
+}
+.user_image{
+   max-width: 45px;
+   aspect-ratio: 1/1;
+   border-radius: 50%;
+}
+.user_text_box{
+   display: flex;
+   flex-direction: column;
+   max-width: 143px;
+   text-align: right;
+   // gap: 3px;
+}
+.header_bg{
+   background-color: #fff
+}
+.user_name{
+   @include roboto_h5_18_mid;
+}
+.user_mail{
+   @include roboto_p2_14_regular;
+}
+.colocol{
+   width: 24px;
+   aspect-ratio: 1/1;
+}
+.image__box{
+   background-color: $color-white-gray;
+   width: 42px;
+   aspect-ratio: 1/1;
+   border-radius: 50%;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   text-align: center;
+   margin-right: 32px;
+   cursor: pointer;
+   position: relative;
+}
+.number_box{
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   text-align: center;
+   position: absolute;
+   top: 4px;
+   right: 10px;
+   @include roboto_p2_12_regular_light;
+
+}
+
+.colocol_count {
+   position: relative;
+   z-index: 1;
+color: $color-white-gray;
+   &::before {
+       content: '';
+       position: absolute;
+       aspect-ratio: 1/1;
+       top: 48%;
+       left: 48%; 
+       height: 85%;
+       border-radius: 50%;
+       aspect-ratio: 1/1; 
+       z-index: -1;
+       background-color: #ec1515;
+       transform: translate(-50%, -50%);
+   }
+}
+.redPoint{
+   position: absolute;
+   content: '';
+   background-color:#ff0202 ;
+   width: 9px;
+   aspect-ratio: 1/1;
+   top: 4px;
+   right: 2px;
+   z-index: 2;
+   border-radius: 50%;
+}
+.tags__list_box,.tags__prev{
+   display: flex;
+   align-items: center;
+}
+.arrow_img{
+   width: 12px;
+   aspect-ratio: 2/1;
+}
+.input_image{
+   width: 24px;
+   aspect-ratio: 1/1;
+   margin-right: 8px;
+}
+.form_box{
+   overflow-x: hidden;
+   display: flex;
+   padding: 13px 16px;
+width: 100%;
+   border-radius: 16px;
+   align-items: center;
+   background-color: $color-white-gray;
+   margin-right: 16px;
+}
+.header_input{
+   width: 100%;
+   @include roboto_p1_16_regular;
+   &::placeholder{
+      @include roboto_p1_16_regular_gray;
+   }
+}
+
+.tags__prev{
+   min-width: 156px;
+   display: flex;
+   padding: 13px 18px;
+   align-items: center;
+   gap: 12px;
+   justify-content: space-between;
+   background-color: $color-white-gray;
+   border-radius: 16px;
+   @include roboto_p1_16_regular;
+   cursor: pointer;
+
+}
+.header_button_submit{
+   @include roboto_p1_16_regular;
+   position: relative;
+   right: -100px;
+   transition: all .3s;
+}
+.header_button_submit_active{
+   right: 0;
+}
+
+.tags__list_box{
+   position: relative;
+}
+.tags__list{
+   transition: all .3s;
+
+z-index: 1000;
+   position: absolute;
+   content: "";
+   top: 120%;
+   width: 100%;
+   left: 0;
+   background-color: #F7F7F7;
+   border-radius: 12px;
+   padding: 14px 18px;
+   @include roboto_p1_16_regular;
+   display: flex;
+   flex-direction: column;
+gap: 8px;
+opacity: 1;
+}
+.tags__prev_text{
+   @include roboto_p1_16_regular;
+}
+.tags__list_item{
+   padding-bottom: 8px;
+   border-bottom: 1px solid $color-light-gray;
+}
+
+.arrow_img_active{
+   transform: rotate(180deg);
+   transition: all .3s;
+}
+.tags__list_item__active{
+   position: relative;
+   &::before{
+      position: absolute;
+      content: "";
+      width: 16px;
+      height: 11px;
+      background-image: url('../../images/svg/mark.svg');
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      right: 0;
+      top: 50%;
+      transform: translateY(-100%);
+   }
+}
+.main_logo{
+   width: 189px;
+   height: 50px;   
+}
+
+//skeleton
+
+.user__data__skeleton{
+   display: flex;
+   flex-direction: column;
+   justify-content: right;
+   text-align: right;
+   align-items: end;
+   gap: 5px !important;
+   margin-right: 10px;
+   margin-left: 38px;
+}
+.header_button_submit_skeleton{
+   left: 10px;
+}
+ 
+@media (max-width:1300px) {
+   .form_box{
+      display: none;
+   }
+   .search__box{
+      width: auto;
+      margin-left: 25px;
+   }
+   .user__box{
+      margin-left: auto;
+   }
+   .main_logo{
+width: 50px;
+margin-left: 20px;
+   }
+}
+@media (max-width:700px) {
+  .user_text_box{
+   display: none;
+  }
+  .user_image{
+   margin-right: 20px;
+  }
+}

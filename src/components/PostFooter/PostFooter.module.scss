@@ -1,0 +1,35 @@
+@import '/src/global.scss';
+
+.post_box{
+   display: flex;
+   width: 100%;
+   align-items: center;
+
+}
+.vues_box{
+   margin-left: auto;
+   margin-right: 8px;
+}
+.comm_box, .stars_box, .vues_box{
+   display: flex;
+   gap: 4px;
+   align-items: center;
+   @include roboto_p3_12_regular_gray
+}
+
+.comm_img{
+   aspect-ratio: 1/1;
+   width: 16px;
+   height: 16px;
+
+margin: 4px;
+}
+.img_comm_box{
+   background-color: #F5F5F5;
+   border-radius: 50%;
+}
+.stars_box, .vues_box{
+border-radius: 100px;
+background-color: #F5F5F5;
+padding: 3px 6px;
+}

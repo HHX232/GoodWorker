@@ -1,0 +1,79 @@
+@import '/src/global.scss';
+.item_box{
+   display: flex;
+   flex-direction: column;
+   gap: 8px;
+   padding-bottom: 16px;
+   margin-bottom: 16px;
+   border-bottom: 1px solid #EDF0F3;
+}
+.viewed_box{
+   width: 100%;
+   display: flex;
+   flex-direction: column;
+   background-color: #fff;
+   border-radius:12px;
+   padding: 24px;
+}
+.viewed_title{
+@include roboto_p1_16_regular_gray;
+margin-bottom: 12px;
+padding-bottom: 12px;
+border-bottom: 1px solid #EDEEF3;
+}
+
+.user_box{
+   display: flex;
+   align-items: center;
+}
+.user_avatar{
+   aspect-ratio: 1/1;
+   max-width: 28px;
+   max-height: 28px;
+   border-radius: 50%;
+   margin-right: 8px;
+}
+.user_text_box{
+   display: flex;
+   flex-direction: column;
+   @include roboto_p3_12_mid;
+   margin-bottom: 2px;
+}
+.user_subtext{
+   display: flex;
+   align-items: center;
+   gap: 4px;
+}
+.user_active{
+   @include roboto_p4;
+   color: #868897 !important;
+}
+.user_active_pin{
+   width: 4px;
+   height: 4px;
+   border-radius: 50%;
+   background-color: #868897;
+}
+.user_active_pin_online{
+   background-color: #2ac12f !important;
+}
+.item_body{
+   display: flex;
+   width: 100%;
+   justify-content: space-between;
+   align-items: center;
+}
+.item_body_image{
+   aspect-ratio: 1/1;
+   max-width: 62px;
+   border-radius: 8px;
+}
+.item_body_title {
+   @include roboto_p1_16_mid; /* Ваши стили */
+   max-width: 204px;
+   overflow: hidden; /* Скрывает текст, выходящий за пределы */
+   display: -webkit-box; /* Устанавливает блочный контейнер */
+   -webkit-box-orient: vertical; /* Устанавливает направление содержимого */
+   -webkit-line-clamp: 2; /* Ограничивает количество строк до 2 */
+   text-overflow: ellipsis; /* Добавляет многоточие */
+}

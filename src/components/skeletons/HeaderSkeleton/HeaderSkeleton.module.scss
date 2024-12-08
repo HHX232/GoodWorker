@@ -1,0 +1,33 @@
+.skeleton {
+   background-color: #e0e0e0; 
+   border-radius: 4px;
+}
+
+.skeletonHeader {
+   display: flex;
+   align-items: center;
+   padding: 24px 2px;
+}
+
+.skeletonLogo {
+   width: 100px;
+   height: 30px;
+   margin-right: 20px;
+}
+
+.skeletonSearch {
+   flex: 1;
+   height: 40px;
+   margin-right: 20px;
+}
+
+.skeletonFilters {
+   width: 150px;
+   height: 40px;
+}
+
+.skeletonUser  {
+   width: 40px;
+   height: 40px;
+   border-radius: 50%;
+}

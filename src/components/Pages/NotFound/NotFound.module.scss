@@ -1,0 +1,31 @@
+@import '/src/global.scss';
+.not_found_links{
+   display: flex;
+}
+.not_found_container{
+   display: flex;
+   width: 100%;
+   margin: 0 auto;
+   justify-content: center;
+   align-items: center;
+   text-align: center;
+}
+.not_found_image{
+   margin-top: 2px;
+   width: 40vw;
+   aspect-ratio: 1/1;
+}
+.not_found_box{
+   text-align: center;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+}
+.not_found_links{
+@include roboto_h5_18_regular
+}
+.not_found_links_link{
+@include roboto_h5_20_mid;
+// text-decoration: underline !important;
+// text-underline-offset: 3px;
+}

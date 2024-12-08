@@ -1,0 +1,17 @@
+@import '/src/global.scss';
+
+.burger_box{
+   display: none;
+   flex-direction: column;
+   gap: 4px;
+}
+.burger_line{
+   height: 2px;
+width: 20px;
+background-color: $color-dark;
+}
+@media (max-width: 650px) {
+   .burger_box{
+      display: flex;
+   }
+}
