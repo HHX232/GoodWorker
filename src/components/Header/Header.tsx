@@ -137,9 +137,9 @@ const UserDataBox = memo(({ userName, userMail, userImage }: { userName: string,
 });
 
 
-const SearchForm = memo(({ filterText, onInputChange, onSubmit }: { filterText: string, onInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void, onSubmit: (event: React.FormEvent<HTMLFormElement>) => void }) => {
+export const SearchForm = memo(({dopStyle, filterText, onInputChange, onSubmit }: { dopStyle?:any, filterText: string, onInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void, onSubmit: (event: React.FormEvent<HTMLFormElement>) => void }) => {
    return (
-       <form className={`${style.form_box}`} role="search" method="get" onSubmit={onSubmit}>
+       <form style={dopStyle} className={`${style.form_box}`} role="search" method="get" onSubmit={onSubmit}>
            <label className={`${style.header_label}`} htmlFor="search-text">
                <img className={`${style.input_image}`} src={searchSVG} alt="" />
            </label>
@@ -205,7 +205,7 @@ const Header = () => {
                     <SkeletonHeader />
                 ) : 
            (<>
-           <Burgermenu />
+           {/* <Burgermenu /> */}
                <Link to="/">
            <picture>
 
@@ -232,7 +232,7 @@ const Header = () => {
 
                <div className={`${style.search__box}`}>
                    <SearchForm filterText={filterText} onInputChange={handleInputChange} onSubmit={handleSubmit} />
-                   <FiltersList/>
+                   {/* <FiltersList/> */}
                </div>
                <div className={`${style.user__box}`}>
                 <Colocol CountNumber={""}/>

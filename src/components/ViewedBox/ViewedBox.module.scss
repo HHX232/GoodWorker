@@ -28,8 +28,8 @@ border-bottom: 1px solid #EDEEF3;
 }
 .user_avatar{
    aspect-ratio: 1/1;
-   max-width: 28px;
-   max-height: 28px;
+   max-width: 32px;
+   max-height: 32px;
    border-radius: 50%;
    margin-right: 8px;
 }
@@ -76,4 +76,23 @@ border-bottom: 1px solid #EDEEF3;
    -webkit-box-orient: vertical; /* Устанавливает направление содержимого */
    -webkit-line-clamp: 2; /* Ограничивает количество строк до 2 */
    text-overflow: ellipsis; /* Добавляет многоточие */
+}
+.item_body_subtitle{
+   @include roboto_p2_14_regular_light;
+   max-width: 204px;
+   overflow: hidden; /* Скрывает текст, выходящий за пределы */
+   display: -webkit-box; /* Устанавливает блочный контейнер */
+   -webkit-box-orient: vertical; /* Устанавливает направление содержимого */
+   -webkit-line-clamp: 1; /* Ограничивает количество строк до 2 */
+   text-overflow: ellipsis; /* Добавляет многоточие */
+}
+@media (max-width:1380px){
+   .item_body_image{
+      display:none;
+   }
+}
+@media (max-width:1320px){
+   .viewed_box{
+      display:none;
+   }
 }

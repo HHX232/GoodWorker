@@ -1,5 +1,7 @@
 @import '/src/global.scss';
-
+.navbar_list_end{
+   border-bottom: none !important;
+}
 .navbar_box{
    display: flex;
    flex-direction: column;
@@ -21,6 +23,7 @@
    display: flex;
    flex-direction: column;
    gap: 12px;
+
    margin-bottom: 24px;
    padding-bottom: 24px;
    border-bottom: 1px solid #EDEEF3;
@@ -42,7 +45,62 @@
    display: flex;
    align-items: center;
    padding: 9px 18px;
+   width: 100%;
    background-color: #141416 !important;
    @include flash_text_disactive_mixin;
    color: #fff !important;
+}
+@media (max-width:960px){
+.navbar_item_link,.navbar_item_link_active{
+   max-width: fit-content;
+   padding: 6px 9px;
+}
+.text{
+   width: 0;
+   height: 0;
+   opacity: 0;
+   display: none;
+   pointer-events: none;
+}
+.navbar_box{
+   padding: 24px 15px;
+   max-width: fit-content;
+}
+.navbar_list{
+// align-items: center !important;
+ transition: align-items 0.3s;
+}
+.navbar_list_end{
+   border-bottom: none !important;
+}
+
+.navbar_box:hover {
+   align-items: flex-start !important;
+}
+
+.navbar_box:hover .text {
+  width: auto !important;
+   height: auto !important;
+   opacity: 1 !important;
+   pointer-events: all !important;
+   display: block;
+}
+.navbar_box:hover .navbar_item_link_active{
+max-width: 100% !important;
+}
+.navbar_box:hover .navbar_item{
+   max-width: 100% !important;
+}
+.imageSvg{
+   width: 20px;
+   height: 20px;
+}
+.navbar_item{
+   max-width: fit-content;
+}
+}
+@media (max-width:560px){
+   .navbar_box{
+      display: none;
+   }
 }

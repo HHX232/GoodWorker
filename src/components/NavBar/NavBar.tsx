@@ -15,6 +15,10 @@ import pomodoroSVG from '../../images/svg/pomodoro.svg'
 import pomodoroSVGActive from '../../images/svg/pomodoroActive.svg'
 import randSVGActive from '../../images/svg/randomActive.svg'
 import randSVG from '../../images/svg/random.svg'
+import gaykaSVG from '../../images/svg/gayka.svg'
+import gaykaSVGActive from '../../images/svg/gaykaWhite.svg'
+import supportSvg from '../../images/svg//support.svg'
+import supportSvgActive from '../../images/svg//supportActive.svg'
 import { v4 as uuidv4 } from 'uuid';
 
 const firstForImages = [searchSVG, plusSVG, messageSVG, saveSVG];
@@ -27,6 +31,11 @@ const secondForImagesActive = [timeSVGActive, pomodoroSVGActive,randSVGActive]
 const secondForText = ["Time Killer", 'Pomodoro', 'Randomizer']
 const secondForLinks = ['/games', '/pomodoro', '/rand']
 
+
+const thirdForImages = [gaykaSVG, supportSvg]
+const thirdForImagesActive = [gaykaSVGActive, supportSvgActive]
+const thirdForText = ["Settings", 'Help & Support']
+const thirdForLinks = ["/settings", '/support']
 const ListItem = ({imageUrl, activateLink="/", activeImageUrl, itemText="someText"}:{activateLink:string,imageUrl:string, activeImageUrl:string, itemText:string})=>{
    const [itemActive, setItemActive] = useState(false);
    const location = useLocation();
@@ -65,6 +74,11 @@ const NavBar = () =>{
       <ul className={`${style.navbar_list}`}>
           {secondForText.map((item,index)=>{
       return <ListItem key={uuidv4()} itemText={item} activateLink={secondForLinks[index]} imageUrl={secondForImages[index]} activeImageUrl={secondForImagesActive[index]}  />
+   })}
+      </ul>
+      <ul className={`${style.navbar_list} ${style.navbar_list_end}`}>
+          {thirdForText.map((item,index)=>{
+      return <ListItem key={uuidv4()} itemText={item} activateLink={thirdForLinks[index]} imageUrl={thirdForImages[index]} activeImageUrl={thirdForImagesActive[index]}  />
    })}
       </ul>
    </nav>

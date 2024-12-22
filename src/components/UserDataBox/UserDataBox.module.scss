@@ -1,0 +1,63 @@
+@import '/src/global.scss';
+
+.user_image{
+   max-width: 120px;
+   aspect-ratio: 1/1;
+   background-position: top center;
+   background-repeat: no-repeat;
+   background-size: cover;
+   border-radius: 50%;
+   margin-bottom: 8px;
+   margin: 0 auto 8px auto;
+}
+.user_box{
+   width: 100%;
+   background-color: #fff;
+   border-radius: 12px;
+}
+.user_data_box{
+   padding: 24px 24px 0px 24px;
+   margin-bottom: 8px;
+}
+.user_text_box{
+   text-align: center;
+}
+.user_name{
+@include roboto_h5_18_mid;
+}
+.user_mail{
+   @include roboto_p2_14_regular_light;
+   color: #868897 !important;
+   font-size: 15px !important;
+}
+.user_list{
+   display: flex;
+   width: 100%;
+   flex-direction: column;
+   gap: 8px;
+   padding: 8px 24px 24px 24px;
+}
+.user_list_item{
+   display: flex;
+   width: 100%;
+   align-items: center;
+   justify-content: space-between;
+   padding-bottom: 8px;
+   border-bottom: 1px solid #F5F5F5;
+}
+.post_category_box{
+   display: flex;
+   gap: 5px;
+}
+.user_list_item_title{
+   @include roboto_p1_16_regular;
+
+}
+.user_list_item_text{
+   max-width: fit-content;
+   max-width: 40%;
+   text-align: right;
+}
+.category, .user_list_item_text{
+   @include roboto_p1_16_regular_gray;
+}

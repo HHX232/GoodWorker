@@ -6,6 +6,7 @@
   padding: 24px;
   background-color: #fff;
 }
+
 .com_box_link{
    display: flex;
    align-items: center;
@@ -95,4 +96,17 @@
  
  .com_list::-webkit-scrollbar-thumb:hover {
    background: #868897; /* Цвет поинта при наведении */
+ }
+
+ @media (max-width:1400px){
+   .new_posts_text, .new_posts_point{
+      display:none;
+   }
+
+ }
+ @media (max-width:1320px){
+   .com_box{
+      display:none;
+   }
+
  }

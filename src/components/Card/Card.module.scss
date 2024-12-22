@@ -108,11 +108,21 @@ gap: 4px;
 }
 .card_title{
  @include roboto_h2_20;
+ display: -webkit-box; /* Для поддержки старых браузеров */
+   -webkit-box-orient: vertical;
+   -webkit-line-clamp: 1; /* Ограничиваем количество строк */
+   overflow: hidden; /* Скрываем переполнение */
+   text-overflow: ellipsis; /* Добавляем многоточие */
 }
-.card_subtitle{
+.card_subtitle {
    @include roboto_p1_16_mid;
    color: #868897 !important;
    font-weight: 400 !important;
+   display: -webkit-box; /* Для поддержки старых браузеров */
+   -webkit-box-orient: vertical;
+   -webkit-line-clamp: 1; /* Ограничиваем количество строк */
+   overflow: hidden; /* Скрываем переполнение */
+   text-overflow: ellipsis; /* Добавляем многоточие */
 }
 
 .card_images_list{
@@ -169,4 +179,13 @@ gap: 4px;
  .link_button svg path {
    width: 24px;
    aspect-ratio: 1/1;
+ }
+ 
+ @media (max-width:500px){
+   .hidden_image{
+   display: none !important;
+ }
+   .card_images_list{
+      flex-direction: column;
+   }
  }

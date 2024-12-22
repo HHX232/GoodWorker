@@ -14,6 +14,7 @@
 .comm_box, .stars_box, .vues_box{
    display: flex;
    gap: 4px;
+   cursor: pointer;
    align-items: center;
    @include roboto_p2_14_regular_light;
 }

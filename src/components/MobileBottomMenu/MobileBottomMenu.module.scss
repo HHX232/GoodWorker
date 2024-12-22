@@ -1,0 +1,114 @@
+@import '/src/global.scss';
+.menu_box{
+   display: none;
+   
+   justify-content: space-between;
+   position: fixed;
+   bottom: 15px;
+   left: 15px;
+   right: 15px;
+background-color: #fff;
+border-radius: 16px;
+padding: 5px 10px;
+   z-index: 100;
+    box-shadow: 0px 2px 5px 1px rgba(0, 0, 0, 0.2);
+}
+.navbar_item_link{
+   border-radius: 12px;
+   display: flex;
+   align-items: center;
+   padding: 9px 18px;
+   color: #868D97 !important;
+   background-color: #fff !important;
+   @include flash_text_disactive_mixin;
+}
+.text{
+   margin-left: 12px;
+}
+.navbar_item_link_active {
+   border-radius: 12px;
+   display: flex;
+   align-items: center;
+   padding: 9px 18px;
+   width: 100%;
+   background-color: #141416 !important;
+   @include flash_text_disactive_mixin;
+   color: #fff !important;
+}
+.menu_links_list{
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   width: 100%;
+
+}
+.menu_link{
+  text-align: center;
+  align-items: center;
+    justify-content: center;
+    display: flex
+;
+    flex-direction: column;
+}
+.plus_box{
+   display: flex;
+   align-items: center;
+padding: 13px;
+justify-content: center;
+
+border-radius: 50%;
+aspect-ratio: 1/1;
+}
+.home_bg{
+   // background-color: #141416;
+  background: linear-gradient(135deg, rgb(255, 122, 0) 0%, rgb(189, 0, 255) 100%);
+}
+.another_bg{
+   background-color: #2ac82f !important;
+}
+.plus_svg{
+   aspect-ratio: 1/1;
+   width: 22px;
+}
+.arrow_image{
+   transform: rotate(-90deg);
+   transition: all .3s;
+}
+.arrow_active{
+   transition: all .3s;
+   transform: rotate(90deg) !important ;
+}
+.full_menu_active{
+   display: flex !important;
+   width: 100%;
+   height: fit-content !important;
+   opacity: 1 !important;
+   pointer-events: all !important;
+   justify-content: space-around;
+   row-gap: 10px;
+   flex-wrap: wrap;
+   margin-top: 15px !important;
+   transition: all .5s;
+
+}
+.full_menu{
+   display: block;
+   height: 0;
+   margin: 0;
+   padding: 0;
+   transition: all .5s;
+   opacity: 0;
+   pointer-events: none ;
+      gap: 8px 30px;
+
+}
+.link_text{
+   @include roboto_p2_14_regular;
+   color: #868D97;
+}
+@media (max-width:560px){
+   .menu_box{
+      display: flex;
+      flex-direction: column;
+   }
+}

@@ -23,6 +23,11 @@
    margin-bottom: 4px;
    text-shadow: 
    1px 1px 2px rgba(0, 0, 0, 0.3);
+    display: -webkit-box; /* Для поддержки старых браузеров */
+   -webkit-box-orient: vertical;
+   -webkit-line-clamp: 1; /* Ограничиваем количество строк */
+   overflow: hidden; /* Скрываем переполнение */
+   text-overflow: ellipsis; /* Добавляем многоточие */
 }
 .card_subtitle{
    color: #fff !important;
@@ -36,4 +41,21 @@
    max-width: fit-content;
    @include roboto_p2_14_regular;
    color: #fff;
+}
+.box_for_user{
+   max-width: fit-content;
+}
+@media (max-width:500px){
+   .card_title{
+      font-size: 19px !important;
+       -webkit-line-clamp: 2;
+   }
+   .card_subtitle{
+      font-size: 13px;
+   }
+}
+@media (max-width: 430px){
+ .box_for_user{
+   display: none !important;;
+ }
 }

@@ -4,13 +4,14 @@ import { FC } from 'react';
 export type TUserRole = "Vip" | "Admin" | "User" | undefined;
 
 interface IUserRole {
-   userRole: TUserRole;
+   userRole: TUserRole | string;
    blurBg?: boolean;
    accentColor?: string;
+   role?:string | TUserRole;
 }
 
 const UserRole:FC<IUserRole> = ({userRole, accentColor = "868897", blurBg = false})=>{
-   const userBoxClass = `${style.user_box} ${!blurBg ?(userRole === 'Vip' ? style.vipBox : userRole === 'Admin' ? style.adminBox : style.defaultBox) : style.blurBg}`;
+   const userBoxClass = `${style.user_box} ${!blurBg ?(userRole === 'Vip' ? style.vipBox : userRole === 'Admin' ? style.adminBox : style.defaultBox) : (userRole !== "User" ? style.blurBg : style.blurBg_no_padding)}`;
    const userTextClass = `${style.user_text} ${userRole === 'Vip' ? style.vipText : userRole === 'Admin' ? style.adminText : style.defaultText}`;
    
    if(userRole !== "Vip" && userRole !== "Admin" && userRole !== "User"){

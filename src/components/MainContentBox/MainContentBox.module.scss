@@ -1,7 +1,7 @@
 @import '/src/global.scss';
 .main_box{
    display: grid;
-   grid-template-columns: repeat(auto-fill, minmax(370px, 1fr)); /* Автоматически заполняет колонки с минимальной шириной 770px */
+   grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); /* Автоматически заполняет колонки с минимальной шириной 770px */
    gap: 16px; /* Промежуток между элементами */
    width: 100%; /* Ширина контейнера */
    grid-template-rows: min-content;
@@ -32,7 +32,8 @@
 .main_content_box{
    width: 100%;
    display: flex;
-   flex-direction: column;
+   flex-wrap: wrap;
+   min-width: 0px;
    gap: 24px;
    flex: 1 1 770px;
 }
@@ -67,8 +68,10 @@
    flex: 1 1 770px;
 }
 .swiper_box{
-   // display: flex;
-   max-width: 796px;
+   display: flex !important;
+   max-width: max-content;
+   min-width: 0px;
+
 }
 .custom_box_right, .custom_box_left{
    padding: 9px;
@@ -99,4 +102,15 @@ cursor: pointer;
    height: 24px;
    aspect-ratio: 1/1;
   transform: translateX(2px);
+}
+@media (max-width:600px){
+   .custom_box_right, .custom_box_left{
+      display: none;
+   }
+
+}
+@media (max-width:500px){
+   .main_box{
+      grid-template-columns: repeat(1, 1fr);
+   }
 }

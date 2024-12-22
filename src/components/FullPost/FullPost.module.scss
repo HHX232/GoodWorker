@@ -1,0 +1,294 @@
+@import '/src/global.scss';
+
+
+.arrowBack, .img_comm_box_2, .warrSvg{
+padding: 9px;
+border-radius: 50%;
+background-color: #F7F7F7;
+aspect-ratio: 1/1;
+max-width: 42px;
+cursor: pointer;
+}
+.skeleton_main_title{
+  font-size: 35px;
+margin-bottom: 20px;
+}
+.skeleton_main_subtitle{
+  margin-bottom: 13px;
+}
+.preloader_svg{
+  width: 50%;
+  margin: 0 auto;
+}
+.warrSvg2{
+  aspect-ratio: 1/1;
+  width: 42px;
+  padding: 9px;
+  border-radius: 50%;
+  background-color: #F7F7F7;
+  stroke: red !important;
+  cursor: pointer;
+  transition: all .3s;
+  &:hover path{
+ 
+    stroke: red !important;
+  }
+  & path{
+    transition: all .3s;
+  }
+}
+
+.arrowBack{
+  margin-right: auto;
+}
+.header_post{
+  width: 100%;
+  display: flex;
+  padding: 12px 24px;
+  gap: 24px;
+}
+.full_box{
+   width: 100%;
+   display: flex;
+   flex-direction: column;
+   min-width: 0px;
+   flex: 1 1 860px;
+
+   background-color: #fff;
+   border-radius: 12px;
+  height: fit-content;
+}
+
+.mark_box{
+   padding: 24px;
+   & > img{
+    border-radius: 6px;
+    margin: 0 !important;
+   }
+   & > p > img{
+    border-radius: 10px;
+    margin: 12px 0;
+    border: 2px solid #EEEFF8;
+   }
+   & > pre{
+    background-color: red !important;
+   }
+   & > blockquote{
+    width: 100%;
+    padding: 10px;
+    background-color: #fffaebc2;
+    font-size: 19px;
+    border-radius: 10px;
+    margin: 15px 0;
+   }
+   & > h1{
+    @include md_roboto_h1_42;
+    margin-bottom: 16px;
+ } 
+ & > h2{
+  @include md_roboto_h2_35;
+  margin-bottom: 24px;
+ }
+ & > h3{
+  @include md_roboto_h3_26;
+  margin: 14px 0;
+ }
+ & > h4{
+  @include md_roboto_h4_26;
+  margin: 8px 0;
+ }
+ & > h5{
+  @include md_roboto_h5_21;
+  margin: 8px 0;
+ }
+ & > h6{
+  @include md_roboto_h6_17;
+  margin: 6px 0;
+  
+ }
+ p > img{
+  width: 100%;
+  margin: 18px 0 !important;
+  border: 2px solid #EEEFF8;
+ }
+ & > p > a{
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  font-style: italic !important;
+ }
+
+ & >  a {
+  font-style: italic !important;
+  text-decoration: underline;
+    text-underline-offset: 3px;
+ } 
+ & > h1 > a{
+  font-style: italic !important;
+  text-decoration: underline;
+    text-underline-offset: 3px;
+ }
+ & > h2 > a{
+  font-style: italic !important;
+  text-decoration: underline;
+    text-underline-offset: 3px;
+ }
+ & > h3 > a{
+  font-style: italic !important;
+  text-decoration: underline;
+    text-underline-offset: 3px;
+ }
+ & > h4 > a{
+  font-style: italic !important;
+  text-decoration: underline;
+    text-underline-offset: 3px;
+ }
+ & > h5 > a{
+  font-style: italic !important;
+  text-decoration: underline;
+    text-underline-offset: 3px;
+ }
+
+ & > p{
+  margin: 20px 0 !important;
+  @include roboto_p1_16_regular;
+    font-size: 18px !important;
+    line-height: 150%;
+ }
+ & > li{
+  @include roboto_p1_16_regular ;
+  font-size: 18px !important;
+  line-height: 150%;
+ }
+
+ & > hr{
+    width: 100%;
+    height: 1px !important;
+    background-color: #d9d9d9;
+    margin: 8px 0;
+   }
+   & > p{
+    margin: 24px 0;
+    
+   }
+   & > ol{
+    @include roboto_p1_16_regular ;
+    font-size: 18px !important;
+    margin: 21px 0;
+    margin-left: 20px;
+    list-style:circle;
+   
+   }
+   & > ol > li > ol{
+    list-style:disc;
+    margin-left: 16px;
+   }
+   & > ul{
+    margin: 21px 0;
+    @include roboto_p1_16_regular ;
+    font-size: 18px !important;
+   }
+   & > ul > li > img{
+    border: 2px solid #EEEFF8;
+   }
+   & > ol > li > img{
+    margin: 15px 0;
+    border-radius: 10px;
+    border: 3px solid #EEEFF8;
+   }
+   & > img{
+    width: 100%;
+    margin: 15px 0 !important;
+    border: 2px solid #EEEFF8;
+   }
+}
+.mark_box table {
+   width: 100%; /* Таблица занимает всю ширину родителя */
+   border-collapse: collapse; /* Убирает двойные линии между ячейками */
+   margin: 1rem 0; /* Отступы сверху и снизу */
+   font-size: 18px;
+   text-align: left; /* Текст выравнивается по левому краю */
+ }
+ 
+ .mark_box th, 
+ .mark_box td {
+   padding: 10px 15px; /* Внутренние отступы */
+   border: 1px solid #ddd; /* Легкие границы между ячейками */
+ }
+ 
+ .mark_box th {
+   background-color: #f4f4f4; /* Фон для заголовков таблицы */
+   font-weight: bold; /* Жирный текст для заголовков */
+ }
+ 
+ .mark_box tr:nth-child(even) {
+   background-color: #f9f9f9; /* Зебра для четных строк */
+ }
+ 
+ .mark_box tr:hover {
+   background-color: #e9f5ff; /* Подсветка строки при наведении */
+ }
+ 
+ .mark_box caption {
+   caption-side: top; /* Заголовок таблицы сверху */
+   text-align: center;
+   font-size: 1.2rem;
+   font-weight: bold;
+   color: #555;
+   margin-bottom: 10px;
+ }
+ 
+
+ @media (max-width:1000px){
+  .mark_box{
+  & > h1{
+    @include md_roboto_h1_42;
+font-size: 34px !important;
+ } 
+ & > h2{
+  @include md_roboto_h2_35;
+font-size: 29px !important;
+ }
+ & > h3{
+  @include md_roboto_h3_26;
+  font-size: 20px !important;
+ }
+ & > h4{
+  @include md_roboto_h4_26;
+  font-size: 20px !important;
+ }
+ & > h5{
+  @include md_roboto_h5_21;
+  font-size: 20px !important;
+ }
+ & > h6{
+  @include md_roboto_h6_17;
+  
+ }
+}
+ }
+ @media (max-width:700px){
+  .mark_box{
+  & > h1{
+    @include md_roboto_h1_42;
+font-size: 30px !important;
+ } 
+ & > h2{
+  @include md_roboto_h2_35;
+font-size: 25px !important;
+ }
+ & > h3{
+  @include md_roboto_h3_26;
+  font-size: 19px !important;
+ }
+ & > h4{
+  @include md_roboto_h4_26;
+  font-size: 19px !important;
+ }
+ & > h5{
+  @include md_roboto_h5_21;
+  font-size: 17px !important;
+ }
+
+}
+ }
