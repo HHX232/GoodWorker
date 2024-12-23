@@ -1,4 +1,4 @@
-@import '/src/global.scss';
+@import '../../global.scss';
 .navbar_list_end{
    border-bottom: none !important;
 }
@@ -67,7 +67,6 @@
    max-width: fit-content;
 }
 .navbar_list{
-// align-items: center !important;
  transition: align-items 0.3s;
 }
 .navbar_list_end{

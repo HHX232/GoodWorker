@@ -4,7 +4,7 @@ $color-gray: #868897;
 $color-white: #fff;
 $color-white-gray: #F7F7F7;
 
-// Миксины для текстовых стилей
+
 @mixin roboto_h2_20{
 line-height: 150%;
 font-size: 20px;
@@ -159,7 +159,6 @@ font-weight: 500;
 }
 
 
-// Применение миксинов к классам
 .roboto_h5_18_mid {
     @include roboto_h5_18_mid;
 }

@@ -1,4 +1,4 @@
-@import '/src/global.scss';
+@import '../../global.scss';
 .card_box{
    width: 50%;
    display: flex;
@@ -133,10 +133,10 @@ border-bottom: 1px solid #EDEEF3;
 }
 .dots_menu_item:active{
    text-shadow: 1px 1px 1px rgba(83, 83, 83, 0.3);
-   user-select: none; /* Для современных браузеров */
-  -webkit-user-select: none; /* Для Safari */
-  -moz-user-select: none; /* Для Firefox */
-  -ms-user-select: none; /* Для Internet Explorer/Edge */
+   user-select: none; 
+  -webkit-user-select: none; 
+  -moz-user-select: none; 
+  -ms-user-select: none; 
   cursor: pointer;
 }
 @media (max-width: 768px){

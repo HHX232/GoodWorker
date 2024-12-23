@@ -1,4 +1,4 @@
-@import '/src/global.scss';
+@import '../../global.scss';
 
 
 .arrowBack, .img_comm_box_2, .warrSvg{
@@ -203,34 +203,34 @@ margin-bottom: 20px;
    }
 }
 .mark_box table {
-   width: 100%; /* Таблица занимает всю ширину родителя */
-   border-collapse: collapse; /* Убирает двойные линии между ячейками */
-   margin: 1rem 0; /* Отступы сверху и снизу */
+   width: 100%; 
+   border-collapse: collapse; 
+   margin: 1rem 0; 
    font-size: 18px;
-   text-align: left; /* Текст выравнивается по левому краю */
+   text-align: left; 
  }
  
  .mark_box th, 
  .mark_box td {
-   padding: 10px 15px; /* Внутренние отступы */
-   border: 1px solid #ddd; /* Легкие границы между ячейками */
+   padding: 10px 15px;
+   border: 1px solid #ddd;
  }
  
  .mark_box th {
-   background-color: #f4f4f4; /* Фон для заголовков таблицы */
-   font-weight: bold; /* Жирный текст для заголовков */
+   background-color: #f4f4f4;
+   font-weight: bold;
  }
  
  .mark_box tr:nth-child(even) {
-   background-color: #f9f9f9; /* Зебра для четных строк */
+   background-color: #f9f9f9; 
  }
  
  .mark_box tr:hover {
-   background-color: #e9f5ff; /* Подсветка строки при наведении */
+   background-color: #e9f5ff; 
  }
  
  .mark_box caption {
-   caption-side: top; /* Заголовок таблицы сверху */
+   caption-side: top; 
    text-align: center;
    font-size: 1.2rem;
    font-weight: bold;

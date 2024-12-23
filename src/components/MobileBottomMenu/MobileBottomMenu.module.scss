@@ -1,4 +1,4 @@
-@import '/src/global.scss';
+@import '../../global.scss';
 .menu_box{
    display: none;
    
@@ -60,7 +60,6 @@ border-radius: 50%;
 aspect-ratio: 1/1;
 }
 .home_bg{
-   // background-color: #141416;
   background: linear-gradient(135deg, rgb(255, 122, 0) 0%, rgb(189, 0, 255) 100%);
 }
 .another_bg{

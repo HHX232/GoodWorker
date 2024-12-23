@@ -1,4 +1,4 @@
-@import '/src/global.scss';
+@import '../../global.scss';
 .card{
    display: flex;
    aspect-ratio: 19/20;
@@ -10,10 +10,7 @@
    background-repeat: no-repeat;
    background-size: cover;
    border-radius: 12px;
-   // box-shadow: 
-   //      inset 0 4px 8px rgba(8, 8, 8, 0),
-   //      inset 0 -50px 45px rgba(8, 8, 8, 0.25); 
-   
+
 }
 
 .card_title{
@@ -23,11 +20,11 @@
    margin-bottom: 4px;
    text-shadow: 
    1px 1px 2px rgba(0, 0, 0, 0.3);
-    display: -webkit-box; /* Для поддержки старых браузеров */
+    display: -webkit-box;
    -webkit-box-orient: vertical;
-   -webkit-line-clamp: 1; /* Ограничиваем количество строк */
-   overflow: hidden; /* Скрываем переполнение */
-   text-overflow: ellipsis; /* Добавляем многоточие */
+   -webkit-line-clamp: 1;
+   overflow: hidden; 
+   text-overflow: ellipsis; 
 }
 .card_subtitle{
    color: #fff !important;

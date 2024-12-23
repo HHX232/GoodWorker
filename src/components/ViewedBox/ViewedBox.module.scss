@@ -1,4 +1,4 @@
-@import '/src/global.scss';
+@import '../../global.scss';
 .item_box{
    display: flex;
    flex-direction: column;
@@ -69,23 +69,24 @@ border-bottom: 1px solid #EDEEF3;
    border-radius: 8px;
 }
 .item_body_title {
-   @include roboto_p1_16_mid; /* Ваши стили */
+   @include roboto_p1_16_mid; 
    max-width: 204px;
-   overflow: hidden; /* Скрывает текст, выходящий за пределы */
-   display: -webkit-box; /* Устанавливает блочный контейнер */
-   -webkit-box-orient: vertical; /* Устанавливает направление содержимого */
-   -webkit-line-clamp: 2; /* Ограничивает количество строк до 2 */
-   text-overflow: ellipsis; /* Добавляет многоточие */
+   overflow: hidden;
+   display: -webkit-box; 
+   -webkit-box-orient: vertical;
+   -webkit-line-clamp: 2;
+   text-overflow: ellipsis;
 }
 .item_body_subtitle{
    @include roboto_p2_14_regular_light;
    max-width: 204px;
-   overflow: hidden; /* Скрывает текст, выходящий за пределы */
-   display: -webkit-box; /* Устанавливает блочный контейнер */
-   -webkit-box-orient: vertical; /* Устанавливает направление содержимого */
-   -webkit-line-clamp: 1; /* Ограничивает количество строк до 2 */
-   text-overflow: ellipsis; /* Добавляет многоточие */
+   overflow: hidden; 
+   display: -webkit-box; 
+   -webkit-box-orient: vertical;
+   -webkit-line-clamp: 1; 
+   text-overflow: ellipsis; 
 }
+
 @media (max-width:1380px){
    .item_body_image{
       display:none;

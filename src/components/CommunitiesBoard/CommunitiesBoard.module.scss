@@ -1,4 +1,4 @@
-@import '/src/global.scss';
+@import '../../global.scss';
 
 .com_box{
   width: 100%;
@@ -25,11 +25,11 @@
    @include roboto_p1_16_mid;
    margin-bottom: 2px;
    max-width: 210px;
-    overflow: hidden; /* Скрывает текст, выходящий за пределы */
-   display: -webkit-box; /* Устанавливает блочный контейнер */
-   -webkit-box-orient: vertical; /* Устанавливает направление содержимого */
-   -webkit-line-clamp: 1; /* Ограничивает количество строк до 2 */
-   text-overflow: ellipsis; /* Добавляет многоточие */
+    overflow: hidden;
+   display: -webkit-box;
+   -webkit-box-orient: vertical;
+   -webkit-line-clamp: 1; 
+   text-overflow: ellipsis;
 
 }
 .online_box, .new_posts_box{
@@ -72,7 +72,7 @@
    padding-right: 5px;
 }
 .com_list::-webkit-scrollbar {
-   width: 0px; /* Ширина скролла */
+   width: 0px;
    transition: all 0.2s;
  
  }
@@ -83,19 +83,19 @@
  }
  
  .com_list::-webkit-scrollbar-track {
-   background: #F3F3F3; /* Фон трека скролла */
-   border-radius: 24px; /* Скругление углов трека */
+   background: #F3F3F3;
+   border-radius: 24px;
    transition: all 0.2s;
  }
  
  .com_list::-webkit-scrollbar-thumb {
-   background: #D8D8D8; /* Цвет поинта скролла */
-   border-radius: 49px; /* Скругление углов поинта */
+   background: #D8D8D8;
+   border-radius: 49px; 
    transition: all 0.2s;
  }
  
  .com_list::-webkit-scrollbar-thumb:hover {
-   background: #868897; /* Цвет поинта при наведении */
+   background: #868897;
  }
 
  @media (max-width:1400px){

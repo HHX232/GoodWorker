@@ -1,4 +1,4 @@
-@import '/src/global.scss';
+@import '../../../global.scss';
 .not_found_links{
    display: flex;
 }
@@ -26,8 +26,6 @@
 }
 .not_found_links_link{
 @include roboto_h5_20_mid;
-// text-decoration: underline !important;
-// text-underline-offset: 3px;
 }
 @media (max-width:670px){
    .not_found_image{

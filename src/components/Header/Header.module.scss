@@ -1,4 +1,4 @@
-@import '/src/global.scss';
+@import '../../global.scss';
 
 .big_main_logo{
    max-width: 190px;
@@ -34,7 +34,7 @@
    flex-direction: column;
    max-width: 143px;
    text-align: right;
-   // gap: 3px;
+
 }
 .header_bg{
    background-color: #fff
@@ -211,7 +211,7 @@ opacity: 1;
    height: 50px;   
 }
 
-//skeleton
+
 
 .user__data__skeleton{
    display: flex;

@@ -1,9 +1,9 @@
-@import '/src/global.scss';
+@import '../../global.scss';
 .main_box{
    display: grid;
-   grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); /* Автоматически заполняет колонки с минимальной шириной 770px */
-   gap: 16px; /* Промежуток между элементами */
-   width: 100%; /* Ширина контейнера */
+   grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); 
+   gap: 16px; 
+   width: 100%; 
    grid-template-rows: min-content;
    flex: 1 1 770px;
 
@@ -45,9 +45,7 @@
    display: flex;
    width: 100%;
    align-items: center;
-//   position: sticky;
-//   top: 0;
-//   z-index: 100;
+
   background-color: #EEEFF8;
 }
 .title_line{
@@ -59,10 +57,10 @@
 }
 .highlighted_box{
    display: grid;
-   grid-template-columns: repeat(auto-fill, minmax(370px, 1fr)); /* Автоматически заполняет колонки с минимальной шириной 770px */
-   gap: 16px; /* Промежуток между элементами */
-   width: 100%; /* Ширина контейнера */
-   // overflow: hidden;
+   grid-template-columns: repeat(auto-fill, minmax(370px, 1fr)); 
+   gap: 16px; 
+   width: 100%; 
+
    max-width: 791px;
    grid-template-rows: min-content;
    flex: 1 1 770px;
@@ -82,7 +80,6 @@
    max-width: fit-content;
    border-radius: 50%;
    backdrop-filter: blur(50px);
-   // background-color: red;
    position: absolute;
    content: "";
 cursor: pointer;

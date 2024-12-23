@@ -1,4 +1,4 @@
-@import '/src/global.scss';
+@import '../../global.scss';
 .card_box{
    width: 100%;
    display: flex;
@@ -108,28 +108,27 @@ gap: 4px;
 }
 .card_title{
  @include roboto_h2_20;
- display: -webkit-box; /* Для поддержки старых браузеров */
+ display: -webkit-box;
    -webkit-box-orient: vertical;
-   -webkit-line-clamp: 1; /* Ограничиваем количество строк */
-   overflow: hidden; /* Скрываем переполнение */
-   text-overflow: ellipsis; /* Добавляем многоточие */
+   -webkit-line-clamp: 1;
+   overflow: hidden;
+   text-overflow: ellipsis;
 }
 .card_subtitle {
    @include roboto_p1_16_mid;
    color: #868897 !important;
    font-weight: 400 !important;
-   display: -webkit-box; /* Для поддержки старых браузеров */
+   display: -webkit-box; 
    -webkit-box-orient: vertical;
-   -webkit-line-clamp: 1; /* Ограничиваем количество строк */
-   overflow: hidden; /* Скрываем переполнение */
-   text-overflow: ellipsis; /* Добавляем многоточие */
+   -webkit-line-clamp: 1; 
+   overflow: hidden; 
+   text-overflow: ellipsis; 
 }
 
 .card_images_list{
    display: flex;
    gap: 4px;
- 
-   // justify-content: space-between;
+
 }
 .card_images_item{
 
@@ -170,11 +169,11 @@ gap: 4px;
    }
 }
 .link_button svg {
-   transition: stroke .2s; /* Плавный переход цвета */
+   transition: stroke .2s;
  }
  
  .link_button:hover svg path {
-   stroke: #ffffff; /* Цвет при наведении */
+   stroke: #ffffff;
  }
  .link_button svg path {
    width: 24px;
