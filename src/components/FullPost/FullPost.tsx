@@ -148,14 +148,71 @@ console.log(cdacsdc)
 
 ## Таблицы
 
+
 | Заголовок 1 | Заголовок 2 | Заголовок 3 | Заголовок 4 |
 |-------------|-------------|-------------|-------------|
 | Ячейка 1    | Ячейка 2    | Ячейка 3    |             |
 | Ячейка 4    | Ячейка 5    | Ячейка 6    |             |
 
 ---
-
-
+<div class="table_wrapper">
+<table>
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 28%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 28%" />
+<col style="width: 10%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th colspan="3">Кратные</th>
+<th colspan="3">Дольные</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><p>10<sup>1</sup></p>
+<p>10<sup>2</sup></p>
+<p>10<sup>3</sup></p>
+<p>10<sup>6</sup></p>
+<p>10<sup>9</sup></p>
+<p>10<sup>12</sup></p></td>
+<td><p>дека</p>
+<p>гекто</p>
+<p>кило</p>
+<p>мега</p>
+<p>гига</p>
+<p>тера</p></td>
+<td><p>[да]</p>
+<p>[г]</p>
+<p>[к]</p>
+<p>[М]</p>
+<p>[Г]</p>
+<p>[Т]</p></td>
+<td><p>10<sup>-1</sup></p>
+<p>10<sup>-2</sup></p>
+<p>10<sup>-3</sup></p>
+<p>10<sup>-6</sup></p>
+<p>10<sup>-9</sup></p>
+<p>10<sup>-12</sup></p></td>
+<td><p>деци</p>
+<p>санти</p>
+<p>мили</p>
+<p>микро</p>
+<p>нано</p>
+<p>пико</p></td>
+<td><p>[д]</p>
+<p>[с]</p>
+<p>[м]</p>
+<p>[мк]</p>
+<p>[н]</p>
+<p>[п]</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 
 
 

@@ -15,6 +15,33 @@ interface somesingBlur extends IUser{
    cardID:string;
    userID?:string;
 }
+
+interface DotsMenuProps {
+   activeMenu: boolean;
+   togglemenu: (e: React.MouseEvent) => void;
+   handleShareClick?: (e: React.MouseEvent<HTMLLIElement>) => void;
+   hiddenShare?:boolean;
+   maxWidth?:string;
+ }
+ 
+ export const DotsMenu: React.FC<DotsMenuProps> = ({ activeMenu, maxWidth , togglemenu, handleShareClick }) => {
+   return (
+     <div className={`${style.dots_menu_box}`}>
+       <img style={{maxWidth:`${maxWidth}px`}} onClick={togglemenu} className={`${style.dots_image}`} src={dotsImage} alt="" />
+       {activeMenu ? (
+         <ul style={{bottom:`-${Number(maxWidth) * 2.8}px`}} className={`${style.dots_menu}`}>
+           <li className={`${style.dots_menu_item}`}>
+             <p className={`${style.report}`}>Пожаловаться</p>
+           </li>
+           <li onClick={handleShareClick} className={`${style.dots_menu_item}`}>
+             <p className={`${style.share_item}`}>Поделиться</p>
+           </li>
+         </ul>
+       ) : null}
+     </div>
+   );
+ };
+
 const UserHeaderCard:FC<somesingBlur> = ({image,userID,cardID,colorTitle="141416", accentColor="868897", blurBg=false, BlurDots=false, role, dateActivity, name}) =>{
 const [activeMenu,setActiveMenu] = useState(false);
 const togglemenu = (e: React.MouseEvent)=>{
@@ -24,6 +51,7 @@ const togglemenu = (e: React.MouseEvent)=>{
 }
 
 
+ 
 const handleShareClick = (e: React.MouseEvent<HTMLLIElement>) => {
    e.stopPropagation();
    //TODO добавить актуальную ссылку
@@ -51,17 +79,9 @@ const handleShareClick = (e: React.MouseEvent<HTMLLIElement>) => {
                <UserRole accentColor={accentColor} blurBg={blurBg} userRole={(role ? role : "User")}/>
          </div>
          </Link>
-        { !BlurDots ? <div className={`${style.dots_menu_box}`}>
-         <img onClick={(e)=>{togglemenu(e)}} className={`${style.dots_image}`} src={dotsImage} alt="" />
-         {activeMenu ?  <ul className={`${style.dots_menu}`}>
-            <li className={`${style.dots_menu_item}`}>
-               <p className={`${style.report}`}>Пожаловаться</p>
-            </li>
-            <li onClick={(e)=>handleShareClick(e)} className={`${style.dots_menu_item}`}>
-            <p className={`${style.share_item}`}>Поделиться</p>
-            </li>
-         </ul> :""}
-         </div> : ""}
+         {!BlurDots ? (
+        <DotsMenu activeMenu={activeMenu} togglemenu={togglemenu} handleShareClick={handleShareClick} />
+      ) : null}
       </div>
    </div>
 }

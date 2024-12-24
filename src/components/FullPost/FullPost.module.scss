@@ -85,6 +85,18 @@ margin-bottom: 20px;
     @include md_roboto_h1_42;
     margin-bottom: 16px;
  } 
+ table{
+  border-collapse: collapse;
+ }
+ table > td{
+  display: flex;
+  align-items: center;
+ }
+ td > img{
+  max-width: 40%;
+  margin: 0 auto;
+  
+ }
  & > h2{
   @include md_roboto_h2_35;
   margin-bottom: 24px;
@@ -291,4 +303,10 @@ font-size: 25px !important;
  }
 
 }
+ }
+
+ @media (max-width:560px){
+  .mark_box{
+    padding-bottom: 100px !important;
+  }
  }

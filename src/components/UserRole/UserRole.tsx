@@ -8,9 +8,10 @@ interface IUserRole {
    blurBg?: boolean;
    accentColor?: string;
    role?:string | TUserRole;
+   dotsWidth?: string;
 }
 
-const UserRole:FC<IUserRole> = ({userRole, accentColor = "868897", blurBg = false})=>{
+const UserRole:FC<IUserRole> = ({userRole,dotsWidth="33", accentColor = "868897", blurBg = false})=>{
    const userBoxClass = `${style.user_box} ${!blurBg ?(userRole === 'Vip' ? style.vipBox : userRole === 'Admin' ? style.adminBox : style.defaultBox) : (userRole !== "User" ? style.blurBg : style.blurBg_no_padding)}`;
    const userTextClass = `${style.user_text} ${userRole === 'Vip' ? style.vipText : userRole === 'Admin' ? style.adminText : style.defaultText}`;
    

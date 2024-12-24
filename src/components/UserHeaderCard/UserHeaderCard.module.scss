@@ -43,6 +43,7 @@ border-bottom: 1px solid #EDEEF3;
    border-radius: 50%;
    background-color: #F7F7F7;
    cursor: pointer;
+   
 }
 .dots_menu_box{
    position: relative;
@@ -56,6 +57,7 @@ border-bottom: 1px solid #EDEEF3;
    border-radius: 16px;
    border: 1px solid #d4d3d3;
    padding: 6px 10px;
+   z-index: 10000;
    @include roboto_p1_16_regular_gray;
    color: #141416 !important;
    display: flex;

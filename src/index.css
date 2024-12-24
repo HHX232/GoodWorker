@@ -223,13 +223,12 @@
 
 .content_box::-webkit-scrollbar-thumb {
   transition: all .2s;
-  background: #D8D8D8; /* Цвет поинта скролла */
-  border-radius: 49px; /* Скругление углов поинта */
+  background: #D8D8D8;
+  border-radius: 49px;
 }
 
 .content_box::-webkit-scrollbar-thumb:hover {
-
-  background: #868897; /* Цвет поинта при наведении */
+  background: #868897;
 }
 body{
   overflow-y: hidden;
@@ -250,11 +249,11 @@ body{
   flex-direction: column;
 }
 .slick-slide {
-  padding: 0 8px; /* Половина от расстояния между слайдами */
+  padding: 0 8px;
 }
 
 .slick-list {
-  margin: 0 -8px !important; /* Уравниваем отступы */
+  margin: 0 -8px !important; 
 }
 .card_class{
   display: flex;
@@ -281,10 +280,19 @@ body{
   background-color: #F7F7F7;
   max-width: fit-content;
 }
-
+.table_wrapper{
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
 @media (max-width:1320px){
   .boards_box{
      display:none;
   }
 
+}
+@media (max-width:560px){
+  .container__global{
+    padding: 0 15px;
+  }
 }

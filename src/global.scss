@@ -54,6 +54,12 @@ font-weight: 500;
     line-height: 150%;
     color: $color-light-gray;
 }
+@mixin roboto_p2_14_regular_black {
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 150%;
+    color: $color-dark;
+}
 
 @mixin roboto_p1_16_regular {
     font-weight: 400;

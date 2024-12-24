@@ -47,7 +47,6 @@ interface IPostLocal {
 const ViewedItem: FC<IViewedItem> = ({postId ,setLoad,user}) =>{
 const [postObject, setPostObject] = useState<IPostLocal>()
 
-console.log(postObject?.images[0])
 
 useEffect(() => {
    const fetchPostData = async () => {
@@ -93,14 +92,22 @@ useEffect(() => {
 const ViewedBox: FC = ({}) =>{
    const [postsIds, setPostsids] = useState<string[]>()
    const [isLoading, setIsLoading] = useState(true)
-   const location = useLocation()
+   const location = useLocation();
+
    useEffect(()=>{
       const storedArray: string[] = JSON.parse(localStorage.getItem('cardIds') || '[]');
       setPostsids(storedArray)
    },[location])
 
+   if(postsIds?.length === 0){
+      return <div className={`${style.viewed_box}`}><h3 className={`${style.viewed_title}`}>Recently viewed</h3>
+       <ul className={`${style.viewed_list}`}>
+         <p>No viewed</p>
+       </ul>
+      </div> 
+   }
    return <div className={`${style.viewed_box}`}>
-      {!isLoading ?<h3 className={`${style.viewed_title}`}>Recently viewed</h3> : <Skeleton variant="rounded" width={"100%"} height={"auto"} className={`${style.item_box}`}/>}
+      {!isLoading ? <h3 className={`${style.viewed_title}`}>Recently viewed</h3> : <Skeleton variant="rounded" width={"100%"} height={"auto"} className={`${style.item_box}`}/>}
       <ul className={`${style.viewed_list}`}>
         
          {postsIds && postsIds.map((el)=>{

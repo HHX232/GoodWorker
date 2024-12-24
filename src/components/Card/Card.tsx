@@ -34,6 +34,7 @@ export function AddLocalId(cardId: string): void {
    } else if (storedArray.length === 1) {
        // Если в массиве уже один элемент, добавляем второй
        storedArray.push(cardId);
+       storedArray.reverse();
    } else {
        storedArray[1] = cardId;
        storedArray.reverse();

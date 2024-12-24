@@ -1,0 +1,35 @@
+.create_box{
+   display: flex;
+   width: 100%;
+   align-items: center;
+   margin-bottom: 16px;
+   padding-top: 12px;
+   border-top: 1px solid #868897;
+   background-color: #fff;
+}
+.input_box{
+   display: flex;
+   align-items: center;
+   padding-bottom: 16px;
+   padding-top: 8px;
+   margin-left: 24px;
+   gap: 12px;
+   border-bottom: 1px solid #EDEEF3;
+}
+.send_img{
+  margin: 8px 8px 8px 16px;
+  transition: all .3s;
+  & > path{
+   transition: all .3s;
+  }
+}
+.text_input{
+   width: 200px;
+   padding: 4px;
+   max-height: 100px;
+   overflow-y: auto !important;
+}
+.text_input:focus {
+   border: none; /* Убираем рамку при фокусе */
+   outline: none; /* Убираем стандартный контур браузера */
+}
