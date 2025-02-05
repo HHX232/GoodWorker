@@ -36,3 +36,23 @@ export interface IDefaultPost {
    date?:string; 
 
 }
+interface User {
+   avatar: string;
+   email: string;
+   id: number;
+   registrationDate: string;
+   role: string;
+   username: string;
+}
+
+export interface IComment {
+   id: number;
+   message: string;
+   publicationDate: string; 
+   user: User;
+   commentsImages?:string[]
+}
+
+export interface ICustomPost extends IDefaultPost {
+   comments: IComment[]
+}

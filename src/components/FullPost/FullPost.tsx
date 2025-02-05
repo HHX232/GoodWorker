@@ -20,6 +20,8 @@ import shareSvg from '../../images/svg/share.svg'
 import Tooltip from '@mui/material/Tooltip';
 import preloader from '../../images/loaders/Bean Eater@1x-1.0s-200px-200px.svg'
 import Skeleton from '@mui/material/Skeleton';
+import { Modal } from '@mui/material';
+import ModalBox from '../ModalBox/ModalBox';
 
 
 
@@ -395,6 +397,7 @@ function replaceImageLinks(body:string, images:string[]) {
     }}
   />}
    </div>
+
    </div> 
 }
 export default FullPost

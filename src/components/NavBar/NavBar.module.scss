@@ -19,6 +19,15 @@
    width: 24px;
    height: 24px;
 }
+.ai_box{
+   margin-bottom: 70px;
+   margin-top: auto;
+   // filter: blur(50px);
+}
+.navbar_box_active{
+   max-width: 250px !important;
+   padding: 24px 15px 24px 19px;
+}
 .navbar_list{
    display: flex;
    flex-direction: column;

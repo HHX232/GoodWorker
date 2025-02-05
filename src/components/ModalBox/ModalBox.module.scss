@@ -1,0 +1,39 @@
+@import '../../global.scss';
+.modal_overlay{
+   z-index: 401;
+   background-color: #fff;
+   border-radius: 12px;
+   height: calc(95svh - 120px);
+   width: calc(100vw - 500px);
+   min-width: 540px;
+   margin: 100px auto 0 auto;
+}
+.modal_overlay_back{
+   position: fixed;
+   top: 0;
+   left: 0;
+   width: 100%;
+   height: 100%;
+   background-color:hsla(234, 38%, 5%, 0.6);
+   z-index: 400;
+}
+.modal_header_title{
+@include roboto_h5_18_regular;
+color: #868D97 !important;
+}
+.modal_header_close{
+   width: 24px;
+   aspect-ratio: 1/1;
+   background-image: url('../../images/svg/crest.svg');
+   background-repeat: no-repeat;
+   background-position: center;
+   background-size: cover;
+}
+.modal_header{
+   display: flex;
+   width: 100%;
+   align-items: center;
+   padding: 24px 24px 12px 24px;
+   justify-content: space-between;
+   border-bottom: 1px solid #EDEEF3;
+}

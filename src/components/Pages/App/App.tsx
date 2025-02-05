@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.scss';
 
-import { Link, Outlet, Route, Routes, useLocation } from 'react-router-dom';
+import { Link, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import Header from '../../Header/Header';
 import NotFoundPage from '../NotFound/NotFound';
 import ContentBox from '../../ContentBox/ContentBox';
@@ -12,39 +12,39 @@ import { userSlice } from '../../../services/reducers/UserSlice';
 import { postAPI } from '../../../services/PostService';
 import MobileBottomMenu from '../../MobileBottomMenu/MobileBottomMenu';
 import FullPost from '../../FullPost/FullPost';
+import ModalBox from '../../ModalBox/ModalBox';
+import FullCommentsPage from '../FullCommentsPage/FullCommentsPage';
+import UnprotectedRouteElement from '../../UnprotectedRouteElement/UnprotectedRouteElement';
+import SignUp from '../SignUp/SignUp';
+import LoginPage from '../LoginPage/LoginPage';
 
 
-// const PostContainer = ()=>{
 
-//   //автоматически генерируется хук
-//   const {data:posts, error, isLoading} = postAPI.useFetchAllPostsQuery(10)
-//   return (
-//     <div >
-//       {isLoading ?  <p style={{color:"red"}}>HELLO</p> : ""}
-//      {posts?.map((el)=>
-//       {console.log(el)
-//       return <p>{el.title}</p>}
-//      )}
-//     </div>
-//   );
-// }
+
 function App() {
 
 const data = useAppSelector(state => state.userReducer)
 
-// const {count} = useAppSelector(state => state.userReducer)
-// const dispatch = useAppDispatch()
-const location = useLocation();
-const regex = /^\/posts\/\d+$/;
 
+const location = useLocation();
+const background = location.state && location.state.background;
+const regex = /^\/posts\/\d+$/;
+const navigate = useNavigate()
+
+const onModalClose = () =>{
+  navigate(-1);
+  location.state.background = null
+}
   return (
     <>
     <Header/>
     <MobileBottomMenu/>
+    <div className={`overflow_box`}>
     <div className={`container__global ${regex.test(location.pathname) ? "fullPostGLoabal" : ""}`}>
-    <Routes>
+    <Routes location={background || location}>
           <Route path="/" element={<ContentBox />}>
             <Route index element={<><MainContentBox /></>} />
+            <Route path='/posts/:id' element={<FullPost/>}/>
             <Route path='/3' element={<><Link style={{flexGrow:"3.95"}} to="1">hi3</Link></>} />
             <Route path='/create' element={<></>} />
             <Route path='/messages' element={<><Link style={{flexGrow:"3.95"}} to="1">message</Link></>} />
@@ -52,13 +52,22 @@ const regex = /^\/posts\/\d+$/;
             <Route path='/pomodoro' element={<><Link style={{flexGrow:"3.95"}} to="1">pomodoro</Link></>} />
             <Route path='/games' element={<><Link style={{flexGrow:"3.95"}} to="1">lorem*30</Link></>} />
             <Route path='/rand' element={<><Link style={{flexGrow:"3.95"}} to="1">rand</Link><Link style={{flexGrow:"1.7"}} to="1">pomodoro</Link></>} />
-            <Route path="/posts/:id" element={<FullPost/>} />
           </Route>
-
-
+          <Route path="/signup" element={<UnprotectedRouteElement>
+    <SignUp />
+  </UnprotectedRouteElement>} />
+          <Route path="/login" element={<UnprotectedRouteElement>
+    <LoginPage />
+  </UnprotectedRouteElement>} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
     </div>
+    </div>
+    {background && (
+      <Routes>
+        <Route path='/posts/:id/comments' element={<ModalBox onClose={onModalClose} children={<FullCommentsPage/>}/>}/>
+      </Routes>
+    )}
     </>
   );
 }

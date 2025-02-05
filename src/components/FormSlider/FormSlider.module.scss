@@ -1,0 +1,229 @@
+
+.signUp_big_box{
+   width: 100%;
+   height: calc(100vh - 97px); 
+  }
+  .medium_box{
+     margin-left: auto;
+     margin-right: auto;
+     height: 100%;
+     display: grid;
+     grid-template-columns: 1fr 1fr;
+     align-items: center;
+     justify-content: center;
+  }
+  .card {
+     background: var(--surface-card);
+     padding: 2rem;
+     border-radius: 10px;
+     margin-bottom: 1rem;
+  }
+  .error_input{
+     color: red;
+     margin-top: 7px;
+  }
+  .form_content{
+     max-width: 530px;
+     padding: 10px;
+     display: flex;
+     flex-direction: column;
+     
+  }
+  .have_text{
+     text-align: center;
+     font-size: 19px;
+     & > .have_text_link{
+        font-weight: 600;
+        cursor: pointer;
+     }
+  }
+  
+  .signup_title{
+     font-size: 36px;
+     font-weight: 600;
+     text-align: center;
+     margin-bottom: 40px;
+     color: #141416;
+  }
+  .inputs_mini_box{
+     display: flex;
+     flex-direction: column;
+     gap: 24px;
+     width: 100%;
+  
+  }
+  .input_password{
+     & > div{
+        & > input{
+           &::placeholder{
+              color:#C2C3CB;
+              font-size: 17px;
+           }
+        }
+     }
+     
+     
+  }
+  .input_password, .input_email, .input_name{
+     width: 100%;
+     background-color: #ffffff;
+     display: flex;
+     justify-content: space-between;
+     padding: 24px;
+     border-radius: 12px;
+     font-size: 17px;
+     height: 77px;
+     &::placeholder{
+        color:#C2C3CB;
+        font-size: 17px;
+     }
+  
+  
+     & > div{
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        & > input{
+           width: 80%;
+           margin-right: auto;
+        }
+        & > span{
+  
+           & > svg{
+              width: 25px;
+           }
+        }
+     }
+     
+  }
+  
+  .signup_button{
+     width: 100%;
+     font-size: 18px;
+     font-weight: 600;
+     padding: 24px;
+     border-radius: 12px;
+     background-color: #141416;
+     color: #F3F5F6;
+     cursor: pointer;
+     
+  }
+  
+  .swiper_box_form{
+     min-width: 0;
+     min-height: 0;
+     align-items: center;
+     display: flex;
+     position: relative;
+     height: 100%;
+     width: 100%;
+     background-color: #141416;
+     &::before{
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 300%;
+        height: 190%;
+        background: #141416;
+        z-index: 0;
+     }
+  }
+  
+  .slider_item_box{
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  }
+  .image_box{
+     position: relative;
+     max-width: fit-content;
+     margin: 0 auto;
+     padding: 30px 0;
+     margin-bottom: 30px;
+  }
+  .slider_image_blur{
+     position: absolute !important;
+      top: 37px;
+      left: 2px;
+      z-index: -1;
+      filter: blur(16.55px);
+  }
+  .slider_image{
+     aspect-ratio: 1/1;
+     max-width: 400px;
+     max-height: 400px;
+     width: 100%;
+     margin: 0 auto;
+     border-radius: 38px;
+  }
+  .slider_title{
+     color: #fff;
+     font-size: 48px;
+     font-weight: 500;
+  
+     line-height: 150%;
+     max-width: 380px;
+     margin: 0 auto 14px auto;
+  }
+  .slider_subtitle{
+     line-height: 150%;
+     color: #6D6D6D;
+     font-size: 22px;
+     margin-bottom: 60px;
+  }
+  .arrow_left_box{
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     position: absolute;
+     left: 45.5%;
+     transform: translateX(-52%);
+     bottom: 11%;
+     cursor: pointer;
+     z-index: 100;
+     background-color: #ffffff;
+     padding: 23px 30px 23px 23px;
+  border-radius: 18px 0 0 18px;
+  }
+  .border_input:not(:focus){
+     border: 2px solid #141416;
+  }
+  .arrow_right_box{
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     position: absolute;
+     left: 45.5%;
+     transform: translateX(47%);
+     // border-left: 1px solid #C2C3CB;
+     bottom: 11%;
+     cursor: pointer;
+     z-index: 100;
+     background-color: #ffffff;
+     padding: 23px 30px 23px 23px;
+  border-radius: 0px 18px 18px 0px;
+  }
+  .pos_box{
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     width: 100%;
+     height: 100%;
+     position: relative;
+     &::before{
+        content: '';
+        position: absolute;
+        left: -26px;
+        width: 3px;
+        height: 28px;
+        top: -9px;
+        background: #E6E8EC;
+        z-index: 0;
+        opacity: 0.5;
+     }
+  }
+  .arrow_image{
+     width: 18px;
+  }
+  

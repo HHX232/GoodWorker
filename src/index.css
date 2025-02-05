@@ -3,6 +3,12 @@
 /* font-family: 'Roboto', sans-serif; */
 @import '/src/global.scss';
 
+
+
+
+
+
+
 * {
    padding: 0px;
    margin: 0px;
@@ -19,7 +25,7 @@
  *::after {
    box-sizing: border-box;
  }
-
+ 
 
  a, a:link, a:visited {
    color: inherit;
@@ -285,6 +291,57 @@ body{
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
+.overflow_box{
+  width: 100vw;
+  overflow-x: clip;
+}
+
+/*! TOAST */
+.p-toast-message-error{
+  border-left:7px solid red !important;
+  }
+  .p-toast-message-success{
+  border-left:7px solid green !important;
+}
+
+.p-toast > div{
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+.p-input-icon{
+  transform: translateY(-50%);
+}
+.p-toast-summary{
+  font-size: 19px;
+
+}
+.p-toast-message-text{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.p-toast-message-icon{
+  margin-right: 10px;
+}
+.p-toast-message-content{
+  padding: 18px;
+  
+}
+.p-toast-message{
+  border-radius: 8px;
+  border-left: 7px solid rgb(30, 169, 124);
+}
+.p-toast-icon-close-icon{
+  width: 19px;
+  height: 19px;
+}
+ .p-password-panel{
+display: none;
+ }
+
+
+
 @media (max-width:1320px){
   .boards_box{
      display:none;

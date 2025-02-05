@@ -16,7 +16,7 @@ type RequestOptions = {
    const defaultHeaders = {
      "Content-Type": "application/json",
    };
- 
+
    try {
      const response = await fetch(url, {
        method: options.method || "GET", 

@@ -9,15 +9,16 @@ interface IUserRole {
    accentColor?: string;
    role?:string | TUserRole;
    dotsWidth?: string;
+   fontSize?: string;
 }
 
-const UserRole:FC<IUserRole> = ({userRole,dotsWidth="33", accentColor = "868897", blurBg = false})=>{
+const UserRole:FC<IUserRole> = ({userRole,fontSize="12", dotsWidth="33", accentColor = "868897", blurBg = false})=>{
    const userBoxClass = `${style.user_box} ${!blurBg ?(userRole === 'Vip' ? style.vipBox : userRole === 'Admin' ? style.adminBox : style.defaultBox) : (userRole !== "User" ? style.blurBg : style.blurBg_no_padding)}`;
    const userTextClass = `${style.user_text} ${userRole === 'Vip' ? style.vipText : userRole === 'Admin' ? style.adminText : style.defaultText}`;
    
    if(userRole !== "Vip" && userRole !== "Admin" && userRole !== "User"){
 return <div className={userBoxClass}>
-<p style={{color:`#${accentColor}`}} className={userTextClass}>User</p>
+<p style={{color:`#${accentColor}`, fontSize: `${fontSize}px`}} className={userTextClass}>User</p>
 </div>
    }
 
@@ -28,7 +29,7 @@ return <div className={userBoxClass}>
 <path fill-rule="evenodd" clip-rule="evenodd" d="M4.31718 5.2527C4.37412 5.16057 4.4747 5.10449 4.58301 5.10449H5.41634C5.52465 5.10449 5.62523 5.16057 5.68217 5.2527C5.73911 5.34483 5.74429 5.45988 5.69585 5.55675L5.3215 6.30545L5.51809 7.87823C5.52388 7.92453 5.51923 7.97154 5.50447 8.01581L5.29614 8.64081C5.2536 8.76842 5.13418 8.85449 4.99967 8.85449C4.86517 8.85449 4.74575 8.76842 4.70321 8.64081L4.49488 8.01581C4.48012 7.97154 4.47547 7.92453 4.48125 7.87823L4.67785 6.30545L4.3035 5.55675C4.25506 5.45988 4.26024 5.34483 4.31718 5.2527Z" fill="#868897"/>
 <path d="M3.229 2.29183C3.229 1.31383 4.02183 0.520996 4.99984 0.520996C5.97784 0.520996 6.77067 1.31383 6.77067 2.29183V2.7085C6.77067 3.6865 5.97784 4.47933 4.99984 4.47933C4.02183 4.47933 3.229 3.6865 3.229 2.7085V2.29183Z" fill={`#${accentColor}`}/>
 </svg>}
-      <p style={{color: `#${accentColor}`}} className={userTextClass}>{userRole}</p>
+      <p style={{color: `#${accentColor}`, fontSize: `${fontSize}px`}} className={userTextClass}>{userRole}</p>
     </div>
     )
 }

@@ -1,0 +1,13 @@
+<svg width="28.403564" height="28.403809" viewBox="0 0 28.4036 28.4038" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<desc>
+			Created with Pixso.
+	</desc>
+	<defs>
+		<clipPath id="clip2_4204">
+			<rect id="icons/Arrow Right 2/Line" rx="0.000000" width="27.220182" height="27.220182" transform="translate(0.591743 0.591743)" fill="white" fill-opacity="0"/>
+		</clipPath>
+	</defs>
+	<g clip-path="url(#clip2_4204)">
+		<path id="vector (Stroke)" d="M16.67 8.59C17.15 8.15 17.9 8.18 18.34 8.66L22.17 12.8C22.59 13.26 22.59 13.95 22.17 14.41L18.34 18.55C17.9 19.03 17.15 19.06 16.67 18.62C16.19 18.17 16.16 17.42 16.6 16.94L18.59 14.79L7.1 14.79C6.44 14.79 5.91 14.26 5.91 13.6C5.91 12.95 6.44 12.42 7.1 12.42L18.59 12.42L16.6 10.27C16.16 9.79 16.19 9.04 16.67 8.59Z" fill="#23262F" fill-opacity="1.000000" fill-rule="evenodd"/>
+	</g>
+</svg>

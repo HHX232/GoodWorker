@@ -24,6 +24,28 @@
 .all_comments_btn{
    @include roboto_p1_16_regular;
 }
+.comment_little_box{
+   display: flex;
+   flex-direction: column;
+
+
+}
+.images_little_box{
+   display: flex;
+   flex-wrap: wrap;
+   gap: 8px;
+   padding: 6px 0px 6px 8px;
+   margin-right: 12px;
+
+   max-height: 105px;
+   overflow-y: auto;
+   overflow-x: clip;
+   align-items: center;
+   justify-content: center;
+}
+.border_box_little{
+   border-top: 1px solid #868897;
+}
 .comm_avatar{
    width: 24px;
    height: 24px;
@@ -58,6 +80,24 @@
    width: 4px;
    height: 4px;
    border-radius: 50%;
+}
+.no_comments{
+   background: linear-gradient(90deg, rgb(172, 140, 254) 0%, rgb(240, 120, 243) 50%, rgb(255, 207, 90) 100%);
+   -webkit-background-clip: text;
+   -webkit-text-fill-color: transparent;
+   @include roboto_p2_14_regular;
+   background-size: 200% 100%;
+   animation: gradient 6s ease infinite;
+   margin-left: 24px;
+   margin-bottom: 15px;
+   @keyframes gradient {
+      0% {
+         background-position: 0% 50%;
+      }
+      100% {
+         background-position: -200% 50%;
+      }
+   }
 }
 .comm_name{
    @include roboto_p2_14_regular_black;
@@ -110,4 +150,37 @@
 
 .comments_all_box::-webkit-scrollbar-thumb:hover {
    background: #868897; /* Цвет поинта при наведении */
+}
+
+
+
+
+
+.images_little_box::-webkit-scrollbar {
+   width: 3px; /* Ширина скролла */
+   transition: all .2s;
+}
+
+.images_little_box::-webkit-scrollbar:hover {
+   width: 8px !important; /* Ширина скролла при наведении */
+}
+
+.images_little_box::-webkit-scrollbar-track {
+   transition: all .2s;
+   background: #F3F3F3; /* Фон трека скролла */
+   border-radius: 24px; /* Скругление углов трека */
+}
+
+.images_little_box::-webkit-scrollbar-thumb {
+   transition: all .2s;
+   background: #D8D8D8; /* Цвет поинта скролла */
+   border-radius: 49px; /* Скругление углов поинта */
+}
+
+.images_little_box::-webkit-scrollbar-thumb:hover {
+   background: #868897; /* Цвет поинта при наведении */
+}
+.display_box{
+   display: flex;
+   flex-direction: column
 }

@@ -1,9 +1,12 @@
 import { combineReducers, configureStore, } from "@reduxjs/toolkit";
 import userReducer from './reducers/UserSlice'
 import { postAPI } from "./PostService";
+import imagesReducer from './reducers/CommentImages';
+
 const rootReducer  = combineReducers({
    userReducer,
-   [postAPI.reducerPath]: postAPI.reducer
+   [postAPI.reducerPath]: postAPI.reducer,
+   comImages:imagesReducer
 })
 
 export const setupStore = ()=>{

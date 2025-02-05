@@ -1,29 +1,12 @@
 import { FC, useEffect, useState } from 'react'
 import style from './Card.module.scss'
-import { IUser } from '../../interfaces/interfaces';
-import userImageProp from '../../images/stubs/stub-4.jpg'
 import UserHeaderCard from '../UserHeaderCard/UserHeaderCard';
-import postImage from '../../images/post_big_1.jpg'
-import postImage2 from '../../images/post_big_2.jpg'
+
 import stubImage from '../../images/stubs/stub-1.jpg'
 import {v4 as uuid} from 'uuid'
 import { Link } from 'react-router-dom';
 import PostFooterMain from '../PostFooterMain/PostFooterMain';
-import request from '../../utils/request';
-
-interface ICard {
-   title:string;
-   subTitle:string;
-   highlightText?:string;
-   user:IUser;
-   imagesArray:Array<string> | undefined ;
-   comments:string;
-   vues:string;
-   stars:string;
-   commentsCount?:string;
-   cardId:string;
-   userId?:string;
-}
+import { ICard } from './CardInterfaces';
 
 export function AddLocalId(cardId: string): void {
 
@@ -42,13 +25,7 @@ export function AddLocalId(cardId: string): void {
    localStorage.setItem('cardIds', JSON.stringify(storedArray));
 }
 
-const Card:FC<ICard> = ({userId,comments="0", cardId ,vues="0",stars="0",title="underfind", subTitle = "", user, imagesArray=[stubImage]})=>{
-   
-   // useEffect(()=>{
-   //    console.log(imagesArray)
-   // },[])
-  
-
+const Card:FC<ICard> = ({userId,comments="0", cardId ,vues="0",stars="0",title="undefined", subTitle = "", user, imagesArray=[stubImage]})=>{
    return <div onClick={()=>AddLocalId(cardId)} className={`${style.card_box}`}>
      <UserHeaderCard userID={userId} cardID={cardId} image={user.image} role={user.role} dateActivity={user.dateActivity} name={user.name}/>
 
@@ -81,4 +58,3 @@ const Card:FC<ICard> = ({userId,comments="0", cardId ,vues="0",stars="0",title="
 }
 
 export default Card
-

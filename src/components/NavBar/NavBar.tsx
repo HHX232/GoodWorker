@@ -20,6 +20,7 @@ import gaykaSVGActive from '../../images/svg/gaykaWhite.svg'
 import supportSvg from '../../images/svg//support.svg'
 import supportSvgActive from '../../images/svg//supportActive.svg'
 import { v4 as uuidv4 } from 'uuid';
+import AIButton from "../AIButton/AIButton";
 
 const firstForImages = [searchSVG, plusSVG, messageSVG, saveSVG];
 const firstForImagesActive = [searchSVGActive, plusSVGActive, messageSVGActive, saveSVGActive];
@@ -62,10 +63,9 @@ const ListItem = ({imageUrl, activateLink="/", activeImageUrl, itemText="someTex
 
 
 const NavBar = () =>{
-   const [isLoading, setIsLoading] = useState(false)
+const location = useLocation()
 
-
-   return <nav className={`${style.navbar_box}`}>
+   return <nav className={`${style.navbar_box} ${location && location.pathname.includes('posts') ? style.navbar_box_active : ""}`}>
       <ul className={`${style.navbar_list}`}>
           {firstForText.map((item,index)=>{
       return <ListItem key={uuidv4()} itemText={item} activateLink={firstForLinks[index]} imageUrl={firstForImages[index]} activeImageUrl={firstForImagesActive[index]}  />
@@ -81,6 +81,11 @@ const NavBar = () =>{
       return <ListItem key={uuidv4()} itemText={item} activateLink={thirdForLinks[index]} imageUrl={thirdForImages[index]} activeImageUrl={thirdForImagesActive[index]}  />
    })}
       </ul>
+      {location.pathname.includes('posts') ?  <ul className={`${style.ai_box}`}>
+         <AIButton/>
+         
+      </ul> : null}
+     
    </nav>
 }
 export default NavBar

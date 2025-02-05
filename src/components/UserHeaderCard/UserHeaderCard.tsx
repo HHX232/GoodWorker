@@ -27,7 +27,7 @@ interface DotsMenuProps {
  export const DotsMenu: React.FC<DotsMenuProps> = ({ activeMenu, maxWidth , togglemenu, handleShareClick }) => {
    return (
      <div className={`${style.dots_menu_box}`}>
-       <img style={{maxWidth:`${maxWidth}px`}} onClick={togglemenu} className={`${style.dots_image}`} src={dotsImage} alt="" />
+       <img style={{width:`${maxWidth}px`}} onClick={togglemenu} className={`${style.dots_image}`} src={dotsImage} alt="" />
        {activeMenu ? (
          <ul style={{bottom:`-${Number(maxWidth) * 2.8}px`}} className={`${style.dots_menu}`}>
            <li className={`${style.dots_menu_item}`}>

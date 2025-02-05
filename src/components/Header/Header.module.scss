@@ -1,5 +1,33 @@
 @import '../../global.scss';
 
+
+.user__box_unlogin{
+   display: flex;
+   align-items: center;
+   gap: 8px;
+   
+}
+.user__name_unlogin{
+@include roboto_p2_14_regular;
+font-size: 14px !important;
+line-height: 100%;
+}
+.links_un_box{
+   display: flex;
+   flex-direction: column;
+   text-align: right;
+gap: 6px;
+}
+.user_image_unlogin{
+width: 42px;
+height: 42px;
+}
+.user__name_unlogin_signup{
+   @include roboto_h5_18_regular;
+   font-weight: 500 !important;
+   font-size: 17px !important;
+   line-height: 100%;
+}
 .big_main_logo{
    max-width: 190px;
    max-height: 50px;

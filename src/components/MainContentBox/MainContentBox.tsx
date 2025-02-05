@@ -94,25 +94,6 @@ useEffect(()=>{
   },[highLightedPosts,setHighLightedPosts])
 
 
-  // const hPostsReq = async () => {
-  //   let response: any;
-  //   try{
-  //     response = await request<{ highlightedPosts: any[]; posts: any[] }>('all_posts');
-  //   }catch(e){
-  //     console.error(e);
-  //   }
-   
-  //   if (response){
-  //     setHighLightedPosts(response.highlightedPosts);
-  //     setDefaultPosts(response.posts);
-  //   } else {
-  //     console.error('Ошибка при загрузке постов');
-  //   }
-  // };
-
-  // useEffect(()=>{
-  //   hPostsReq();
-  // },[])
 
   const [settings, setSettings] = useState({
     infinite: true,

@@ -1,0 +1,126 @@
+.full_box{
+   display: flex;
+   flex-direction: column;
+   width: 100%;
+   height: 100%;
+   background-color: #fff;
+   border-radius: 12px;
+   justify-content: space-between;
+}
+.create_box{
+   margin-top: auto;
+display: flex;
+flex-direction: column;
+}
+.images_box{
+   display: flex;
+   width: 100%;
+   gap: 10px;
+   overflow-y: scroll;
+   padding: 12px 24px;
+   flex-wrap: wrap;
+   max-height: 180px;
+   border-top: 1px solid #868897;
+   -webkit-overflow-scrolling: touch;
+   justify-content: center;
+   margin: 0 auto;
+   padding-right: 12px !important;
+   margin-right: 12px !important;
+}
+
+.images_box::-webkit-scrollbar {
+   width: 3px; /* Ширина скролла */
+   transition: all .2s;
+}
+
+.images_box::-webkit-scrollbar:hover {
+   width: 8px !important; /* Ширина скролла при наведении */
+}
+
+.images_box::-webkit-scrollbar-track {
+   transition: all .2s;
+   background: #F3F3F3; /* Фон трека скролла */
+   border-radius: 24px; /* Скругление углов трека */
+}
+
+.images_box::-webkit-scrollbar-thumb {
+   transition: all .2s;
+   background: #D8D8D8; /* Цвет поинта скролла */
+   border-radius: 49px; /* Скругление углов поинта */
+}
+
+.images_box::-webkit-scrollbar-thumb:hover {
+   background: #868897; /* Цвет поинта при наведении */
+}
+
+
+
+
+.image_box_element_box{
+   position: relative;
+}
+.crest_element{
+   position: absolute;
+   pointer-events: none;
+   opacity: 0;
+   top: 0;
+   right: 0;
+   transform: translate(25%, -25%);
+   width: 28px;
+   height: 28px;
+   border-radius: 50%;
+   background-color: #fff;
+   padding: 5px;
+   cursor: pointer;
+   transition: all .2s;
+}
+.image_box_element_box:hover .crest_element{
+   display: flex;
+   pointer-events: all;
+   opacity: 1;
+   border: 1px solid #868897;
+   transition: all .2s;
+}
+.image_box_element{
+   width: 85px;
+   height: 85px;
+   background-size: cover;
+   background-position: center;
+   background-repeat: no-repeat;
+   border-radius: 12px;
+}
+.comments_full_box{
+   display: flex;
+   flex-direction: column;
+  max-height: 100%;
+  overflow-y: scroll;
+  padding: 14px 14px 24px 16px;
+  margin-top: 10px;
+  margin-right: 4px;
+  -webkit-overflow-scrolling: touch;
+  
+}
+.comments_full_box::-webkit-scrollbar {
+   width: 4px; /* Ширина скролла */
+   transition: all .2s;
+}
+
+.comments_full_box::-webkit-scrollbar:hover {
+   width: 8px !important; /* Ширина скролла при наведении */
+}
+
+.comments_full_box::-webkit-scrollbar-track {
+   transition: all .2s;
+   background: #F3F3F3; /* Фон трека скролла */
+   border-radius: 24px; /* Скругление углов трека */
+}
+
+.comments_full_box::-webkit-scrollbar-thumb {
+   transition: all .2s;
+   background: #D8D8D8; /* Цвет поинта скролла */
+   border-radius: 49px; /* Скругление углов поинта */
+}
+
+.comments_full_box::-webkit-scrollbar-thumb:hover {
+   background: #868897; /* Цвет поинта при наведении */
+}

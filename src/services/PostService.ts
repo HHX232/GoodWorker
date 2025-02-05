@@ -1,6 +1,5 @@
-
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { IDefaultPost } from '../interfaces/interfaces';
+import { IDefaultPost, ICustomPost } from '../interfaces/interfaces';
 import { i } from 'vite/dist/node/types.d-aGj9QkWt';
 
 interface HighlightedPostObj {
@@ -58,12 +57,12 @@ export const postAPI = createApi({
     baseQuery: fetchBaseQuery({ baseUrl: 'https://goodworker.onrender.com/api/v1' }),
     tagTypes: ['Posts'], // Теги для кэширования и перезапроса
     endpoints: (build) => ({
-      // Запрос всех постов
+
       fetchAllPosts: build.query<PostsResponse, void>({
         query: () => '/all_posts',
         providesTags: (result) => ['Posts'], 
       }),
-      fetchPostById: build.query<IDefaultPost, string>({
+      fetchPostById: build.query<ICustomPost, string>({
         query: (id) => `/posts/${id}`,
         providesTags: (result, error, id) => [{ type: 'Posts', id }],
       }),

@@ -16,12 +16,31 @@
    gap: 12px;
    border-bottom: 1px solid #EDEEF3;
 }
+.file_input{
+   opacity: 0;
+   position: absolute;
+   z-index: -1;
+   width: 0;
+   // pointer-events: none;
+}
+.back_image{
+   width: 50px;
+   height: 50px;
+}
 .send_img{
   margin: 8px 8px 8px 16px;
   transition: all .3s;
+      min-width: 24px;
+    min-height: 24px;
+
+  cursor: pointer;
   & > path{
    transition: all .3s;
   }
+}
+.add_img{
+   cursor: pointer;
+   
 }
 .text_input{
    width: 200px;
@@ -32,4 +51,28 @@
 .text_input:focus {
    border: none; /* Убираем рамку при фокусе */
    outline: none; /* Убираем стандартный контур браузера */
+}
+.text_input::-webkit-scrollbar {
+   width: 4px; /* Ширина скролла */
+   transition: all .2s;
+}
+
+.text_input::-webkit-scrollbar:hover {
+   width: 8px !important; /* Ширина скролла при наведении */
+}
+
+.text_input::-webkit-scrollbar-track {
+   transition: all .2s;
+   background: #F3F3F3; /* Фон трека скролла */
+   border-radius: 24px; /* Скругление углов трека */
+}
+
+.text_input::-webkit-scrollbar-thumb {
+   transition: all .2s;
+   background: #D8D8D8; /* Цвет поинта скролла */
+   border-radius: 49px; /* Скругление углов поинта */
+}
+
+.text_input::-webkit-scrollbar-thumb:hover {
+   background: #868897; /* Цвет поинта при наведении */
 }

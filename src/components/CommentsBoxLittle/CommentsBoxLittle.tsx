@@ -5,6 +5,12 @@ import {v4 as uuid} from 'uuid'
 import { DotsMenu } from '../UserHeaderCard/UserHeaderCard';
 import UserRole from '../UserRole/UserRole';
 import CommentsCreate from '../CommentsCreate/CommentsCreate';
+import { Link, useLocation, useParams } from 'react-router-dom';
+import request from '../../utils/request';
+import ModalBox from '../ModalBox/ModalBox';
+import { useAppSelector } from '../../hooks/redux';
+import { CommentImage } from '../Pages/FullCommentsPage/FullCommentsPage';
+
 interface User {
    avatar: string;
    email: string;
@@ -20,6 +26,11 @@ interface Comment {
    publicationDate: string; 
    user: User;
    commentsImages?:string[]
+   fontText?:string;
+   avatarWidth?:string;
+   miniSize?:boolean;
+    dotsMenu?:string;
+    images?:string[]
 }
 
 interface ICommentsProps {
@@ -31,11 +42,11 @@ interface CommentsResponse {
    comments: Comment[];
 }
 
-const response: CommentsResponse = {
+export const responseCommentsFake: CommentsResponse = {
    comments: [
        {
            id: 3,
-           message: "Отличная работа!",
+           message: "Отличная работа!Не хватает некоторых функций, но в целом неплохо.Не хватает некоторых функций, но в целом неплохо.Не хватает некоторых функций, но в целом неплохо.Не хватает некоторых функций, но в целом неплохо.Не хватает некоторых функций, но в целом неплохо.",
            publicationDate: "2024-12-24T06:23:23Z",
            commentsImages:[randAvatar,randAvatar,randAvatar],
            user: {
@@ -45,7 +56,8 @@ const response: CommentsResponse = {
                registrationDate: "2006-06-09T11:11:11Z",
                role: "User ",
                username: "Станислав"
-           }
+           },
+        
        },
        {
            id: 4,
@@ -155,6 +167,7 @@ const response: CommentsResponse = {
 },
    ]
 };
+
 const getHowDate = (publicationDate:any) => {
    const today:any = new Date();
    const pubDate:any = new Date(publicationDate);
@@ -177,7 +190,8 @@ const getHowDate = (publicationDate:any) => {
        return `${diffYears}y`; // Возвращаем годы
    }
 };
-const CommentItem: FC<Comment> = ({ id, message, publicationDate, user }) => {
+export const CommentItem: FC<Comment> = ({ id, message, publicationDate, user, fontText="12", avatarWidth="24", miniSize=true, dotsMenu="26" }) => {
+    const titleSize = Number(fontText ) + 4;
    const FinishDate = getHowDate(publicationDate);
    const [activeMenu, setActiveMenu] = useState(false);
    const [isTruncated, setIsTruncated] = useState(false);
@@ -202,19 +216,22 @@ const CommentItem: FC<Comment> = ({ id, message, publicationDate, user }) => {
 
    return (
        <li key={uuid()} className={`${style.some_com_box}`}>
-           <div style={{ backgroundImage: `url(${randAvatar})` }} className={`${style.comm_avatar}`}></div>
+           <div style={{ backgroundImage: `url(${randAvatar})`, width: `${avatarWidth}px`, height: `${avatarWidth}px` }} className={`${style.comm_avatar}`}></div>
            <div className={`${style.comm_content}`}>
                <div className={`${style.unic_comm_header}`}>
-                   <div className={`${style.comm_name}`}>{user?.username}</div>
-                   <DotsMenu maxWidth={"26"} activeMenu={activeMenu} togglemenu={togglemenu} hiddenShare={true} />
-               </div>
-               <div className={`${style.user_subdata_box}`}>
-                   <p className={`${style.user_activity}`}>{FinishDate}</p>
+                <div className={`${style.display_box}`}>
+                <div style={{ fontSize: `${fontText === "12" ? "14" : titleSize}px` }} className={`${style.comm_name}`}>{user?.username}</div>
+                <div className={`${style.user_subdata_box}` } style={{marginTop:`${fontText === "12" ? "0px" : "5px"}`}}>
+                   <p style={{ fontSize: `${fontText}px` }} className={`${style.user_activity}`}>{FinishDate}</p>
                    <div style={{ backgroundColor: `${FinishDate === "Today" ? "#29D32F" : "#868897"}` }} className={`${style.dot_activity}`}></div>
-                   <UserRole accentColor='868897' userRole={user.role} />
+                   <UserRole fontSize={fontText} accentColor='868897' userRole={user.role} />
                </div>
-               <div className={`${style.comments_text}`} ref={textRef}>
-                   {isTruncated ? `${message.substring(0, 100)}... See more` : message}
+                </div>
+
+                   <DotsMenu  activeMenu={activeMenu} togglemenu={togglemenu} hiddenShare={true} maxWidth={dotsMenu} />
+               </div>
+               <div style={{ fontSize: `${fontText === "12" ? "14" : (Number(fontText) + 2)}px`, WebkitLineClamp: miniSize ? 2 : 120 }} className={`${style.comments_text}`} ref={textRef}>
+                   {(isTruncated && miniSize) ? `${message.substring(0, 80)}... See more` : message}
                </div>
            </div>
        </li>
@@ -223,6 +240,25 @@ const CommentItem: FC<Comment> = ({ id, message, publicationDate, user }) => {
 
 const CommentsBoxLittle:FC<ICommentsProps> = ({commentsCount = "0", comments}) =>{
 
+   const location = useLocation();
+   const id = useParams().id;
+   const [Realcomments, setRealComments] = useState<Comment[]>([]);
+
+   const images = useAppSelector((state)=>state.comImages.images);
+    // console.log(Realcomments )
+   useEffect(() => {
+       const fetchComments = async () => {
+           const response:any = await request(`posts/${id}`).then((res) => res);
+        //    console.log("response", response)
+           setRealComments(response.comments);
+       };
+       try{
+        fetchComments();
+       }catch(e){
+        console.log('e')
+       }
+      
+   }, []);
   
   
    
@@ -230,14 +266,31 @@ const CommentsBoxLittle:FC<ICommentsProps> = ({commentsCount = "0", comments}) =
    return <div className={`${style.comments_box}`}>
       <div className={`${style.comments_header}`}>
          <h4 className={`${style.comments_count}`}>{`Comments (${commentsCount})`}</h4>
-         <button className={`${style.all_comments_btn}`}>view all</button>
+         <Link 
+            to={`${location.pathname}/comments`} 
+            state={{ background: location }}
+            className={`${style.all_comments_btn}`}
+         >
+            view all
+         </Link>
       </div>
       <ul className={`${style.comments_all_box}`}>
-      {response.comments.map((el)=>{
+      {responseCommentsFake.comments.length >= 1 && responseCommentsFake.comments?.map((el)=>{
          return <CommentItem id={el.id} message={el.message} publicationDate={el.publicationDate} user={el.user}/>
       })}
+      {responseCommentsFake.comments.length === 0 && <p className={`${style.no_comments}`}>Write the first comment</p>}
       </ul>
+    
+      <div className={`${style.comment_little_box}`}>
+        { images.length >0 &&   <div className={`${style.border_box_little}`}> <ul className={`${style.images_little_box}`}>
+            {images.map((img, index)=>{
+                return <CommentImage widthImage={images.length <= 5 ? "50" : "40"} imageUrl={img} indexUrl={index.toString()}/>
+            })}
+        </ul></div>}
       <CommentsCreate/>
+      </div>
+
+
    </div>
 }
 export default CommentsBoxLittle

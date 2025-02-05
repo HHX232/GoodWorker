@@ -11,16 +11,33 @@ import  stub1 from '../../images/stubs/stub-1.jpg'
 import  stub2 from '../../images/stubs/stub-2.jpg'
 import  stub3 from '../../images/stubs/stub-3.jpg'
 import  stub4 from '../../images/stubs/stub-4.jpg'
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { SkeletonHeader } from "../skeletons/HeaderSkeleton/HeaderSkeleton";
 import Burgermenu from "../BurgerMenu/BurgerMenu";
+import unLoginUser from '../../images/svg/unloginUser.svg'
+import { getCookie } from "../cookies/cookies";
+import request from "../../utils/request";
+
+const UnLoginUser = () => {
+
+    return (
+        <div className={`${style.user__box_unlogin} `}>
+           <div className={`${style.links_un_box}`}>
+           <Link to="/signup" className={`${style.user__name} ${style.user__name_unlogin_signup} `}>Sign up</Link>
+            <Link to="/login" className={`${style.user__name} ${style.user__name_unlogin} `}>Login</Link>
+           </div>
+           <Link to="/signup" className={`${style.user__name} ${style.user__name_unlogin_signup} `}>
+           <img src={unLoginUser} alt="" className={`${style.user_image} ${style.user_image_unlogin}`} />
+           </Link>
+        </div>
+    )
+}
 
 type TFilter = "All posts" | "Several" | "IT" | "Files" | "Литература" | "Развлечение" 
 const FiltersList: FC = () =>{
    const [activeFilters, setActiveFilters] = useState<TFilter[]>([]);
    const [active, setActive] = useState(false)
    const [searchParams, setSearchParams] = useSearchParams()
-   
 
  
 
@@ -124,7 +141,29 @@ return (
 
 
 const allStubs = [stub1, stub2, stub3, stub4]
-const UserDataBox = memo(({ userName, userMail, userImage }: { userName: string, userMail: string, userImage: string }) => {
+
+const 
+UserDataBox = memo(({ userName, userMail, userImage }: { userName: string, userMail: string, userImage: string }) => {
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const accessToken = getCookie('accessToken');
+            console.log("accessToken in userDAta", accessToken);
+            try {
+                const response = await request('auth/me', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+                console.log("response in userDAta", response);
+            } catch (error) {
+                console.log("error in userDAta");
+            }
+        };
+
+        fetchUserData();
+    }, []);
+    
    return (
        <div className={`${style.user__data_box}`}>
            <div className={`${style.user_text_box}`}>
@@ -174,23 +213,25 @@ const [boolMessage, setBoolMessage] = useState(true);
 }
 
 
+
+
+
+
+
+
+
+
+
 const Header = () => {
    const [filterText, setFilterText] = useState('');
    const [loading, setLoading] = useState(false); // Флаг загрузки
-
-   //  useEffect(() => {
-   //      // Симуляция загрузки данных
-   //      const timer = setTimeout(() => {
-   //          setLoading(false);
-   //      }, 2000); // Задержка 2 секунды для имитации загрузки
-
-   //      return () => clearTimeout(timer);
-   //  }, []);
-
+   const location = useLocation()
    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
        setFilterText(event.target.value); 
        console.log(filterText)
    };
+   const accessToken = getCookie('accessToken')
+   const refreshToken = getCookie('refreshToken') 
 
    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
        event.preventDefault(); 
@@ -231,15 +272,25 @@ const Header = () => {
                </Link>
 
                <div className={`${style.search__box}`}>
-                   <SearchForm filterText={filterText} onInputChange={handleInputChange} onSubmit={handleSubmit} />
-                   {/* <FiltersList/> */}
+                {/* 
+                !!!!! */}
+
+                {(location.pathname.includes('login') || location.pathname.includes('signup')) ? null :  <SearchForm filterText={filterText} onInputChange={handleInputChange} onSubmit={handleSubmit} />}
+                {(location.pathname.includes('login') || location.pathname.includes('signup')) ? null : <FiltersList/>}
+                  
+                   
                </div>
-               <div className={`${style.user__box}`}>
+
+             {!((accessToken == null || accessToken === undefined) || (refreshToken == null || refreshToken === undefined) ) ? <div className={`${style.user__box}`} > 
+                    
                 <Colocol CountNumber={""}/>
                 <div className={`${style.user__box}`}>
                   <UserDataBox userImage={""} userMail={"@ekaterina"} userName={"Ekaterina Ivanova"}/>
                 </div>
-               </div></>)
+
+               </div> : <UnLoginUser/>}
+
+               </>)
                }
 
        </header>
