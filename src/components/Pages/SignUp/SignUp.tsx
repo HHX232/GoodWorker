@@ -77,7 +77,7 @@ const SignUp = () => {
 
         setDataIsSend(true);
         setUserEmail(data?.email);
-        setUserName(data?.name);
+        setUserName(data?.username);
         showInfo(res?.message)
         // showSuccess();
     } catch (error: any) {

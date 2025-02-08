@@ -5,6 +5,9 @@ import { InputHTMLAttributes } from 'react';
 import style from './PinCode.module.scss';
 //@ts-ignore
 import { Toast } from 'primereact/toast';
+import request from '../../../utils/request';
+import { setCookie } from '../../cookies/cookies';
+import { useNavigate } from 'react-router-dom';
 
 
 interface CustomInputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -48,10 +51,12 @@ export  function TemplateDemo({setData, token}:any) {
     );
 }
     interface IPinCode {userEmail:string,userName:string}
+    interface IVerifyEmailResponse { access_token: string, refresh_token: string }
     
 const PinCode:FC<IPinCode> = ({userEmail,userName}) => {
    const [token, setTokens] = useState<string | number | undefined>();
    const toast = useRef<Toast>(null);
+   const navigate = useNavigate();
 
    const showSuccess = () => {
       toast.current?.show({
@@ -69,8 +74,22 @@ const PinCode:FC<IPinCode> = ({userEmail,userName}) => {
       if(!token){
          return
       }
-      token === "1111" ? showSuccess() : showError()
-      
+
+      request<IVerifyEmailResponse>("auth/verify_email", {
+        method: 'POST',
+        body: {
+            email: userEmail,
+            code: token,
+        }
+      }).then((tokens: IVerifyEmailResponse) => {
+        setCookie('accessToken', tokens.access_token);
+        setCookie('refreshToken', tokens.refresh_token);
+        showSuccess();
+        navigate(-1);
+      }).catch(err => {
+        console.error("Verify Error: ", err);
+        showError();
+      })
    }
    return <div className={`${style.pin_code_box}`}>
       
