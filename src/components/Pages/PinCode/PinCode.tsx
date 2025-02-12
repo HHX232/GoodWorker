@@ -8,6 +8,9 @@ import { Toast } from 'primereact/toast';
 import request from '../../../utils/request';
 import { setCookie } from '../../cookies/cookies';
 import { useNavigate } from 'react-router-dom';
+import { useAppDispatch } from '../../../hooks/redux';
+import { setUserData, UserRoles } from '../../../services/reducers/DataUser';
+import UserRole from '../../UserRole/UserRole';
 
 
 interface CustomInputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -58,6 +61,7 @@ const PinCode:FC<IPinCode> = ({userEmail,userName}) => {
    const toast = useRef<Toast>(null);
    const navigate = useNavigate();
 
+   const dispatch = useAppDispatch();
    const showSuccess = () => {
       toast.current?.show({
         severity: 'success',
@@ -84,6 +88,13 @@ const PinCode:FC<IPinCode> = ({userEmail,userName}) => {
       }).then((tokens: IVerifyEmailResponse) => {
         setCookie('accessToken', tokens.access_token);
         setCookie('refreshToken', tokens.refresh_token);
+        dispatch(setUserData({
+           avatar: null,
+           name: userName,
+           email: userEmail,
+           role: UserRoles.USER,
+           registrationDate: ''
+        }))
         showSuccess();
         navigate(-1);
       }).catch(err => {

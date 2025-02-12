@@ -176,10 +176,12 @@
      display: flex;
      align-items: center;
      justify-content: center;
-     position: absolute;
-     left: 45.5%;
+     position: fixed;
+     bottom: 10px;
+   //   left: 45.5%;
      transform: translateX(-52%);
-     bottom: 11%;
+   //   bottom: 11%;
+   right: 28vw;
      cursor: pointer;
      z-index: 100;
      background-color: #ffffff;
@@ -193,11 +195,13 @@
      display: flex;
      align-items: center;
      justify-content: center;
-     position: absolute;
-     left: 45.5%;
+     position: fixed;
+     bottom: 10px;
+   //   left: 45.5%;
+   right: 28vw;
      transform: translateX(47%);
      // border-left: 1px solid #C2C3CB;
-     bottom: 11%;
+   //   bottom: 11%;
      cursor: pointer;
      z-index: 100;
      background-color: #ffffff;
@@ -227,3 +231,8 @@
      width: 18px;
   }
   
+  @media(max-width:1160px){
+   .swiper_box_form{
+      display: none;
+   }
+  }

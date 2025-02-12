@@ -1,0 +1,53 @@
+.editor{
+   width: 100%;
+   background-color: #fff;
+   display: flex;
+   flex-direction: column;
+   border: 0px solid #141416 !important;
+   border-radius: 12px;
+   & > div:first-child{
+      border: 0px solid #141416 !important;
+      border-bottom: 1px solid #e7e8ed !important;
+      border-radius: 12px 12px 0 0; 
+      display: flex;
+      & > span{
+         display: flex;
+         flex-wrap: wrap;
+         justify-content: center;
+      }
+   }
+   & > div:last-child{
+      border: 0px solid #141416 !important;
+      border-top: 0 !important;
+      border-radius: 0 0 12px 12px ;
+   }
+}
+.editor_box{
+   flex: 1 1 770px;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+}
+.editor_button{
+   padding: 10px 30px;
+   border-radius: 12px;
+   background-color: #141416;
+   color: #fff;
+   font-weight: 500;
+   font-size: 20px;
+   cursor: pointer;
+   margin: 25px auto 0 auto;
+}
+
+@media (max-width: 800px){
+   .editor{
+      & > div:first-child{ 
+         & > span{
+            display: flex;
+            flex-wrap: wrap;
+            row-gap: 15px;
+            justify-content: center;
+         }
+      }
+   }
+}

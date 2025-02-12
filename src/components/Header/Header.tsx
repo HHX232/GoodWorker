@@ -1,22 +1,23 @@
 import React, { FC, memo, useEffect, useState } from "react";
-import style from './Header.module.scss'
-import big_main_logo_png from '../../images/logos/Logo-GoodWorker.png'
-import big_main_logo_svg from '../../images/logos/Logo-GoodWorker.svg'
-import mobile_logo_png from '../../images/logos/MobileLogo.png'
-import mobile_logo_svg from '../../images/logos/MobileLogo.svg'
-import searchSVG from '../../images/svg/search.svg'
-import arrow from '../../images/svg/arrow.svg'
-import messageSvg from '../../images/svg/colocol.svg'
-import  stub1 from '../../images/stubs/stub-1.jpg'
-import  stub2 from '../../images/stubs/stub-2.jpg'
-import  stub3 from '../../images/stubs/stub-3.jpg'
-import  stub4 from '../../images/stubs/stub-4.jpg'
 import { Link, useLocation, useSearchParams } from "react-router-dom";
-import { SkeletonHeader } from "../skeletons/HeaderSkeleton/HeaderSkeleton";
-import Burgermenu from "../BurgerMenu/BurgerMenu";
-import unLoginUser from '../../images/svg/unloginUser.svg'
-import { getCookie } from "../cookies/cookies";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
+import big_main_logo_png from '../../images/logos/Logo-GoodWorker.png';
+import big_main_logo_svg from '../../images/logos/Logo-GoodWorker.svg';
+import mobile_logo_png from '../../images/logos/MobileLogo.png';
+import mobile_logo_svg from '../../images/logos/MobileLogo.svg';
+import stub1 from '../../images/stubs/stub-1.jpg';
+import stub2 from '../../images/stubs/stub-2.jpg';
+import stub3 from '../../images/stubs/stub-3.jpg';
+import stub4 from '../../images/stubs/stub-4.jpg';
+import arrow from '../../images/svg/arrow.svg';
+import messageSvg from '../../images/svg/colocol.svg';
+import searchSVG from '../../images/svg/search.svg';
+import unLoginUser from '../../images/svg/unloginUser.svg';
+import { setUserData } from "../../services/reducers/DataUser";
 import request from "../../utils/request";
+import { getCookie } from "../cookies/cookies";
+import { SkeletonHeader } from "../skeletons/HeaderSkeleton/HeaderSkeleton";
+import style from './Header.module.scss';
 
 const UnLoginUser = () => {
 
@@ -144,18 +145,27 @@ const allStubs = [stub1, stub2, stub3, stub4]
 
 const 
 UserDataBox = memo(({ userName, userMail, userImage }: { userName: string, userMail: string, userImage: string }) => {
+    const dispatch = useAppDispatch();
+    const {avatar, name, email} = useAppSelector(state => state.dataUser)
     useEffect(() => {
         const fetchUserData = async () => {
             const accessToken = getCookie('accessToken');
-            console.log("accessToken in userDAta", accessToken);
+            console.log("accessToken in userData", accessToken);
             try {
-                const response = await request('auth/me', {
+                const response: any = await request('auth/me', {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${accessToken}`
                     }
                 });
                 console.log("response in userDAta", response);
+                dispatch(setUserData({
+                    avatar: null,
+                    name: response.username,
+                    email: response.email,
+                    role: response.role,
+                    registrationDate: ''
+                }))
             } catch (error) {
                 console.log("error in userDAta");
             }
@@ -167,10 +177,10 @@ UserDataBox = memo(({ userName, userMail, userImage }: { userName: string, userM
    return (
        <div className={`${style.user__data_box}`}>
            <div className={`${style.user_text_box}`}>
-               <p className={`${style.user_name}`}>{userName}</p>
-               <p className={`${style.user_mail}`}>{userMail}</p>
+               <p className={`${style.user_name}`}>{name}</p>
+               <p className={`${style.user_mail}`}>{email}</p>
            </div>
-           <img className={`${style.user_image}`} src={userImage ? userImage : allStubs[Math.floor(Math.random() * 4)]} alt="User  Avatar" />
+           <img className={`${style.user_image}`} src={avatar ? avatar : allStubs[Math.floor(Math.random() * 4)]} alt="User  Avatar" />
        </div>
    );
 });

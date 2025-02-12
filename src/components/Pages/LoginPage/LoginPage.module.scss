@@ -227,3 +227,11 @@
      width: 18px;
   }
   
+  @media (max-width:1160px){
+     .medium_box{
+      grid-template-columns: 1fr;
+     }
+     .form_content{
+      margin: 0 auto;
+     }
+   }

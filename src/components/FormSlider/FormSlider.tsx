@@ -62,15 +62,15 @@ const FormSlider = () => {
       initialSlide:1,
       autoplay:true,
       autoplaySpeed:5000,
-      prevArrow: <ArrowLeft />,
-      nextArrow: <ArrowRight />,
+      prevArrow: <></>,
+      nextArrow: <></>,
       draggable: true,
      swipe:true, 
     });
 
    return  <Slider className={`${style.swiper_box_form}`} {...settings} >
    <SliderItem imageUrl={stubImg} title="Make money with your templates!" subtitle="Get donations by publishing the best posts and templates" />
-   <SliderItem imageUrl={stubImg2} title="Become a hero for millions!" subtitle="Of students who need your knowledge" />
+   <SliderItem imageUrl={stubImg2} title="Become a hero for millions!" subtitle="Students who need your knowledge" />
    <SliderItem imageUrl={stubImg3} title="Become a better writer!" subtitle="And your posts will rise to the top of the ratings" /> 
 </Slider>
 

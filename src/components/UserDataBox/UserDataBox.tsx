@@ -4,6 +4,7 @@ import { TUserRole } from '../UserRole/UserRole';
 import {v4 as uuid} from 'uuid'
 import postAPI from '../../services/PostService';
 import { useParams } from 'react-router-dom';
+import imageStub from '../../images/stubs/stub-2.jpg'
 interface IUser{
    user:{
       avatar: string;
@@ -41,7 +42,7 @@ const UserDataBox:FC<IUser> = ({}) => {
 
    return <div className={`${style.user_box}`}>
       <div className={`${style.user_data_box}`}>
-         <div style={{backgroundImage: `url(${post?.user?.avatar})`}} className={`${style.user_image}`} />
+         <div style={{backgroundImage: `url(${post?.user.avatar ? post.user.avatar : imageStub})`}} className={`${style.user_image}`} />
          <div className={`${style.user_text_box}`}>
             <h2 className={`${style.user_name}`}>{post?.user?.name}</h2>
             <p className={`${style.user_mail}`}>{post?.user.email}</p>

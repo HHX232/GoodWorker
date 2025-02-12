@@ -27,6 +27,7 @@ const LoginPage = () => {
   } = useForm<FormInputs>({
     mode: 'onSubmit',
   });
+
   const toast = useRef<Toast>(null);
   const showSuccess = () => {
     toast.current?.show({
@@ -39,6 +40,7 @@ const LoginPage = () => {
   const showError = () => {
     toast?.current?.show({severity:'error', summary: 'Error', detail:'Login Failed', life: 3000});
 }
+
   // Функция обработки сабмита
   const onSubmit: SubmitHandler<FormInputs> = async (data) => {
     console.log('Form Submitted:', data);
