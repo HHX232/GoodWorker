@@ -12,18 +12,20 @@ export function AddLocalId(cardId: string): void {
 
    const storedArray: string[] = JSON.parse(localStorage.getItem('cardIds') || '[]');
 
+
    if (storedArray.length === 0) {
        storedArray.push(cardId);
    } else if (storedArray.length === 1) {
        // Если в массиве уже один элемент, добавляем второй
        storedArray.push(cardId);
-       storedArray.reverse();
+       storedArray.reverse(); 
    } else {
        storedArray[1] = cardId;
        storedArray.reverse();
    }
    localStorage.setItem('cardIds', JSON.stringify(storedArray));
 }
+
 
 const Card:FC<ICard> = ({userId,comments="0", cardId ,vues="0",stars="0",title="undefined", subTitle = "", user, imagesArray=[stubImage]})=>{
    return <div onClick={()=>AddLocalId(cardId)} className={`${style.card_box}`}>
@@ -54,7 +56,6 @@ const Card:FC<ICard> = ({userId,comments="0", cardId ,vues="0",stars="0",title="
 </svg>
    </Link>
    </div>
-
 }
 
 export default Card
