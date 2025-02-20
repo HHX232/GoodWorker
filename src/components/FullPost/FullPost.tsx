@@ -1,27 +1,22 @@
-import { FC, useEffect, useState } from 'react'
-import style from './FullPost.module.scss'
+import { FC, useEffect, useState } from 'react';
+import style from './FullPost.module.scss';
 //@ts-ignore
-import Markdown from 'react-markdown'
+import Markdown from 'react-markdown';
 //@ts-ignore
-import remarkGfm from 'remark-gfm'
-import postAPI from '../../services/PostService';
+import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
+import postAPI from '../../services/PostService';
 //@ts-ignore
-import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 //@ts-ignore
-import {dark,okaidia,a11yDark} from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { a11yDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 // @ts-ignore
-import rehypeRaw from 'rehype-raw'
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import warSvg from '../../images/svg/warr.svg'
-import datsSvg from '../../images/svg/threeDats.svg'
-import leftArrow from '../../images/svg/leftArrowBlack.svg'
-import shareSvg from '../../images/svg/share.svg'
-import Tooltip from '@mui/material/Tooltip';
-import preloader from '../../images/loaders/Bean Eater@1x-1.0s-200px-200px.svg'
 import Skeleton from '@mui/material/Skeleton';
-import { Modal } from '@mui/material';
-import ModalBox from '../ModalBox/ModalBox';
+import Tooltip from '@mui/material/Tooltip';
+import { useNavigate, useParams } from 'react-router-dom';
+import rehypeRaw from 'rehype-raw';
+import leftArrow from '../../images/svg/leftArrowBlack.svg';
+import shareSvg from '../../images/svg/share.svg';
 
 
 
@@ -305,6 +300,9 @@ const FullPost:FC = () => {
  const stringPostId: any = (paramsUrl && paramsUrl.toString())
  const { data: post, error, isLoading } = postAPI.useFetchPostByIdQuery(stringPostId);
 
+ useEffect(()=>{
+console.log(post)
+ },[post])
  useEffect(() => {
   const specialLinks = document.querySelectorAll<HTMLElement>('.borderText');
 

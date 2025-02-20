@@ -27,14 +27,31 @@ const CreatePost: FC = () => {
       life: 2500,
     });
   };
+
   const showError = () => {
     toast?.current?.show({severity:'error', summary: 'Error', detail:`Create Post Failed: \n Should be Title and Subtitle`, life: 6000});
 }
+  const showCustomError = (e:string) => {
+    toast?.current?.show({severity:'error', summary: 'Error', detail:`Create Post Failed: \n ${e}`, life: 6000});
+}
 
    const onCreatePost = async () =>{
-      console.log("h1Content", h1Content, "h2Content",h2Content);
+      // console.log("h1Content", h1Content, "h2Content",h2Content);
       try{
          //Потом добавить проверку
+        const data:any = await fetch('https://good-worker-ai.onrender.com/bun_word',{
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({text: text})
+         })
+
+         if(!data.ok){
+            showCustomError(`Исправьте ошибки: \n ${data.bad_sentense.map((el:string)=> `\n ${el}`)}`)
+            return
+         }
+         
       await request('posts',{
          method: 'POST',
          body: {
