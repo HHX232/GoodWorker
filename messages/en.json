@@ -1,0 +1,142 @@
+{
+  "HomeTest": {
+    "title": "Welcome",
+    "description": "This is a description"
+  },
+  "Header": {
+    "collections": "Collections",
+    "constructor": "Constructor",
+    "sale": "Sale",
+    "basket": "Basket",
+    "profile": "Profile",
+    "catalog": "Catalog"
+  },
+  "CollectionsMenu": {
+    "collections": "Collections",
+    "clothing": "Clothing",
+    "accessories": "Accessories",
+    "all": "All"
+  },
+  "Home": {
+    "main": "A Moscow-based clothing brand that doesn't limit itself to any specific concepts."
+  },
+  "HeroCard": {
+    "heroAlt": "Hero",
+    "clothingAlt": "Clothing item",
+    "collection": "Collection",
+    "article": "Article",
+    "size": "Size",
+    "color": "Color",
+    "price": "Price",
+    "more": "Details"
+  },
+  "sort": {
+    "from": "From",
+    "to": "To",
+    "loading": "Loading...",
+    "select": "Sort by",
+    "newest": "Newest",
+    "oldest": "Oldest",
+    "priceAsc": "Price: Low to High",
+    "priceDesc": "Price: High to Low",
+    "sortBy": "Sort",
+    "showMore": "Show more"
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "Footer": {
+    "aboutBrand": "About Brand",
+    "campaign": "Campaign",
+    "care": "Care",
+    "warranty": "Warranty",
+    "shop": "Shop",
+    "deliveryReturns": "Delivery & Returns",
+    "telegram": "Telegram",
+    "instagram": "Instagram",
+    "discountLabel": "Get 10% discount for subscription",
+    "emailPlaceholder": "Enter your email",
+    "subscribeButton": "Subscribe"
+  },
+  "NotFoundPage": {
+    "mainText": "Sorry, the page you’re looking for doesn’t exist or has been moved.",
+    "goBack": "Go back to home"
+  },
+  "BasketButton": {
+    "addToCart": "Add to cart",
+    "inCart": "Go to cart"
+  },
+  "ProductTabs": {
+    "description": "Description",
+    "sizes": "Sizes",
+    "fabric": "Fabric",
+    "delivery": "Delivery & Returns"
+  },
+  "profile": {
+    "profileLabel": "Profile"
+  },
+  "bread": {
+    "account": "Account",
+    "login": "Login",
+    "register": "Register"
+  },
+  "auth": {
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "password": "Password",
+    "otp": "Code from email",
+    "send": "Send",
+    "confirm": "Confirm",
+    "error": "Something went wrong",
+    "loading": "Loading...",
+    "registerTitle": "Register",
+    "loginTitle": "Login",
+    "nameRequired": "Name is required",
+    "invalidEmail": "Invalid email",
+    "phoneTooShort": "Minimum 7 characters",
+    "passwordTooShort": "Minimum 6 characters",
+    "emailOrPhoneRequired": "Email or phone is required",
+    "otpRequired": "Enter the code",
+    "login": "Login",
+    "invalidCredentials": "Invalid login or password",
+    "haveAccount": "Have account? Login!",
+    "notHaveAccount": "Not have account? Create!",
+    "sendCode": "Send code",
+    "resendCode": "Resend code"
+  },
+  "productInBasket": {
+    "collection": "Collection",
+    "size": "Size",
+    "color": "Color",
+    "price": "Price",
+    "remove": "Remove"
+  },
+  "countInput": {
+    "title": "Count"
+  },
+  "basket": {
+    "loading": "Loading...",
+    "createOrder": "Create order",
+    "basket": "Basket",
+    "name": "Name",
+    "namePlaceholder": "Enter your name",
+    "address": "Delivery address",
+    "addressPlaceholder": "City, street, building, apartment",
+    "deliveryMethod": "Delivery method",
+    "delivery_courier": "Courier",
+    "delivery_pickup": "Pickup",
+    "delivery_post": "Mail",
+    "paymentMethod": "Payment method",
+    "payment_card": "Card",
+    "payment_cash": "Cash",
+    "payment_online": "Online",
+    "points": "Points (1 point = $1)",
+    "comment": "Comment",
+    "commentPlaceholder": "Order notes",
+    "agreeText": "I agree to the terms of personal data processing",
+    "submit": "Place order",
+    "fullPrice": "Total: "
+  }
+}

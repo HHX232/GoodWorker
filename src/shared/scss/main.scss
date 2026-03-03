@@ -1,0 +1,572 @@
+@use 'sass:math';
+@use 'variables';
+@use 'config/root';
+@use 'config/functions';
+@use 'config/mixins';
+@use 'config/keyframes';
+
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+body {
+  position: relative !important;
+  max-width: 100vw !important;
+  height: 100% !important;
+  font-family: var(--font-main) !important;
+  line-height: 1.35;
+  overflow: hidden auto !important;
+}
+
+#telegram-login-exporterubot {
+  cursor: pointer !important;
+
+  & > * {
+    cursor: pointer !important;
+  }
+
+  & > body {
+    cursor: pointer !important;
+  }
+
+  & > html > body {
+    cursor: pointer !important;
+  }
+}
+
+.keen-slider {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  height: 100%;
+  border-radius: 0;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+.promo-keen-slider {
+  .keen-slider {
+    height: 100%;
+    border-radius: 0 !important;
+
+    &__slide {
+      display: flex;
+      height: 100%;
+      align-items: stretch;
+      border-radius: 0 !important;
+
+      & > div {
+        width: 100%;
+        height: 100%;
+        border-radius: 0 !important;
+      }
+    }
+  }
+}
+
+.keen-slider[data-keen-slider-v] {
+  transform: translateZ(0);
+}
+
+.keen-slider[data-keen-slider-moves] {
+  transform: translate3d(var(--keen-slider-move-x, 0), var(--keen-slider-move-y, 0), 0) rotateZ(0deg);
+}
+
+.keen-slider__slide {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+
+  min-height: 0;
+  border-radius: 0;
+  transform: translate3d(var(--keen-slider-slide-x, 0), var(--keen-slider-slide-y, 0), 0) rotateZ(0deg);
+}
+
+.keen_without_transform {
+  position: absolute !important;
+  transform: none !important;
+}
+
+.no-scroll {
+  overflow: hidden !important;
+
+  &::-webkit-scrollbar {
+    width: 0;
+  }
+}
+
+.category__slider__main .slick-dots {
+  position: static !important;
+}
+
+.category__slider__main {
+  .slick-track {
+    height: 220px;
+  }
+
+  .slick-slide {
+    & > div {
+      height: 100%;
+      padding-bottom: 6px;
+    }
+  }
+}
+
+.category__slider__first {
+  .slick-track {
+    height: 270px;
+  }
+}
+
+.md-editor-resize-operate {
+  width: 2px !important;
+  background-color: #d9d9d9 !important;
+}
+
+.md-editor-toolbar-wrapper {
+  border-bottom: 2px solid #b8b8b8 !important;
+}
+
+.md-editor {
+  border: 2px solid #b8b8b8 !important;
+}
+
+.md-editor-light {
+  .toolbar-item {
+    &:hover {
+      background-color: #f0f0f0;
+    }
+
+    &.active {
+      background-color: #e6f7ff;
+      color: #1890ff;
+    }
+  }
+}
+
+.md-editor-toolbar {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  row-gap: 15px;
+}
+
+.md-editor-toolbar-left {
+  width: 100% !important;
+  flex-wrap: wrap !important;
+  justify-content: space-around !important;
+}
+
+.md-editor-toolbar-right {
+  margin-left: auto;
+}
+
+.md-editor-preview h1 {
+  margin-top: 20px !important;
+  margin-bottom: 20px !important;
+  line-height: 1.35 !important;
+}
+
+.md-editor-preview h2 {
+  margin-top: 16px !important;
+  margin-bottom: 16px !important;
+  line-height: 1.35 !important;
+}
+
+.md-editor-preview h3 {
+  margin-top: 16px !important;
+  margin-bottom: 16px !important;
+  line-height: 1.35 !important;
+}
+
+.md-editor-preview h4 {
+  margin-top: 10px !important;
+  margin-bottom: 10px !important;
+  line-height: 1.35 !important;
+}
+
+.md-editor-preview h5 {
+  margin-top: 10px !important;
+  margin-bottom: 10px !important;
+  line-height: 1.35 !important;
+}
+
+.md-editor-preview h6 {
+  margin-top: 10px !important;
+  margin-bottom: 10px !important;
+  line-height: 1.35 !important;
+}
+
+// Или более продвинутый вариант с учетом ширины скроллбара:
+.body-scroll-lock {
+  position: fixed !important;
+  overflow: hidden !important;
+  width: 100% !important;
+
+  // Для плавности
+  transition: none !important;
+}
+
+.container {
+  width: 100%;
+  max-width: 1400px;
+  padding: 0 var(--container-padding-desktop);
+  margin: 0 auto;
+
+  @include mixins.lg() {
+    padding: 0 var(--container-padding-large);
+  }
+
+  @include mixins.md() {
+    padding: 0 var(--container-padding-small);
+  }
+}
+
+
+/* Reset CSS (Eric Meyer's Reset v2.0 + modern additions) */
+html,
+body,
+div,
+span,
+applet,
+object,
+iframe,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+a,
+abbr,
+acronym,
+address,
+big,
+cite,
+code,
+del,
+dfn,
+em,
+img,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+strike,
+strong,
+sub,
+sup,
+tt,
+var,
+b,
+u,
+i,
+center,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+form,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td,
+article,
+aside,
+canvas,
+details,
+embed,
+figure,
+figcaption,
+footer,
+header,
+hgroup,
+menu,
+nav,
+output,
+ruby,
+section,
+summary,
+time,
+mark,
+audio,
+video {
+  padding: 0;
+  border: 0;
+  margin: 0;
+  font-family: var(--font-main);
+  font-size: 15px;
+  vertical-align: baseline;
+}
+
+/* HTML5 display-role reset for older browsers */
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section {
+  display: block;
+}
+
+ol,
+ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+blockquote,
+q {
+  quotes: none;
+}
+
+blockquote::before,
+blockquote::after,
+q::before,
+q::after {
+  content: '';
+  content: none;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* Modern additions */
+* {
+  box-sizing: border-box;
+}
+
+button,
+input,
+optgroup,
+select,
+textarea {
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: 100%;
+  line-height: 1.15;
+}
+
+button,
+input {
+  overflow: visible;
+}
+
+button,
+select {
+  text-transform: none;
+}
+
+button,
+[type='button'],
+[type='reset'],
+[type='submit'] {
+  appearance: button;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+}
+
+a {
+  display: contents;
+  background-color: transparent;
+  color: inherit;
+  -webkit-tap-highlight-color: rgb(0 0 0 / 0%);
+  text-decoration: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+
+  &:focus,
+  &:hover,
+  &:visited,
+  &:link,
+  &:active {
+    outline: none;
+  }
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+button {
+  border: unset;
+
+  background: transparent;
+  cursor: pointer;
+}
+
+input {
+  outline: none;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  border-style: none;
+}
+
+.slick-next::before,
+.slick-prev::before {
+  content: '' !important;
+}
+
+.spec__slider_2 .slick-next::before {
+  display: none !important;
+}
+
+.spec__slider_2 .slick-list {
+  // width: 104%;
+  // left: -2%;
+}
+
+.spec__slider_2 .slick-slider .slick-list .slick-track {
+  display: flex;
+  gap: 15px !important;
+}
+
+.mini__card__slider .spec__slider_2 .slick-prev::before {
+  display: none !important;
+}
+
+.mini__card__slider .slick-list .slick-track > div {
+  max-width: fit-content;
+}
+
+@media (max-width: 768px) {
+  .slick-slide {
+    display: block;
+    padding: 0 8px !important;
+  }
+
+  .spec__slider_2 .slick-next::before {
+    display: none !important;
+  }
+
+  .spec__slider_2 .slick-prev::before {
+    display: none !important;
+  }
+
+  .spec__slider .slick-slide {
+    padding: 0 !important;
+  }
+}
+
+/* Альтернативное решение через JavaScript + CSS */
+.truncated__base64 {
+  display: inline-block;
+  overflow: hidden;
+  max-width: 200px;
+  color: #0969da;
+  cursor: pointer;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+  white-space: nowrap;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+@media (max-width: 600px) {
+  // html {
+  //   scrollbar-width: none;
+
+  //   /* скрыть скроллбар в Firefox */
+  // }
+
+  body {
+    overflow-x: hidden;
+  }
+
+  /* Для WebKit-браузеров */
+  // ::-webkit-scrollbar {
+  //   display: none !important;
+  // }
+}

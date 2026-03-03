@@ -1,0 +1,149 @@
+.notFoundContainer {
+   display: flex;
+   flex-direction: column;
+   min-height: 100vh;
+   background-color: #ffffff;
+}
+
+.mainContent {
+   flex: 1;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   padding: 0 16px;
+}
+
+.contentWrapper {
+   max-width: 600px;
+   width: 100%;
+   text-align: center;
+}
+
+.iconCircle {
+   background-color: #f5f5f5;
+   border-radius: 50%;
+   padding: 16px;
+   width: 120px;
+   height: 120px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   margin: 0 auto 40px;
+}
+
+.errorIcon {
+   width: 80px;
+   height: 80px;
+   color: #080b13;
+}
+
+.heading {
+   font-size: 48px;
+   font-weight: 600;
+   color: #080b13;
+   margin-bottom: 24px;
+   line-height: 1.2;
+}
+
+.description {
+   color: #707070;
+   font-size: 24px;
+   line-height: 1.5;
+   margin-bottom: 48px;
+}
+
+.homeButton {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   padding: 16px 32px;
+   border: 2px solid #080b13;
+   border-radius: 0;
+   font-size: 20px;
+   font-weight: 500;
+   color: #080b13;
+   background-color: transparent;
+   cursor: pointer;
+   text-decoration: none;
+   transition: all 0.3s ease;
+}
+
+.homeButton:hover {
+   background-color: #080b13;
+   color: #ffffff;
+}
+
+.homeButton:focus {
+   outline: none;
+   box-shadow: 0 0 0 3px rgba(8, 11, 19, 0.2);
+}
+
+@media (max-width: 768px) {
+   .heading {
+      font-size: 36px;
+   }
+
+   .description {
+      font-size: 20px;
+      margin-bottom: 40px;
+   }
+
+   .iconCircle {
+      width: 100px;
+      height: 100px;
+      margin-bottom: 32px;
+   }
+
+   .errorIcon {
+      width: 64px;
+      height: 64px;
+   }
+
+   .homeButton {
+      padding: 14px 28px;
+      font-size: 18px;
+   }
+}
+
+@media (max-width: 640px) {
+   .heading {
+      font-size: 28px;
+   }
+
+   .description {
+      font-size: 18px;
+      margin-bottom: 32px;
+   }
+
+   .iconCircle {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 24px;
+   }
+
+   .errorIcon {
+      width: 48px;
+      height: 48px;
+   }
+
+   .homeButton {
+      padding: 12px 24px;
+      font-size: 16px;
+   }
+}
+
+@media (max-width: 480px) {
+   .heading {
+      font-size: 24px;
+   }
+
+   .description {
+      font-size: 16px;
+      margin-bottom: 24px;
+   }
+
+   .homeButton {
+      padding: 10px 20px;
+      font-size: 14px;
+   }
+}

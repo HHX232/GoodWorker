@@ -1,0 +1,143 @@
+{
+  "HomeTest": {
+    "title": "Привет",
+    "description": "Это описание"
+  },
+  "Header": {
+    "collections": "Коллекции",
+    "constructor": "Конструктор",
+    "sale": "Распродажа",
+    "basket": "Корзина",
+    "profile": "Профиль",
+    "catalog": "Каталог"
+  },
+  "CollectionsMenu": {
+    "collections": "Коллекции",
+    "clothing": "Одежда",
+    "accessories": "Аксессуары",
+    "all": "Все"
+  },
+  "Home": {
+    "main": "Московский бренд одежды, не ограничивающий себя рамками каких-либо концепций"
+  },
+  "HeroCard": {
+    "heroAlt": "Персонаж",
+    "clothingAlt": "Элемент одежды",
+    "collection": "Коллекция",
+    "article": "Артикул",
+    "size": "Размер",
+    "color": "Цвет",
+    "price": "Цена",
+    "more": "Подробнее"
+  },
+  "sort": {
+    "from": "От",
+    "to": "До",
+    "loading": "Загрузка...",
+    "select": "Сортировка",
+    "newest": "Новинки",
+    "oldest": "Старые",
+    "priceAsc": "Цена: по возрастанию",
+    "priceDesc": "Цена: по убыванию",
+    "sortBy": "Сортировать",
+    "showMore": "Показать еще"
+  },
+  "pagination": {
+    "previous": "Предыдущая",
+    "next": "Следующая"
+  },
+  "Footer": {
+    "aboutBrand": "О бренде",
+    "campaign": "Campaign",
+    "care": "Уход",
+    "warranty": "Гарантия",
+    "shop": "Магазин",
+    "deliveryReturns": "Доставка & Возвраты",
+    "telegram": "Telegram",
+    "instagram": "Instagram",
+    "discountLabel": "Дарим 10% скидку за подписку",
+    "emailPlaceholder": "Введите ваш email",
+    "subscribeButton": "Подписаться"
+  },
+  "NotFoundPage": {
+    "mainText": "Извините, страница не найдена или была перемещена.",
+    "goBack": "Вернуться на главную"
+  },
+  "BasketButton": {
+    "addToCart": "Добавить в корзину",
+    "inCart": "Перейти в корзину"
+  },
+  "ProductTabs": {
+    "description": "Описание",
+    "sizes": "Размеры",
+    "fabric": "Ткань",
+    "delivery": "Доставка & Возврат"
+  },
+  "profile": {
+    "profileLabel": "Профиль"
+  },
+  "bread": {
+    "account": "Аккаунт",
+    "login": "Войти",
+    "register": "Регистрация"
+  },
+  "auth": {
+    "name": "Имя",
+    "email": "Email",
+    "phone": "Телефон",
+    "password": "Пароль",
+    "otp": "Код из письма",
+    "send": "Отправить",
+    "confirm": "Подтвердить",
+    "error": "Что-то пошло не так",
+    "loading": "Загрузка...",
+    "registerTitle": "Регистрация",
+    "loginTitle": "Войдите в аккаунт",
+    "nameRequired": "Имя обязательно",
+    "invalidEmail": "Неверный email",
+    "phoneTooShort": "Минимум 7 символов",
+    "passwordTooShort": "Минимум 6 символов",
+    "emailOrPhoneRequired": "Email или телефон обязателен",
+    "otpRequired": "Введите код",
+    "haveAccount": "Есть аккаут? Войти!",
+    "notHaveAccount": "Нет аккаунта? Создать!",
+    "sendCode": "Получить код",
+    "resendCode": "Повторный код",
+    "login": "Войти",
+    "invalidCredentials": "Неверный логин или пароль"
+  },
+  "productInBasket": {
+  "collection": "Коллекция",
+  "size": "Размер",
+  "color": "Цвет",
+  "price": "Цена",
+  "remove": "Удалить"
+},
+"countInput":{
+  "title":"Количество"
+},
+"basket":{
+  "loading":"Загрузка...",
+  "createOrder":"Создать заказ",
+  "basket":"Корзина",
+   "name": "Имя",
+  "namePlaceholder": "Введите ваше имя",
+  "address": "Адрес доставки",
+  "addressPlaceholder": "Город, улица, дом, квартира",
+  "deliveryMethod": "Способ доставки",
+  "delivery_courier": "Курьер",
+  "delivery_pickup": "Самовывоз",
+  "delivery_post": "Почта",
+  "paymentMethod": "Способ оплаты",
+  "payment_card": "Карта",
+  "payment_cash": "Наличные",
+  "payment_online": "Онлайн",
+  "points": "Баллы (1 балл = 1 руб.)",
+  "comment": "Комментарий",
+  "commentPlaceholder": "Пожелания к заказу",
+  "agreeText": "Я согласен с условиями обработки персональных данных",
+  "submit": "Оформить заказ",
+  "fullPrice": "Итого: "
+}
+
+}

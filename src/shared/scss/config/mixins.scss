@@ -1,0 +1,146 @@
+@use 'sass:math';
+@use 'functions';
+
+@mixin text-gradient($gradient) {
+  background: $gradient;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@mixin media-mx($value) {
+  $width: functions.em($value);
+
+  @media (max-width: $width) {
+    @content;
+  }
+}
+
+@mixin media-mn($value) {
+  $width: functions.em($value + 0.98);
+
+  @media (min-width: $width) {
+    @content;
+  }
+}
+
+@mixin any-hover() {
+  @media (any-hover: hover) {
+    &:hover {
+      @content;
+    }
+  }
+}
+
+@mixin not-last() {
+  &:not(:last-child) {
+    @content;
+  }
+}
+
+@mixin not-first() {
+  &:not(:first-child) {
+    @content;
+  }
+}
+
+// !обрезает текст до определенного кол-ва строк, остаток заменяет на 3 точки (...)
+@mixin line-clamp($value) {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: block-axis;
+  -webkit-line-clamp: $value;
+}
+
+@mixin styled-placeholder($color: inherit, $fontSize: inherit, $lineHeight: normal) {
+  &::placeholder {
+    color: $color;
+    font-size: $fontSize;
+    line-height: $lineHeight;
+  }
+}
+
+@mixin hide-placeholder($time: 300, $effect: ease) {
+  &::placeholder {
+    transition: opacity #{$time}ms $effect;
+  }
+
+  &:focus {
+    &::placeholder {
+      opacity: 0;
+    }
+  }
+}
+
+@mixin pseudo-cell($type, $pos: absolute) {
+  &::#{$type} {
+    position: $pos;
+    content: '';
+    @content;
+  }
+}
+
+@mixin mediaBg() {
+  @media (min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    @content;
+  }
+}
+
+@mixin xs() {
+  @media (max-width: 320px) {
+    @content;
+  }
+}
+
+@mixin sm() {
+  @media (max-width: 576px) {
+    @content;
+  }
+}
+
+@mixin md() {
+  @media (max-width: 768px) {
+    @content;
+  }
+}
+
+@mixin lg() {
+  @media (max-width: 992px) {
+    @content;
+  }
+}
+
+@mixin xl() {
+  @media (max-width: 1200px) {
+    @content;
+  }
+}
+
+@mixin xl2() {
+  @media (max-width: 1300px) {
+    @content;
+  }
+}
+
+@mixin xxl() {
+  @media (min-width: 1201px) {
+    @content;
+  }
+}
+
+@mixin desktop() {
+  @media (max-width: 1440px) {
+    @content;
+  }
+}
+
+@mixin tablet() {
+  @media (max-width: 1024px) {
+    @content;
+  }
+}
+
+@mixin mobile() {
+  @media (max-width: 440px) {
+    @content;
+  }
+}

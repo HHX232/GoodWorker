@@ -1,0 +1,116 @@
+/* ------------------------------------------------------------------------------------------------------------------------------
+RESET
+-------------------------------------------------------------------------------------------------------------------------------- */
+@use './mixins.scss';
+@use './functions.scss' as fn;
+
+* {
+  padding: 0;
+  border: 0;
+  margin: 0;
+  -webkit-tap-highlight-color: transparent;
+
+  &,
+  &::before,
+  &::after {
+    box-sizing: border-box;
+  }
+
+  &:focus,
+  &:active {
+    outline: none;
+  }
+}
+
+nav,
+footer,
+header,
+aside {
+  display: block;
+}
+
+html,
+body {
+  block-size: 100%;
+  inline-size: 100%;
+}
+
+body {
+  font-family: var(--font-main);
+  font-size: fn.rem(16);
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  font-weight: 400;
+  overscroll-behavior: none;
+  text-rendering: optimizelegibility;
+  text-size-adjust: 100%;
+}
+
+input,
+button,
+textarea {
+  font-family: inherit;
+}
+
+input::-ms-clear {
+  display: none;
+}
+
+textarea,
+input {
+  width: 100%;
+  height: inherit;
+  appearance: none;
+}
+
+button {
+  background-color: transparent;
+  cursor: pointer;
+  user-select: none;
+
+  &::-moz-focus-inner {
+    padding: 0;
+    border: 0;
+  }
+}
+
+a {
+  text-decoration: none;
+  user-select: none;
+
+  &:hover {
+    text-decoration: none;
+  }
+
+  &:focus,
+  &:active {
+    outline: none;
+  }
+
+  &:visited {
+    text-decoration: none;
+  }
+}
+
+ul,
+li {
+  list-style: none;
+}
+
+img {
+  vertical-align: top;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: inherit;
+  font-weight: 400;
+}
+
+sup {
+  color: inherit;
+}

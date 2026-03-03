@@ -1,0 +1,44 @@
+/* ------------------------------------------------------------------------------------------------------------------------------
+KEYFRAMES
+-------------------------------------------------------------------------------------------------------------------------------- */
+@keyframes show-header {
+  0% {
+    inset-block-start: -100%;
+  }
+
+  100% {
+    inset-block-start: 0;
+  }
+}
+
+@keyframes fade-up-big {
+  0% {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-up {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0);
+  }
+
+  100% {
+    transform: rotate(359deg);
+  }
+}

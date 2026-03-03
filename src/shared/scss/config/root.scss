@@ -1,0 +1,25 @@
+:root {
+  --accent: #080b13;
+  --max-width: 1440px;
+  --norm-width: 1270px;
+  --container-padding-desktop: 20px;
+  --container-padding-large: 20px;
+  --container-padding-small: 20px;
+  --font-main: var(--font-main), sans-serif;
+  --font-title: var(--font-main), sans-serif;
+  --white: #fff;
+  --black: #000;
+  --accent: #AC8CFE;
+  --red: #e1251b;
+  --text: #2f2f2f;
+  --gray: #2b2b2b;
+  --vk: #07f;
+  --tg: #08c;
+  --wechat: #2bc100;
+  --whatsapp: #25d366;
+  --scrollbar: gray;
+  --scrollbar-track: gray;
+  --scrollbar-thumb: var(--accent);
+  --filter: brightness(1.5);
+  --transition: all 0.2s ease-in-out;
+}
