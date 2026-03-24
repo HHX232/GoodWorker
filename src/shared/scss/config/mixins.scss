@@ -108,6 +108,11 @@
     @content;
   }
 }
+@mixin lgg() {
+  @media (max-width: 1040px) {
+    @content;
+  }
+}
 
 @mixin xl() {
   @media (max-width: 1200px) {

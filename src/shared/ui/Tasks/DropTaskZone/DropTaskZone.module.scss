@@ -1,0 +1,26 @@
+.drop_zone {
+  width: 100%;
+  min-height: 80px;
+  border: 2px dashed #868d97;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.over {
+  border-color: #AC8CFE;
+  background-color: #eff6ff;
+
+  .drop_text {
+    color: #AC8CFE;
+  }
+}
+
+.drop_text {
+  font-size: 15px;
+  color: #868d97;
+  pointer-events: none;
+  user-select: none;
+}

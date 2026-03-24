@@ -1,0 +1,70 @@
+.user_box {
+  display: flex;
+  gap: 4px;
+  padding: 2px 4px;
+  align-items: center;
+  border-radius: 16px;
+  font-size: 12px;
+  font-family: 'Roboto', sans-serif;
+}
+
+.user_image {
+  aspect-ratio: 1/1;
+  width: 10px;
+  flex-shrink: 0;
+}
+
+/* ── Box variants ─────────────────────────────── */
+
+.vipBox {
+  background: linear-gradient(135deg, #ffcb22 0%, #ff922b 100%);
+}
+
+.adminBox {
+  background-color: #F5F5F5;
+}
+
+.teacherBox {
+  background-color: #EEF4FF;
+}
+
+.defaultBox {
+  background-color: transparent;
+  padding: 0;
+}
+
+.blurBg {
+  backdrop-filter: blur(20px);
+}
+
+.blurBg_no_padding {
+  backdrop-filter: blur(20px);
+  background-color: transparent;
+  padding: 0;
+}
+
+/* ── Text variants ────────────────────────────── */
+
+.user_text {
+  margin: 0;
+  line-height: 1;
+}
+
+.vipText {
+  color: #fff !important;
+  margin-left: 2px;
+  margin-right: 2px;
+  font-weight: 600;
+}
+
+.adminText {
+  color: #868897;
+}
+
+.teacherText {
+  color: #4C6EF5;
+}
+
+.defaultText {
+  color: #868897;
+}

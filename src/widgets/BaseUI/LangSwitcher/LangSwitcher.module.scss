@@ -1,0 +1,97 @@
+
+.wrapper {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 13px 16px;
+  background-color: #F5F5F5;
+  border-radius: 100px;
+  border: none;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: #EBEBEB;
+  }
+}
+
+.triggerLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: #141416;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+
+.flag {
+  font-size: 16px;
+  line-height: 1;
+  // флаги — эмодзи, не масштабируем через width/height
+  flex-shrink: 0;
+}
+
+.arrow {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+  margin-left: 2px;
+}
+
+.arrowOpen {
+  transform: rotate(180deg);
+}
+
+// ── dropdown ─────────────────────────────────────────────────────────────
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  // минимальная ширина = ширина триггера, но может быть шире
+  min-width: 100%;
+  width: max-content;
+  background-color: #F5F5F5;
+  border-radius: 16px;
+  padding: 8px 0;
+  list-style: none;
+  margin: 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  color: #141416;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background-color: #EBEBEB;
+  }
+}
+
+.dropdownItemActive {
+  background-color: #EBEBEB;
+}
+
+.itemLabel {
+  flex: 1;
+  white-space: nowrap;
+}
+
+.checkmark {
+  font-size: 12px;
+  color: #141416;
+  opacity: 0.5;
+  margin-left: 4px;
+}

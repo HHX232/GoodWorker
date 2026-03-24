@@ -1,0 +1,223 @@
+// features/test-block-editor/ui/editors/InfoAudioEditor/InfoAudioEditor.module.scss
+
+.box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  background: #ffffff;
+}
+
+.hidden { display: none; }
+
+// ── Кнопка загрузки ───────────────────────────────────────
+
+.upload_btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 32px 16px;
+  border: 2px dashed #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 500;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  cursor: pointer;
+
+  svg { color: #94a3b8; transition: color 0.15s; }
+
+  &:hover {
+    border-color: #f43f5e;
+    background: #fff1f2;
+    color: #f43f5e;
+    svg { color: #f43f5e; }
+  }
+}
+
+.upload_hint {
+  font-size: 11px;
+  font-weight: 400;
+  color: #94a3b8;
+}
+
+// ── Анимация анализа ──────────────────────────────────────
+
+.extracting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 28px 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.extracting_bars {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 32px;
+}
+
+.extracting_bar {
+  width: 4px;
+  border-radius: 2px;
+  background: #f43f5e;
+  animation: extractPulse 0.8s ease-in-out infinite alternate;
+
+  @for $i from 1 through 20 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{($i - 1) * 60}ms;
+    }
+  }
+}
+
+@keyframes extractPulse {
+  from { height: 4px;  opacity: 0.3; }
+  to   { height: 28px; opacity: 1;   }
+}
+
+// ── Плеер ─────────────────────────────────────────────────
+
+.player {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  grid-template-rows: auto auto;
+  gap: 8px 12px;
+  align-items: center;
+  padding: 14px;
+  border-radius: 10px;
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+}
+
+// ── Кнопка play ───────────────────────────────────────────
+
+.play_btn {
+  grid-row: 1 / 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f43f5e;
+  color: #ffffff;
+  flex-shrink: 0;
+  transition: background 0.15s, transform 0.1s;
+
+  &:hover  { background: #e11d48; transform: scale(1.06); }
+  &:active { transform: scale(0.96); }
+
+  // смещаем иконку play чуть вправо для оптики
+  svg[data-lucide="play"] { transform: translateX(1px); }
+}
+
+// ── Waveform ──────────────────────────────────────────────
+
+.waveform_wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.waveform {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 40px;
+  cursor: pointer;
+  user-select: none;
+
+  &:hover .bar { opacity: 0.85; }
+}
+
+.bar {
+  flex: 1;
+  border-radius: 2px;
+  background: #fecdd3;
+  // высота = amp * 100%, минимум 3px
+  height: calc(max(3px, calc(var(--amp) * 100%)));
+  transition: background 0.12s;
+}
+
+.bar_passed {
+  background: #f43f5e;
+}
+
+// текущий бар — чуть ярче
+.bar_cursor {
+  background: #e11d48;
+  opacity: 1 !important;
+}
+
+// ── Таймер ────────────────────────────────────────────────
+
+.timer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 500;
+  color: #f43f5e;
+}
+
+.timer_total {
+  color: #fda4af;
+}
+
+// ── Мета (имя файла + удалить) ────────────────────────────
+
+.meta {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.filename {
+  font-size: 12px;
+  color: #9f1239;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: calc(100% - 30px);
+}
+
+.remove_btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  color: #fda4af;
+  transition: background 0.12s, color 0.12s;
+
+  &:hover {
+    background: #ffe4e6;
+    color: #e11d48;
+  }
+}
+
+// ── Подсказка для репетитора ──────────────────────────────
+
+.student_hint {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #94a3b8;
+
+  svg { color: #f43f5e; opacity: 0.6; }
+}

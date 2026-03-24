@@ -1,3 +1,5 @@
+$header-height: 113;
+
 :root {
   --accent: #080b13;
   --max-width: 1440px;
@@ -22,4 +24,5 @@
   --scrollbar-thumb: var(--accent);
   --filter: brightness(1.5);
   --transition: all 0.2s ease-in-out;
+   --header-height: #{$header-height}px;
 }

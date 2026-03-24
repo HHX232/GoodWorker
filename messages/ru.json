@@ -9,7 +9,37 @@
     "sale": "Распродажа",
     "basket": "Корзина",
     "profile": "Профиль",
-    "catalog": "Каталог"
+    "catalog": "Каталог",
+    "search": "Поиск",
+    "specialization": "Специализация",
+    "developer": "Разработчик",
+    "designer": "Дизайнер",
+    "qa": "инженер"
+  },
+  "NavBar": {
+    "home": "Главная",
+    "add": "Добавить",
+    "bookmark": "Закладки",
+    "messages": "Сообщения",
+    "support": "Поддержка",
+    "settings": "Настройки",
+    "collapse": "Свернуть меню",
+    "expand": "Развернуть меню"
+  },
+  "CreateTestPage": {
+    "title": "Создать тест",
+    "namePlaceholder": "Введите название теста",
+    "themePlaceholder": "Введите тему теста",
+    "descriptionPlaceholder": "Введите описание теста, например «Тема деепричастие часто попадается в экзаменах»",
+    "loading": "Загрузка..."
+  },
+  "BlockEditor": {
+    "fillText": "Заполнение текста",
+    "sequence": "Выберите последовательность",
+    "chooseOption": "Выберите верный вариант/ы",
+    "matchPairs": "Соедините пары",
+    "freeAnswer": "Введите ответ",
+    "deleteBlock": "Удалить блок"
   },
   "CollectionsMenu": {
     "collections": "Коллекции",
@@ -40,7 +70,7 @@
     "priceAsc": "Цена: по возрастанию",
     "priceDesc": "Цена: по убыванию",
     "sortBy": "Сортировать",
-    "showMore": "Показать еще"
+    "showMore": "Показать ещё"
   },
   "pagination": {
     "previous": "Предыдущая",
@@ -48,7 +78,7 @@
   },
   "Footer": {
     "aboutBrand": "О бренде",
-    "campaign": "Campaign",
+    "campaign": "Кампания",
     "care": "Уход",
     "warranty": "Гарантия",
     "shop": "Магазин",
@@ -99,7 +129,7 @@
     "passwordTooShort": "Минимум 6 символов",
     "emailOrPhoneRequired": "Email или телефон обязателен",
     "otpRequired": "Введите код",
-    "haveAccount": "Есть аккаут? Войти!",
+    "haveAccount": "Есть аккаунт? Войти!",
     "notHaveAccount": "Нет аккаунта? Создать!",
     "sendCode": "Получить код",
     "resendCode": "Повторный код",
@@ -107,37 +137,40 @@
     "invalidCredentials": "Неверный логин или пароль"
   },
   "productInBasket": {
-  "collection": "Коллекция",
-  "size": "Размер",
-  "color": "Цвет",
-  "price": "Цена",
-  "remove": "Удалить"
-},
-"countInput":{
-  "title":"Количество"
-},
-"basket":{
-  "loading":"Загрузка...",
-  "createOrder":"Создать заказ",
-  "basket":"Корзина",
-   "name": "Имя",
-  "namePlaceholder": "Введите ваше имя",
-  "address": "Адрес доставки",
-  "addressPlaceholder": "Город, улица, дом, квартира",
-  "deliveryMethod": "Способ доставки",
-  "delivery_courier": "Курьер",
-  "delivery_pickup": "Самовывоз",
-  "delivery_post": "Почта",
-  "paymentMethod": "Способ оплаты",
-  "payment_card": "Карта",
-  "payment_cash": "Наличные",
-  "payment_online": "Онлайн",
-  "points": "Баллы (1 балл = 1 руб.)",
-  "comment": "Комментарий",
-  "commentPlaceholder": "Пожелания к заказу",
-  "agreeText": "Я согласен с условиями обработки персональных данных",
-  "submit": "Оформить заказ",
-  "fullPrice": "Итого: "
-}
-
+    "collection": "Коллекция",
+    "size": "Размер",
+    "color": "Цвет",
+    "price": "Цена",
+    "remove": "Удалить"
+  },
+  "countInput": {
+    "title": "Количество"
+  },
+  "basket": {
+    "loading": "Загрузка...",
+    "createOrder": "Создать заказ",
+    "basket": "Корзина",
+    "name": "Имя",
+    "namePlaceholder": "Введите ваше имя",
+    "address": "Адрес доставки",
+    "addressPlaceholder": "Город, улица, дом, квартира",
+    "deliveryMethod": "Способ доставки",
+    "delivery_courier": "Курьер",
+    "delivery_pickup": "Самовывоз",
+    "delivery_post": "Почта",
+    "paymentMethod": "Способ оплаты",
+    "payment_card": "Карта",
+    "payment_cash": "Наличные",
+    "payment_online": "Онлайн",
+    "points": "Баллы (1 балл = 1 руб.)",
+    "comment": "Комментарий",
+    "commentPlaceholder": "Пожелания к заказу",
+    "agreeText": "Я согласен с условиями обработки персональных данных",
+    "submit": "Оформить заказ",
+    "fullPrice": "Итого: "
+  },
+  "CardsCatalog": {
+    "noMore": "Больше постов нет",
+    "loadError": "Ошибка загрузки карточек"
+  }
 }

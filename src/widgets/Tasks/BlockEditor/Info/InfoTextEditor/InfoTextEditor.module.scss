@@ -1,0 +1,80 @@
+
+.box {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+
+.toolbar {
+  display: flex;
+  gap: 2px;
+  padding: 6px 8px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.tool_btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 5px;
+  color: #64748b;
+  transition: background 0.12s, color 0.12s;
+
+  &:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+  }
+}
+
+.tool_btn_active {
+  background: #e0f2fe;
+  color: #0284c7;
+
+  &:hover {
+    background: #bae6fd;
+    color: #0284c7;
+  }
+}
+
+// ── Редактор ──────────────────────────────────────────────
+
+.editor {
+  padding: 14px 16px;
+  min-height: 120px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #1e293b;
+
+  // tiptap сбрасывает стили — возвращаем нужные
+  :global(.ProseMirror) {
+    outline: none;
+
+    h2 { font-size: 18px; font-weight: 600; margin: 0 0 6px; }
+    h3 { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+
+    p { margin: 0 0 6px; }
+    p:last-child { margin-bottom: 0; }
+
+    strong { font-weight: 600; }
+    em { font-style: italic; }
+
+    ul, ol { padding-left: 20px; margin: 0 0 6px; }
+    li { margin-bottom: 2px; }
+
+    // placeholder
+    p.is-editor-empty:first-child::before {
+      content: attr(data-placeholder);
+      color: #cbd5e1;
+      pointer-events: none;
+      float: left;
+      height: 0;
+    }
+  }
+}

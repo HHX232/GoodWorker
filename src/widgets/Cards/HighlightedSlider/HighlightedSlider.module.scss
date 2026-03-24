@@ -1,0 +1,87 @@
+/* Swiper override — убираем overflow чтобы стрелки не обрезались */
+.swiper_box {
+//   display: flex !important;
+  width: 100%;
+  min-width: 0;
+//   overflow: visible !important;
+
+  :global(.swiper-wrapper) {
+    align-items: stretch;
+  }
+}
+
+.swiper_slide {
+  height: auto;
+}
+
+.slider_wrapper {
+  position: relative;
+  width: 100%;
+  padding: 0 0px;
+  overflow: hidden;
+}
+
+/* Скелетон повторяет размер карточки */
+.skeleton_card {
+  display: flex;
+  aspect-ratio: 19/20;
+  width: 100%;
+  max-height: 400px;
+  border-radius: 12px;
+}
+
+/* ── Стрелки ──────────────────────────────────── */
+
+.custom_box_right,
+.custom_box_left {
+  padding: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1/1;
+  max-width: fit-content;
+  border-radius: 50%;
+  backdrop-filter: blur(50px);
+  background-color: rgba(255, 255, 255, 0.25);
+  border: none;
+  position: absolute;
+  cursor: pointer;
+  z-index: 100;
+  top: 30%;
+  transform: translateY(-50%);
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.45);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+}
+
+.custom_box_right {
+  right: 10px;
+}
+
+.custom_box_left {
+  left: 10px;
+}
+
+.image_tag {
+  width: 24px;
+  height: 24px;
+  aspect-ratio: 1/1;
+  color: #141416;
+  display: block;
+}
+
+/* ── Медиа ────────────────────────────────────── */
+
+@media (max-width: 600px) {
+  .custom_box_right,
+  .custom_box_left {
+    display: none;
+  }
+}

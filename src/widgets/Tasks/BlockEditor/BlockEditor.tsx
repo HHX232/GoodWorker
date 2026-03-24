@@ -1,0 +1,75 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import {TestBlock} from '@/entities/store/slices/tasksSlice.slice'
+import {useActions} from '@/features/hooks/store/useActions'
+import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
+import {useTranslations} from 'next-intl'
+import ChooseOptionEditor from './ChooseOptionEditor/ChooseOptionEditor'
+import {FillTextEditor} from './FillTextEditor/FillTextEditor'
+import FreeAnswerEditor from './FreeAnswerEditor/FreeAnswerEditor'
+import {HighlightTextEditor} from './HighlightTextEditor/HighlightTextEditor'
+import {InfoAudioEditor} from './Info/InfoAudioEditor/InfoAudioEditor'
+import {InfoMediaEditor} from './Info/InfoMediaEditor/InfoMediaEditor'
+import {InfoTextEditor} from './Info/InfoTextEditor/InfoTextEditor'
+import MatchPairsEditor from './MatchPairsEditor/MatchPairsEditor'
+import SequenceEditor from './SequenceEditor/SequenceEditor'
+import {WordScrambleEditor} from './WordScrambleEditor/WordScrambleEditor'
+import {DialogueEditor} from './DialogueEditor/DialogueEditor'
+
+interface Props {
+  block: TestBlock
+}
+
+const DeleteBlockButton = ({label, onDelete}: {label: string; onDelete: () => void}) => (
+  <button
+    style={{marginRight: 'auto', padding: '5px', borderRadius: '5px', backgroundColor: '#f3f3f3'}}
+    onClick={onDelete}
+  >
+    {label}
+  </button>
+)
+
+function BlockEditor({block}: Props) {
+  const t = useTranslations('BlockEditor')
+  const {removeBlock} = useActions()
+
+  const deleteBtn = <DeleteBlockButton label={t('deleteBlock')} onDelete={() => removeBlock(block.id)} />
+
+  const wrapper = (heading: string, children: React.ReactNode) => (
+    <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
+      <h3 style={{marginTop: '15px', fontWeight: '500', fontSize: '32px'}}>{heading}</h3>
+      {deleteBtn}
+      {children}
+    </div>
+  )
+
+  switch (block?.type) {
+    case TaskBlockType.FILL_TEXT:
+      return wrapper(t('fillText'), <FillTextEditor blockId={block.id} payload={block.payload as any} />)
+    case TaskBlockType.SEQUENCE:
+      return wrapper(t('sequence'), <SequenceEditor blockId={block.id} payload={block.payload as any} />)
+    case TaskBlockType.CHOOSE_OPTION:
+      return wrapper(t('chooseOption'), <ChooseOptionEditor blockId={block.id} payload={block.payload as any} />)
+    case TaskBlockType.MATCH_PAIRS:
+      return wrapper(t('matchPairs'), <MatchPairsEditor blockId={block.id} payload={block.payload as any} />)
+    case TaskBlockType.FREE_ANSWER:
+      return wrapper(t('freeAnswer'), <FreeAnswerEditor blockId={block.id} payload={block.payload as any} />)
+
+    case TaskBlockType.HIGHLIGHT_TEXT:
+      return wrapper(t('highlightText'), <HighlightTextEditor blockId={block.id} payload={block.payload as any} />)
+    case TaskBlockType.WORD_SCRAMBLE:
+      return wrapper(t('wordScramble'), <WordScrambleEditor blockId={block.id} payload={block.payload as any} />)
+
+    case TaskBlockType.INFO_TEXT:
+      return wrapper(t('infoText'), <InfoTextEditor blockId={block.id} payload={block.payload as any} />)
+    case TaskBlockType.INFO_MEDIA:
+      return wrapper(t('infoMedia'), <InfoMediaEditor blockId={block.id} payload={block.payload as any} />)
+    case TaskBlockType.INFO_AUDIO:
+      return wrapper(t('infoAudio'), <InfoAudioEditor blockId={block.id} payload={block.payload as any} />)
+    case TaskBlockType.DIALOGUE:
+      return wrapper(t('dialogue'), <DialogueEditor blockId={block.id} payload={block.payload as any} />)
+    default:
+      return null
+  }
+}
+
+export default BlockEditor

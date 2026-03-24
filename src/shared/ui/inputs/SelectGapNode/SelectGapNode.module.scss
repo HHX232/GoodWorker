@@ -1,0 +1,262 @@
+
+.wrapper {
+  position: relative;
+  display: inline-block;
+  vertical-align: baseline;
+}
+
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 60px;
+  padding: 0 5px;
+  margin: 0 5px;
+  border-radius: 5px;
+  border: none;
+  font-size: inherit;        
+  font-family: inherit;
+  line-height: inherit;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+
+.chip_filled {
+  background: #868D9720;
+  color: inherit;
+
+  &:hover {
+    background: #868D9730;
+  }
+}
+
+.chip_empty {
+  background: #868D9712;
+  color: #868D97;
+  outline: 1.5px dashed #868D9760;
+  outline-offset: -1px;
+
+  &:hover {
+    background: #868D9720;
+    color: inherit;
+  }
+}
+
+.chip_label {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip_chevron {
+  flex-shrink: 0;
+  opacity: 0.45;
+  transition: transform 0.18s ease;
+}
+
+.chip_chevron_open {
+  transform: rotate(180deg);
+}
+
+
+.popover {
+  position: absolute;
+  top: calc(100% + 7px);
+  left: 0;
+  z-index: 200;
+  min-width: 252px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 8px 24px rgba(0, 0, 0, 0.1);
+  animation: popoverIn 0.13s ease;
+}
+
+@keyframes popoverIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.popover_title {
+  margin: 0 0 10px;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+}
+
+
+.option_list {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.option_item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 7px;
+  border-radius: 6px;
+  background: #f8fafc;
+  border: 1px solid transparent;
+}
+
+.option_item_correct {
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+
+
+.drag_handle {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  color: #cbd5e1;
+  cursor: grab;
+  border-radius: 3px;
+  transition: color 0.1s, background 0.1s;
+
+  &:hover {
+    color: #94a3b8;
+    background: #f1f5f9;
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+
+.option_num {
+  flex-shrink: 0;
+  width: 17px;
+  height: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #e2e8f0;
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748b;
+
+  .option_item_correct & {
+    background: #dcfce7;
+    color: #16a34a;
+  }
+}
+
+
+.option_text {
+  flex: 1;
+  font-size: 13px;
+  color: #1e293b;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  .option_item_correct & {
+    color: #15803d;
+  }
+}
+
+
+.correct_badge {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 600;
+  color: #16a34a;
+  background: #dcfce7;
+  border: 1px solid #86efac;
+  border-radius: 4px;
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+
+
+.remove_btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  color: #cbd5e1;
+  transition: background 0.12s, color 0.12s;
+
+  &:hover {
+    background: #fee2e2;
+    color: #ef4444;
+  }
+}
+
+
+.add_row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.add_input {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 13px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  outline: none;
+  color: #1e293b;
+  background: #f8fafc;
+  transition: border-color 0.15s, background 0.15s;
+
+  &::placeholder { color: #cbd5e1; }
+
+  &:focus {
+    border-color: #93c5fd;
+    background: #ffffff;
+  }
+}
+
+.add_btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  background: #3b82f6;
+  color: #ffffff;
+  transition: background 0.15s, opacity 0.15s;
+
+  &:hover:not(:disabled) { background: #2563eb; }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+}
+
+
+.hint {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.4;
+}

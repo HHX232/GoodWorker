@@ -1,0 +1,176 @@
+{
+   "HomeTest": {
+      "title": "नमस्ते",
+      "description": "यह एक विवरण है"
+   },
+   "Header": {
+      "collections": "संग्रह",
+      "constructor": "कंस्ट्रक्टर",
+      "sale": "सेल",
+      "basket": "कार्ट",
+      "profile": "प्रोफ़ाइल",
+      "catalog": "कैटलॉग",
+      "search": "खोजें",
+      "specialization": "विशेषज्ञता",
+      "developer": "डेवलपर",
+      "designer": "डिज़ाइनर",
+      "qa": "इंजीनियर"
+   },
+   "NavBar": {
+      "home": "होम",
+      "add": "जोड़ें",
+      "bookmark": "बुकमार्क",
+      "messages": "संदेश",
+      "support": "सहायता",
+      "settings": "सेटिंग्स",
+      "collapse": "मेनू छुपाएं",
+      "expand": "मेनू दिखाएं"
+   },
+   "CreateTestPage": {
+      "title": "टेस्ट बनाएं",
+      "namePlaceholder": "टेस्ट का नाम दर्ज करें",
+      "themePlaceholder": "टेस्ट का विषय दर्ज करें",
+      "descriptionPlaceholder": "टेस्ट का विवरण दर्ज करें, उदा. क्रियाविशेषण विषय अक्सर परीक्षाओं में आता है",
+      "loading": "लोड हो रहा है..."
+   },
+   "BlockEditor": {
+      "fillText": "पाठ भरें",
+      "sequence": "क्रम चुनें",
+      "chooseOption": "सही विकल्प चुनें",
+      "matchPairs": "जोड़े मिलाएं",
+      "freeAnswer": "उत्तर दर्ज करें",
+      "deleteBlock": "ब्लॉक हटाएं"
+   },
+   "CardsCatalog": {
+      "noMore": "और कोई पोस्ट नहीं",
+      "loadError": "कार्ड लोड करने में त्रुटि"
+   },
+   "CollectionsMenu": {
+      "collections": "संग्रह",
+      "clothing": "कपड़े",
+      "accessories": "सहायक वस्तुएं",
+      "all": "सभी"
+   },
+   "Home": {
+      "main": "एक मॉस्को फैशन ब्रांड जो किसी भी अवधारणा की सीमाओं में नहीं बंधता"
+   },
+   "HeroCard": {
+      "heroAlt": "पात्र",
+      "clothingAlt": "कपड़े का आइटम",
+      "collection": "संग्रह",
+      "article": "आर्टिकल",
+      "size": "साइज़",
+      "color": "रंग",
+      "price": "मूल्य",
+      "more": "और जानें"
+   },
+   "sort": {
+      "from": "से",
+      "to": "तक",
+      "loading": "लोड हो रहा है...",
+      "select": "क्रमबद्ध करें",
+      "newest": "नए",
+      "oldest": "पुराने",
+      "priceAsc": "मूल्य: कम से अधिक",
+      "priceDesc": "मूल्य: अधिक से कम",
+      "sortBy": "क्रमबद्ध करें",
+      "showMore": "और दिखाएं"
+   },
+   "pagination": {
+      "previous": "पिछला",
+      "next": "अगला"
+   },
+   "Footer": {
+      "aboutBrand": "ब्रांड के बारे में",
+      "campaign": "अभियान",
+      "care": "देखभाल",
+      "warranty": "वारंटी",
+      "shop": "दुकान",
+      "deliveryReturns": "डिलीवरी और वापसी",
+      "telegram": "Telegram",
+      "instagram": "Instagram",
+      "discountLabel": "सब्सक्रिप्शन पर 10% छूट पाएं",
+      "emailPlaceholder": "अपना ईमेल दर्ज करें",
+      "subscribeButton": "सब्सक्राइब करें"
+   },
+   "NotFoundPage": {
+      "mainText": "क्षमा करें, पृष्ठ नहीं मिला या स्थानांतरित कर दिया गया है।",
+      "goBack": "होम पर वापस जाएं"
+   },
+   "BasketButton": {
+      "addToCart": "कार्ट में जोड़ें",
+      "inCart": "कार्ट पर जाएं"
+   },
+   "ProductTabs": {
+      "description": "विवरण",
+      "sizes": "साइज़",
+      "fabric": "कपड़ा",
+      "delivery": "डिलीवरी और वापसी"
+   },
+   "profile": {
+      "profileLabel": "प्रोफ़ाइल"
+   },
+   "bread": {
+      "account": "खाता",
+      "login": "लॉगिन",
+      "register": "रजिस्टर"
+   },
+   "auth": {
+      "name": "नाम",
+      "email": "ईमेल",
+      "phone": "फ़ोन",
+      "password": "पासवर्ड",
+      "otp": "ईमेल से कोड",
+      "send": "भेजें",
+      "confirm": "पुष्टि करें",
+      "error": "कुछ गलत हो गया",
+      "loading": "लोड हो रहा है...",
+      "registerTitle": "रजिस्ट्रेशन",
+      "loginTitle": "अपने खाते में लॉगिन करें",
+      "nameRequired": "नाम आवश्यक है",
+      "invalidEmail": "अमान्य ईमेल",
+      "phoneTooShort": "न्यूनतम 7 वर्ण",
+      "passwordTooShort": "न्यूनतम 6 वर्ण",
+      "emailOrPhoneRequired": "ईमेल या फ़ोन आवश्यक है",
+      "otpRequired": "कोड दर्ज करें",
+      "haveAccount": "खाता है? लॉगिन करें!",
+      "notHaveAccount": "खाता नहीं है? बनाएं!",
+      "sendCode": "कोड प्राप्त करें",
+      "resendCode": "कोड दोबारा भेजें",
+      "login": "लॉगिन",
+      "invalidCredentials": "अमान्य लॉगिन या पासवर्ड"
+   },
+   "productInBasket": {
+      "collection": "संग्रह",
+      "size": "साइज़",
+      "color": "रंग",
+      "price": "मूल्य",
+      "remove": "हटाएं"
+   },
+   "countInput": {
+      "title": "मात्रा"
+   },
+   "basket": {
+      "loading": "लोड हो रहा है...",
+      "createOrder": "ऑर्डर बनाएं",
+      "basket": "कार्ट",
+      "name": "नाम",
+      "namePlaceholder": "अपना नाम दर्ज करें",
+      "address": "डिलीवरी पता",
+      "addressPlaceholder": "शहर, सड़क, मकान, अपार्टमेंट",
+      "deliveryMethod": "डिलीवरी विधि",
+      "delivery_courier": "कूरियर",
+      "delivery_pickup": "स्वयं उठाएं",
+      "delivery_post": "डाक",
+      "paymentMethod": "भुगतान विधि",
+      "payment_card": "कार्ड",
+      "payment_cash": "नकद",
+      "payment_online": "ऑनलाइन",
+      "points": "पॉइंट्स (1 पॉइंट = 1 रूबल)",
+      "comment": "टिप्पणी",
+      "commentPlaceholder": "ऑर्डर नोट्स",
+      "agreeText": "मैं व्यक्तिगत डेटा प्रोसेसिंग की शर्तों से सहमत हूं",
+      "submit": "ऑर्डर दें",
+      "fullPrice": "कुल: "
+   }
+}

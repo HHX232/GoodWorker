@@ -1,0 +1,85 @@
+// FillTextEditor.module.scss
+
+.editor_box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #2f2f2f33;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 8px;
+}
+
+.toolbar_btn {
+  padding: 6px 14px;
+  font-size: 13px;
+  color: #868d97;
+  background: #f4f5f7;
+  border: 1.5px dashed #c4c8d0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: #eaecf0;
+    border-color: #868d97;
+    color: #3d4350;
+  }
+}
+
+.editor_content {
+  // сам редактируемый div от Tiptap
+  :global(.tiptap) {
+    outline: none;
+    font-size: 16px;
+    line-height: 1.8;
+    color: #1a1d23;
+    min-height: 80px;
+
+    // плейсхолдер
+    p.is-editor-empty:first-child::before {
+      content: attr(data-placeholder);
+      float: left;
+      color: #b0b5bf;
+      pointer-events: none;
+      height: 0;
+    }
+  }
+}
+
+// обёртка ноды — inline чтоб не разрывал текст
+.gap_wrapper {
+  display: inline;
+}
+
+// сам инпут-пропуск
+.gap_input {
+  display: inline-block;
+  min-width: 60px;
+  padding: 2px 8px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #3d4350;
+  background: #f0f1f3;
+  border: 1.5px solid #c4c8d0;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  vertical-align: baseline;
+
+  &:focus {
+    border-color: #868d97;
+    background: #e8eaed;
+  }
+
+  &::placeholder {
+    color: #b0b5bf;
+    font-size: 13px;
+  }
+}

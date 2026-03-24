@@ -1,0 +1,61 @@
+// TextSelectionPopup.module.scss
+.popup {
+  position: absolute;
+  z-index: 99999;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.10));
+  animation: fadeIn 0.15s ease;
+}
+
+.content {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 10px 14px;
+  max-height: 80px;
+  overflow: hidden;
+  border: 1px solid #EDEEF3;
+}
+
+.text {
+  font-size: 13px;
+  color: #1a1a2e;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+// ── Стрелка ────────────────────────────────────
+.arrow {
+  width: 0;
+  height: 0;
+  flex-shrink: 0;
+}
+
+// Попап СВЕРХУ текста → стрелка смотрит ВНИЗ
+.top .arrow {
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 7px solid #EDEEF3;
+}
+
+// Попап СНИЗУ текста → стрелка смотрит ВВЕРХ
+.bottom .arrow {
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 7px solid #EDEEF3;
+}
+
+// ── Выравнивание стрелки ───────────────────────
+.left .arrow   { margin-left: 16px; }
+.right .arrow  { margin-left: auto; margin-right: 16px; }
+.center .arrow { margin: 0 auto; }
+
+// ── Анимация ───────────────────────────────────
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

@@ -1,0 +1,27 @@
+
+.main_content {
+  width: 100%;
+  min-width: 0;
+}
+
+.title_box {
+  display: flex;
+  margin-top: 24px;
+  margin-bottom: 24px;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+
+  h1 {
+    font-size: 30px;
+    font-weight: 600;
+    min-width: fit-content;
+    color: #141416;
+  }
+}
+
+.decor_line {
+  width: 100%;
+  height: 1px;
+  background-color: #DADCEB;
+}

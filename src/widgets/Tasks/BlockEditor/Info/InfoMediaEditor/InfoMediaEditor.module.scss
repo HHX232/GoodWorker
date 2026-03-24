@@ -1,0 +1,161 @@
+// features/test-block-editor/ui/editors/InfoMediaEditor/InfoMediaEditor.module.scss
+
+.box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  background: #ffffff;
+}
+
+// ── Выбор источника ───────────────────────────────────────
+
+.kind_row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.kind_btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 6px;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
+  transition: border-color 0.14s, background 0.14s;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: #94a3b8;
+    background: #f1f5f9;
+  }
+}
+
+.or {
+  font-size: 12px;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.url_input {
+  flex: 1;
+  min-width: 200px;
+  padding: 7px 12px;
+  font-size: 13px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  outline: none;
+  color: #1e293b;
+  background: #f8fafc;
+  transition: border-color 0.15s;
+
+  &::placeholder { color: #cbd5e1; }
+  &:focus { border-color: #93c5fd; background: #fff; }
+}
+
+.hidden {
+  display: none;
+}
+
+// ── Превью ────────────────────────────────────────────────
+
+.preview_box {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.clear_btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  color: #ffffff;
+  transition: background 0.12s;
+
+  &:hover { background: rgba(0, 0, 0, 0.65); }
+}
+
+.preview_img {
+  width: 100%;
+  max-height: 340px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: #f1f5f9;
+}
+
+.preview_video {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 6px;
+  border: none;
+  background: #000;
+}
+
+.caption_input {
+  padding: 6px 10px;
+  font-size: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  outline: none;
+  color: #64748b;
+  background: #f8fafc;
+  transition: border-color 0.15s;
+
+  &::placeholder { color: #cbd5e1; }
+  &:focus { border-color: #93c5fd; background: #fff; }
+}
+
+// ── Пустой плейсхолдер ────────────────────────────────────
+
+.empty_hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 0 8px;
+  color: #cbd5e1;
+
+  p {
+    font-size: 12px;
+    color: #94a3b8;
+    text-align: center;
+  }
+
+  // иконки рядом
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  grid-template-rows: auto auto;
+  align-items: center;
+  justify-items: center;
+
+  // переопределяем для вёрстки иконки + текст
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.empty_icon_img {
+  color: #bfdbfe;
+}
+
+.empty_icon_vid {
+  color: #ddd6fe;
+}

@@ -1,0 +1,64 @@
+// Добавь эти стили в Header.module.scss
+
+.searchWrapper {
+  position: relative;
+  display: inline-flex;
+  width: 100%;
+  flex-direction: column;
+}
+
+.searchInputContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 16px;
+  background-color: #F5F5F5;
+  border-radius: 100px;
+  width: 100%;
+  cursor: text;
+}
+
+.searchIcon {
+  flex-shrink: 0;
+  display: block;
+}
+
+.searchInput {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: #141416;
+  width: 100%;
+
+  &::placeholder {
+    color: #868D97;
+  }
+}
+
+.searchDropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  right: 0;
+  background-color: #F5F5F5;
+  border-radius: 16px;
+  padding: 8px 0;
+  list-style: none;
+  margin: 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.searchDropdownItem {
+  padding: 10px 16px;
+  font-size: 14px;
+  color: #141416;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background-color: #ebebeb;
+  }
+}

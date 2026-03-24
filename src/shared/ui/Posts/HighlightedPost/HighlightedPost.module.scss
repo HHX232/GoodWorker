@@ -1,0 +1,69 @@
+.card {
+  display: flex;
+  aspect-ratio: 19/20;
+  width: 100%;
+  flex-direction: column;
+  padding: 24px;
+  max-height: 400px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-radius: 12px;
+  text-decoration: none;
+}
+
+.card_title {
+  color: #fff;
+  font-family: 'Roboto', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-top: 12px;
+  margin-bottom: 4px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card_subtitle {
+  color: #fff;
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.high_title {
+  margin-bottom: auto;
+  padding: 5px 8px;
+  border-radius: 99px;
+  background: linear-gradient(135deg, rgb(255, 122, 0) 0%, rgb(189, 0, 255) 100%);
+  max-width: fit-content;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #fff;
+}
+
+.box_for_user {
+  max-width: fit-content;
+}
+
+@media (max-width: 500px) {
+  .card_title {
+    font-size: 19px;
+    -webkit-line-clamp: 2;
+  }
+  .card_subtitle {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 430px) {
+  .box_for_user {
+    display: none;
+  }
+}

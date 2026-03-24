@@ -1,0 +1,316 @@
+// features/test-block-editor/ui/editors/WordScrambleEditor/WordScrambleEditor.module.scss
+
+.box {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  background: #ffffff;
+}
+
+// ── Переключатель режима ──────────────────────────────────
+
+.mode_bar {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  background: #f1f5f9;
+  border-radius: 8px;
+  width: fit-content;
+}
+
+.mode_btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 14px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #64748b;
+  transition: background 0.14s, color 0.14s, box-shadow 0.14s;
+
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+  &:not(:disabled):hover { color: #1e293b; }
+}
+
+.mode_btn_active {
+  background: #ffffff;
+  color: #1e293b;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+// ── Поля ─────────────────────────────────────────────────
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+}
+
+.input {
+  padding: 9px 12px;
+  font-size: 13px;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  outline: none;
+  color: #1e293b;
+  background: #f8fafc;
+  font-family: inherit;
+  transition: border-color 0.15s, background 0.15s;
+
+  &::placeholder { color: #cbd5e1; }
+  &:focus { border-color: #fb923c; background: #fff; }
+}
+
+// ── Табы режима (letters / words) ─────────────────────────
+
+.mode_tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.mode_tab {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #64748b;
+  transition: border-color 0.14s, background 0.14s, color 0.14s;
+  cursor: pointer;
+
+  &:hover { border-color: #94a3b8; color: #1e293b; }
+}
+
+.mode_tab_active {
+  border-color: #fb923c;
+  background: #fff7ed;
+  color: #c2410c;
+
+  &:hover { border-color: #ea580c; background: #ffedd5; }
+}
+
+// ── Тайлы ────────────────────────────────────────────────
+
+.tiles_row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 44px;
+}
+
+// базовый тайл
+.tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  padding: 7px 13px;
+  border-radius: 7px;
+  border: 1.5px solid #fdba74;
+  background: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  color: #c2410c;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+  cursor: grab;
+  user-select: none;
+  transition: box-shadow 0.12s, transform 0.12s, opacity 0.12s;
+
+  &:hover { box-shadow: 0 3px 8px rgba(0,0,0,0.12); transform: translateY(-2px); }
+  &:active { cursor: grabbing; }
+}
+
+// статичный (в редакторе, не перетаскиваемый)
+.tile_static {
+  cursor: default;
+  &:hover { box-shadow: 0 1px 3px rgba(0,0,0,0.07); transform: none; }
+}
+
+.tile_dimmed {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+// ── Текущий ответ ─────────────────────────────────────────
+
+.current_answer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 7px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.current_answer_label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.current_answer_value {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+  transition: color 0.15s;
+}
+
+.answer_correct { color: #15803d !important; }
+.answer_wrong   { color: #b91c1c !important; }
+
+// ── Кнопки ───────────────────────────────────────────────
+
+.submit_btn {
+  align-self: flex-start;
+  padding: 8px 20px;
+  border-radius: 8px;
+  background: #3b82f6;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.14s;
+
+  &:hover { background: #2563eb; }
+}
+
+.result_row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.result_badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.result_badge_ok {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+}
+
+.result_badge_err {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+
+.retry_btn {
+  font-size: 12px;
+  color: #94a3b8;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  &:hover { color: #64748b; }
+}
+
+// ── Превью в редакторе ────────────────────────────────────
+
+.editor_preview {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  background: #fff7ed;
+}
+
+.editor_preview_header {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #fb923c;
+}
+
+.answer_row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #fed7aa;
+}
+
+.answer_label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9a3412;
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.answer_value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #c2410c;
+}
+
+// ── Превью ученика ────────────────────────────────────────
+
+.preview_wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.preview_label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+}
+
+.student_wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border: 1.5px dashed #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.student_hint_text {
+  font-size: 13px;
+  color: #78716c;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+.student_instruction {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1e293b;
+}

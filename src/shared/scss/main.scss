@@ -30,6 +30,7 @@
     --radius: 0.5rem;
   }
 
+
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
@@ -63,27 +64,43 @@
   }
 }
 
+html {
+  background-color: #EEEFF8;
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+  display: none !important;
+}
+
 body {
   position: relative !important;
   max-width: 100vw !important;
+  max-height: 100vh;
   height: 100% !important;
   font-family: var(--font-main) !important;
   line-height: 1.35;
-  overflow: hidden auto !important;
+  overflow: hidden hidden !important;
+  // @include mixins.md{
+  //   padding-bottom: 100px !important;
+  //   max-height: calc(100vh + 100px) !important;
+  //   overflow: auto !important;
+  //   height: calc(100vh + 100px) !important;
+  // }
 }
 
 #telegram-login-exporterubot {
   cursor: pointer !important;
 
-  & > * {
+  &>* {
     cursor: pointer !important;
   }
 
-  & > body {
+  &>body {
     cursor: pointer !important;
   }
 
-  & > html > body {
+  &>html>body {
     cursor: pointer !important;
   }
 }
@@ -110,7 +127,7 @@ body {
       align-items: stretch;
       border-radius: 0 !important;
 
-      & > div {
+      &>div {
         width: 100%;
         height: 100%;
         border-radius: 0 !important;
@@ -160,7 +177,7 @@ body {
   }
 
   .slick-slide {
-    & > div {
+    &>div {
       height: 100%;
       padding-bottom: 6px;
     }
@@ -515,7 +532,7 @@ img {
   display: none !important;
 }
 
-.mini__card__slider .slick-list .slick-track > div {
+.mini__card__slider .slick-list .slick-track>div {
   max-width: fit-content;
 }
 
@@ -536,6 +553,55 @@ img {
   .spec__slider .slick-slide {
     padding: 0 !important;
   }
+}
+.mobile_padding{
+  display: none;
+}
+@media(max-width:700px){
+ .mobile_padding{
+  display: block;
+  height: 55px;
+  width: 10px;
+  opacity: 0;
+ }
+}
+.default_content {
+  & > * {
+    min-width: 0; 
+  }
+  display: grid;
+  grid-template-columns: 0.8fr 2.5fr 1fr;
+  gap: 24px;
+  min-width: 0;
+  max-width: 1440px;
+  width: 100%;
+  position: relative;
+  padding-bottom: 50px;
+  max-height: calc(100vh - 130px);
+  overflow-y: scroll;
+  overflow-x: clip;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  @include mixins.lgg {
+    gap: 12px;
+    padding: 0 12px;
+    grid-template-columns: minmax(0, 80px) 3fr;
+  max-height: calc(100vh - 170px);
+  }
+
+  @include mixins.sm {
+
+    grid-template-columns: 1fr;
+    position: relative;
+
+  }
+
+
 }
 
 /* Альтернативное решение через JavaScript + CSS */

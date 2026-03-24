@@ -1,0 +1,177 @@
+// SequenceEditor.module.scss
+
+.editor_box {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.items_list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+// ─── Редактор ────────────────────────────────────────────────────────────────
+
+.item_row {
+  display: grid;
+  grid-template-columns: 28px 24px 1fr 28px;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  border-radius: 8px;
+  background: #f9fafb;
+  border: 1.5px solid transparent;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &.dragging {
+    border-color: #c4c8d0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: #ffffff;
+    z-index: 10;
+  }
+}
+
+.drag_handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #c4c8d0;
+  font-size: 18px;
+  cursor: grab;
+  border-radius: 6px;
+  transition: color 0.15s ease, background 0.15s ease;
+  user-select: none;
+
+  &:active {
+    cursor: grabbing;
+  }
+
+  &:hover {
+    color: #868d97;
+    background: #eaecf0;
+  }
+}
+
+.item_index {
+  font-size: 13px;
+  color: #b0b5bf;
+  font-weight: 500;
+  text-align: center;
+}
+
+.item_input {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 15px;
+  color: #1a1d23;
+  background: #ffffff;
+  border: 1.5px solid transparent;
+  border-radius: 8px;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+
+  &::placeholder {
+    color: #b0b5bf;
+  }
+
+  &:focus {
+    border-color: #c4c8d0;
+  }
+}
+
+.remove_btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: #868d97;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: #fee2e2;
+    color: #ef4444;
+  }
+}
+
+.add_btn {
+  align-self: flex-start;
+  padding: 7px 16px;
+  font-size: 13px;
+  color: #868d97;
+  background: #f4f5f7;
+  border: 1.5px dashed #c4c8d0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: #eaecf0;
+    border-color: #868d97;
+    color: #3d4350;
+  }
+}
+
+// ─── Превью ──────────────────────────────────────────────────────────────────
+
+.preview_box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+
+.preview_label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #b0b5bf;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.preview_item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  &:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+  }
+
+  &.dragging {
+    border-color: #000;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    transform: scale(1.02);
+  }
+}
+
+.preview_item_text {
+  font-size: 15px;
+  font-weight: 500;
+  color: #1f2937;
+  line-height: 1.4;
+}

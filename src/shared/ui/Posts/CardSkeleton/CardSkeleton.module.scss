@@ -1,0 +1,23 @@
+
+/* Скелетон */
+.skeleton_card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  background-color: #fff;
+  border-radius: 12px;
+  gap: 12px;
+}
+
+.skeleton_header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.skeleton_header_text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}

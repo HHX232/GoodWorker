@@ -1,0 +1,84 @@
+.inputOtpContainer {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.inputOtpBox {
+  width: fit-content;
+  max-width: 80px;
+  height: fit-content;
+  max-height: 89px;
+  padding: 25px;
+  border: 1px solid rgb(47 47 47 / 20%);
+  border-radius: 10px;
+  background-color: #f6f6f6;
+  color: #0a0c12;
+  cursor: pointer;
+
+  // border-radius: 4px;
+  font-size: 36px;
+  font-weight: 700;
+  font-weight: bold;
+
+  // Убираем стандартные рамки браузера
+  outline: none;
+  text-align: center;
+  transition: all 0.2s ease;
+
+  // Remove spinner arrows for number inputs
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    margin: 0;
+    appearance: none;
+  }
+
+  /* Firefox */
+  &[type='number'] {
+    appearance: textfield;
+  }
+
+  // Стиль для элемента в фокусе - красная рамка
+  &:focus,
+  &:active {
+    border-width: 2px;
+    border-color: #ac2525;
+    box-shadow: none; // Убираем тень, которая может мешать
+    outline: none;
+  }
+
+  // Стиль для элемента с введенным значением - толстая рамка основного цвета
+  &:not(:placeholder-shown) {
+    border-width: 4px;
+    border-color: #2a2e46;
+  }
+
+  // Приоритет для фокуса над заполненным значением
+  &:focus:not(:placeholder-shown),
+  &:active:not(:placeholder-shown) {
+    border-width: 2px;
+    border-color: #ac2525;
+  }
+
+  &:hover:not(:focus, :disabled) {
+    border-color: #9ca3af;
+  }
+
+  &:disabled {
+    background-color: #f3f4f6;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+@media (max-width: 470px) {
+  .inputOtpContainer {
+    gap: 15px !important;
+  }
+
+  .inputOtpBox {
+    max-width: 74px;
+    padding: 22px 11px;
+    font-size: 25px;
+  }
+}
