@@ -2,9 +2,10 @@
 import {BlockRoadParam, RoadMapParamType, RoadNode, RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
 import {useReactFlow, useStore} from '@xyflow/react'
 import {useCallback} from 'react'
+import HelpTextParam from '../../Params/HelpTextParam/HelpTextParam'
 import SelectMyTestParam from '../../Params/SelectMyTestParam/SelectMyTestParam'
 import styles from './NodeParamField.module.scss'
-import HelpTextParam from '../../Params/HelpTextParam/HelpTextParam'
+import ActiveTestParam from '../../Params/ActiveTestBlock/ActiveTestParam'
 
 function StringParam({
   param,
@@ -102,6 +103,10 @@ export default function NodeParamField({
       )
     case RoadMapParamType.HIDE:
       return <></>
+    case RoadMapParamType.CREATE_ACTIVE_TEST:
+      return (
+        <ActiveTestParam param={param} value={value} updateNodeParamValue={updateNodeParamValue} disabled={disabled} />
+      )
     case RoadMapParamType.SELECT_MY_TEST:
       return (
         <SelectMyTestParam

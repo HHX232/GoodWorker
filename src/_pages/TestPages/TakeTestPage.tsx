@@ -16,6 +16,7 @@ import {
   WordScramblePayload
 } from '@/shared/types/Tasks/TaskPayload.type'
 import {ResultToast} from '@/shared/ui/Tasks/ResultToast/ResultToast'
+import {NavBar} from '@/widgets/BaseUI'
 import {DialogueStudentView} from '@/widgets/Tasks/BlockEditor/DialogueEditor/DialogueEditor'
 import {FillTextEditor} from '@/widgets/Tasks/BlockEditor/FillTextEditor/FillTextEditor'
 import {HighlightStudentView} from '@/widgets/Tasks/BlockEditor/HighlightTextEditor/HighlightTextEditor'
@@ -27,7 +28,7 @@ import {SavedTest, testStorage} from '@/widgets/Tasks/Storage/testStorage'
 import {toast} from 'sonner'
 import {ChooseOptionStudent, FreeAnswerStudent, MatchPairsStudent, SequenceStudent} from './Studentviews/Studentviews'
 import styles from './TakeTestPage.module.scss'
-import {NavBar} from '@/widgets/BaseUI'
+import {TestPlayer} from './TestPlayer/TestPlayer'
 
 // ── Роутер блоков ─────────────────────────────────────────────────────────────
 
@@ -187,6 +188,22 @@ export default function TakeTestPage() {
       }
     )
   }
+  const handleResult = (res: TestResult) => {
+    toast.custom(
+      (id) => (
+        <ResultToast
+          test={test!}
+          result={res}
+          onRetry={() => {
+            toast.dismiss(id)
+            window.location.reload()
+          }}
+          onClose={() => toast.dismiss(id)}
+        />
+      ),
+      {duration: Infinity, id: 'test-result'}
+    )
+  }
 
   if (notFound) return <div className={styles.error}>Тест не найден</div>
   if (!test) return <div className={styles.loading}>Загрузка...</div>
@@ -195,29 +212,8 @@ export default function TakeTestPage() {
     <div className={`container default_content ${styles.content}`}>
       <NavBar />
       <div className={styles.main_content}>
-        <div className={`${styles.page} `}>
-          <div className={styles.header}>
-            <h1 className={styles.title}>{test.title}</h1>
-            {test.theme && <p className={styles.theme}>{test.theme}</p>}
-            {test.description && <p className={styles.desc}>{test.description}</p>}
-          </div>
-
-          <div className={styles.blocks}>
-            {test.blocks.map((block: any) => (
-              <div key={block.id} className={styles.block}>
-                <BlockWrapper block={block}>
-                  <BlockView block={block} onChange={setAnswer} isSubmitted={isSubmitted} />
-                </BlockWrapper>
-              </div>
-            ))}
-          </div>
-
-          <div className={styles.footer}>
-            <button type='button' className={styles.submit_btn} onClick={handleSubmit}>
-              Завершить тест
-            </button>
-          </div>
-        </div>
+        <h1>{test.title}</h1>
+        <TestPlayer showInlineResult={false} blocks={test.blocks} onResult={handleResult} />
       </div>
     </div>
   )

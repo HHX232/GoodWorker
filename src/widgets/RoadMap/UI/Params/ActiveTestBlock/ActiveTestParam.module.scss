@@ -1,0 +1,164 @@
+.wrap {
+   display: flex;
+   flex-direction: column;
+   gap: 12px;
+   padding: 12px;
+   width: 420px;
+}
+
+.add_row {
+   display: flex;
+   gap: 8px;
+   align-items: center;
+}
+
+.type_select {
+   flex: 1;
+   padding: 7px 10px;
+   font-size: 13px;
+   border: 0.5px solid #e5e5e5;
+   border-radius: 8px;
+   background: #fafafa;
+   color: #1a1d23;
+   outline: none;
+   cursor: pointer;
+
+   &:focus {
+      border-color: #c4c8d0;
+      background: #fff;
+   }
+}
+
+.add_btn {
+   padding: 7px 14px;
+   font-size: 13px;
+   border-radius: 8px;
+   background: #141416;
+   color: #fff;
+   border: none;
+   cursor: pointer;
+   white-space: nowrap;
+   transition: opacity 0.15s;
+
+   &:hover {
+      opacity: 0.82;
+   }
+}
+
+.empty {
+   font-size: 13px;
+   color: #b0b5bf;
+   text-align: center;
+   padding: 20px 0;
+}
+
+// ── Навигация ────────────────────────────────────────────
+
+.nav {
+   display: flex;
+   align-items: center;
+   gap: 8px;
+}
+
+.nav_btn {
+   width: 28px;
+   height: 28px;
+   border-radius: 6px;
+   border: 0.5px solid #e5e5e5;
+   background: #fafafa;
+   font-size: 14px;
+   color: #555;
+   cursor: pointer;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   transition: background 0.12s, border-color 0.12s;
+   flex-shrink: 0;
+
+   &:hover:not(:disabled) {
+      background: #f0f0f0;
+      border-color: #c4c8d0;
+   }
+
+   &:disabled {
+      opacity: 0.35;
+      cursor: default;
+   }
+}
+
+.pills {
+   display: flex;
+   gap: 4px;
+   flex-wrap: wrap;
+   flex: 1;
+}
+
+.pill {
+   width: 26px;
+   height: 26px;
+   border-radius: 6px;
+   border: 0.5px solid #e5e5e5;
+   background: #fafafa;
+   font-size: 12px;
+   color: #868d97;
+   cursor: pointer;
+   transition: background 0.12s, border-color 0.12s, color 0.12s;
+
+   &:hover {
+      background: #f0f0f0;
+      color: #333;
+   }
+}
+
+.pill_active {
+   background: #141416;
+   border-color: #141416;
+   color: #fff;
+
+   &:hover {
+      background: #2a2a2c;
+   }
+}
+
+// ── Блок ─────────────────────────────────────────────────
+
+.block_wrap {
+   display: flex;
+   flex-direction: column;
+   gap: 10px;
+   padding: 12px;
+   border: 0.5px solid #e5e5e5;
+   border-radius: 10px;
+   background: #fff;
+}
+
+.block_header {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+}
+
+.block_type {
+   font-size: 11px;
+   font-weight: 600;
+   text-transform: uppercase;
+   letter-spacing: 0.06em;
+   color: #94a3b8;
+}
+
+.remove_btn {
+   font-size: 12px;
+   color: #b0b5bf;
+   padding: 3px 8px;
+   border-radius: 5px;
+   border: 0.5px solid #e5e5e5;
+   background: #fafafa;
+   cursor: pointer;
+   transition: background 0.12s, color 0.12s, border-color 0.12s;
+
+   &:hover {
+      background: #fee2e2;
+      border-color: #fca5a5;
+      color: #ef4444;
+   }
+}

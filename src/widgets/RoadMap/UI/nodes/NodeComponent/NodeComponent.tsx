@@ -1,7 +1,9 @@
 import RoadMapBlockRegistry from '@/features/Roadmap/registry'
 import {RoadMapBlockType, RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
+import {useViewMode} from '@/shared/ui/RoadMap/context/ViewModeContext'
 import {Handle, NodeProps, Position} from '@xyflow/react'
 import {memo} from 'react'
+import ActiveTestBlock from '../../Params/ActiveTestBlock/ActiveTestParam'
 import NodeCard from '../NodeCard/NodeCard'
 import NodeHeader from '../NodeHeader/NodeHeader'
 import NodeInputs, {NodeInput} from '../NodeInputs/NodeInputs'
@@ -24,23 +26,29 @@ const NodeComponent = memo((props: NodeProps) => {
   const isEntryPoint = nodeData.type === RoadMapBlockType.ENTRY_POINT
   const isPosts = nodeData.type === RoadMapBlockType.POST_LINK
   const isFile = nodeData.type === RoadMapBlockType.DOWNLOAD_FILE_LINK
-
+  const isActiveTest = nodeData.type === RoadMapBlockType.ACTIVE_TEST
+  const viewMode = useViewMode()
+  const isView = viewMode === 'view'
   return (
     <NodeCard useMini={isDivider} isSelected={!!props.selected} nodeId={props.id}>
-      {DEV_MODE && <span style={{fontSize: 10, opacity: 0.5}}>DEV: {props.id}</span>}
-      <NodeHeader taskType={nodeData.type} nodeId={props.id} />
-      {isPosts && <PostsBlock nodeId={props.id} />}
-      {isAudio && <AudioBlock nodeId={props.id} />}
-      {isMedia && <MediaBlock nodeId={props.id} />}
-      {isFile && <FileBlock nodeId={props.id} />}
+      <NodeHeader taskType={nodeData.type} nodeId={props.id} readonly={isView} />
+      {isPosts && <PostsBlock nodeId={props.id} readonly={isView} />}
+      {isAudio && <AudioBlock nodeId={props.id} readonly={isView} />}
+      {isMedia && <MediaBlock nodeId={props.id} readonly={isView} />}
+      {isFile && <FileBlock nodeId={props.id} readonly={isView} />}
+
+      {/* В режиме просмотра — onlyPass, в редактировании — редактор */}
+      {isActiveTest && <ActiveTestBlock nodeId={props.id} onlyPass={isView} />}
+
       {isEntryPoint && (
         <>
-          <EntryPointBlock nodeId={props.id} />
+          <EntryPointBlock nodeId={props.id} readonly={isView} />
           <Handle type='source' position={Position.Right} id={`${props.id}-output`} />
         </>
       )}
-      {/* Обычные блоки */}
-      {!isDivider && (
+
+      {/* Обычные блоки — скрываем inputs/outputs в режиме просмотра */}
+      {!isDivider && !isView && (
         <>
           {task?.inputs && task.inputs.length > 0 && (
             <NodeInputs nodeId={props.id}>
@@ -49,7 +57,6 @@ const NodeComponent = memo((props: NodeProps) => {
               ))}
             </NodeInputs>
           )}
-
           {task?.outputs && task.outputs.length > 0 && (
             <NodeOutputs nodeId={props.id}>
               {task.outputs.map((output) => (
@@ -60,8 +67,7 @@ const NodeComponent = memo((props: NodeProps) => {
         </>
       )}
 
-      {/* Разделитель */}
-      {isDivider && (
+      {isDivider && !isView && (
         <>
           <NodeInputs nodeId={props.id}>
             {task.inputs.map((input) => (

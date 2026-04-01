@@ -7,6 +7,7 @@ import {RoadHelpTextTask} from './tasks/RoadHelpTextTask'
 import {RoadMediaTask} from './tasks/RoadMediaTask'
 import {RoadPostLinkTask} from './tasks/RoadPostLinkTask'
 import {RoadPostsLinkTask} from './tasks/RoadPostsLinkTask'
+import {RoadActiveTestTask} from './tasks/RoadActiveTestTask'
 
 type Registry = {
   [K in RoadMapBlockType]: RoadMapTask & {type: K}
@@ -20,7 +21,8 @@ const RoadMapBlockRegistry: Registry = {
   [RoadMapBlockType.INFO_MEDIA]: RoadMediaTask,
   [RoadMapBlockType.ENTRY_POINT]: RoadEntryPointTask,
   [RoadMapBlockType.POST_LINK]: RoadPostsLinkTask,
-  [RoadMapBlockType.DOWNLOAD_FILE_LINK]: RoadFileTask
+  [RoadMapBlockType.DOWNLOAD_FILE_LINK]: RoadFileTask,
+  [RoadMapBlockType.ACTIVE_TEST]: RoadActiveTestTask
 
   // [RoadMapBlockType.POST_LINK]: {type: RoadMapBlockType.POST_LINK},
   // [RoadMapBlockType.GROUP_POSTS_LINK]: {type: RoadMapBlockType.GROUP_POSTS_LINK},

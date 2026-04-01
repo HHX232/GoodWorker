@@ -14,6 +14,7 @@ function CreateRoadNavbar() {
       <TaskMenuBtn taskType={RoadMapBlockType.INFO_MEDIA} id='taskmenu-task-example'></TaskMenuBtn>
       <TaskMenuBtn taskType={RoadMapBlockType.POST_LINK} id='taskmenu-task-example'></TaskMenuBtn>
       <TaskMenuBtn taskType={RoadMapBlockType.DOWNLOAD_FILE_LINK} id='taskmenu-task-example'></TaskMenuBtn>
+      <TaskMenuBtn taskType={RoadMapBlockType.ACTIVE_TEST} id='taskmenu-task-example'></TaskMenuBtn>
       {/* <TaskMenuBtn taskType={RoadMapBlockType.ENTRY_POINT} id='taskmenu-task-example'></TaskMenuBtn> */}
     </div>
   )

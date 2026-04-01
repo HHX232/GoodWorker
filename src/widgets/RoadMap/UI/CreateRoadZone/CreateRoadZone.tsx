@@ -5,6 +5,7 @@ import {useActions} from '@/features/hooks/store/useActions'
 import {useTypedSelector} from '@/features/hooks/store/useTypedSelector'
 import {createRoadNode} from '@/shared/helpers/Node/CreateFlowNode'
 import {RoadMapBlockType, RoadNode, RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
+import {ViewModeContext} from '@/shared/ui/RoadMap/context/ViewModeContext'
 import {useDroppable} from '@dnd-kit/core'
 import {
   addEdge,
@@ -80,8 +81,14 @@ function CreateRoadZoneInner() {
         addEdge(
           {
             ...connection,
+            type: 'default',
             animated: true,
-            markerEnd: {type: MarkerType.ArrowClosed, width: 22, height: 22, color: '#868897'}
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+              width: 22,
+              height: 22,
+              color: '#868897'
+            }
           },
           eds
         )
@@ -139,60 +146,62 @@ function CreateRoadZoneInner() {
   )
 
   return (
-    <div
-      ref={setDropRef}
-      style={{
-        width: '100%',
-        height: '100%',
-        minHeight: 600,
-        border: `2px dashed ${isOver ? '#6366f1' : '#d1d5db'}`,
-        transition: 'border-color 0.2s',
-        position: 'relative',
-        overflow: 'hidden'
-      }}
-    >
-      {isPaywallMode && (
-        <div className={styles.paywallBanner}>
-          <EyeOffIcon size={14} />
-          Режим paywall — нажмите на блок чтобы скрыть его и всё дерево после него
-        </div>
-      )}
-
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        onDragOver={onDragOver}
-        onDrop={onDrop}
-        onNodeClick={onNodeClick}
-        nodeTypes={nodeTypes}
-        fitViewOptions={fitViewOptions}
-        isValidConnection={isValidConnection}
-        snapGrid={snapGrid}
-        edgeTypes={edgeTypes}
-        snapToGrid
+    <ViewModeContext.Provider value='edit'>
+      <div
+        ref={setDropRef}
+        style={{
+          width: '100%',
+          height: '100%',
+          minHeight: 600,
+          border: `2px dashed ${isOver ? '#6366f1' : '#d1d5db'}`,
+          transition: 'border-color 0.2s',
+          position: 'relative',
+          overflow: 'hidden'
+        }}
       >
-        <Controls position='top-left' />
-        <Background variant={BackgroundVariant.Dots} gap={15} />
-        <Panel position='top-right'>
-          <div className={styles.panelRow}>
-            <AutoLayoutButton />
-            <button
-              className={`${styles.paywallBtn} ${isPaywallMode ? styles.paywallBtnActive : ''}`}
-              onClick={() => {
-                toggleRoadmapPaywallMode()
-              }}
-              title='Режим paywall'
-            >
-              <LockIcon size={14} />
-              {isPaywallMode ? 'Выйти' : 'Paywall'}
-            </button>
+        {isPaywallMode && (
+          <div className={styles.paywallBanner}>
+            <EyeOffIcon size={14} />
+            Режим paywall — нажмите на блок чтобы скрыть его и всё дерево после него
           </div>
-        </Panel>
-      </ReactFlow>
-    </div>
+        )}
+
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onDragOver={onDragOver}
+          onDrop={onDrop}
+          onNodeClick={onNodeClick}
+          nodeTypes={nodeTypes}
+          fitViewOptions={fitViewOptions}
+          isValidConnection={isValidConnection}
+          snapGrid={snapGrid}
+          edgeTypes={edgeTypes}
+          snapToGrid
+        >
+          <Controls position='top-left' />
+          <Background variant={BackgroundVariant.Dots} gap={15} />
+          <Panel position='top-right'>
+            <div className={styles.panelRow}>
+              <AutoLayoutButton />
+              <button
+                className={`${styles.paywallBtn} ${isPaywallMode ? styles.paywallBtnActive : ''}`}
+                onClick={() => {
+                  toggleRoadmapPaywallMode()
+                }}
+                title='Режим paywall'
+              >
+                <LockIcon size={14} />
+                {isPaywallMode ? 'Выйти' : 'Paywall'}
+              </button>
+            </div>
+          </Panel>
+        </ReactFlow>
+      </div>
+    </ViewModeContext.Provider>
   )
 }
 

@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import {TestBlock} from '@/entities/store/slices/tasksSlice.slice'
 import {Node} from '@xyflow/react'
 import {LucideProps} from 'lucide-react'
 
@@ -6,6 +7,7 @@ export enum RoadMapBlockType {
   TEST_LINK = 'TEST_LINK',
   ENTRY_POINT = 'ENTRY_POINT',
   POST_LINK = 'POST_LINK',
+  ACTIVE_TEST = 'ACTIVE_TEST',
   // GROUP_POSTS_LINK = 'GROUP_POSTS_LINK',
   // ACTIVE_TEST_LINK = 'ACTIVE_TEST_LINK',
   // TEACHER_SERVICE_LINK = 'TEACHER_SERVICE_LINK',
@@ -25,7 +27,8 @@ export enum RoadMapParamType {
   FILE = 'FILE',
   SELECT_MY_TEST = 'SELECT_MY_TEST',
   SELECT_MY_POST = 'SELECT_MY_POST',
-  HIDE = 'HIDE'
+  HIDE = 'HIDE',
+  CREATE_ACTIVE_TEST = 'CREATE_ACTIVE_TEST'
 }
 
 export interface BlockRoadParam {
@@ -59,6 +62,7 @@ export interface RoadNodeData extends Record<string, unknown> {
   selectedPostIds?: string[]
   uploadedFiles?: {name: string; size: number; mimeType: string; url: string}[]
 
+  activeTests?: TestBlock[]
   // Для начального блока
   roadTitle?: string
   roadDescription?: string

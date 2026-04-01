@@ -1,6 +1,10 @@
 import {TestResult} from '@/features/Tasks/TaskResult/scoreBlock'
-import {SavedTest} from '@/widgets/Tasks/Storage/testStorage'
 import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
+import {SavedTest} from '@/widgets/Tasks/Storage/testStorage'
+import {PieChart} from '@mui/x-charts/PieChart'
+
+import {PieItemIdentifier} from '@mui/x-charts'
+import {useState} from 'react'
 import styles from './ResultToast.module.scss'
 
 const BLOCK_LABELS: Partial<Record<TaskBlockType, string>> = {
@@ -30,27 +34,73 @@ interface Props {
 
 export function ResultToast({test, result, onRetry, onClose}: Props) {
   const {label, color} = grade(result.percent)
+  const correct = result.totalScore
+  const wrong = result.maxScore - result.totalScore
+  const [active, setActive] = useState<PieItemIdentifier | null>(null)
 
+  // группировка по типам заданий
+  const typeStats = Object.values(TaskBlockType)
+    .map((type) => {
+      const blocks = result.blocks.filter((b) => b.blockType === type)
+
+      return {
+        id: type,
+        value: blocks.reduce((sum, b) => sum + b.score, 0),
+        label: BLOCK_LABELS[type] ?? type
+      }
+    })
+    .filter((item) => item.value > 0)
   return (
     <div className={styles.toast}>
       {/* Шапка с кругом */}
-      <div className={styles.top}>
-        <div className={styles.ring} style={{borderColor: color}}>
-          <span className={styles.pct} style={{color}}>
-            {result.percent}%
-          </span>
-          <span className={styles.lbl} style={{color}}>
-            {label}
-          </span>
-        </div>
-        <div className={styles.meta}>
-          <span className={styles.title}>{test.title}</span>
-          <span className={styles.score}>
-            Верных: {result.totalScore} из {result.maxScore}
-          </span>
-          <span className={styles.date}>{new Date(result.completedAt).toLocaleString('ru-RU')}</span>
-        </div>
-      </div>
+
+      <PieChart
+        series={[
+          {
+            id: 'result',
+            arcLabel: (item) => `${item.value}`,
+            innerRadius: 0,
+
+            outerRadius: 60,
+            data: [
+              {id: 'correct', value: correct, label: 'Верно'},
+              {id: 'wrong', value: wrong, label: 'Неверно'}
+            ]
+          },
+          {
+            id: 'types',
+            innerRadius: 70,
+            outerRadius: 90,
+            data: [
+              {id: 'correct', value: correct, label: 'Верно'},
+              {id: 'wrong', value: wrong, label: 'Неверно'}
+            ]
+          }
+        ]}
+        slotProps={{
+          tooltip: {
+            sx: {
+              zIndex: 9999999
+            },
+            trigger: 'none'
+          }
+        }}
+        sx={{
+          '& .MuiPieArc-root': {
+            transition: 'all 0.5s ease-out'
+          },
+          '& .MuiPieArcLabel-root': {
+            fill: '#fff',
+            fontSize: 18,
+            fontWeight: 600
+          },
+          zIndex: 9999999
+        }}
+        width={200}
+        height={200}
+        hideLegend
+        onItemClick={(e, d) => setActive(d)}
+      />
 
       {/* Прогресс */}
       <div className={styles.progress}>
