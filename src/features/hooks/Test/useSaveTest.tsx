@@ -10,15 +10,22 @@ export function useSaveTest(existingId?: string) {
   const {title, theme, description, blocks} = useTypedSelector((s) => s.tasks)
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [invalidBlockIds, setInvalidBlockIds] = useState<Set<string>>(new Set())
+  const [errorsMap, setErrorsMap] = useState<Map<string, string>>(new Map())
+
   const clearInvalidBlock = (blockId: string) => {
     setInvalidBlockIds((prev) => {
       const next = new Set(prev)
       next.delete(blockId)
       return next
     })
+    setErrorsMap((prev) => {
+      const next = new Map(prev)
+      next.delete(blockId)
+      return next
+    })
   }
+
   const save = async () => {
-    // Валидация названия
     if (!title.trim()) {
       toast.error('Введите название теста')
       return
@@ -29,21 +36,23 @@ export function useSaveTest(existingId?: string) {
       return
     }
 
-    // Валидация блоков
     const errors: BlockValidationTestBlockError[] = validateTestBlocks(blocks)
     if (errors.length > 0) {
-      setInvalidBlockIds(new Set(errors.map((e) => e.blockId)))
+      const newIds = new Set(errors.map((e) => e.blockId))
+      const newMap = new Map(errors.map((e) => [e.blockId, e.message]))
+      setInvalidBlockIds(newIds)
+      setErrorsMap(newMap)
+
       toast.error(`${errors.length} ${errors.length === 1 ? 'блок не заполнен' : 'блока не заполнены'}`, {
-        description: errors[0].message // показываем первую ошибку
+        description: errors[0].message
       })
-      // скроллим к первому невалидному блоку
-      const firstId = errors[0].blockId
-      document.getElementById(`block-${firstId}`)?.scrollIntoView({behavior: 'smooth', block: 'center'})
+
+      document.getElementById(`block-${errors[0].blockId}`)?.scrollIntoView({behavior: 'smooth', block: 'center'})
       return
     }
 
-    // Сбрасываем ошибки если всё ок
     setInvalidBlockIds(new Set())
+    setErrorsMap(new Map())
     setStatus('saving')
 
     try {
@@ -62,5 +71,5 @@ export function useSaveTest(existingId?: string) {
     }
   }
 
-  return {save, status, invalidBlockIds, clearInvalidBlock}
+  return {save, status, invalidBlockIds, errorsMap, clearInvalidBlock}
 }

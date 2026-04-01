@@ -17,13 +17,13 @@ interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: {content: any} // tiptap JSON
   onlyPass?: boolean
+  error?: string | null
   onChangeAnswer?: (answer: StudentAnswer & {type: TaskBlockType.FILL_TEXT}) => void
 }
 
-export const FillTextEditor = ({blockId, payload, onlyPass = false, onChangeAnswer}: Props) => {
+export const FillTextEditor = ({blockId, payload, onlyPass = false, onChangeAnswer, error}: Props) => {
   const {updateBlockPayload} = useActions()
 
-  // Храним текущие ответы по gapId → value
   const answersRef = useRef<Record<string, string>>({})
 
   const handleGapChange = useCallback(
@@ -37,7 +37,6 @@ export const FillTextEditor = ({blockId, payload, onlyPass = false, onChangeAnsw
     [onChangeAnswer]
   )
 
-  // FillTextEditor.tsx — только изменённая часть useEditor
   const editor = useEditor({
     immediatelyRender: false,
     editable: !onlyPass,
@@ -71,7 +70,7 @@ export const FillTextEditor = ({blockId, payload, onlyPass = false, onChangeAnsw
   }
 
   return (
-    <div className={styles.editor_box}>
+    <div className={`${styles.editor_box}  ${error ? styles.editor_error : ''}`}>
       {!onlyPass && (
         <div className={styles.toolbar}>
           <button type='button' onClick={insertGap} className={styles.toolbar_btn}>

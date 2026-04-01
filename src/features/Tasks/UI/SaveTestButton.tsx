@@ -9,7 +9,7 @@ interface Props {
 }
 
 export function SaveTestButton({existingId}: Props) {
-  const {save, status, invalidBlockIds} = useSaveTest(existingId)
+  const {save, status} = useSaveTest(existingId)
 
   const label = {
     idle: 'Сохранить тест',
@@ -19,10 +19,8 @@ export function SaveTestButton({existingId}: Props) {
   }[status]
 
   return (
-    <InvalidTestBlocksContext.Provider value={invalidBlockIds}>
-      <button type='button' className={`${styles.btn} ${styles[status]}`} onClick={save} disabled={status === 'saving'}>
-        {label}
-      </button>
-    </InvalidTestBlocksContext.Provider>
+    <button type='button' className={`${styles.btn} ${styles[status]}`} onClick={save} disabled={status === 'saving'}>
+      {label}
+    </button>
   )
 }

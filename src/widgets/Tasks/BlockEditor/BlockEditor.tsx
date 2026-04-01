@@ -33,12 +33,12 @@ const DeleteBlockButton = ({label, onDelete}: {label: string; onDelete: () => vo
 function BlockEditor({block}: Props) {
   const t = useTranslations('BlockEditor')
   const {removeBlock} = useActions()
-  const {ids: invalidBlockIds, clear: clearInvalidBlock} = useInvalidTestBlocks()
+  const {ids: invalidBlockIds, clear: clearInvalidBlock, errors} = useInvalidTestBlocks()
   const isInvalid = invalidBlockIds.has(block.id)
-
+  const error = errors.get(block.id) ?? null
   const deleteBtn = <DeleteBlockButton label={t('deleteBlock')} onDelete={() => removeBlock(block.id)} />
 
-  const wrapper = (heading: string, children: React.ReactNode) => (
+  const wrapper = (heading: string, children: React.ReactNode, error?: string) => (
     <div id={`block-${block.id}`} className={`${styles.block_wrap} ${isInvalid ? styles.block_invalid : ''}`}>
       <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
         <h3 style={{marginTop: '15px', fontWeight: '500', fontSize: '32px'}}>{heading}</h3>
@@ -50,9 +50,10 @@ function BlockEditor({block}: Props) {
   useEffect(() => {
     if (isInvalid) clearInvalidBlock(block.id)
   }, [block.payload])
+
   switch (block?.type) {
     case TaskBlockType.FILL_TEXT:
-      return wrapper(t('fillText'), <FillTextEditor blockId={block.id} payload={block.payload as any} />)
+      return wrapper(t('fillText'), <FillTextEditor error={error} blockId={block.id} payload={block.payload as any} />)
     case TaskBlockType.SEQUENCE:
       return wrapper(t('sequence'), <SequenceEditor blockId={block.id} payload={block.payload as any} />)
     case TaskBlockType.CHOOSE_OPTION:
@@ -60,7 +61,10 @@ function BlockEditor({block}: Props) {
     case TaskBlockType.MATCH_PAIRS:
       return wrapper(t('matchPairs'), <MatchPairsEditor blockId={block.id} payload={block.payload as any} />)
     case TaskBlockType.FREE_ANSWER:
-      return wrapper(t('freeAnswer'), <FreeAnswerEditor blockId={block.id} payload={block.payload as any} />)
+      return wrapper(
+        t('freeAnswer'),
+        <FreeAnswerEditor error={error} blockId={block.id} payload={block.payload as any} />
+      )
 
     case TaskBlockType.HIGHLIGHT_TEXT:
       return wrapper(t('highlightText'), <HighlightTextEditor blockId={block.id} payload={block.payload as any} />)

@@ -20,10 +20,10 @@ function CreateTestPage() {
   const {description, theme, title} = useTypedSelector((state) => state.tasks)
   const searchParams = useSearchParams()
   const existingId = searchParams.get('id') ?? undefined
-  const {save, status, invalidBlockIds, clearInvalidBlock} = useSaveTest(existingId)
+  const {save, status, invalidBlockIds, errorsMap, clearInvalidBlock} = useSaveTest(existingId)
 
   return (
-    <InvalidTestBlocksContext.Provider value={{ids: invalidBlockIds, clear: clearInvalidBlock}}>
+    <InvalidTestBlocksContext.Provider value={{ids: invalidBlockIds, errors: errorsMap, clear: clearInvalidBlock}}>
       <div className={`container default_content ${styles.content}`}>
         <NavBar />
 
@@ -57,13 +57,13 @@ function CreateTestPage() {
                 currentValue={description}
                 onSetValue={setDescription}
               />
-              <SaveTestButton existingId={searchParams.get('id') ?? undefined} />
             </div>
 
             <Suspense fallback={<div>{t('loading')}</div>}>
               <TaskCanvas />
             </Suspense>
           </form>
+          <SaveTestButton existingId={searchParams.get('id') ?? undefined} />
         </div>
 
         <Suspense>
