@@ -1,0 +1,57 @@
+.panelRow {
+   display: flex;
+   gap: 6px;
+   align-items: center;
+}
+
+.paywallBtn {
+   display: flex;
+   align-items: center;
+   gap: 5px;
+   font-size: 0.75rem;
+   font-weight: 600;
+   padding: 6px 10px;
+   border-radius: 8px;
+   border: 1px solid #e4e4e7;
+   background: #fff;
+   color: #868897;
+   cursor: pointer;
+   transition: all 0.15s;
+
+   &:hover {
+      border-color: #141416;
+      color: #141416;
+   }
+}
+
+.paywallBtnActive {
+   background: #141416;
+   border-color: #141416;
+   color: #fff;
+
+   &:hover {
+      background: #2d2d2d;
+      border-color: #2d2d2d;
+      color: #fff;
+   }
+}
+
+.paywallBanner {
+   position: absolute;
+   top: 12px;
+   left: 50%;
+   transform: translateX(-50%);
+   z-index: 10;
+   display: flex;
+   align-items: center;
+   gap: 6px;
+   font-size: 0.72rem;
+   font-weight: 500;
+   color: #fff;
+   background: rgba(20, 20, 22, 0.82);
+   backdrop-filter: blur(8px);
+   padding: 6px 14px;
+   border-radius: 999px;
+   pointer-events: none;
+   white-space: nowrap;
+}

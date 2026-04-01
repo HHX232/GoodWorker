@@ -1,9 +1,9 @@
 // features/test-block-editor/ui/editors/HighlightTextEditor/HighlightTextEditor.tsx
 'use client'
-import { useActions } from '@/features/hooks/store/useActions'
-import { HighlightTextPayload, HighlightToken } from '@/shared/types/Tasks/TaskPayload.type'
-import { EyeIcon, PencilIcon, CheckCircle2Icon, XCircleIcon } from 'lucide-react'
-import { useState } from 'react'
+import {useActions} from '@/features/hooks/store/useActions'
+import {HighlightTextPayload, HighlightToken} from '@/shared/types/Tasks/TaskPayload.type'
+import {CheckCircle2Icon, EyeIcon, PencilIcon, XCircleIcon} from 'lucide-react'
+import {useState} from 'react'
 import styles from './HighlightTextEditor.module.scss'
 
 interface Props {
@@ -13,35 +13,45 @@ interface Props {
 
 function tokenize(text: string): HighlightToken[] {
   const parts = text.match(/[\wА-Яа-яЁёA-Za-z'-]+|[^\wА-Яа-яЁё\s]/g) ?? []
-  return parts.map((text, id) => ({ id, text, isCorrect: false }))
+  return parts.map((text, id) => ({id, text, isCorrect: false}))
 }
 
 interface StudentViewProps {
   instruction: string | null
   tokens: HighlightToken[]
+  onChange?: (selected: number[]) => void
+  externalChecked?: boolean
 }
 
-const StudentView = ({ instruction, tokens }: StudentViewProps) => {
+export const HighlightStudentView = ({instruction, tokens, onChange, externalChecked}: StudentViewProps) => {
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [submitted, setSubmitted] = useState(false)
 
+  const isStudentMode = !!onChange
+  const isChecked = submitted || externalChecked === true
+
   const toggle = (id: number) => {
-    if (submitted) return
+    if (isChecked) return
     setSelected((prev) => {
       const next = new Set(prev)
       next.has(id) ? next.delete(id) : next.add(id)
+      onChange?.([...next])
       return next
     })
   }
 
-  const reset = () => { setSelected(new Set()); setSubmitted(false) }
+  const reset = () => {
+    setSelected(new Set())
+    setSubmitted(false)
+    onChange?.([])
+  }
 
   const correctIds = new Set(tokens.filter((t) => t.isCorrect).map((t) => t.id))
 
-  const truePositives  = submitted ? [...selected].filter((id) => correctIds.has(id)).length : 0
-  const falsePositives = submitted ? [...selected].filter((id) => !correctIds.has(id)).length : 0
-  const missed         = submitted ? [...correctIds].filter((id) => !selected.has(id)).length : 0
-  const allCorrect     = submitted && falsePositives === 0 && missed === 0
+  const truePositives = isChecked ? [...selected].filter((id) => correctIds.has(id)).length : 0
+  const falsePositives = isChecked ? [...selected].filter((id) => !correctIds.has(id)).length : 0
+  const missed = isChecked ? [...correctIds].filter((id) => !selected.has(id)).length : 0
+  const allCorrect = isChecked && falsePositives === 0 && missed === 0
 
   return (
     <div className={styles.student_wrap}>
@@ -50,25 +60,28 @@ const StudentView = ({ instruction, tokens }: StudentViewProps) => {
       <div className={styles.tokens}>
         {tokens.map((token) => {
           const isPunct = /^[^\wА-Яа-яЁёA-Za-z]$/.test(token.text)
-          if (isPunct) return <span key={token.id} className={styles.punct}>{token.text}</span>
+          if (isPunct)
+            return (
+              <span key={token.id} className={styles.punct}>
+                {token.text}
+              </span>
+            )
 
           const isSelected = selected.has(token.id)
-
-          const isCorrectAndSelected = submitted && token.isCorrect && isSelected
-          const isMissed             = submitted && token.isCorrect && !isSelected
-          const isFalse              = submitted && !token.isCorrect && isSelected
+          const isCorrectAndSelected = isChecked && token.isCorrect && isSelected
+          const isFalse = isChecked && !token.isCorrect && isSelected
+          // пропущенные — НЕ помечаем (по условию задачи)
 
           return (
             <button
               key={token.id}
-              type="button"
+              type='button'
               onClick={() => toggle(token.id)}
               className={`
                 ${styles.token}
-                ${isSelected && !submitted ? styles.token_selected : ''}
-                ${isCorrectAndSelected     ? styles.token_correct   : ''}
-                ${isMissed                 ? styles.token_missed    : ''}
-                ${isFalse                  ? styles.token_false     : ''}
+                ${isSelected && !isChecked ? styles.token_selected : ''}
+                ${isCorrectAndSelected ? styles.token_correct : ''}
+                ${isFalse ? styles.token_false : ''}
               `}
             >
               {token.text}
@@ -77,73 +90,82 @@ const StudentView = ({ instruction, tokens }: StudentViewProps) => {
         })}
       </div>
 
-      {!submitted ? (
+      {/* Кнопка проверки — только в standalone превью */}
+      {!isStudentMode && !submitted && (
         <button
-          type="button"
+          type='button'
           className={styles.submit_btn}
           onClick={() => setSubmitted(true)}
           disabled={selected.size === 0}
         >
           Проверить
         </button>
-      ) : (
+      )}
+
+      {/* Результат после проверки */}
+      {isChecked && (
         <div className={styles.result_row}>
           <div className={`${styles.result_badge} ${allCorrect ? styles.result_badge_ok : styles.result_badge_err}`}>
-            {allCorrect
-              ? <><CheckCircle2Icon size={15} /> Верно!</>
-              : <><XCircleIcon size={15} /> {truePositives} из {correctIds.size} · {falsePositives > 0 ? `${falsePositives} лишних` : ''} {missed > 0 ? `${missed} пропущено` : ''}</>
-            }
+            {allCorrect ? (
+              <>
+                <CheckCircle2Icon size={15} /> Верно!
+              </>
+            ) : (
+              <>
+                <XCircleIcon size={15} /> {truePositives} из {correctIds.size}
+                {falsePositives > 0 ? ` · ${falsePositives} лишних` : ''}
+              </>
+            )}
           </div>
-          <button type="button" className={styles.retry_btn} onClick={reset}>
-            Попробовать снова
-          </button>
+          {/* Кнопка «Попробовать снова» — только в standalone */}
+          {!isStudentMode && (
+            <button type='button' className={styles.retry_btn} onClick={reset}>
+              Попробовать снова
+            </button>
+          )}
         </div>
       )}
     </div>
   )
 }
-
-export const HighlightTextEditor = ({ blockId, payload }: Props) => {
-  const { updateBlockPayload } = useActions()
+export const HighlightTextEditor = ({blockId, payload}: Props) => {
+  const {updateBlockPayload} = useActions()
   const [mode, setMode] = useState<'edit' | 'preview'>('edit')
   const [draft, setDraft] = useState('')
 
   const update = (patch: Partial<HighlightTextPayload>) =>
-    updateBlockPayload({ id: blockId, payload: { ...payload, ...patch } })
+    updateBlockPayload({id: blockId, payload: {...payload, ...patch}})
 
   const handleApply = () => {
     if (!draft.trim()) return
-    update({ tokens: tokenize(draft.trim()) })
+    update({tokens: tokenize(draft.trim())})
     setDraft('')
   }
 
   const toggleToken = (id: number) => {
     if (!payload.tokens) return
     update({
-      tokens: payload.tokens.map((t) =>
-        t.id === id ? { ...t, isCorrect: !t.isCorrect } : t
-      ),
+      tokens: payload.tokens.map((t) => (t.id === id ? {...t, isCorrect: !t.isCorrect} : t))
     })
   }
 
-  const hasTokens      = !!(payload.tokens && payload.tokens.length > 0)
-  const correctCount   = payload.tokens?.filter((t) => t.isCorrect).length ?? 0
-  const canPreview     = hasTokens && correctCount > 0
+  const hasTokens = !!(payload.tokens && payload.tokens.length > 0)
+  const correctCount = payload.tokens?.filter((t) => t.isCorrect).length ?? 0
+  const canPreview = hasTokens && correctCount > 0
 
   return (
     <div className={styles.box}>
-
       {/* ── Переключатель режима ── */}
       <div className={styles.mode_bar}>
         <button
-          type="button"
+          type='button'
           className={`${styles.mode_btn} ${mode === 'edit' ? styles.mode_btn_active : ''}`}
           onClick={() => setMode('edit')}
         >
           <PencilIcon size={13} /> Редактор
         </button>
         <button
-          type="button"
+          type='button'
           className={`${styles.mode_btn} ${mode === 'preview' ? styles.mode_btn_active : ''}`}
           onClick={() => setMode('preview')}
           disabled={!canPreview}
@@ -163,7 +185,7 @@ export const HighlightTextEditor = ({ blockId, payload }: Props) => {
               className={styles.input}
               placeholder='Например: «Выдели все глаголы в прошедшем времени»'
               value={payload.instruction ?? ''}
-              onChange={(e) => update({ instruction: e.target.value || null })}
+              onChange={(e) => update({instruction: e.target.value || null})}
             />
           </div>
 
@@ -173,7 +195,7 @@ export const HighlightTextEditor = ({ blockId, payload }: Props) => {
               <label className={styles.label}>Текст задания</label>
               <textarea
                 className={styles.textarea}
-                placeholder="Введите текст, затем нажмите «Разбить на слова»"
+                placeholder='Введите текст, затем нажмите «Разбить на слова»'
                 rows={4}
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
@@ -181,12 +203,7 @@ export const HighlightTextEditor = ({ blockId, payload }: Props) => {
                   if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleApply()
                 }}
               />
-              <button
-                type="button"
-                className={styles.apply_btn}
-                onClick={handleApply}
-                disabled={!draft.trim()}
-              >
+              <button type='button' className={styles.apply_btn} onClick={handleApply} disabled={!draft.trim()}>
                 Разбить на слова →
               </button>
             </div>
@@ -198,11 +215,12 @@ export const HighlightTextEditor = ({ blockId, payload }: Props) => {
               <div className={styles.tokens_header}>
                 <label className={styles.label}>Кликни на правильные слова</label>
                 <div className={styles.tokens_meta}>
-                  {correctCount > 0
-                    ? <span className={styles.correct_count}>✓ {correctCount} выделено</span>
-                    : <span className={styles.warn_count}>ни одного не выделено</span>
-                  }
-                  <button type="button" className={styles.reset_btn} onClick={() => update({ tokens: null })}>
+                  {correctCount > 0 ? (
+                    <span className={styles.correct_count}>✓ {correctCount} выделено</span>
+                  ) : (
+                    <span className={styles.warn_count}>ни одного не выделено</span>
+                  )}
+                  <button type='button' className={styles.reset_btn} onClick={() => update({tokens: null})}>
                     Изменить текст
                   </button>
                 </div>
@@ -211,11 +229,16 @@ export const HighlightTextEditor = ({ blockId, payload }: Props) => {
               <div className={styles.tokens}>
                 {payload.tokens!.map((token) => {
                   const isPunct = /^[^\wА-Яа-яЁёA-Za-z]$/.test(token.text)
-                  if (isPunct) return <span key={token.id} className={styles.punct}>{token.text}</span>
+                  if (isPunct)
+                    return (
+                      <span key={token.id} className={styles.punct}>
+                        {token.text}
+                      </span>
+                    )
                   return (
                     <button
                       key={token.id}
-                      type="button"
+                      type='button'
                       onClick={() => toggleToken(token.id)}
                       className={`${styles.token} ${token.isCorrect ? styles.token_correct : ''}`}
                     >
@@ -225,9 +248,7 @@ export const HighlightTextEditor = ({ blockId, payload }: Props) => {
                 })}
               </div>
 
-              <p className={styles.editor_hint}>
-                Зелёные — правильные ответы. Нажми ещё раз чтобы снять.
-              </p>
+              <p className={styles.editor_hint}>Зелёные — правильные ответы. Нажми ещё раз чтобы снять.</p>
             </div>
           )}
         </>
@@ -239,10 +260,7 @@ export const HighlightTextEditor = ({ blockId, payload }: Props) => {
             <EyeIcon size={13} />
             Так видит ученик
           </div>
-          <StudentView
-            instruction={payload.instruction}
-            tokens={payload.tokens!}
-          />
+          <HighlightStudentView instruction={payload.instruction} tokens={payload.tokens!} />
         </div>
       )}
     </div>

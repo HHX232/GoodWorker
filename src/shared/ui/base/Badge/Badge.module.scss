@@ -1,0 +1,51 @@
+.badge {
+   display: inline-flex;
+   align-items: center;
+   border-radius: 9999px;
+   border: 1px solid transparent;
+   padding: 0.125rem 0.625rem;
+   font-size: 0.75rem;
+   font-weight: 600;
+   line-height: 1;
+   transition: background-color 0.2s ease, color 0.2s ease;
+
+   &:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--ring), 0 0 0 4px var(--ring-offset);
+   }
+
+   // --- variants ---
+
+   &.default {
+      background-color: var(--primary, #18181b);
+      color: var(--primary-foreground, #fafafa);
+
+      &:hover {
+         background-color: color-mix(in srgb, var(--primary, #18181b) 80%, transparent);
+      }
+   }
+
+   &.secondary {
+      background-color: var(--secondary, #f4f4f5);
+      color: var(--secondary-foreground, #18181b);
+
+      &:hover {
+         background-color: color-mix(in srgb, var(--secondary, #f4f4f5) 80%, transparent);
+      }
+   }
+
+   &.destructive {
+      background-color: var(--destructive, #ef4444);
+      color: var(--destructive-foreground, #fafafa);
+
+      &:hover {
+         background-color: color-mix(in srgb, var(--destructive, #ef4444) 80%, transparent);
+      }
+   }
+
+   &.outline {
+      border-color: var(--border, #e4e4e7);
+      background-color: transparent;
+      color: var(--foreground, #18181b);
+   }
+}

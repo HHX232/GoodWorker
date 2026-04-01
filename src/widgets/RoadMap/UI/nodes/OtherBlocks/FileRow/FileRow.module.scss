@@ -1,0 +1,224 @@
+.block {
+   display: flex;
+   flex-direction: column;
+   gap: 6px;
+   padding: 10px 12px;
+   width: 100%;
+   max-width: 400px;
+}
+
+.hidden {
+   display: none;
+}
+
+// ── Upload button ─────────────────────────────────────────────────────────────
+
+.uploadBtn {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   flex-direction: column;
+   gap: 6px;
+   width: 100%;
+   padding: 20px 16px;
+   border-radius: 10px;
+   border: 2px dashed #e4e4e7;
+   background: transparent;
+   color: #868897;
+   cursor: pointer;
+   transition: border-color 0.2s, background 0.2s, color 0.2s;
+
+   &:hover {
+      border-color: #a1a1aa;
+      background: rgba(0, 0, 0, 0.02);
+      color: #141416;
+   }
+
+   // Компактный вид когда файлы уже есть
+   &.uploadBtnCompact {
+      flex-direction: row;
+      padding: 8px 12px;
+      justify-content: flex-start;
+      gap: 8px;
+      font-size: 0.78rem;
+      border-style: dashed;
+      border-width: 1px;
+   }
+}
+
+.uploadText {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   gap: 3px;
+   font-size: 0.85rem;
+
+   .uploadBtnCompact & {
+      align-items: flex-start;
+   }
+}
+
+.uploadHint {
+   font-size: 0.67rem;
+   color: #a1a1aa;
+}
+
+.uploadCounter {
+   margin-left: auto;
+   font-size: 0.65rem;
+   font-weight: 600;
+   color: #a1a1aa;
+   background: rgba(0, 0, 0, 0.05);
+   padding: 2px 7px;
+   border-radius: 999px;
+}
+
+// ── File list ─────────────────────────────────────────────────────────────────
+
+.fileList {
+   display: flex;
+   flex-direction: column;
+   gap: 4px;
+}
+
+// ── File row ──────────────────────────────────────────────────────────────────
+
+.fileRow {
+   display: flex;
+   align-items: center;
+   gap: 8px;
+   padding: 8px 10px;
+   border-radius: 8px;
+   border: 1px solid #f4f4f5;
+   background: #fafafa;
+   transition: border-color 0.15s, background 0.15s;
+
+   &:hover {
+      border-color: #e4e4e7;
+      background: #fff;
+   }
+
+   // Если есть превью — вертикальная раскладка
+   &:has(.imagePreviewWrap) {
+      flex-wrap: wrap;
+   }
+}
+
+// ── File icon ─────────────────────────────────────────────────────────────────
+
+.fileIcon {
+   position: relative;
+   flex-shrink: 0;
+   width: 36px;
+   height: 36px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   border-radius: 8px;
+
+   &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 8px;
+      background: currentColor;
+      opacity: 0.08;
+   }
+}
+
+.fileExt {
+   position: absolute;
+   bottom: -4px;
+   right: -4px;
+   font-size: 0.45rem;
+   font-weight: 700;
+   color: #fff;
+   padding: 1px 3px;
+   border-radius: 3px;
+   line-height: 1;
+   letter-spacing: 0.02em;
+}
+
+// ── File info ─────────────────────────────────────────────────────────────────
+
+.fileInfo {
+   flex: 1;
+   min-width: 0;
+   display: flex;
+   flex-direction: column;
+   gap: 2px;
+}
+
+.fileName {
+   font-size: 0.78rem;
+   font-weight: 500;
+   color: #141416;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+}
+
+.fileSize {
+   font-size: 0.65rem;
+   color: #a1a1aa;
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+
+.fileActions {
+   display: flex;
+   gap: 2px;
+   flex-shrink: 0;
+}
+
+.actionBtn {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   width: 26px;
+   height: 26px;
+   border-radius: 6px;
+   border: none;
+   background: transparent;
+   color: #868897;
+   cursor: pointer;
+   transition: background 0.15s, color 0.15s;
+
+   &:hover {
+      background: rgba(0, 0, 0, 0.06);
+      color: #141416;
+   }
+}
+
+.actionBtnDanger {
+   &:hover {
+      background: rgba(239, 68, 68, 0.08);
+      color: #ef4444;
+   }
+}
+
+// ── Image preview ─────────────────────────────────────────────────────────────
+
+.imagePreviewWrap {
+   width: 100%;
+   border-radius: 6px;
+   overflow: hidden;
+   margin-top: 4px;
+}
+
+.imagePreview {
+   display: block;
+   width: 100%;
+   max-height: 140px;
+   object-fit: cover;
+   border-radius: 6px;
+}
+
+// ── Limit message ─────────────────────────────────────────────────────────────
+
+.limitMsg {
+   font-size: 0.68rem;
+   color: #a1a1aa;
+   text-align: center;
+   padding: 4px;
+}

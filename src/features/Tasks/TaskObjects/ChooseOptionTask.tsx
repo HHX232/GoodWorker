@@ -1,18 +1,18 @@
-import { ChooseOptionPayload } from '@/shared/types/Tasks/TaskPayload.type'
-import { TaskBlockType } from '@/shared/types/Tasks/TaskType.type'
-import { ListChecksIcon } from 'lucide-react'
-import { TaskBlockMeta } from '../TaskRegistry'
+import {ChooseOptionPayload} from '@/shared/types/Tasks/TaskPayload.type'
+import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
+import {ListChecksIcon} from 'lucide-react'
+import {TestUserBlockMeta} from '../TaskRegistry'
 
-export const ChooseOptionTask: TaskBlockMeta & { type: TaskBlockType.CHOOSE_OPTION } = {
+export const ChooseOptionTask: TestUserBlockMeta & {type: TaskBlockType.CHOOSE_OPTION} = {
   type: TaskBlockType.CHOOSE_OPTION,
   label: 'Выбери вариант',
   description: 'Один правильный ответ из нескольких вариантов',
-  icon: <ListChecksIcon className="stroke-yellow-400" />,
+  icon: <ListChecksIcon className='stroke-yellow-400' />,
   credits: 0,
   defaultPayload: {
     question: '',
     options: [],
-    correctId: '',
+    correctId: ''
   } satisfies ChooseOptionPayload,
-  availableFor: ['all'],
+  availableFor: ['all']
 }

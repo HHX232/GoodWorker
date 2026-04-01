@@ -1,0 +1,200 @@
+.box {
+   padding: 10px 12px;
+   display: flex;
+   flex-direction: column;
+   gap: 8px;
+   min-width: 320px;
+}
+
+.hidden {
+   display: none;
+}
+
+// ── Upload button ─────────────────────────────────────────────────────────────
+
+.uploadBtn {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+   gap: 6px;
+   width: 100%;
+   padding: 20px 16px;
+   border-radius: 10px;
+   border: 2px dashed #e4e4e7;
+   background: transparent;
+   color: #868897;
+   cursor: pointer;
+   transition: border-color 0.2s, background 0.2s;
+   font-size: 0.85rem;
+
+   &:hover {
+      border-color: #a1a1aa;
+      background: rgba(0, 0, 0, 0.02);
+      color: #141416;
+   }
+}
+
+.uploadHint {
+   font-size: 0.7rem;
+   color: #a1a1aa;
+}
+
+// ── Extracting animation ──────────────────────────────────────────────────────
+
+.extracting {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   gap: 10px;
+   padding: 16px;
+   font-size: 0.78rem;
+   color: #868897;
+}
+
+.extractingBars {
+   display: flex;
+   align-items: flex-end;
+   gap: 3px;
+   height: 32px;
+}
+
+.extractingBar {
+   width: 4px;
+   border-radius: 2px;
+   background: #3b82f6;
+   animation: bounce 0.8s ease-in-out infinite alternate;
+
+   @keyframes bounce {
+      from {
+         height: 4px;
+         opacity: 0.4;
+      }
+
+      to {
+         height: 28px;
+         opacity: 1;
+      }
+   }
+}
+
+// ── Player ────────────────────────────────────────────────────────────────────
+
+.player {
+   display: flex;
+   align-items: center;
+   gap: 10px;
+
+}
+
+.playBtn {
+   flex-shrink: 0;
+   width: 36px;
+   height: 36px;
+   border-radius: 50%;
+   border: 2px solid currentColor;
+   background: transparent;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   cursor: pointer;
+   transition: background 0.15s, opacity 0.15s;
+
+   &:hover {
+      background: rgba(0, 0, 0, 0.06);
+   }
+}
+
+.waveformWrap {
+   flex: 1;
+   min-width: 0;
+   display: flex;
+   flex-direction: column;
+   gap: 3px;
+}
+
+.waveform {
+   display: flex;
+   align-items: center;
+   gap: 2px;
+   height: 36px;
+   cursor: pointer;
+}
+
+.bar {
+   flex: 1;
+   border-radius: 2px;
+   min-width: 2px;
+   background: #e4e4e7;
+   min-height: 3px;
+   height: calc(var(--amp, 0.3) * 100%);
+   transition: background 0.1s;
+
+   &:hover {
+      background: #d1d5db;
+   }
+}
+
+.barPassed {
+   background: var(--accent, #3b82f6);
+   opacity: 0.85;
+}
+
+.barCursor {
+   background: var(--accent, #3b82f6);
+   opacity: 1;
+}
+
+.timer {
+   display: flex;
+   justify-content: space-between;
+   font-size: 0.65rem;
+   font-variant-numeric: tabular-nums;
+}
+
+.timerTotal {
+   color: #a1a1aa;
+}
+
+// ── Meta row ──────────────────────────────────────────────────────────────────
+
+.meta {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   gap: 6px;
+}
+
+.filename {
+   font-size: 0.7rem;
+   color: #868897;
+   text-overflow: ellipsis;
+   max-width: 100px;
+}
+
+.removeBtn {
+   flex-shrink: 0;
+   background: none;
+   border: none;
+   cursor: pointer;
+   color: #a1a1aa;
+   padding: 2px;
+   border-radius: 4px;
+   display: flex;
+   align-items: center;
+
+   &:hover {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.08);
+   }
+}
+
+// ── Hint ──────────────────────────────────────────────────────────────────────
+
+.hint {
+   display: flex;
+   align-items: center;
+   gap: 5px;
+   font-size: 0.68rem;
+   color: #a1a1aa;
+}

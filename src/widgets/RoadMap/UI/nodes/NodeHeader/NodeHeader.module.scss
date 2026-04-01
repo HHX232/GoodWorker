@@ -1,0 +1,163 @@
+.header {
+   display: flex;
+   align-items: center;
+   gap: 0.5rem;
+   padding: 0.5rem;
+   border-radius: 12px 12px 0 0;
+
+   // Вертикальный режим (для разделителя)
+   &.vertical {
+      flex-direction: column;
+      border-radius: 12px;
+      width: fit-content;
+      min-width: 0;
+      padding: 0.5rem 0.25rem;
+
+      .content {
+         flex-direction: column;
+         align-items: center;
+         width: fit-content;
+         gap: 0.25rem;
+      }
+
+      .label {
+         writing-mode: vertical-rl;
+         text-orientation: mixed;
+         transform: rotate(180deg);
+         white-space: nowrap;
+      }
+
+      .actions {
+         flex-direction: column;
+         align-items: center;
+      }
+   }
+}
+
+.content {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   width: 100%;
+}
+
+.label {
+   font-size: 0.75rem;
+   font-weight: 700;
+   text-transform: uppercase;
+   color: #868897;
+   transition: color 0.2s;
+}
+
+.actions {
+   display: flex;
+   gap: 0.25rem;
+   align-items: center;
+}
+
+.badge {
+   display: inline-flex;
+   align-items: center;
+   font-size: 0.7rem;
+   font-weight: 600;
+   padding: 2px 8px;
+   border-radius: 999px;
+   border: 1px solid currentColor;
+   opacity: 0.8;
+}
+
+.dragHandle {
+   cursor: grab;
+
+   &:active {
+      cursor: grabbing;
+   }
+}
+
+.pickerPopover {
+   position: absolute;
+   top: calc(100% + 6px);
+   right: 0;
+   z-index: 9999;
+   background: #fff;
+   border: 1px solid #f5f5f5;
+   border-radius: 12px;
+   padding: 12px;
+   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+   display: flex;
+   flex-direction: column;
+   gap: 8px;
+
+   :global(.react-colorful) {
+      width: 180px;
+      height: 160px;
+      border-radius: 8px;
+      overflow: hidden;
+   }
+
+   :global(.react-colorful__saturation) {
+      border-radius: 6px 6px 0 0;
+   }
+
+   :global(.react-colorful__hue) {
+      height: 14px;
+      border-radius: 4px;
+      margin-top: 8px;
+   }
+
+   :global(.react-colorful__pointer) {
+      width: 16px;
+      height: 16px;
+   }
+}
+
+.pickerRow {
+   display: flex;
+   gap: 10px;
+   align-items: flex-start;
+}
+
+.presets {
+   display: grid;
+   grid-template-columns: repeat(4, 1fr);
+   gap: 5px;
+   align-content: start;
+}
+
+.presetSwatch {
+   width: 20px;
+   height: 20px;
+   border-radius: 5px;
+   border: 2px solid transparent;
+   cursor: pointer;
+   padding: 0;
+   transition: transform 0.1s, border-color 0.1s;
+   outline: none;
+
+   &:hover {
+      transform: scale(1.2);
+      border-color: rgba(0, 0, 0, 0.2);
+   }
+}
+
+.presetSwatchActive {
+   border-color: rgba(0, 0, 0, 0.5);
+   transform: scale(1.15);
+   box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+.resetColor {
+   font-size: 0.7rem;
+   color: #868897;
+   background: none;
+   border: 1px solid #f5f5f5;
+   border-radius: 6px;
+   padding: 4px 8px;
+   cursor: pointer;
+   width: 100%;
+   transition: background 0.15s;
+
+   &:hover {
+      background: rgba(0, 0, 0, 0.05);
+   }
+}

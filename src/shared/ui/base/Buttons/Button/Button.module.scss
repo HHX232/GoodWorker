@@ -1,0 +1,147 @@
+.button {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   gap: 0.5rem;
+   white-space: nowrap;
+   border-radius: 12px;
+   font-size: 0.875rem;
+   font-weight: 500;
+   padding: 10px 15px;
+   border: none;
+   cursor: pointer;
+   text-decoration: none;
+   transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
+   &:focus-visible {
+      outline: 2px solid var(--ring, #868897);
+      outline-offset: 2px;
+   }
+
+   &:disabled {
+      pointer-events: none;
+      opacity: 0.5;
+   }
+
+   svg {
+      pointer-events: none;
+      width: 1rem;
+      height: 1rem;
+      flex-shrink: 0;
+   }
+
+   // Sizes
+   &.sm {
+      height: 2.25rem;
+      padding: 6px 12px;
+      font-size: 0.8125rem;
+   }
+
+   &.lg {
+      height: 2.75rem;
+      padding: 12px 24px;
+      font-size: 0.9375rem;
+   }
+
+   &.icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      padding: 0;
+   }
+
+
+   // Первый вариант — обводка, серый текст, hover → чёрная заливка
+   &.outline {
+      background-color: transparent;
+      border: 1px solid #f5f5f5;
+      color: #868897;
+
+      &:hover:not(:disabled) {
+         background-color: #141416;
+         color: #ffffff;
+         border-color: #141416;
+      }
+   }
+
+   // Серый вариант — полупрозрачная заливка
+   &.secondary {
+      background-color: rgba(0, 0, 0, 0.1);
+      border: 1px solid transparent;
+      color: #141416;
+
+      &:hover:not(:disabled) {
+         background-color: rgba(0, 0, 0, 0.18);
+         color: #141416;
+      }
+   }
+
+   // Чёрный вариант — инверсия первого
+   &.default {
+      background-color: #141416;
+      border: 1px solid #141416;
+      color: #ffffff;
+
+      &:hover:not(:disabled) {
+         background-color: transparent;
+         border-color: #f5f5f5;
+         color: #868897;
+      }
+   }
+
+   &.ghost {
+      background-color: transparent;
+      border: 1px solid transparent;
+      color: #868897;
+
+      &:hover:not(:disabled) {
+         background-color: rgba(0, 0, 0, 0.06);
+         color: #141416;
+      }
+   }
+
+   &.link {
+      background-color: transparent;
+      border: 1px solid transparent;
+      color: #141416;
+      text-underline-offset: 4px;
+      padding-left: 0;
+      padding-right: 0;
+
+      &:hover:not(:disabled) {
+         text-decoration: underline;
+      }
+   }
+
+   &.destructive {
+      background-color: #ef4444;
+      border: 1px solid transparent;
+      color: #ffffff;
+
+      &:hover:not(:disabled) {
+         background-color: color-mix(in srgb, #ef4444 90%, transparent);
+      }
+   }
+
+   &.sidebarItem {
+      justify-content: flex-start;
+      background-color: transparent;
+      border: 1px solid transparent;
+      color: #868897;
+
+      &:hover:not(:disabled) {
+         background-color: rgba(20, 20, 22, 0.8);
+         color: #ffffff;
+      }
+   }
+
+   &.sidebarActiveItem {
+      justify-content: flex-start;
+      background-color: #141416;
+      border: 1px solid transparent;
+      color: #ffffff;
+
+      &:hover:not(:disabled) {
+         background-color: color-mix(in srgb, #141416 90%, transparent);
+      }
+   }
+}

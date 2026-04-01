@@ -1,0 +1,15 @@
+.divider {
+   width: 300px;
+   border-radius: 12px !important;
+   border: 2px dashed transparent;
+
+   &.selected {
+      border-color: #6366f1;
+   }
+
+   // header у него скруглён со всех сторон, не только сверху
+   &>div {
+      // или через передачу класса
+      border-radius: 12px !important;
+   }
+}

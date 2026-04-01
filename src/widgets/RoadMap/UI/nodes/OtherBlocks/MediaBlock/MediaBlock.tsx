@@ -1,0 +1,245 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+'use client'
+
+import {RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
+import {useReactFlow, useStore} from '@xyflow/react'
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  Maximize2Icon,
+  Minimize2Icon,
+  PlusIcon,
+  Trash2Icon,
+  UploadIcon
+} from 'lucide-react'
+import Image from 'next/image'
+import {useRef, useState} from 'react'
+import 'swiper/css'
+import 'swiper/css/navigation'
+import {Navigation} from 'swiper/modules'
+import {Swiper, SwiperSlide} from 'swiper/react'
+import styles from './MediaBlock.module.scss'
+
+type MediaSize = 'mini' | 'medium' | 'large'
+type MediaType = 'image' | 'video'
+
+interface MediaItem {
+  url: string
+  type: MediaType
+  points: number
+}
+
+const SIZE_LABELS: Record<MediaSize, string> = {mini: 'S', medium: 'M', large: 'L'}
+const SIZE_PX: Record<MediaSize, number> = {mini: 320, medium: 450, large: 600}
+const SIZES: MediaSize[] = ['mini', 'medium', 'large']
+
+const POINTS_IMAGE = 1
+const POINTS_VIDEO = 3
+const MAX_POINTS = 15
+
+function calcPoints(items: MediaItem[]) {
+  return items.reduce((acc, i) => acc + i.points, 0)
+}
+
+function ArrowLeft() {
+  return (
+    <button className={`${styles.arrowLeft} media-prev`} aria-label='Назад'>
+      <ChevronLeftIcon size={18} className={styles.arrowIcon} />
+    </button>
+  )
+}
+
+function ArrowRight() {
+  return (
+    <button className={`${styles.arrowRight} media-next`} aria-label='Вперёд'>
+      <ChevronRightIcon size={18} className={styles.arrowIcon} />
+    </button>
+  )
+}
+
+export default function MediaBlock({nodeId}: {nodeId: string}) {
+  const {updateNodeData} = useReactFlow()
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [activeIndex, setActiveIndex] = useState(0)
+
+  const mediaData = useStore((s) => {
+    const data = s.nodeLookup.get(nodeId)?.data as RoadNodeData & {
+      mediaItems?: MediaItem[]
+      mediaSize?: MediaSize
+    }
+    return {
+      items: (data?.mediaItems ?? []) as MediaItem[],
+      size: (data?.mediaSize ?? 'medium') as MediaSize
+    }
+  })
+
+  const update = (patch: Record<string, any>) => updateNodeData(nodeId, patch as any)
+
+  const usedPoints = calcPoints(mediaData.items)
+  const remainingPoints = MAX_POINTS - usedPoints
+
+  const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? [])
+    if (!files.length) return
+
+    const current = mediaData.items
+    const newItems: MediaItem[] = []
+    let pts = usedPoints
+
+    for (const file of files) {
+      const isVideo = file.type.startsWith('video/')
+      const cost = isVideo ? POINTS_VIDEO : POINTS_IMAGE
+      if (pts + cost > MAX_POINTS) continue
+      newItems.push({
+        url: URL.createObjectURL(file),
+        type: isVideo ? 'video' : 'image',
+        points: cost
+      })
+      pts += cost
+    }
+
+    update({mediaItems: [...current, ...newItems]})
+    if (fileRef.current) fileRef.current.value = ''
+  }
+
+  const removeItem = (index: number) => {
+    const next = mediaData.items.filter((_, i) => i !== index)
+    update({mediaItems: next})
+    setActiveIndex(Math.min(activeIndex, next.length - 1))
+  }
+
+  const cycleSize = (direction: 'up' | 'down') => {
+    const idx = SIZES.indexOf(mediaData.size)
+    const next = direction === 'up' ? SIZES[Math.min(idx + 1, SIZES.length - 1)] : SIZES[Math.max(idx - 1, 0)]
+    update({mediaSize: next})
+  }
+
+  const hasMedia = mediaData.items.length > 0
+  const isMultiple = mediaData.items.length > 1
+  const sizePx = SIZE_PX[mediaData.size]
+  const mediaHeight = Math.round(sizePx * 0.7)
+
+  const canAddMore = remainingPoints > 0
+
+  return (
+    <div className={`${styles.box} nodrag nopan`}>
+      <input
+        ref={fileRef}
+        type='file'
+        accept='image/*,video/*'
+        multiple
+        className={styles.hidden}
+        onChange={handleFiles}
+      />
+
+      {/* ── Нет медиа ── */}
+      {!hasMedia && (
+        <button type='button' className={styles.uploadBtn} onClick={() => fileRef.current?.click()}>
+          <UploadIcon size={18} />
+          <span>Загрузить фото или видео</span>
+          <span className={styles.uploadHint}>JPG, PNG, GIF · MP4, MOV, WEBM</span>
+          <span className={styles.uploadHint}>Фото = 1 балл · Видео = 3 балла · Макс {MAX_POINTS}</span>
+        </button>
+      )}
+
+      {hasMedia && (
+        <div className={styles.mediaWrap} style={{width: sizePx}}>
+          <div className={styles.controls}>
+            <div className={styles.sizeControls}>
+              {SIZES.map((s) => (
+                <button
+                  key={s}
+                  className={`${styles.sizeBtn} ${mediaData.size === s ? styles.sizeBtnActive : ''}`}
+                  onClick={() => update({mediaSize: s})}
+                >
+                  {SIZE_LABELS[s]}
+                </button>
+              ))}
+            </div>
+
+            <div className={styles.rightControls}>
+              <span className={styles.points}>
+                {usedPoints}/{MAX_POINTS}
+              </span>
+
+              <button
+                className={styles.iconBtn}
+                onClick={() => cycleSize('up')}
+                disabled={mediaData.size === 'large'}
+                title='Увеличить'
+              >
+                <Maximize2Icon size={12} />
+              </button>
+              <button
+                className={styles.iconBtn}
+                onClick={() => cycleSize('down')}
+                disabled={mediaData.size === 'mini'}
+                title='Уменьшить'
+              >
+                <Minimize2Icon size={12} />
+              </button>
+
+              {/* Добавить ещё */}
+              {canAddMore && (
+                <button
+                  className={styles.iconBtn}
+                  onClick={() => fileRef.current?.click()}
+                  title={`Добавить (осталось ${remainingPoints} оч.)`}
+                >
+                  <PlusIcon size={12} />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Слайдер или одиночный */}
+          {isMultiple ? (
+            <div className={styles.sliderWrapper} style={{height: mediaHeight}}>
+              <ArrowLeft />
+              <ArrowRight />
+
+              {/* Счётчик слайдов */}
+              <div className={styles.counter}>
+                {activeIndex + 1}/{mediaData.items.length}
+              </div>
+
+              <Swiper
+                modules={[Navigation]}
+                navigation={{prevEl: '.media-prev', nextEl: '.media-next'}}
+                onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
+                className={styles.swiper}
+                style={{height: '100%'}}
+              >
+                {mediaData.items.map((item, i) => (
+                  <SwiperSlide key={i} className={styles.slide}>
+                    <SlideContent item={item} height={mediaHeight} onRemove={() => removeItem(i)} />
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
+          ) : (
+            <div className={styles.singleWrap} style={{height: mediaHeight}}>
+              <SlideContent item={mediaData.items[0]} height={mediaHeight} onRemove={() => removeItem(0)} />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function SlideContent({item, height, onRemove}: {item: MediaItem; height: number; onRemove: () => void}) {
+  return (
+    <div className={styles.slideContent} style={{height}}>
+      {item.type === 'image' ? (
+        <Image src={item.url} alt='media' fill style={{objectFit: 'cover'}} unoptimized />
+      ) : (
+        <video src={item.url} controls className={styles.video} style={{height: '100%'}} />
+      )}
+
+      <button className={styles.removeSlide} onClick={onRemove} title='Удалить'>
+        <Trash2Icon size={12} />
+      </button>
+    </div>
+  )
+}

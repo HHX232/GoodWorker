@@ -1,14 +1,15 @@
 // features/test-block-editor/ui/editors/InfoAudioEditor/InfoAudioEditor.tsx
 'use client'
-import { useActions } from '@/features/hooks/store/useActions'
-import { InfoAudioPayload } from '@/shared/types/Tasks/TaskPayload.type'
-import { Mic2Icon, PauseIcon, PlayIcon, UploadIcon, XIcon } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import {useActions} from '@/features/hooks/store/useActions'
+import {InfoAudioPayload} from '@/shared/types/Tasks/TaskPayload.type'
+import {Mic2Icon, PauseIcon, PlayIcon, UploadIcon, XIcon} from 'lucide-react'
+import {useCallback, useEffect, useRef, useState} from 'react'
 import styles from './InfoAudioEditor.module.scss'
 
 interface Props {
   blockId: string
   payload: InfoAudioPayload
+  viewOnly?: boolean
 }
 
 async function extractWaveform(file: File): Promise<number[]> {
@@ -44,12 +45,13 @@ interface PlayerProps {
   filename: string
   waveform: number[]
   onRemove: () => void
+  viewOnly?: boolean
 }
 
-const AudioPlayer = ({ url, filename, waveform, onRemove }: PlayerProps) => {
+const AudioPlayer = ({url, filename, waveform, onRemove, viewOnly = false}: PlayerProps) => {
   const audioRef = useRef<HTMLAudioElement>(null)
   const [playing, setPlaying] = useState(false)
-  const [progress, setProgress] = useState(0)   // 0..1
+  const [progress, setProgress] = useState(0) // 0..1
   const [duration, setDuration] = useState(0)
   const [currentTime, setCurrentTime] = useState(0)
   const rafRef = useRef<number>(0)
@@ -117,11 +119,8 @@ const AudioPlayer = ({ url, filename, waveform, onRemove }: PlayerProps) => {
         onEnded={handleEnded}
       />
 
-      <button type="button" className={styles.play_btn} onClick={togglePlay}>
-        {playing
-          ? <PauseIcon size={18} />
-          : <PlayIcon  size={18} />
-        }
+      <button type='button' className={styles.play_btn} onClick={togglePlay}>
+        {playing ? <PauseIcon size={18} /> : <PlayIcon size={18} />}
       </button>
 
       <div className={styles.waveform_wrap}>
@@ -133,7 +132,7 @@ const AudioPlayer = ({ url, filename, waveform, onRemove }: PlayerProps) => {
               <div
                 key={i}
                 className={`${styles.bar} ${passed ? styles.bar_passed : ''} ${isCursor ? styles.bar_cursor : ''}`}
-                style={{ '--amp': amp } as React.CSSProperties}
+                style={{'--amp': amp} as React.CSSProperties}
               />
             )
           })}
@@ -146,22 +145,26 @@ const AudioPlayer = ({ url, filename, waveform, onRemove }: PlayerProps) => {
       </div>
 
       <div className={styles.meta}>
-        <span className={styles.filename} title={filename}>{filename}</span>
-        <button type="button" className={styles.remove_btn} onClick={onRemove}>
-          <XIcon size={13} />
-        </button>
+        <span className={styles.filename} title={filename}>
+          {filename}
+        </span>
+        {!viewOnly && (
+          <button type='button' className={styles.remove_btn} onClick={onRemove}>
+            <XIcon size={13} />
+          </button>
+        )}
       </div>
     </div>
   )
 }
 
-export const InfoAudioEditor = ({ blockId, payload }: Props) => {
-  const { updateBlockPayload } = useActions()
+export const InfoAudioEditor = ({blockId, payload, viewOnly = false}: Props) => {
+  const {updateBlockPayload} = useActions()
   const fileRef = useRef<HTMLInputElement>(null)
   const [extracting, setExtracting] = useState(false)
 
   const update = (patch: Partial<InfoAudioPayload>) =>
-    updateBlockPayload({ id: blockId, payload: { ...payload, ...patch } })
+    updateBlockPayload({id: blockId, payload: {...payload, ...patch}})
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -171,38 +174,41 @@ export const InfoAudioEditor = ({ blockId, payload }: Props) => {
     const url = URL.createObjectURL(file)
     try {
       const waveform = await extractWaveform(file)
-      update({ url, filename: file.name, waveform })
+      update({url, filename: file.name, waveform})
     } catch {
-      update({ url, filename: file.name, waveform: Array(100).fill(0.5) })
+      update({url, filename: file.name, waveform: Array(100).fill(0.5)})
     } finally {
       setExtracting(false)
     }
   }
 
   const remove = () => {
-    update({ url: null, filename: null, waveform: null })
+    update({url: null, filename: null, waveform: null})
     if (fileRef.current) fileRef.current.value = ''
   }
 
   const hasAudio = !!payload.url && !!payload.waveform
 
+  if (viewOnly) {
+    if (!payload.url || !payload.waveform) return null
+    return (
+      <AudioPlayer
+        url={payload.url}
+        filename={payload.filename ?? ''}
+        waveform={payload.waveform}
+        onRemove={() => {}}
+        viewOnly
+      />
+    )
+  }
+
   return (
     <div className={styles.box}>
-      <input
-        ref={fileRef}
-        type="file"
-        accept="audio/*"
-        className={styles.hidden}
-        onChange={handleFile}
-      />
+      <input ref={fileRef} type='file' accept='audio/*' className={styles.hidden} onChange={handleFile} />
 
       {/* ── Загрузка ── */}
       {!hasAudio && !extracting && (
-        <button
-          type="button"
-          className={styles.upload_btn}
-          onClick={() => fileRef.current?.click()}
-        >
+        <button type='button' className={styles.upload_btn} onClick={() => fileRef.current?.click()}>
           <UploadIcon size={18} />
           <span>Загрузить аудиофайл</span>
           <span className={styles.upload_hint}>MP3, WAV, OGG, M4A</span>
@@ -213,8 +219,8 @@ export const InfoAudioEditor = ({ blockId, payload }: Props) => {
       {extracting && (
         <div className={styles.extracting}>
           <div className={styles.extracting_bars}>
-            {Array.from({ length: 20 }).map((_, i) => (
-              <div key={i} className={styles.extracting_bar} style={{ animationDelay: `${i * 60}ms` }} />
+            {Array.from({length: 20}).map((_, i) => (
+              <div key={i} className={styles.extracting_bar} style={{animationDelay: `${i * 60}ms`}} />
             ))}
           </div>
           <span>Анализирую аудио...</span>
@@ -224,12 +230,7 @@ export const InfoAudioEditor = ({ blockId, payload }: Props) => {
       {/* ── Плеер с waveform ── */}
       {hasAudio && (
         <>
-          <AudioPlayer
-            url={payload.url!}
-            filename={payload.filename!}
-            waveform={payload.waveform!}
-            onRemove={remove}
-          />
+          <AudioPlayer url={payload.url!} filename={payload.filename!} waveform={payload.waveform!} onRemove={remove} />
           <p className={styles.student_hint}>
             <Mic2Icon size={12} />
             Ученик увидит этот плеер в режиме прохождения

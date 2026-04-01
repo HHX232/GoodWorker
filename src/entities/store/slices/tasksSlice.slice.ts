@@ -1,7 +1,7 @@
 // features/test-block-editor/model/constructorSlice.ts
-import { TaskBlockRegistry } from '@/features'
-import { TaskBlockType } from '@/shared/types/Tasks/TaskType.type'
-import { createSlice, nanoid, PayloadAction } from '@reduxjs/toolkit'
+import {TaskBlockRegistry} from '@/features'
+import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
+import {createSlice, nanoid, PayloadAction} from '@reduxjs/toolkit'
 
 export interface TestBlock {
   id: string
@@ -9,7 +9,7 @@ export interface TestBlock {
   payload: unknown
 }
 
-interface ConstructorState {
+export interface ConstructorState {
   blocks: TestBlock[]
   selectedBlockId: string | null
   title: string
@@ -22,39 +22,38 @@ const initialState: ConstructorState = {
   selectedBlockId: null,
   title: '',
   theme: '',
-  description: '',
+  description: ''
 }
 
 const tasksSlice = createSlice({
   name: 'constructor',
   initialState,
   reducers: {
-
     addBlock(state, action: PayloadAction<TaskBlockType>) {
       const meta = TaskBlockRegistry[action.payload]
       state.blocks.push({
         id: nanoid(),
         type: action.payload,
-        payload: structuredClone(meta.defaultPayload),
+        payload: structuredClone(meta.defaultPayload)
       })
     },
 
     removeBlock(state, action: PayloadAction<string>) {
-      state.blocks = state.blocks.filter(b => b.id !== action.payload)
+      state.blocks = state.blocks.filter((b) => b.id !== action.payload)
     },
 
-    reorderBlocks(state, action: PayloadAction<{ activeId: string; overId: string }>) {
-      const { activeId, overId } = action.payload
-      const oldIndex = state.blocks.findIndex(b => b.id === activeId)
-      const newIndex = state.blocks.findIndex(b => b.id === overId)
+    reorderBlocks(state, action: PayloadAction<{activeId: string; overId: string}>) {
+      const {activeId, overId} = action.payload
+      const oldIndex = state.blocks.findIndex((b) => b.id === activeId)
+      const newIndex = state.blocks.findIndex((b) => b.id === overId)
       if (oldIndex === -1 || newIndex === -1) return
 
       const [moved] = state.blocks.splice(oldIndex, 1)
       state.blocks.splice(newIndex, 0, moved)
     },
 
-    updateBlockPayload(state, action: PayloadAction<{ id: string; payload: unknown }>) {
-      const block = state.blocks.find(b => b.id === action.payload.id)
+    updateBlockPayload(state, action: PayloadAction<{id: string; payload: unknown}>) {
+      const block = state.blocks.find((b) => b.id === action.payload.id)
       if (block) block.payload = action.payload.payload
     },
 
@@ -76,10 +75,8 @@ const tasksSlice = createSlice({
 
     resetConstructor() {
       return initialState
-    },
-  },
+    }
+  }
 })
-
-
 
 export default tasksSlice

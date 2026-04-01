@@ -1,10 +1,10 @@
-import { combineReducers, configureStore } from '@reduxjs/toolkit'
+import {combineReducers, configureStore} from '@reduxjs/toolkit'
 import tasksSlice from './slices/tasksSlice.slice'
-
+import roadmapUISlice from './slices/roadmapUISlice.slice'
 
 const rootReducer = combineReducers({
   tasks: tasksSlice.reducer,
-
+  roadmapUISlice: roadmapUISlice.reducer
 })
 
 export const store = configureStore({

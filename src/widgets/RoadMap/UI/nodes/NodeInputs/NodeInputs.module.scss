@@ -1,0 +1,29 @@
+.inputs {
+   display: flex;
+   flex-direction: column;
+   gap: 0.5rem;
+}
+
+.inputRow {
+   display: flex;
+   justify-content: flex-start;
+   align-items: center;
+   position: relative;
+   padding: 0.75rem;
+   // background-color: rgba(0, 0, 0, 0.06);
+   border-bottom: 1px solid #eeeff8;
+   width: 100%;
+
+   &:last-child {
+      border-bottom: none !important;
+   }
+}
+
+.handle {
+   position: absolute;
+   width: 1rem;
+   height: 1rem;
+   border-radius: 50%;
+   border: 2px solid #fff;
+   background-color: #868897;
+}

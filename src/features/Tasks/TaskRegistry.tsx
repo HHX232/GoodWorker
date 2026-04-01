@@ -3,6 +3,7 @@
 import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
 import {ReactNode} from 'react'
 import {ChooseOptionTask} from './TaskObjects/ChooseOptionTask'
+import {DialogueTask} from './TaskObjects/DialogueTask'
 import {FillTextTask} from './TaskObjects/FillTextTask'
 import {FreeAnswerTask} from './TaskObjects/FreeAnswerTask'
 import {HighlightTextTask} from './TaskObjects/HighlightTextTask'
@@ -12,25 +13,24 @@ import {InfoTextTask} from './TaskObjects/InfoTextTask'
 import {MatchPairsTask} from './TaskObjects/MatchPairsTask'
 import {SequenceTask} from './TaskObjects/SequenceTask'
 import {WordScrambleTask} from './TaskObjects/WordScrambleTask'
-import {DialogueTask} from './TaskObjects/DialogueTask'
 
 type TAvailableFor = 'lang' | 'math' | 'all'
 
-export interface TaskBlockMeta {
+export interface TestUserBlockMeta {
   type: TaskBlockType
   label: string
   description: string
+  credits?: number
   icon: ReactNode
-  credits: number
   defaultPayload: unknown
   availableFor?: TAvailableFor[]
 }
 
 type Registry = {
-  [K in TaskBlockType]: TaskBlockMeta & {type: K}
+  [K in TaskBlockType]: TestUserBlockMeta & {type: K}
 }
 
-const TaskBlockRegistry: Registry = {
+const TestUserBlockRegistry: Registry = {
   [TaskBlockType.FILL_TEXT]: FillTextTask,
   [TaskBlockType.SEQUENCE]: SequenceTask,
   [TaskBlockType.CHOOSE_OPTION]: ChooseOptionTask,
@@ -43,4 +43,4 @@ const TaskBlockRegistry: Registry = {
   [TaskBlockType.WORD_SCRAMBLE]: WordScrambleTask,
   [TaskBlockType.DIALOGUE]: DialogueTask
 }
-export default TaskBlockRegistry
+export default TestUserBlockRegistry

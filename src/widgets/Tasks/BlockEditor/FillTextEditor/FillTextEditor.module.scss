@@ -34,6 +34,7 @@
 }
 
 .editor_content {
+
   // сам редактируемый div от Tiptap
   :global(.tiptap) {
     outline: none;
@@ -49,6 +50,13 @@
       color: #b0b5bf;
       pointer-events: none;
       height: 0;
+    }
+  }
+
+  &[data-pass='true'] {
+    :global(.tiptap) {
+      cursor: default;
+      user-select: text;
     }
   }
 }

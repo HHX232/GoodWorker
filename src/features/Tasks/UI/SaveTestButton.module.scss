@@ -1,0 +1,28 @@
+.btn {
+   padding: 10px 24px;
+   border-radius: 8px;
+   border: none;
+   font-size: 14px;
+   font-weight: 500;
+   cursor: pointer;
+   transition: background 0.15s, opacity 0.15s;
+   background: #141416;
+   color: #fff;
+
+   &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+   }
+
+   &.saved {
+      background: #1D9E75;
+   }
+
+   &.error {
+      background: #E24B4A;
+   }
+
+   &.saving {
+      opacity: 0.7;
+   }
+}

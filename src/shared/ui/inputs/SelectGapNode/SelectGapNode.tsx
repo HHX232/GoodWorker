@@ -1,16 +1,21 @@
-// shared/ui/inputs/SelectTaskGapComponent/SelectGapNode.ts
-import { Node, mergeAttributes } from '@tiptap/core'
-import { ReactNodeViewRenderer } from '@tiptap/react'
-import { SelectTaskGapComponent } from './SelectTaskGapComponent'
+// SelectGapNode.ts
+import {Node, mergeAttributes} from '@tiptap/core'
+import {ReactNodeViewRenderer} from '@tiptap/react'
+import {SelectTaskGapComponent} from './SelectTaskGapComponent'
 
-export const SelectTaskGapNode = Node.create({
+export const SelectTaskGapNode = Node.create<{onChangeAnswer?: (gapId: string, value: string) => void}>({
   name: 'selectGap',
   group: 'inline',
   inline: true,
   atom: true,
 
+  addOptions() {
+    return {onChangeAnswer: undefined}
+  },
+
   addAttributes() {
     return {
+      gapId: {default: () => crypto.randomUUID()},
       options: {
         default: [],
         parseHTML: (el) => {
@@ -20,22 +25,21 @@ export const SelectTaskGapNode = Node.create({
             return []
           }
         },
-        renderHTML: (attrs) => ({
-          'data-options': JSON.stringify(attrs.options),
-        }),
+        renderHTML: (attrs) => ({'data-options': JSON.stringify(attrs.options)})
       },
+      correctOption: {default: ''}
     }
   },
 
   parseHTML() {
-    return [{ tag: 'select-gap' }]
+    return [{tag: 'select-gap'}]
   },
 
-  renderHTML({ HTMLAttributes }) {
+  renderHTML({HTMLAttributes}) {
     return ['select-gap', mergeAttributes(HTMLAttributes)]
   },
 
   addNodeView() {
     return ReactNodeViewRenderer(SelectTaskGapComponent)
-  },
+  }
 })

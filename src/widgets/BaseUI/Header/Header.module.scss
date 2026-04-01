@@ -1,20 +1,24 @@
 @use '../../../shared/scss/config/mixins.scss' as *;
 
-.wrapper{
+.wrapper {
    width: 100%;
    background-color: #fff;
    padding: 15px;
+   position: relative;
+   z-index: 1000;
    margin-bottom: 24px;
+
    @include md {
-    padding: 16px;
-    margin-bottom: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
    }
+
    @include sm {
-    padding: 12px;
+      padding: 12px;
    }
 }
 
-.inner{
+.inner {
    display: flex;
    gap: 15px;
    width: 100%;
@@ -23,22 +27,25 @@
 }
 
 .logo_small {
-  display: none;
-width: 50px;
-height: 50px;
-  @include md {
-    display: block;
-  }
+   display: none;
+   width: 50px;
+   height: 50px;
+
+   @include md {
+      display: block;
+   }
 }
 
-.logo_big{
+.logo_big {
    width: 190px;
    height: 50px;
+
    @include md {
-    display: none;
-  }
+      display: none;
+   }
 }
-.search_box{
+
+.search_box {
    display: flex;
    align-items: center;
    width: 100%;
@@ -46,7 +53,7 @@ height: 50px;
    gap: 16px;
 }
 
-.profile_box{
+.profile_box {
    width: 100px;
    height: 80px;
    background-color: red;

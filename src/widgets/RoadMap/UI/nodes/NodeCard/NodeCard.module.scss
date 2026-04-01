@@ -1,0 +1,63 @@
+.container {
+   border-radius: 14px;
+   cursor: pointer;
+   background-color: #fff;
+   border-style: solid;
+   border-width: 1px;
+   min-width: 350px;
+   width: fit-content;
+   color: var(--sc);
+   gap: 0.25rem;
+   display: flex;
+   flex-direction: column;
+
+   // padding: 0.25rem;
+   &.blurred {
+      filter: blur(5px);
+      opacity: 0.6;
+      border-color: #f87171;
+      border-style: dashed;
+   }
+
+   // Скрытая нода вне режима редактирования — тонкий намёк
+   &.hidden:not(.blurred) {
+      border-color: #fca5a5;
+      border-style: dashed;
+      opacity: 0.85;
+   }
+
+   &.selected {
+      border-color: var(--primary);
+   }
+}
+
+.mini {
+   min-width: 0px !important;
+
+   &.selected {
+      border-color: var(--primary);
+   }
+}
+
+.paywallBadge {
+   position: absolute;
+   bottom: 6px;
+   right: 6px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   width: 22px;
+   height: 22px;
+   border-radius: 6px;
+   background: rgba(239, 68, 68, 0.12);
+   color: #ef4444;
+   pointer-events: none;
+}
+
+// В режиме редактирования бейдж чуть заметнее
+.paywallBadgeEdit {
+   background: rgba(239, 68, 68, 0.2);
+   width: 26px;
+   height: 26px;
+   border-radius: 8px;
+}

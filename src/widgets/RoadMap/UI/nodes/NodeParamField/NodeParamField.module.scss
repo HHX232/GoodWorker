@@ -1,0 +1,67 @@
+.notImplemented {
+   font-size: 0.75rem;
+   color: var(--muted-foreground, #868897);
+}
+
+.label {
+   font-size: 0.75rem;
+   font-weight: 500;
+   color: var(--foreground, #141416);
+   margin-bottom: 0.25rem;
+}
+
+.helpText {
+   font-size: 0.7rem;
+   color: var(--muted-foreground, #868897);
+   margin-top: 0.125rem;
+}
+
+.field {
+   display: flex;
+   flex-direction: column;
+   width: 100%;
+}
+
+.stringInput {
+   font-size: 0.75rem;
+   padding: 0.375rem 0.5rem;
+   border-radius: 8px;
+   border: 1px solid var(--border, #f5f5f5);
+   background-color: var(--background, #fff);
+   color: var(--foreground, #141416);
+   width: 100%;
+   transition: border-color 0.2s;
+
+   &:focus {
+      outline: none;
+      border-color: var(--ring, #141416);
+   }
+
+   &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+   }
+}
+
+
+.select {
+   font-size: 0.75rem;
+   padding: 0.375rem 0.5rem;
+   border-radius: 8px;
+   border: 1px solid var(--border, #f5f5f5);
+   background-color: var(--background, #fff);
+   color: var(--foreground, #141416);
+   width: 100%;
+   cursor: pointer;
+   transition: border-color 0.2s;
+
+   &:focus {
+      outline: none;
+      border-color: var(--ring, #141416);
+   }
+
+   &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+   }
+}

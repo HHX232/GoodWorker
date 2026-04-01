@@ -2,8 +2,12 @@
 import {TestBlock} from '@/entities/store/slices/tasksSlice.slice'
 import {useActions} from '@/features/hooks/store/useActions'
 import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
+import {useInvalidTestBlocks} from '@/shared/ui/Tasks/providers/InvalidBlocksContext/InvalidBlocksContext'
 import {useTranslations} from 'next-intl'
+import {useEffect} from 'react'
+import styles from './BlockEditor.module.scss'
 import ChooseOptionEditor from './ChooseOptionEditor/ChooseOptionEditor'
+import {DialogueEditor} from './DialogueEditor/DialogueEditor'
 import {FillTextEditor} from './FillTextEditor/FillTextEditor'
 import FreeAnswerEditor from './FreeAnswerEditor/FreeAnswerEditor'
 import {HighlightTextEditor} from './HighlightTextEditor/HighlightTextEditor'
@@ -13,8 +17,6 @@ import {InfoTextEditor} from './Info/InfoTextEditor/InfoTextEditor'
 import MatchPairsEditor from './MatchPairsEditor/MatchPairsEditor'
 import SequenceEditor from './SequenceEditor/SequenceEditor'
 import {WordScrambleEditor} from './WordScrambleEditor/WordScrambleEditor'
-import {DialogueEditor} from './DialogueEditor/DialogueEditor'
-
 interface Props {
   block: TestBlock
 }
@@ -31,17 +33,23 @@ const DeleteBlockButton = ({label, onDelete}: {label: string; onDelete: () => vo
 function BlockEditor({block}: Props) {
   const t = useTranslations('BlockEditor')
   const {removeBlock} = useActions()
+  const {ids: invalidBlockIds, clear: clearInvalidBlock} = useInvalidTestBlocks()
+  const isInvalid = invalidBlockIds.has(block.id)
 
   const deleteBtn = <DeleteBlockButton label={t('deleteBlock')} onDelete={() => removeBlock(block.id)} />
 
   const wrapper = (heading: string, children: React.ReactNode) => (
-    <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
-      <h3 style={{marginTop: '15px', fontWeight: '500', fontSize: '32px'}}>{heading}</h3>
-      {deleteBtn}
-      {children}
+    <div id={`block-${block.id}`} className={`${styles.block_wrap} ${isInvalid ? styles.block_invalid : ''}`}>
+      <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
+        <h3 style={{marginTop: '15px', fontWeight: '500', fontSize: '32px'}}>{heading}</h3>
+        {deleteBtn}
+        {children}
+      </div>
     </div>
   )
-
+  useEffect(() => {
+    if (isInvalid) clearInvalidBlock(block.id)
+  }, [block.payload])
   switch (block?.type) {
     case TaskBlockType.FILL_TEXT:
       return wrapper(t('fillText'), <FillTextEditor blockId={block.id} payload={block.payload as any} />)
