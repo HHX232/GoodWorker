@@ -34,12 +34,6 @@ function InnerViewer({nodes: initialNodes, edges: initialEdges}: any) {
         edgeTypes={edgeTypes}
         nodesDraggable={false}
         nodesConnectable={false}
-        elementsSelectable={false}
-        panOnDrag={false} // <- отключаем drag для панорамирования
-        panOnScroll={true} // <- панорамирование колёсиком
-        zoomOnScroll={false} // <- зум отключаем (конфликтует с panOnScroll)
-        zoomOnPinch={true} // <- зум пинчем на тачпаде
-        zoomOnDoubleClick={false}
         fitView
         minZoom={0.2}
         maxZoom={2}

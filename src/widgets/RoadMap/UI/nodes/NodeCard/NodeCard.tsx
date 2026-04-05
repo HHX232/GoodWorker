@@ -53,6 +53,9 @@ export default function NodeCard({nodeId, children, isSelected, useMini = false}
         const {width = 420, height = 200} = measured
         setCenter(position.x + width / 2, position.y + height / 2, {zoom: 1, duration: 500})
       }}
+      onClick={() => {
+        console.log('3246456')
+      }}
       className={[
         styles.container,
         isSelected ? styles.selected : '',

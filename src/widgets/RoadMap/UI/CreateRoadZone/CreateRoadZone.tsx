@@ -181,6 +181,8 @@ function CreateRoadZoneInner() {
           snapGrid={snapGrid}
           edgeTypes={edgeTypes}
           snapToGrid
+          maxZoom={3}
+          minZoom={0.3}
         >
           <Controls position='top-left' />
           <Background variant={BackgroundVariant.Dots} gap={15} />

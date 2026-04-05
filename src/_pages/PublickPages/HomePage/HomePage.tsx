@@ -7,19 +7,7 @@ import styles from './HomePage.module.scss'
 
 function HomePage() {
   return (
-    <div
-      onClick={() => {
-        console.log('123123')
-      }}
-      className={`container default_content ${styles.content}`}
-    >
-      <button
-        onClick={() => {
-          console.log('123123')
-        }}
-      >
-        123123
-      </button>
+    <div className={`container default_content ${styles.content}`}>
       <NavBar />
       <div className={`${styles.main_content}`}>
         <HighlightedSlider />
