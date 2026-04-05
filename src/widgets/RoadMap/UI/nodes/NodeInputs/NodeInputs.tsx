@@ -4,15 +4,28 @@ import React from 'react'
 import NodeParamField from '../NodeParamField/NodeParamField'
 import styles from './NodeInputs.module.scss'
 
-export default function NodeInputs({children, nodeId}: {children: React.ReactNode; nodeId: string}) {
+export default function NodeInputs({
+  children,
+  nodeId,
+  hidden
+}: {
+  children: React.ReactNode
+  nodeId: string
+  hidden?: boolean
+}) {
   return (
     <div className={styles.inputs}>
-      <Handle position={Position.Left} id={`${nodeId}-input`} type='target' className={styles.handle} />
-      {children}
+      <Handle
+        position={Position.Left}
+        id={`${nodeId}-input`}
+        type='target'
+        className={styles.handle}
+        style={hidden ? {opacity: 0, pointerEvents: 'none'} : {}}
+      />
+      {!hidden && children}
     </div>
   )
 }
-
 export function NodeInput({input, nodeId}: {input: BlockRoadParam; nodeId: string}) {
   return (
     <div style={{display: input.type === RoadMapParamType.HIDE ? 'none' : ''}} className={styles.inputRow}>

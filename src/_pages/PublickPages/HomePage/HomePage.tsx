@@ -1,13 +1,26 @@
-import { NavBar } from '@/widgets/BaseUI'
-import { MOCK_CARDS, mockLoadMore } from '@/widgets/Cards/CardsCatalog/CardsCatalog'
+'use client'
+import {NavBar} from '@/widgets/BaseUI'
+import {MOCK_CARDS, mockLoadMore} from '@/widgets/Cards/CardsCatalog/CardsCatalog'
 
-import { CardsCatalog, HighlightedSlider } from '@/widgets/Cards'
+import {CardsCatalog, HighlightedSlider} from '@/widgets/Cards'
 import styles from './HomePage.module.scss'
 
 function HomePage() {
   return (
-    <div className={`container default_content ${styles.content}`}>
-      <NavBar  />
+    <div
+      onClick={() => {
+        console.log('123123')
+      }}
+      className={`container default_content ${styles.content}`}
+    >
+      <button
+        onClick={() => {
+          console.log('123123')
+        }}
+      >
+        123123
+      </button>
+      <NavBar />
       <div className={`${styles.main_content}`}>
         <HighlightedSlider />
         <div className={styles.title_box}>
@@ -16,7 +29,7 @@ function HomePage() {
         </div>
         <CardsCatalog initialCards={MOCK_CARDS} onLoadMore={mockLoadMore} hasMore={true} />
       </div>
-        <div className="mobile_padding"></div>
+      <div className='mobile_padding'></div>
     </div>
   )
 }

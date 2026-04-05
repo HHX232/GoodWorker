@@ -48,17 +48,17 @@ const NodeComponent = memo((props: NodeProps) => {
       )}
 
       {/* Обычные блоки — скрываем inputs/outputs в режиме просмотра */}
-      {!isDivider && !isView && (
+      {!isDivider && (
         <>
           {task?.inputs && task.inputs.length > 0 && (
-            <NodeInputs nodeId={props.id}>
+            <NodeInputs nodeId={props.id} hidden={isView}>
               {task.inputs.map((input) => (
                 <NodeInput key={input.name} input={input} nodeId={props.id} />
               ))}
             </NodeInputs>
           )}
           {task?.outputs && task.outputs.length > 0 && (
-            <NodeOutputs nodeId={props.id}>
+            <NodeOutputs nodeId={props.id} hidden={isView}>
               {task.outputs.map((output) => (
                 <NodeOutput key={output.name} output={output} nodeId={props.id} />
               ))}
@@ -67,14 +67,14 @@ const NodeComponent = memo((props: NodeProps) => {
         </>
       )}
 
-      {isDivider && !isView && (
+      {isDivider && (
         <>
-          <NodeInputs nodeId={props.id}>
+          <NodeInputs nodeId={props.id} hidden={isView}>
             {task.inputs.map((input) => (
               <NodeInput key={input.name} input={input} nodeId={props.id} />
             ))}
           </NodeInputs>
-          <DividerOutputs nodeId={props.id} />
+          {!isView && <DividerOutputs nodeId={props.id} />}
         </>
       )}
     </NodeCard>

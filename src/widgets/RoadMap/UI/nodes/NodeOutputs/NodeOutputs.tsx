@@ -4,12 +4,25 @@ import {Handle, Position} from '@xyflow/react'
 import React from 'react'
 import styles from './NodeOutputs.module.scss'
 
-export default function NodeOutputs({children, nodeId}: {children: React.ReactNode; nodeId: string}) {
+export default function NodeOutputs({
+  children,
+  nodeId,
+  hidden
+}: {
+  children: React.ReactNode
+  nodeId: string
+  hidden?: boolean
+}) {
   return (
     <div className={styles.outputs}>
-      {/* Единственная точка выхода на весь блок */}
-      <Handle position={Position.Right} id={`${nodeId}-output`} type='source' className={styles.handle} />
-      {children}
+      <Handle
+        position={Position.Right}
+        id={`${nodeId}-output`}
+        type='source'
+        className={styles.handle}
+        style={hidden ? {opacity: 0, pointerEvents: 'none'} : {}}
+      />
+      {!hidden && children}
     </div>
   )
 }

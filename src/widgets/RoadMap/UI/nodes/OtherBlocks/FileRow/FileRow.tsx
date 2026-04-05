@@ -124,11 +124,58 @@ function FileRow({file, onRemove}: {file: UploadedFile; onRemove: () => void}) {
 }
 
 // ── Основной компонент ────────────────────────────────────────────────────────
+function FileRowReadonly({file}: {file: UploadedFile}) {
+  const Icon = getFileIcon(file.mimeType)
+  const color = getFileColor(file.mimeType)
+  const isImage = file.mimeType.startsWith('image/')
 
+  const handleDownload = () => {
+    const a = document.createElement('a')
+    a.href = file.url
+    a.download = file.name
+    a.click()
+  }
+
+  return (
+    <div className={styles.fileRow}>
+      <div className={styles.fileIcon} style={{color}}>
+        <Icon size={20} />
+        <span className={styles.fileExt} style={{backgroundColor: color}}>
+          {getFileExt(file.name)}
+        </span>
+      </div>
+
+      <div className={styles.fileInfo}>
+        <span className={styles.fileName} title={file.name}>
+          {file.name}
+        </span>
+        <span className={styles.fileSize}>{formatSize(file.size)}</span>
+      </div>
+
+      <div className={styles.fileActions}>
+        <button
+          onMouseDown={(e) => e.stopPropagation()}
+          className={styles.actionBtn}
+          onClick={handleDownload}
+          title='Скачать'
+        >
+          <DownloadIcon size={13} />
+        </button>
+        {/* кнопка удаления скрыта */}
+      </div>
+
+      {isImage && (
+        <div className={styles.imagePreviewWrap}>
+          <ImagePreview url={file.url} name={file.name} />
+        </div>
+      )}
+    </div>
+  )
+}
 const MAX_FILES = 10
 const MAX_SIZE_MB = 50
 
-export default function FileBlock({nodeId}: {nodeId: string}) {
+export default function FileBlock({nodeId, readonly = false}: {nodeId: string; readonly?: boolean}) {
   const {updateNodeData} = useReactFlow()
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -139,15 +186,14 @@ export default function FileBlock({nodeId}: {nodeId: string}) {
   const update = (patch: Partial<FileBlockData>) => updateNodeData(nodeId, patch as any)
 
   const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (readonly) return
     const selected = Array.from(e.target.files ?? [])
     if (!selected.length) return
-
     const current = files
     const remaining = MAX_FILES - current.length
     const newFiles: UploadedFile[] = []
-
     for (const file of selected.slice(0, remaining)) {
-      if (file.size > MAX_SIZE_MB * 1024 * 1024) continue // пропускаем слишком большие
+      if (file.size > MAX_SIZE_MB * 1024 * 1024) continue
       newFiles.push({
         name: file.name,
         size: file.size,
@@ -155,23 +201,57 @@ export default function FileBlock({nodeId}: {nodeId: string}) {
         url: URL.createObjectURL(file)
       })
     }
-
     update({uploadedFiles: [...current, ...newFiles]})
     if (fileRef.current) fileRef.current.value = ''
   }
 
   const removeFile = (index: number) => {
+    if (readonly) return
     const next = files.filter((_, i) => i !== index)
     update({uploadedFiles: next})
   }
 
   const canAddMore = files.length < MAX_FILES
 
+  // ── Режим просмотра ──
+  if (readonly) {
+    if (files.length === 0) {
+      return (
+        <div
+          onClick={() => {
+            console.log('helloooo')
+          }}
+          className={`${styles.block} nodrag nopan`}
+        >
+          <div className={styles.emptyState}>
+            <FileIcon size={24} style={{color: '#c4c8d0'}} />
+            <p className={styles.emptyText}>Файлы не прикреплены</p>
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <div
+        onClick={() => {
+          console.log('helloooo')
+        }}
+        className={`${styles.block} nodrag nopan`}
+      >
+        <div className={styles.fileList}>
+          {files.map((file, i) => (
+            <FileRowReadonly key={`${file.name}-${i}`} file={file} />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // ── Режим редактирования (без изменений) ──
   return (
     <div className={`${styles.block} nodrag nopan`}>
       <input ref={fileRef} type='file' multiple className={styles.hidden} onChange={handleFiles} />
 
-      {/* ── Список файлов ── */}
       {files.length > 0 && (
         <div className={styles.fileList}>
           {files.map((file, i) => (
@@ -180,7 +260,6 @@ export default function FileBlock({nodeId}: {nodeId: string}) {
         </div>
       )}
 
-      {/* ── Загрузка ── */}
       {canAddMore && (
         <button
           type='button'
@@ -204,7 +283,6 @@ export default function FileBlock({nodeId}: {nodeId: string}) {
         </button>
       )}
 
-      {/* ── Лимит достигнут ── */}
       {!canAddMore && <p className={styles.limitMsg}>Максимум {MAX_FILES} файлов</p>}
     </div>
   )
