@@ -31,18 +31,18 @@ const NodeComponent = memo((props: NodeProps) => {
   const isView = viewMode === 'view'
   return (
     <NodeCard useMini={isDivider} isSelected={!!props.selected} nodeId={props.id}>
-      <NodeHeader taskType={nodeData.type} nodeId={props.id} readonly={isView} />
-      {isPosts && <PostsBlock nodeId={props.id} readonly={isView} />}
-      {isAudio && <AudioBlock nodeId={props.id} readonly={isView} />}
-      {isMedia && <MediaBlock nodeId={props.id} readonly={isView} />}
-      {isFile && <FileBlock nodeId={props.id} readonly={isView} />}
+      <NodeHeader taskType={nodeData.type} nodeId={props.id} />
+      {isPosts && <PostsBlock nodeId={props.id}  />}
+      {isAudio && <AudioBlock nodeId={props.id}/>}
+      {isMedia && <MediaBlock nodeId={props.id}  />}
+      {isFile && <FileBlock nodeId={props.id}  />}
 
       {/* В режиме просмотра — onlyPass, в редактировании — редактор */}
       {isActiveTest && <ActiveTestBlock nodeId={props.id} onlyPass={isView} />}
 
       {isEntryPoint && (
         <>
-          <EntryPointBlock nodeId={props.id} readonly={isView} />
+          <EntryPointBlock nodeId={props.id} />
           <Handle type='source' position={Position.Right} id={`${props.id}-output`} />
         </>
       )}

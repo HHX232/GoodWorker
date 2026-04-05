@@ -153,7 +153,7 @@ function CreateRoadZoneInner() {
           width: '100%',
           height: '100%',
           minHeight: 600,
-          border: `2px dashed ${isOver ? '#6366f1' : '#d1d5db'}`,
+          // border: `2px solid ${isOver ? '#6366f1' : '#d1d5db'}`,
           transition: 'border-color 0.2s',
           position: 'relative',
           overflow: 'hidden'

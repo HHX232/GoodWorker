@@ -33,7 +33,23 @@
       }
    }
 }
+.reportBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #868897;
+  transition: color 0.15s, background-color 0.15s;
 
+  &:hover {
+    color: #e84393;
+    background-color: rgba(232, 67, 147, 0.1);
+  }
+}
 .content {
    display: flex;
    justify-content: space-between;

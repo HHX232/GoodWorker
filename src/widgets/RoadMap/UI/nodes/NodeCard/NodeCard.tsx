@@ -25,22 +25,6 @@ export default function NodeCard({nodeId, children, isSelected, useMini = false}
     (s) => ((s.nodeLookup.get(nodeId)?.data as RoadNodeData)?.isPaywallHidden ?? false) as boolean
   )
 
-  useEffect(() => {
-    if (!isView) return
-    const el = ref.current
-    if (!el) return
-
-    const handler = (e: MouseEvent) => e.stopPropagation()
-
-    el.addEventListener('mousedown', handler, {capture: true})
-    el.addEventListener('click', handler, {capture: true})
-
-    return () => {
-      el.removeEventListener('mousedown', handler, {capture: true})
-      el.removeEventListener('click', handler, {capture: true})
-    }
-  }, [isView])
-
   return (
     <div
       ref={ref}

@@ -2,8 +2,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
-import {RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
-import {useReactFlow, useStore} from '@xyflow/react'
+import { RoadNodeData } from '@/shared/types/RoadMap/RoadMap.types'
+import { useReactFlow, useStore } from '@xyflow/react'
 import {
   DownloadIcon,
   FileArchiveIcon,
@@ -15,8 +15,9 @@ import {
   Trash2Icon,
   UploadIcon
 } from 'lucide-react'
-import {useRef} from 'react'
+import { useRef } from 'react'
 import styles from './FileRow.module.scss'
+import { useViewMode } from '@/shared/ui/RoadMap/context/ViewModeContext'
 
 // ── Типы ─────────────────────────────────────────────────────────────────────
 
@@ -175,7 +176,8 @@ function FileRowReadonly({file}: {file: UploadedFile}) {
 const MAX_FILES = 10
 const MAX_SIZE_MB = 50
 
-export default function FileBlock({nodeId, readonly = false}: {nodeId: string; readonly?: boolean}) {
+export default function FileBlock({nodeId}: {nodeId: string}) {
+  const readOnly = useViewMode() === 'view'
   const {updateNodeData} = useReactFlow()
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -186,7 +188,7 @@ export default function FileBlock({nodeId, readonly = false}: {nodeId: string; r
   const update = (patch: Partial<FileBlockData>) => updateNodeData(nodeId, patch as any)
 
   const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (readonly) return
+    if (readOnly) return
     const selected = Array.from(e.target.files ?? [])
     if (!selected.length) return
     const current = files
@@ -206,7 +208,7 @@ export default function FileBlock({nodeId, readonly = false}: {nodeId: string; r
   }
 
   const removeFile = (index: number) => {
-    if (readonly) return
+    if (readOnly) return
     const next = files.filter((_, i) => i !== index)
     update({uploadedFiles: next})
   }
@@ -214,7 +216,7 @@ export default function FileBlock({nodeId, readonly = false}: {nodeId: string; r
   const canAddMore = files.length < MAX_FILES
 
   // ── Режим просмотра ──
-  if (readonly) {
+  if (readOnly) {
     if (files.length === 0) {
       return (
         <div
