@@ -5,6 +5,7 @@ import {ICard} from '@/shared/types'
 import {RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
 import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
 import Card from '@/shared/ui/Posts/Card/Card'
+import {useViewMode} from '@/shared/ui/RoadMap/context/ViewModeContext'
 import {MOCK_CARDS} from '@/widgets/Cards/CardsCatalog/CardsCatalog'
 import {useReactFlow, useStore} from '@xyflow/react'
 import {CheckIcon, ChevronLeftIcon, ChevronRightIcon, PlusIcon, Trash2Icon} from 'lucide-react'
@@ -14,12 +15,16 @@ import 'swiper/css/navigation'
 import {Navigation} from 'swiper/modules'
 import {Swiper, SwiperSlide} from 'swiper/react'
 import styles from './PostsBlockData.module.scss'
+import {useTranslations} from 'next-intl'
 
 type PostsBlockData = RoadNodeData & {
   selectedPostIds?: string[]
 }
 
 export default function PostsBlock({nodeId}: {nodeId: string}) {
+  const viewOnly = useViewMode() === 'view'
+  const t = useTranslations('roadMap')
+
   const {updateNodeData} = useReactFlow()
   const [modalOpen, setModalOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
@@ -45,13 +50,13 @@ export default function PostsBlock({nodeId}: {nodeId: string}) {
 
   return (
     <div className={`${styles.block} nodrag nopan`}>
-      {/* ── Нет постов ── */}
-      {selectedPosts.length === 0 && (
+      {selectedPosts.length === 0 && !viewOnly && (
         <button className={styles.addBtn} onClick={() => setModalOpen(true)}>
           <PlusIcon size={16} />
-          <span>Выбрать посты</span>
+          <span>{t('choosePosts')}</span>
         </button>
       )}
+      {selectedPosts.length === 0 && viewOnly && <p>{t('noPostsSelected')}</p>}
       {/* ── Слайдер / одиночный пост ── */}
       {selectedPosts.length > 0 && (
         <div className={styles.sliderSection}>
@@ -71,20 +76,26 @@ export default function PostsBlock({nodeId}: {nodeId: string}) {
               >
                 {selectedPosts.map((post) => (
                   <SwiperSlide key={post.cardId} className={styles.slide}>
-                    <SlideCard post={post} onRemove={() => removePost(post.cardId)} />
+                    <SlideCard canRemove={!viewOnly} post={post} onRemove={() => removePost(post.cardId)} />
                   </SwiperSlide>
                 ))}
               </Swiper>
             </div>
           ) : (
-            <SlideCard post={selectedPosts[0]} onRemove={() => removePost(selectedPosts[0].cardId)} />
+            <SlideCard
+              canRemove={!viewOnly}
+              post={selectedPosts[0]}
+              onRemove={() => removePost(selectedPosts[0].cardId)}
+            />
           )}
 
           {/* Добавить ещё */}
-          <button className={styles.addMoreBtn} onClick={() => setModalOpen(true)}>
-            <PlusIcon size={12} />
-            Добавить пост
-          </button>
+          {!viewOnly && (
+            <button className={styles.addMoreBtn} onClick={() => setModalOpen(true)}>
+              <PlusIcon size={12} />
+              {t('addPost')}
+            </button>
+          )}
         </div>
       )}
       {/* ── Модальное окно ── */}
@@ -93,8 +104,10 @@ export default function PostsBlock({nodeId}: {nodeId: string}) {
         onClose={() => setModalOpen(false)}
         additionalTitle={
           <p className={styles.modalTitle}>
-            Выберите посты
-            {selectedIds.length > 0 && <span className={styles.modalCount}>{selectedIds.length} выбрано</span>}
+            {t('selectPosts')}
+            {selectedIds.length > 0 && (
+              <span className={styles.modalCount}>{t('selectedCount', {count: selectedIds.length})}</span>
+            )}
           </p>
         }
       >
@@ -135,12 +148,15 @@ export default function PostsBlock({nodeId}: {nodeId: string}) {
 
 // ── Слайд с постом ────────────────────────────────────────────────────────────
 
-function SlideCard({post, onRemove}: {post: ICard; onRemove: () => void}) {
+function SlideCard({post, onRemove, canRemove}: {post: ICard; onRemove: () => void; canRemove: boolean}) {
+  const t = useTranslations('roadMap')
   return (
     <div className={styles.slideCard}>
-      <button className={styles.removeBtn} onClick={onRemove} title='Убрать'>
-        <Trash2Icon size={12} />
-      </button>
+      {canRemove && (
+        <button className={styles.removeBtn} onClick={onRemove} title={t('removePost')}>
+          <Trash2Icon size={12} />
+        </button>
+      )}
       <Card
         cardId={post.cardId}
         title={post.title}

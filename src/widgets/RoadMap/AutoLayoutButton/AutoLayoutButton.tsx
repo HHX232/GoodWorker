@@ -1,5 +1,6 @@
 import dagre from '@dagrejs/dagre'
 import {useReactFlow} from '@xyflow/react'
+import styles from './AutoLayoutButton.module.scss'
 
 export function AutoLayoutButton() {
   const {getNodes, getEdges, setNodes, fitView} = useReactFlow()
@@ -12,9 +13,9 @@ export function AutoLayoutButton() {
     graph.setDefaultEdgeLabel(() => ({}))
 
     graph.setGraph({
-      rankdir: 'LR', // слева направо, 'TB' — сверху вниз
-      nodesep: 150, // расстояние между нодами по вертикали
-      ranksep: 150 // расстояние между колонками,
+      rankdir: 'LR',
+      nodesep: 150,
+      ranksep: 100
     })
 
     nodes.forEach((node) => {
@@ -46,5 +47,17 @@ export function AutoLayoutButton() {
     setTimeout(() => fitView({padding: 0.2, duration: 500}), 50)
   }
 
-  return <button onClick={applyLayout}>Авто-расстановка</button>
+  return (
+    <button onClick={applyLayout} className={styles.button}>
+      <svg className={styles.icon} viewBox='0 0 16 16' fill='none'>
+        <path
+          d='M2 4h4M2 8h4M2 12h4M8 2v12M10 4h4M10 8h4M10 12h4'
+          stroke='currentColor'
+          strokeWidth='1.3'
+          strokeLinecap='round'
+        />
+      </svg>
+      Авто-расстановка
+    </button>
+  )
 }

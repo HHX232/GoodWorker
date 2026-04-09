@@ -1,6 +1,7 @@
 'use client'
 import RoadMapBlockRegistry from '@/features/Roadmap/registry'
 import {RoadMapBlockType} from '@/shared/types/RoadMap/RoadMap.types'
+import {useTranslations} from 'next-intl'
 import {useState} from 'react'
 import styles from './CreateRoadNavbar.module.scss'
 
@@ -15,7 +16,6 @@ function CreateRoadNavbar() {
       <TaskMenuBtn taskType={RoadMapBlockType.POST_LINK} id='taskmenu-task-example'></TaskMenuBtn>
       <TaskMenuBtn taskType={RoadMapBlockType.DOWNLOAD_FILE_LINK} id='taskmenu-task-example'></TaskMenuBtn>
       <TaskMenuBtn taskType={RoadMapBlockType.ACTIVE_TEST} id='taskmenu-task-example'></TaskMenuBtn>
-      {/* <TaskMenuBtn taskType={RoadMapBlockType.ENTRY_POINT} id='taskmenu-task-example'></TaskMenuBtn> */}
     </div>
   )
 }
@@ -23,6 +23,7 @@ function CreateRoadNavbar() {
 export default CreateRoadNavbar
 
 function TaskMenuBtn({taskType, id}: {taskType: RoadMapBlockType; id?: string}) {
+  const t = useTranslations('roadMap')
   const task = RoadMapBlockRegistry[taskType]
   const [isDragging, setIsDragging] = useState(false)
 
@@ -53,11 +54,12 @@ function TaskMenuBtn({taskType, id}: {taskType: RoadMapBlockType; id?: string}) 
         border: '1px solid var(--color-border-secondary)',
         background: 'var(--color-background-secondary)',
         color: 'var(--color-text-primary)',
-        fontSize: 14
+        fontSize: 14,
+        whiteSpace: 'nowrap'
       }}
     >
-      <task.icon width={16} height={16} />
-      {task.label}
+      <task.icon style={{minHeight: '16px', minWidth: '16px'}} width={16} height={16} />
+      {t(task.label)}
     </button>
   )
 }

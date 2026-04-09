@@ -17,11 +17,14 @@ import {HighlightStudentView} from '@/widgets/Tasks/BlockEditor/HighlightTextEdi
 import {InfoAudioEditor} from '@/widgets/Tasks/BlockEditor/Info/InfoAudioEditor/InfoAudioEditor'
 import {InfoMediaEditor} from '@/widgets/Tasks/BlockEditor/Info/InfoMediaEditor/InfoMediaEditor'
 import {InfoTextEditor} from '@/widgets/Tasks/BlockEditor/Info/InfoTextEditor/InfoTextEditor'
-import {getShuffledItems, StudentView} from '@/widgets/Tasks/BlockEditor/WordScrambleEditor/WordScrambleEditor'
+import {
+  getShuffledItems,
+  StudentViewWordScramble
+} from '@/widgets/Tasks/BlockEditor/WordScrambleEditor/WordScrambleEditor'
 
 import {useState} from 'react'
+import {ChooseOptionStudent, FreeAnswerStudent, MatchPairsStudent, SequenceStudent} from '../Studentviews/Studentviews'
 import styles from './TestPlayer.module.scss'
-import {ChooseOptionStudent, FreeAnswerStudent, SequenceStudent, MatchPairsStudent} from '../Studentviews/Studentviews'
 
 // ── BlockView ─────────────────────────────────────────────────────────────────
 
@@ -59,7 +62,7 @@ export function BlockView({
       const wp = p as WordScramblePayload
       if (!wp.source) return null
       return (
-        <StudentView
+        <StudentViewWordScramble
           source={wp.source}
           mode={wp.mode}
           hint={wp.hint}

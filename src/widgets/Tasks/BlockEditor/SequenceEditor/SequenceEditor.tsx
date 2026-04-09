@@ -1,11 +1,11 @@
 'use client'
-import { useActions } from '@/features/hooks/store/useActions'
-import { SequencePayload } from '@/shared/types/Tasks/TaskPayload.type'
-import { DndContext, DragEndEvent, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core'
-import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
-import { nanoid } from '@reduxjs/toolkit'
-import { useEffect, useState } from 'react'
+import {useActions} from '@/features/hooks/store/useActions'
+import {SequencePayload} from '@/shared/types/Tasks/TaskPayload.type'
+import {DndContext, DragEndEvent, PointerSensor, closestCenter, useSensor, useSensors} from '@dnd-kit/core'
+import {SortableContext, arrayMove, useSortable, verticalListSortingStrategy} from '@dnd-kit/sortable'
+import {CSS} from '@dnd-kit/utilities'
+import {nanoid} from '@reduxjs/toolkit'
+import {useEffect, useState} from 'react'
 import styles from './SequenceEditor.module.scss'
 
 interface Props {
@@ -53,7 +53,7 @@ function SequenceEditor({blockId, payload}: Props) {
 
   useEffect(() => {
     setPreviewItems([...payload.items].sort(() => Math.random() - 0.5))
-  }, [payload.items.length, payload.items]) // перемешиваем только когда меняется количество элементов
+  }, [payload.items.length, payload.items])
 
   const handlePreviewDragEnd = (event: DragEndEvent) => {
     const {active, over} = event
@@ -104,8 +104,6 @@ function SequenceEditor({blockId, payload}: Props) {
   )
 }
 
-// ─── SortableItem (редактор) ──────────────────────────────────────────────────
-
 interface SortableItemProps {
   id: string
   index: number
@@ -139,8 +137,6 @@ function SortableItem({id, index, text, onTextChange, onRemove}: SortableItemPro
     </div>
   )
 }
-
-// ─── SortablePreviewItem (превью) ─────────────────────────────────────────────
 
 interface SortablePreviewItemProps {
   id: string

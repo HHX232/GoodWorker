@@ -54,7 +54,6 @@ const Bubble = ({line, nameA, nameB, dimmed}: BubbleProps) => {
   )
 }
 
-// ── Sortable строка реплики (редактор) ────────────────────────────────────────
 interface SortableLineProps {
   line: DialogueLine
   nameA: string

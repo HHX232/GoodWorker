@@ -2,11 +2,15 @@
 'use client'
 import {RoadMapParamType, RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
 import {TextAreaUI} from '@/shared/ui/inputs'
+import {useViewMode} from '@/shared/ui/RoadMap/context/ViewModeContext'
 import {Handle, Position, useReactFlow, useStore} from '@xyflow/react'
 import {PlusIcon} from 'lucide-react'
+import {useTranslations} from 'next-intl'
 import styles from './DividerOutputs.module.scss'
 
 export default function DividerOutputs({nodeId}: {nodeId: string}) {
+  const t = useTranslations('roadMap')
+  const viewOnly = useViewMode() === 'view'
   const {updateNodeData, getNode} = useReactFlow()
   const outputs = useStore((s) => (s.nodeLookup.get(nodeId)?.data as RoadNodeData)?.outputs ?? [])
 
@@ -39,7 +43,8 @@ export default function DividerOutputs({nodeId}: {nodeId: string}) {
         <div key={index} className={`${styles.outputRow} nodrag nopan`}>
           <TextAreaUI
             autoResize
-            placeholder='Условие...'
+            disabled={viewOnly}
+            placeholder={t('placeholderCondition')}
             minRows={1}
             maxRows={3}
             extraClass={styles.extra_area}
@@ -47,13 +52,12 @@ export default function DividerOutputs({nodeId}: {nodeId: string}) {
             currentValue={output.name}
           />
 
-          {outputs.length > 1 && (
+          {outputs.length > 1 && !viewOnly && (
             <button className={styles.removeBtn} onClick={() => removeOutput(index)}>
-              ×
+              {t('remove')}
             </button>
           )}
 
-          {/* Обёртка выносит handle за правый край карточки */}
           <div className={styles.handleWrapper}>
             <Handle
               type='source'
@@ -65,9 +69,12 @@ export default function DividerOutputs({nodeId}: {nodeId: string}) {
         </div>
       ))}
 
-      <button className={styles.addBtn} onClick={addOutput}>
-        <PlusIcon size={12} /> Добавить условие
-      </button>
+      {!viewOnly && (
+        <button className={styles.addBtn} onClick={addOutput}>
+          <PlusIcon size={12} />
+          {t('addCondition')}
+        </button>
+      )}
     </div>
   )
 }

@@ -3,14 +3,14 @@ import {ImageIcon, LucideProps} from 'lucide-react'
 
 export const RoadMediaTask = {
   type: RoadMapBlockType.INFO_MEDIA,
-  label: 'Медиа',
+  label: 'mediaInfoLabel',
   headerColor: '',
   icon: (props: LucideProps) => <ImageIcon {...props} />,
   inputs: [
     {
       name: '',
       type: RoadMapParamType.HIDE,
-      helpText: 'please, write',
+      helpText: 'infoTextHelpText',
       required: true,
       hideHandle: false
     }
@@ -19,7 +19,7 @@ export const RoadMediaTask = {
     {
       name: '',
       type: RoadMapParamType.STRING,
-      helpText: 'please, write',
+      helpText: 'infoTextHelpText',
       required: true,
       hideHandle: false
     }

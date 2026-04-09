@@ -1,16 +1,15 @@
-// features/test-block-editor/model/activeTestSlice.ts
 import {TaskBlockRegistry} from '@/features'
 import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
 import {createSlice, nanoid, PayloadAction} from '@reduxjs/toolkit'
 import tasksSlice, {TestBlock} from './tasksSlice.slice'
 
 export interface ActiveTestState {
-  blocks: TestBlock[]
-  activeNodeId: string | null // какая нода сейчас редактируется
+  blocksByNode: Record<string, TestBlock[]>
+  activeNodeId: string | null
 }
 
 const initialState: ActiveTestState = {
-  blocks: [],
+  blocksByNode: {},
   activeNodeId: null
 }
 
@@ -19,46 +18,66 @@ const activeTestSlice = createSlice({
   initialState,
   extraReducers: (builder) => {
     builder.addCase(tasksSlice.actions.updateBlockPayload, (state, action) => {
-      const block = state.blocks.find((b) => b.id === action.payload.id)
+      if (!state.activeNodeId) return
+      const blocks = state.blocksByNode[state.activeNodeId]
+      if (!blocks) return
+      const block = blocks.find((b) => b.id === action.payload.id)
       if (block) block.payload = action.payload.payload
     })
   },
   reducers: {
-    // Загрузка блоков из nodeData при маунте ноды
     loadBlocksForNode(state, action: PayloadAction<{nodeId: string; blocks: TestBlock[]}>) {
-      state.activeNodeId = action.payload.nodeId
-      state.blocks = action.payload.blocks
+      const {nodeId, blocks} = action.payload
+      state.activeNodeId = nodeId
+      if (!state.blocksByNode[nodeId]) {
+        state.blocksByNode[nodeId] = structuredClone(blocks)
+      }
     },
 
     addActiveBlock(state, action: PayloadAction<TaskBlockType>) {
+      if (!state.activeNodeId) return
       const meta = TaskBlockRegistry[action.payload]
-      state.blocks.push({
+      const blocks = state.blocksByNode[state.activeNodeId] ?? []
+      blocks.push({
         id: nanoid(),
         type: action.payload,
         payload: structuredClone(meta.defaultPayload)
       })
+      state.blocksByNode[state.activeNodeId] = blocks
     },
 
     removeActiveBlock(state, action: PayloadAction<string>) {
-      state.blocks = state.blocks.filter((b) => b.id !== action.payload)
-    },
-
-    updateActiveBlockPayload(state, action: PayloadAction<{id: string; payload: unknown}>) {
-      const block = state.blocks.find((b) => b.id === action.payload.id)
-      if (block) block.payload = action.payload.payload
+      if (!state.activeNodeId) return
+      const blocks = state.blocksByNode[state.activeNodeId] ?? []
+      state.blocksByNode[state.activeNodeId] = blocks.filter((b) => b.id !== action.payload)
     },
 
     reorderActiveBlocks(state, action: PayloadAction<{activeId: string; overId: string}>) {
-      const {activeId, overId} = action.payload
-      const oldIndex = state.blocks.findIndex((b) => b.id === activeId)
-      const newIndex = state.blocks.findIndex((b) => b.id === overId)
+      if (!state.activeNodeId) return
+      const blocks = state.blocksByNode[state.activeNodeId] ?? []
+      const oldIndex = blocks.findIndex((b) => b.id === action.payload.activeId)
+      const newIndex = blocks.findIndex((b) => b.id === action.payload.overId)
       if (oldIndex === -1 || newIndex === -1) return
-      const [moved] = state.blocks.splice(oldIndex, 1)
-      state.blocks.splice(newIndex, 0, moved)
+      const [moved] = blocks.splice(oldIndex, 1)
+      blocks.splice(newIndex, 0, moved)
+    },
+
+    // Вызывать при дублировании
+    cloneNodeBlocks(state, action: PayloadAction<{fromNodeId: string; toNodeId: string}>) {
+      const source = state.blocksByNode[action.payload.fromNodeId]
+      if (!source) return
+      state.blocksByNode[action.payload.toNodeId] = structuredClone(source).map((b) => ({
+        ...b,
+        id: nanoid()
+      }))
+    },
+
+    removeNodeBlocks(state, action: PayloadAction<string>) {
+      delete state.blocksByNode[action.payload]
     },
 
     clearActiveTest(state) {
-      state.blocks = []
+      state.blocksByNode = {}
       state.activeNodeId = null
     }
   }

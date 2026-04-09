@@ -25,11 +25,12 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import {EyeOffIcon, LockIcon} from 'lucide-react'
-import {useCallback, useEffect} from 'react'
+import {useCallback, useEffect, useRef} from 'react'
 import {AutoLayoutButton} from '../../AutoLayoutButton/AutoLayoutButton'
 import DeletableEdge from '../nodes/DeletableEdge/DeletableEdge'
 import NodeComponent from '../nodes/NodeComponent/NodeComponent'
 import styles from './CreateRoadZone.module.scss'
+import {SaveRoadMapButton} from '@/shared/ui/RoadMap/Buttons/SaveRoadMapButton/SaveRoadMapButton'
 
 const nodeTypes = {FlowScrapeNode: NodeComponent}
 const edgeTypes = {default: DeletableEdge}
@@ -50,17 +51,29 @@ function CreateRoadZoneInner() {
     if (event.dataTransfer) event.dataTransfer.dropEffect = 'move'
   }, [])
 
+  const isEntryCreated = useRef(false)
+
   useEffect(() => {
-    if (nodes.some((el) => el.data.type === RoadMapBlockType.ENTRY_POINT)) return
+    if (isEntryCreated.current) return
 
-    const center = screenToFlowPosition({
-      x: window.innerWidth / 2.2,
-      y: window.innerHeight / 2.7
+    setNodes((nds) => {
+      if (nds.some((el) => el.data.type === RoadMapBlockType.ENTRY_POINT)) {
+        isEntryCreated.current = true
+        return nds
+      }
+
+      const center = screenToFlowPosition({
+        x: window.innerWidth / 2.2,
+        y: window.innerHeight / 2.7
+      })
+
+      const newNode = createRoadNode(RoadMapBlockType.ENTRY_POINT, center)
+
+      isEntryCreated.current = true
+      return [...nds, newNode]
     })
+  }, [screenToFlowPosition, setNodes])
 
-    const newNode = createRoadNode(RoadMapBlockType.ENTRY_POINT, center)
-    setNodes((nds) => [...nds, newNode])
-  }, [])
   const onDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
       event.preventDefault()
@@ -153,7 +166,6 @@ function CreateRoadZoneInner() {
           width: '100%',
           height: '100%',
           minHeight: 600,
-          // border: `2px solid ${isOver ? '#6366f1' : '#d1d5db'}`,
           transition: 'border-color 0.2s',
           position: 'relative',
           overflow: 'hidden'
@@ -199,6 +211,8 @@ function CreateRoadZoneInner() {
                 <LockIcon size={14} />
                 {isPaywallMode ? 'Выйти' : 'Paywall'}
               </button>
+
+              <SaveRoadMapButton />
             </div>
           </Panel>
         </ReactFlow>

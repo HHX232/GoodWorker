@@ -3,7 +3,7 @@ import {MapIcon, LucideProps} from 'lucide-react'
 
 export const RoadEntryPointTask = {
   type: RoadMapBlockType.ENTRY_POINT,
-  label: 'Начало',
+  label: 'entryLabel',
   headerColor: '#141416',
   isEntryPoint: true,
   icon: (props: LucideProps) => <MapIcon {...props} />,

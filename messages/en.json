@@ -172,5 +172,63 @@
   "CardsCatalog": {
     "noMore": "No more posts",
     "loadError": "Failed to load cards"
+  },
+  "roadMap": {
+    "postslabel": "Posts",
+    "linkTestLabel": "Test Link",
+    "mediaInfoLabel": "Media Info",
+    "infoTextLabel": "Text Info",
+    "FilesLabel": "Files",
+    "entryLabel": "Entry Point",
+    "dividerLabel": "Divider",
+    "audioLabel": "Audio",
+    "testLabel": "Test",
+    "helpClickText": "Click to select a test",
+    "infoTextHelpText": "Enter informational text",
+    "clean": "Reset",
+    "startEntryPoint": "Starting Point",
+    "chooseOption": "Choose Option",
+    "freeAnswer": "Free Answer",
+    "fillText": "Fill in the Blanks",
+    "sequence": "Sequence",
+    "matchPairs": "Match Pairs",
+    "highlightText": "Highlight Words",
+    "wordScramble": "Word Scramble",
+    "dialogue": "Dialogue",
+
+    "noQuestions": "No questions",
+    "addButton": "Add",
+    "addFirstBlock": "Add the first block",
+    "delete": "Delete",
+    "uploadAudio": "Upload audio file",
+    "audioFormats": "MP3, WAV, OGG, M4A",
+    "analyzingAudio": "Analyzing audio...",
+    "studentWillHearAudio": "Student will hear this audio during the lesson",
+
+    "uploadMedia": "Upload photo or video",
+    "mediaFormats": "JPG, PNG, GIF · MP4, MOV, WEBM",
+    "mediaPoints": "Photo = 1 pt · Video = 3 pts · Max ",
+    "increaseSize": "Increase",
+    "decreaseSize": "Decrease",
+    "addMedia": "Add ({{remainingPoints}} pts left)",
+    "choosePosts": "Choose posts",
+    "noPostsSelected": "No posts selected, may be added later",
+    "addPost": "Add post",
+    "selectPosts": "Select posts",
+    "selectedCount": "{{count}} selected",
+    "removePost": "Remove",
+
+    "addCondition": "Add condition",
+    "placeholderCondition": "Condition...",
+    "remove": "×"
+  },
+  "fileBlock": {
+    "filesNotAttached": "No files attached",
+    "downloadFile": "Download",
+    "removeFile": "Remove",
+    "uploadFiles": "Upload files",
+    "addFiles": "Add files",
+    "anyFormatMaxSize": "Any format · up to {maxSize} MB · max {maxFiles} files",
+    "maxFilesLimit": "Maximum {maxFiles} files"
   }
 }

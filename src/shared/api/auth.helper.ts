@@ -42,7 +42,6 @@ export const getAccessToken = () => {
 
 export const getAccessTokenServer = async () => {
   if (isClient) {
-    // Если код выполняется на клиенте, используем обычную функцию
     return getAccessToken()
   }
 

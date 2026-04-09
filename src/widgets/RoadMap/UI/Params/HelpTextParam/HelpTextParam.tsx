@@ -5,19 +5,21 @@ function HelpTextParam({
   param,
   value,
   updateNodeParamValue,
-  disabled
+  disabled,
+  t
 }: {
   param: BlockRoadParam
   value: string
   updateNodeParamValue: (v: string) => void
   disabled?: boolean
+  t: (v: string) => void
 }) {
   return (
     <div className={styles.wrapper}>
       <TextAreaUI
         disabled={disabled}
         currentValue={value}
-        placeholder={param.helpText || 'write text'}
+        placeholder={t(param.helpText || '') ?? 'write text'}
         autoResize
         maxRows={disabled ? 30 : 15}
         minRows={0}

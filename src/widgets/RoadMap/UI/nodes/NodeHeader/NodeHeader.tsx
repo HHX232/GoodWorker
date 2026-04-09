@@ -2,60 +2,18 @@
 'use client'
 
 import RoadMapBlockRegistry from '@/features/Roadmap/registry'
+import {PRESET_COLORS} from '@/shared/constants/roadMap/roadMap.const'
 import {createRoadNode} from '@/shared/helpers/Node/CreateFlowNode'
 import {RoadMapBlockType, RoadNode} from '@/shared/types/RoadMap/RoadMap.types'
 import {Button} from '@/shared/ui/base/Buttons/Button/Button'
 import {useViewMode} from '@/shared/ui/RoadMap/context/ViewModeContext'
 import {useReactFlow} from '@xyflow/react'
 import {CopyIcon, GripVerticalIcon, PaletteIcon, TrashIcon} from 'lucide-react'
+import {useTranslations} from 'next-intl'
 import {useEffect, useRef, useState} from 'react'
 import {HexColorPicker} from 'react-colorful'
 import styles from './NodeHeader.module.scss'
-
-function getIconColor(hex: string): string | undefined {
-  const clean = hex.replace('#', '')
-  if (clean.length < 6) return undefined
-  const r = parseInt(clean.slice(0, 2), 16)
-  const g = parseInt(clean.slice(2, 4), 16)
-  const b = parseInt(clean.slice(4, 6), 16)
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-  if (luminance < 0.35) return '#ffffff' // тёмный → белый
-  if (luminance < 0.85) return '#141416' // яркий → чёрный
-  return undefined // почти белый → серый из CSS
-}
-
-const PRESET_COLORS = [
-  // Reds
-  '#ff6b6b',
-  '#ee5a24',
-  '#c0392b',
-  '#ff4757',
-  // Oranges / Yellows
-  '#fd9644',
-  '#f9ca24',
-  '#f0932b',
-  '#ffeaa7',
-  // Greens
-  '#26de81',
-  '#20bf6b',
-  '#2ecc71',
-  '#a3cb38',
-  // Blues
-  '#45aaf2',
-  '#2d98da',
-  '#3498db',
-  '#4a90d9',
-  // Purples / Pinks
-  '#a29bfe',
-  '#6c5ce7',
-  '#fd79a8',
-  '#e84393',
-  // Neutrals
-  '#b2bec3',
-  '#636e72',
-  '#2d3436',
-  '#dfe6e9'
-]
+import {getNodeHeaderIconColor} from '@/shared/helpers/Node/getNodeHeaderIconColor'
 
 export default function NodeHeader({
   taskType,
@@ -69,6 +27,7 @@ export default function NodeHeader({
   hideTitle?: boolean
 }) {
   const task = RoadMapBlockRegistry[taskType]
+  const t = useTranslations('roadMap')
   const {deleteElements, getNode, addNodes, updateNodeData} = useReactFlow()
 
   const node = getNode(nodeId) as RoadNode | undefined
@@ -94,7 +53,7 @@ export default function NodeHeader({
     updateNodeData(nodeId, {headerColor: newColor} as any)
   }
   const activeColor = color || ''
-  const iconColor = activeColor ? getIconColor(activeColor) : undefined
+  const iconColor = activeColor ? getNodeHeaderIconColor(activeColor) : undefined
   const onlyView = useViewMode() === 'view'
 
   return (
@@ -110,14 +69,14 @@ export default function NodeHeader({
       <div className={styles.content}>
         {!hideTitle && (
           <p className={styles.label} style={{color: iconColor}}>
-            {task?.label}
+            {t(task?.label)}
           </p>
         )}
 
         <div className={styles.actions}>
           {task?.isEntryPoint && (
             <span className={styles.badge} style={{color: iconColor}}>
-              Entry point
+              {t('startEntryPoint')}
             </span>
           )}
 
@@ -174,7 +133,9 @@ export default function NodeHeader({
                         {PRESET_COLORS.map((preset) => (
                           <button
                             key={preset}
-                            className={`${styles.presetSwatch} ${activeColor === preset ? styles.presetSwatchActive : ''}`}
+                            className={`${styles.presetSwatch} ${
+                              activeColor === preset ? styles.presetSwatchActive : ''
+                            }`}
                             style={{backgroundColor: preset}}
                             onClick={() => handleColorChange(preset)}
                             title={preset}
@@ -184,7 +145,7 @@ export default function NodeHeader({
                     </div>
                     {activeColor && (
                       <button className={styles.resetColor} onClick={() => handleColorChange('')}>
-                        Сбросить
+                        ({t('clean')})
                       </button>
                     )}
                   </div>

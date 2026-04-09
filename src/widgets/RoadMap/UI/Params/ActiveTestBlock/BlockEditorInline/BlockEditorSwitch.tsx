@@ -2,7 +2,6 @@
 'use client'
 import {TestBlock} from '@/entities/store/slices/tasksSlice.slice'
 import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
-import {useActions} from '@/features/hooks/store/useActions'
 import ChooseOptionEditor from '@/widgets/Tasks/BlockEditor/ChooseOptionEditor/ChooseOptionEditor'
 import FreeAnswerEditor from '@/widgets/Tasks/BlockEditor/FreeAnswerEditor/FreeAnswerEditor'
 import {FillTextEditor} from '@/widgets/Tasks/BlockEditor/FillTextEditor/FillTextEditor'
@@ -11,16 +10,6 @@ import MatchPairsEditor from '@/widgets/Tasks/BlockEditor/MatchPairsEditor/Match
 import {HighlightTextEditor} from '@/widgets/Tasks/BlockEditor/HighlightTextEditor/HighlightTextEditor'
 import {WordScrambleEditor} from '@/widgets/Tasks/BlockEditor/WordScrambleEditor/WordScrambleEditor'
 import {DialogueEditor} from '@/widgets/Tasks/BlockEditor/DialogueEditor/DialogueEditor'
-import {useEffect} from 'react'
-import {useDispatch} from 'react-redux'
-
-// Патч: подменяем updateBlockPayload → updateActiveBlockPayload
-// Редакторы диспатчат 'constructor/updateBlockPayload'
-// Мы перехватываем через middleware или... проще: просто слушаем нужный slice
-
-// Самый чистый способ без middleware:
-// передаём фиктивный blockId который совпадает с id в activeTest slice,
-// и добавляем в редюсер activeTest обработчик экшена constructor/updateBlockPayload
 
 export function BlockEditorSwitch({block}: {block: TestBlock}) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

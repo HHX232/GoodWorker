@@ -34,7 +34,6 @@ export function ResultScreen({test, result}: Props) {
 
   return (
     <div className={styles.page}>
-      {/* ── Итоговый счёт ── */}
       <div className={styles.score_card}>
         <div className={styles.circle} style={{borderColor: color}}>
           <span className={styles.percent} style={{color}}>
@@ -54,14 +53,12 @@ export function ResultScreen({test, result}: Props) {
         </div>
       </div>
 
-      {/* ── Прогресс-бар ── */}
       <div className={styles.progress_wrap}>
         <div className={styles.progress_bar}>
           <div className={styles.progress_fill} style={{width: `${result.percent}%`, background: color}} />
         </div>
       </div>
 
-      {/* ── Разбор по блокам ── */}
       <div className={styles.breakdown}>
         <h2 className={styles.breakdown_title}>Разбор по заданиям</h2>
         {result.blocks.map((br, i) => (
@@ -69,7 +66,6 @@ export function ResultScreen({test, result}: Props) {
         ))}
       </div>
 
-      {/* ── Действия ── */}
       <div className={styles.actions}>
         <button type='button' className={styles.retry_btn} onClick={() => window.location.reload()}>
           Пройти снова

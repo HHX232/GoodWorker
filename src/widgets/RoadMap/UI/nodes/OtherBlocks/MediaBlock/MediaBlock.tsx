@@ -2,6 +2,7 @@
 'use client'
 
 import {RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
+import {useViewMode} from '@/shared/ui/RoadMap/context/ViewModeContext'
 import {useReactFlow, useStore} from '@xyflow/react'
 import {
   ChevronLeftIcon,
@@ -12,6 +13,7 @@ import {
   Trash2Icon,
   UploadIcon
 } from 'lucide-react'
+import {useTranslations} from 'next-intl'
 import Image from 'next/image'
 import {useRef, useState} from 'react'
 import 'swiper/css'
@@ -61,6 +63,8 @@ export default function MediaBlock({nodeId}: {nodeId: string}) {
   const {updateNodeData} = useReactFlow()
   const fileRef = useRef<HTMLInputElement>(null)
   const [activeIndex, setActiveIndex] = useState(0)
+  const viewOnly = useViewMode() === 'view'
+  const t = useTranslations('roadMap')
 
   const mediaData = useStore((s) => {
     const data = s.nodeLookup.get(nodeId)?.data as RoadNodeData & {
@@ -132,13 +136,12 @@ export default function MediaBlock({nodeId}: {nodeId: string}) {
         onChange={handleFiles}
       />
 
-      {/* ── Нет медиа ── */}
       {!hasMedia && (
         <button type='button' className={styles.uploadBtn} onClick={() => fileRef.current?.click()}>
           <UploadIcon size={18} />
-          <span>Загрузить фото или видео</span>
+          <span>{t('uploadMedia')}</span>
           <span className={styles.uploadHint}>JPG, PNG, GIF · MP4, MOV, WEBM</span>
-          <span className={styles.uploadHint}>Фото = 1 балл · Видео = 3 балла · Макс {MAX_POINTS}</span>
+          <span className={styles.uploadHint}>{t('mediaPoints') + ` ${MAX_POINTS}`}</span>
         </button>
       )}
 
@@ -166,7 +169,7 @@ export default function MediaBlock({nodeId}: {nodeId: string}) {
                 className={styles.iconBtn}
                 onClick={() => cycleSize('up')}
                 disabled={mediaData.size === 'large'}
-                title='Увеличить'
+                title={t('increaseSize')}
               >
                 <Maximize2Icon size={12} />
               </button>
@@ -174,17 +177,16 @@ export default function MediaBlock({nodeId}: {nodeId: string}) {
                 className={styles.iconBtn}
                 onClick={() => cycleSize('down')}
                 disabled={mediaData.size === 'mini'}
-                title='Уменьшить'
+                title={t('decreaseSize')}
               >
                 <Minimize2Icon size={12} />
               </button>
 
-              {/* Добавить ещё */}
-              {canAddMore && (
+              {canAddMore && !viewOnly && (
                 <button
                   className={styles.iconBtn}
                   onClick={() => fileRef.current?.click()}
-                  title={`Добавить (осталось ${remainingPoints} оч.)`}
+                  title={t('addMedia', {remainingPoints})}
                 >
                   <PlusIcon size={12} />
                 </button>
@@ -192,7 +194,6 @@ export default function MediaBlock({nodeId}: {nodeId: string}) {
             </div>
           </div>
 
-          {/* Слайдер или одиночный */}
           {isMultiple ? (
             <div className={styles.sliderWrapper} style={{height: mediaHeight}}>
               <ArrowLeft />
@@ -212,14 +213,19 @@ export default function MediaBlock({nodeId}: {nodeId: string}) {
               >
                 {mediaData.items.map((item, i) => (
                   <SwiperSlide key={i} className={styles.slide}>
-                    <SlideContent item={item} height={mediaHeight} onRemove={() => removeItem(i)} />
+                    <SlideContent viewOnly={viewOnly} item={item} height={mediaHeight} onRemove={() => removeItem(i)} />
                   </SwiperSlide>
                 ))}
               </Swiper>
             </div>
           ) : (
             <div className={styles.singleWrap} style={{height: mediaHeight}}>
-              <SlideContent item={mediaData.items[0]} height={mediaHeight} onRemove={() => removeItem(0)} />
+              <SlideContent
+                viewOnly={viewOnly}
+                item={mediaData.items[0]}
+                height={mediaHeight}
+                onRemove={() => removeItem(0)}
+              />
             </div>
           )}
         </div>
@@ -228,7 +234,18 @@ export default function MediaBlock({nodeId}: {nodeId: string}) {
   )
 }
 
-function SlideContent({item, height, onRemove}: {item: MediaItem; height: number; onRemove: () => void}) {
+function SlideContent({
+  item,
+  height,
+  onRemove,
+  viewOnly
+}: {
+  item: MediaItem
+  height: number
+  onRemove: () => void
+  viewOnly: boolean
+}) {
+  const t = useTranslations('roadMap')
   return (
     <div className={styles.slideContent} style={{height}}>
       {item.type === 'image' ? (
@@ -236,10 +253,11 @@ function SlideContent({item, height, onRemove}: {item: MediaItem; height: number
       ) : (
         <video src={item.url} controls className={styles.video} style={{height: '100%'}} />
       )}
-
-      <button className={styles.removeSlide} onClick={onRemove} title='Удалить'>
-        <Trash2Icon size={12} />
-      </button>
+      {!viewOnly && (
+        <button className={styles.removeSlide} onClick={onRemove} title={t('delete')}>
+          <Trash2Icon size={12} />
+        </button>
+      )}
     </div>
   )
 }

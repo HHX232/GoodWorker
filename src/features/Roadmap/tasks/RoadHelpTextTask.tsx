@@ -3,14 +3,14 @@ import {LucideProps, TextCursorIcon} from 'lucide-react'
 
 export const RoadHelpTextTask = {
   type: RoadMapBlockType.INFO_TEXT,
-  label: 'Write help text',
+  label: 'infoTextLabel',
   headerColor: '',
   icon: (props: LucideProps) => <TextCursorIcon {...props} />,
   inputs: [
     {
-      name: '',
+      name: RoadMapBlockType.INFO_TEXT,
       type: RoadMapParamType.STRING,
-      helpText: 'please, write',
+      helpText: 'infoTextHelpText',
       required: true,
       hideHandle: false
     }

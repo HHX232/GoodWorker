@@ -2,9 +2,6 @@ import {TestResult} from '@/features/Tasks/TaskResult/scoreBlock'
 import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
 import {SavedTest} from '@/widgets/Tasks/Storage/testStorage'
 import {PieChart} from '@mui/x-charts/PieChart'
-
-import {PieItemIdentifier} from '@mui/x-charts'
-import {useState} from 'react'
 import styles from './ResultToast.module.scss'
 
 const BLOCK_LABELS: Partial<Record<TaskBlockType, string>> = {
@@ -33,27 +30,12 @@ interface Props {
 }
 
 export function ResultToast({test, result, onRetry, onClose}: Props) {
-  const {label, color} = grade(result.percent)
+  const {color} = grade(result.percent)
   const correct = result.totalScore
   const wrong = result.maxScore - result.totalScore
-  const [active, setActive] = useState<PieItemIdentifier | null>(null)
 
-  // группировка по типам заданий
-  const typeStats = Object.values(TaskBlockType)
-    .map((type) => {
-      const blocks = result.blocks.filter((b) => b.blockType === type)
-
-      return {
-        id: type,
-        value: blocks.reduce((sum, b) => sum + b.score, 0),
-        label: BLOCK_LABELS[type] ?? type
-      }
-    })
-    .filter((item) => item.value > 0)
   return (
     <div className={styles.toast}>
-      {/* Шапка с кругом */}
-
       <PieChart
         series={[
           {
@@ -99,15 +81,12 @@ export function ResultToast({test, result, onRetry, onClose}: Props) {
         width={200}
         height={200}
         hideLegend
-        onItemClick={(e, d) => setActive(d)}
       />
 
-      {/* Прогресс */}
       <div className={styles.progress}>
         <div className={styles.fill} style={{width: `${result.percent}%`, background: color}} />
       </div>
 
-      {/* Разбор */}
       <div className={styles.rows}>
         {result.blocks.map((br, i) => (
           <div key={br.blockId} className={`${styles.row} ${br.isCorrect ? styles.ok : styles.err}`}>
@@ -123,7 +102,6 @@ export function ResultToast({test, result, onRetry, onClose}: Props) {
         ))}
       </div>
 
-      {/* Кнопки */}
       <div className={styles.actions}>
         <button type='button' className={styles.btn_retry} onClick={onRetry}>
           Пройти снова

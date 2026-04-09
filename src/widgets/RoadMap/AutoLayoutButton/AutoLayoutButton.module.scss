@@ -1,0 +1,60 @@
+.button {
+   display: inline-flex;
+   align-items: center;
+   gap: 5px;
+   font-size: 0.75rem;
+   font-weight: 600;
+   padding: 6px 10px;
+   border-radius: 8px;
+   border: 1px solid #e4e4e7;
+   background: #fff;
+   color: #868897;
+   cursor: pointer;
+   transition: all 0.15s;
+
+   &:hover {
+      border-color: #141416;
+      color: #141416;
+   }
+
+   &:active {
+      transform: scale(0.97);
+   }
+}
+
+.icon {
+   width: 14px;
+   height: 14px;
+   flex-shrink: 0;
+   transition: transform 0.15s;
+}
+
+.save_button {
+   &:hover {
+      border-color: #2d7a4f;
+      background: #2d7a4f;
+      color: #fff;
+
+      .icon {
+         transform: translateY(-1px);
+      }
+   }
+
+   &:active {
+      background: #255f3e;
+      border-color: #255f3e;
+   }
+
+   &:disabled {
+      border-color: #e4e4e7;
+      background: #fff;
+      color: #c0c0c8;
+      cursor: not-allowed;
+      transform: none;
+
+      &:hover {
+         background: #fff;
+         border-color: #e4e4e7;
+      }
+   }
+}

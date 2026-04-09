@@ -3,7 +3,7 @@ import {Headphones, LucideProps} from 'lucide-react'
 
 export const RoadAudioTask = {
   type: RoadMapBlockType.INFO_AUDIO,
-  label: 'Аудио',
+  label: 'audioLabel',
   headerColor: '',
   icon: (props: LucideProps) => <Headphones {...props} />,
   inputs: [{name: '', type: RoadMapParamType.HIDE}],

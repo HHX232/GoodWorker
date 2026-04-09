@@ -9,7 +9,8 @@ function TestPreview({
   createdAt,
   avatarUrl,
   authorName,
-  testId
+  testId,
+  useBorder = true
 }: {
   avatarUrl: string
   description: string
@@ -18,6 +19,7 @@ function TestPreview({
   createdAt: string
   authorName: string
   testId: string
+  useBorder?: boolean
 }) {
   const formattedDate = new Date(createdAt).toLocaleDateString('ru-RU', {
     day: 'numeric',
@@ -26,7 +28,7 @@ function TestPreview({
 
   return (
     <Link href={`/test/${testId}`}>
-      <div className={styles.card}>
+      <div className={`${styles.card} ${!useBorder ? styles.none_border : ''}`}>
         <div className={styles.author}>
           <div className={styles.avatar}>
             <Image width={80} height={80} src={avatarUrl} alt={authorName} />

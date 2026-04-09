@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
-import { RoadNodeData } from '@/shared/types/RoadMap/RoadMap.types'
-import { useReactFlow, useStore } from '@xyflow/react'
-import { Mic2Icon, PauseIcon, PlayIcon, UploadIcon, XIcon } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import {RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
+import {useViewMode} from '@/shared/ui/RoadMap/context/ViewModeContext'
+import {useReactFlow, useStore} from '@xyflow/react'
+import {Mic2Icon, PauseIcon, PlayIcon, UploadIcon, XIcon} from 'lucide-react'
+import {useCallback, useEffect, useRef, useState} from 'react'
 import styles from './AudioBlock.module.scss'
-import { useViewMode } from '@/shared/ui/RoadMap/context/ViewModeContext'
-
+import {useTranslations} from 'next-intl'
 
 async function extractWaveform(file: File): Promise<number[]> {
   const BAR_COUNT = 80
@@ -146,14 +146,16 @@ function AudioPlayer({url, filename, waveform, accentColor, onRemove}: PlayerPro
         </div>
       </div>
 
-      {!viewOnly && <div className={styles.meta}>
-        <span className={styles.filename} title={filename}>
-          {filename}
-        </span>
-        <button type='button' className={styles.removeBtn} onClick={onRemove}>
-          <XIcon size={13} />
-        </button>
-      </div>}
+      {!viewOnly && (
+        <div className={styles.meta}>
+          <span className={styles.filename} title={filename}>
+            {filename}
+          </span>
+          <button type='button' className={styles.removeBtn} onClick={onRemove}>
+            <XIcon size={13} />
+          </button>
+        </div>
+      )}
     </div>
   )
 }
@@ -161,6 +163,7 @@ function AudioPlayer({url, filename, waveform, accentColor, onRemove}: PlayerPro
 // ── Основной блок ─────────────────────────────────────────────────────────────
 
 export default function AudioBlock({nodeId}: {nodeId: string}) {
+  const t = useTranslations('roadMap')
   const viewOnly = useViewMode() === 'view'
   const {updateNodeData} = useReactFlow()
   const fileRef = useRef<HTMLInputElement>(null)
@@ -213,8 +216,8 @@ export default function AudioBlock({nodeId}: {nodeId: string}) {
       {!hasAudio && !extracting && !viewOnly && (
         <button type='button' className={styles.uploadBtn} onClick={() => fileRef.current?.click()}>
           <UploadIcon size={18} />
-          <span>Загрузить аудиофайл</span>
-          <span className={styles.uploadHint}>MP3, WAV, OGG, M4A</span>
+          <span>{t('uploadAudio')}</span>
+          <span className={styles.uploadHint}>{t('audioFormats')}</span>
         </button>
       )}
 
@@ -232,11 +235,11 @@ export default function AudioBlock({nodeId}: {nodeId: string}) {
               />
             ))}
           </div>
-          <span>Анализирую аудио...</span>
+          <span>{t('analyzingAudio')}</span>
         </div>
       )}
 
-      {hasAudio &&  (
+      {hasAudio && (
         <>
           <AudioPlayer
             url={audioData.url!}
@@ -245,10 +248,12 @@ export default function AudioBlock({nodeId}: {nodeId: string}) {
             accentColor={audioData.headerColor || undefined}
             onRemove={remove}
           />
-        {!viewOnly &&  <p className={styles.hint}>
-            <Mic2Icon size={12} />
-            Ученик услышит это аудио при прохождении
-          </p>}
+          {!viewOnly && (
+            <p className={styles.hint}>
+              <Mic2Icon size={12} />
+              {t('studentWillHearAudio')}
+            </p>
+          )}
         </>
       )}
     </div>

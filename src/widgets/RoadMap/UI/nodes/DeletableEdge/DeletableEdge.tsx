@@ -5,7 +5,6 @@ import {useViewMode} from '@/shared/ui/RoadMap/context/ViewModeContext'
 import {BaseEdge, EdgeLabelRenderer, EdgeProps, getSmoothStepPath, useReactFlow} from '@xyflow/react'
 
 export default function DeletableEdge(props: EdgeProps) {
-  // window.alert(props.id)
   const [edgePath, labelX, labelY] = getSmoothStepPath({...props})
   const {setEdges} = useReactFlow()
   const viewMode = useViewMode()
@@ -15,7 +14,6 @@ export default function DeletableEdge(props: EdgeProps) {
     <>
       <BaseEdge path={edgePath} markerEnd={props.markerEnd} style={props.style} />
 
-      {/* кнопка удаления — только в режиме редактирования */}
       {!isView && (
         <EdgeLabelRenderer>
           <div

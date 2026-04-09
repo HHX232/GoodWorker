@@ -3,7 +3,7 @@ import {LucideProps, PaperclipIcon} from 'lucide-react'
 
 export const RoadFileTask = {
   type: RoadMapBlockType.DOWNLOAD_FILE_LINK,
-  label: 'Файлы',
+  label: 'FilesLabel',
   headerColor: '',
   icon: (props: LucideProps) => <PaperclipIcon {...props} />,
   inputs: [{name: '', type: RoadMapParamType.HIDE}],

@@ -7,14 +7,15 @@ function SelectMyTestParam({
   param,
   value,
   updateNodeParamValue,
-  disabled
+  disabled,
+  t
 }: {
   param: BlockRoadParam
   value: string
   updateNodeParamValue: (v: string) => void
   disabled?: boolean
+  t: (v: string) => void
 }) {
-  console.log('param', param)
   return (
     <div className={styles.wrapper}>
       <SelectInput

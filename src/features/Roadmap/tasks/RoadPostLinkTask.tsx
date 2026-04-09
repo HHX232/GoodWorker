@@ -3,14 +3,14 @@ import {ClipboardList, LucideProps} from 'lucide-react'
 
 export const RoadPostLinkTask = {
   type: RoadMapBlockType.TEST_LINK,
-  label: 'Link to test',
+  label: 'linkTestLabel',
   headerColor: '',
   icon: (props: LucideProps) => <ClipboardList {...props} />,
   inputs: [
     {
-      name: 'Link to test',
+      name: 'linkTestLabel',
       type: RoadMapParamType.SELECT_MY_TEST,
-      helpText: 'please, click',
+      helpText: 'helpClickText',
       required: true,
       hideHandle: false
     }

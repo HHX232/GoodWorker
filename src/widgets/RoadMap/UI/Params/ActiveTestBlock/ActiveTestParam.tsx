@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // OtherBlocks/ActiveTestBlock/ActiveTestBlock.tsx
 'use client'
+
 import {TestPlayer} from '@/_pages/TestPages/TestPlayer/TestPlayer'
 import {TestBlock} from '@/entities/store/slices/tasksSlice.slice'
 import {useActions} from '@/features/hooks/store/useActions'
@@ -23,18 +24,26 @@ const AVAILABLE_TYPES: TaskBlockType[] = [
   TaskBlockType.DIALOGUE
 ]
 
-const TYPE_LABELS: Record<string, string> = {
-  [TaskBlockType.CHOOSE_OPTION]: 'Выбор варианта',
-  [TaskBlockType.FREE_ANSWER]: 'Свободный ответ',
-  [TaskBlockType.FILL_TEXT]: 'Заполнить пропуски',
-  [TaskBlockType.SEQUENCE]: 'Последовательность',
-  [TaskBlockType.MATCH_PAIRS]: 'Сопоставить пары',
-  [TaskBlockType.HIGHLIGHT_TEXT]: 'Выделить слова',
-  [TaskBlockType.WORD_SCRAMBLE]: 'Собрать слово',
-  [TaskBlockType.DIALOGUE]: 'Диалог'
+export const TYPE_KEYS: Record<string, string> = {
+  [TaskBlockType.CHOOSE_OPTION]: 'chooseOption',
+  [TaskBlockType.FREE_ANSWER]: 'freeAnswer',
+  [TaskBlockType.FILL_TEXT]: 'fillText',
+  [TaskBlockType.SEQUENCE]: 'sequence',
+  [TaskBlockType.MATCH_PAIRS]: 'matchPairs',
+  [TaskBlockType.HIGHLIGHT_TEXT]: 'highlightText',
+  [TaskBlockType.WORD_SCRAMBLE]: 'wordScramble',
+  [TaskBlockType.DIALOGUE]: 'dialogue'
 }
 
-export default function ActiveTestBlock({nodeId, onlyPass = false}: {nodeId: string; onlyPass?: boolean}) {
+export default function ActiveTestBlock({
+  nodeId,
+  onlyPass = false,
+  t
+}: {
+  nodeId: string
+  onlyPass?: boolean
+  t: (v: string) => string
+}) {
   const {updateNodeData} = useReactFlow()
   const {loadBlocksForNode, addActiveBlock, removeActiveBlock} = useActions()
 
@@ -42,17 +51,21 @@ export default function ActiveTestBlock({nodeId, onlyPass = false}: {nodeId: str
     (s) => ((s.nodeLookup.get(nodeId)?.data as RoadNodeData)?.activeTests ?? []) as TestBlock[]
   )
 
-  const {blocks, activeNodeId} = useTypedSelector((s) => s.activeTestSlice)
+  const {blocksByNode, activeNodeId} = useTypedSelector((s) => s.activeTestSlice)
+  const isActive = activeNodeId === nodeId
+  const blocks = blocksByNode[nodeId] ?? nodeBlocks
   const [activeIdx, setActiveIdx] = useState(0)
   const [selectedType, setSelectedType] = useState<TaskBlockType>(TaskBlockType.CHOOSE_OPTION)
+  useEffect(() => {
+    if (!isActive) return
+    updateNodeData(nodeId, {activeTests: blocks} as any)
+  }, [blocks, isActive, nodeId])
 
-  // Загружаем блоки из nodeData в slice при маунте или смене ноды
   useEffect(() => {
     loadBlocksForNode({nodeId, blocks: nodeBlocks})
     setActiveIdx(0)
   }, [nodeId])
 
-  // Синхронизируем slice → nodeData при каждом изменении блоков
   useEffect(() => {
     if (activeNodeId !== nodeId) return
     updateNodeData(nodeId, {activeTests: blocks} as any)
@@ -60,7 +73,7 @@ export default function ActiveTestBlock({nodeId, onlyPass = false}: {nodeId: str
 
   const handleAdd = () => {
     addActiveBlock(selectedType)
-    setActiveIdx(blocks.length) // станет последним
+    setActiveIdx(blocks.length)
   }
 
   const handleRemove = (id: string) => {
@@ -69,38 +82,40 @@ export default function ActiveTestBlock({nodeId, onlyPass = false}: {nodeId: str
   }
 
   const current = blocks[activeIdx] ?? null
+
   if (onlyPass) {
     return (
       <div className={`${styles.wrap} nodrag nopan`}>
         {nodeBlocks.length === 0 ? (
-          <p className={styles.empty}>Нет вопросов</p>
+          <p className={styles.empty}>{t('noQuestions')}</p>
         ) : (
           <TestPlayer showInlineResult blocks={nodeBlocks} singleBlock onResult={(res) => console.log(res)} />
         )}
       </div>
     )
   }
+
   return (
     <div className={`${styles.wrap} nodrag nopan`}>
-      {/* ── Добавление блока ── */}
       <div className={styles.add_row}>
         <select
           className={styles.type_select}
           value={selectedType}
           onChange={(e) => setSelectedType(e.target.value as TaskBlockType)}
         >
-          {AVAILABLE_TYPES.map((t) => (
-            <option key={t} value={t}>
-              {TYPE_LABELS[t]}
+          {AVAILABLE_TYPES.map((type) => (
+            <option key={type} value={type}>
+              {t(TYPE_KEYS[type])}
             </option>
           ))}
         </select>
+
         <button type='button' className={styles.add_btn} onClick={handleAdd}>
-          + Добавить
+          + {t('addButton')}
         </button>
       </div>
 
-      {blocks.length === 0 && <p className={styles.empty}>Добавьте первый блок</p>}
+      {blocks.length === 0 && <p className={styles.empty}>{t('addFirstBlock')}</p>}
 
       {blocks.length > 0 && (
         <>
@@ -142,11 +157,13 @@ export default function ActiveTestBlock({nodeId, onlyPass = false}: {nodeId: str
           {current && (
             <div className={styles.block_wrap}>
               <div className={styles.block_header}>
-                <span className={styles.block_type}>{TYPE_LABELS[current.type]}</span>
+                <span className={styles.block_type}> {t(TYPE_KEYS[current.type])}</span>
+
                 <button type='button' className={styles.remove_btn} onClick={() => handleRemove(current.id)}>
-                  Удалить
+                  {t('delete')}
                 </button>
               </div>
+
               <BlockEditorSwitch block={current} />
             </div>
           )}

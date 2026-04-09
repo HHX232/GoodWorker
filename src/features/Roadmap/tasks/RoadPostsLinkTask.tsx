@@ -3,7 +3,7 @@ import {LayoutGridIcon, LucideProps} from 'lucide-react'
 
 export const RoadPostsLinkTask = {
   type: RoadMapBlockType.POST_LINK,
-  label: 'Посты',
+  label: 'postslabel',
   headerColor: '',
   icon: (props: LucideProps) => <LayoutGridIcon {...props} />,
   inputs: [{name: '', type: RoadMapParamType.HIDE}],

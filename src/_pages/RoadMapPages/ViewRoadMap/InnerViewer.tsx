@@ -35,6 +35,7 @@ function InnerViewer({nodes: initialNodes, edges: initialEdges}: any) {
         nodesDraggable={false}
         nodesConnectable={false}
         fitView
+        fitViewOptions={{padding: 0.2, duration: 400}}
         minZoom={0.2}
         maxZoom={2}
       >
@@ -54,6 +55,7 @@ export default function RoadMapViewer() {
     ...edge,
     type: 'default',
     animated: true,
+    selectable: false,
     markerEnd: {
       type: MarkerType.ArrowClosed,
       width: 22,

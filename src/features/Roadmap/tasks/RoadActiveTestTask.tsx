@@ -3,7 +3,7 @@ import {LucideProps, NotebookPen} from 'lucide-react'
 
 export const RoadActiveTestTask = {
   type: RoadMapBlockType.ACTIVE_TEST,
-  label: 'Тест',
+  label: 'testLabel',
   headerColor: '',
   icon: (props: LucideProps) => <NotebookPen {...props} />,
   inputs: [{name: '', type: RoadMapParamType.HIDE}],

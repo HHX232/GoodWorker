@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 import {TestBlock} from '@/entities/store/slices/tasksSlice.slice'
 
@@ -7,103 +6,12 @@ import {useParams} from 'next/navigation'
 import {useEffect, useState} from 'react'
 
 import {calculateResult, StudentAnswer, TestResult} from '@/features/Tasks/TaskResult/scoreBlock'
-import {
-  ChooseOptionPayload,
-  DialoguePayload,
-  FreeAnswerPayload,
-  MatchPairsPayload,
-  SequencePayload,
-  WordScramblePayload
-} from '@/shared/types/Tasks/TaskPayload.type'
 import {ResultToast} from '@/shared/ui/Tasks/ResultToast/ResultToast'
 import {NavBar} from '@/widgets/BaseUI'
-import {DialogueStudentView} from '@/widgets/Tasks/BlockEditor/DialogueEditor/DialogueEditor'
-import {FillTextEditor} from '@/widgets/Tasks/BlockEditor/FillTextEditor/FillTextEditor'
-import {HighlightStudentView} from '@/widgets/Tasks/BlockEditor/HighlightTextEditor/HighlightTextEditor'
-import {InfoAudioEditor} from '@/widgets/Tasks/BlockEditor/Info/InfoAudioEditor/InfoAudioEditor'
-import {InfoMediaEditor} from '@/widgets/Tasks/BlockEditor/Info/InfoMediaEditor/InfoMediaEditor'
-import {InfoTextEditor} from '@/widgets/Tasks/BlockEditor/Info/InfoTextEditor/InfoTextEditor'
-import {getShuffledItems, StudentView} from '@/widgets/Tasks/BlockEditor/WordScrambleEditor/WordScrambleEditor'
 import {SavedTest, testStorage} from '@/widgets/Tasks/Storage/testStorage'
 import {toast} from 'sonner'
-import {ChooseOptionStudent, FreeAnswerStudent, MatchPairsStudent, SequenceStudent} from './Studentviews/Studentviews'
 import styles from './TakeTestPage.module.scss'
 import {TestPlayer} from './TestPlayer/TestPlayer'
-
-// ── Роутер блоков ─────────────────────────────────────────────────────────────
-
-function BlockView({
-  block,
-  onChange,
-  isSubmitted
-}: {
-  block: TestBlock
-  onChange: (blockId: string, answer: StudentAnswer) => void
-  isSubmitted: boolean
-}) {
-  const cb = (a: StudentAnswer) => onChange(block.id, a)
-  const p = block.payload as any
-
-  switch (block.type) {
-    case TaskBlockType.CHOOSE_OPTION:
-      return <ChooseOptionStudent payload={p as ChooseOptionPayload} onChange={cb} />
-
-    case TaskBlockType.FREE_ANSWER:
-      return <FreeAnswerStudent payload={p as FreeAnswerPayload} onChange={cb} />
-
-    case TaskBlockType.SEQUENCE:
-      return <SequenceStudent payload={p as SequencePayload} onChange={cb} />
-
-    case TaskBlockType.MATCH_PAIRS:
-      return <MatchPairsStudent payload={p as MatchPairsPayload} onChange={cb} />
-
-    case TaskBlockType.HIGHLIGHT_TEXT:
-      return (
-        <HighlightStudentView
-          instruction={p.instruction}
-          tokens={p.tokens ?? []}
-          onChange={(selected) => cb({type: TaskBlockType.HIGHLIGHT_TEXT, value: selected})}
-          externalChecked={isSubmitted}
-        />
-      )
-
-    case TaskBlockType.WORD_SCRAMBLE: {
-      const wp = p as WordScramblePayload
-      if (!wp.source) return null
-      return (
-        <StudentView
-          source={wp.source}
-          mode={wp.mode}
-          hint={wp.hint}
-          shuffledItems={getShuffledItems(wp.source, wp.mode)}
-          onChange={cb}
-          externalChecked={isSubmitted}
-        />
-      )
-    }
-
-    case TaskBlockType.DIALOGUE:
-      return (
-        <DialogueStudentView
-          payload={p as DialoguePayload}
-          onChange={(ids) => cb({type: TaskBlockType.DIALOGUE, value: ids})}
-          externalChecked={isSubmitted}
-        />
-      )
-
-    // INFO-блоки — только показываем, не собираем ответ
-    case TaskBlockType.INFO_TEXT:
-    case TaskBlockType.INFO_MEDIA:
-    case TaskBlockType.INFO_AUDIO:
-      return <InfoBlockView block={block} />
-
-    case TaskBlockType.FILL_TEXT:
-      return <FillTextEditor blockId='123' onlyPass onChangeAnswer={cb} payload={p} />
-
-    default:
-      return null
-  }
-}
 
 const BLOCK_LABELS: Partial<Record<TaskBlockType, string>> = {
   [TaskBlockType.CHOOSE_OPTION]: 'Выберите вариант ответа',
@@ -127,25 +35,6 @@ export function BlockWrapper({block, children}: {block: TestBlock; children: Rea
     </div>
   )
 }
-
-function InfoBlockView({block}: {block: TestBlock}) {
-  const p = block.payload as any
-
-  switch (block.type) {
-    case TaskBlockType.INFO_TEXT:
-      return <InfoTextEditor blockId={block.id} payload={p} viewOnly />
-
-    case TaskBlockType.INFO_MEDIA:
-      return <InfoMediaEditor blockId={block.id} payload={p} viewOnly />
-
-    case TaskBlockType.INFO_AUDIO:
-      return <InfoAudioEditor blockId={block.id} payload={p} viewOnly />
-
-    default:
-      return null
-  }
-}
-// ── Главная страница ──────────────────────────────────────────────────────────
 
 export default function TakeTestPage() {
   const params = useParams()

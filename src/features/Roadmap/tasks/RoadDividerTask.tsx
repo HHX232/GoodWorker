@@ -3,7 +3,7 @@ import {LucideProps, SeparatorVertical} from 'lucide-react'
 
 export const RoadDividerTask = {
   type: RoadMapBlockType.DIVIDER,
-  label: 'Раздел',
+  label: 'dividerLabel',
   headerColor: '',
   icon: (props: LucideProps) => <SeparatorVertical {...props} />,
   inputs: [{name: '', type: RoadMapParamType.HIDE}],

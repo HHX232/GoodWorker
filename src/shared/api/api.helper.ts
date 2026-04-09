@@ -54,7 +54,6 @@ export const getAbsoluteLanguage = async (): Promise<TAllLang> => {
   const isServer = typeof window === 'undefined'
 
   if (isServer) {
-    // --- Серверная часть ---
     const {cookies, headers} = await import('next/headers')
 
     const cookieStore = await cookies()
@@ -77,11 +76,9 @@ export const getAbsoluteLanguage = async (): Promise<TAllLang> => {
 
     return (locale as TAllLang) || 'en'
   } else {
-
     const cookieMatch = document.cookie.match(/(?:^|; )NEXT_LOCALE=([^;]*)/)
     let locale = cookieMatch ? decodeURIComponent(cookieMatch[1]) : undefined
 
-    // Если нет, пробуем URL
     if (!locale) {
       const match = window.location.pathname.match(/^\/([a-z]{2})(\/|$)/)
       if (match && ['en', 'ru', 'zh'].includes(match[1])) {
