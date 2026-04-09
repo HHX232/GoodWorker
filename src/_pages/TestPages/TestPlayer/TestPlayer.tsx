@@ -17,16 +17,17 @@ import {HighlightStudentView} from '@/widgets/Tasks/BlockEditor/HighlightTextEdi
 import {InfoAudioEditor} from '@/widgets/Tasks/BlockEditor/Info/InfoAudioEditor/InfoAudioEditor'
 import {InfoMediaEditor} from '@/widgets/Tasks/BlockEditor/Info/InfoMediaEditor/InfoMediaEditor'
 import {InfoTextEditor} from '@/widgets/Tasks/BlockEditor/Info/InfoTextEditor/InfoTextEditor'
+import {useState} from 'react'
+
+import {ChooseOptionStudent} from '@/widgets/Tasks/BlockEditor/ChooseOptionEditor/ChooseOptionStudent/ChooseOptionStudent'
 import {
   getShuffledItems,
   StudentViewWordScramble
-} from '@/widgets/Tasks/BlockEditor/WordScrambleEditor/WordScrambleEditor'
-
-import {useState} from 'react'
-import {ChooseOptionStudent, FreeAnswerStudent, MatchPairsStudent, SequenceStudent} from '../Studentviews/Studentviews'
+} from '@/widgets/Tasks/BlockEditor/WordScrambleEditor/StudentViewWordScramble/StudentViewWordScramble'
 import styles from './TestPlayer.module.scss'
-
-// ── BlockView ─────────────────────────────────────────────────────────────────
+import {FreeAnswerStudent} from '@/widgets/Tasks/BlockEditor/FreeAnswerEditor/FreeAnswerStudent/FreeAnswerStudent'
+import {MatchPairsStudent} from '@/widgets/Tasks/BlockEditor/MatchPairsEditor/MatchPairsStudent/MatchPairsStudent'
+import {SequenceStudent} from '@/widgets/Tasks/BlockEditor/SequenceEditor/SequenceStudent/SequenceStudent'
 
 export function BlockView({
   block,

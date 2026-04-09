@@ -1,5 +1,3 @@
-// MatchPairsEditor.module.scss
-
 .editor_box {
   display: flex;
   flex-direction: column;
@@ -10,7 +8,6 @@
   padding: 16px;
 }
 
-// ─── Редактор пар ────────────────────────────────────────────────────────────
 
 .pairs_list {
   display: flex;
@@ -29,8 +26,13 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
 
-  span:first-child { grid-column: 2; }
-  span:last-child  { grid-column: 4; }
+  span:first-child {
+    grid-column: 2;
+  }
+
+  span:last-child {
+    grid-column: 4;
+  }
 }
 
 .pair_row {
@@ -114,7 +116,6 @@
   }
 }
 
-// ─── Превью ──────────────────────────────────────────────────────────────────
 
 .preview_box {
   display: flex;
@@ -132,138 +133,4 @@
   color: #b0b5bf;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-}
-
-// ─── MatchConnector ───────────────────────────────────────────────────────────
-
-.match_grid {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
-  padding: 12px 0;
-  min-height: 120px;
-}
-
-.match_svg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 1;
-  overflow: visible;
-}
-
-.match_column {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  position: relative;
-  z-index: 2;
-}
-
-.match_item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
-  background: linear-gradient(to bottom, #ffffff, #fafafa);
-  border: 2px solid #e5e7eb;
-  border-radius: 10px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-
-  &:hover {
-    border-color: #d1d5db;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    transform: translateY(-1px);
-  }
-
-  &.connected {
-    border-color: #000;
-    background: linear-gradient(to bottom, #fafafa, #f5f5f5);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-
-  &.active {
-    border-color: #4a90e2;
-    background: linear-gradient(to bottom, #eff6ff, #dbeafe);
-    box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.15);
-    transform: translateY(-1px);
-  }
-}
-
-.match_item_content {
-  flex: 1;
-  font-size: 14px;
-  font-weight: 500;
-  color: #1f2937;
-  line-height: 1.4;
-  min-height: 20px;
-}
-
-// ─── Handles ─────────────────────────────────────────────────────────────────
-
-.handle {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-  border: 2.5px solid #94a3b8;
-  border-radius: 50%;
-  background: #fff;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: all 0.2s ease;
-
-  &:hover {
-    border-color: #000;
-    border-width: 3px;
-    width: 18px;
-    height: 18px;
-    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.1);
-  }
-
-  &.handle_right { margin-right: -8px; }
-  &.handle_left  { margin-left: -8px; }
-
-  &.handle_connected {
-    border-color: #000;
-    background: #000;
-    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
-
-    .handle_inner { background: #fff; }
-  }
-
-  &.handle_active {
-    border-color: #4a90e2;
-    border-width: 3px;
-    width: 20px;
-    height: 20px;
-    box-shadow: 0 0 0 6px rgba(74, 144, 226, 0.2);
-    animation: pulse 1.5s ease infinite;
-
-    .handle_inner {
-      background: #4a90e2;
-      width: 8px;
-      height: 8px;
-    }
-  }
-}
-
-.handle_inner {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #94a3b8;
-  transition: all 0.2s ease;
-}
-
-@keyframes pulse {
-  0%, 100% { box-shadow: 0 0 0 6px rgba(74, 144, 226, 0.2); }
-  50%       { box-shadow: 0 0 0 10px rgba(74, 144, 226, 0.08); }
 }
