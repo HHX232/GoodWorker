@@ -1,0 +1,202 @@
+// SubjectsPieChart.module.scss
+
+.card {
+   background: #fff;
+   border-radius: 20px;
+   padding: 20px 22px;
+   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
+
+   // fill height fix — занимаем всю высоту ячейки грида
+   display: flex;
+   flex-direction: column;
+   height: 100%;
+   box-sizing: border-box;
+   overflow: hidden;
+}
+
+.title {
+   font-size: 16px;
+   font-weight: 700;
+   color: #1a1a1a;
+   flex-shrink: 0;
+
+   // Анимация появления заголовка
+   animation: fadeUp 0.4s ease both;
+}
+
+// ── Pie ──────────────────────────────────────────
+.chart_wrap {
+   position: relative;
+   display: flex;
+   justify-content: center;
+   flex-shrink: 0;
+
+   // Анимация появления
+   animation: fadeUp 0.45s ease both;
+   animation-delay: 0.05s;
+}
+
+.center_label {
+   position: absolute;
+   top: 50%;
+   left: 50%;
+   transform: translate(-50%, -50%);
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   pointer-events: none;
+   gap: 2px;
+   // плавная смена контента
+   transition: opacity 0.15s ease;
+}
+
+.center_num {
+   font-size: 26px;
+   font-weight: 800;
+   color: #1a1a1a;
+   letter-spacing: -0.04em;
+   line-height: 1;
+   transition: all 0.2s ease;
+}
+
+// При активном секторе — число чуть меньше чтобы влезло название
+.center_num_active {
+   font-size: 22px;
+}
+
+.center_sub {
+   font-size: 10px;
+   color: #bbb;
+   font-weight: 400;
+   white-space: nowrap;
+   max-width: 80px;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   text-align: center;
+   transition: color 0.2s;
+}
+
+// ── Legend ────────────────────────────────────────
+.legend {
+   display: flex;
+   flex-direction: column;
+   gap: 0px;
+   // занимает оставшееся место
+   flex: 1;
+   justify-content: space-evenly;
+   overflow: hidden;
+}
+
+.legend__row {
+   display: flex;
+   flex-direction: column;
+   gap: 5px;
+   padding: 5px 8px;
+   border-radius: 10px;
+   cursor: pointer;
+   transition: background 0.15s;
+
+   // Staggered появление строк
+   animation: fadeUp 0.4s ease both;
+
+   @for $i from 0 through 4 {
+      &:nth-child(#{$i + 1}) {
+         animation-delay: #{0.1 + $i * 0.06}s;
+      }
+   }
+
+   &:hover {
+      background: #f5f5f5;
+   }
+}
+
+.legend__row_active {
+   background: #f5f5f5;
+}
+
+.legend__top {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+}
+
+.legend__left {
+   display: flex;
+   align-items: center;
+   gap: 7px;
+}
+
+.legend__right {
+   display: flex;
+   align-items: center;
+   gap: 8px;
+}
+
+.legend__dot {
+   width: 8px;
+   height: 8px;
+   border-radius: 2px;
+   flex-shrink: 0;
+}
+
+.legend__name {
+   font-size: 12px;
+   color: #555;
+}
+
+.legend__pct {
+   font-size: 11px;
+   color: #bbb;
+   font-weight: 400;
+   font-variant-numeric: tabular-nums;
+}
+
+.legend__val {
+   font-size: 12px;
+   font-weight: 700;
+   color: #1a1a1a;
+   font-variant-numeric: tabular-nums;
+   min-width: 28px;
+   text-align: right;
+}
+
+// ── Progress bar ──────────────────────────────────
+.bar_track {
+   height: 3px;
+   background: #f0f0f0;
+   border-radius: 2px;
+   overflow: hidden;
+}
+
+.bar_fill {
+   height: 100%;
+   border-radius: 2px;
+   // Анимация заполнения при загрузке
+   animation: barGrow 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+   transform-origin: left center;
+}
+
+// ── Keyframes ─────────────────────────────────────
+@keyframes fadeUp {
+   from {
+      opacity: 0;
+      transform: translateY(8px);
+   }
+
+   to {
+      opacity: 1;
+      transform: translateY(0);
+   }
+}
+
+@keyframes barGrow {
+   from {
+      transform: scaleX(0);
+      opacity: 0;
+   }
+
+   to {
+      transform: scaleX(1);
+      opacity: 1;
+   }
+}

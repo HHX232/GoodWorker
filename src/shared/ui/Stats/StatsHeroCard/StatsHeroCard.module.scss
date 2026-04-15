@@ -1,0 +1,248 @@
+// StatsHeroCard.module.scss
+
+// ─── Card (оригинальные стили без изменений) ──────────────────────────────────
+
+.avatar_card {
+   overflow: hidden;
+   display: flex;
+   flex-direction: column;
+   transition: box-shadow 0.2s;
+   justify-content: space-between;
+   gap: 20px;
+}
+
+.avatar_img_wrap {
+   position: relative;
+   width: 100%;
+   aspect-ratio: 1 / 1;
+   overflow: hidden;
+   background: #f0f0f0;
+   border-radius: 20px;
+   height: 100%;
+}
+
+.avatar_img {
+   width: 100%;
+   height: 100%;
+   object-fit: cover;
+   display: block;
+   transition: transform 0.4s ease;
+
+   .avatar_card:hover & {
+      transform: scale(1.03);
+   }
+}
+
+.blur_box {
+   display: flex;
+   position: absolute;
+   z-index: 1000;
+   bottom: 0;
+   left: 0;
+   width: 100%;
+   justify-content: space-between;
+   align-items: center;
+   gap: 10px;
+   backdrop-filter: blur(10px);
+   border-radius: 0 0 20px 20px;
+   padding: 10px;
+}
+
+.left_name_text {
+   display: flex;
+   flex-direction: column;
+   gap: 5px;
+
+   >span {
+      font-weight: 300;
+      color: #fff;
+      font-size: 13px;
+   }
+}
+
+.avatar_name {
+   font-size: 21px;
+   color: #fff;
+   line-height: 1.2;
+}
+
+.right_name_text {
+   color: #fff;
+   font-weight: 300;
+   font-size: 17px;
+   margin-right: 5px;
+   border: 1px solid #fff;
+   padding: 5px 10px;
+   border-radius: 20px;
+   white-space: nowrap;
+}
+
+.avatar_info {
+   padding: 15px;
+   display: flex;
+   flex-direction: column;
+   gap: 10px;
+   background-color: #fff;
+   border-radius: 20px;
+
+   &>h2 {
+      font-weight: 500;
+      font-size: 19px;
+   }
+}
+
+.avatar_badge {
+   bottom: 12px;
+   right: 12px;
+   background: #1a1a1a;
+   color: #fff;
+   font-size: 13px;
+   font-weight: 600;
+   padding: 5px 10px;
+   border-radius: 50px;
+   letter-spacing: 0.02em;
+}
+
+.avatar_reviews {
+   font-size: 12px;
+   color: #bbb;
+   margin-top: 2px;
+}
+
+.review_box {
+   display: flex;
+   width: 100%;
+   justify-content: space-between;
+   align-items: center;
+}
+
+// ─── Receipts row ─────────────────────────────────────────────────────────────
+
+.receipts_row {
+   display: flex;
+   align-items: stretch;
+   gap: 7px;
+}
+
+// Инлайн-чек в карточке — компактная, но прочитываемая
+.receipt_mini {
+   flex: 1;
+   min-width: 0;
+   background: #f9f9f9;
+   border: 1px solid #eeeeee;
+   border-radius: 12px;
+   padding: 10px 12px;
+   text-align: left;
+   cursor: pointer;
+   font-family: inherit;
+   transition: background 0.15s, transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+   position: relative;
+   overflow: hidden;
+
+   // left accent bar
+   &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 20%;
+      bottom: 20%;
+      width: 2px;
+      background: #3daa5f;
+      border-radius: 2px;
+      opacity: 0;
+      transition: opacity 0.15s;
+   }
+
+   &:hover {
+      background: #f4f4f4;
+      border-color: #e0e0e0;
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+
+      &::before {
+         opacity: 1;
+      }
+   }
+
+   &:active {
+      transform: none;
+      box-shadow: none;
+   }
+}
+
+.rm_date {
+   font-size: 9px;
+   color: #c0c0c0;
+   text-transform: uppercase;
+   letter-spacing: 0.06em;
+   margin-bottom: 4px;
+}
+
+.rm_subj {
+   font-size: 11px;
+   font-weight: 500;
+   color: #1a1a1a;
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   margin-bottom: 5px;
+}
+
+.rm_amt {
+   font-size: 13px;
+   font-weight: 400;
+   color: #444;
+   font-variant-numeric: tabular-nums;
+   letter-spacing: -0.02em;
+}
+
+.list_grid_container {
+   width: 75vw;
+   max-width: 1200px;
+
+}
+
+.list_grid {
+   display: grid;
+   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+   gap: 10px;
+}
+
+.extra_modal {
+   &>div {
+      max-width: 81vw;
+   }
+
+}
+
+.arrow_btn {
+   width: 32px;
+   height: 32px;
+   flex-shrink: 0;
+   align-self: center;
+   border-radius: 50%;
+   border: 1px solid #e8e8e8;
+   background: #f9f9f9;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   cursor: pointer;
+   color: #c0c0c0;
+   transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
+
+   svg {
+      width: 13px;
+      height: 13px;
+   }
+
+   &:hover {
+      background: #1a1a1a;
+      border-color: #1a1a1a;
+      color: #fff;
+      transform: scale(1.05);
+   }
+
+   &:active {
+      transform: scale(0.97);
+   }
+}

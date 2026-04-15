@@ -1,4 +1,4 @@
-@use '../../../shared/scss/config/mixins.scss' ;
+@use '../../../shared/scss/config/mixins.scss';
 
 .navbar {
   display: flex;
@@ -9,12 +9,15 @@
   border-radius: 12px;
   position: sticky;
   top: 0;
-  max-height: calc(100vh - 170px);
+  max-height: calc(100vh - 180px);
   overflow-y: auto;
   overflow-x: hidden;
   transition: width 0.25s ease, padding 0.25s ease;
   scrollbar-width: none;
-  &::-webkit-scrollbar { display: none; }
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .nav_content {
@@ -37,33 +40,10 @@
   flex-shrink: 0;
 }
 
-// ── Кнопка toggle (десктоп) ───────────────────────────
-
-.toggle_btn {
-  display: none;
-  align-self: flex-end;
-  background: transparent;
-  border: none;
-  padding: 4px;
-  cursor: pointer;
-  border-radius: 8px;
-  flex-shrink: 0;
-  transition: background-color 0.15s ease;
-
-  &:hover {
-    background-color: rgba(20, 20, 22, 0.05);
-  }
-}
-
-.toggle_icon {
-  display: block;
-  transition: transform 0.25s ease;
-}
-
 // ── Drag handle (мобайл) ──────────────────────────────
 
 .drag_handle_wrapper {
-  display: none; // скрыт на десктопе
+  display: none;
   justify-content: center;
   align-items: center;
   padding: 6px 0 2px;
@@ -126,8 +106,7 @@
 
 .icon {
   flex-shrink: 0;
-  filter: brightness(0) saturate(100%) invert(56%) sepia(9%) saturate(373%)
-    hue-rotate(176deg) brightness(94%) contrast(89%);
+  filter: brightness(0) saturate(100%) invert(56%) sepia(9%) saturate(373%) hue-rotate(176deg) brightness(94%) contrast(89%);
 }
 
 .label {
@@ -139,65 +118,26 @@
   opacity: 1;
 }
 
-// ── 1040px — collapsed режим ──────────────────────────
-@include mixins.md{
-  
-  .navbar{ padding: 12px;}
- 
-}
-@include mixins.lg {
-  .label{
-    display: none;
-  }
-  .toggle_btn {
-    display: flex;
-    width: 100%;
-    justify-content: center;
-  }
+@media(max-width:1040px) {
 
   .item {
     flex-direction: column;
   }
 
-  .collapsed {
-    padding: 16px 12px;
-
-    .label {
-      opacity: 0;
-      width: 0;
-      pointer-events: none;
-    }
-
-    .item {
-      justify-content: center;
-      padding: 10px;
-      gap: 0;
-
-      &:hover .label {
-        opacity: 1;
-        width: auto;
-        position: absolute;
-        left: calc(100% + 8px);
-        background-color: #141416;
-        color: #fff;
-        padding: 6px 10px;
-        border-radius: 8px;
-        font-size: 14px;
-        pointer-events: none;
-        z-index: 100;
-        white-space: nowrap;
-      }
-    }
-
-    .toggle_icon {
-      transform: rotate(180deg);
-    }
+  .label {
+    display: none;
   }
+
+  .navbar {
+    padding: 12px !important;
+  }
+
 }
 
 
 
-@media (max-width: 700px){
+
+@media (max-width: 700px) {
   .navbar {
     position: fixed;
     bottom: 15px;
@@ -205,7 +145,6 @@
     transform: translateX(-50%);
     top: unset;
 
-    // Высота определяется контентом — никаких max-height
     height: auto;
     max-height: unset;
     overflow: visible;
@@ -213,7 +152,7 @@
     width: calc(100% - 30px);
     max-width: 480px;
     border-radius: 20px;
-    padding: 0 12px 12px;
+
     gap: 0;
 
     z-index: 1000;
@@ -221,27 +160,18 @@
     transition: box-shadow 0.3s ease;
 
     &.expanded {
+      z-index: 2000;
       box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.06);
     }
   }
 
-  // Показываем ручку
   .drag_handle_wrapper {
     display: flex;
     padding: 10px 0 6px;
   }
 
-  // Скрываем десктопный toggle
-  .toggle_btn {
-    display: none;
-  }
 
-  // Скрываем лейблы — только иконки
-  .label {
-    display: none;
-  }
 
-  // Иконки по центру в ряд
   .group {
     flex-direction: row;
     justify-content: space-around;
@@ -256,7 +186,6 @@
     flex: 1;
   }
 
-  // Нижняя часть (divider + bottom_group) — коллапсируется
   .expandable {
     display: grid;
     grid-template-rows: 0fr;
@@ -279,7 +208,6 @@
     margin: 4px 0;
   }
 
-  // bottom_group fade
   .bottom_group {
     opacity: 0;
     transform: translateY(6px);

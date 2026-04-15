@@ -2,7 +2,6 @@
    display: flex;
    flex-direction: column;
    height: calc(100vh - var(--header-height) - 40px);
-
    padding: 15px 20px;
    position: relative;
    z-index: 1;
@@ -17,5 +16,186 @@
       background-color: #eeeff8;
       z-index: 0;
    }
+}
 
+// ── Десктоп ───────────────────────────────────────────
+
+.desktop_group {
+   display: flex;
+   flex-direction: column;
+   gap: 6px;
+}
+
+// мобильные блоки скрыты на десктопе
+.mobile_top,
+.mobile_expandable {
+   display: none;
+}
+
+// ── Общие стили кнопок ────────────────────────────────
+
+.task_btn {
+   display: flex;
+   align-items: center;
+   gap: 8px;
+   padding: 8px 12px;
+   border-radius: 8px;
+   border: 1px solid var(--color-border-secondary);
+   background: var(--color-background-secondary);
+   color: var(--color-text-primary);
+   font-size: 14px;
+   white-space: nowrap;
+   cursor: grab;
+   transition: background-color 0.15s ease, opacity 0.15s ease;
+
+   &:hover {
+      background-color: rgba(20, 20, 22, 0.05);
+   }
+
+   &.dragging {
+      opacity: 0.5;
+      cursor: grabbing;
+   }
+}
+
+.task_label {
+   // на мобайле скрываем текст
+}
+
+// ── Мобайл ────────────────────────────────────────────
+
+@media (max-width: 960px) {
+   .main {
+      position: fixed;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      top: unset;
+      right: unset;
+
+      height: auto;
+      max-height: unset;
+      overflow: visible;
+
+      width: calc(100% - 30px);
+      max-width: 480px;
+      padding: 0 12px 12px;
+      border-radius: 20px;
+      background-color: #ffffff;
+      box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+      transition: box-shadow 0.3s ease;
+      gap: 0;
+
+      &::before {
+         display: none;
+      }
+
+      &.expanded {
+         box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.06);
+      }
+   }
+
+   // скрываем десктопный список
+   .desktop_group {
+      display: none;
+   }
+
+   // показываем мобильные блоки
+   .mobile_top {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-around;
+      align-items: center;
+      gap: 4px;
+      padding-top: 12px;
+   }
+
+   .mobile_expandable {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+      overflow: hidden;
+   }
+
+   .expanded .mobile_expandable {
+      grid-template-rows: 1fr;
+   }
+
+   .mobile_expandable_inner {
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+   }
+
+   .divider {
+      width: 100%;
+      height: 1px;
+      background-color: #edeef3;
+      margin: 8px 0 4px;
+      flex-shrink: 0;
+   }
+
+   .mobile_bottom {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-around;
+      gap: 4px;
+      padding-bottom: 4px;
+
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+   }
+
+   .expanded .mobile_bottom {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.25s ease 0.15s, transform 0.25s ease 0.15s;
+   }
+
+   // на мобайле кнопки — только иконки
+   .task_btn {
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 10px 8px;
+      flex: 1;
+      gap: 0;
+      border: none;
+      background: transparent;
+   }
+
+   .task_label {
+      display: none;
+   }
+
+   // ── кнопка-стрелочка ──────────────────────────────
+
+   .expand_btn {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      color: #868d97;
+      cursor: pointer;
+      transition: background-color 0.15s ease, color 0.15s ease;
+
+      &:hover {
+         background-color: rgba(20, 20, 22, 0.05);
+         color: #141416;
+      }
+   }
+
+   .expand_icon {
+      transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+
+      &.rotated {
+         transform: rotate(180deg);
+      }
+   }
 }

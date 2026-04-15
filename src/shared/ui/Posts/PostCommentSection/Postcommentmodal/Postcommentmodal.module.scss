@@ -6,43 +6,31 @@
   letter-spacing: -0.2px;
 }
 
-.box {
+// ── Список комментариев ───────────────────────────────────────────────────────
+// padding уже есть от .content в ModalWindowDefault — ничего лишнего не нужно
+
+.comments_list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  // Modal content area already has padding — reset it
-  margin: -25px; // cancel .content padding from ModalWindowDefault
-  overflow: hidden;
-}
-
-/* ── Scrollable list ── */
-.content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0 24px;
+  gap: 20px;
 
   &::-webkit-scrollbar {
     width: 4px;
   }
+
   &::-webkit-scrollbar-track {
     background: transparent;
   }
+
   &::-webkit-scrollbar-thumb {
     background: #d4d4e0;
     border-radius: 2px;
   }
-
-  ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
 }
 
-/* ── Single comment ── */
 .comment_item {
   padding: 16px 0;
   border-bottom: 1px solid #f5f5fa;
@@ -65,7 +53,6 @@
   font-weight: 400;
 }
 
-/* ── Images grid ── */
 .images_previews {
   display: flex;
   flex-wrap: wrap;
@@ -81,21 +68,19 @@
   overflow: hidden;
   flex-shrink: 0;
 
-  // Adaptive: smaller screens
   @media (max-width: 480px) {
     width: 100px;
     height: 100px;
   }
 }
 
-/* ── Fixed bottom input bar ── */
+// ── Инпут-бар (футер) ────────────────────────────────────────────────────────
+
 .comment_input_bar {
-  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 14px 20px;
-  border-top: 1px solid #f0f0f5;
   background: #ffffff;
 }
 

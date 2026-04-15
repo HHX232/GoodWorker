@@ -1,0 +1,382 @@
+// ReceiptPreviews.module.scss
+
+@keyframes checkPop {
+   0% {
+      transform: scale(0.5);
+      opacity: 0;
+   }
+
+   70% {
+      transform: scale(1.15);
+   }
+
+   100% {
+      transform: scale(1);
+      opacity: 1;
+   }
+}
+
+@keyframes fadeUp {
+   from {
+      opacity: 0;
+      transform: translateY(10px);
+   }
+
+   to {
+      opacity: 1;
+      transform: translateY(0);
+   }
+}
+
+@keyframes shimmer {
+   0% {
+      background-position: -200% center;
+   }
+
+   100% {
+      background-position: 200% center;
+   }
+}
+
+// ─── Mini preview (modal grid) ────────────────────────────────────────────────
+
+.mini {
+   display: flex;
+   flex-direction: column;
+   align-items: flex-start;
+   width: 100%;
+   background: #fff;
+   border: 1px solid #ececec;
+   border-radius: 16px;
+   padding: 16px;
+   text-align: left;
+   cursor: pointer;
+   font-family: inherit;
+   transition: border-color 0.2s, box-shadow 0.2s, transform 0.18s;
+   animation: fadeUp 0.35s both;
+   position: relative;
+   overflow: hidden;
+
+   // subtle top accent line
+   &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #d4f0dc, #a8e0b8);
+      border-radius: 16px 16px 0 0;
+      opacity: 0;
+      transition: opacity 0.2s;
+   }
+
+   &:hover {
+      border-color: #d8d8d8;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+      transform: translateY(-2px);
+
+      &::before {
+         opacity: 1;
+      }
+   }
+
+   &:active {
+      transform: translateY(0);
+      box-shadow: none;
+   }
+}
+
+.mini_status {
+   display: flex;
+   align-items: center;
+   gap: 5px;
+   margin-bottom: 12px;
+}
+
+.mini_dot {
+   width: 6px;
+   height: 6px;
+   border-radius: 50%;
+   background: #3daa5f;
+   flex-shrink: 0;
+   box-shadow: 0 0 0 2px rgba(61, 170, 95, 0.2);
+}
+
+.mini_status_text {
+   font-size: 10px;
+   font-weight: 600;
+   text-transform: uppercase;
+   letter-spacing: 0.08em;
+   color: #3daa5f;
+}
+
+.mini_amount {
+   font-size: 26px;
+   font-weight: 300;
+   color: #1a1a1a;
+   letter-spacing: -0.04em;
+   font-variant-numeric: tabular-nums;
+   line-height: 1;
+   margin-bottom: 4px;
+}
+
+.mini_currency {
+   font-size: 16px;
+   font-weight: 300;
+   color: #aaa;
+}
+
+.mini_subject {
+   font-size: 11px;
+   color: #999;
+   margin-bottom: 14px;
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   max-width: 100%;
+}
+
+.mini_divider {
+   width: 100%;
+   height: 1px;
+   background: #f0f0f0;
+   margin-bottom: 12px;
+}
+
+.mini_rows {
+   display: flex;
+   flex-direction: column;
+   gap: 5px;
+   width: 100%;
+   margin-bottom: 14px;
+}
+
+.mini_row {
+   display: flex;
+   justify-content: space-between;
+   align-items: baseline;
+   gap: 8px;
+}
+
+.mini_k {
+   font-size: 10px;
+   color: #ccc;
+   flex-shrink: 0;
+}
+
+.mini_v {
+   font-size: 10px;
+   font-weight: 500;
+   color: #555;
+   font-variant-numeric: tabular-nums;
+   text-align: right;
+}
+
+.mini_footer {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   width: 100%;
+}
+
+.mini_tx {
+   font-size: 9px;
+   color: #ccc;
+   letter-spacing: 0.04em;
+   font-variant-numeric: tabular-nums;
+}
+
+.mini_cta {
+   display: flex;
+   align-items: center;
+   gap: 3px;
+   font-size: 10px;
+   font-weight: 500;
+   color: #bbb;
+   transition: color 0.15s;
+
+   svg {
+      transition: transform 0.15s;
+   }
+
+   .mini:hover & {
+      color: #1a1a1a;
+
+      svg {
+         transform: translateX(2px);
+      }
+   }
+}
+
+// ─── Full preview ─────────────────────────────────────────────────────────────
+
+.full {
+   display: flex;
+   flex-direction: column;
+   animation: fadeUp 0.3s both;
+}
+
+.full_back {
+   display: flex;
+   align-items: center;
+   gap: 6px;
+   background: transparent;
+   border: none;
+   cursor: pointer;
+   color: #bbb;
+   font-size: 11px;
+   font-family: inherit;
+   padding: 0;
+   margin-bottom: 20px;
+   transition: color 0.15s;
+
+   &:hover {
+      color: #1a1a1a;
+   }
+}
+
+.full_header {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   margin-bottom: 24px;
+   padding: 20px;
+   background: linear-gradient(160deg, #f5fbf7 0%, #fff 100%);
+   border-radius: 16px;
+   border: 1px solid #e6f3eb;
+}
+
+.full_check {
+   width: 44px;
+   height: 44px;
+   background: #e8f5ee;
+   border-radius: 50%;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   margin-bottom: 12px;
+   animation: checkPop 0.5s 0.1s both;
+
+   svg {
+      width: 22px;
+      height: 22px;
+   }
+}
+
+.full_title {
+   font-size: 15px;
+   font-weight: 500;
+   color: #1a1a1a;
+   text-align: center;
+   margin-bottom: 5px;
+}
+
+.full_subtitle {
+   font-size: 11px;
+   color: #bbb;
+   text-align: center;
+   line-height: 1.5;
+   max-width: 280px;
+}
+
+// ─── Blocks ───────────────────────────────────────────────────────────────────
+
+.full_block {
+   display: flex;
+   flex-direction: column;
+   gap: 1px;
+   margin-bottom: 4px;
+}
+
+.full_section_label {
+   font-size: 9px;
+   font-weight: 600;
+   text-transform: uppercase;
+   letter-spacing: 0.1em;
+   color: #ccc;
+   margin-bottom: 6px;
+   margin-top: 2px;
+}
+
+.full_row {
+   display: flex;
+   justify-content: space-between;
+   align-items: baseline;
+   gap: 16px;
+   padding: 4px 0;
+}
+
+.full_k {
+   font-size: 12px;
+   color: #bbb;
+   flex-shrink: 0;
+}
+
+.full_v {
+   font-size: 12px;
+   font-weight: 500;
+   color: #1a1a1a;
+   text-align: right;
+   font-variant-numeric: tabular-nums;
+   word-break: break-all;
+}
+
+.full_dash {
+   border: none;
+   border-top: 1px dashed #efefef;
+   margin: 12px 0;
+}
+
+// ─── Total ────────────────────────────────────────────────────────────────────
+
+.full_total {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   margin-top: 16px;
+   padding-top: 14px;
+   border-top: 1px solid #f0f0f0;
+}
+
+.full_total_k {
+   font-size: 10px;
+   text-transform: uppercase;
+   letter-spacing: 0.09em;
+   color: #bbb;
+}
+
+.full_total_v {
+   font-size: 28px;
+   font-weight: 300;
+   color: #1a1a1a;
+   letter-spacing: -0.05em;
+   font-variant-numeric: tabular-nums;
+}
+
+// ─── Download button ──────────────────────────────────────────────────────────
+
+.full_btn {
+   width: 100%;
+   background: #1a1a1a;
+   color: #fff;
+   border: none;
+   border-radius: 12px;
+   padding: 14px;
+   font-size: 13px;
+   font-weight: 500;
+   font-family: inherit;
+   cursor: pointer;
+   margin-top: 18px;
+   transition: opacity 0.15s, transform 0.15s;
+   letter-spacing: 0.01em;
+
+   &:hover {
+      opacity: 0.82;
+   }
+
+   &:active {
+      opacity: 0.65;
+      transform: scale(0.99);
+   }
+}

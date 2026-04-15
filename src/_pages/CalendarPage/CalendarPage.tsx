@@ -1,0 +1,180 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+'use client'
+
+import {updateCalendarTask} from '@/entities/store/slices/calendar.slice'
+import {
+  selectCreateModal,
+  selectEvents,
+  selectSelectedEvent,
+  selectSelectedTask,
+  selectStudents,
+  selectTasks,
+  selectWeekDays
+} from '@/features/Calendar/selectors/selector'
+import {useActions} from '@/features/hooks/store/useActions'
+import {useTypedSelector} from '@/features/hooks/store/useTypedSelector'
+import {CalendarEvent} from '@/shared/types/Calendar/calendar.types'
+import {CalendarHeader} from '@/widgets/Calendar/CalendarHeader/CalendarHeader'
+import {CalendarSidebar} from '@/widgets/Calendar/CalendarSidebar/CalendarSidebar'
+import {DayCalendar} from '@/widgets/Calendar/DayCalendar/DayCalendar'
+import {CalendarCreateModal} from '@/widgets/Calendar/Modals/CalendarCreateModal/CalendarCreateModal'
+import {CalendarEventModal} from '@/widgets/Calendar/Modals/CalendarEventModal/CalendarEventModal'
+import {CalendarTaskCreateModal} from '@/widgets/Calendar/Modals/CalendarTaskCreateModal/CalendarTaskCreateModal'
+import {CalendarTaskModal} from '@/widgets/Calendar/Modals/CalendarTaskModal/CalendarTaskModal'
+import {MonthCalendar} from '@/widgets/Calendar/MonthCalendar/MonthCalendar'
+import {WeekCalendar} from '@/widgets/Calendar/WeekCalendar/WeekCalendar'
+import styles from './CalendarPage.module.scss'
+
+export function CalendarPage() {
+  const {
+    addEvent,
+    setView,
+    updateEvent,
+    deleteEvent,
+    selectEvent,
+    selectTask,
+    toggleCalendarTask,
+    goToPrevWeek,
+    goToNextWeek,
+    goToToday,
+    openCreateModal,
+    closeCreateModal,
+    addCalendarTask,
+    setCreateTaskModalStatus,
+    goToPrevDay,
+    goToNextDay,
+    goToPrevMonth,
+    goToNextMonth,
+    setCurrentDate
+  } = useActions()
+  const weekDays = useTypedSelector(selectWeekDays)
+  const events = useTypedSelector(selectEvents)
+  const tasks = useTypedSelector(selectTasks)
+  const students = useTypedSelector(selectStudents)
+  const selectedEvent = useTypedSelector(selectSelectedEvent)
+  const selectedTask = useTypedSelector(selectSelectedTask)
+  const createModal = useTypedSelector(selectCreateModal)
+  const isOpen = useTypedSelector((state) => state.calendar.createTaskIsOpen)
+  const view = useTypedSelector((state) => state.calendar.view)
+
+  const currentDate = weekDays[0] ?? new Date()
+  const currentDateRaw = useTypedSelector((state) => state.calendar.currentDate)
+  const currentDateObj = new Date(currentDateRaw)
+  const handleEditEvent = (event: CalendarEvent) => {
+    selectEvent(null)
+    openCreateModal({editEventId: event.id})
+  }
+
+  const handleDeleteEvent = (id: string) => {
+    deleteEvent(id)
+    selectEvent(null)
+  }
+
+  const handleSaveEvent = (eventData: Omit<CalendarEvent, 'id'> & {id?: string}) => {
+    if (eventData.id) {
+      updateEvent(eventData as CalendarEvent)
+    } else {
+      addEvent(eventData)
+    }
+    closeCreateModal()
+  }
+  const closeEvent = () => selectEvent(null)
+  const closeTask = () => selectTask(null)
+  const closeCreate = () => closeCreateModal()
+  const handlePrev = () => {
+    if (view === 'month') goToPrevMonth()
+    else if (view === 'day') goToPrevDay()
+    else goToPrevWeek()
+  }
+
+  const handleNext = () => {
+    if (view === 'month') goToNextMonth()
+    else if (view === 'day') goToNextDay()
+    else goToNextWeek()
+  }
+  return (
+    <div className={styles.layout}>
+      <CalendarSidebar
+        tasks={tasks}
+        students={students}
+        onTaskClick={(task) => selectTask(task.id)}
+        onTaskToggle={(id) => toggleCalendarTask(id)}
+      />
+
+      <div className={styles.main}>
+        <CalendarHeader
+          view={view}
+          onViewChange={setView}
+          currentDate={currentDate}
+          onPrev={handlePrev}
+          onNext={handleNext}
+          onToday={goToToday}
+          onDateSelect={(d) => {
+            setCurrentDate(d.toISOString())
+          }}
+          onAdd={() => openCreateModal({})}
+        />
+        {view === 'week' && (
+          <WeekCalendar
+            weekDays={weekDays}
+            events={events}
+            onEventClick={(event) => selectEvent(event.id)}
+            onCellClick={(date, startTime, endTime) => openCreateModal({date, startTime, endTime})}
+          />
+        )}
+        {view === 'day' && (
+          <DayCalendar
+            day={currentDateObj}
+            onTaskSave={updateCalendarTask}
+            events={events}
+            onTaskToggle={toggleCalendarTask}
+            tasks={tasks}
+            onEventClick={(event) => selectEvent(event.id)}
+            onCellClick={(date, startTime, endTime) => openCreateModal({date, startTime, endTime})}
+          />
+        )}
+        {view === 'month' && (
+          <MonthCalendar
+            currentDate={currentDate}
+            events={events}
+            tasks={tasks}
+            onEventClick={(event: any) => selectEvent(event.id)}
+            onDayClick={(date: any) => openCreateModal({date})}
+            onTaskToggle={(id) => toggleCalendarTask(id)}
+          />
+        )}
+      </div>
+
+      <CalendarEventModal
+        event={selectedEvent}
+        onClose={closeEvent}
+        onEdit={handleEditEvent}
+        onDelete={handleDeleteEvent}
+      />
+
+      <CalendarTaskCreateModal
+        isOpen={isOpen}
+        onClose={() => {
+          setCreateTaskModalStatus(false)
+        }}
+        onSave={addCalendarTask}
+      />
+
+      <CalendarTaskModal
+        task={selectedTask}
+        onClose={closeTask}
+        onToggle={toggleCalendarTask}
+        onSave={updateCalendarTask}
+      />
+      <CalendarCreateModal
+        isOpen={createModal.isOpen}
+        initialDate={createModal.date}
+        initialStartTime={createModal.startTime}
+        initialEndTime={createModal.endTime}
+        editingEvent={createModal.editingEvent}
+        onClose={closeCreate}
+        onSave={handleSaveEvent}
+      />
+    </div>
+  )
+}

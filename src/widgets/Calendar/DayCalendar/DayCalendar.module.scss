@@ -1,0 +1,452 @@
+.root {
+   display: flex;
+   flex-direction: column;
+   flex: 1;
+   min-height: 0;
+   background: #f8f8fb;
+}
+
+.dayHeader {
+   display: grid;
+   grid-template-columns: 52px 1fr;
+   background: #ffffff;
+   border-bottom: 0.5px solid rgba(0, 0, 0, 0.06);
+   padding: 0 4px;
+   flex-shrink: 0;
+}
+
+.timeGutter {}
+
+.dayHead {
+   padding: 12px 16px;
+   display: flex;
+   align-items: center;
+   gap: 12px;
+}
+
+.dayName {
+   font-size: 15px;
+   font-weight: 600;
+   color: #141416;
+}
+
+.dayNum {
+   font-size: 15px;
+   font-weight: 600;
+   color: #141416;
+   width: 32px;
+   height: 32px;
+   border-radius: 50%;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   flex-shrink: 0;
+}
+
+.dayNum.today {
+   background: #534AB7;
+   color: #ffffff;
+}
+
+.eventCount {
+   font-size: 12px;
+   color: #aaa;
+   margin-left: 4px;
+}
+
+.body {
+   flex: 1;
+   min-height: 0;
+   overflow-y: auto;
+   scrollbar-width: thin;
+   scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+
+   &::-webkit-scrollbar {
+      width: 4px;
+   }
+
+   &::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 2px;
+   }
+}
+
+.grid {
+   display: grid;
+   grid-template-columns: 52px 1fr;
+   padding: 0 4px;
+}
+
+.timeCol {
+   display: flex;
+   flex-direction: column;
+}
+
+.timeSlot {
+   height: 56px;
+   padding-right: 8px;
+   display: flex;
+   align-items: flex-start;
+   justify-content: flex-end;
+   padding-top: 4px;
+   flex-shrink: 0;
+}
+
+.timeLabel {
+   font-size: 10px;
+   color: #ccc;
+   white-space: nowrap;
+   font-variant-numeric: tabular-nums;
+}
+
+.dayTrack {
+   position: relative;
+   border-left: 0.5px solid rgba(0, 0, 0, 0.05);
+   // 16 часов: 23 - 7 = 16
+   height: calc(56px * 16);
+   cursor: crosshair;
+
+   &.weekend {
+      background: rgba(0, 0, 0, 0.012);
+   }
+
+   &:not(.weekend):hover {
+      background: rgba(83, 74, 183, 0.012);
+   }
+}
+
+.hourLine {
+   position: absolute;
+   left: 0;
+   right: 0;
+   height: 0.5px;
+   background: rgba(0, 0, 0, 0.06);
+   pointer-events: none;
+}
+
+.halfLine {
+   position: absolute;
+   left: 0;
+   right: 0;
+   height: 0.5px;
+   background: rgba(0, 0, 0, 0.03);
+   pointer-events: none;
+}
+
+.hoverGhost {
+   position: absolute;
+   left: 3px;
+   right: 3px;
+   height: 56px;
+   margin-top: -28px;
+   border-radius: 6px;
+   background: rgba(83, 74, 183, 0.07);
+   border: 1px dashed rgba(83, 74, 183, 0.25);
+   pointer-events: none;
+   transition: top 0.05s;
+}
+
+.lunchBreak {
+   position: absolute;
+   left: 3px;
+   right: 3px;
+   border-radius: 5px;
+   border: 0.5px dashed rgba(0, 0, 0, 0.08);
+   background: rgba(0, 0, 0, 0.015);
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   gap: 4px;
+   pointer-events: none;
+}
+
+.lunchLabel {
+   font-size: 10px;
+   color: #ccc;
+}
+
+.freeDay {
+   position: absolute;
+   inset: 0;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   font-size: 13px;
+   color: #ddd;
+   letter-spacing: 0.04em;
+}
+
+.nowLine {
+   position: absolute;
+   left: 0;
+   right: 0;
+   z-index: 10;
+   pointer-events: none;
+}
+
+.nowDot {
+   width: 7px;
+   height: 7px;
+   border-radius: 50%;
+   background: #E24B4A;
+   margin-left: -3px;
+   margin-top: -3px;
+   position: absolute;
+   top: 0;
+   left: 0;
+}
+
+.nowBar {
+   position: absolute;
+   left: 4px;
+   right: 0;
+   height: 1.5px;
+   background: #E24B4A;
+   top: 0;
+}
+
+/* ── Tasks panel ── */
+.tasksPanel {
+   display: grid;
+   grid-template-columns: 52px 1fr;
+   background: #ffffff;
+   border-bottom: 0.5px solid rgba(0, 0, 0, 0.06);
+   padding: 0 4px;
+   flex-shrink: 0;
+}
+
+.tasksPanelGutter {}
+
+.tasksList {
+   padding: 10px 12px 10px 16px;
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   gap: 6px;
+}
+
+.tasksLabel {
+   font-size: 10px;
+   color: #bbb;
+   text-transform: uppercase;
+   letter-spacing: 0.06em;
+   font-weight: 500;
+   margin-right: 4px;
+   flex-shrink: 0;
+}
+
+.taskChip {
+   display: inline-flex;
+   align-items: center;
+   gap: 6px;
+   padding: 5px 10px 5px 8px;
+   border-radius: 20px;
+   border: 0.5px solid rgba(0, 0, 0, 0.1);
+   background: #ffffff;
+   cursor: pointer;
+   font-size: 12px;
+   color: #333;
+   transition: background 0.12s, border-color 0.12s;
+
+   &:hover {
+      background: #f3f3f7;
+      border-color: rgba(83, 74, 183, 0.3);
+   }
+}
+
+.taskChip.taskChipDone {
+   opacity: 0.5;
+
+   .taskChipTitle {
+      text-decoration: line-through;
+      color: #aaa;
+   }
+}
+
+.taskDot {
+   width: 6px;
+   height: 6px;
+   border-radius: 50%;
+   background: #534AB7;
+   flex-shrink: 0;
+}
+
+.taskDot.taskDotDone {
+   background: #85c672;
+}
+
+.taskChipTitle {
+   font-size: 12px;
+   color: #333;
+   white-space: nowrap;
+}
+
+.taskPriorityBadge {
+   font-size: 10px;
+   padding: 2px 6px;
+   border-radius: 10px;
+   font-weight: 500;
+}
+
+/* ── Task modal content ── */
+.modalHeader {
+   display: flex;
+   justify-content: space-between;
+   align-items: flex-start;
+   padding: 20px 20px 0;
+}
+
+.modalEyebrow {
+   font-size: 11px;
+   color: #aaa;
+   text-transform: uppercase;
+   letter-spacing: 0.06em;
+   margin-bottom: 4px;
+}
+
+.modalTitle {
+   font-size: 17px;
+   font-weight: 600;
+   color: #141416;
+}
+
+.modalCloseBtn {
+   width: 28px;
+   height: 28px;
+   border-radius: 8px;
+   border: 0.5px solid rgba(0, 0, 0, 0.1);
+   background: #f4f4f7;
+   cursor: pointer;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   color: #888;
+   flex-shrink: 0;
+
+   &:hover {
+      background: #eaeaef;
+   }
+}
+
+.modalBody {
+   padding: 16px 20px;
+   display: flex;
+   flex-direction: column;
+   gap: 16px;
+}
+
+.modalDesc {
+   font-size: 13px;
+   color: #555;
+   line-height: 1.6;
+   margin: 0;
+}
+
+.modalMeta {
+   display: grid;
+   grid-template-columns: 1fr 1fr;
+   gap: 8px;
+}
+
+.metaCard {
+   background: #f8f8fb;
+   border-radius: 8px;
+   padding: 10px 12px;
+   display: flex;
+   flex-direction: column;
+   gap: 4px;
+}
+
+.metaLabel {
+   font-size: 10px;
+   color: #aaa;
+   text-transform: uppercase;
+   letter-spacing: 0.05em;
+}
+
+.metaValue {
+   font-size: 13px;
+   color: #333;
+   font-weight: 500;
+}
+
+.metaPill {
+   font-size: 12px;
+   padding: 3px 8px;
+   border-radius: 10px;
+   font-weight: 500;
+   width: fit-content;
+}
+
+.checklist {
+   display: flex;
+   flex-direction: column;
+   gap: 6px;
+}
+
+.checklistLabel {
+   font-size: 10px;
+   color: #aaa;
+   text-transform: uppercase;
+   letter-spacing: 0.06em;
+   margin-bottom: 2px;
+}
+
+.checklistItem {
+   display: flex;
+   align-items: center;
+   gap: 8px;
+   font-size: 13px;
+   color: #333;
+}
+
+.checklistItem.checklistItemDone {
+   color: #aaa;
+   text-decoration: line-through;
+}
+
+.modalFooter {
+   display: flex;
+   justify-content: flex-end;
+   gap: 8px;
+   padding: 12px 20px 20px;
+   border-top: 0.5px solid rgba(0, 0, 0, 0.06);
+}
+
+.btnSecondary {
+   padding: 8px 16px;
+   border-radius: 8px;
+   border: 0.5px solid rgba(0, 0, 0, 0.1);
+   background: #ffffff;
+   font-size: 13px;
+   color: #555;
+   cursor: pointer;
+
+   &:hover {
+      background: #f3f3f7;
+   }
+}
+
+.btnToggle {
+   padding: 8px 16px;
+   border-radius: 8px;
+   border: none;
+   background: #534AB7;
+   font-size: 13px;
+   color: #ffffff;
+   cursor: pointer;
+   font-weight: 500;
+
+   &:hover {
+      background: #7F77DD;
+   }
+}
+
+.btnToggle.btnToggleDone {
+   background: #f4f4f7;
+   color: #666;
+
+   &:hover {
+      background: #eaeaef;
+   }
+}

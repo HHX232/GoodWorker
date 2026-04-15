@@ -1,0 +1,171 @@
+// HoursChart.module.scss
+
+.chart_card {
+   background: #fff;
+   border-radius: 20px;
+   padding: 22px 26px 18px;
+   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
+
+   // full height fix
+   display: flex;
+   flex-direction: column;
+   height: 100%;
+   box-sizing: border-box;
+   overflow: hidden;
+}
+
+// ── Header ───────────────────────────────────────
+.chart_header {
+   display: flex;
+   align-items: flex-start;
+   justify-content: space-between;
+   gap: 16px;
+   flex-wrap: wrap;
+   flex-shrink: 0;
+
+   animation: fadeUp 0.35s ease both;
+}
+
+.chart_header__left {
+   display: flex;
+   flex-direction: column;
+   gap: 3px;
+}
+
+.chart_title {
+   font-size: 17px;
+   font-weight: 700;
+   color: #1a1a1a;
+   line-height: 1.2;
+}
+
+.chart_subtitle {
+   font-size: 12px;
+   color: #aaa;
+
+   strong {
+      color: #1a1a1a;
+      font-weight: 600;
+   }
+}
+
+// ── Month tabs ────────────────────────────────────
+.month_tabs {
+   display: flex;
+   gap: 5px;
+   flex-wrap: wrap;
+   animation: fadeUp 0.35s ease both;
+   animation-delay: 0.05s;
+}
+
+.month_tab {
+   font-size: 11px;
+   font-weight: 500;
+   padding: 5px 12px;
+   border-radius: 50px;
+   background: #f4f4f4;
+   color: #888;
+   border: none;
+   cursor: pointer;
+   transition: background 0.15s, color 0.15s, transform 0.12s;
+   animation: fadeUp 0.3s ease both;
+
+   &:hover {
+      background: #ebebeb;
+      color: #333;
+      transform: translateY(-1px);
+   }
+
+   &:active {
+      transform: translateY(0);
+   }
+}
+
+.month_tab_active {
+   background: #1a1a1a;
+   color: #fff;
+
+   &:hover {
+      background: #1a1a1a;
+      color: #fff;
+   }
+}
+
+// ── Chips ─────────────────────────────────────────
+.chart_chips {
+   display: flex;
+   gap: 8px;
+   margin-top: 14px;
+   flex-wrap: wrap;
+   flex-shrink: 0;
+   animation: fadeUp 0.4s ease both;
+   animation-delay: 0.08s;
+}
+
+.chip {
+   display: flex;
+   align-items: center;
+   gap: 6px;
+   font-size: 11px;
+   line-height: 11px;
+   color: #888;
+   background: #f7f7f7;
+   padding: 5px 11px;
+   border-radius: 50px;
+
+   strong {
+      color: #1a1a1a;
+      font-weight: 600;
+   }
+}
+
+.chip_dot {
+   width: 8px;
+   height: 8px;
+   border-radius: 50%;
+   flex-shrink: 0;
+}
+
+// ── Chart wrap — занимает оставшееся место ────────
+.chart_wrap {
+   flex: 1;
+   min-height: 0; // критично: без этого flex-child не обрезается
+   margin: 12px -8px 0;
+   animation: fadeUp 0.45s ease both;
+   animation-delay: 0.1s;
+}
+
+// ── Tooltip ───────────────────────────────────────
+.tooltip {
+   background: #1a1a1a;
+   color: #fff;
+   border-radius: 10px;
+   padding: 8px 13px;
+   display: flex;
+   flex-direction: column;
+   gap: 2px;
+   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+}
+
+.tooltip__day {
+   font-size: 10px;
+   color: #888;
+}
+
+.tooltip__val {
+   font-weight: 700;
+   font-size: 15px;
+}
+
+// ── Keyframes ─────────────────────────────────────
+@keyframes fadeUp {
+   from {
+      opacity: 0;
+      transform: translateY(8px);
+   }
+
+   to {
+      opacity: 1;
+      transform: translateY(0);
+   }
+}

@@ -51,7 +51,13 @@ export default function EntryPointBlock({nodeId}: {nodeId: string}) {
         <div className={styles.preview} onClick={() => !data?.roadPreview && fileRef.current?.click()}>
           {data?.roadPreview ? (
             <>
-              <Image src={data.roadPreview} alt='preview' fill style={{objectFit: 'cover'}} unoptimized />
+              {/* блюр-фон — растянутая копия */}
+              <div className={styles.previewBlur} style={{backgroundImage: `url(${data.roadPreview})`}} />
+
+              {/* оригинальное изображение в своём соотношении */}
+              <div className={styles.previewImageWrap}>
+                <img src={data.roadPreview} alt='preview' className={styles.previewImage} />
+              </div>
 
               {!onlyView && (
                 <>
@@ -117,10 +123,6 @@ export default function EntryPointBlock({nodeId}: {nodeId: string}) {
             maxLength={300}
           />
         )}
-
-        {/* {!onlyView && data?.roadDescription && (
-          <span className={styles.charCount}>{data?.roadDescription?.length ?? 0}/300</span>
-        )} */}
 
         <div className={styles.fieldGroup}>
           <label className={styles.fieldLabel}>Категория</label>

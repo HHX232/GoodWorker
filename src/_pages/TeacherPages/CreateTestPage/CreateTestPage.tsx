@@ -11,7 +11,7 @@ import {NavBar} from '@/widgets/BaseUI'
 import {TaskCanvas} from '@/widgets/Tasks/TaskCanvas/TaskCanvas'
 import {useTranslations} from 'next-intl'
 import {useSearchParams} from 'next/navigation'
-import {Suspense} from 'react'
+import {Suspense, useRef} from 'react'
 import styles from './CreateTestPage.module.scss'
 
 function CreateTestPage() {
@@ -22,12 +22,14 @@ function CreateTestPage() {
   const existingId = searchParams.get('id') ?? undefined
   const {save, status, invalidBlockIds, errorsMap, clearInvalidBlock} = useSaveTest(existingId)
 
+  const mainContentRef = useRef<HTMLDivElement>(null)
+
   return (
     <InvalidTestBlocksContext.Provider value={{ids: invalidBlockIds, errors: errorsMap, clear: clearInvalidBlock}}>
       <div className={`container default_content ${styles.content}`}>
         <NavBar />
 
-        <div className={styles.main_content}>
+        <div className={styles.main_content} ref={mainContentRef}>
           <h1>{t('title')}</h1>
 
           <form className={styles.form}>
@@ -67,7 +69,7 @@ function CreateTestPage() {
         </div>
 
         <Suspense>
-          <TaskMenu />
+          <TaskMenu mainContentRef={mainContentRef} />
         </Suspense>
       </div>
     </InvalidTestBlocksContext.Provider>

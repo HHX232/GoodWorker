@@ -24,6 +24,37 @@
    }
 }
 
+// размытый фон — растянутая копия картинки
+.previewBlur {
+   position: absolute;
+   inset: -10px; // чуть больше чтобы блюр не давал белые края
+   background-size: cover;
+   background-position: center;
+   filter: blur(16px) brightness(0.75) saturate(1.2);
+   transform: scale(1.05); // компенсируем края от blur
+}
+
+// обёртка для оригинального изображения по центру
+.previewImageWrap {
+   position: absolute;
+   inset: 0;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   z-index: 1;
+}
+
+.previewImage {
+   max-width: 100%;
+   max-height: 100%;
+   width: auto;
+   height: auto;
+   object-fit: contain;
+   display: block;
+   // лёгкая тень чтобы картинка не сливалась с фоном
+   filter: drop-shadow(0 2px 12px rgba(0, 0, 0, 0.25));
+}
+
 .previewEmpty {
    position: absolute;
    inset: 0;
@@ -45,7 +76,6 @@
    z-index: 10;
    width: 26px;
    height: 26px;
-   //dius: 6px;
    border: none;
    background: rgba(0, 0, 0, 0.4);
    backdrop-filter: blur(8px);
@@ -72,7 +102,6 @@
    font-size: 0.68rem;
    font-weight: 500;
    padding: 4px 10px;
-   //dius: 6px;
    border: none;
    background: rgba(0, 0, 0, 0.35);
    backdrop-filter: blur(8px);
@@ -123,7 +152,6 @@
    font-size: 0.95rem;
    font-weight: 600;
    padding: 8px 10px;
-   //dius: 8px;
    border: 1px solid #f5f5f5;
    background: #fafafa;
    color: #141416;
@@ -145,7 +173,6 @@
 .descInput {
    font-size: 0.8rem;
    padding: 8px 10px;
-   //dius: 8px;
    border: 1px solid #f5f5f5;
    background: #fafafa;
    color: #141416;
@@ -169,7 +196,6 @@
 .select {
    font-size: 0.8rem;
    padding: 7px 10px;
-   //dius: 8px;
    border: 1px solid #f5f5f5;
    background: #fafafa;
    color: #141416;

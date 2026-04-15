@@ -1,9 +1,9 @@
 'use client'
-import { UserRolesObject } from '@/shared/constants/user/user.const'
-import { PostCommentSection, UserPostInfo } from '@/shared/ui'
-import { mockComments } from '@/shared/ui/Posts/PostCommentSection/PostCommentSection'
-import { NavBar } from '@/widgets/BaseUI'
-import { BorderTextHandler, FullPost } from '@/widgets/Cards'
+import {UserRolesObject} from '@/shared/constants/user/user.const'
+import {PostCommentSection, UserPostInfo} from '@/shared/ui'
+import {mockComments} from '@/shared/ui/Posts/PostCommentSection/PostCommentSection'
+import {NavBar} from '@/widgets/BaseUI'
+import {BorderTextHandler, FullPost} from '@/widgets/Cards'
 import styles from './PostPage.module.scss'
 
 const markdown = `
@@ -198,26 +198,23 @@ const mockUserPostInfo = {
 }
 
 function PostPage({id}: {id: string}) {
-
-
   return (
     <div className={`container default_content ${styles.extra_content}`}>
       <NavBar />
       <BorderTextHandler />
 
-  
-        <div className={styles.mobile_wrapper}>
-          <UserPostInfo {...mockUserPostInfo} />
-          <FullPost extraClass={styles.extra_full} body={markdown} postId={id} />
-          <PostCommentSection comments={mockComments} totalComments={400} />
-        </div>
-    
-         <FullPost extraClass={styles.extra_full_bot} body={markdown} postId={id} />
-          <div className={`${styles.sticky_sidebar} ${styles.not_mobile_box}`}>
-            <UserPostInfo {...mockUserPostInfo} /> <PostCommentSection comments={mockComments} totalComments={400} />
-          </div>
-   
-  <div className="mobile_padding"></div>
+      <div className={styles.mobile_wrapper}>
+        <UserPostInfo {...mockUserPostInfo} />
+        <FullPost extraClass={styles.extra_full} body={markdown} postId={id} />
+        <PostCommentSection comments={mockComments} totalComments={400} />
+      </div>
+
+      <FullPost extraClass={styles.extra_full_bot} body={markdown} postId={id} />
+      <div className={`${styles.sticky_sidebar} ${styles.not_mobile_box}`}>
+        <UserPostInfo {...mockUserPostInfo} /> <PostCommentSection comments={mockComments} totalComments={400} />
+      </div>
+
+      <div className='mobile_padding'></div>
     </div>
   )
 }

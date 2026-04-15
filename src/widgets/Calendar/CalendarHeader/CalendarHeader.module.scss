@@ -1,0 +1,165 @@
+.header {
+   display: flex;
+   align-items: center;
+   gap: 10px;
+   padding: 14px 20px 12px;
+   background: #ffffff;
+   border-bottom: 0.5px solid rgba(0, 0, 0, 0.07);
+   flex-shrink: 0;
+}
+
+.month {
+   font-size: 17px;
+   font-weight: 600;
+   color: #141416;
+   letter-spacing: -0.02em;
+   min-width: 160px;
+}
+
+.nav {
+   display: flex;
+   gap: 3px;
+}
+
+.navBtn {
+   width: 28px;
+   height: 28px;
+   border-radius: 8px;
+   border: 0.5px solid rgba(0, 0, 0, 0.1);
+   background: #ffffff;
+   cursor: pointer;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   color: #888;
+   transition: background 0.15s ease;
+
+   &:hover {
+      background: #f3f3f7;
+      color: #444;
+   }
+}
+
+.today {
+   padding: 6px 14px;
+   border-radius: 8px;
+   border: 0.5px solid rgba(0, 0, 0, 0.1);
+   background: #ffffff;
+   font-size: 13px;
+   color: #555;
+   cursor: pointer;
+   transition: background 0.15s ease;
+
+   &:hover {
+      background: #f3f3f7;
+   }
+}
+
+.right {
+   margin-left: auto;
+   display: flex;
+   align-items: center;
+   gap: 8px;
+}
+
+.addBtn {
+   padding: 7px 14px;
+   border-radius: 8px;
+   background: #534AB7;
+   border: none;
+   font-size: 13px;
+   color: #ffffff;
+   cursor: pointer;
+   display: flex;
+   align-items: center;
+   gap: 6px;
+   font-weight: 500;
+   transition: background 0.15s ease;
+
+   &:hover {
+      background: #7F77DD;
+   }
+}
+
+.share {
+   padding: 7px 14px;
+   border-radius: 8px;
+   background: #141416;
+   border: none;
+   font-size: 13px;
+   color: #ffffff;
+   cursor: pointer;
+   display: flex;
+   align-items: center;
+   gap: 6px;
+   transition: background 0.15s ease;
+
+   &:hover {
+      background: #2c2c2e;
+   }
+}
+
+.viewTabs {
+   display: flex;
+   border-radius: 8px;
+   border: 0.5px solid rgba(0, 0, 0, 0.1);
+   overflow: hidden;
+   background: #f3f3f7;
+}
+
+.viewTab {
+   padding: 6px 14px;
+   font-size: 13px;
+   color: #666;
+   background: transparent;
+   border: none;
+   cursor: pointer;
+   transition: background 0.15s, color 0.15s;
+
+   &:hover {
+      background: rgba(83, 74, 183, 0.08);
+      color: #534AB7;
+   }
+}
+
+.viewTabActive {
+   background: #ffffff;
+   color: #534AB7;
+   font-weight: 500;
+}
+
+.monthWrap {
+   position: relative;
+}
+
+.month {
+   font-size: 15px;
+   font-weight: 500;
+   color: #141416;
+   cursor: pointer;
+   display: flex;
+   align-items: center;
+   gap: 6px;
+   padding: 4px 8px;
+   border-radius: 8px;
+   transition: background 0.12s;
+   user-select: none;
+
+   svg {
+      opacity: 0.35;
+      transition: transform 0.18s, opacity 0.12s;
+   }
+
+   &:hover {
+      background: rgba(0, 0, 0, 0.04);
+   }
+
+   &:hover svg {
+      opacity: 0.7
+   }
+}
+
+.monthOpen svg {
+   transform: rotate(180deg);
+   opacity: 0.7;
+}

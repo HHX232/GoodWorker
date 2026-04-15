@@ -1,0 +1,180 @@
+.header {
+   display: flex;
+   align-items: flex-start;
+   gap: 12px;
+   padding: 20px 20px 16px;
+   border-bottom: 0.5px solid rgba(0, 0, 0, 0.07);
+}
+
+.headerLeft {
+   flex: 1;
+   min-width: 0;
+}
+
+.eyebrow {
+   font-size: 10px;
+   text-transform: uppercase;
+   letter-spacing: 0.08em;
+   color: #aaa;
+   margin-bottom: 4px;
+}
+
+.title {
+   font-size: 17px;
+   font-weight: 600;
+   color: #141416;
+   display: flex;
+   align-items: center;
+   gap: 10px;
+   line-height: 1.2;
+}
+
+.colorDot {
+   width: 10px;
+   height: 10px;
+   border-radius: 50%;
+   flex-shrink: 0;
+}
+
+.closeBtn {
+   width: 28px;
+   height: 28px;
+   border-radius: 8px;
+   border: 0.5px solid rgba(0, 0, 0, 0.1);
+   background: transparent;
+   cursor: pointer;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   color: #888;
+   flex-shrink: 0;
+   transition: background 0.15s;
+
+   &:hover {
+      background: #f3f3f7;
+   }
+}
+
+// ── Body ──────────────────────────────────────────────
+
+.body {
+   padding: 8px 20px 12px;
+}
+
+.row {
+   display: flex;
+   align-items: flex-start;
+   gap: 12px;
+   padding: 9px 0;
+   border-bottom: 0.5px solid rgba(0, 0, 0, 0.06);
+
+   &:last-child {
+      border-bottom: none;
+   }
+}
+
+.rowIcon {
+   width: 32px;
+   height: 32px;
+   border-radius: 8px;
+   background: #F4F4F7;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   flex-shrink: 0;
+   color: #999;
+}
+
+.rowContent {
+   display: flex;
+   flex-direction: column;
+   gap: 2px;
+   justify-content: center;
+   min-width: 0;
+}
+
+.rowLabel {
+   font-size: 10px;
+   color: #bbb;
+   text-transform: uppercase;
+   letter-spacing: 0.06em;
+}
+
+.rowValue {
+   font-size: 13px;
+   color: #141416;
+   display: flex;
+   align-items: center;
+}
+
+.tag {
+   display: inline-flex;
+   align-items: center;
+   padding: 3px 10px;
+   border-radius: 20px;
+   font-size: 12px;
+   font-weight: 500;
+}
+
+.descBlock {
+   padding-top: 12px;
+   margin-top: 4px;
+   border-top: 0.5px solid rgba(0, 0, 0, 0.06);
+}
+
+.descLabel {
+   font-size: 10px;
+   color: #bbb;
+   text-transform: uppercase;
+   letter-spacing: 0.06em;
+   display: block;
+   margin-bottom: 6px;
+}
+
+.descText {
+   font-size: 13px;
+   color: #555;
+   line-height: 1.6;
+}
+
+// ── Footer ────────────────────────────────────────────
+
+.footer {
+   display: flex;
+   gap: 8px;
+   justify-content: flex-end;
+   padding: 12px 20px;
+   border-top: 0.5px solid rgba(0, 0, 0, 0.07);
+}
+
+.btnSecondary {
+   padding: 8px 18px;
+   border-radius: 9px;
+   font-size: 13px;
+   font-weight: 500;
+   cursor: pointer;
+   background: transparent;
+   color: #555;
+   border: 0.5px solid rgba(0, 0, 0, 0.12);
+   transition: background 0.15s;
+
+   &:hover {
+      background: #f4f4f7;
+   }
+}
+
+.btnDanger {
+   padding: 8px 18px;
+   border-radius: 9px;
+   font-size: 13px;
+   font-weight: 500;
+   cursor: pointer;
+   background: #FCEBEB;
+   color: #A32D2D;
+   border: 0.5px solid #F7C1C1;
+   transition: background 0.15s;
+
+   &:hover {
+      background: #f7d5d5;
+   }
+}

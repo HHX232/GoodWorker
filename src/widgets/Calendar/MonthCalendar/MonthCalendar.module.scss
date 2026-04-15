@@ -1,0 +1,129 @@
+.monthGrid {
+   display: grid;
+   grid-template-columns: repeat(7, 1fr);
+   flex: 1;
+   overflow-y: auto;
+   background: #ffffff;
+}
+
+.monthDayName {
+   text-align: center;
+   font-size: 11px;
+   color: #aaa;
+   text-transform: uppercase;
+   letter-spacing: 0.06em;
+   padding: 10px 0 8px;
+   border-bottom: 0.5px solid rgba(0, 0, 0, 0.06);
+   background: #fff;
+   position: sticky;
+   top: 0;
+}
+
+.monthCell {
+   min-height: 100px;
+   padding: 8px 6px 6px;
+   border-right: 0.5px solid rgba(0, 0, 0, 0.05);
+   border-bottom: 0.5px solid rgba(0, 0, 0, 0.05);
+   cursor: pointer;
+   display: flex;
+   flex-direction: column;
+   gap: 2px;
+   background: #ffffff;
+
+   &:hover {
+      background: rgba(83, 74, 183, 0.02);
+   }
+}
+
+.monthToday .monthNum {
+   background: #534AB7;
+   color: #fff;
+   border-radius: 50%;
+}
+
+.monthNum {
+   font-size: 13px;
+   font-weight: 600;
+   color: #141416;
+   width: 24px;
+   height: 24px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   margin-bottom: 2px;
+   border-radius: 50%;
+
+   &.weekend {
+      color: #E24B4A;
+   }
+}
+
+.monthEvent {
+   font-size: 11px;
+   color: #fff;
+   padding: 2px 6px;
+   border-radius: 4px;
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   cursor: pointer;
+}
+
+/* Таск в месячном виде */
+.monthTask {
+   display: flex;
+   align-items: center;
+   gap: 4px;
+   padding: 2px 4px;
+   border-radius: 4px;
+   background: rgba(83, 74, 183, 0.07);
+   border: 0.5px solid rgba(83, 74, 183, 0.15);
+   cursor: default;
+   min-width: 0;
+}
+
+.monthTaskDone {
+   opacity: 0.5;
+
+   .monthTaskTitle {
+      text-decoration: line-through;
+   }
+}
+
+.monthTaskCheck {
+   width: 13px;
+   height: 13px;
+   border-radius: 3px;
+   border: 1.5px solid #534AB7;
+   background: #ffffff;
+   flex-shrink: 0;
+   cursor: pointer;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   padding: 0;
+   transition: background 0.15s;
+
+   &:hover {
+      background: rgba(83, 74, 183, 0.1);
+   }
+}
+
+.monthTaskDone .monthTaskCheck {
+   background: #534AB7;
+   border-color: #534AB7;
+}
+
+.monthTaskTitle {
+   font-size: 10px;
+   color: #534AB7;
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+}
+
+.monthMore {
+   font-size: 10px;
+   color: #aaa;
+   padding-left: 4px;
+}

@@ -1,0 +1,43 @@
+.dop_container {
+   max-height: calc(100vh - 150px);
+   overflow-y: auto;
+   scrollbar-width: none;
+
+   &::-webkit-scrollbar {
+      display: none;
+   }
+}
+
+.page {
+   display: grid;
+   grid-template-columns: repeat(4, 1fr);
+   grid-template-rows: repeat(2, calc((103vh - 285px - 28px - 24px) / 2));
+   gap: 24px;
+   padding-top: 28px;
+   align-items: start;
+
+   .hero_card {
+      grid-column: span 1;
+      height: 100%;
+   }
+
+   .hours_chart {
+      grid-column: span 2;
+      height: 100%;
+   }
+
+   .sub_pie {
+      grid-column: span 1;
+      height: 100%;
+   }
+
+   .week_calendar {
+      grid-column: span 3;
+      height: 100%;
+   }
+
+   .error_topics {
+      grid-column: span 1;
+      height: 100%;
+   }
+}

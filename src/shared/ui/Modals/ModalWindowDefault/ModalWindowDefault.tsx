@@ -1,6 +1,6 @@
 'use client'
-import { FC, ReactNode, useEffect } from 'react'
-import { createPortal } from 'react-dom'
+import {FC, ReactNode, useEffect} from 'react'
+import {createPortal} from 'react-dom'
 import styles from './ModalWindowDefault.module.scss'
 
 interface IModalWindowDefaultProps {
@@ -9,8 +9,9 @@ interface IModalWindowDefaultProps {
   onClose: (e: React.MouseEvent) => void
   extraClass?: string
   useAbsoluteClose?: boolean
-  additionalTitle?:string | ReactNode
+  additionalTitle?: string | ReactNode
   scrallToElementID?: string
+  modalFooter?: ReactNode
 }
 
 const ModalWindowDefault: FC<IModalWindowDefaultProps> = ({
@@ -19,21 +20,19 @@ const ModalWindowDefault: FC<IModalWindowDefaultProps> = ({
   onClose,
   extraClass,
   useAbsoluteClose = false,
-  additionalTitle, scrallToElementID
+  additionalTitle,
+  scrallToElementID,
+  modalFooter
 }) => {
-
-   useEffect(() => {
-  if (!isOpen || !scrallToElementID) return;
-
-  const timer = setTimeout(() => {
-    const element = document.getElementById(scrallToElementID);
-    if (!element) return;
-
-    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, 100);
-
-  return () => clearTimeout(timer);
-}, [isOpen, scrallToElementID]);
+  useEffect(() => {
+    if (!isOpen || !scrallToElementID) return
+    const timer = setTimeout(() => {
+      const element = document.getElementById(scrallToElementID)
+      if (!element) return
+      element.scrollIntoView({behavior: 'smooth', block: 'center'})
+    }, 100)
+    return () => clearTimeout(timer)
+  }, [isOpen, scrallToElementID])
 
   useEffect(() => {
     if (isOpen) {
@@ -41,31 +40,35 @@ const ModalWindowDefault: FC<IModalWindowDefaultProps> = ({
     } else {
       document.body.style.overflow = 'auto'
     }
-
     return () => {
       document.body.style.overflow = 'auto'
     }
   }, [isOpen])
 
   if (!isOpen) return null
+
   const onBackClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()
-    console.log('onBackClick')
     onClose(e)
   }
+
   return createPortal(
     <div className={`${styles.modal__window__default__back} ${extraClass}`} onClick={onBackClick}>
-      <div className={`${styles.modal__inner}`} onClick={(e) => e.stopPropagation()}>
-        <div className={`${styles.modal__header} ${useAbsoluteClose && styles.absolute_close} ${additionalTitle && styles.has_additional_title}`}>
-         {additionalTitle && additionalTitle}
+      <div className={styles.modal__inner} onClick={(e) => e.stopPropagation()}>
+        <div
+          className={`${styles.modal__header} ${useAbsoluteClose ? styles.absolute_close : ''} ${
+            additionalTitle ? styles.has_additional_title : ''
+          }`}
+        >
+          {additionalTitle && additionalTitle}
           <button
             id='cy-modal-window-default-close-button'
-            className={`${styles.modal__header__close__button}`}
+            className={styles.modal__header__close__button}
             onClick={(e) => onClose(e)}
           >
             <svg
-              className={`${styles.modal__header__close__button__svg}`}
+              className={styles.modal__header__close__button__svg}
               width='24'
               height='25'
               viewBox='0 0 24 25'
@@ -82,9 +85,10 @@ const ModalWindowDefault: FC<IModalWindowDefaultProps> = ({
             </svg>
           </button>
         </div>
-        <div className={`${styles.content}`}>
-        {children}
-        </div>
+
+        <div className={styles.content}>{children}</div>
+
+        {modalFooter && <div className={styles.modal__footer}>{modalFooter}</div>}
       </div>
     </div>,
     document.getElementById('modal_portal')!

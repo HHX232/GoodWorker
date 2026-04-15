@@ -1,0 +1,202 @@
+.root {
+   display: flex;
+   flex-direction: column;
+   flex: 1;
+   min-height: 0;
+   background: #f8f8fb;
+}
+
+.daysHeader {
+   display: grid;
+   grid-template-columns: 52px repeat(7, minmax(0, 1fr));
+   background: #ffffff;
+   border-bottom: 0.5px solid rgba(0, 0, 0, 0.06);
+   padding: 0 4px;
+   flex-shrink: 0;
+}
+
+.timeGutter {}
+
+.dayHead {
+   padding: 8px 6px;
+   text-align: center;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   gap: 4px;
+}
+
+.dayName {
+   font-size: 11px;
+   color: #aaa;
+   text-transform: uppercase;
+   letter-spacing: 0.06em;
+   font-weight: 500;
+}
+
+.dayNum {
+   font-size: 16px;
+   font-weight: 600;
+   color: #141416;
+   width: 32px;
+   height: 32px;
+   border-radius: 50%;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+}
+
+.dayNum.today {
+   background: #534AB7;
+   color: #ffffff;
+}
+
+.body {
+   flex: 1;
+   min-height: 0;
+   overflow-y: auto;
+   scrollbar-width: thin;
+   scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+}
+
+.body::-webkit-scrollbar {
+   width: 4px;
+}
+
+.body::-webkit-scrollbar-thumb {
+   background: rgba(0, 0, 0, 0.1);
+   border-radius: 2px;
+}
+
+.grid {
+   display: grid;
+   grid-template-columns: 52px repeat(7, minmax(0, 1fr));
+   padding: 0 4px;
+}
+
+.timeCol {
+   display: flex;
+   flex-direction: column;
+}
+
+.timeSlot {
+   height: 56px;
+   padding-right: 8px;
+   display: flex;
+   align-items: flex-start;
+   justify-content: flex-end;
+   padding-top: 4px;
+   flex-shrink: 0;
+}
+
+.timeLabel {
+   font-size: 10px;
+   color: #ccc;
+   white-space: nowrap;
+   font-variant-numeric: tabular-nums;
+}
+
+.dayTrack {
+   position: relative;
+   border-left: 0.5px solid rgba(0, 0, 0, 0.05);
+   height: calc(56px * 16);
+   cursor: crosshair;
+}
+
+.dayTrack.weekend {
+   background: rgba(0, 0, 0, 0.012);
+}
+
+.dayTrack:not(.weekend):hover {
+   background: rgba(83, 74, 183, 0.012);
+}
+
+.hourLine {
+   position: absolute;
+   left: 0;
+   right: 0;
+   height: 0.5px;
+   background: rgba(0, 0, 0, 0.06);
+   pointer-events: none;
+}
+
+.halfLine {
+   position: absolute;
+   left: 0;
+   right: 0;
+   height: 0.5px;
+   background: rgba(0, 0, 0, 0.03);
+   pointer-events: none;
+}
+
+.hoverGhost {
+   position: absolute;
+   left: 3px;
+   right: 3px;
+   height: 56px;
+   margin-top: -28px;
+   border-radius: 6px;
+   background: rgba(83, 74, 183, 0.07);
+   border: 1px dashed rgba(83, 74, 183, 0.25);
+   pointer-events: none;
+   transition: top 0.05s;
+}
+
+.lunchBreak {
+   position: absolute;
+   left: 3px;
+   right: 3px;
+   border-radius: 5px;
+   border: 0.5px dashed rgba(0, 0, 0, 0.08);
+   background: rgba(0, 0, 0, 0.015);
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   gap: 4px;
+   pointer-events: none;
+}
+
+.lunchLabel {
+   font-size: 10px;
+   color: #ccc;
+}
+
+.freeDay {
+   position: absolute;
+   inset: 0;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   font-size: 11px;
+   color: #ddd;
+   letter-spacing: 0.04em;
+}
+
+.nowLine {
+   position: absolute;
+   left: 0;
+   right: 0;
+   z-index: 10;
+   pointer-events: none;
+}
+
+.nowDot {
+   width: 7px;
+   height: 7px;
+   border-radius: 50%;
+   background: #E24B4A;
+   margin-left: -3px;
+   margin-top: -3px;
+   position: absolute;
+   top: 0;
+   left: 0;
+}
+
+.nowBar {
+   position: absolute;
+   left: 4px;
+   right: 0;
+   height: 1.5px;
+   background: #E24B4A;
+   top: 0;
+}

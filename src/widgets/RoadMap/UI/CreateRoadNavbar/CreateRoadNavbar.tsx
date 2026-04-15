@@ -5,17 +5,75 @@ import {useTranslations} from 'next-intl'
 import {useState} from 'react'
 import styles from './CreateRoadNavbar.module.scss'
 
+const allItems = [
+  RoadMapBlockType.TEST_LINK,
+  RoadMapBlockType.INFO_TEXT,
+  RoadMapBlockType.DIVIDER,
+  RoadMapBlockType.INFO_AUDIO,
+  RoadMapBlockType.INFO_MEDIA,
+  RoadMapBlockType.POST_LINK,
+  RoadMapBlockType.DOWNLOAD_FILE_LINK,
+  RoadMapBlockType.ACTIVE_TEST
+]
+
+const TOP_COUNT = 4
+
 function CreateRoadNavbar() {
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  const topItems = allItems.slice(0, TOP_COUNT)
+  const bottomItems = allItems.slice(TOP_COUNT)
+
   return (
-    <div className={styles.main}>
-      <TaskMenuBtn taskType={RoadMapBlockType.TEST_LINK} id='taskmenu-task-example'></TaskMenuBtn>
-      <TaskMenuBtn taskType={RoadMapBlockType.INFO_TEXT} id='taskmenu-task-example'></TaskMenuBtn>
-      <TaskMenuBtn taskType={RoadMapBlockType.DIVIDER} id='taskmenu-task-example'></TaskMenuBtn>
-      <TaskMenuBtn taskType={RoadMapBlockType.INFO_AUDIO} id='taskmenu-task-example'></TaskMenuBtn>
-      <TaskMenuBtn taskType={RoadMapBlockType.INFO_MEDIA} id='taskmenu-task-example'></TaskMenuBtn>
-      <TaskMenuBtn taskType={RoadMapBlockType.POST_LINK} id='taskmenu-task-example'></TaskMenuBtn>
-      <TaskMenuBtn taskType={RoadMapBlockType.DOWNLOAD_FILE_LINK} id='taskmenu-task-example'></TaskMenuBtn>
-      <TaskMenuBtn taskType={RoadMapBlockType.ACTIVE_TEST} id='taskmenu-task-example'></TaskMenuBtn>
+    <div className={`${styles.main} ${isExpanded ? styles.expanded : ''}`}>
+      {/* десктоп — все кнопки подряд */}
+      <div className={styles.desktop_group}>
+        {allItems.map((type) => (
+          <TaskMenuBtn key={type} taskType={type} />
+        ))}
+      </div>
+
+      {/* мобайл — верхний ряд (всегда виден) */}
+      <div className={styles.mobile_top}>
+        {topItems.map((type) => (
+          <TaskMenuBtn key={type} taskType={type} />
+        ))}
+
+        {/* кнопка-стрелочка */}
+        <button
+          className={styles.expand_btn}
+          onClick={() => setIsExpanded((prev) => !prev)}
+          aria-label={isExpanded ? 'Свернуть' : 'Развернуть'}
+        >
+          <svg
+            width='16'
+            height='16'
+            viewBox='0 0 24 24'
+            fill='none'
+            className={`${styles.expand_icon} ${isExpanded ? styles.rotated : ''}`}
+          >
+            <path
+              d='M6 9L12 15L18 9'
+              stroke='currentColor'
+              strokeWidth='1.8'
+              strokeLinecap='round'
+              strokeLinejoin='round'
+            />
+          </svg>
+        </button>
+      </div>
+
+      {/* мобайл — нижний ряд (раскрывается) */}
+      <div className={styles.mobile_expandable}>
+        <div className={styles.mobile_expandable_inner}>
+          <div className={styles.divider} />
+          <div className={styles.mobile_bottom}>
+            {bottomItems.map((type) => (
+              <TaskMenuBtn key={type} taskType={type} />
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -43,23 +101,10 @@ function TaskMenuBtn({taskType, id}: {taskType: RoadMapBlockType; id?: string}) 
       draggable
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
-      style={{
-        opacity: isDragging ? 0.5 : 1,
-        cursor: isDragging ? 'grabbing' : 'grab',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
-        padding: '8px 12px',
-        borderRadius: 8,
-        border: '1px solid var(--color-border-secondary)',
-        background: 'var(--color-background-secondary)',
-        color: 'var(--color-text-primary)',
-        fontSize: 14,
-        whiteSpace: 'nowrap'
-      }}
+      className={`${styles.task_btn} ${isDragging ? styles.dragging : ''}`}
     >
       <task.icon style={{minHeight: '16px', minWidth: '16px'}} width={16} height={16} />
-      {t(task.label)}
+      <span className={styles.task_label}>{t(task.label)}</span>
     </button>
   )
 }

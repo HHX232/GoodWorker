@@ -1,0 +1,191 @@
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px 20px 16px;
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.07);
+}
+
+.headerLeft {
+  flex: 1;
+}
+
+.eyebrow {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #aaa;
+  margin-bottom: 4px;
+}
+
+.title {
+  font-size: 17px;
+  font-weight: 600;
+  color: #141416;
+}
+
+.closeBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 0.5px solid rgba(0, 0, 0, 0.1);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  flex-shrink: 0;
+  transition: background 0.15s;
+
+  &:hover {
+    background: #f3f3f7;
+  }
+}
+
+// ── Body ──────────────────────────────────────────────
+
+.body {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 60vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.input {
+  background: #F8F8FB;
+  border: 0.5px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 13px;
+  color: #141416;
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+  width: 100%;
+
+  &:focus {
+    border-color: #534AB7;
+    background: #ffffff;
+  }
+
+  // date/time inputs
+  &[type='date'],
+  &[type='time'] {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.textarea {
+  background: #F8F8FB;
+  border: 0.5px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 13px;
+  color: #141416;
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+  resize: none;
+  line-height: 1.5;
+  font-family: inherit;
+  width: 100%;
+
+  &:focus {
+    border-color: #534AB7;
+    background: #ffffff;
+  }
+}
+
+// ── Color picker ──────────────────────────────────────
+
+.colorPicker {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 4px 0;
+}
+
+.colorDot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s, outline 0.15s;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+
+  &:hover {
+    transform: scale(1.15);
+  }
+
+  &.colorDotSelected {
+    outline-color: #534AB7;
+    transform: scale(1.1);
+  }
+}
+
+// ── Footer ────────────────────────────────────────────
+
+.footer {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 12px 20px;
+  border-top: 0.5px solid rgba(0, 0, 0, 0.07);
+}
+
+.btnSecondary {
+  padding: 8px 18px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  background: transparent;
+  color: #555;
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
+  transition: background 0.15s;
+
+  &:hover {
+    background: #f4f4f7;
+  }
+}
+
+.btnPrimary {
+  padding: 8px 20px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  background: #534AB7;
+  color: #ffffff;
+  border: none;
+  transition: background 0.15s;
+
+  &:hover {
+    background: #7F77DD;
+  }
+}

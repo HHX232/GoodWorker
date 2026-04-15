@@ -1,0 +1,235 @@
+.picker {
+   position: absolute;
+   top: calc(100% + 6px);
+   left: 0;
+   z-index: 200;
+   width: 280px;
+   background: #ffffff;
+   border: 0.5px solid rgba(0, 0, 0, 0.1);
+   border-radius: 12px;
+   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+   overflow: hidden;
+}
+
+.modes {
+   display: flex;
+   border-bottom: 0.5px solid rgba(0, 0, 0, 0.06);
+}
+
+.modeTab {
+   flex: 1;
+   font-size: 11px;
+   padding: 8px 0;
+   border: none;
+   background: transparent;
+   cursor: pointer;
+   color: #aaa;
+   transition: all 0.12s;
+   letter-spacing: 0.03em;
+}
+
+.modeActive {
+   color: #534AB7;
+   border-bottom: 1.5px solid #534AB7;
+   background: rgba(83, 74, 183, 0.03);
+}
+
+.nav {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   padding: 10px 12px 6px;
+
+   span {
+      font-size: 13px;
+      font-weight: 500;
+      color: #141416;
+   }
+
+   button {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      border: 0.5px solid rgba(0, 0, 0, 0.08);
+      background: transparent;
+      cursor: pointer;
+      font-size: 16px;
+      color: #888;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background 0.1s;
+
+      &:hover {
+         background: rgba(0, 0, 0, 0.05)
+      }
+   }
+}
+
+// Day
+.dayGrid {
+   display: grid;
+   grid-template-columns: repeat(7, 1fr);
+   gap: 2px;
+   padding: 0 10px 10px;
+}
+
+.wd {
+   font-size: 10px;
+   text-align: center;
+   color: #ccc;
+   padding: 4px 0;
+   letter-spacing: 0.04em;
+}
+
+.dayCell {
+   aspect-ratio: 1;
+   border: none;
+   border-radius: 50%;
+   font-size: 11px;
+   cursor: pointer;
+   color: #141416;
+   background: transparent;
+   transition: all 0.1s;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+
+   &:hover {
+      background: rgba(83, 74, 183, 0.08)
+   }
+
+   &.today {
+      background: #534AB7;
+      color: #fff;
+   }
+
+   &.weekend {
+      color: #E24B4A;
+   }
+
+   &.today.weekend {
+      color: #fff
+   }
+}
+
+// Week
+.weekList {
+   padding: 4px 10px 10px;
+   display: flex;
+   flex-direction: column;
+   gap: 2px;
+}
+
+.weekRow {
+   display: flex;
+   align-items: center;
+   gap: 6px;
+   padding: 4px 4px;
+   border-radius: 8px;
+   cursor: pointer;
+   transition: background 0.1s;
+
+   &:hover {
+      background: rgba(83, 74, 183, 0.06)
+   }
+}
+
+.weekNum {
+   font-size: 10px;
+   color: #ccc;
+   width: 18px;
+   text-align: right;
+   flex-shrink: 0;
+}
+
+.weekCells {
+   display: flex;
+   gap: 1px;
+   flex: 1;
+}
+
+.weekDay {
+   width: 28px;
+   height: 28px;
+   border-radius: 50%;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   font-size: 10px;
+   color: #888;
+
+   &.weekend {
+      color: #E24B4A
+   }
+
+   &.today {
+      background: #534AB7;
+      color: #fff
+   }
+}
+
+.weekRange {
+   font-size: 10px;
+   color: #ccc;
+   flex-shrink: 0;
+}
+
+// Month
+.monthGrid {
+   display: grid;
+   grid-template-columns: repeat(3, 1fr);
+   gap: 4px;
+   padding: 8px 10px 12px;
+}
+
+.monthCell {
+   padding: 8px 4px;
+   border-radius: 8px;
+   border: none;
+   font-size: 12px;
+   color: #666;
+   background: transparent;
+   cursor: pointer;
+   transition: all 0.1s;
+
+   &:hover {
+      background: rgba(83, 74, 183, 0.07);
+      color: #141416
+   }
+
+   &.today {
+      background: #534AB7;
+      color: #fff
+   }
+}
+
+// Year
+.yearGrid {
+   display: grid;
+   grid-template-columns: repeat(4, 1fr);
+   gap: 4px;
+   padding: 8px 10px 12px;
+}
+
+.yearCell {
+   padding: 7px 4px;
+   border-radius: 8px;
+   border: none;
+   font-size: 12px;
+   color: #666;
+   background: transparent;
+   cursor: pointer;
+   transition: all 0.1s;
+
+   &:hover {
+      background: rgba(83, 74, 183, 0.07);
+      color: #141416
+   }
+
+   &.today {
+      background: #534AB7;
+      color: #fff
+   }
+}

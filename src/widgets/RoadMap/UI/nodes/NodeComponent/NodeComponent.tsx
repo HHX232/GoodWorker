@@ -20,7 +20,7 @@ const NodeComponent = memo((props: NodeProps) => {
   const isHidden = (nodeData as any).isPaywallHidden ?? false
   const isLockedInView = isView && isHidden
   const isDivider = nodeData.type === RoadMapBlockType.DIVIDER
-
+  const isEntryPoint = nodeData.type === RoadMapBlockType.ENTRY_POINT
   const blockContent = useNodeContent({nodeId: props.id, nodeData})
 
   return (
@@ -28,18 +28,27 @@ const NodeComponent = memo((props: NodeProps) => {
       <NodeHeader taskType={nodeData.type} nodeId={props.id} />
 
       {isLockedInView ? (
-        <PaywallOverlay type={nodeData.type} />
+        <PaywallOverlay
+          type={nodeData.type}
+          nodeId={props.id}
+          hasInput={!isEntryPoint && !isDivider}
+          hasOutput={!isDivider}
+          inputs={task?.inputs}
+          outputs={task?.outputs}
+        />
       ) : (
         <>
           {blockContent}
 
           {!isDivider && (
             <>
-              <NodeInputs nodeId={props.id} hidden={isView}>
-                {task?.inputs?.map((input) => (
-                  <NodeInput key={input.name} input={input} nodeId={props.id} />
-                ))}
-              </NodeInputs>
+              {!isEntryPoint && (
+                <NodeInputs nodeId={props.id} hidden={isView}>
+                  {task?.inputs?.map((input) => (
+                    <NodeInput key={input.name} input={input} nodeId={props.id} />
+                  ))}
+                </NodeInputs>
+              )}
               <NodeOutputs nodeId={props.id} hidden={isView}>
                 {task?.outputs?.map((output) => (
                   <NodeOutput key={output.name} output={output} nodeId={props.id} />

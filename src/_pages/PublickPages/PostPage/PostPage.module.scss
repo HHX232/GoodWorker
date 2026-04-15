@@ -1,11 +1,11 @@
 @use '../../../shared/scss/config/mixins.scss';
 
 .extra_content {
-     @include mixins.lgg {
-       gap: 12px;
+   @include mixins.lgg {
+      gap: 12px;
       padding: 0 12px;
       grid-template-columns: minmax(0, 100px) 3fr;
-     }
+   }
 
 
    @media(max-width: 700px) {
@@ -13,29 +13,36 @@
       position: relative;
    }
 }
-.mobile_wrapper{
+
+.mobile_wrapper {
    display: none !important;
 }
-.extra_full{
+
+.extra_full {
    display: none;
 }
-@media(max-width:1040px){
-   .mobile_wrapper{
+
+@media(max-width:1040px) {
+   .mobile_wrapper {
       display: flex !important;
       flex-direction: column;
       gap: 12px;
    }
-   .not_mobile_box{
+
+   .not_mobile_box {
       display: none !important;
    }
-   .extra_full{
-   display: block;
-}
-   .extra_full_bot{
+
+   .extra_full {
+      display: block;
+   }
+
+   .extra_full_bot {
       display: none;
    }
 
 }
+
 .mobile_wrapper {
    display: flex;
    flex-direction: column;
@@ -49,7 +56,7 @@
 .sticky_sidebar {
    position: sticky;
    top: 0;
-   max-height: calc(100vh - 150px);
+   max-height: calc(100vh - 180px);
 
    @include mixins.lgg {
       order: -1;

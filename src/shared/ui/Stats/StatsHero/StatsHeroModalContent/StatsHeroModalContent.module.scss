@@ -1,0 +1,187 @@
+// StatsHeroModalContent.module.scss
+
+// ─── Keyframes ────────────────────────────────────────────────────────────────
+
+@keyframes fadeUp {
+   from {
+      opacity: 0;
+      transform: translateY(10px);
+   }
+
+   to {
+      opacity: 1;
+      transform: translateY(0);
+   }
+}
+
+// ─── Root ─────────────────────────────────────────────────────────────────────
+
+.root {
+   display: flex;
+   flex-direction: column;
+}
+
+// ─── Period ───────────────────────────────────────────────────────────────────
+
+.period {
+   font-size: 11px;
+   color: #bbb;
+   letter-spacing: 0.04em;
+   margin-bottom: 20px;
+   margin-top: -4px;
+   animation: fadeUp 0.35s 0.05s both;
+}
+
+// ─── KPI row ──────────────────────────────────────────────────────────────────
+
+.kpi_row {
+   display: grid;
+   grid-template-columns: repeat(4, 1fr);
+   gap: 10px;
+   margin-bottom: 22px;
+
+   @media (max-width: 480px) {
+      grid-template-columns: repeat(2, 1fr);
+   }
+}
+
+.kpi {
+   background: #f7f7f7;
+   border: 0.5px solid transparent;
+   border-radius: 12px;
+   padding: 12px 14px;
+   display: flex;
+   flex-direction: column;
+   gap: 3px;
+   cursor: default;
+   // entrance
+   opacity: 0;
+   animation: fadeUp 0.4s both;
+   // hover
+   transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+
+   &:hover {
+      background: #f0f0f0;
+      border-color: rgba(0, 0, 0, 0.07);
+      transform: translateY(-2px);
+   }
+}
+
+.kpi_n {
+   font-size: 22px;
+   font-weight: 300;
+   color: #1a1a1a;
+   letter-spacing: -0.04em;
+   line-height: 1;
+}
+
+.kpi_l {
+   font-size: 9px;
+   font-weight: 500;
+   text-transform: uppercase;
+   letter-spacing: 0.1em;
+   color: #bbb;
+}
+
+.kpi_d {
+   font-size: 10px;
+   margin-top: 2px;
+}
+
+.kpi_d_up {
+   color: #4a9e6b;
+}
+
+.kpi_d_dn {
+   color: #c0504d;
+}
+
+// ─── Section ──────────────────────────────────────────────────────────────────
+
+.section {
+   margin-bottom: 20px;
+   opacity: 0;
+   animation: fadeUp 0.4s both;
+
+   &:hover .section_title {
+      color: #aaa;
+   }
+}
+
+// no bottom margin variant (used inside two_col)
+.section_flat {
+   opacity: 0;
+   animation: fadeUp 0.4s both;
+
+   &:hover .section_title {
+      color: #aaa;
+   }
+}
+
+.section_title {
+   font-size: 10px;
+   font-weight: 500;
+   text-transform: uppercase;
+   letter-spacing: 0.1em;
+   color: #ccc;
+   margin-bottom: 10px;
+   transition: color 0.2s ease;
+}
+
+// ─── Chart wrap — hover background ───────────────────────────────────────────
+
+.chart_wrap {
+   border-radius: 10px;
+   padding: 2px 0;
+   transition: background 0.2s ease;
+
+   &:hover {
+      background: #fafafa;
+   }
+}
+
+// ─── Two-column layout ────────────────────────────────────────────────────────
+
+.two_col {
+   display: grid;
+   grid-template-columns: 3fr 2fr;
+   gap: 16px;
+
+   @media (max-width: 480px) {
+      grid-template-columns: 1fr;
+   }
+}
+
+// ─── Tooltip ──────────────────────────────────────────────────────────────────
+
+.tooltip {
+   background: #fff;
+   border: 0.5px solid rgba(0, 0, 0, 0.1);
+   border-radius: 8px;
+   padding: 8px 12px;
+   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.tooltip_label {
+   font-size: 10px;
+   color: #bbb;
+   margin-bottom: 4px;
+}
+
+.tooltip_row {
+   display: flex;
+   justify-content: space-between;
+   gap: 16px;
+}
+
+.tooltip_name {
+   font-size: 11px;
+   color: #999;
+}
+
+.tooltip_val {
+   font-size: 11px;
+   font-weight: 500;
+   color: #1a1a1a;
+   font-variant-numeric: tabular-nums;
+}
