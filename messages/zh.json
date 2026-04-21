@@ -1,181 +1,181 @@
 {
   "HomeTest": {
-    "title": "Hello",
-    "description": "This is a description"
+    "title": "你好",
+    "description": "这是一个描述"
   },
   "Header": {
-    "collections": "Collections",
-    "constructor": "Constructor",
-    "sale": "Sale",
-    "basket": "Cart",
-    "profile": "Profile",
-    "catalog": "Catalog",
-    "search": "Search",
-    "specialization": "Specialization",
-    "developer": "Developer",
-    "designer": "Designer",
-    "qa": "Engineer"
+    "collections": "系列",
+    "constructor": "构造器",
+    "sale": "促销",
+    "basket": "购物车",
+    "profile": "个人资料",
+    "catalog": "商品目录",
+    "search": "搜索",
+    "specialization": "专业方向",
+    "developer": "开发者",
+    "designer": "设计师",
+    "qa": "测试工程师"
   },
   "NavBar": {
-    "home": "Home",
-    "add": "Add",
-    "bookmark": "Bookmarks",
-    "messages": "Messages",
-    "support": "Support",
-    "settings": "Settings",
-    "collapse": "Collapse menu",
-    "expand": "Expand menu"
+    "home": "首页",
+    "add": "添加",
+    "bookmark": "书签",
+    "messages": "消息",
+    "support": "支持",
+    "settings": "设置",
+    "collapse": "收起菜单",
+    "expand": "展开菜单"
   },
   "CreateTestPage": {
-    "title": "Create Test",
-    "namePlaceholder": "Enter test name",
-    "themePlaceholder": "Enter test topic",
-    "descriptionPlaceholder": "Enter test description, e.g. \"Participles often appear in exams\"",
-    "loading": "Loading..."
+    "title": "创建测试",
+    "namePlaceholder": "输入测试名称",
+    "themePlaceholder": "输入测试主题",
+    "descriptionPlaceholder": "输入测试说明，例如“分词在考试中经常出现”",
+    "loading": "加载中..."
   },
   "BlockEditor": {
-    "fillText": "Fill in the text",
-    "sequence": "Choose the sequence",
-    "chooseOption": "Choose the correct option(s)",
-    "matchPairs": "Match the pairs",
-    "freeAnswer": "Enter your answer",
-    "deleteBlock": "Delete block"
+    "fillText": "填空",
+    "sequence": "选择顺序",
+    "chooseOption": "选择正确选项",
+    "matchPairs": "配对",
+    "freeAnswer": "输入答案",
+    "deleteBlock": "删除区块"
   },
   "CollectionsMenu": {
-    "collections": "Collections",
-    "clothing": "Clothing",
-    "accessories": "Accessories",
-    "all": "All"
+    "collections": "系列",
+    "clothing": "服装",
+    "accessories": "配饰",
+    "all": "全部"
   },
   "Home": {
-    "main": "A Moscow clothing brand that does not limit itself to any concepts"
+    "main": "一个不受任何概念限制的莫斯科服装品牌"
   },
   "HeroCard": {
-    "heroAlt": "Character",
-    "clothingAlt": "Clothing item",
-    "collection": "Collection",
-    "article": "SKU",
-    "size": "Size",
-    "color": "Color",
-    "price": "Price",
-    "more": "More details"
+    "heroAlt": "角色",
+    "clothingAlt": "服装单品",
+    "collection": "系列",
+    "article": "货号",
+    "size": "尺寸",
+    "color": "颜色",
+    "price": "价格",
+    "more": "更多详情"
   },
   "sort": {
-    "from": "From",
-    "to": "To",
-    "loading": "Loading...",
-    "select": "Sort",
-    "newest": "Newest",
-    "oldest": "Oldest",
-    "priceAsc": "Price: low to high",
-    "priceDesc": "Price: high to low",
-    "sortBy": "Sort by",
-    "showMore": "Show more"
+    "from": "从",
+    "to": "到",
+    "loading": "加载中...",
+    "select": "排序",
+    "newest": "最新",
+    "oldest": "最早",
+    "priceAsc": "价格：从低到高",
+    "priceDesc": "价格：从高到低",
+    "sortBy": "排序方式",
+    "showMore": "查看更多"
   },
   "pagination": {
-    "previous": "Previous",
-    "next": "Next"
+    "previous": "上一页",
+    "next": "下一页"
   },
   "Footer": {
-    "aboutBrand": "About the brand",
-    "campaign": "Campaign",
-    "care": "Care",
-    "warranty": "Warranty",
-    "shop": "Shop",
-    "deliveryReturns": "Delivery & Returns",
+    "aboutBrand": "关于品牌",
+    "campaign": "活动",
+    "care": "保养",
+    "warranty": "保修",
+    "shop": "商店",
+    "deliveryReturns": "配送与退货",
     "telegram": "Telegram",
     "instagram": "Instagram",
-    "discountLabel": "Get 10% off with subscription",
-    "emailPlaceholder": "Enter your email",
-    "subscribeButton": "Subscribe"
+    "discountLabel": "订阅可享 10% 折扣",
+    "emailPlaceholder": "输入邮箱",
+    "subscribeButton": "订阅"
   },
   "NotFoundPage": {
-    "mainText": "Sorry, the page was not found or has been moved.",
-    "goBack": "Back to home"
+    "mainText": "抱歉，页面未找到或已被移动。",
+    "goBack": "返回首页"
   },
   "BasketButton": {
-    "addToCart": "Add to cart",
-    "inCart": "Go to cart"
+    "addToCart": "加入购物车",
+    "inCart": "前往购物车"
   },
   "ProductTabs": {
-    "description": "Description",
-    "sizes": "Sizes",
-    "fabric": "Fabric",
-    "delivery": "Delivery & Returns"
+    "description": "描述",
+    "sizes": "尺寸",
+    "fabric": "面料",
+    "delivery": "配送与退货"
   },
   "profile": {
-    "profileLabel": "Profile"
+    "profileLabel": "个人资料"
   },
   "bread": {
-    "account": "Account",
-    "login": "Sign in",
-    "register": "Register"
+    "account": "账户",
+    "login": "登录",
+    "register": "注册"
   },
   "auth": {
-    "name": "Name",
-    "email": "Email",
-    "phone": "Phone",
-    "password": "Password",
-    "otp": "Code from email",
-    "send": "Send",
-    "confirm": "Confirm",
-    "error": "Something went wrong",
-    "loading": "Loading...",
-    "registerTitle": "Register",
-    "loginTitle": "Sign in to your account",
-    "nameRequired": "Name is required",
-    "invalidEmail": "Invalid email",
-    "phoneTooShort": "Minimum 7 characters",
-    "passwordTooShort": "Minimum 6 characters",
-    "emailOrPhoneRequired": "Email or phone is required",
-    "otpRequired": "Enter the code",
-    "haveAccount": "Have an account? Sign in!",
-    "notHaveAccount": "No account? Create one!",
-    "sendCode": "Get code",
-    "resendCode": "Resend code",
-    "login": "Sign in",
-    "invalidCredentials": "Invalid login or password"
+    "name": "姓名",
+    "email": "邮箱",
+    "phone": "电话",
+    "password": "密码",
+    "otp": "邮箱验证码",
+    "send": "发送",
+    "confirm": "确认",
+    "error": "发生错误",
+    "loading": "加载中...",
+    "registerTitle": "注册",
+    "loginTitle": "登录您的账户",
+    "nameRequired": "姓名是必填项",
+    "invalidEmail": "邮箱格式不正确",
+    "phoneTooShort": "最少 7 个字符",
+    "passwordTooShort": "最少 6 个字符",
+    "emailOrPhoneRequired": "邮箱或电话是必填项",
+    "otpRequired": "请输入验证码",
+    "haveAccount": "已有账户？登录！",
+    "notHaveAccount": "没有账户？创建一个！",
+    "sendCode": "获取验证码",
+    "resendCode": "重新发送验证码",
+    "login": "登录",
+    "invalidCredentials": "用户名或密码不正确"
   },
   "productInBasket": {
-    "collection": "Collection",
-    "size": "Size",
-    "color": "Color",
-    "price": "Price",
-    "remove": "Remove"
+    "collection": "系列",
+    "size": "尺寸",
+    "color": "颜色",
+    "price": "价格",
+    "remove": "移除"
   },
   "countInput": {
-    "title": "Quantity"
+    "title": "数量"
   },
   "basket": {
-    "loading": "Loading...",
-    "createOrder": "Create order",
-    "basket": "Cart",
-    "name": "Name",
-    "namePlaceholder": "Enter your name",
-    "address": "Delivery address",
-    "addressPlaceholder": "City, street, building, apartment",
-    "deliveryMethod": "Delivery method",
-    "delivery_courier": "Courier",
-    "delivery_pickup": "Pickup",
-    "delivery_post": "Post",
-    "paymentMethod": "Payment method",
-    "payment_card": "Card",
-    "payment_cash": "Cash",
-    "payment_online": "Online",
-    "points": "Points (1 point = 1 RUB)",
-    "comment": "Comment",
-    "commentPlaceholder": "Order notes",
-    "agreeText": "I agree to the personal data processing terms",
-    "submit": "Place order",
-    "fullPrice": "Total: "
+    "loading": "加载中...",
+    "createOrder": "创建订单",
+    "basket": "购物车",
+    "name": "姓名",
+    "namePlaceholder": "输入您的姓名",
+    "address": "配送地址",
+    "addressPlaceholder": "城市、街道、楼号、单元",
+    "deliveryMethod": "配送方式",
+    "delivery_courier": "快递",
+    "delivery_pickup": "自提",
+    "delivery_post": "邮政",
+    "paymentMethod": "支付方式",
+    "payment_card": "刷卡",
+    "payment_cash": "现金",
+    "payment_online": "在线支付",
+    "points": "积分（1 积分 = 1 卢布）",
+    "comment": "备注",
+    "commentPlaceholder": "订单备注",
+    "agreeText": "我同意个人数据处理条款",
+    "submit": "下单",
+    "fullPrice": "总计："
   },
   "CardsCatalog": {
-    "noMore": "No more posts",
-    "loadError": "Failed to load cards"
+    "noMore": "没有更多内容",
+    "loadError": "加载卡片失败"
   },
   "roadMap": {
     "postslabel": "帖子",
-    "linkTestLabel": "测试链接",
+    "linkTestLabel": "链接测试",
     "mediaInfoLabel": "媒体信息",
     "infoTextLabel": "文本信息",
     "FilesLabel": "文件",
@@ -195,16 +195,14 @@
     "highlightText": "标记单词",
     "wordScramble": "拼词",
     "dialogue": "对话",
-
     "noQuestions": "没有问题",
     "addButton": "添加",
-    "addFirstBlock": "添加第一个块",
+    "addFirstBlock": "添加第一个区块",
     "delete": "删除",
     "uploadAudio": "上传音频文件",
     "audioFormats": "MP3、WAV、OGG、M4A",
     "analyzingAudio": "正在分析音频...",
     "studentWillHearAudio": "学生在学习时会听到此音频",
-
     "uploadMedia": "上传图片或视频",
     "mediaFormats": "JPG、PNG、GIF · MP4、MOV、WEBM",
     "mediaPoints": "图片 = 1 分 · 视频 = 3 分 · 最大 ",
@@ -229,5 +227,49 @@
     "addFiles": "添加文件",
     "anyFormatMaxSize": "任意格式 · 最大 {maxSize} MB · 最多 {maxFiles} 个文件",
     "maxFilesLimit": "最多 {maxFiles} 个文件"
+  },
+  "auth2": {
+  "login": {
+    "title": "欢迎",
+    "subtitle": "登录您的账户",
+    "emailPlaceholder": "电子邮箱",
+    "passwordPlaceholder": "密码",
+    "submit": "登录",
+    "loading": "加载中...",
+    "noAccount": "没有账户？",
+    "register": "注册",
+    "emailRequired": "请输入电子邮箱",
+    "passwordMin": "密码至少6个字符",
+    "invalidCredentials": "邮箱或密码错误",
+    "successLogin": "欢迎！",
+    "unexpectedError": "出了点问题"
+  },
+  "register": {
+    "title": "创建账户",
+    "subtitle": "注册以开始使用",
+    "roleStudent": "学生",
+    "roleTeacher": "老师",
+    "namePlaceholder": "姓名",
+    "emailPlaceholder": "电子邮箱",
+    "phonePlaceholder": "电话号码（选填）",
+    "passwordPlaceholder": "密码",
+    "categoriesLabel": "您的科目",
+    "sendCode": "获取验证码",
+    "loading": "加载中...",
+    "hasAccount": "已有账户？",
+    "login": "登录",
+    "nameRequired": "请输入姓名",
+    "emailInvalid": "请输入有效的电子邮箱",
+    "passwordMin": "密码至少6个字符",
+    "categoriesRequired": "请至少选择一个科目",
+    "codeSent": "验证码已发送到您的邮箱",
+    "unexpectedError": "出了点问题",
+    "verifyTitle": "输入验证码",
+    "verifySubtitle": "我们已将6位验证码发送至",
+    "noCode": "没有收到验证码？",
+    "resend": "重新发送",
+    "back": "返回",
+    "successRegister": "账户创建成功！"
   }
+}
 }

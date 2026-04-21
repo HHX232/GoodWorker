@@ -1,0 +1,268 @@
+'use client'
+
+import { InputOtp, TextInputUI } from '@/shared/ui/inputs'
+import { signIn } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { toast } from 'sonner'
+import styles from './RegisterPage.module.scss'
+
+type Role = 'User' | 'Teacher'
+type Step = 'send' | 'verify'
+
+// TODO: replace with real categories fetched from API
+const CATEGORIES = [
+  { id: 'math', label: 'Математика' },
+  { id: 'english', label: 'Английский' },
+  { id: 'physics', label: 'Физика' },
+  { id: 'chemistry', label: 'Химия' },
+  { id: 'biology', label: 'Биология' },
+  { id: 'history', label: 'История' },
+  { id: 'geography', label: 'География' },
+  { id: 'it', label: 'Информатика' },
+]
+
+export default function RegisterPage() {
+  const t = useTranslations('auth2.register')
+  const router = useRouter()
+
+  const [step, setStep] = useState<Step>('send')
+  const [role, setRole] = useState<Role>('User')
+  const [loading, setLoading] = useState(false)
+
+  // send step fields
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  const [password, setPassword] = useState('')
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+
+  function toggleCategory(id: string) {
+    setSelectedCategories((prev) =>
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
+    )
+  }
+
+  async function handleSend() {
+    if (!name.trim()) {
+      toast.error(t('nameRequired'))
+      return
+    }
+    if (!email || !email.includes('@')) {
+      toast.error(t('emailInvalid'))
+      return
+    }
+    if (password.length < 6) {
+      toast.error(t('passwordMin'))
+      return
+    }
+    if (role === 'Teacher' && selectedCategories.length === 0) {
+      toast.error(t('categoriesRequired'))
+      return
+    }
+
+    setLoading(true)
+    try {
+      const body: Record<string, unknown> = {
+        step: 'send',
+        userType: role,
+        name,
+        email,
+        phone,
+        password,
+        langCode: 'ru',
+      }
+      if (role === 'Teacher') {
+        body.categoryIds = selectedCategories
+      }
+
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        toast.error(data.error ?? t('unexpectedError'))
+        return
+      }
+
+      toast.success(t('codeSent'))
+      setStep('verify')
+    } catch {
+      toast.error(t('unexpectedError'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleVerify(otp: string) {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          step: 'verify',
+          userType: role,
+          otp,
+          name,
+          email,
+          phone,
+          password,
+          langCode: 'ru',
+          ...(role === 'Teacher' ? { categoryIds: selectedCategories } : {}),
+        }),
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        toast.error(data.error ?? t('unexpectedError'))
+        return
+      }
+
+      // sign in right after registration
+      await signIn('credentials', { email, password, redirect: false })
+      toast.success(t('successRegister'))
+      router.push('/')
+    } catch {
+      toast.error(t('unexpectedError'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className={styles.page}>
+      <div className={styles.card}>
+
+        {/* ── STEP: SEND ── */}
+        {step === 'send' && (
+          <>
+            <div className={styles.header}>
+              <h1 className={styles.title}>{t('title')}</h1>
+              <p className={styles.subtitle}>{t('subtitle')}</p>
+            </div>
+
+            {/* Role switcher */}
+            <div className={styles.roleTabs}>
+              <button
+                className={`${styles.roleTab} ${role === 'User' ? styles.active : ''}`}
+                onClick={() => setRole('User')}
+              >
+                {t('roleStudent')}
+              </button>
+              <button
+                className={`${styles.roleTab} ${role === 'Teacher' ? styles.active : ''}`}
+                onClick={() => setRole('Teacher')}
+              >
+                {t('roleTeacher')}
+              </button>
+            </div>
+
+            <div className={styles.fields}>
+              <TextInputUI
+                helpTitle='name'
+                theme='newWhite'
+                placeholder={t('namePlaceholder')}
+                currentValue={name}
+                onSetValue={setName}
+              />
+              <TextInputUI
+                helpTitle='email'
+                theme='newWhite'
+                placeholder={t('emailPlaceholder')}
+                currentValue={email}
+                onSetValue={setEmail}
+              />
+              <TextInputUI
+                helpTitle='phone'
+                theme='newWhite'
+                placeholder={t('phonePlaceholder')}
+                currentValue={phone}
+                onSetValue={setPhone}
+              />
+              <TextInputUI
+                helpTitle='password'
+                theme='newWhite'
+                placeholder={t('passwordPlaceholder')}
+                currentValue={password}
+                onSetValue={setPassword}
+                isSecret
+              />
+            </div>
+
+            {/* Categories — Teacher only */}
+            {role === 'Teacher' && (
+              <div className={styles.categoriesBlock}>
+                <p className={styles.categoriesLabel}>{t('categoriesLabel')}</p>
+                <div className={styles.categoriesGrid}>
+                  {CATEGORIES.map((cat) => (
+                    <button
+                      key={cat.id}
+                      className={`${styles.chip} ${selectedCategories.includes(cat.id) ? styles.chipActive : ''}`}
+                      onClick={() => toggleCategory(cat.id)}
+                    >
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <button
+              className={styles.btn}
+              onClick={handleSend}
+              disabled={loading}
+            >
+              {loading ? t('loading') : t('sendCode')}
+            </button>
+
+            <p className={styles.hint}>
+              {t('hasAccount')}{' '}
+              <Link href='/login' className={styles.link}>
+                {t('login')}
+              </Link>
+            </p>
+          </>
+        )}
+
+        {/* ── STEP: VERIFY ── */}
+        {step === 'verify' && (
+          <>
+            <button className={styles.backBtn} onClick={() => setStep('send')}>
+              ← {t('back')}
+            </button>
+
+            <div className={styles.header}>
+              <h1 className={styles.title}>{t('verifyTitle')}</h1>
+              <p className={styles.subtitle}>
+                {t('verifySubtitle')} <strong>{email}</strong>
+              </p>
+            </div>
+
+            <div className={styles.otpWrap}>
+              <InputOtp
+                length={6}
+                onComplete={handleVerify}
+                disabled={loading}
+                autoFocus
+              />
+            </div>
+
+            <p className={styles.resendHint}>
+              {t('noCode')}{' '}
+              <button className={styles.resendBtn} onClick={handleSend} disabled={loading}>
+                {t('resend')}
+              </button>
+            </p>
+          </>
+        )}
+
+      </div>
+    </div>
+  )
+}

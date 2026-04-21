@@ -1,0 +1,460 @@
+// ActiveTestBlock.module.scss
+// CSS variables are injected by the component via style="" on .root
+// --accent: derived contrast color (same luminance logic as NodeHeader icon)
+// --accent-bg: header hex color used as fill for active elements
+// --accent-text: contrasting text on top of --accent-bg
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 12px 14px;
+  min-width: 280px;
+  max-width: 420px;
+  font-family: inherit;
+}
+
+// ── Editor label ──────────────────────────────────────────────────────────────
+
+.editorLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #7c83a0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 2px;
+}
+
+.emptyHint {
+  text-align: center;
+  color: #aab0c8;
+  font-size: 13px;
+  padding: 12px 0;
+}
+
+// ── Swiper wrapper & nav ──────────────────────────────────────────────────────
+
+.swiperWrapper {
+  position: relative;
+  // clip inactive slides
+  overflow: hidden;
+
+  :global(.swiper) {
+    width: 100%;
+    overflow: hidden;
+  }
+  :global(.swiper-slide) {
+    height: auto;
+    box-sizing: border-box;
+  }
+}
+
+// Nav row: two icon-buttons flanking the counter, add-question sits BELOW as its own row
+.swiperNav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.swiperNavRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.navCounter {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9098b8;
+  flex: 1;
+  text-align: center;
+}
+
+.navBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1.5px solid #d6daf0;
+  background: #fff;
+  color: #7c83a0;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  font-family: inherit;
+
+  &:hover:not(:disabled) {
+    border-color: var(--accent-bg, #5b6ee1);
+    color: var(--accent-bg, #5b6ee1);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+}
+
+// ── Question card (shared editor + view) ─────────────────────────────────────
+
+.questionCard {
+  background: #fff;
+  border: 1.5px solid #e0e3f0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  // slight shadow so the card lifts from bg
+  box-shadow: 0 2px 8px rgba(91, 110, 225, 0.04);
+}
+
+// ── Editor question card ──────────────────────────────────────────────────────
+
+.questionHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.questionIndex {
+  font-size: 12px;
+  font-weight: 700;
+  color: #9098b8;
+  min-width: 22px;
+}
+
+.typeToggle {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.typePill {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  border: 1.5px solid #d6daf0;
+  background: transparent;
+  color: #7c83a0;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  line-height: 1.4;
+
+  &:hover {
+    border-color: var(--accent-bg, #5b6ee1);
+    color: var(--accent-bg, #5b6ee1);
+  }
+}
+
+.typePillActive {
+  // filled with header color; text uses the contrast variable
+  background: var(--accent-bg, #5b6ee1);
+  border-color: var(--accent-bg, #5b6ee1);
+  color: var(--accent-text, #fff);
+  font-weight: 600;
+}
+
+.removeBtn {
+  background: transparent;
+  border: none;
+  color: #c0c5da;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  line-height: 1;
+  flex-shrink: 0;
+  font-family: inherit;
+  transition: color 0.12s;
+
+  &:hover {
+    color: #e57373;
+  }
+}
+
+.questionTextarea {
+  width: 100%;
+  border: 1.5px solid #e0e3f0;
+  border-radius: 7px;
+  padding: 6px 9px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  color: #2d3354;
+  background: #f8f9fd;
+  box-sizing: border-box;
+  line-height: 1.4;
+  transition: border-color 0.15s;
+
+  &:focus {
+    border-color: var(--accent-bg, #5b6ee1);
+  }
+}
+
+.optionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 4px;
+}
+
+.optionRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.correctToggle {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #d0d5e8;
+  background: transparent;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  color: #aab0c8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+  font-family: inherit;
+
+  &:hover {
+    border-color: #4caf7d;
+  }
+}
+
+.correctToggleOn {
+  background: #4caf7d;
+  border-color: #4caf7d;
+  color: #fff;
+}
+
+.optionInput {
+  flex: 1;
+  border: 1.5px solid #e0e3f0;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+  color: #2d3354;
+  background: #f8f9fd;
+  transition: border-color 0.15s;
+
+  &:focus {
+    border-color: var(--accent-bg, #5b6ee1);
+  }
+}
+
+.addOptionBtn {
+  align-self: flex-start;
+  background: transparent;
+  border: 1.5px dashed #c8cdea;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: #7c83a0;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: var(--accent-bg, #5b6ee1);
+    color: var(--accent-bg, #5b6ee1);
+  }
+}
+
+// ── Add question button — styled like a real Button ───────────────────────────
+
+.addQuestionBtn {
+  width: 100%;
+  padding: 9px 16px;
+  border-radius: 10px;
+  border: none;
+  // Filled with header color accent, text contrasts
+  background: var(--accent-bg, #5b6ee1);
+  color: var(--accent-text, #fff);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s, transform 0.1s;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent-bg, #5b6ee1) 35%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  &:hover {
+    opacity: 0.88;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+// ── View mode ─────────────────────────────────────────────────────────────────
+
+.viewQuestion {
+  background: #fff;
+  border: 1.5px solid #e0e3f0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(91, 110, 225, 0.04);
+}
+
+.viewQuestionText {
+  font-size: 13px;
+  color: #2d3354;
+  font-weight: 500;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.viewIndex {
+  color: #9098b8;
+  font-weight: 700;
+  margin-right: 3px;
+}
+
+.viewOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.viewOptionLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1.5px solid #e4e7f4;
+  cursor: pointer;
+  font-size: 13px;
+  color: #2d3354;
+  background: #f8f9fd;
+  transition: all 0.12s;
+  user-select: none;
+
+  &:hover {
+    border-color: var(--accent-bg, #5b6ee1);
+  }
+}
+
+// Checked state — filled with header color
+.viewOptionChecked {
+  border-color: var(--accent-bg, #5b6ee1);
+  background: var(--accent-bg, #5b6ee1);
+  color: var(--accent-text, #fff);
+  font-weight: 500;
+}
+
+.radioCircle {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #c8cdea;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s;
+}
+
+.radioCircleOn {
+  // Inner dot using box-shadow trick so color can be driven by variable
+  border-color: var(--accent-text, #fff);
+  background: var(--accent-text, #fff);
+  box-shadow: inset 0 0 0 3px var(--accent-bg, #5b6ee1);
+}
+
+.checkBox {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 2px solid #c8cdea;
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 800;
+  color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s;
+}
+
+.checkBoxOn {
+  background: var(--accent-text, #fff);
+  border-color: var(--accent-text, #fff);
+  color: var(--accent-bg, #5b6ee1);
+}
+
+.freeTextarea {
+  width: 100%;
+  border: 1.5px solid #e0e3f0;
+  border-radius: 7px;
+  padding: 7px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  color: #2d3354;
+  background: #f8f9fd;
+  box-sizing: border-box;
+  line-height: 1.4;
+  transition: border-color 0.15s;
+
+  &:focus {
+    border-color: var(--accent-bg, #5b6ee1);
+  }
+}
+
+.submitBtn {
+  margin-top: 4px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  background: var(--accent-bg, #5b6ee1);
+  color: var(--accent-text, #fff);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.2s, transform 0.1s;
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--accent-bg, #5b6ee1) 35%, transparent);
+
+  &:hover:not(:disabled) {
+    opacity: 0.88;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+}
+
+.submitBtnDone {
+  background: #4caf7d;
+  box-shadow: 0 2px 10px rgba(76, 175, 125, 0.3);
+  cursor: default;
+  color: #fff;
+}

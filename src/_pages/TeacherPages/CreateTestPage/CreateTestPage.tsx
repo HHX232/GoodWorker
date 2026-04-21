@@ -48,6 +48,7 @@ function CreateTestPage() {
                   placeholder={t('themePlaceholder')}
                   currentValue={theme}
                   onSetValue={setTheme}
+                  isSecret
                 />
               </div>
 

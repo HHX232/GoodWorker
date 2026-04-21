@@ -2,6 +2,7 @@
 
 import { store } from '@/entities/store/store'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { SessionProvider } from "next-auth/react"
 import { ReactNode, useState } from 'react'
 import { Provider as ReduxProvider } from 'react-redux'
 
@@ -23,7 +24,9 @@ export default function DefaultProvider({children}: {children: ReactNode}) {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <SessionProvider>
       <Provider store={store}>{children}</Provider>
+      </SessionProvider>
     </QueryClientProvider>
   )
 }

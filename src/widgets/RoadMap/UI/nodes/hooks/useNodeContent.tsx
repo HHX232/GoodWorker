@@ -1,17 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {RoadPostLinkTask} from '@/features/Roadmap/tasks/RoadPostLinkTask'
-import {RoadMapBlockType, RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
-import {useViewMode} from '@/shared/ui/RoadMap/context/ViewModeContext'
+import { RoadPostLinkTask } from '@/features/Roadmap/tasks/RoadPostLinkTask'
+import { RoadMapBlockType, RoadNodeData } from '@/shared/types/RoadMap/RoadMap.types'
+import { useViewMode } from '@/shared/ui/RoadMap/context/ViewModeContext'
 import TestPreview from '@/widgets/Tasks/TestPreview/TestPreview'
-import {Handle, Position} from '@xyflow/react'
-import {useTranslations} from 'next-intl'
-import {JSX, useMemo} from 'react'
+import { Handle, Position } from '@xyflow/react'
+import { useTranslations } from 'next-intl'
+import { JSX, useMemo } from 'react'
 import ActiveTestBlock from '../../Params/ActiveTestBlock/ActiveTestParam'
 import AudioBlock from '../OtherBlocks/AudioBlock/AudioBlock'
 import EntryPointBlock from '../OtherBlocks/EntryPointBlock/EntryPointBlock'
 import FileBlock from '../OtherBlocks/FileRow/FileRow'
 import MediaBlock from '../OtherBlocks/MediaBlock/MediaBlock'
 import PostsBlock from '../OtherBlocks/PostsBlockData/PostsBlockData'
+import ActiveCommentBlock from '../../Params/ActiveCommentBlock/ActiveCommentBlock'
 
 interface UseNodeContentProps {
   nodeId: string
@@ -33,7 +34,14 @@ const BLOCK_RENDERERS: Partial<Record<RoadMapBlockType, BlockRenderer>> = {
   [RoadMapBlockType.INFO_MEDIA]: ({nodeId}) => <MediaBlock nodeId={nodeId} />,
 
   [RoadMapBlockType.DOWNLOAD_FILE_LINK]: ({nodeId}) => <FileBlock nodeId={nodeId} />,
-
+[RoadMapBlockType.ACTIVE_COMMENT]: ({nodeId, nodeData, isView, t}) => (
+    <ActiveCommentBlock
+      t={t}
+      nodeId={nodeId}
+      onlyPass={isView}
+      headerColor={(nodeData as any).headerColor ?? ''}
+    />
+  ),
   [RoadMapBlockType.TEST_LINK]: ({nodeId, nodeData, isView}) =>
     (nodeData.inputs as any)?.[RoadPostLinkTask.label] && isView ? (
       <p>

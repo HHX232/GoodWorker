@@ -1,0 +1,372 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+enum PostVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+// ─────────────────────────────────────────────
+// RATE LIMIT
+// ─────────────────────────────────────────────
+
+model RateLimit {
+  id      String   @id @default(cuid())
+  key     String   @unique
+  count   Int      @default(1)
+  resetAt DateTime
+
+  @@index([key])
+}
+
+// ─────────────────────────────────────────────
+// STUDENT
+// ─────────────────────────────────────────────
+
+model Student {
+  id                 String                   @id @default(uuid())
+  name               String
+  nameTransliterated String?
+  email              String                   @unique
+  phone              String?
+  langCode           String                   @default("ru")
+  password           String?
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+  avatarUrl          String?
+  
+  teachers           TeacherStudent[]
+  favoritePosts      StudentFavoritePost[]
+  savedTexts         StudentSavedText[]
+  testAttempts       StudentTestAttempt[]
+  roadmapProgress    StudentRoadmapProgress[]
+  complaints         Complaint[]
+  errors             StudentError[]
+}
+
+// ─────────────────────────────────────────────
+// TEACHER
+// ─────────────────────────────────────────────
+
+model Teacher {
+  id                 String  @id @default(uuid())
+  name               String
+  nameTransliterated String?
+  email              String  @unique
+  avatarUrl          String?
+  langCode           String  @default("ru")
+  password           String?
+  // Личный календарь репетитора — JSON, доступен только ему
+  // Структура: { events: [{ id, title, date, studentId?, reminder? }] }
+  calendar           Json?
+
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  pasportConfirmed Boolean?
+  phone            String?
+  students         TeacherStudent[]
+  posts            Post[]
+  roadmaps         Roadmap[]
+  tests            Test[]
+  categories       TeacherCategory[]
+  complaints       Complaint[]
+}
+
+// ─────────────────────────────────────────────
+// TEACHER ↔ STUDENT  (junction)
+// ─────────────────────────────────────────────
+
+model TeacherStudent {
+  teacherId String
+  studentId String
+  linkedAt  DateTime @default(now())
+
+  teacher Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([teacherId, studentId])
+}
+
+// ─────────────────────────────────────────────
+// CATEGORY  (иерархическая, с переводами)
+// ─────────────────────────────────────────────
+
+model Category {
+  id          String  @id @default(uuid())
+  slug        String  @unique
+  levelNumber Int // 1-3
+  parentId    String?
+
+  parent   Category?  @relation("CategoryChildren", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryChildren")
+
+  translations           CategoryTranslation[]
+  posts                  Post[]
+  teachers               TeacherCategory[]
+  testCategories         TestCategory[]
+  studentErrorCategories StudentErrorCategory[]
+}
+
+// Переводы названий категорий
+model CategoryTranslation {
+  id         String @id @default(uuid())
+  categoryId String
+  langCode   String // "en", "ru", "hi", "uk" и т.д.
+  name       String
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, langCode])
+}
+
+// ─────────────────────────────────────────────
+// TEACHER ↔ CATEGORY  (junction)
+// ─────────────────────────────────────────────
+
+model TeacherCategory {
+  teacherId  String
+  categoryId String
+
+  teacher  Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([teacherId, categoryId])
+}
+
+// ─────────────────────────────────────────────
+// POST
+// ─────────────────────────────────────────────
+
+model Post {
+  id         String         @id @default(uuid())
+  teacherId  String
+  categoryId String?
+  title      String
+  mediaUrls  String[] // ссылки на фото/видео
+  visibility PostVisibility @default(PUBLIC)
+
+  aiTopics       String[] // темы найденные нейронкой
+  aiModerated    Boolean  @default(false)
+  aiModerationOk Boolean? // null = не проверен, true/false = результат
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teacher  Teacher   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  category Category? @relation(fields: [categoryId], references: [id])
+
+  favoritedBy StudentFavoritePost[]
+  comments    PostComment[]
+  complaints  Complaint[]
+}
+
+model PostComment {
+  id         String   @id @default(uuid())
+  postId     String
+  authorId   String
+  authorRole Role
+  text       String
+  createdAt  DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────
+// STUDENT ↔ POST favorites  (junction)
+// ─────────────────────────────────────────────
+
+model StudentFavoritePost {
+  studentId String
+  postId    String
+  savedAt   DateTime @default(now())
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  post    Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([studentId, postId])
+}
+
+// ─────────────────────────────────────────────
+// ROAD-MAP
+// ─────────────────────────────────────────────
+
+model Roadmap {
+  id        String @id @default(uuid())
+  teacherId String
+  title     String
+  price     Float  @default(0)
+
+  content Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teacher    Teacher                  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  progress   StudentRoadmapProgress[]
+  complaints Complaint[]
+}
+
+// Прогресс студента по road-map
+// completedSteps — массив id шагов из JSON content
+model StudentRoadmapProgress {
+  id             String    @id @default(uuid())
+  studentId      String
+  roadmapId      String
+  completedSteps String[] // id шагов из айди нод пройденных
+  startedAt      DateTime  @default(now())
+  completedAt    DateTime?
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  roadmap Roadmap @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, roadmapId])
+}
+
+// ─────────────────────────────────────────────
+// TEST
+// ─────────────────────────────────────────────
+
+model Test {
+  id        String  @id @default(uuid())
+  teacherId String
+  title     String
+  aiTopic   String?
+
+  content Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teacher        Teacher              @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  attempts       StudentTestAttempt[]
+  testCategories TestCategory[]
+}
+
+// ─────────────────────────────────────────────
+// TEST ↔ CATEGORY  (junction)
+// ─────────────────────────────────────────────
+
+model TestCategory {
+  testId     String
+  categoryId String
+
+  test     Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([testId, categoryId])
+}
+
+model StudentTestAttempt {
+  id        String @id @default(uuid())
+  studentId String
+  testId    String
+  score     Float? // процент правильных ответов, null если не завершён
+
+  answers Json
+
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  test    Test    @relation(fields: [testId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────
+// SAVED TEXTS  (слова и фразы из постов, которые студент сохранил)
+// postId хранится как мягкая ссылка без Prisma-relation,
+// чтобы не засорять модель Post
+// ─────────────────────────────────────────────
+
+model StudentSavedText {
+  id            String   @id @default(uuid())
+  studentId     String
+  postId        String? // мягкая ссылка, без @relation
+  title         String?
+  rawText       String
+  correctedText String?
+  errors        Json?
+  createdAt     DateTime @default(now())
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────
+// STUDENT ERRORS  (ошибки ученика для аналитики учителя)
+// ─────────────────────────────────────────────
+
+model StudentError {
+  id          String   @id @default(uuid())
+  studentId   String
+  sourceType  String // "test" | "video"
+  sourceId    String // id теста или видео
+  description String?
+  createdAt   DateTime @default(now())
+
+  student    Student                @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  categories StudentErrorCategory[]
+}
+
+// ─────────────────────────────────────────────
+// STUDENT ERROR ↔ CATEGORY  (junction)
+// ─────────────────────────────────────────────
+
+model StudentErrorCategory {
+  errorId    String
+  categoryId String
+
+  error    StudentError @relation(fields: [errorId], references: [id], onDelete: Cascade)
+  category Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([errorId, categoryId])
+}
+
+// ─────────────────────────────────────────────
+// COMPLAINTS
+// ─────────────────────────────────────────────
+
+model Complaint {
+  id           String @id @default(uuid())
+  reporterId   String
+  reporterRole Role
+
+  targetType String // "teacher" | "student" | "post" | "roadmap"
+  targetId   String
+
+  text      String
+  photoUrl  String?
+  status    String   @default("pending") // "pending" | "resolved" | "dismissed"
+  createdAt DateTime @default(now())
+
+  // (заполняется только нужный в зависимости от targetType)
+  teacherId String?
+  studentId String?
+  postId    String?
+  roadmapId String?
+
+  teacher Teacher? @relation(fields: [teacherId], references: [id])
+  student Student? @relation(fields: [studentId], references: [id])
+  post    Post?    @relation(fields: [postId], references: [id])
+  roadmap Roadmap? @relation(fields: [roadmapId], references: [id])
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  target    String   @unique
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([target])
+}

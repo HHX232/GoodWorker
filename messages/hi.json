@@ -230,5 +230,49 @@
     "addFiles": "फ़ाइलें जोड़ें",
     "anyFormatMaxSize": "कोई भी फ़ॉर्मेट · अधिकतम {maxSize} MB · अधिकतम {maxFiles} फ़ाइलें",
     "maxFilesLimit": "अधिकतम {maxFiles} फ़ाइलें"
+  },
+  "auth2": {
+  "login": {
+    "title": "स्वागत है",
+    "subtitle": "अपने खाते में लॉगिन करें",
+    "emailPlaceholder": "ईमेल",
+    "passwordPlaceholder": "पासवर्ड",
+    "submit": "लॉगिन करें",
+    "loading": "लोड हो रहा है...",
+    "noAccount": "खाता नहीं है?",
+    "register": "रजिस्टर करें",
+    "emailRequired": "ईमेल दर्ज करें",
+    "passwordMin": "पासवर्ड कम से कम 6 अक्षर का हो",
+    "invalidCredentials": "गलत ईमेल या पासवर्ड",
+    "successLogin": "स्वागत है!",
+    "unexpectedError": "कुछ गड़बड़ हो गई"
+  },
+  "register": {
+    "title": "खाता बनाएं",
+    "subtitle": "शुरू करने के लिए रजिस्टर करें",
+    "roleStudent": "छात्र",
+    "roleTeacher": "शिक्षक",
+    "namePlaceholder": "नाम",
+    "emailPlaceholder": "ईमेल",
+    "phonePlaceholder": "फ़ोन नंबर (वैकल्पिक)",
+    "passwordPlaceholder": "पासवर्ड",
+    "categoriesLabel": "आपके विषय",
+    "sendCode": "कोड प्राप्त करें",
+    "loading": "लोड हो रहा है...",
+    "hasAccount": "पहले से खाता है?",
+    "login": "लॉगिन करें",
+    "nameRequired": "नाम दर्ज करें",
+    "emailInvalid": "सही ईमेल दर्ज करें",
+    "passwordMin": "पासवर्ड कम से कम 6 अक्षर का हो",
+    "categoriesRequired": "कम से कम एक विषय चुनें",
+    "codeSent": "कोड आपके ईमेल पर भेज दिया गया है",
+    "unexpectedError": "कुछ गड़बड़ हो गई",
+    "verifyTitle": "कोड दर्ज करें",
+    "verifySubtitle": "हमने 6 अंकों का कोड भेजा है",
+    "noCode": "कोड नहीं मिला?",
+    "resend": "पुनः भेजें",
+    "back": "वापस",
+    "successRegister": "खाता सफलतापूर्वक बना लिया गया है!"
   }
+}
 }

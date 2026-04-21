@@ -1,0 +1,274 @@
+.overlay {
+  position: fixed;
+  z-index: 1010000100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+  background: rgb(255 255 255 / 95%);
+  inset: 0;
+  overflow-y: auto;
+}
+
+.modal {
+  display: flex;
+  width: 90%;
+  max-width: 700px;
+  max-height: calc(100vh - 40px);
+  flex-direction: column;
+  border: 2px solid #000;
+  background: #fff;
+  box-shadow: 0 0 40px rgb(0 0 0 / 10%);
+}
+
+.header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 2px solid #000;
+}
+
+.title {
+  margin: 0;
+  color: #000;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: none;
+  background: none;
+  color: #000;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.7;
+  }
+
+  &:active {
+    opacity: 0.5;
+  }
+}
+
+.content {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  min-height: 300px;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: #f5f5f5;
+}
+
+.canvas {
+  display: block;
+  border: 1px solid #ccc;
+  cursor: move;
+  user-select: none;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.controls {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  background: #f5f5f5;
+}
+
+.zoomControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.controlButton {
+  display: flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: #000;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #333;
+  }
+
+  &:active {
+    background: #666;
+  }
+}
+
+.zoomValue {
+  min-width: 50px;
+  color: #000;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  text-align: center;
+}
+
+.resetButton {
+  padding: 6px 16px;
+  border: 2px solid #000;
+  background: none;
+  color: #000;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #000;
+    color: #fff;
+  }
+
+  &:active {
+    background: #333;
+  }
+}
+
+.footer {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: flex-end;
+  padding: 20px 24px;
+  gap: 12px;
+}
+
+.cancelButton,
+.saveButton {
+  padding: 10px 24px;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
+}
+
+.cancelButton {
+  border: 2px solid #999;
+  background: none;
+  color: #000;
+
+  &:hover {
+    border-color: #000;
+    background: rgb(0 0 0 / 5%);
+  }
+
+  &:active {
+    background: rgb(0 0 0 / 10%);
+  }
+}
+
+.saveButton {
+  background: #000;
+  color: #fff;
+
+  &:hover {
+    background: #333;
+  }
+
+  &:active {
+    background: #666;
+  }
+}
+
+@media (max-width: 768px) {
+  .overlay {
+    padding: 10px;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: none;
+    max-height: calc(100vh - 20px);
+  }
+
+  .header {
+    padding: 16px 20px;
+  }
+
+  .title {
+    font-size: 16px;
+  }
+
+  .content {
+    min-height: 250px;
+    padding: 16px;
+  }
+
+  .canvas {
+    width: auto !important;
+    max-width: 100%;
+    height: auto !important;
+    max-height: 100%;
+  }
+
+  .controls {
+    padding: 12px 20px;
+  }
+
+  .footer {
+    flex-wrap: wrap;
+    padding: 16px 20px;
+  }
+
+  .cancelButton,
+  .saveButton {
+    min-width: 120px;
+    flex: 1;
+  }
+}
+
+@media (max-height: 700px) {
+  .header {
+    padding: 12px 20px;
+  }
+
+  .title {
+    font-size: 16px;
+  }
+
+  .content {
+    min-height: 200px;
+    padding: 16px;
+  }
+
+  .controls {
+    padding: 10px 20px;
+  }
+
+  .footer {
+    padding: 12px 20px;
+  }
+
+  .cancelButton,
+  .saveButton {
+    padding: 8px 20px;
+    font-size: 14px;
+  }
+}

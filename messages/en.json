@@ -230,5 +230,49 @@
     "addFiles": "Add files",
     "anyFormatMaxSize": "Any format · up to {maxSize} MB · max {maxFiles} files",
     "maxFilesLimit": "Maximum {maxFiles} files"
+  },
+  "auth2": {
+  "login": {
+    "title": "Welcome",
+    "subtitle": "Log in to your account",
+    "emailPlaceholder": "Email",
+    "passwordPlaceholder": "Password",
+    "submit": "Log in",
+    "loading": "Loading...",
+    "noAccount": "No account?",
+    "register": "Sign up",
+    "emailRequired": "Enter email",
+    "passwordMin": "Password must be at least 6 characters",
+    "invalidCredentials": "Invalid email or password",
+    "successLogin": "Welcome!",
+    "unexpectedError": "Something went wrong"
+  },
+  "register": {
+    "title": "Create account",
+    "subtitle": "Sign up to get started",
+    "roleStudent": "Student",
+    "roleTeacher": "Teacher",
+    "namePlaceholder": "Name",
+    "emailPlaceholder": "Email",
+    "phonePlaceholder": "Phone number (optional)",
+    "passwordPlaceholder": "Password",
+    "categoriesLabel": "Your subjects",
+    "sendCode": "Get code",
+    "loading": "Loading...",
+    "hasAccount": "Already have an account?",
+    "login": "Log in",
+    "nameRequired": "Enter your name",
+    "emailInvalid": "Enter a valid email",
+    "passwordMin": "Password must be at least 6 characters",
+    "categoriesRequired": "Select at least one category",
+    "codeSent": "Code sent to your email",
+    "unexpectedError": "Something went wrong",
+    "verifyTitle": "Enter code",
+    "verifySubtitle": "We sent a 6-digit code to",
+    "noCode": "Didn't receive the code?",
+    "resend": "Resend",
+    "back": "Back",
+    "successRegister": "Account created successfully!"
   }
+}
 }

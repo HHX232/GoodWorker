@@ -10,6 +10,7 @@ function HomePage() {
     <div className={`container default_content ${styles.content}`}>
       <NavBar />
       <div className={`${styles.main_content}`}>
+        
         <HighlightedSlider />
         <div className={styles.title_box}>
           <h1>All posts</h1>

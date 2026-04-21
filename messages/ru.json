@@ -228,5 +228,53 @@
     "addFiles": "Добавить файлы",
     "anyFormatMaxSize": "Любые форматы · до {maxSize} МБ · макс {maxFiles} файлов",
     "maxFilesLimit": "Максимум {maxFiles} файлов"
+  },
+
+
+  
+  "auth2": {
+    "login": {
+      "title": "Добро пожаловать",
+      "subtitle": "Войдите в свой аккаунт",
+      "emailPlaceholder": "Email",
+      "passwordPlaceholder": "Пароль",
+      "submit": "Войти",
+      "loading": "Загрузка...",
+      "noAccount": "Нет аккаунта?",
+      "register": "Зарегистрироваться",
+      "emailRequired": "Введите email",
+      "passwordMin": "Пароль минимум 6 символов",
+      "invalidCredentials": "Неверный email или пароль",
+      "successLogin": "Добро пожаловать!",
+      "unexpectedError": "Что-то пошло не так"
+    },
+    "register": {
+      "title": "Создать аккаунт",
+      "subtitle": "Зарегистрируйтесь, чтобы начать",
+      "roleStudent": "Ученик",
+      "roleTeacher": "Учитель",
+      "namePlaceholder": "Имя",
+      "emailPlaceholder": "Email",
+      "phonePlaceholder": "Телефон (необязательно)",
+      "passwordPlaceholder": "Пароль",
+      "categoriesLabel": "Ваши предметы",
+      "sendCode": "Получить код",
+      "loading": "Загрузка...",
+      "hasAccount": "Уже есть аккаунт?",
+      "login": "Войти",
+      "nameRequired": "Введите имя",
+      "emailInvalid": "Введите корректный email",
+      "passwordMin": "Пароль минимум 6 символов",
+      "categoriesRequired": "Выберите хотя бы одну категорию",
+      "codeSent": "Код отправлен на ваш email",
+      "unexpectedError": "Что-то пошло не так",
+      "verifyTitle": "Введите код",
+      "verifySubtitle": "Мы отправили 6-значный код на",
+      "noCode": "Не получили код?",
+      "resend": "Отправить повторно",
+      "back": "Назад",
+      "successRegister": "Аккаунт успешно создан!"
+    }
   }
+
 }

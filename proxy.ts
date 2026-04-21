@@ -1,26 +1,58 @@
-import type { NextRequest } from 'next/server'
-import { NextResponse } from 'next/server'
+import { NextResponse } from "next/server"
+import { auth } from "./auth"
 
-const privatePaths = ['/profile', '/orders', '/basket']
+const teacherOnlyPaths = [
+  "/statistics",
+  "/calendar",
+  "/create-test",
+  "/teacher-profile",
+]
 
-export function proxy(request: NextRequest) {
-  const path = request.nextUrl.pathname
+const studentOnlyPaths = [
+  "/student-profile",
+]
 
-  const isPrivatePath = privatePaths.some((privatePath) => path.startsWith(privatePath))
+const authPaths = [
+  "/profile",
+]
 
-  const routeType = isPrivatePath ? 'PRIVATE' : 'PUBLIC'
+const publicRoutes = [
+  "/login",
+  "/register",
+  "/forgot-password",
+]
 
-  console.log(`📍 Роут: ${path}`)
-  console.log(`🔑 Тип: ${routeType}`)
-  console.log('---')
+export default auth((req) => {
+  const { auth: session } = req
+  const path = req.nextUrl.pathname
 
-  const response = NextResponse.next()
-  response.headers.set('x-route-type', routeType)
-  response.headers.set('x-current-path', path)
+  const isLoggedIn = !!session
+  const role = session?.user?.role
 
-  return response
-}
+  const isTeacherOnly = teacherOnlyPaths.some((p) => path.startsWith(p))
+  const isStudentOnly = studentOnlyPaths.some((p) => path.startsWith(p))
+  const isAuthRequired = authPaths.some((p) => path.startsWith(p))
+  const isPublicRoute = publicRoutes.some((p) => path.startsWith(p))
+
+  if ((isTeacherOnly || isStudentOnly || isAuthRequired) && !isLoggedIn) {
+    return NextResponse.redirect(new URL("/login", req.url))
+  }
+
+  if (isTeacherOnly && role !== "TEACHER") {
+    return NextResponse.redirect(new URL("/student-profile", req.url))
+  }
+
+  if (isStudentOnly && role !== "STUDENT") {
+    return NextResponse.redirect(new URL("/teacher-profile", req.url))
+  }
+
+  if (isPublicRoute && isLoggedIn) {
+    return NextResponse.redirect(new URL("/", req.url))
+  }
+
+  return NextResponse.next()
+})
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.jpg$|.*\\.svg$).*)']
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 }

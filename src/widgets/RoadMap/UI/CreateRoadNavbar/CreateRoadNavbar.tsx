@@ -13,7 +13,8 @@ const allItems = [
   RoadMapBlockType.INFO_MEDIA,
   RoadMapBlockType.POST_LINK,
   RoadMapBlockType.DOWNLOAD_FILE_LINK,
-  RoadMapBlockType.ACTIVE_TEST
+  RoadMapBlockType.ACTIVE_TEST,
+  RoadMapBlockType.ACTIVE_COMMENT
 ]
 
 const TOP_COUNT = 4
