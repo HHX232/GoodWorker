@@ -1,57 +1,49 @@
-// features/test-block-editor/ui/editors/InfoAudioEditor/InfoAudioEditor.tsx
 'use client'
-import {useActions} from '@/features/hooks/store/useActions'
 import {InfoAudioPayload} from '@/shared/types/Tasks/TaskPayload.type'
 import {Mic2Icon, PauseIcon, PlayIcon, UploadIcon, XIcon} from 'lucide-react'
 import {useCallback, useEffect, useRef, useState} from 'react'
 import styles from './InfoAudioEditor.module.scss'
 
 interface Props {
-  blockId: string
   payload: InfoAudioPayload
+  onChange?: (payload: InfoAudioPayload) => void
   viewOnly?: boolean
 }
 
 async function extractWaveform(file: File): Promise<number[]> {
   const BAR_COUNT = 130
-
   const arrayBuffer = await file.arrayBuffer()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)()
   const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
   await audioCtx.close()
-
   const raw = audioBuffer.getChannelData(0)
   const blockSize = Math.floor(raw.length / BAR_COUNT)
   const peaks: number[] = []
-
   for (let i = 0; i < BAR_COUNT; i++) {
     let sum = 0
     const start = i * blockSize
-    for (let j = 0; j < blockSize; j++) {
-      sum += Math.abs(raw[start + j])
-    }
+    for (let j = 0; j < blockSize; j++) sum += Math.abs(raw[start + j])
     peaks.push(sum / blockSize)
   }
-
-  // нормализуем к [0..1]
   const max = Math.max(...peaks, 0.001)
   return peaks.map((p) => p / max)
 }
 
-// ── Компонент waveform + плеер ────────────────────────────────────────────────
+// ── AudioPlayer ───────────────────────────────────────────────
+
 interface PlayerProps {
   url: string
   filename: string
   waveform: number[]
-  onRemove: () => void
+  onRemove?: () => void
   viewOnly?: boolean
 }
 
 const AudioPlayer = ({url, filename, waveform, onRemove, viewOnly = false}: PlayerProps) => {
   const audioRef = useRef<HTMLAudioElement>(null)
   const [playing, setPlaying] = useState(false)
-  const [progress, setProgress] = useState(0) // 0..1
+  const [progress, setProgress] = useState(0)
   const [duration, setDuration] = useState(0)
   const [currentTime, setCurrentTime] = useState(0)
   const rafRef = useRef<number>(0)
@@ -102,12 +94,10 @@ const AudioPlayer = ({url, filename, waveform, onRemove, viewOnly = false}: Play
 
   useEffect(() => () => cancelAnimationFrame(rafRef.current), [])
 
-  const fmt = (s: number) => {
-    const m = Math.floor(s / 60)
-    const sec = Math.floor(s % 60)
-    return `${m}:${sec.toString().padStart(2, '0')}`
-  }
-
+  const fmt = (s: number) =>
+    `${Math.floor(s / 60)}:${Math.floor(s % 60)
+      .toString()
+      .padStart(2, '0')}`
   const passedBars = Math.round(progress * waveform.length)
 
   return (
@@ -125,19 +115,14 @@ const AudioPlayer = ({url, filename, waveform, onRemove, viewOnly = false}: Play
 
       <div className={styles.waveform_wrap}>
         <div className={styles.waveform} onClick={handleWaveformClick}>
-          {waveform.map((amp, i) => {
-            const passed = i < passedBars
-            const isCursor = i === passedBars
-            return (
-              <div
-                key={i}
-                className={`${styles.bar} ${passed ? styles.bar_passed : ''} ${isCursor ? styles.bar_cursor : ''}`}
-                style={{'--amp': amp} as React.CSSProperties}
-              />
-            )
-          })}
+          {waveform.map((amp, i) => (
+            <div
+              key={i}
+              className={`${styles.bar} ${i < passedBars ? styles.bar_passed : ''} ${i === passedBars ? styles.bar_cursor : ''}`}
+              style={{'--amp': amp} as React.CSSProperties}
+            />
+          ))}
         </div>
-
         <div className={styles.timer}>
           <span>{fmt(currentTime)}</span>
           <span className={styles.timer_total}>{fmt(duration)}</span>
@@ -148,7 +133,7 @@ const AudioPlayer = ({url, filename, waveform, onRemove, viewOnly = false}: Play
         <span className={styles.filename} title={filename}>
           {filename}
         </span>
-        {!viewOnly && (
+        {!viewOnly && onRemove && (
           <button type='button' className={styles.remove_btn} onClick={onRemove}>
             <XIcon size={13} />
           </button>
@@ -158,18 +143,18 @@ const AudioPlayer = ({url, filename, waveform, onRemove, viewOnly = false}: Play
   )
 }
 
-export const InfoAudioEditor = ({blockId, payload, viewOnly = false}: Props) => {
-  const {updateBlockPayload} = useActions()
+// ── InfoAudioEditor ───────────────────────────────────────────
+
+export const InfoAudioEditor = ({payload, onChange, viewOnly = false}: Props) => {
+  const editable = !!onChange && !viewOnly
   const fileRef = useRef<HTMLInputElement>(null)
   const [extracting, setExtracting] = useState(false)
 
-  const update = (patch: Partial<InfoAudioPayload>) =>
-    updateBlockPayload({id: blockId, payload: {...payload, ...patch}})
+  const update = (patch: Partial<InfoAudioPayload>) => onChange?.({...payload, ...patch})
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-
     setExtracting(true)
     const url = URL.createObjectURL(file)
     try {
@@ -189,24 +174,19 @@ export const InfoAudioEditor = ({blockId, payload, viewOnly = false}: Props) => 
 
   const hasAudio = !!payload.url && !!payload.waveform
 
-  if (viewOnly) {
+  // ── View only ─────────────────────────────────────────────
+
+  if (!editable) {
     if (!payload.url || !payload.waveform) return null
-    return (
-      <AudioPlayer
-        url={payload.url}
-        filename={payload.filename ?? ''}
-        waveform={payload.waveform}
-        onRemove={() => {}}
-        viewOnly
-      />
-    )
+    return <AudioPlayer url={payload.url} filename={payload.filename ?? ''} waveform={payload.waveform} viewOnly />
   }
+
+  // ── Edit ──────────────────────────────────────────────────
 
   return (
     <div className={styles.box}>
       <input ref={fileRef} type='file' accept='audio/*' className={styles.hidden} onChange={handleFile} />
 
-      {/* ── Загрузка ── */}
       {!hasAudio && !extracting && (
         <button type='button' className={styles.upload_btn} onClick={() => fileRef.current?.click()}>
           <UploadIcon size={18} />
@@ -215,7 +195,6 @@ export const InfoAudioEditor = ({blockId, payload, viewOnly = false}: Props) => 
         </button>
       )}
 
-      {/* ── Анализ waveform ── */}
       {extracting && (
         <div className={styles.extracting}>
           <div className={styles.extracting_bars}>
@@ -227,7 +206,6 @@ export const InfoAudioEditor = ({blockId, payload, viewOnly = false}: Props) => 
         </div>
       )}
 
-      {/* ── Плеер с waveform ── */}
       {hasAudio && (
         <>
           <AudioPlayer url={payload.url!} filename={payload.filename!} waveform={payload.waveform!} onRemove={remove} />

@@ -6,9 +6,11 @@ import {useParams} from 'next/navigation'
 import {useEffect, useState} from 'react'
 
 import {calculateResult, StudentAnswer, TestResult} from '@/features/Tasks/TaskResult/scoreBlock'
+import instance, {axiosClassic} from '@/shared/api'
+import {ITestFull} from '@/shared/types/Tasks/test.types'
 import {ResultToast} from '@/shared/ui/Tasks/ResultToast/ResultToast'
 import {NavBar} from '@/widgets/BaseUI'
-import {SavedTest, testStorage} from '@/widgets/Tasks/Storage/testStorage'
+import {SavedTest} from '@/widgets/Tasks/Storage/testStorage'
 import {toast} from 'sonner'
 import styles from './TakeTestPage.module.scss'
 import {TestPlayer} from './TestPlayer/TestPlayer'
@@ -47,10 +49,19 @@ export default function TakeTestPage() {
   const [isSubmitted, setIsSubmitted] = useState(false)
 
   useEffect(() => {
-    const found = testStorage.getById(testId)
-    found ? setTest(found) : setNotFound(true)
+    axiosClassic
+      .get<ITestFull>(`/tests/${testId}`)
+      .then(({data}) => {
+        setTest({
+          id: data.id,
+          title: data.title,
+          theme: data.aiTopic ?? '',
+          description: data.content.description ?? '',
+          blocks: data.content.blocks
+        })
+      })
+      .catch(() => setNotFound(true))
   }, [testId])
-
   const setAnswer = (blockId: string, answer: StudentAnswer) => setAnswers((prev) => new Map(prev).set(blockId, answer))
 
   const handleSubmit = () => {
@@ -77,7 +88,7 @@ export default function TakeTestPage() {
       }
     )
   }
-  const handleResult = (res: TestResult) => {
+  const handleResult = async (res: TestResult) => {
     toast.custom(
       (id) => (
         <ResultToast
@@ -92,6 +103,16 @@ export default function TakeTestPage() {
       ),
       {duration: Infinity, id: 'test-result'}
     )
+
+    try {
+      await instance.post<{attemptId: string; errorsCreated: number}>('/attempts', {
+        testId: test!.id,
+        result: res,
+        answers: Object.fromEntries(answers)
+      })
+    } catch (e) {
+      console.error('Failed to save attempt:', e)
+    }
   }
 
   if (notFound) return <div className={styles.error}>Тест не найден</div>

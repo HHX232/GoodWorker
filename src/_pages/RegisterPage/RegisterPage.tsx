@@ -1,28 +1,17 @@
 'use client'
 
-import { InputOtp, TextInputUI } from '@/shared/ui/inputs'
-import { signIn } from 'next-auth/react'
-import { useTranslations } from 'next-intl'
+import {InputOtp, TextInputUI} from '@/shared/ui/inputs'
+import {CategorySelect} from '@/shared/ui/inputs/CategorySelect/CategorySelect'
+import {signIn} from 'next-auth/react'
+import {useTranslations} from 'next-intl'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
-import { toast } from 'sonner'
+import {useRouter} from 'next/navigation'
+import {useState} from 'react'
+import {toast} from 'sonner'
 import styles from './RegisterPage.module.scss'
 
 type Role = 'User' | 'Teacher'
 type Step = 'send' | 'verify'
-
-// TODO: replace with real categories fetched from API
-const CATEGORIES = [
-  { id: 'math', label: 'Математика' },
-  { id: 'english', label: 'Английский' },
-  { id: 'physics', label: 'Физика' },
-  { id: 'chemistry', label: 'Химия' },
-  { id: 'biology', label: 'Биология' },
-  { id: 'history', label: 'История' },
-  { id: 'geography', label: 'География' },
-  { id: 'it', label: 'Информатика' },
-]
 
 export default function RegisterPage() {
   const t = useTranslations('auth2.register')
@@ -40,9 +29,7 @@ export default function RegisterPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
 
   function toggleCategory(id: string) {
-    setSelectedCategories((prev) =>
-      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
-    )
+    setSelectedCategories((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]))
   }
 
   async function handleSend() {
@@ -72,7 +59,7 @@ export default function RegisterPage() {
         email,
         phone,
         password,
-        langCode: 'ru',
+        langCode: 'ru'
       }
       if (role === 'Teacher') {
         body.categoryIds = selectedCategories
@@ -80,8 +67,8 @@ export default function RegisterPage() {
 
       const res = await fetch('/api/auth/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(body)
       })
       const data = await res.json()
 
@@ -104,7 +91,7 @@ export default function RegisterPage() {
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           step: 'verify',
           userType: role,
@@ -114,8 +101,8 @@ export default function RegisterPage() {
           phone,
           password,
           langCode: 'ru',
-          ...(role === 'Teacher' ? { categoryIds: selectedCategories } : {}),
-        }),
+          ...(role === 'Teacher' ? {categoryIds: selectedCategories} : {})
+        })
       })
       const data = await res.json()
 
@@ -125,7 +112,7 @@ export default function RegisterPage() {
       }
 
       // sign in right after registration
-      await signIn('credentials', { email, password, redirect: false })
+      await signIn('credentials', {email, password, redirect: false})
       toast.success(t('successRegister'))
       router.push('/')
     } catch {
@@ -138,7 +125,6 @@ export default function RegisterPage() {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-
         {/* ── STEP: SEND ── */}
         {step === 'send' && (
           <>
@@ -195,29 +181,17 @@ export default function RegisterPage() {
               />
             </div>
 
-            {/* Categories — Teacher only */}
             {role === 'Teacher' && (
-              <div className={styles.categoriesBlock}>
-                <p className={styles.categoriesLabel}>{t('categoriesLabel')}</p>
-                <div className={styles.categoriesGrid}>
-                  {CATEGORIES.map((cat) => (
-                    <button
-                      key={cat.id}
-                      className={`${styles.chip} ${selectedCategories.includes(cat.id) ? styles.chipActive : ''}`}
-                      onClick={() => toggleCategory(cat.id)}
-                    >
-                      {cat.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <CategorySelect
+                canSelectMany={true}
+                maxLevel={1}
+                value={selectedCategories}
+                onChange={setSelectedCategories}
+                placeholder='Выберите предметы'
+              />
             )}
 
-            <button
-              className={styles.btn}
-              onClick={handleSend}
-              disabled={loading}
-            >
+            <button className={styles.btn} onClick={handleSend} disabled={loading}>
               {loading ? t('loading') : t('sendCode')}
             </button>
 
@@ -245,12 +219,7 @@ export default function RegisterPage() {
             </div>
 
             <div className={styles.otpWrap}>
-              <InputOtp
-                length={6}
-                onComplete={handleVerify}
-                disabled={loading}
-                autoFocus
-              />
+              <InputOtp length={6} onComplete={handleVerify} disabled={loading} autoFocus />
             </div>
 
             <p className={styles.resendHint}>
@@ -261,7 +230,6 @@ export default function RegisterPage() {
             </p>
           </>
         )}
-
       </div>
     </div>
   )

@@ -1,0 +1,111 @@
+.wrapper {
+   display: flex;
+   align-items: center;
+   gap: 12px;
+   padding: 6px 8px;
+   border-radius: 10px;
+   text-decoration: none;
+   transition: background 0.15s;
+
+   &:hover {
+      background: rgba(0, 0, 0, 0.04);
+   }
+}
+
+.info {
+   text-align: right;
+}
+
+.name {
+   margin: 0;
+   font-size: 14px;
+   font-weight: 500;
+   color: var(--text-primary, #111);
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+}
+
+.username {
+   margin: 0;
+   font-size: 12px;
+   color: var(--text-secondary, #888);
+}
+
+.avatarWrap {
+   flex-shrink: 0;
+   width: 40px;
+   height: 40px;
+}
+
+.avatar {
+   width: 100%;
+   height: 100%;
+   border-radius: 50%;
+   object-fit: cover;
+}
+
+.initials {
+   width: 100%;
+   height: 100%;
+   border-radius: 50%;
+   background: #e8f0fe;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   font-size: 14px;
+   font-weight: 500;
+   color: #3b5bdb;
+}
+
+// ── Skeleton ─────────────────────────────────────────────────
+
+.skeleton {
+   display: flex;
+   align-items: center;
+   gap: 12px;
+   padding: 6px 8px;
+}
+
+.skeletonText {
+   text-align: right;
+}
+
+.skeletonLine {
+   height: 12px;
+   width: 100px;
+   border-radius: 4px;
+   background: #f0f0f0;
+   margin-bottom: 6px;
+   animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeletonLineSm {
+   height: 10px;
+   width: 60px;
+   border-radius: 4px;
+   background: #f0f0f0;
+   margin-left: auto;
+   animation: pulse 1.5s ease-in-out infinite 0.2s;
+}
+
+.skeletonAvatar {
+   width: 40px;
+   height: 40px;
+   border-radius: 50%;
+   background: #f0f0f0;
+   animation: pulse 1.5s ease-in-out infinite;
+   flex-shrink: 0;
+}
+
+@keyframes pulse {
+
+   0%,
+   100% {
+      opacity: 1;
+   }
+
+   50% {
+      opacity: 0.45;
+   }
+}

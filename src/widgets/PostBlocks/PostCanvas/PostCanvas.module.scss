@@ -1,0 +1,111 @@
+.canvas_wrap {
+   flex: 1;
+}
+
+.canvas {
+   display: flex;
+   flex-direction: column;
+   overflow-x: hidden;
+}
+
+// ── Sortable row ──────────────────────────────────────────────
+
+.sortable_row {
+   display: flex;
+   align-items: stretch;
+   border-bottom: 1px solid #ebebeb;
+
+   &:first-child {
+      border-top: 1px solid #ebebeb;
+   }
+}
+
+.drag_handle {
+   flex-shrink: 0;
+   width: 30px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   border: none;
+   border-right: 1px solid #ebebeb;
+   background: transparent;
+   color: #ccc;
+   cursor: grab;
+   transition: color 0.12s, background 0.12s;
+   touch-action: pan-y;
+
+   &:hover {
+      color: #555;
+      background: #f7f7f7;
+   }
+
+   &:active {
+      cursor: grabbing;
+      background: #f0f0f0;
+   }
+}
+
+.block_content {
+   flex: 1;
+   min-width: 0;
+   overflow: hidden;
+}
+
+// ── Empty ─────────────────────────────────────────────────────
+
+.empty {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+   gap: 10px;
+   min-height: 220px;
+   border: 2px dashed #868d97;
+   border-radius: 12px;
+   background: #fafafa;
+}
+
+.empty_mark {
+   font-size: 36px;
+   font-weight: 200;
+   color: #868d97;
+   line-height: 1;
+}
+
+.empty_text {
+   font-size: 13px;
+   color: #868d97;
+   margin: 0;
+   letter-spacing: 0.02em;
+}
+
+// ── Drop zone ─────────────────────────────────────────────────
+
+.drop_zone {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   min-height: 100px;
+   border: 2px dashed #868d97;
+   border-radius: 12px;
+   background: #fafafa;
+   margin-top: 8px;
+   transition: border-color 0.15s, background 0.15s;
+}
+
+.drop_zone_over {
+   border-color: #111;
+   background: #f4f5f7;
+
+   .drop_zone_text {
+      color: #111;
+      font-weight: 600;
+   }
+}
+
+.drop_zone_text {
+   font-size: 13px;
+   color: #868d97;
+   letter-spacing: 0.03em;
+   pointer-events: none;
+}

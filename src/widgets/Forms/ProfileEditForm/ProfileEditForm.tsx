@@ -2,8 +2,10 @@
 
 import OtpModal from '@/shared/ui/Modals/OtpModal/OtpModal'
 import ImageCropEditor from '@/widgets/BaseUI/ImageCropEditor/ImageCropEditor'
-import { FC, useRef, useState } from 'react'
+import Image from 'next/image'
+import {FC, useRef, useState} from 'react'
 import styles from './ProfileEditForm.module.scss'
+import {useUpdateProfile} from '@/features/hooks/User/useUpdateProfile'
 
 type UserType = 'Student' | 'Teacher'
 
@@ -19,8 +21,10 @@ interface ProfileEditFormProps {
   initialData: ProfileData
 }
 
-const ProfileEditForm: FC<ProfileEditFormProps> = ({ userType, initialData }) => {
-const apiBase = userType === 'Student' ? '/api/profile/edit/student' : '/api/profile/edit/teacher'
+const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData}) => {
+  const apiBase = userType === 'Student' ? '/api/profile/edit/student' : '/api/profile/edit/teacher'
+  const {mutateAsync: updateProfile, isPending} = useUpdateProfile(userType)
+
   // ── Basic fields ────────────────────────────────────────────────────────────
   const [name, setName] = useState(initialData.name)
   const [phone, setPhone] = useState(initialData.phone ?? '')
@@ -40,14 +44,12 @@ const apiBase = userType === 'Student' ? '/api/profile/edit/student' : '/api/pro
   const [passwordModalOpen, setPasswordModalOpen] = useState(false)
   const [newEmail, setNewEmail] = useState('')
 
-  // ── Avatar handlers ─────────────────────────────────────────────────────────
   const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     const url = URL.createObjectURL(file)
     setCropSrc(url)
     setCropOpen(true)
-    // reset input so same file can be re-picked
     e.target.value = ''
   }
 
@@ -63,40 +65,23 @@ const apiBase = userType === 'Student' ? '/api/profile/edit/student' : '/api/pro
     setCropSrc(null)
   }
 
-  // ── Save basic info ─────────────────────────────────────────────────────────
   const handleSave = async () => {
-    setSaving(true)
     setSaveError('')
     setSaveSuccess(false)
 
     try {
-      const res = await fetch(apiBase, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: name.trim(),
-          phone: phone.trim() || null,
-          avatarUrl,
-        }),
+      await updateProfile({
+        name: name.trim(),
+        phone: phone.trim() || null,
+        avatarUrl
       })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        setSaveError(data.error ?? 'Failed to save')
-        return
-      }
-
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 3000)
-    } catch {
-      setSaveError('Network error')
-    } finally {
-      setSaving(false)
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Failed to save')
     }
   }
 
-  // ── Change email OTP ────────────────────────────────────────────────────────
   const handleSendEmailOtp = async () => {
     if (!newEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
       throw new Error('Enter a valid email')
@@ -104,8 +89,8 @@ const apiBase = userType === 'Student' ? '/api/profile/edit/student' : '/api/pro
 
     const res = await fetch('/api/profile/edit/change-email', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ step: 'send', newEmail, userType }),
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({step: 'send', newEmail, userType})
     })
 
     const data = await res.json()
@@ -115,8 +100,8 @@ const apiBase = userType === 'Student' ? '/api/profile/edit/student' : '/api/pro
   const handleVerifyEmailOtp = async (otp: string) => {
     const res = await fetch('/api/profile/edit/change-email', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ step: 'verify', newEmail, otp, userType }),
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({step: 'verify', newEmail, otp, userType})
     })
 
     const data = await res.json()
@@ -132,8 +117,8 @@ const apiBase = userType === 'Student' ? '/api/profile/edit/student' : '/api/pro
   const handleSendPasswordOtp = async () => {
     const res = await fetch('/api/profile/change-password', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ step: 'send', userType }),
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({step: 'send', userType})
     })
 
     const data = await res.json()
@@ -145,8 +130,8 @@ const apiBase = userType === 'Student' ? '/api/profile/edit/student' : '/api/pro
 
     const res = await fetch('/api/profile/change-password', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ step: 'verify', otp, newPassword, userType }),
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({step: 'verify', otp, newPassword, userType})
     })
 
     const data = await res.json()
@@ -163,32 +148,23 @@ const apiBase = userType === 'Student' ? '/api/profile/edit/student' : '/api/pro
         <div className={styles.avatarSection}>
           <div className={styles.avatarWrapper}>
             {avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={avatarUrl} alt="Avatar" className={styles.avatar} />
+              <Image width={200} height={200} src={avatarUrl} alt='Avatar' className={styles.avatar} />
             ) : (
               <div className={styles.avatarPlaceholder}>
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="8" r="4" stroke="#999" strokeWidth="1.5" />
-                  <path d="M4 20c0-4 3.58-7 8-7s8 3 8 7" stroke="#999" strokeWidth="1.5" strokeLinecap="round" />
+                <svg width='40' height='40' viewBox='0 0 24 24' fill='none'>
+                  <circle cx='12' cy='8' r='4' stroke='#999' strokeWidth='1.5' />
+                  <path d='M4 20c0-4 3.58-7 8-7s8 3 8 7' stroke='#999' strokeWidth='1.5' strokeLinecap='round' />
                 </svg>
               </div>
             )}
           </div>
 
           <div className={styles.avatarActions}>
-            <button
-              type="button"
-              className={styles.avatarBtn}
-              onClick={() => avatarInputRef.current?.click()}
-            >
+            <button type='button' className={styles.avatarBtn} onClick={() => avatarInputRef.current?.click()}>
               {avatarUrl ? 'Change photo' : 'Upload photo'}
             </button>
             {avatarUrl && (
-              <button
-                type="button"
-                className={styles.avatarBtnDanger}
-                onClick={() => setAvatarUrl(null)}
-              >
+              <button type='button' className={styles.avatarBtnDanger} onClick={() => setAvatarUrl(null)}>
                 Remove
               </button>
             )}
@@ -196,9 +172,9 @@ const apiBase = userType === 'Student' ? '/api/profile/edit/student' : '/api/pro
 
           <input
             ref={avatarInputRef}
-            type="file"
-            accept="image/jpeg,image/jpg,image/png,image/webp"
-            style={{ display: 'none' }}
+            type='file'
+            accept='image/jpeg,image/jpg,image/png,image/webp'
+            style={{display: 'none'}}
             onChange={handleAvatarFileChange}
           />
         </div>
@@ -206,36 +182,35 @@ const apiBase = userType === 'Student' ? '/api/profile/edit/student' : '/api/pro
         {/* ── Fields ── */}
         <div className={styles.form}>
           <div className={styles.field}>
-            <label className={styles.label} htmlFor="name">Name</label>
+            <label className={styles.label} htmlFor='name'>
+              Name
+            </label>
             <input
-              id="name"
+              id='name'
               className={styles.input}
-              type="text"
+              type='text'
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
+              placeholder='Your name'
             />
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label} htmlFor="phone">Phone</label>
+            <label className={styles.label} htmlFor='phone'>
+              Phone
+            </label>
             <input
-              id="phone"
+              id='phone'
               className={styles.input}
-              type="tel"
+              type='tel'
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="+7 999 000 00 00"
+              placeholder='+7 999 000 00 00'
             />
           </div>
 
           {/* Save basic info */}
-          <button
-            type="button"
-            className={styles.saveBtn}
-            onClick={handleSave}
-            disabled={saving}
-          >
+          <button type='button' className={styles.saveBtn} onClick={handleSave} disabled={saving}>
             {saving ? 'Saving...' : 'Save changes'}
           </button>
 
@@ -255,11 +230,7 @@ const apiBase = userType === 'Student' ? '/api/profile/edit/student' : '/api/pro
               <span className={styles.securityLabel}>Email</span>
               <span className={styles.securityValue}>{initialData.email}</span>
             </div>
-            <button
-              type="button"
-              className={styles.securityBtn}
-              onClick={() => setEmailModalOpen(true)}
-            >
+            <button type='button' className={styles.securityBtn} onClick={() => setEmailModalOpen(true)}>
               Change
             </button>
           </div>
@@ -269,11 +240,7 @@ const apiBase = userType === 'Student' ? '/api/profile/edit/student' : '/api/pro
               <span className={styles.securityLabel}>Password</span>
               <span className={styles.securityValue}>••••••••</span>
             </div>
-            <button
-              type="button"
-              className={styles.securityBtn}
-              onClick={() => setPasswordModalOpen(true)}
-            >
+            <button type='button' className={styles.securityBtn} onClick={() => setPasswordModalOpen(true)}>
               Change
             </button>
           </div>
@@ -291,7 +258,7 @@ const apiBase = userType === 'Student' ? '/api/profile/edit/student' : '/api/pro
             setCropSrc(null)
           }}
           onSave={handleCropSave}
-          cropShape="circle"
+          cropShape='circle'
           cropSize={300}
           aspectRatio={1}
         />
@@ -300,21 +267,26 @@ const apiBase = userType === 'Student' ? '/api/profile/edit/student' : '/api/pro
       {/* ── Change email modal ── */}
       <OtpModal
         isOpen={emailModalOpen}
-        onClose={() => { setEmailModalOpen(false); setNewEmail('') }}
-        title="Change email"
+        onClose={() => {
+          setEmailModalOpen(false)
+          setNewEmail('')
+        }}
+        title='Change email'
         description="Enter your new email address. We'll send a confirmation code to it."
         onSendCode={handleSendEmailOtp}
         onVerify={handleVerifyEmailOtp}
         extraField={
           <div className={styles.field}>
-            <label className={styles.label} htmlFor="new-email">New email</label>
+            <label className={styles.label} htmlFor='new-email'>
+              New email
+            </label>
             <input
-              id="new-email"
+              id='new-email'
               className={styles.input}
-              type="email"
+              type='email'
               value={newEmail}
               onChange={(e) => setNewEmail(e.target.value)}
-              placeholder="new@email.com"
+              placeholder='new@email.com'
             />
           </div>
         }
@@ -323,21 +295,26 @@ const apiBase = userType === 'Student' ? '/api/profile/edit/student' : '/api/pro
       {/* ── Change password modal ── */}
       <OtpModal
         isOpen={passwordModalOpen}
-        onClose={() => { setPasswordModalOpen(false); setNewPassword('') }}
-        title="Change password"
+        onClose={() => {
+          setPasswordModalOpen(false)
+          setNewPassword('')
+        }}
+        title='Change password'
         description="We'll send a confirmation code to your current email."
         onSendCode={handleSendPasswordOtp}
         onVerify={handleVerifyPasswordOtp}
         extraField={
           <div className={styles.field}>
-            <label className={styles.label} htmlFor="new-password">New password</label>
+            <label className={styles.label} htmlFor='new-password'>
+              New password
+            </label>
             <input
-              id="new-password"
+              id='new-password'
               className={styles.input}
-              type="password"
+              type='password'
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Min. 6 characters"
+              placeholder='Min. 6 characters'
             />
           </div>
         }

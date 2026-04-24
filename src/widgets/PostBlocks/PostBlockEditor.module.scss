@@ -1,0 +1,189 @@
+.box {
+   display: flex;
+   flex-direction: column;
+   gap: 12px;
+}
+
+.hidden {
+   display: none;
+}
+
+// ── Upload button ─────────────────────────────────────────────
+.upload_btn {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   gap: 6px;
+   padding: 28px 20px;
+   border: 1px dashed #bbb;
+   background: #fafafa;
+   cursor: pointer;
+   width: 100%;
+   color: #555;
+   font-size: 14px;
+   transition: border-color 0.12s, background 0.12s;
+
+   &:hover {
+      border-color: #222;
+      background: #f0f0f0;
+      color: #222;
+   }
+}
+
+.upload_hint {
+   font-size: 11px;
+   color: #aaa;
+   letter-spacing: 0.05em;
+}
+
+// ── Extracting animation ──────────────────────────────────────
+.extracting {
+   display: flex;
+   align-items: flex-end;
+   justify-content: center;
+   gap: 3px;
+   padding: 20px;
+   color: #888;
+   font-size: 12px;
+   flex-direction: row;
+   flex-wrap: wrap;
+
+   span {
+      width: 100%;
+      text-align: center;
+      margin-top: 8px;
+      letter-spacing: 0.05em;
+   }
+}
+
+.ext_bar {
+   width: 3px;
+   height: 24px;
+   background: #222;
+   animation: ext-bounce 0.8s ease-in-out infinite alternate;
+   transform-origin: bottom;
+
+   @keyframes ext-bounce {
+      from {
+         transform: scaleY(0.15);
+      }
+
+      to {
+         transform: scaleY(1);
+      }
+   }
+}
+
+// ── Player ────────────────────────────────────────────────────
+.player {
+   display: flex;
+   flex-direction: column;
+   gap: 10px;
+   padding: 14px;
+   border: 1px solid #222;
+   background: #fff;
+}
+
+.play_btn {
+   width: 36px;
+   height: 36px;
+   border: 1px solid #222;
+   background: #222;
+   color: #fff;
+   cursor: pointer;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   flex-shrink: 0;
+   transition: background 0.12s;
+
+   &:hover {
+      background: #444;
+   }
+}
+
+.waveform_wrap {
+   display: flex;
+   flex-direction: column;
+   gap: 6px;
+}
+
+.waveform {
+   display: flex;
+   align-items: center;
+   gap: 2px;
+   height: 48px;
+   cursor: pointer;
+   user-select: none;
+}
+
+.bar {
+   flex: 1;
+   background: #ddd;
+   height: calc(var(--amp, 0.3) * 100%);
+   min-height: 2px;
+   transition: background 0.05s;
+}
+
+.bar_passed {
+   background: #222;
+}
+
+.bar_cursor {
+   background: #555;
+}
+
+.timer {
+   display: flex;
+   gap: 4px;
+   font-size: 11px;
+   color: #888;
+   font-variant-numeric: tabular-nums;
+}
+
+.timer_sep {
+   color: #ccc;
+}
+
+.timer_total {
+   color: #aaa;
+}
+
+// ── File row ──────────────────────────────────────────────────
+.file_row {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   gap: 8px;
+   padding-top: 6px;
+   border-top: 1px solid #eee;
+}
+
+.filename {
+   font-size: 12px;
+   color: #666;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+   flex: 1;
+}
+
+.remove_btn {
+   width: 22px;
+   height: 22px;
+   border: 1px solid #ddd;
+   background: transparent;
+   color: #999;
+   cursor: pointer;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   flex-shrink: 0;
+   transition: all 0.12s;
+
+   &:hover {
+      border-color: #222;
+      color: #222;
+      background: #f0f0f0;
+   }
+}

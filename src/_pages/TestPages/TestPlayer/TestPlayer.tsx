@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 import {TestBlock} from '@/entities/store/slices/tasksSlice.slice'
+import {InfoAudioEditor} from '@/features/BlockEditors/InfoAudioEditor/InfoAudioEditor'
+import {InfoMediaEditor} from '@/features/BlockEditors/InfoMediaEditor/InfoMediaEditor'
 import {calculateResult, StudentAnswer, TestResult} from '@/features/Tasks/TaskResult/scoreBlock'
 import {
   ChooseOptionPayload,
@@ -14,20 +16,18 @@ import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
 import {DialogueStudentView} from '@/widgets/Tasks/BlockEditor/DialogueEditor/DialogueEditor'
 import {FillTextEditor} from '@/widgets/Tasks/BlockEditor/FillTextEditor/FillTextEditor'
 import {HighlightStudentView} from '@/widgets/Tasks/BlockEditor/HighlightTextEditor/HighlightTextEditor'
-import {InfoAudioEditor} from '@/widgets/Tasks/BlockEditor/Info/InfoAudioEditor/InfoAudioEditor'
-import {InfoMediaEditor} from '@/widgets/Tasks/BlockEditor/Info/InfoMediaEditor/InfoMediaEditor'
-import {InfoTextEditor} from '@/widgets/Tasks/BlockEditor/Info/InfoTextEditor/InfoTextEditor'
 import {useState} from 'react'
 
 import {ChooseOptionStudent} from '@/widgets/Tasks/BlockEditor/ChooseOptionEditor/ChooseOptionStudent/ChooseOptionStudent'
+import {FreeAnswerStudent} from '@/widgets/Tasks/BlockEditor/FreeAnswerEditor/FreeAnswerStudent/FreeAnswerStudent'
+import {MatchPairsStudent} from '@/widgets/Tasks/BlockEditor/MatchPairsEditor/MatchPairsStudent/MatchPairsStudent'
+import {SequenceStudent} from '@/widgets/Tasks/BlockEditor/SequenceEditor/SequenceStudent/SequenceStudent'
 import {
   getShuffledItems,
   StudentViewWordScramble
 } from '@/widgets/Tasks/BlockEditor/WordScrambleEditor/StudentViewWordScramble/StudentViewWordScramble'
 import styles from './TestPlayer.module.scss'
-import {FreeAnswerStudent} from '@/widgets/Tasks/BlockEditor/FreeAnswerEditor/FreeAnswerStudent/FreeAnswerStudent'
-import {MatchPairsStudent} from '@/widgets/Tasks/BlockEditor/MatchPairsEditor/MatchPairsStudent/MatchPairsStudent'
-import {SequenceStudent} from '@/widgets/Tasks/BlockEditor/SequenceEditor/SequenceStudent/SequenceStudent'
+import {InfoTextEditor} from '@/features/BlockEditors/InfoTextEditor/InfoTextEditor'
 
 export function BlockView({
   block,

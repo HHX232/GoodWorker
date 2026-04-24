@@ -7,8 +7,8 @@ export interface SavedTest {
   theme: string
   description: string
   blocks: TestBlock[]
-  createdAt: string
-  updatedAt: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 const KEY = 'saved_tests'

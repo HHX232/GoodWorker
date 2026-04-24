@@ -1,14 +1,15 @@
 import axios from 'axios'
-import { getContentType } from './api.helper'
-import { getAccessToken } from './auth.helper'
+import {getContentType} from './api.helper'
+import {getAccessToken} from './auth.helper'
 
+// TODO сделать логику разбиения на null/v1
 export const instance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL_SECOND + '/api/v1',
+  baseURL: (process.env.NEXT_PUBLIC_API_URL_SECOND || '') + '/api',
   headers: getContentType()
 })
 
 export const axiosClassic = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL_SECOND + '/api/v1',
+  baseURL: (process.env.NEXT_PUBLIC_API_URL_SECOND || '') + '/api',
   headers: getContentType()
 })
 

@@ -1,4 +1,5 @@
 import {DropInputUI, SearchInputUI} from '@/shared/ui'
+import {ProfilePreview} from '@/widgets/ProfilePreview/ProfilePreview'
 import {getTranslations} from 'next-intl/server'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -43,7 +44,7 @@ async function Header() {
         </div>
 
         <LangSwitcher />
-        <div className={styles.profile_box} />
+        <ProfilePreview />
       </div>
     </header>
   )

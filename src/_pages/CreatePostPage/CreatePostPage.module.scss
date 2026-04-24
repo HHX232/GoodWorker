@@ -1,0 +1,138 @@
+.content {
+   // display: contents;
+}
+
+.main_content {
+   display: flex;
+   flex-direction: column;
+   gap: 15px;
+   background-color: #fff;
+   border-radius: 15px;
+   padding: 15px;
+
+   >h1 {
+      text-align: center;
+      font-size: 42px;
+      font-weight: 500;
+   }
+
+   grid-column: 1 / -1;
+
+   @media (min-width: 1100px) {
+      grid-column: 1 / -2;
+   }
+
+   @media (max-width: 1100px) {
+      margin-bottom: 100px;
+   }
+}
+
+.form {
+   display: flex;
+   flex-direction: column;
+   gap: 15px;
+}
+
+.meta_form {
+   display: flex;
+   flex-direction: column;
+   gap: 12px;
+   width: 70%;
+   min-width: 100px;
+
+   @media (max-width: 700px) {
+      width: 100%;
+   }
+}
+
+.title_input {
+   width: 100%;
+   padding: 10px 14px;
+   border: 1.5px solid #e0e0e0;
+   border-radius: 10px;
+   font-size: 15px;
+   outline: none;
+   transition: border-color 0.2s;
+   background: #fafafa;
+
+   &:focus {
+      border-color: #6366f1;
+      background: #fff;
+   }
+
+   &::placeholder {
+      color: #bbb;
+   }
+}
+
+.visibility_toggle {
+   display: flex;
+   gap: 8px;
+}
+
+.vis_btn {
+   padding: 8px 18px;
+   border-radius: 8px;
+   border: 1.5px solid #e0e0e0;
+   background: #f5f5f5;
+   font-size: 14px;
+   cursor: pointer;
+   transition: all 0.18s;
+}
+
+.vis_active {
+   border-color: #6366f1;
+   background: #eef2ff;
+   color: #4338ca;
+   font-weight: 600;
+}
+
+.publish_btn {
+   align-self: flex-start;
+   padding: 12px 28px;
+   background: #111;
+   color: #fff;
+   border: none;
+   border-radius: 10px;
+   font-size: 15px;
+   font-weight: 500;
+   cursor: pointer;
+   transition: background 0.15s;
+
+   &:hover {
+      background: #333;
+   }
+
+   &:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+   }
+}
+
+.error_text {
+   font-size: 13px;
+   color: #e53e3e;
+}
+
+.drag_ghost {
+   display: inline-flex;
+   align-items: center;
+   gap: 8px;
+   padding: 8px 14px;
+   background: #fff;
+   border: 1.5px solid #e0e0e0;
+   border-radius: 10px;
+   font-size: 14px;
+   font-weight: 500;
+   color: #111;
+   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+   pointer-events: none;
+   white-space: nowrap;
+   width: fit-content;
+
+   svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+   }
+}

@@ -15,6 +15,7 @@ export interface ConstructorState {
   title: string
   theme: string
   description: string
+  categoryIds: string[]
 }
 
 const initialState: ConstructorState = {
@@ -22,7 +23,8 @@ const initialState: ConstructorState = {
   selectedBlockId: null,
   title: '',
   theme: '',
-  description: ''
+  description: '',
+  categoryIds: []
 }
 
 const tasksSlice = createSlice({
@@ -41,7 +43,9 @@ const tasksSlice = createSlice({
     removeBlock(state, action: PayloadAction<string>) {
       state.blocks = state.blocks.filter((b) => b.id !== action.payload)
     },
-
+    setCategoryIds(state, action: PayloadAction<string[]>) {
+      state.categoryIds = action.payload
+    },
     reorderBlocks(state, action: PayloadAction<{activeId: string; overId: string}>) {
       const {activeId, overId} = action.payload
       const oldIndex = state.blocks.findIndex((b) => b.id === activeId)

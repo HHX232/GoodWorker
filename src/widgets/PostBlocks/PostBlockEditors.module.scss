@@ -1,0 +1,142 @@
+// PostBlockEditors.module.scss
+
+// ── Shared ───────────────────────────────────────────────────
+.url_input {
+   width: 100%;
+   padding: 10px 14px;
+   border: 1.5px solid #e0e0e0;
+   border-radius: 10px;
+   font-size: 14px;
+   outline: none;
+   transition: border-color 0.2s;
+   background: #fafafa;
+
+   &:focus {
+      border-color: #6366f1;
+      background: #fff;
+   }
+}
+
+// ── TEXT ─────────────────────────────────────────────────────
+.text_editor {
+   min-height: 120px;
+   border: 1.5px solid #e0e0e0;
+   border-radius: 10px;
+   padding: 12px 16px;
+   background: #fafafa;
+   transition: border-color 0.2s;
+
+   &:focus-within {
+      border-color: #6366f1;
+      background: #fff;
+   }
+
+   // Tiptap reset
+   :global(.ProseMirror) {
+      outline: none;
+      min-height: 100px;
+      font-size: 15px;
+      line-height: 1.65;
+
+      p {
+         margin: 0 0 8px;
+      }
+
+      h1,
+      h2,
+      h3 {
+         font-weight: 600;
+         margin: 12px 0 6px;
+      }
+
+      :global(.is-editor-empty)::before {
+         color: #aaa;
+         content: attr(data-placeholder);
+         float: left;
+         height: 0;
+         pointer-events: none;
+      }
+   }
+}
+
+// ── MEDIA ─────────────────────────────────────────────────────
+.media_editor {
+   display: flex;
+   flex-direction: column;
+   gap: 12px;
+}
+
+.kind_toggle {
+   display: flex;
+   gap: 8px;
+}
+
+.kind_btn {
+   padding: 8px 18px;
+   border-radius: 8px;
+   border: 1.5px solid #e0e0e0;
+   background: #f5f5f5;
+   font-size: 14px;
+   cursor: pointer;
+   transition: all 0.18s;
+
+   &.active {
+      border-color: #6366f1;
+      background: #eef2ff;
+      color: #4338ca;
+      font-weight: 600;
+   }
+}
+
+.preview_img {
+   max-width: 100%;
+   max-height: 340px;
+   border-radius: 10px;
+   object-fit: contain;
+   border: 1px solid #eee;
+}
+
+.preview_video {
+   max-width: 100%;
+   border-radius: 10px;
+}
+
+// ── AUDIO ─────────────────────────────────────────────────────
+.audio_editor {
+   display: flex;
+   flex-direction: column;
+   gap: 12px;
+}
+
+.audio_player {
+   width: 100%;
+   border-radius: 8px;
+}
+
+// ── TEST LINK STUB ────────────────────────────────────────────
+.test_link_stub {
+   display: flex;
+   align-items: center;
+   gap: 14px;
+   padding: 20px;
+   border-radius: 12px;
+   background: #f0f0ff;
+   border: 1.5px dashed #a5b4fc;
+}
+
+.stub_icon {
+   font-size: 28px;
+   flex-shrink: 0;
+}
+
+.stub_text {
+   font-size: 15px;
+   color: #4338ca;
+   margin: 0;
+   line-height: 1.5;
+}
+
+.stub_sub {
+   font-size: 13px;
+   color: #818cf8;
+}

@@ -1,6 +1,4 @@
-// features/test-block-editor/ui/editors/InfoMediaEditor/InfoMediaEditor.tsx
 'use client'
-import {useActions} from '@/features/hooks/store/useActions'
 import {InfoMediaKind, InfoMediaPayload} from '@/shared/types/Tasks/TaskPayload.type'
 import {ImageIcon, UploadIcon, VideoIcon, XIcon} from 'lucide-react'
 import Image from 'next/image'
@@ -8,8 +6,8 @@ import {useRef} from 'react'
 import styles from './InfoMediaEditor.module.scss'
 
 interface Props {
-  blockId: string
   payload: InfoMediaPayload
+  onChange?: (payload: InfoMediaPayload) => void
   viewOnly?: boolean
 }
 
@@ -20,12 +18,11 @@ const toEmbedUrl = (url: string) => {
   return match ? `https://www.youtube.com/embed/${match[1]}` : null
 }
 
-export const InfoMediaEditor = ({blockId, payload, viewOnly = false}: Props) => {
-  const {updateBlockPayload} = useActions()
+export const InfoMediaEditor = ({payload, onChange, viewOnly = false}: Props) => {
+  const editable = !!onChange && !viewOnly
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const update = (patch: Partial<InfoMediaPayload>) =>
-    updateBlockPayload({id: blockId, payload: {...payload, ...patch}})
+  const update = (patch: Partial<InfoMediaPayload>) => onChange?.({...payload, ...patch})
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -52,10 +49,13 @@ export const InfoMediaEditor = ({blockId, payload, viewOnly = false}: Props) => 
 
   const hasMedia = !!payload.url
   const embedUrl = payload.kind === 'video' && payload.url ? toEmbedUrl(payload.url) : null
-  if (viewOnly) {
+
+  // ── View only ─────────────────────────────────────────────
+
+  if (!editable) {
     if (!payload.url) return null
     return (
-      <div className={styles.preview_box} style={{position: 'relative'}}>
+      <div className={styles.preview_box}>
         {payload.kind === 'image' && (
           <Image
             width={600}
@@ -74,40 +74,43 @@ export const InfoMediaEditor = ({blockId, payload, viewOnly = false}: Props) => 
           />
         )}
         {payload.kind === 'video' && !embedUrl && <video src={payload.url} controls className={styles.preview_video} />}
-        {payload.caption && (
-          <p className={styles.caption_input} style={{border: 'none', background: 'none', color: '#666'}}>
-            {payload.caption}
-          </p>
-        )}
+        {payload.caption && <p className={styles.caption_text}>{payload.caption}</p>}
       </div>
     )
   }
+
+  // ── Edit ──────────────────────────────────────────────────
+
   return (
     <div className={styles.box}>
       {!hasMedia && (
-        <div className={styles.kind_row}>
-          <button type='button' className={styles.kind_btn} onClick={() => fileRef.current?.click()}>
-            <UploadIcon size={16} />
-            Загрузить файл
-          </button>
-
-          <span className={styles.or}>или вставить ссылку</span>
-
-          <input
-            className={styles.url_input}
-            placeholder='https://youtube.com/watch?v=... или URL картинки'
-            defaultValue={payload.url ?? ''}
-            onBlur={handleUrlInput}
-          />
-
-          <input
-            ref={fileRef}
-            type='file'
-            accept='image/*,video/*'
-            className={styles.hidden}
-            onChange={handleFileChange}
-          />
-        </div>
+        <>
+          <div className={styles.kind_row}>
+            <button type='button' className={styles.kind_btn} onClick={() => fileRef.current?.click()}>
+              <UploadIcon size={16} />
+              Загрузить файл
+            </button>
+            <span className={styles.or}>или вставить ссылку</span>
+            <input
+              className={styles.url_input}
+              placeholder='https://youtube.com/watch?v=... или URL картинки'
+              defaultValue={payload.url ?? ''}
+              onBlur={handleUrlInput}
+            />
+            <input
+              ref={fileRef}
+              type='file'
+              accept='image/*,video/*'
+              className={styles.hidden}
+              onChange={handleFileChange}
+            />
+          </div>
+          <div className={styles.empty_hint}>
+            <ImageIcon size={32} className={styles.empty_icon_img} />
+            <VideoIcon size={32} className={styles.empty_icon_vid} />
+            <p>Загрузите изображение или вставьте ссылку на видео</p>
+          </div>
+        </>
       )}
 
       {hasMedia && (
@@ -115,7 +118,6 @@ export const InfoMediaEditor = ({blockId, payload, viewOnly = false}: Props) => 
           <button type='button' className={styles.clear_btn} onClick={clear}>
             <XIcon size={14} />
           </button>
-
           {payload.kind === 'image' && (
             <Image
               width={400}
@@ -125,7 +127,6 @@ export const InfoMediaEditor = ({blockId, payload, viewOnly = false}: Props) => 
               className={styles.preview_img}
             />
           )}
-
           {payload.kind === 'video' && embedUrl && (
             <iframe
               src={embedUrl}
@@ -134,25 +135,15 @@ export const InfoMediaEditor = ({blockId, payload, viewOnly = false}: Props) => 
               allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
             />
           )}
-
           {payload.kind === 'video' && !embedUrl && (
             <video src={payload.url!} controls className={styles.preview_video} />
           )}
-
           <input
             className={styles.caption_input}
             placeholder='Подпись (необязательно)...'
             value={payload.caption ?? ''}
             onChange={(e) => update({caption: e.target.value || null})}
           />
-        </div>
-      )}
-
-      {!hasMedia && (
-        <div className={styles.empty_hint}>
-          <ImageIcon size={32} className={styles.empty_icon_img} />
-          <VideoIcon size={32} className={styles.empty_icon_vid} />
-          <p>Загрузите изображение или вставьте ссылку на видео</p>
         </div>
       )}
     </div>

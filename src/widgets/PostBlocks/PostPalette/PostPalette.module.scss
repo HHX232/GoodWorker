@@ -1,0 +1,134 @@
+.palette {
+   position: sticky;
+   top: 80px;
+   width: 190px;
+   flex-shrink: 0;
+   height: fit-content;
+   border: 1px solid #222;
+   background: #fff;
+   padding: 14px 12px;
+   user-select: none;
+
+   @media (max-width: 1100px) {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      top: unset;
+      width: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      z-index: 50;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+   }
+}
+
+.palette_title {
+   font-size: 10px;
+   font-weight: 700;
+   letter-spacing: 0.12em;
+   text-transform: uppercase;
+   color: #999;
+   margin: 0 0 10px 0;
+
+   @media (max-width: 1100px) {
+      display: none;
+   }
+}
+
+.palette_hint {
+   font-size: 10px;
+   color: #bbb;
+   margin: 10px 0 0;
+   letter-spacing: 0.04em;
+
+   @media (max-width: 1100px) {
+      display: none;
+   }
+}
+
+.items {
+   display: flex;
+   flex-direction: column;
+   gap: 3px;
+
+   @media (max-width: 1100px) {
+      flex-direction: row;
+      gap: 6px;
+   }
+}
+
+.item {
+   display: flex;
+   align-items: center;
+   gap: 8px;
+   padding: 9px 10px;
+   border: 1px solid #e0e0e0;
+   background: #fff;
+   cursor: grab;
+   transition: border-color 0.12s, background 0.12s;
+
+   &:hover {
+      border-color: #222;
+      background: #f8f8f8;
+   }
+
+   &:active {
+      cursor: grabbing;
+   }
+
+   @media (max-width: 1100px) {
+      padding: 8px 12px;
+      border-color: #ddd;
+   }
+}
+
+.item_dragging {
+   opacity: 0.35;
+   border-color: #222 !important;
+   background: #f0f0f0 !important;
+}
+
+.item_icon {
+   font-size: 15px;
+   color: #444;
+   width: 18px;
+   text-align: center;
+   font-family: serif;
+   flex-shrink: 0;
+}
+
+.item_info {
+   display: flex;
+   flex-direction: column;
+   flex: 1;
+   min-width: 0;
+
+   @media (max-width: 1100px) {
+      display: none;
+   }
+}
+
+.item_label {
+   font-size: 13px;
+   font-weight: 600;
+   color: #222;
+}
+
+.item_desc {
+   font-size: 11px;
+   color: #999;
+   margin-top: 1px;
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+}
+
+.item_drag_hint {
+   font-size: 14px;
+   color: #ccc;
+   flex-shrink: 0;
+   letter-spacing: -1px;
+}

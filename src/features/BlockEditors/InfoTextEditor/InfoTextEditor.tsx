@@ -1,6 +1,4 @@
-// features/test-block-editor/ui/editors/InfoTextEditor/InfoTextEditor.tsx
 'use client'
-import {useActions} from '@/features/hooks/store/useActions'
 import {InfoTextPayload} from '@/shared/types/Tasks/TaskPayload.type'
 import Placeholder from '@tiptap/extension-placeholder'
 import {EditorContent, useEditor} from '@tiptap/react'
@@ -9,31 +7,27 @@ import {BoldIcon, Heading2Icon, Heading3Icon, ItalicIcon, ListIcon, ListOrderedI
 import styles from './InfoTextEditor.module.scss'
 
 interface Props {
-  blockId: string
   payload: InfoTextPayload
+  onChange?: (payload: InfoTextPayload) => void
   viewOnly?: boolean
 }
 
-export const InfoTextEditor = ({blockId, payload, viewOnly = false}: Props) => {
-  const {updateBlockPayload} = useActions()
+export const InfoTextEditor = ({payload, onChange, viewOnly = false}: Props) => {
+  const editable = !!onChange && !viewOnly
 
   const editor = useEditor({
     immediatelyRender: false,
-    editable: !viewOnly,
-    extensions: [
-      StarterKit,
-      ...(!viewOnly ? [Placeholder.configure({placeholder: 'Введите текст материала...'})] : [])
-    ],
+    editable,
+    extensions: [StarterKit, ...(editable ? [Placeholder.configure({placeholder: 'Введите текст материала...'})] : [])],
     content: payload.content ?? '',
     onUpdate({editor}) {
-      if (viewOnly) return
-      updateBlockPayload({id: blockId, payload: {content: editor.getJSON()}})
+      onChange?.({content: editor.getJSON()})
     }
   })
 
   if (!editor) return null
 
-  if (viewOnly) {
+  if (!editable) {
     return <EditorContent editor={editor} className={styles.editor} />
   }
 
