@@ -11,6 +11,8 @@ ADMIN ADMIN
 
         PostVisibility {
             PUBLIC PUBLIC
+STUDENTS STUDENTS
+SELECTED SELECTED
 PRIVATE PRIVATE
         }
     
@@ -51,6 +53,7 @@ FAILED FAILED
     DateTime updatedAt 
     String avatarUrl "❓"
     String password "❓"
+    DateTime lastSeenAt "❓"
     }
   
 
@@ -67,6 +70,7 @@ FAILED FAILED
     String password "❓"
     Boolean pasportConfirmed "❓"
     String phone "❓"
+    DateTime lastSeenAt "❓"
     }
   
 
@@ -106,6 +110,14 @@ FAILED FAILED
     Boolean aiModerationOk "❓"
     DateTime createdAt 
     DateTime updatedAt 
+    String additionalTitle "❓"
+    Boolean isVip 
+    DateTime vipExpiresAt "❓"
+    }
+  
+
+  "PostAllowedStudent" {
+
     }
   
 
@@ -264,6 +276,8 @@ FAILED FAILED
     "Post" |o--|| "PostVisibility" : "enum:visibility"
     "Post" }o--|o "Category" : "category"
     "Post" }o--|| "Teacher" : "teacher"
+    "PostAllowedStudent" }o--|| "Post" : "post"
+    "PostAllowedStudent" }o--|| "Student" : "student"
     "PostView" |o--|| "Role" : "enum:viewerRole"
     "PostView" }o--|| "Post" : "post"
     "PostView" }o--|o "Student" : "student"

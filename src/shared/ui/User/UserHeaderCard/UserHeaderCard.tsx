@@ -1,9 +1,11 @@
 'use client'
 
-import { DotsMenuProps, UserHeaderCardProps } from '@/shared/types'
+import {useOnlineStatus} from '@/features/hooks/User/useOnlineStatus'
+import {formatActivity} from '@/shared/helpers/formatActivity'
+import {DotsMenuProps, UserHeaderCardProps} from '@/shared/types'
 import Image from 'next/image'
 import Link from 'next/link'
-import { FC, useState } from 'react'
+import {FC, useState} from 'react'
 import UserRole from '../UserRole/UserRole'
 import style from './UserHeaderCard.module.scss'
 
@@ -51,7 +53,8 @@ const UserHeaderCard: FC<UserHeaderCardProps> = ({
   size = 'lg'
 }) => {
   const [activeMenu, setActiveMenu] = useState(false)
-
+  const {online, lastSeenAt} = useOnlineStatus(userID)
+  const computedDateActivity = dateActivity || formatActivity(online, lastSeenAt)
   const toggleMenu = (e: React.MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()
@@ -102,12 +105,12 @@ const UserHeaderCard: FC<UserHeaderCardProps> = ({
             <div className={style.user_subdata_box}>
               <p
                 style={{color: `#${accentColor}`}}
-                className={`${style.user_active} ${dateActivity === 'Online' ? style.user_active_online : ''} ${size === 'sm' && style.user__little_online}`}
+                className={`${style.user_active} ${computedDateActivity === 'Online' ? style.user_active_online : ''} ${size === 'sm' && style.user__little_online}`}
               >
-                {dateActivity}
+                {computedDateActivity}
               </p>
               <div
-                className={`${style.user_active_pin} ${dateActivity === 'Online' ? style.user_active_pin_online : ''}`}
+                className={`${style.user_active_pin} ${computedDateActivity === 'Online' ? style.user_active_pin_online : ''}`}
               />
               <UserRole
                 fontSize={size === 'sm' ? '10px' : '12px'}
@@ -128,12 +131,12 @@ const UserHeaderCard: FC<UserHeaderCardProps> = ({
             <div className={style.user_subdata_box}>
               <p
                 style={{color: `#${accentColor}`}}
-                className={`${style.user_active} ${dateActivity === 'Online' ? style.user_active_online : ''} ${size === 'sm' && style.user__little_online}`}
+                className={`${style.user_active} ${computedDateActivity === 'Online' ? style.user_active_online : ''} ${size === 'sm' && style.user__little_online}`}
               >
-                {dateActivity}
+                {computedDateActivity}
               </p>
               <div
-                className={`${style.user_active_pin} ${dateActivity === 'Online' ? style.user_active_pin_online : ''}`}
+                className={`${style.user_active_pin} ${computedDateActivity === 'Online' ? style.user_active_pin_online : ''}`}
               />
               <UserRole
                 fontSize={size === 'sm' ? '10px' : '12px'}

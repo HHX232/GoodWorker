@@ -1,9 +1,9 @@
 'use client'
 
+import {useMe} from '@/features/hooks/User/useMe'
 import Image from 'next/image'
 import Link from 'next/link'
 import styles from './ProfilePreview.module.scss'
-import {useMe} from '@/features/hooks/User/useMe'
 
 export function ProfilePreview() {
   const {data: user, isLoading} = useMe()
@@ -20,7 +20,21 @@ export function ProfilePreview() {
     )
   }
 
-  if (!user) return null
+  if (!user) {
+    return (
+      <Link href='/login' className={styles.wrapper}>
+        <div className={styles.info}>
+          <p className={styles.name}>Войти</p>
+          <p style={{whiteSpace: 'nowrap'}} className={styles.username}>
+            в аккаунт
+          </p>
+        </div>
+        <div className={styles.avatarWrap}>
+          <span className={styles.initials}>?</span>
+        </div>
+      </Link>
+    )
+  }
 
   const href = user.role === 'TEACHER' ? '/teacher-profile' : '/student-profile'
   const username = user.email.split('@')[0]

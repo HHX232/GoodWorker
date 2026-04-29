@@ -28,12 +28,36 @@
 
 
 .avatar_wrapper {
-  width: 120px;
-  height: 120px;
+  width: 135px;
+  height: 135px;
+  padding: 15px;
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
   margin-bottom: 10px;
+  position: relative;
+}
+
+.status_circle {
+  width: 13px;
+  height: 13px;
+  border-radius: 50px;
+  position: absolute;
+  content: '';
+  right: 28px;
+  bottom: 18px;
+  z-index: 10;
+  background-color: #FAFAFA;
+  border: 1px solid #636363;
+}
+
+.active_circle {
+  background-color: green;
+  width: 15px;
+  height: 15px;
+  bottom: 14px;
+  right: 26px;
+  border: 2px solid #FAFAFA;
 }
 
 .avatar {
@@ -88,11 +112,12 @@
     border-bottom: none;
   }
 
-  @media(max-width: 1100px){
+  @media(max-width: 1100px) {
     flex-wrap: wrap;
     text-align: start !important;
-    &>span{
-          text-align: start !important;
+
+    &>span {
+      text-align: start !important;
 
     }
   }

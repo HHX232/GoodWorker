@@ -1,0 +1,81 @@
+.title {
+   font-size: 16px;
+   font-weight: 500;
+   color: #141416;
+   display: flex;
+   align-items: center;
+   gap: 8px;
+   margin: 0;
+}
+
+.badge {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   min-width: 20px;
+   height: fit-content;
+   padding: 3px 6px;
+   border-radius: 100px;
+   background: #FF7A00;
+   color: #fff;
+   font-size: 11px;
+   font-weight: 500;
+}
+
+.body {
+   display: flex;
+   flex-direction: column;
+   gap: 20px;
+   padding: 4px 0;
+}
+
+.field {
+   display: flex;
+   flex-direction: column;
+   gap: 8px;
+}
+
+.label {
+   font-size: 13px;
+   font-weight: 500;
+   color: #868897;
+}
+
+.footer {
+   display: flex;
+   gap: 20px;
+   padding: 15px 20px;
+}
+
+.reset_btn {
+   flex: 1;
+   height: 44px;
+   border-radius: 12px;
+   border: 1px solid #e0e0e0;
+   background: #F7F7F7;
+   color: #868897;
+   font-size: 14px;
+   cursor: pointer;
+   transition: background 0.15s;
+
+   &:hover {
+      background: #ebebeb;
+   }
+}
+
+.apply_btn {
+   flex: 2;
+   height: 44px;
+   border-radius: 12px;
+   border: none;
+   background: #141416;
+   color: #fff;
+   font-size: 14px;
+   font-weight: 500;
+   cursor: pointer;
+   transition: opacity 0.15s;
+
+   &:active {
+      opacity: 0.85;
+   }
+}

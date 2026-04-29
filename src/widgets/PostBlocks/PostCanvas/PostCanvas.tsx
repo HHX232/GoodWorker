@@ -22,18 +22,17 @@ function SortableBlock({block}: {block: PostBlock}) {
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
+
         opacity: isDragging ? 0.35 : 1
       }}
       className={styles.sortable_row}
     >
-      {/* Хэндл — только за него можно тянуть внутри канваса */}
       <button
         type='button'
         className={styles.drag_handle}
         {...attributes}
         {...listeners}
         aria-label='Переместить блок'
-        // Предотвращаем горизонтальный скролл — drag только вертикально
         style={{touchAction: 'none'}}
       >
         <GripVertical size={15} />
@@ -72,8 +71,7 @@ export function PostCanvas({isDraggingFromPalette}: Props) {
             <SortableBlock key={block.id} block={block} />
           ))}
 
-          {/* Пустое состояние или drop-hint */}
-          {blocks.length === 0 && !isDraggingFromPalette && (
+          {!isDraggingFromPalette && (
             <div className={styles.empty}>
               <span className={styles.empty_mark}>+</span>
               <p className={styles.empty_text}>Перетащите блок из панели справа</p>

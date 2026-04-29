@@ -1,16 +1,21 @@
-import {DropInputUI, SearchInputUI} from '@/shared/ui'
+'use client'
+import {SearchInputUI} from '@/shared/ui'
+import {FilterModal} from '@/shared/ui/Modals/FilterModal/FilterModal'
 import {ProfilePreview} from '@/widgets/ProfilePreview/ProfilePreview'
-import {getTranslations} from 'next-intl/server'
+import {SlidersHorizontal} from 'lucide-react'
+import {useTranslations} from 'next-intl'
 import Image from 'next/image'
 import Link from 'next/link'
+import {useState} from 'react'
 import {LangSwitcher} from '../LangSwitcher/LangSwitcher'
 import styles from './Header.module.scss'
 
 const LogoBigUrl = '/logos/BigLogo.svg'
 const LogoMobileUrl = '/logos/MobileLogo.svg'
 
-async function Header() {
-  const t = await getTranslations('Header')
+function Header() {
+  const t = useTranslations('Header')
+  const [isOpen, setIsOpen] = useState(false)
 
   return (
     <header className={styles.wrapper}>
@@ -25,22 +30,11 @@ async function Header() {
 
         <div className={styles.search_box}>
           <SearchInputUI placeholder={t('search')} />
-          <DropInputUI
-            placeholder={t('specialization')}
-            initialActiveItem={{id: 2, label: t('designer')}}
-            items={[
-              {id: 1, label: t('developer')},
-              {id: 2, label: t('designer')},
-              {
-                id: 3,
-                label: (
-                  <>
-                    <b>QA</b> {t('qa')}
-                  </>
-                )
-              }
-            ]}
-          />
+          <button className={styles.btn} onClick={() => setIsOpen(true)}>
+            <SlidersHorizontal size={16} />
+            Фильтры
+          </button>
+          <FilterModal isOpen={isOpen} onClose={() => setIsOpen(false)} />
         </div>
 
         <LangSwitcher />

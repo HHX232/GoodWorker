@@ -28,7 +28,11 @@ export const InfoTextEditor = ({payload, onChange, viewOnly = false}: Props) => 
   if (!editor) return null
 
   if (!editable) {
-    return <EditorContent editor={editor} className={styles.editor} />
+    return (
+      <div style={{background: '#fff', borderRadius: 12, padding: '12px 16px'}}>
+        <EditorContent editor={editor} className={styles.editor} />
+      </div>
+    )
   }
 
   const tools = [

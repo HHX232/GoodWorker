@@ -187,3 +187,49 @@
       background: #f0f0f0;
    }
 }
+
+.block_wrap {
+   display: flex;
+   flex-direction: column;
+}
+
+.block_header {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   padding: 6px 12px;
+   background: #f7f7f7;
+   // border-bottom: 1px solid #ebebeb;
+}
+
+.block_label {
+   font-size: 11px;
+   font-weight: 600;
+   color: #868d97;
+   text-transform: uppercase;
+   letter-spacing: 0.06em;
+}
+
+.delete_btn {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   width: 26px;
+   height: 26px;
+   border: 1px solid #e0e0e0;
+   border-radius: 6px;
+   background: #fff;
+   color: #aaa;
+   cursor: pointer;
+   transition: all 0.12s;
+
+   &:hover {
+      border-color: #e53e3e;
+      color: #e53e3e;
+      background: #fff5f5;
+   }
+}
+
+.block_body {
+   padding: 12px;
+}

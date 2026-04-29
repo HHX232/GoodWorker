@@ -27,9 +27,10 @@ export const InfoMediaEditor = ({payload, onChange, viewOnly = false}: Props) =>
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    const objectUrl = URL.createObjectURL(file)
     const kind: InfoMediaKind = file.type.startsWith('video') ? 'video' : 'image'
-    update({kind, url: objectUrl})
+    const reader = new FileReader()
+    reader.onload = () => update({kind, url: reader.result as string})
+    reader.readAsDataURL(file)
   }
 
   const handleUrlInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,13 +58,16 @@ export const InfoMediaEditor = ({payload, onChange, viewOnly = false}: Props) =>
     return (
       <div className={styles.preview_box}>
         {payload.kind === 'image' && (
-          <Image
-            width={600}
-            height={600}
-            src={payload.url}
-            alt={payload.caption ?? ''}
-            className={styles.preview_img}
-          />
+          <div className={styles.image_wrapper}>
+            <img src={payload.url!} alt='' className={styles.image_bg_blur} aria-hidden />
+            <Image
+              width={800}
+              height={600}
+              src={payload.url!}
+              alt={payload.caption ?? ''}
+              className={styles.preview_img}
+            />
+          </div>
         )}
         {payload.kind === 'video' && embedUrl && (
           <iframe
@@ -78,8 +82,6 @@ export const InfoMediaEditor = ({payload, onChange, viewOnly = false}: Props) =>
       </div>
     )
   }
-
-  // ── Edit ──────────────────────────────────────────────────
 
   return (
     <div className={styles.box}>

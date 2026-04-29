@@ -29,9 +29,14 @@ export const PostMenu = ({mainContentRef}: PostMenuProps) => {
     const sc = mainContentRef.current?.closest('.default_content') ?? window
     sc.addEventListener('scroll', update)
     window.addEventListener('resize', update)
+
+    const ro = new ResizeObserver(update)
+    if (mainContentRef.current) ro.observe(mainContentRef.current)
+
     return () => {
       sc.removeEventListener('scroll', update)
       window.removeEventListener('resize', update)
+      ro.disconnect()
     }
   }, [mainContentRef])
 

@@ -37,10 +37,22 @@
       display: block;
    }
 
-   .extra_full_bot {
-      display: none;
+
+
+}
+
+.extra_full_bot {
+   display: block;
+
+   &>div {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
    }
 
+   @media(max-width: 1040px) {
+      display: none;
+   }
 }
 
 .mobile_wrapper {

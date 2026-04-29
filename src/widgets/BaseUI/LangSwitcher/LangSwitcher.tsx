@@ -1,9 +1,9 @@
 'use client'
 
-import { useLocale } from 'next-intl'
+import {useLocale} from 'next-intl'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
-import { useEffect, useRef, useState, useTransition } from 'react'
+import {useRouter} from 'next/navigation'
+import {useEffect, useRef, useState, useTransition} from 'react'
 import styles from './LangSwitcher.module.scss'
 
 interface LangItem {
@@ -13,10 +13,10 @@ interface LangItem {
 }
 
 const LANGS: LangItem[] = [
-  { code: 'ru', label: 'Русский', flag: '🇷🇺' },
-  { code: 'en', label: 'English', flag: '🇬🇧' },
-  { code: 'zh', label: '中文',     flag: '🇨🇳' },
-  { code: 'hi', label: 'हिन्दी',  flag: '🇮🇳' },
+  {code: 'ru', label: 'Русский', flag: '🇷🇺'},
+  {code: 'en', label: 'English', flag: '🇬🇧'},
+  {code: 'zh', label: '中文', flag: '🇨🇳'},
+  {code: 'hi', label: 'हिन्दी', flag: '🇮🇳'}
 ]
 
 export function LangSwitcher() {
@@ -24,7 +24,7 @@ export function LangSwitcher() {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
-  const [isOpen,      setIsOpen]      = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const [pendingLang, setPendingLang] = useState<string | null>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
 
@@ -41,7 +41,6 @@ export function LangSwitcher() {
     return () => document.removeEventListener('mousedown', handleOutside)
   }, [])
 
-  // запись в document.cookie разрешена только в useEffect —
   // react-compiler не жалуется на side-effects внутри эффектов
   useEffect(() => {
     if (!pendingLang) return
@@ -53,24 +52,22 @@ export function LangSwitcher() {
   const handleSelect = (lang: LangItem) => {
     setIsOpen(false)
     if (lang.code === locale) return
-    // просто сохраняем выбор — эффект выше его подхватит
     setPendingLang(lang.code)
   }
 
   return (
     <div className={`${styles.wrapper} ${isPending ? styles.pending : ''}`} ref={wrapperRef}>
       <button
-        type="button"
+        type='button'
         className={styles.trigger}
         onClick={() => setIsOpen((prev) => !prev)}
-        aria-label="Сменить язык"
+        aria-label='Сменить язык'
         disabled={isPending}
       >
-        <span className={styles.flag}>{active.flag}</span>
         <span className={styles.triggerLabel}>{active.code.toUpperCase()}</span>
         <Image
-          src="/arrow.svg"
-          alt=""
+          src='/arrow.svg'
+          alt=''
           width={16}
           height={16}
           className={`${styles.arrow} ${isOpen ? styles.arrowOpen : ''}`}
@@ -78,11 +75,11 @@ export function LangSwitcher() {
       </button>
 
       {isOpen && (
-        <ul className={styles.dropdown} role="listbox" aria-label="Выбор языка">
+        <ul className={styles.dropdown} role='listbox' aria-label='Выбор языка'>
           {LANGS.map((lang) => (
             <li
               key={lang.code}
-              role="option"
+              role='option'
               aria-selected={lang.code === locale}
               className={`${styles.dropdownItem} ${lang.code === locale ? styles.dropdownItemActive : ''}`}
               onMouseDown={() => handleSelect(lang)}

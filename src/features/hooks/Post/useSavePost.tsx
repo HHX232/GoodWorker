@@ -2,54 +2,50 @@
 import {useActions} from '@/features/hooks/store/useActions'
 import {useTypedSelector} from '@/features/hooks/store/useTypedSelector'
 import PostService from '@/features/services/PostService.service'
+import {PostBlock} from '@/shared/types/Post/Post.type'
+import {useMutation, useQueryClient} from '@tanstack/react-query'
 import {useRouter} from 'next/navigation'
 import {useState} from 'react'
 
-export type SavePostStatus = 'idle' | 'loading' | 'success' | 'error'
-
 export function useSavePost(existingId?: string) {
   const router = useRouter()
-  const [status, setStatus] = useState<SavePostStatus>('idle')
-  const [error, setError] = useState<string | null>(null)
+  const queryClient = useQueryClient()
 
   const {title, visibility, categoryIds, blocks} = useTypedSelector((state) => state.postSlice)
   const {resetPostConstructor} = useActions()
+  const [validationError, setValidationError] = useState<string | null>(null)
 
-  const save = async () => {
-    if (!title.trim()) {
-      setError('Введите заголовок поста')
-      return
-    }
-    if (blocks.length === 0) {
-      setError('Добавьте хотя бы один блок')
-      return
-    }
-
-    setStatus('loading')
-    setError(null)
-
-    try {
+  const mutation = useMutation({
+    mutationFn: () => {
       const dto = {
         title,
         visibility,
         categoryIds,
-        content: {blocks}
+        content: {blocks: blocks as PostBlock[]}
       }
-
+      return existingId ? PostService.update(existingId, dto) : PostService.create(dto)
+    },
+    onSuccess: (data) => {
       if (existingId) {
-        await PostService.update(existingId, dto)
+        queryClient.setQueryData(['post', existingId], data)
       } else {
-        await PostService.create(dto)
+        queryClient.setQueryData(['post', data.id], data)
       }
-
-      setStatus('success')
       resetPostConstructor()
-      router.push('/teacher/posts')
-    } catch (err) {
-      setStatus('error')
-      setError(err instanceof Error ? err.message : 'Неизвестная ошибка')
+      router.push(`/post/${data.id || existingId}`)
     }
+  })
+
+  const save = () => {
+    if (!title.trim()) return setValidationError('Введите заголовок поста')
+    if (blocks.length === 0) return setValidationError('Добавьте хотя бы один блок')
+    setValidationError(null)
+    mutation.mutate()
   }
 
-  return {save, status, error}
+  return {
+    save,
+    status: mutation.status === 'pending' ? 'loading' : mutation.status,
+    error: validationError ?? (mutation.error instanceof Error ? mutation.error.message : null)
+  }
 }

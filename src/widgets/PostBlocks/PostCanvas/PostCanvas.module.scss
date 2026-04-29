@@ -13,42 +13,40 @@
 .sortable_row {
    display: flex;
    align-items: stretch;
-   border-bottom: 1px solid #ebebeb;
+   // border-bottom: 1px solid #ebebeb;
 
    &:first-child {
       border-top: 1px solid #ebebeb;
    }
 }
 
+.block_content {
+   width: 100%;
+}
+
 .drag_handle {
    flex-shrink: 0;
-   width: 30px;
+   width: 36px;
    display: flex;
    align-items: center;
    justify-content: center;
    border: none;
-   border-right: 1px solid #ebebeb;
+   // border-right: 1px solid #ebebeb;
    background: transparent;
-   color: #ccc;
+   color: #d0d0d0;
    cursor: grab;
    transition: color 0.12s, background 0.12s;
    touch-action: pan-y;
 
    &:hover {
-      color: #555;
-      background: #f7f7f7;
+      color: #868d97;
+      background: #f4f5f7;
    }
 
    &:active {
       cursor: grabbing;
-      background: #f0f0f0;
+      background: #ebebeb;
    }
-}
-
-.block_content {
-   flex: 1;
-   min-width: 0;
-   overflow: hidden;
 }
 
 // ── Empty ─────────────────────────────────────────────────────

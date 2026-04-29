@@ -65,7 +65,6 @@ export function CategorySelect({
   const rootRef = useRef<HTMLDivElement>(null)
 
   const {data: allCategories = [], isLoading} = useCategories(langCode)
-
   const categories = maxLevel ? allCategories.filter((c) => c.levelNumber <= maxLevel) : allCategories
 
   const treeMap = buildTree(categories)
@@ -115,11 +114,32 @@ export function CategorySelect({
 
     const nodes = treeMap[parentId ?? 'root'] || []
 
+    if (level === 3) {
+      // level 3 — чипсы
+      return (
+        <>
+          {nodes.map((cat) => {
+            const isActive = value.includes(cat.id)
+            return (
+              <button
+                key={cat.id}
+                type='button'
+                className={`${styles.child_chip} ${isActive ? styles.child_chip_active : ''}`}
+                style={isActive ? {background: '#EC972A', borderColor: '#EC972A'} : {}}
+                onClick={() => toggle(cat.id)}
+              >
+                {cat.name}
+              </button>
+            )
+          })}
+        </>
+      )
+    }
+
     return nodes.map((cat, index) => {
       const isActive = value.includes(cat.id)
       const isExpanded = expandedIds.has(cat.id)
       const hasChildren = !!treeMap[cat.id]?.length
-
       const color = getAccentColor(index)
 
       return (

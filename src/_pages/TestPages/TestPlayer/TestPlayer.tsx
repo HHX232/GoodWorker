@@ -18,6 +18,7 @@ import {FillTextEditor} from '@/widgets/Tasks/BlockEditor/FillTextEditor/FillTex
 import {HighlightStudentView} from '@/widgets/Tasks/BlockEditor/HighlightTextEditor/HighlightTextEditor'
 import {useState} from 'react'
 
+import {InfoTextEditor} from '@/features/BlockEditors/InfoTextEditor/InfoTextEditor'
 import {ChooseOptionStudent} from '@/widgets/Tasks/BlockEditor/ChooseOptionEditor/ChooseOptionStudent/ChooseOptionStudent'
 import {FreeAnswerStudent} from '@/widgets/Tasks/BlockEditor/FreeAnswerEditor/FreeAnswerStudent/FreeAnswerStudent'
 import {MatchPairsStudent} from '@/widgets/Tasks/BlockEditor/MatchPairsEditor/MatchPairsStudent/MatchPairsStudent'
@@ -27,7 +28,6 @@ import {
   StudentViewWordScramble
 } from '@/widgets/Tasks/BlockEditor/WordScrambleEditor/StudentViewWordScramble/StudentViewWordScramble'
 import styles from './TestPlayer.module.scss'
-import {InfoTextEditor} from '@/features/BlockEditors/InfoTextEditor/InfoTextEditor'
 
 export function BlockView({
   block,
@@ -82,11 +82,11 @@ export function BlockView({
         />
       )
     case TaskBlockType.INFO_TEXT:
-      return <InfoTextEditor blockId={block.id} payload={p} viewOnly />
+      return <InfoTextEditor payload={p} viewOnly />
     case TaskBlockType.INFO_MEDIA:
-      return <InfoMediaEditor blockId={block.id} payload={p} viewOnly />
+      return <InfoMediaEditor payload={p} viewOnly />
     case TaskBlockType.INFO_AUDIO:
-      return <InfoAudioEditor blockId={block.id} payload={p} viewOnly />
+      return <InfoAudioEditor payload={p} viewOnly />
     case TaskBlockType.FILL_TEXT:
       return <FillTextEditor blockId={block.id} onlyPass onChangeAnswer={cb} payload={p} />
     default:

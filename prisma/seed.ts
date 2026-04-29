@@ -861,7 +861,7 @@ const categoriesSecondPart: CategoryNode[] = [
   },
 
   {
-    slug: 'functions',
+    slug: 'cs-functions',
     levelNumber: 2,
     parentSlug: 'computer-science',
     translations: {
@@ -888,7 +888,7 @@ const categoriesSecondPart: CategoryNode[] = [
           ru: 'Параметры и возвращаемые значения',
           en: 'Parameters and Returns',
           hi: 'पैरामीटर और रिटर्न',
-          zh: '参数和返回值'
+          zh: '参数और返回值'
         }
       }
     ]
@@ -1015,47 +1015,17 @@ const categoriesSecondPart: CategoryNode[] = [
 ]
 
 async function main() {
-  const existingCategories = await prisma.category.findMany({
-    select: {slug: true}
-  })
-
-  const existingSlugs = new Set(existingCategories.map((c) => c.slug))
-
   const createCategory = async (item: CategoryNode, parentId: string | null = null): Promise<void> => {
-    if (existingSlugs.has(item.slug)) {
-      const existing = await prisma.category.findUnique({
-        where: {slug: item.slug},
-        select: {id: true}
-      })
-
-      if (!existing) return
-
-      for (const child of item.children ?? []) {
-        await createCategory(child, existing.id)
-      }
-
-      return
-    }
-
     const category = await prisma.category.create({
-      data: {
-        slug: item.slug,
-        levelNumber: item.levelNumber,
-        parentId
-      }
+      data: {slug: item.slug, levelNumber: item.levelNumber, parentId}
     })
 
-    existingSlugs.add(item.slug)
-
-    const translations = (Object.entries(item.translations) as [LangCode, string][]).map(([langCode, name]) => ({
-      categoryId: category.id,
-      langCode,
-      name
-    }))
-
     await prisma.categoryTranslation.createMany({
-      data: translations,
-      skipDuplicates: true
+      data: (Object.entries(item.translations) as [LangCode, string][]).map(([langCode, name]) => ({
+        categoryId: category.id,
+        langCode,
+        name
+      }))
     })
 
     for (const child of item.children ?? []) {
@@ -1068,7 +1038,11 @@ async function main() {
   }
 
   for (const category of categoriesSecondPart) {
-    await createCategory(category)
+    const parent = category.parentSlug
+      ? await prisma.category.findUnique({where: {slug: category.parentSlug}, select: {id: true}})
+      : null
+
+    await createCategory(category, parent?.id ?? null)
   }
 }
 main()

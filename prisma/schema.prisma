@@ -41,6 +41,8 @@ model Student {
   teachers               TeacherStudent[]
   postViews              PostView[]
   conferenceParticipants ConferenceParticipant[]
+  postAllowedStudents    PostAllowedStudent[]
+  lastSeenAt             DateTime?
 }
 
 model Teacher {
@@ -62,7 +64,8 @@ model Teacher {
   categories         TeacherCategory[]
   students           TeacherStudent[]
   tests              Test[]
-  conferences        Conference[] // 🆕
+  conferences        Conference[]
+  lastSeenAt         DateTime?
 }
 
 model TeacherStudent {
@@ -109,19 +112,15 @@ model TeacherCategory {
   @@id([teacherId, categoryId])
 }
 
-// ============================================================
-// ПОСТЫ (обновлённые) — теперь с JSON-контентом и просмотрами
-// ============================================================
-
 model Post {
   id             String                @id @default(uuid())
   teacherId      String
   categoryId     String?
   title          String
-  content        Json? // 🆕 JSON-контент (блоки, тексты, медиа-ссылки и т.д.)
+  content        Json?
   mediaUrls      String[]
   visibility     PostVisibility        @default(PUBLIC)
-  viewCount      Int                   @default(0) // 🆕 денормализованный счётчик
+  viewCount      Int                   @default(0)
   aiTopics       String[]
   aiModerated    Boolean               @default(false)
   aiModerationOk Boolean?
@@ -132,7 +131,23 @@ model Post {
   teacher        Teacher               @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   comments       PostComment[]
   favoritedBy    StudentFavoritePost[]
-  views          PostView[] // 🆕
+  views          PostView[]
+
+  additionalTitle String?
+  isVip           Boolean   @default(false)
+  vipExpiresAt    DateTime?
+
+  allowedStudents PostAllowedStudent[]
+}
+
+model PostAllowedStudent {
+  postId    String
+  studentId String
+  post      Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([postId, studentId])
+  @@index([postId])
 }
 
 // 🆕 Просмотры постов (учениками и преподавателями)
@@ -374,8 +389,10 @@ enum Role {
 }
 
 enum PostVisibility {
-  PUBLIC
-  PRIVATE
+  PUBLIC // видят все
+  STUDENTS // все ученики учителя
+  SELECTED // только выбранные ученики
+  PRIVATE // только сам учитель
 }
 
 enum ConferenceStatus {

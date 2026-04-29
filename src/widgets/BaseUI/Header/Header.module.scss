@@ -26,6 +26,27 @@
    align-items: center;
 }
 
+.btn {
+   display: flex;
+   align-items: center;
+   gap: 6px;
+   height: 40px;
+   padding: 0 16px;
+   border-radius: var(--border-radius-md);
+   border: 0.5px solid var(--color-border-secondary);
+   background: var(--color-background-primary);
+   color: var(--color-text-secondary);
+   font-size: 14px;
+   cursor: pointer;
+   white-space: nowrap;
+   transition: all 0.15s;
+
+   &:hover {
+      border-color: var(--color-border-primary);
+      color: var(--color-text-primary);
+   }
+}
+
 .logo_small {
    display: none;
    width: 50px;

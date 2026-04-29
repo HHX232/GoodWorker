@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 'use client'
 
 import {useSavePost} from '@/features/hooks/Post/useSavePost'
@@ -5,6 +6,7 @@ import {useActions} from '@/features/hooks/store/useActions'
 import {useTypedSelector} from '@/features/hooks/store/useTypedSelector'
 import {PostBlockRegistry} from '@/features/Post/PostBlockRegistry'
 import {PostBlockType} from '@/shared/types/Post/Post.type'
+import {TextInputUI} from '@/shared/ui/inputs'
 import {CategorySelect} from '@/shared/ui/inputs/CategorySelect/CategorySelect'
 import {PostCanvas} from '@/widgets/PostBlocks/PostCanvas/PostCanvas'
 import {PostMenu} from '@/widgets/PostBlocks/PostMenu/PostMenu'
@@ -18,23 +20,28 @@ import {
   useSensors
 } from '@dnd-kit/core'
 import {useSearchParams} from 'next/navigation'
-import {useRef, useState} from 'react'
+import {useEffect, useRef, useState} from 'react'
+import {toast} from 'sonner'
 import styles from './CreatePostPage.module.scss'
 
-function CreatePostPage() {
+function CreatePostPage({id}: {id?: string}) {
   const searchParams = useSearchParams()
   const existingId = searchParams.get('id') ?? undefined
+  const activeId = id || existingId
   const mainContentRef = useRef<HTMLDivElement>(null)
 
-  const {setPostTitle, setPostVisibility, addPostBlock, reorderPostBlocks, setCategoryIds} = useActions()
+  const {setPostTitle, setPostVisibility, addPostBlock, reorderPostBlocks, setPostCategoryIds} = useActions()
   const {title, visibility, categoryIds} = useTypedSelector((s) => s.postSlice)
   const blocks = useTypedSelector((s) => s.postSlice.blocks)
 
-  const {save, status, error} = useSavePost(existingId)
+  const {save, status, error} = useSavePost(activeId)
   const isLoading = status === 'loading'
 
   const [draggingType, setDraggingType] = useState<PostBlockType | null>(null)
 
+  useEffect(() => {
+    isLoading ? toast.loading('Публикация...') : toast.dismiss()
+  }, [isLoading])
   const sensors = useSensors(useSensor(PointerSensor, {activationConstraint: {distance: 6}}))
 
   const handleDragStart = (e: DragStartEvent) => {
@@ -62,16 +69,15 @@ function CreatePostPage() {
         {/* <NavBar /> */}
 
         <div className={styles.main_content} ref={mainContentRef}>
-          <h1>{existingId ? 'Редактировать пост' : 'Новый пост'}</h1>
+          <h1>{activeId ? 'Редактировать пост' : 'Новый пост'}</h1>
 
           <div className={styles.form}>
             <div className={styles.meta_form}>
-              <input
-                className={styles.title_input}
-                type='text'
+              <TextInputUI
+                theme='newWhite'
                 placeholder='Заголовок поста…'
-                value={title}
-                onChange={(e) => setPostTitle(e.target.value)}
+                currentValue={title}
+                onSetValue={setPostTitle}
               />
 
               <div className={styles.visibility_toggle}>
@@ -82,7 +88,7 @@ function CreatePostPage() {
                     className={`${styles.vis_btn} ${visibility === v ? styles.vis_active : ''}`}
                     onClick={() => setPostVisibility(v)}
                   >
-                    {v === 'PUBLIC' ? '🌍 Публичный' : '🔒 Приватный'}
+                    {v === 'PUBLIC' ? 'Публичный' : 'Приватный'}
                   </button>
                 ))}
               </div>
@@ -91,7 +97,8 @@ function CreatePostPage() {
                 placeholder='Выберите категорию поста'
                 canSelectMany={false}
                 value={categoryIds}
-                onChange={setCategoryIds}
+                // maxLevel={1}
+                onChange={setPostCategoryIds}
               />
             </div>
 
@@ -101,7 +108,7 @@ function CreatePostPage() {
           {error && <p className={styles.error_text}>{error}</p>}
 
           <button type='button' className={styles.publish_btn} disabled={isLoading} onClick={save}>
-            {isLoading ? 'Публикация…' : existingId ? 'Сохранить изменения' : 'Опубликовать пост'}
+            {isLoading ? 'Публикация…' : activeId ? 'Сохранить изменения' : 'Опубликовать пост'}
           </button>
         </div>
 

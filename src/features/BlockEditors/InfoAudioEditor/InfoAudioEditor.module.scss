@@ -10,7 +10,9 @@
   background: #ffffff;
 }
 
-.hidden { display: none; }
+.hidden {
+  display: none;
+}
 
 // ── Кнопка загрузки ───────────────────────────────────────
 
@@ -31,13 +33,19 @@
   transition: border-color 0.15s, background 0.15s, color 0.15s;
   cursor: pointer;
 
-  svg { color: #94a3b8; transition: color 0.15s; }
+  svg {
+    color: #94a3b8;
+    transition: color 0.15s;
+  }
 
   &:hover {
     border-color: #f43f5e;
     background: #fff1f2;
     color: #f43f5e;
-    svg { color: #f43f5e; }
+
+    svg {
+      color: #f43f5e;
+    }
   }
 }
 
@@ -80,8 +88,15 @@
 }
 
 @keyframes extractPulse {
-  from { height: 4px;  opacity: 0.3; }
-  to   { height: 28px; opacity: 1;   }
+  from {
+    height: 4px;
+    opacity: 0.3;
+  }
+
+  to {
+    height: 28px;
+    opacity: 1;
+  }
 }
 
 // ── Плеер ─────────────────────────────────────────────────
@@ -113,11 +128,19 @@
   flex-shrink: 0;
   transition: background 0.15s, transform 0.1s;
 
-  &:hover  { background: #e11d48; transform: scale(1.06); }
-  &:active { transform: scale(0.96); }
+  &:hover {
+    background: #e11d48;
+    transform: scale(1.06);
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
 
   // смещаем иконку play чуть вправо для оптики
-  svg[data-lucide="play"] { transform: translateX(1px); }
+  svg[data-lucide="play"] {
+    transform: translateX(1px);
+  }
 }
 
 // ── Waveform ──────────────────────────────────────────────
@@ -137,7 +160,9 @@
   cursor: pointer;
   user-select: none;
 
-  &:hover .bar { opacity: 0.85; }
+  &:hover .bar {
+    opacity: 0.85;
+  }
 }
 
 .bar {
@@ -219,5 +244,8 @@
   font-size: 11px;
   color: #94a3b8;
 
-  svg { color: #f43f5e; opacity: 0.6; }
+  svg {
+    color: #f43f5e;
+    opacity: 0.6;
+  }
 }

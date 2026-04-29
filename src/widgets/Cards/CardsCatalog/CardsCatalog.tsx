@@ -130,7 +130,12 @@ export const CardsCatalog: FC<ICardsCatalog> = ({initialCards, onLoadMore, hasMo
 
   useEffect(() => {
     setCards(initialCards)
+    setPage(1)
   }, [initialCards])
+
+  useEffect(() => {
+    setCanLoadMore(hasMore)
+  }, [hasMore])
 
   return (
     <div className={style.catalog}>
@@ -150,7 +155,7 @@ export const CardsCatalog: FC<ICardsCatalog> = ({initialCards, onLoadMore, hasMo
           />
         ))}
 
-        {isLoading && (
+        {(isLoading || (cards.length === 0 && canLoadMore)) && (
           <>
             <CardSkeleton />
             <CardSkeleton />

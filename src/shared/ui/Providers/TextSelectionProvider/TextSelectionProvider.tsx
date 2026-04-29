@@ -1,8 +1,9 @@
 'use client'
 
-import { OFFSET, POPUP_HEIGHT, POPUP_WIDTH } from '@/shared/constants/providers/textSelection.const'
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react'
-import { TextSelectionPopup } from '../../TextSelectionPopup/TextSelectionPopup'
+import {OFFSET, POPUP_HEIGHT, POPUP_WIDTH} from '@/shared/constants/providers/textSelection.const'
+import {usePathname} from 'next/navigation'
+import {createContext, ReactNode, useContext, useEffect, useState} from 'react'
+import {TextSelectionPopup} from '../../TextSelectionPopup/TextSelectionPopup'
 
 interface SelectionState {
   text: string
@@ -16,10 +17,9 @@ interface TextSelectionContextType {
   selection: SelectionState | null
 }
 
-const TextSelectionContext = createContext<TextSelectionContextType>({ selection: null })
+const TextSelectionContext = createContext<TextSelectionContextType>({selection: null})
 
 export const useTextSelection = () => useContext(TextSelectionContext)
-
 
 function calcPosition(rect: DOMRect): Pick<SelectionState, 'x' | 'y' | 'placement' | 'align'> {
   const vw = window.innerWidth
@@ -27,9 +27,8 @@ function calcPosition(rect: DOMRect): Pick<SelectionState, 'x' | 'y' | 'placemen
   const fitsTop = rect.top - POPUP_HEIGHT - OFFSET >= 0
   const placement = fitsTop ? 'top' : 'bottom'
 
-  const y = placement === 'top'
-    ? rect.top + window.scrollY - POPUP_HEIGHT - OFFSET
-    : rect.bottom + window.scrollY + OFFSET
+  const y =
+    placement === 'top' ? rect.top + window.scrollY - POPUP_HEIGHT - OFFSET : rect.bottom + window.scrollY + OFFSET
 
   let x = centerX - POPUP_WIDTH / 2 + window.scrollX
   let align: SelectionState['align'] = 'center'
@@ -42,13 +41,19 @@ function calcPosition(rect: DOMRect): Pick<SelectionState, 'x' | 'y' | 'placemen
     align = 'right'
   }
 
-  return { x, y, placement, align }
+  return {x, y, placement, align}
 }
 
-export function TextSelectionProvider({ children }: { children: ReactNode }) {
+export function TextSelectionProvider({children}: {children: ReactNode}) {
   const [selection, setSelection] = useState<SelectionState | null>(null)
+  const pathname = usePathname()
+  const isDisabled = pathname.startsWith('/create-post') || pathname.startsWith('/teacher/posts')
 
   useEffect(() => {
+    if (isDisabled) {
+      setSelection(null)
+      return
+    }
     const handleSelectionEnd = () => {
       const sel = window.getSelection()
       if (!sel || sel.isCollapsed || !sel.toString().trim()) {
@@ -59,13 +64,12 @@ export function TextSelectionProvider({ children }: { children: ReactNode }) {
       const range = sel.getRangeAt(0)
       const rect = range.getBoundingClientRect()
       if (rect.width === 0 && rect.height === 0) return
-      const { x, y, placement, align } = calcPosition(rect)
-      setSelection({ text, x, y, placement, align })
+      const {x, y, placement, align} = calcPosition(rect)
+      setSelection({text, x, y, placement, align})
     }
 
     const handleSelectionStart = () => setSelection(null)
 
-    // Скрываем при скролле любого элемента, кроме самого попапа
     const handleScroll = (e: Event) => {
       const popup = document.getElementById('text-selection-popup')
       if (popup && popup.contains(e.target as Node)) return
@@ -75,21 +79,20 @@ export function TextSelectionProvider({ children }: { children: ReactNode }) {
     document.addEventListener('mousedown', handleSelectionStart)
     document.addEventListener('mouseup', handleSelectionEnd)
     document.addEventListener('touchend', handleSelectionEnd)
-    // capture: true — ловим скролл на всех элементах, включая div с overflow
-    window.addEventListener('scroll', handleScroll, { capture: true })
+    window.addEventListener('scroll', handleScroll, {capture: true})
 
     return () => {
       document.removeEventListener('mousedown', handleSelectionStart)
       document.removeEventListener('mouseup', handleSelectionEnd)
       document.removeEventListener('touchend', handleSelectionEnd)
-      window.removeEventListener('scroll', handleScroll, { capture: true })
+      window.removeEventListener('scroll', handleScroll, {capture: true})
     }
-  }, [])
+  }, [isDisabled])
 
   return (
-    <TextSelectionContext.Provider value={{ selection }}>
+    <TextSelectionContext.Provider value={{selection}}>
       {children}
-      <TextSelectionPopup />
+      {!isDisabled && <TextSelectionPopup />}
     </TextSelectionContext.Provider>
   )
 }

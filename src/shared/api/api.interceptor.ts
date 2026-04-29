@@ -2,14 +2,23 @@ import axios from 'axios'
 import {getContentType} from './api.helper'
 import {getAccessToken} from './auth.helper'
 
-// TODO сделать логику разбиения на null/v1
+const getBaseURL = () => {
+  const explicit = process.env.NEXT_PUBLIC_API_URL_SECOND
+  if (explicit) return explicit + '/api'
+  if (typeof window === 'undefined') {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || `http://localhost:${process.env.PORT || 3000}`
+    return appUrl + '/api'
+  }
+  return '/api'
+}
+
 export const instance = axios.create({
-  baseURL: (process.env.NEXT_PUBLIC_API_URL_SECOND || '') + '/api',
+  baseURL: getBaseURL(),
   headers: getContentType()
 })
 
 export const axiosClassic = axios.create({
-  baseURL: (process.env.NEXT_PUBLIC_API_URL_SECOND || '') + '/api',
+  baseURL: getBaseURL(),
   headers: getContentType()
 })
 
