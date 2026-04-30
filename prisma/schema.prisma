@@ -90,7 +90,7 @@ model Category {
   studentErrorCategories StudentErrorCategory[]
   teachers               TeacherCategory[]
   testCategories         TestCategory[]
-  conferenceCategories   ConferenceCategory[] // 🆕
+  conferenceCategories   ConferenceCategory[]
 }
 
 model CategoryTranslation {
@@ -130,6 +130,7 @@ model Post {
   category       Category?             @relation(fields: [categoryId], references: [id])
   teacher        Teacher               @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   comments       PostComment[]
+  ratings        PostRating[]
   favoritedBy    StudentFavoritePost[]
   views          PostView[]
 
@@ -150,7 +151,6 @@ model PostAllowedStudent {
   @@index([postId])
 }
 
-// 🆕 Просмотры постов (учениками и преподавателями)
 model PostView {
   id         String   @id @default(uuid())
   postId     String
@@ -161,19 +161,35 @@ model PostView {
   post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   student    Student? @relation(fields: [studentId], references: [id], onDelete: SetNull)
 
-  @@unique([postId, studentId]) // один уникальный просмотр на студента
+  @@unique([postId, studentId])
   @@index([postId])
   @@index([studentId])
 }
 
 model PostComment {
-  id         String   @id @default(uuid())
+  id         String    @id @default(uuid())
   postId     String
   authorId   String
   authorRole Role
   text       String
+  imageUrls  String[]  @default([])
+  editedAt   DateTime?
+  createdAt  DateTime  @default(now())
+  post       Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model PostRating {
+  id         String   @id @default(uuid())
+  postId     String
+  authorId   String
+  authorRole Role
+  stars      Int
   createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
   post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, authorId])
+  @@index([postId])
 }
 
 model StudentFavoritePost {
@@ -314,34 +330,25 @@ model OtpCode {
   @@index([target])
 }
 
-// ============================================================
-// 🆕 ВИДЕОКОНФЕРЕНЦИИ
-// ============================================================
-
 model Conference {
   id          String  @id @default(uuid())
   teacherId   String
   title       String
   description String?
 
-  // Планирование
-  scheduledAt DateTime? // запланированное время начала
-  startedAt   DateTime? // фактическое начало
-  endedAt     DateTime? // фактическое окончание
+  scheduledAt DateTime?
+  startedAt   DateTime?
+  endedAt     DateTime?
 
   status ConferenceStatus @default(SCHEDULED)
 
-  // Jitsi / медиа
-  roomName     String  @unique // уникальное имя комнаты в Jitsi
-  recordingUrl String? // ссылка на запись (если есть)
+  roomName     String  @unique
+  recordingUrl String?
 
-  // Автоконспект
-  transcriptRaw    String? // сырой текст транскрипции
-  transcriptJson   Json? // структурированный конспект (тезисы, таймкоды)
+  transcriptRaw    String?
+  transcriptJson   Json?
   transcriptStatus TranscriptStatus @default(NONE)
 
-  // Распределение нагрузки — список серверов/нод
-  // Пример: [{ "node": "jitsi-1.example.com", "region": "eu" }]
   mediaNodes Json?
 
   createdAt DateTime @default(now())
@@ -352,7 +359,6 @@ model Conference {
   categories   ConferenceCategory[]
 }
 
-// 🆕 Категории конференции (many-to-many, необязательное)
 model ConferenceCategory {
   conferenceId String
   categoryId   String
@@ -362,12 +368,11 @@ model ConferenceCategory {
   @@id([conferenceId, categoryId])
 }
 
-// 🆕 Участники конференции
 model ConferenceParticipant {
   id           String     @id @default(uuid())
   conferenceId String
   studentId    String?
-  teacherId    String? // если другой преподаватель участвует
+  teacherId    String?
   role         Role
   joinedAt     DateTime?
   leftAt       DateTime?
@@ -378,10 +383,6 @@ model ConferenceParticipant {
   @@index([studentId])
 }
 
-// ============================================================
-// ENUMS
-// ============================================================
-
 enum Role {
   STUDENT
   TEACHER
@@ -389,22 +390,22 @@ enum Role {
 }
 
 enum PostVisibility {
-  PUBLIC // видят все
-  STUDENTS // все ученики учителя
-  SELECTED // только выбранные ученики
-  PRIVATE // только сам учитель
+  PUBLIC
+  STUDENTS
+  SELECTED
+  PRIVATE
 }
 
 enum ConferenceStatus {
-  SCHEDULED // запланирована
-  LIVE // идёт прямо сейчас
-  ENDED // завершена
-  CANCELLED // отменена
+  SCHEDULED
+  LIVE
+  ENDED
+  CANCELLED
 }
 
 enum TranscriptStatus {
-  NONE // транскрипция не запускалась
-  PROCESSING // в процессе
-  DONE // готово
-  FAILED // ошибка
+  NONE
+  PROCESSING
+  DONE
+  FAILED
 }

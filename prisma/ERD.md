@@ -134,7 +134,19 @@ FAILED FAILED
     String authorId 
     Role authorRole 
     String text 
+    String imageUrls 
+    DateTime editedAt "❓"
     DateTime createdAt 
+    }
+  
+
+  "PostRating" {
+    String id "🗝️"
+    String authorId 
+    Role authorRole 
+    Int stars 
+    DateTime createdAt 
+    DateTime updatedAt 
     }
   
 
@@ -283,6 +295,8 @@ FAILED FAILED
     "PostView" }o--|o "Student" : "student"
     "PostComment" |o--|| "Role" : "enum:authorRole"
     "PostComment" }o--|| "Post" : "post"
+    "PostRating" |o--|| "Role" : "enum:authorRole"
+    "PostRating" }o--|| "Post" : "post"
     "StudentFavoritePost" }o--|| "Post" : "post"
     "StudentFavoritePost" }o--|| "Student" : "student"
     "Roadmap" }o--|| "Teacher" : "teacher"

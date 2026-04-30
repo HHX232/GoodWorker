@@ -1,156 +1,300 @@
 'use client'
 
-import { useQueryParams } from '@/shared/helpers/setQueryParams'
-import { UserHeaderCardProps } from '@/shared/types'
-import Image from 'next/image'
-import { useState } from 'react'
-import { SelectPhotoInput } from '../../inputs/SelectPhotoInput/SelectPhotoInput'
+import CommentService, {ICommentResponse} from '@/features/services/CommentService.service'
+import {useQueryParams} from '@/shared/helpers/setQueryParams'
+import {UserHeaderCardProps} from '@/shared/types'
+import {useCallback, useEffect, useState} from 'react'
+import {SelectPhotoInput} from '../../inputs/SelectPhotoInput/SelectPhotoInput'
+import {ModalImageZoom} from '../../Modals/ModalImageZoom/ModalImageZoom'
 import UserHeaderCard from '../../User/UserHeaderCard/UserHeaderCard'
-import { PostCommentModal } from './Postcommentmodal/Postcommentmodal'
+import {PostCommentModal} from './Postcommentmodal/Postcommentmodal'
 import styles from './PostCommentSection.module.scss'
 
-export const mockComments: {
+// ─── Star Rating ─────────────────────────────────────────────────────────────
+
+interface StarRatingProps {
+  value: number | null
+  onChange?: (stars: number) => void
+  readonly?: boolean
+  size?: number
+}
+
+export function StarRating({value, onChange, readonly = false, size = 18}: StarRatingProps) {
+  const [hovered, setHovered] = useState<number | null>(null)
+  const display = hovered ?? value ?? 0
+
+  return (
+    <div style={{display: 'flex', gap: 2, alignItems: 'center'}} onMouseLeave={() => !readonly && setHovered(null)}>
+      {[1, 2, 3, 4, 5].map((star) => (
+        <svg
+          key={star}
+          width={size}
+          height={size}
+          viewBox='0 0 24 24'
+          fill={star <= display ? '#FF7A00' : 'none'}
+          stroke={star <= display ? '#FF7A00' : '#E5E5E5'}
+          strokeWidth='2'
+          strokeLinecap='round'
+          strokeLinejoin='round'
+          style={{cursor: readonly ? 'default' : 'pointer', transition: 'fill 0.12s, stroke 0.12s', flexShrink: 0}}
+          onMouseEnter={() => !readonly && setHovered(star)}
+          onClick={() => !readonly && onChange?.(star)}
+        >
+          <polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2' />
+        </svg>
+      ))}
+    </div>
+  )
+}
+
+// ─── Comment images with zoom trigger ────────────────────────────────────────
+
+interface CommentImagesProps {
+  images: string[]
+  size?: number
+  onZoom?: (src: string) => void
+}
+
+export function CommentImages({images, size = 80, onZoom}: CommentImagesProps) {
+  if (!images.length) return null
+  return (
+    <div className={styles.images_previews}>
+      {images.map((src, i) => (
+        <div
+          key={i}
+          className={styles.image_zoom_wrap}
+          onClick={() => onZoom?.(src)}
+          role={onZoom ? 'button' : undefined}
+          tabIndex={onZoom ? 0 : undefined}
+          onKeyDown={onZoom ? (e) => e.key === 'Enter' && onZoom(src) : undefined}
+          style={{cursor: onZoom ? 'pointer' : 'default'}}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={src}
+            alt='comment image'
+            width={size}
+            height={size}
+            className={styles.image_preview}
+            style={{objectFit: 'cover', borderRadius: 8, display: 'block'}}
+          />
+          {onZoom && (
+            <div className={styles.image_zoom_overlay}>
+              <svg
+                width='20'
+                height='20'
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='#fff'
+                strokeWidth='2.2'
+                strokeLinecap='round'
+                strokeLinejoin='round'
+              >
+                <circle cx='11' cy='11' r='8' />
+                <line x1='21' y1='21' x2='16.65' y2='16.65' />
+                <line x1='11' y1='8' x2='11' y2='14' />
+                <line x1='8' y1='11' x2='14' y2='11' />
+              </svg>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ─── Draft previews ───────────────────────────────────────────────────────────
+
+interface DraftImage {
+  file: File
+  previewUrl: string
+}
+
+function DraftPreviews({drafts, onRemove}: {drafts: DraftImage[]; onRemove: (previewUrl: string) => void}) {
+  if (!drafts.length) return null
+  return (
+    <div className={styles.draft_previews}>
+      {drafts.map(({previewUrl}) => (
+        <div key={previewUrl} className={styles.draft_preview_wrap}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={previewUrl}
+            alt='draft'
+            width={40}
+            height={40}
+            className={styles.draft_preview_img}
+            style={{objectFit: 'cover', borderRadius: 6}}
+          />
+          <button className={styles.draft_remove_btn} onClick={() => onRemove(previewUrl)} aria-label='Remove image'>
+            ×
+          </button>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export interface CommentItem {
+  id: string
   user: UserHeaderCardProps
   commentText: string
   images: string[]
-}[] = [
-  {
+}
+
+function commentToUI(c: ICommentResponse): CommentItem {
+  return {
+    id: c.id,
     user: {
-      cardID: 'card-1',
-      userID: 'user-1',
-      name: 'Savannah Johnson',
-      role: 'Admin',
-      image: 'https://i.pravatar.cc/40?img=47',
-      dateActivity: '1d',
-      BlurDots: true
+      cardID: c.id,
+      userID: c.authorId,
+      name: c.author?.name ?? 'Unknown',
+      role: c.authorRole === 'TEACHER' ? 'Admin' : 'Member',
+      image: c.author?.avatarUrl ?? '',
+      dateActivity: new Date(c.createdAt).toLocaleDateString('en-GB', {day: 'numeric', month: 'short'}),
+      BlurDots: c.authorRole === 'TEACHER'
     },
-    commentText:
-      'Improving the user experience in mobile app design is crucial for retaining users and growing your product.',
-    images: ['https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=200&h=200&fit=crop']
-  },
-  {
-    user: {
-      cardID: 'card-2',
-      userID: 'user-2',
-      name: 'Savannah Johnson',
-      role: 'Admin',
-      image: 'https://i.pravatar.cc/40?img=47',
-      dateActivity: '1d',
-      BlurDots: true
-    },
-    commentText: 'Improving the user experience in mobile app design is crucial for building products people love.',
-    images: []
-  },
-  {
-    user: {
-      cardID: 'card-3',
-      userID: 'user-3',
-      name: 'Marcus Rivera',
-      role: 'Member',
-      image: 'https://i.pravatar.cc/40?img=12',
-      dateActivity: '2d',
-      BlurDots: false
-    },
-    commentText: 'Great post! Really helpful insights.',
-    images: []
-  },
-  {
-    user: {
-      cardID: 'card-4',
-      userID: 'user-4',
-      name: 'Elena Petrova',
-      role: 'Admin',
-      image: 'https://i.pravatar.cc/40?img=32',
-      dateActivity: '3d',
-      BlurDots: true
-    },
-    commentText:
-      'This is exactly what I needed to read today. The tips on onboarding flows are something our team has been discussing for weeks.',
-    images: [
-      'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=200&h=200&fit=crop',
-      'https://images.unsplash.com/photo-1551650975-87deedd944c3?w=200&h=200&fit=crop'
-    ]
-  },
-  {
-    user: {
-      cardID: 'card-5',
-      userID: 'user-5',
-      name: "James O'Brien",
-      role: 'Member',
-      image: 'https://i.pravatar.cc/40?img=60',
-      dateActivity: '4d',
-      BlurDots: false
-    },
-    commentText: 'Bookmarked this. Will share with my design team!',
-    images: []
-  },
-  {
-    user: {
-      cardID: 'card-6',
-      userID: 'user-6',
-      name: 'Yuki Tanaka',
-      role: 'Member',
-      image: 'https://i.pravatar.cc/40?img=25',
-      dateActivity: '5d',
-      BlurDots: false
-    },
-    commentText: 'I especially agree with the point about reducing cognitive load. Simpler = better, always.',
-    images: []
+    commentText: c.text,
+    images: c.imageUrls ?? []
   }
-]
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
+interface PostCommentSectionProps {
+  postId: string
+  initialComments: CommentItem[]
+  totalComments: number
+  currentUserId?: string
+}
 
 export function PostCommentSection({
-  comments,
-  totalComments
-}: {
-  comments: {user: UserHeaderCardProps; commentText: string; images: string[]}[]
-  totalComments: number
-}) {
+  postId,
+  initialComments,
+  totalComments: initialTotal,
+  currentUserId
+}: PostCommentSectionProps) {
+  const [comments, setComments] = useState<CommentItem[]>(initialComments)
+  const [total, setTotal] = useState(initialTotal)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [draftImages, setDraftImages] = useState<{file: File; url: string}[]>([])
+
+  const [text, setText] = useState('')
+  const [drafts, setDrafts] = useState<DraftImage[]>([])
+  const [sending, setSending] = useState(false)
+
+  const [userRating, setUserRating] = useState<number | null>(null)
+  const [avgRating, setAvgRating] = useState<number | null>(null)
+  const [ratingLoading, setRatingLoading] = useState(false)
+
+  const [zoomSrc, setZoomSrc] = useState<string | null>(null)
 
   const {getQueryParam, setQueryParams} = useQueryParams()
   const scrollToCommentId = getQueryParam('commentIdToScroll')
 
-  const handleOpenModal = () => setIsModalOpen(true)
+  useEffect(() => {
+    CommentService.getRating(postId)
+      .then((r) => {
+        setUserRating(r.userRating)
+        setAvgRating(r.averageStars)
+      })
+      .catch(() => {})
+  }, [postId])
 
-  const handleCloseModal = (e: React.MouseEvent) => {
-    setIsModalOpen(false)
-    if (scrollToCommentId) {
-      setQueryParams({commentIdToScroll: null}, {replace: true})
+  const handleRating = async (stars: number) => {
+    if (ratingLoading) return
+    setRatingLoading(true)
+    try {
+      const r = await CommentService.ratePost(postId, stars)
+      setUserRating(r.userRating)
+      setAvgRating(r.averageStars)
+    } finally {
+      setRatingLoading(false)
     }
   }
 
   const handleSelectFile = (file: File) => {
-    const url = URL.createObjectURL(file)
-    setDraftImages((prev) => [...prev, {file, url}])
+    const previewUrl = URL.createObjectURL(file)
+    setDrafts((prev) => [...prev, {file, previewUrl}])
   }
 
-  const handleRemoveDraft = (url: string) => {
-    setDraftImages((prev) => {
-      const removed = prev.find((img) => img.url === url)
-      if (removed) URL.revokeObjectURL(removed.url)
-      return prev.filter((img) => img.url !== url)
+  const handleRemoveDraft = (previewUrl: string) => {
+    setDrafts((prev) => {
+      const removed = prev.find((d) => d.previewUrl === previewUrl)
+      if (removed) URL.revokeObjectURL(removed.previewUrl)
+      return prev.filter((d) => d.previewUrl !== previewUrl)
     })
   }
+
+  const handleSend = async () => {
+    const trimmed = text.trim()
+    if (!trimmed && drafts.length === 0) return
+    setSending(true)
+    try {
+      const created = await CommentService.create(postId, {
+        text: trimmed,
+        images: drafts.map((d) => d.file)
+      })
+      setComments((prev) => [commentToUI(created), ...prev])
+      setTotal((t) => t + 1)
+      setText('')
+      drafts.forEach((d) => URL.revokeObjectURL(d.previewUrl))
+      setDrafts([])
+    } catch {
+      // TODO: toast
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSend()
+    }
+  }
+
+  const handleCommentUpdated = useCallback((updated: CommentItem) => {
+    setComments((prev) => prev.map((c) => (c.id === updated.id ? updated : c)))
+  }, [])
+
+  const handleCommentDeleted = useCallback((id: string) => {
+    setComments((prev) => prev.filter((c) => c.id !== id))
+    setTotal((t) => Math.max(0, t - 1))
+  }, [])
+
+  const handleCommentCreated = useCallback((c: CommentItem) => {
+    setComments((prev) => [c, ...prev])
+    setTotal((t) => t + 1)
+  }, [])
 
   return (
     <>
       <div className={styles.box}>
+        {/* Header */}
         <div className={styles.header}>
-          <p className={styles.total_comments}>Comments ({totalComments})</p>
-          <button className={styles.view_all_button} onClick={handleOpenModal}>
+          <div className={styles.flex_wrapper}>
+            <p className={styles.total_comments}>Comments ({total})</p>
+            {avgRating !== null && (
+              <span style={{fontSize: 13, color: '#868897', display: 'flex', alignItems: 'center', gap: 4}}>
+                <StarRating value={Math.round(avgRating)} readonly size={14} />
+                <span style={{color: '#141416', fontWeight: 500}}>{avgRating.toFixed(1)}</span>
+              </span>
+            )}
+          </div>
+          <button className={styles.view_all_button} onClick={() => setIsModalOpen(true)}>
             view all
           </button>
         </div>
 
+        {/* Scrollable list */}
         <div className={styles.content}>
           <ul>
-            {comments?.map((el, i) => {
+            {comments.map((el, i) => {
               if (i >= 10) return null
               const isLong = el.commentText.length > 50
               return (
-                <div className={styles.comment_item} key={`${el.user.userID}-${i}`}>
+                <div className={styles.comment_item} key={el.id}>
                   <UserHeaderCard size='sm' {...el.user} />
                   <div className={styles.comment_content}>
                     <p className={styles.comment_text_mini}>
@@ -161,7 +305,7 @@ export function PostCommentSection({
                           ...
                           <span
                             onClick={() => {
-                              handleOpenModal()
+                              setIsModalOpen(true)
                               setQueryParams({commentIdToScroll: el.user.userID})
                             }}
                             className={styles.see_more}
@@ -172,54 +316,48 @@ export function PostCommentSection({
                         </>
                       )}
                     </p>
-                    {el.images.length > 0 && (
-                      <div className={styles.images_previews}>
-                        {el.images.map((url) => (
-                          <Image
-                            className={styles.image_preview}
-                            key={url}
-                            width={80}
-                            height={80}
-                            alt='comment image'
-                            src={url}
-                          />
-                        ))}
-                      </div>
-                    )}
+                    <CommentImages images={el.images} size={80} onZoom={setZoomSrc} />
                   </div>
                 </div>
               )
             })}
-            {comments?.length >= 10 && totalComments >= 10 && (
-              <button className={styles.show_all_bottom_button} onClick={handleOpenModal}>
+            {comments.length >= 10 && total >= 10 && (
+              <button className={styles.show_all_bottom_button} onClick={() => setIsModalOpen(true)}>
                 Show All
               </button>
             )}
           </ul>
         </div>
 
+        {/* ★ Rating row — directly above the input bar */}
+        <div className={styles.rating_row}>
+          <span className={styles.rating_label}>Your rating:</span>
+          <StarRating value={userRating} onChange={handleRating} size={20} />
+          {userRating !== null && <span className={styles.rating_value}>({userRating}/5)</span>}
+        </div>
+
+        {/* Input bar */}
         <div className={styles.comment_input_bar}>
           <SelectPhotoInput size='m' onSelectImageFile={handleSelectFile} />
           <div className={styles.input_area}>
-            {draftImages.length > 0 && (
-              <div className={styles.draft_previews}>
-                {draftImages.map(({url}) => (
-                  <div key={url} className={styles.draft_preview_wrap}>
-                    <Image src={url} alt='draft' width={40} height={40} className={styles.draft_preview_img} />
-                    <button
-                      className={styles.draft_remove_btn}
-                      onClick={() => handleRemoveDraft(url)}
-                      aria-label='Remove image'
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-            <input className={styles.comment_input} type='text' placeholder='Write your comment here' />
+            <DraftPreviews drafts={drafts} onRemove={handleRemoveDraft} />
+            <input
+              className={styles.comment_input}
+              type='text'
+              placeholder='Write your comment here'
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={sending}
+            />
           </div>
-          <button className={styles.send_button} aria-label='Send comment'>
+          <button
+            className={styles.send_button}
+            aria-label='Send comment'
+            onClick={handleSend}
+            disabled={sending || (!text.trim() && drafts.length === 0)}
+            style={{opacity: sending ? 0.5 : 1}}
+          >
             <svg
               width='22'
               height='22'
@@ -239,11 +377,22 @@ export function PostCommentSection({
 
       <PostCommentModal
         isOpen={isModalOpen}
-        onClose={handleCloseModal}
+        onClose={(e) => {
+          setIsModalOpen(false)
+          if (scrollToCommentId) setQueryParams({commentIdToScroll: null}, {replace: true})
+        }}
+        postId={postId}
         comments={comments}
-        totalComments={totalComments}
+        totalComments={total}
         scrollToCommentId={scrollToCommentId}
+        currentUserId={currentUserId}
+        onCommentUpdated={handleCommentUpdated}
+        onCommentDeleted={handleCommentDeleted}
+        onCommentCreated={handleCommentCreated}
+        onZoomImage={setZoomSrc}
       />
+
+      <ModalImageZoom isOpen={zoomSrc !== null} src={zoomSrc} onClose={() => setZoomSrc(null)} />
     </>
   )
 }

@@ -74,6 +74,105 @@
   }
 }
 
+// ── Заголовок комментария (с кнопками действий) ──────────────────────────────
+
+.comment_header_row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.comment_actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+  padding-top: 4px;
+}
+
+.action_btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: #8888a0;
+  padding: 3px 8px;
+  border-radius: 6px;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: #f0f0f5;
+    color: #1a1a2e;
+  }
+}
+
+.delete_btn {
+  &:hover {
+    background: #fff0f0;
+    color: #d94f4f;
+  }
+}
+
+// ── Inline редактирование ────────────────────────────────────────────────────
+
+.edit_row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+  padding-left: 4px;
+}
+
+.edit_input {
+  flex: 1;
+  border: 1px solid #e0e0f0;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+
+  &:focus {
+    border-color: #aaaacc;
+  }
+}
+
+.edit_save_btn {
+  background: #1a1a2e;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.edit_cancel_btn {
+  background: #f0f0f5;
+  color: #555570;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    background: #e5e5f0;
+  }
+}
+
+.edited_mark {
+  font-size: 12px;
+  color: #aaaacc;
+  font-style: italic;
+}
+
 // ── Инпут-бар (футер) ────────────────────────────────────────────────────────
 
 .comment_input_bar {
