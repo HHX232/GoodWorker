@@ -1,30 +1,31 @@
 'use client'
 
-import CommentService, {ICommentResponse} from '@/features/services/CommentService.service'
-import {useQueryParams} from '@/shared/helpers/setQueryParams'
-import {UserHeaderCardProps} from '@/shared/types'
-import {useCallback, useEffect, useState} from 'react'
-import {SelectPhotoInput} from '../../inputs/SelectPhotoInput/SelectPhotoInput'
-import {ModalImageZoom} from '../../Modals/ModalImageZoom/ModalImageZoom'
+import CommentService, { ICommentResponse } from '@/features/services/CommentService.service'
+import { useQueryParams } from '@/shared/helpers/setQueryParams'
+import { UserHeaderCardProps } from '@/shared/types'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
+import { SelectPhotoInput } from '../../inputs/SelectPhotoInput/SelectPhotoInput'
+import { ModalImageZoom } from '../../Modals/ModalImageZoom/ModalImageZoom'
 import UserHeaderCard from '../../User/UserHeaderCard/UserHeaderCard'
-import {PostCommentModal} from './Postcommentmodal/Postcommentmodal'
+import { getErrorMessage, PostCommentModal } from './Postcommentmodal/Postcommentmodal'
 import styles from './PostCommentSection.module.scss'
 
-// ─── Star Rating ─────────────────────────────────────────────────────────────
 
 interface StarRatingProps {
   value: number | null
   onChange?: (stars: number) => void
   readonly?: boolean
   size?: number
+  extraClass?:string
 }
-
-export function StarRating({value, onChange, readonly = false, size = 18}: StarRatingProps) {
+// TODO разбить типы и вынести хелперы
+export function StarRating({value, onChange, readonly = false, size = 18, extraClass = ''}: StarRatingProps) {
   const [hovered, setHovered] = useState<number | null>(null)
   const display = hovered ?? value ?? 0
 
   return (
-    <div style={{display: 'flex', gap: 2, alignItems: 'center'}} onMouseLeave={() => !readonly && setHovered(null)}>
+    <div className={extraClass} style={{display: 'flex', gap: 2, alignItems: 'center'}} onMouseLeave={() => !readonly && setHovered(null)}>
       {[1, 2, 3, 4, 5].map((star) => (
         <svg
           key={star}
@@ -80,16 +81,7 @@ export function CommentImages({images, size = 80, onZoom}: CommentImagesProps) {
           />
           {onZoom && (
             <div className={styles.image_zoom_overlay}>
-              <svg
-                width='20'
-                height='20'
-                viewBox='0 0 24 24'
-                fill='none'
-                stroke='#fff'
-                strokeWidth='2.2'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-              >
+              <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='#fff' strokeWidth='2.2' strokeLinecap='round' strokeLinejoin='round'>
                 <circle cx='11' cy='11' r='8' />
                 <line x1='21' y1='21' x2='16.65' y2='16.65' />
                 <line x1='11' y1='8' x2='11' y2='14' />
@@ -105,12 +97,12 @@ export function CommentImages({images, size = 80, onZoom}: CommentImagesProps) {
 
 // ─── Draft previews ───────────────────────────────────────────────────────────
 
-interface DraftImage {
+export interface DraftImage {
   file: File
   previewUrl: string
 }
 
-function DraftPreviews({drafts, onRemove}: {drafts: DraftImage[]; onRemove: (previewUrl: string) => void}) {
+export function DraftPreviews({drafts, onRemove}: {drafts: DraftImage[]; onRemove: (previewUrl: string) => void}) {
   if (!drafts.length) return null
   return (
     <div className={styles.draft_previews}>
@@ -143,7 +135,7 @@ export interface CommentItem {
   images: string[]
 }
 
-function commentToUI(c: ICommentResponse): CommentItem {
+export function commentToUI(c: ICommentResponse): CommentItem {
   return {
     id: c.id,
     user: {
@@ -175,8 +167,7 @@ export function PostCommentSection({
   totalComments: initialTotal,
   currentUserId
 }: PostCommentSectionProps) {
-  const [comments, setComments] = useState<CommentItem[]>(initialComments)
-  const [total, setTotal] = useState(initialTotal)
+  // Инлайн-блок использует только SSR-данные — не грузит ничего сам
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   const [text, setText] = useState('')
@@ -201,17 +192,21 @@ export function PostCommentSection({
       .catch(() => {})
   }, [postId])
 
-  const handleRating = async (stars: number) => {
-    if (ratingLoading) return
-    setRatingLoading(true)
-    try {
-      const r = await CommentService.ratePost(postId, stars)
-      setUserRating(r.userRating)
-      setAvgRating(r.averageStars)
-    } finally {
-      setRatingLoading(false)
-    }
+const handleRating = async (stars: number) => {
+  if (ratingLoading) return
+  setRatingLoading(true)
+  const toastId = toast.loading('Saving rating…')
+  try {
+    const r = await CommentService.ratePost(postId, stars)
+    setUserRating(r.userRating)
+    setAvgRating(r.averageStars)
+    toast.success('Rating saved', {id: toastId})
+  } catch {
+    toast.error('Failed to save rating', {id: toastId})
+  } finally {
+    setRatingLoading(false)
   }
+}
 
   const handleSelectFile = (file: File) => {
     const previewUrl = URL.createObjectURL(file)
@@ -226,27 +221,25 @@ export function PostCommentSection({
     })
   }
 
-  const handleSend = async () => {
-    const trimmed = text.trim()
-    if (!trimmed && drafts.length === 0) return
-    setSending(true)
-    try {
-      const created = await CommentService.create(postId, {
-        text: trimmed,
-        images: drafts.map((d) => d.file)
-      })
-      setComments((prev) => [commentToUI(created), ...prev])
-      setTotal((t) => t + 1)
-      setText('')
-      drafts.forEach((d) => URL.revokeObjectURL(d.previewUrl))
-      setDrafts([])
-    } catch {
-      // TODO: toast
-    } finally {
-      setSending(false)
-    }
-  }
+const handleSend = async () => {
+  const trimmed = text.trim()
+  if (!trimmed && drafts.length === 0) return
+  const toastId = toast.loading('Sending comment…')
+  setSending(true)
+  try {
+    await CommentService.create(postId, {text: trimmed, images: drafts.map((d) => d.file)})
+    setText('')
+    drafts.forEach((d) => URL.revokeObjectURL(d.previewUrl))
+    setDrafts([])
+    setIsModalOpen(true)
+    toast.success('Comment posted', {id: toastId})
+  }catch (error) {
 
+  toast.error(getErrorMessage(error, 'Failed to send comment'), {id: toastId})
+}finally {
+    setSending(false)
+  }
+}
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -254,27 +247,13 @@ export function PostCommentSection({
     }
   }
 
-  const handleCommentUpdated = useCallback((updated: CommentItem) => {
-    setComments((prev) => prev.map((c) => (c.id === updated.id ? updated : c)))
-  }, [])
-
-  const handleCommentDeleted = useCallback((id: string) => {
-    setComments((prev) => prev.filter((c) => c.id !== id))
-    setTotal((t) => Math.max(0, t - 1))
-  }, [])
-
-  const handleCommentCreated = useCallback((c: CommentItem) => {
-    setComments((prev) => [c, ...prev])
-    setTotal((t) => t + 1)
-  }, [])
-
   return (
     <>
       <div className={styles.box}>
         {/* Header */}
         <div className={styles.header}>
           <div className={styles.flex_wrapper}>
-            <p className={styles.total_comments}>Comments ({total})</p>
+            <p className={styles.total_comments}>Comments ({initialTotal})</p>
             {avgRating !== null && (
               <span style={{fontSize: 13, color: '#868897', display: 'flex', alignItems: 'center', gap: 4}}>
                 <StarRating value={Math.round(avgRating)} readonly size={14} />
@@ -287,11 +266,10 @@ export function PostCommentSection({
           </button>
         </div>
 
-        {/* Scrollable list */}
+        {/* Превью — только SSR-данные, первые 3 */}
         <div className={styles.content}>
           <ul>
-            {comments.map((el, i) => {
-              if (i >= 10) return null
+            {initialComments.slice(0, 3).map((el) => {
               const isLong = el.commentText.length > 50
               return (
                 <div className={styles.comment_item} key={el.id}>
@@ -301,8 +279,7 @@ export function PostCommentSection({
                       {isLong ? el.commentText.slice(0, 50) : el.commentText}
                       {isLong && (
                         <>
-                          {' '}
-                          ...
+                          {' '}...
                           <span
                             onClick={() => {
                               setIsModalOpen(true)
@@ -310,8 +287,7 @@ export function PostCommentSection({
                             }}
                             className={styles.see_more}
                           >
-                            {' '}
-                            See more
+                            {' '}See more
                           </span>
                         </>
                       )}
@@ -321,15 +297,15 @@ export function PostCommentSection({
                 </div>
               )
             })}
-            {comments.length >= 10 && total >= 10 && (
+            {initialTotal > 3 && (
               <button className={styles.show_all_bottom_button} onClick={() => setIsModalOpen(true)}>
-                Show All
+                Show all {initialTotal} comments
               </button>
             )}
           </ul>
         </div>
 
-        {/* ★ Rating row — directly above the input bar */}
+        {/* Rating row */}
         <div className={styles.rating_row}>
           <span className={styles.rating_label}>Your rating:</span>
           <StarRating value={userRating} onChange={handleRating} size={20} />
@@ -358,16 +334,7 @@ export function PostCommentSection({
             disabled={sending || (!text.trim() && drafts.length === 0)}
             style={{opacity: sending ? 0.5 : 1}}
           >
-            <svg
-              width='22'
-              height='22'
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke='currentColor'
-              strokeWidth='1.8'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-            >
+            <svg width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'>
               <line x1='22' y1='2' x2='11' y2='13' />
               <polygon points='22 2 15 22 11 13 2 9 22 2' />
             </svg>
@@ -377,18 +344,13 @@ export function PostCommentSection({
 
       <PostCommentModal
         isOpen={isModalOpen}
-        onClose={(e) => {
+        onClose={() => {
           setIsModalOpen(false)
           if (scrollToCommentId) setQueryParams({commentIdToScroll: null}, {replace: true})
         }}
         postId={postId}
-        comments={comments}
-        totalComments={total}
         scrollToCommentId={scrollToCommentId}
         currentUserId={currentUserId}
-        onCommentUpdated={handleCommentUpdated}
-        onCommentDeleted={handleCommentDeleted}
-        onCommentCreated={handleCommentCreated}
         onZoomImage={setZoomSrc}
       />
 

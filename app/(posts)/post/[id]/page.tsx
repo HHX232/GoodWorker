@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import PostPage, {EnrichedComment} from '@/_pages/PublickPages/PostPage/PostPage'
-import {prisma} from '@/shared/prisma/prisma'
-import {SeoPostContent} from '@/shared/ui/Posts/SeoPostContent/SeoPostContent'
-import {Prisma} from '@prisma/client'
-import {notFound} from 'next/navigation'
-import {auth} from '../../../../auth'
+import PostPage, { EnrichedComment } from '@/_pages/PublickPages/PostPage/PostPage'
+import { prisma } from '@/shared/prisma/prisma'
+import { SeoPostContent } from '@/shared/ui/Posts/SeoPostContent/SeoPostContent'
+import { Prisma } from '@prisma/client'
+import { notFound } from 'next/navigation'
+import { auth } from '../../../../auth'
 
 function parseBlocks(content: Prisma.JsonValue): any[] {
   if (!content || typeof content !== 'object' || Array.isArray(content)) return []
@@ -99,6 +99,7 @@ async function PostServerPage({params}: {params: Promise<{id: string}>}) {
     <>
       <SeoPostContent blocks={blocks} />
       <PostPage post={{...post, enrichedComments}} currentUserId={session?.user?.id} />
+     
     </>
   )
 }

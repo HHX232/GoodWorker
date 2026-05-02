@@ -48,8 +48,8 @@ export interface ICreateCommentDto {
 
 export interface IUpdateCommentDto {
   text?: string
-  /** Replacement image files — sent as multipart/form-data */
   images?: File[]
+   keepImageUrls?: string[]
 }
 
 const CommentService = {
@@ -80,20 +80,20 @@ const CommentService = {
     }
   },
 
-  async update(postId: string, commentId: string, dto: IUpdateCommentDto): Promise<ICommentResponse> {
-    try {
-      const form = new FormData()
-      if (dto.text !== undefined) form.append('text', dto.text)
-      dto.images?.forEach((file) => form.append('images', file))
-
-      const res = await instance.patch<ICommentResponse>(`/post/${postId}/comments/${commentId}`, form, {
-        headers: {'Content-Type': 'multipart/form-data'}
-      })
-      return res.data
-    } catch (error) {
-      handleError(error, 'Failed to update comment')
-    }
-  },
+    async update(postId: string, commentId: string, dto: IUpdateCommentDto): Promise<ICommentResponse> {
+      try {
+        const form = new FormData()
+        if (dto.text !== undefined) form.append('text', dto.text)
+        dto.images?.forEach((file) => form.append('images', file))
+        dto.keepImageUrls?.forEach((url) => form.append('keepImageUrls', url))
+        const res = await instance.patch<ICommentResponse>(`/post/${postId}/comments/${commentId}`, form, {
+          headers: {'Content-Type': 'multipart/form-data'}
+        })
+        return res.data
+      } catch (error) {
+        handleError(error, 'Failed to update comment')
+      }
+    },
 
   async delete(postId: string, commentId: string): Promise<void> {
     try {

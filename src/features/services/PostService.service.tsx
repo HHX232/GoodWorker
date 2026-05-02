@@ -33,6 +33,7 @@ export interface IPostsResponse {
 export interface IPostResponse {
   id: string
   title: string
+  additionalTitle?: string | null
   visibility: 'PUBLIC' | 'PRIVATE'
   content: {blocks: PostBlock[]} | null
   mediaUrls: string[]
@@ -40,6 +41,8 @@ export interface IPostResponse {
   updatedAt: string
   teacherId: string
   categoryId: string | null
+  isVip: boolean
+  vipExpiresAt?: string | null
   teacher: {
     id: string
     name: string
@@ -51,6 +54,7 @@ export interface IPostResponse {
     translations: {langCode: string; name: string}[]
   } | null
   viewCount: number
+  avgRating: number
   _count: {
     comments: number
   }

@@ -47,16 +47,19 @@ export async function PATCH(req: NextRequest, {params}: RouteParams) {
     if (text !== null && (typeof text !== 'string' || !text.trim())) {
       return NextResponse.json({error: 'Text cannot be empty'}, {status: 400})
     }
-
-    // Only replace imageUrls if new files were actually sent
+    const keepImageUrls = form.getAll('keepImageUrls').filter((v): v is string => typeof v === 'string')
     const newImages = await filesToBase64(form, 'images')
-    const imageUrls = newImages.length > 0 ? newImages : undefined
+
+    const imageUrls =
+      newImages.length > 0 || keepImageUrls.length !== comment.imageUrls.length
+        ? [...keepImageUrls, ...newImages]
+        : undefined
 
     const updated = await prisma.postComment.update({
       where: {id: commentId},
       data: {
         ...(typeof text === 'string' && text.trim() ? {text: text.trim()} : {}),
-        ...(imageUrls !== undefined ? {imageUrls} : {}),
+        imageUrls: imageUrls ?? comment.imageUrls,
         editedAt: new Date()
       }
     })

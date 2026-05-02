@@ -11,7 +11,12 @@ const sendUserSchema = z
     step: z.literal('send'),
     name: z.string({ error: 'Name is required' }).min(1, 'Name is required').default(''),
     email: z.string({ error: 'Invalid email' }).email('Invalid email').min(1, 'Email is required'),
-    phone: z.string({ error: 'Minimum 7 characters' }).min(7, 'Minimum 7 characters').optional().default(''),
+    phone: z
+  .string()
+  .transform((v) => (v?.trim() === '' ? null : v))
+  .pipe(z.string().min(7, 'Minimum 7 characters').nullable())
+  .optional()
+  .nullable(),
     password: z.string({ error: 'Minimum 6 characters' }).min(6, 'Minimum 6 characters').default(''),
     langCode: z.string().default('ru')
   })
@@ -20,7 +25,12 @@ const sendUserSchema = z
     step: z.literal('send'),
     name: z.string({ error: 'Name is required' }).min(1, 'Name is required').default(''),
     email: z.string({ error: 'Invalid email' }).email('Invalid email').min(1, 'Email is required'),
-    phone: z.string({ error: 'Minimum 7 characters' }).min(7, 'Minimum 7 characters').optional().default(''),
+    phone: z
+  .string()
+  .transform((v) => (v?.trim() === '' ? null : v))
+  .pipe(z.string().min(7, 'Minimum 7 characters').nullable())
+  .optional()
+  .nullable(),
     password: z.string({ error: 'Minimum 6 characters' }).min(6, 'Minimum 6 characters').default(''),
     langCode: z.string().default('ru'),
     categoryIds: z.array(z.string()).min(1, 'At least one category is required').default([])

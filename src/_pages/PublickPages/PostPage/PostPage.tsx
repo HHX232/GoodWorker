@@ -1,15 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
-import {PostBlockRenderer} from '@/_pages/CreatePostPage/PostBlockRenderer/PostBlockRenderer'
+import { PostBlockRenderer } from '@/_pages/CreatePostPage/PostBlockRenderer/PostBlockRenderer'
 
-import {UserRolesObject} from '@/shared/constants/user/user.const'
-import {UserPostInfo} from '@/shared/ui'
-import {CommentItem, PostCommentSection} from '@/shared/ui/Posts/PostCommentSection/PostCommentSection'
-import {NavBar} from '@/widgets/BaseUI'
-import {BorderTextHandler} from '@/widgets/Cards'
-import {Prisma, Role} from '@prisma/client'
+import { UserRolesObject } from '@/shared/constants/user/user.const'
+import { UserPostInfo } from '@/shared/ui'
+import { CommentItem, PostCommentSection } from '@/shared/ui/Posts/PostCommentSection/PostCommentSection'
+import { SetCommentBlock } from '@/shared/ui/Posts/SetCommentBlock/SetCommentBlock'
+import { NavBar } from '@/widgets/BaseUI'
+import { BorderTextHandler } from '@/widgets/Cards'
+import { Prisma, Role } from '@prisma/client'
 import styles from './PostPage.module.scss'
+import { BookmarkHighlighter } from '@/shared/ui/bookmark/BookmarkHighlighter'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -92,7 +94,10 @@ function PostPage({post, initialComments, currentUserId}: PostPageProps) {
   }
 
   const blocks = parsePostContent(post.content)
-  const content = blocks.length > 0 ? <PostBlockRenderer blocks={blocks} /> : null
+  const content = blocks.length > 0 ? <>
+    <PostBlockRenderer postId={post.id} blocks={blocks} />
+    <BookmarkHighlighter postId={post.id} />
+  </> : null
 
   const commentSection = (
     <PostCommentSection
@@ -112,20 +117,25 @@ function PostPage({post, initialComments, currentUserId}: PostPageProps) {
       <div className={styles.mobile_wrapper}>
         <UserPostInfo {...userPostInfo} />
         {content}
+        <SetCommentBlock postId={post.id} />
         {commentSection}
       </div>
 
       {/* desktop: main content column */}
-      <div className={styles.extra_full_bot}>{content}</div>
+      <div className={styles.extra_full_bot}>
+        {content}
+        <SetCommentBlock postId={post.id} />
+      </div>
 
       {/* desktop: right sticky sidebar */}
       <div className={`${styles.sticky_sidebar} ${styles.not_mobile_box}`}>
         <UserPostInfo {...userPostInfo} />
-        {commentSection}
+        <div style={{flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column'}}>{commentSection}</div>
       </div>
     </div>
   )
 }
 
 export default PostPage
-export type {EnrichedComment, PostWithRelations}
+export type { EnrichedComment, PostWithRelations }
+

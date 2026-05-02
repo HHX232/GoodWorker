@@ -219,7 +219,7 @@ export default function RegisterPage() {
             </div>
 
             <div className={styles.otpWrap}>
-              <InputOtp length={6} onComplete={handleVerify} disabled={loading} autoFocus />
+              <InputOtp className={styles.extra_otp} length={6} onComplete={handleVerify} disabled={loading} autoFocus />
             </div>
 
             <p className={styles.resendHint}>

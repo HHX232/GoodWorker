@@ -6,9 +6,10 @@
       padding: 0 12px;
       grid-template-columns: minmax(0, 100px) 3fr;
    }
+   padding-bottom: 20px !important;
 
 
-   @media(max-width: 700px) {
+   @media(max-width: 770px) {
       grid-template-columns: 1fr;
       position: relative;
    }
@@ -64,24 +65,26 @@
       max-height: 600px !important;
    }
 }
-
 .sticky_sidebar {
-   position: sticky;
-   top: 0;
-   max-height: calc(100vh - 180px);
+  position: sticky;
+  top: 0;
+  max-height: calc(100vh - 180px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 
-   @include mixins.lgg {
-      order: -1;
-      max-height: 60vh;
-      overflow-y: auto;
-      grid-column: 2;
-      grid-row: 1;
-   }
+  @include mixins.lgg {
+    order: -1;
+    max-height: 60vh;
+    overflow: hidden;
+    grid-column: 2;
+    grid-row: 1;
+  }
 
-   @include mixins.sm {
-      position: relative;
-      max-height: 60vh;
-      overflow-y: auto;
-      order: -1;
-   }
+  @include mixins.sm {
+    position: relative;
+    max-height: 60vh;
+    overflow: hidden;
+    order: -1;
+  }
 }

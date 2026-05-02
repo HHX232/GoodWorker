@@ -1,19 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
-import {InfoAudioEditor} from '@/features/BlockEditors/InfoAudioEditor/InfoAudioEditor'
-import {InfoMediaEditor} from '@/features/BlockEditors/InfoMediaEditor/InfoMediaEditor'
-import {InfoTextEditor} from '@/features/BlockEditors/InfoTextEditor/InfoTextEditor'
-import {PostBlock, PostBlockType} from '@/shared/types/Post/Post.type'
+import { InfoAudioEditor } from '@/features/BlockEditors/InfoAudioEditor/InfoAudioEditor'
+import { InfoMediaEditor } from '@/features/BlockEditors/InfoMediaEditor/InfoMediaEditor'
+import { InfoTextEditor } from '@/features/BlockEditors/InfoTextEditor/InfoTextEditor'
+import { PostBlock, PostBlockType } from '@/shared/types/Post/Post.type'
 
 interface Props {
   blocks: PostBlock[]
+  postId: string
 }
 
-export const PostBlockRenderer = ({blocks}: Props) => {
+export const PostBlockRenderer = ({blocks, postId}: Props) => {
   console.log('blocks', blocks)
   return (
-    <div style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
+    <div
+      data-source-type="post"
+      data-source-id={postId}
+      style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}
+    >
       {blocks.map((block) => {
         switch (block.type) {
           case PostBlockType.TEXT:

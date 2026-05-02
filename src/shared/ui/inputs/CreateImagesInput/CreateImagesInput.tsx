@@ -1,11 +1,9 @@
-import {FC, useState, ChangeEvent, useEffect, useCallback, useMemo, memo, useRef} from 'react'
-import styles from './CreateImagesInput.module.scss'
+import { useTranslations } from 'next-intl'
 import Image from 'next/image'
-import {toast} from 'sonner'
+import { ChangeEvent, FC, memo, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
+import { toast } from 'sonner'
+import styles from './CreateImagesInput.module.scss'
 import SliderForCreateImages from './SliderForCreateImages/SliderForCreateImages'
-import {useTranslations} from 'next-intl'
-
-const plusIcon = '/create-card/plus.svg'
 
 interface CreateImagesInputProps {
   activeImages?: string[]
@@ -32,7 +30,7 @@ export const ImagePreview = memo<{
   loadError: boolean
   isOnlyShow?: boolean
   onImageClick?: (index: number) => void
-}>(({url, file, index, onError, loadError, isOnlyShow, onImageClick}) => {
+}>(({ url, file, index, onError, loadError, isOnlyShow, onImageClick }) => {
   const t = useTranslations('CreateImagesInput')
 
   const handleError = useCallback(() => {
@@ -56,7 +54,7 @@ export const ImagePreview = memo<{
         loop
         autoPlay
         onClick={handleClick}
-        style={{cursor: isOnlyShow ? 'pointer' : 'default'}}
+        style={{ cursor: isOnlyShow ? 'pointer' : 'default' }}
       />
     )
   }
@@ -82,7 +80,7 @@ export const ImagePreview = memo<{
         className={`${styles.preview} ${isOnlyShow ? styles.clickable : ''}`}
         onError={handleError}
         onClick={handleClick}
-        style={{cursor: isOnlyShow ? 'pointer' : 'default'}}
+        style={{ cursor: isOnlyShow ? 'pointer' : 'default' }}
       />
     )
   }
@@ -96,12 +94,28 @@ export const ImagePreview = memo<{
       className={`${styles.preview} ${isOnlyShow ? styles.clickable : ''}`}
       onError={handleError}
       onClick={handleClick}
-      style={{cursor: isOnlyShow ? 'pointer' : 'default'}}
+      style={{ cursor: isOnlyShow ? 'pointer' : 'default' }}
     />
   )
 })
 
 ImagePreview.displayName = 'ImagePreview'
+
+// Кастомная иконка плюса — серая, закруглённая
+const PlusIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="28" height="28" rx="8" fill="#E0E0E0" />
+    <path d="M14 8V20M8 14H20" stroke="#9E9E9E" strokeWidth="2" strokeLinecap="round" />
+  </svg>
+)
+
+// Кастомная иконка минуса — серая, закруглённая
+const MinusIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="28" height="28" rx="8" fill="#E0E0E0" />
+    <path d="M8 14H20" stroke="#9E9E9E" strokeWidth="2" strokeLinecap="round" />
+  </svg>
+)
 
 const ImageUploadItem = memo<{
   index: number
@@ -142,7 +156,7 @@ const ImageUploadItem = memo<{
     onRemove,
     onImageError,
     onImageClick,
-    onSwapWithMain
+    onSwapWithMain,
   }) => {
     const t = useTranslations('CreateImagesInput')
     const t2 = useTranslations('previewText')
@@ -152,10 +166,7 @@ const ImageUploadItem = memo<{
 
     const isValidFileType = useCallback(
       (file: File) => {
-        if (file.type === 'image/svg+xml') {
-          return false
-        }
-
+        if (file.type === 'image/svg+xml') return false
         return allowedTypes.some((type) => {
           if (type.endsWith('/*')) {
             const baseType = type.replace('/*', '/')
@@ -179,25 +190,17 @@ const ImageUploadItem = memo<{
           const oversizedFiles: string[] = []
 
           Array.from(files).forEach((file) => {
-            if (!isValidFileType(file)) {
-              invalidFiles.push(file.name)
-            }
-            if (file.size > maxFileSize) {
-              oversizedFiles.push(file.name)
-            }
+            if (!isValidFileType(file)) invalidFiles.push(file.name)
+            if (file.size > maxFileSize) oversizedFiles.push(file.name)
           })
 
           if (invalidFiles.length > 0) {
             toast.error(
-              <div data-special-attr-for-error={true} style={{lineHeight: 1.5}}>
-                <strong style={{display: 'block', marginBottom: 4}}>{t('uploadError')}</strong>
-                <span>{t('invalidFileTypes', {fileNames: invalidFiles.join(', ')})}</span>
+              <div data-special-attr-for-error={true} style={{ lineHeight: 1.5 }}>
+                <strong style={{ display: 'block', marginBottom: 4 }}>{t('uploadError')}</strong>
+                <span>{t('invalidFileTypes', { fileNames: invalidFiles.join(', ') })}</span>
               </div>,
-              {
-                style: {
-                  background: '#AC2525'
-                }
-              }
+              { style: { background: '#AC2525' } }
             )
             return
           }
@@ -205,20 +208,11 @@ const ImageUploadItem = memo<{
           if (oversizedFiles.length > 0) {
             const maxSizeMB = Math.round(maxFileSize / (1024 * 1024))
             toast.error(
-              <div data-special-attr-for-error={true} style={{lineHeight: 1.5}}>
-                <strong style={{display: 'block', marginBottom: 4}}>{t('uploadError')}</strong>
-                <span>
-                  {t('fileSizeExceeded', {
-                    maxSizeMB,
-                    fileNames: oversizedFiles.join(', ')
-                  })}
-                </span>
+              <div data-special-attr-for-error={true} style={{ lineHeight: 1.5 }}>
+                <strong style={{ display: 'block', marginBottom: 4 }}>{t('uploadError')}</strong>
+                <span>{t('fileSizeExceeded', { maxSizeMB, fileNames: oversizedFiles.join(', ') })}</span>
               </div>,
-              {
-                style: {
-                  background: '#AC2525'
-                }
-              }
+              { style: { background: '#AC2525' } }
             )
             return
           }
@@ -231,15 +225,11 @@ const ImageUploadItem = memo<{
 
         if (!isValidFileType(file)) {
           toast.error(
-            <div data-special-attr-for-error={true} style={{lineHeight: 1.5}}>
-              <strong style={{display: 'block', marginBottom: 4}}>{t('uploadError')}</strong>
+            <div data-special-attr-for-error={true} style={{ lineHeight: 1.5 }}>
+              <strong style={{ display: 'block', marginBottom: 4 }}>{t('uploadError')}</strong>
               <span>{t('chooseImageOrVideo')}</span>
             </div>,
-            {
-              style: {
-                background: '#AC2525'
-              }
-            }
+            { style: { background: '#AC2525' } }
           )
           return
         }
@@ -247,38 +237,23 @@ const ImageUploadItem = memo<{
         if (file.size > maxFileSize) {
           const maxSizeMB = Math.round(maxFileSize / (1024 * 1024))
           toast.error(
-            <div data-special-attr-for-error={true} style={{lineHeight: 1.5}}>
-              <strong style={{display: 'block', marginBottom: 4}}>{t('uploadError')}</strong>
-              <span>{t('fileSizeLimit', {maxSizeMB})}</span>
+            <div data-special-attr-for-error={true} style={{ lineHeight: 1.5 }}>
+              <strong style={{ display: 'block', marginBottom: 4 }}>{t('uploadError')}</strong>
+              <span>{t('fileSizeLimit', { maxSizeMB })}</span>
             </div>,
-            {
-              style: {
-                background: '#AC2525'
-              }
-            }
+            { style: { background: '#AC2525' } }
           )
           return
         }
 
         onFileChange(index, file)
       },
-      [
-        index,
-        maxFileSize,
-        allowMultipleFiles,
-        allowedTypes,
-        isValidFileType,
-        onFileChange,
-        onMultipleFilesChange,
-        isOnlyShow,
-        t
-      ]
+      [index, maxFileSize, allowMultipleFiles, allowedTypes, isValidFileType, onFileChange, onMultipleFilesChange, isOnlyShow, t]
     )
 
     const handleRemove = useCallback(
       (e: React.MouseEvent) => {
         if (isOnlyShow) return
-
         e.preventDefault()
         e.stopPropagation()
         onRemove(index)
@@ -312,9 +287,7 @@ const ImageUploadItem = memo<{
       (e: React.MouseEvent) => {
         e.preventDefault()
         e.stopPropagation()
-        if (onSwapWithMain) {
-          onSwapWithMain(index)
-        }
+        if (onSwapWithMain) onSwapWithMain(index)
         setIsMenuOpen(false)
       },
       [index, onSwapWithMain]
@@ -326,14 +299,8 @@ const ImageUploadItem = memo<{
           setIsMenuOpen(false)
         }
       }
-
-      if (isMenuOpen) {
-        document.addEventListener('mousedown', handleClickOutside)
-      }
-
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside)
-      }
+      if (isMenuOpen) document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
     }, [isMenuOpen])
 
     const hasContent = previewUrl !== null
@@ -342,15 +309,13 @@ const ImageUploadItem = memo<{
 
     return (
       <label
-        className={`${styles.create__images__input__label} ${
-          isBig ? styles.create__images__input__label__big : ''
-        } ${hasContent ? styles.has__file : ''} ${isOnlyShow ? styles.readonly : ''} ${isBig && !!error ? styles.big_error : ''}`}
+        className={`${styles.create__images__input__label} ${isBig ? styles.create__images__input__label__big : ''} ${hasContent ? styles.has__file : ''} ${isOnlyShow ? styles.readonly : ''} ${isBig && !!error ? styles.big_error : ''}`}
         htmlFor={isOnlyShow ? undefined : inputId}
         id={`label-${inputId}`}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onClick={handleLabelClick}
-        style={{cursor: isOnlyShow && hasContent ? 'pointer' : isOnlyShow ? 'default' : 'pointer'}}
+        style={{ cursor: isOnlyShow && hasContent ? 'pointer' : isOnlyShow ? 'default' : 'pointer' }}
       >
         {hasContent && (
           <>
@@ -365,9 +330,8 @@ const ImageUploadItem = memo<{
             />
             {isHovered && !isOnlyShow && (
               <div className={styles.remove__overlay} onClick={handleRemove}>
-                <svg width='26' height='2' viewBox='0 0 26 2' fill='none' xmlns='http://www.w3.org/2000/svg'>
-                  <path d='M24.6668 1H1.3335' stroke='#FFFFFF' strokeWidth='2' strokeLinecap='round' />
-                </svg>
+                {/* Минус — кастомный */}
+                <MinusIcon />
               </div>
             )}
           </>
@@ -376,22 +340,23 @@ const ImageUploadItem = memo<{
         {!hasContent && !isOnlyShow && (
           <>
             {isBig && <div className={styles.preview__label}>{t2('preview')}</div>}
-            <Image src={plusIcon} alt='plus' width={24} height={24} />
+            {/* Плюс — кастомный */}
+            <PlusIcon />
           </>
         )}
 
         {!isOnlyShow && showBigFirstItem && hasContent && index !== 0 && (
           <div className={styles.menu__container} ref={menuRef}>
-            <button className={styles.menu__button} onClick={handleMenuToggle} type='button'>
-              <svg width='4' height='18' viewBox='0 0 4 18' fill='none' xmlns='http://www.w3.org/2000/svg'>
-                <circle cx='2' cy='2' r='2' fill='white' />
-                <circle cx='2' cy='9' r='2' fill='white' />
-                <circle cx='2' cy='16' r='2' fill='white' />
+            <button className={styles.menu__button} onClick={handleMenuToggle} type="button">
+              <svg width="4" height="18" viewBox="0 0 4 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="2" cy="2" r="2" fill="white" />
+                <circle cx="2" cy="9" r="2" fill="white" />
+                <circle cx="2" cy="16" r="2" fill="white" />
               </svg>
             </button>
             {isMenuOpen && (
               <div className={styles.dropdown__menu}>
-                <button className={styles.menu__item} onClick={handleSwapClick} type='button'>
+                <button className={styles.menu__item} onClick={handleSwapClick} type="button">
                   {t2('makePreview')}
                 </button>
               </div>
@@ -401,12 +366,12 @@ const ImageUploadItem = memo<{
 
         {!isOnlyShow && (
           <input
-            type='file'
+            type="file"
             id={inputId}
             accept={acceptString}
             multiple={allowMultipleFiles}
             onChange={handleFileChange}
-            style={{display: 'none'}}
+            style={{ display: 'none' }}
           />
         )}
       </label>
@@ -437,12 +402,14 @@ export const CreateImagesInput: FC<CreateImagesInputProps> = ({
     'video/mp4',
     'video/webm',
     'video/mov',
-    'video/avi'
+    'video/avi',
   ],
   isOnlyShow = false,
-  showBigFirstItem = true
+  showBigFirstItem = true,
 }) => {
   const t = useTranslations('CreateImagesInput')
+const uid = useId()
+  const prefix = `${inputIdPrefix}-${uid.replace(/:/g, '')}`
 
   const [localFiles, setLocalFiles] = useState<(File | null)[]>(() => new Array(maxFiles).fill(null))
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -451,55 +418,42 @@ export const CreateImagesInput: FC<CreateImagesInputProps> = ({
   const [previewUrls, setPreviewUrls] = useState<(string | null)[]>(() => {
     const urls = new Array(maxFiles).fill(null)
     activeImages.forEach((url, index) => {
-      if (index < maxFiles) {
-        urls[index] = url
-      }
+      if (index < maxFiles) urls[index] = url
     })
     return urls
   })
 
-  const [loadError, setLoadError] = useState<{[key: number]: boolean}>({})
+  const [loadError, setLoadError] = useState<{ [key: number]: boolean }>({})
   const [removedInitialImages, setRemovedInitialImages] = useState<Set<number>>(new Set())
 
   const acceptString = useMemo(() => {
     const filteredTypes = allowedTypes.map((type) => {
-      if (type === 'image/*') {
-        return 'image/jpeg,image/jpg,image/png,image/gif,image/webp'
-      }
+      if (type === 'image/*') return 'image/jpeg,image/jpg,image/png,image/gif,image/webp'
       return type
     })
     return filteredTypes.join(',')
   }, [allowedTypes])
 
   const itemsToShow = useMemo(() => {
-    if (isOnlyShow) {
-      return activeImages.length
-    }
+    if (isOnlyShow) return activeImages.length
     return maxFiles
   }, [isOnlyShow, activeImages.length, maxFiles])
 
   const reorderImages = useCallback((clickedIndex: number, images: string[]) => {
     if (clickedIndex === 0) return images
-
     const reordered = [...images]
     const clickedItem = reordered[clickedIndex]
-
     reordered.splice(clickedIndex, 1)
     reordered.unshift(clickedItem)
-
     return reordered
   }, [])
 
   const handleImageClick = useCallback(
     (clickedIndex: number) => {
       if (!isOnlyShow) return
-
       const validImages = activeImages.filter((img) => img && img.trim() !== '')
-
       if (validImages.length === 0) return
-
       const reorderedImages = reorderImages(clickedIndex, validImages)
-
       setModalImages(reorderedImages)
       setIsModalOpen(true)
     },
@@ -512,15 +466,10 @@ export const CreateImagesInput: FC<CreateImagesInputProps> = ({
   }, [])
 
   const totalImagesCount = useMemo(() => {
-    if (isOnlyShow) {
-      return activeImages.length
-    }
-
+    if (isOnlyShow) return activeImages.length
     let count = 0
     for (let i = 0; i < maxFiles; i++) {
-      if (localFiles[i] || (previewUrls[i] && !removedInitialImages.has(i))) {
-        count++
-      }
+      if (localFiles[i] || (previewUrls[i] && !removedInitialImages.has(i))) count++
     }
     return count
   }, [localFiles, previewUrls, removedInitialImages, maxFiles, isOnlyShow, activeImages.length])
@@ -540,11 +489,9 @@ export const CreateImagesInput: FC<CreateImagesInputProps> = ({
         const temp = newFiles[0]
         newFiles[0] = newFiles[targetIndex]
         newFiles[targetIndex] = temp
-
         setTimeout(() => {
           onFilesChange(newFiles.filter((f) => f !== null) as File[])
         }, 0)
-
         return newFiles
       })
 
@@ -569,13 +516,13 @@ export const CreateImagesInput: FC<CreateImagesInputProps> = ({
     [activeImages, onActiveImagesChange, onFilesChange]
   )
 
+  // ✅ ФИКС: setPreviewUrls вынесен из setLocalFiles — нет вложенных setState
   const handleFileChange = useCallback(
     (index: number, file: File) => {
       if (isOnlyShow) return
 
       const url = URL.createObjectURL(file)
 
-      // Удаляем индекс из removedInitialImages если он там был
       setRemovedInitialImages((prev) => {
         if (prev.has(index)) {
           const newSet = new Set(prev)
@@ -585,28 +532,25 @@ export const CreateImagesInput: FC<CreateImagesInputProps> = ({
         return prev
       })
 
-      setLoadError((prev) => ({...prev, [index]: false}))
+      setLoadError((prev) => ({ ...prev, [index]: false }))
 
-      // Обновляем файлы и превью одновременно
+      // Сначала обновляем превью
+      setPreviewUrls((prevUrls) => {
+        const newUrls = [...prevUrls]
+        if (prevUrls[index] && prevUrls[index]!.startsWith('blob:')) {
+          URL.revokeObjectURL(prevUrls[index]!)
+        }
+        newUrls[index] = url
+        return newUrls
+      })
+
+      // Затем обновляем файлы и нотифицируем родителя
       setLocalFiles((prev) => {
         const newFiles = [...prev]
         newFiles[index] = file
-
-        // Обновляем превью в том же тике
-        setPreviewUrls((prevUrls) => {
-          const newUrls = [...prevUrls]
-          if (prevUrls[index] && prev[index]) {
-            URL.revokeObjectURL(prevUrls[index]!)
-          }
-          newUrls[index] = url
-          return newUrls
-        })
-
-        // Отправляем обновленный список файлов
         setTimeout(() => {
           onFilesChange(newFiles.filter((f) => f !== null) as File[])
         }, 0)
-
         return newFiles
       })
     },
@@ -621,42 +565,28 @@ export const CreateImagesInput: FC<CreateImagesInputProps> = ({
 
       const freeSlots: number[] = []
       for (let i = 0; i < maxFiles; i++) {
-        if (!localFiles[i] && !previewUrls[i]) {
-          freeSlots.push(i)
-        }
+        if (!localFiles[i] && !previewUrls[i]) freeSlots.push(i)
       }
 
       if (freeSlots.length < fileArray.length) {
         toast.error(
-          <div data-special-attr-for-error={true} style={{lineHeight: 1.5}}>
-            <strong style={{display: 'block', marginBottom: 4}}>{t('notEnoughSlots')}</strong>
-            <span>
-              {t('availableSlots', {
-                available: freeSlots.length,
-                selected: fileArray.length
-              })}
-            </span>
+          <div data-special-attr-for-error={true} style={{ lineHeight: 1.5 }}>
+            <strong style={{ display: 'block', marginBottom: 4 }}>{t('notEnoughSlots')}</strong>
+            <span>{t('availableSlots', { available: freeSlots.length, selected: fileArray.length })}</span>
           </div>,
-          {
-            style: {
-              background: '#AC2525'
-            }
-          }
+          { style: { background: '#AC2525' } }
         )
       }
 
       const filesToProcess = fileArray.slice(0, freeSlots.length)
-
       const newFiles = [...localFiles]
       const newUrls = [...previewUrls]
-      const newLoadError = {...loadError}
+      const newLoadError = { ...loadError }
 
       filesToProcess.forEach((file, index) => {
         const slotIndex = freeSlots[index]
-        const url = URL.createObjectURL(file)
-
         newFiles[slotIndex] = file
-        newUrls[slotIndex] = url
+        newUrls[slotIndex] = URL.createObjectURL(file)
         newLoadError[slotIndex] = false
       })
 
@@ -702,7 +632,6 @@ export const CreateImagesInput: FC<CreateImagesInputProps> = ({
               while (updatedImages.length > 0 && updatedImages[updatedImages.length - 1] === '') {
                 updatedImages.pop()
               }
-
               onActiveImagesChange(updatedImages)
             }, 0)
           }
@@ -717,7 +646,7 @@ export const CreateImagesInput: FC<CreateImagesInputProps> = ({
         }
       }
 
-      setLoadError((prev) => ({...prev, [index]: false}))
+      setLoadError((prev) => ({ ...prev, [index]: false }))
 
       setLocalFiles((currentFiles) => {
         const updatedFiles = [...currentFiles]
@@ -767,7 +696,6 @@ export const CreateImagesInput: FC<CreateImagesInputProps> = ({
 
         localFiles.forEach((file, index) => {
           if (file) {
-            // Если есть локальный файл, используем существующий URL или создаем новый
             newUrls[index] = prev[index] || URL.createObjectURL(file)
           }
         })
@@ -778,31 +706,8 @@ export const CreateImagesInput: FC<CreateImagesInputProps> = ({
   }, [activeImages, removedInitialImages, localFiles, maxFiles])
 
   const handleImageError = useCallback((index: number) => {
-    setLoadError((prev) => ({...prev, [index]: true}))
+    setLoadError((prev) => ({ ...prev, [index]: true }))
   }, [])
-
-  useEffect(() => {
-    if (activeImages.length > 0) {
-      setPreviewUrls((prev) => {
-        const newUrls = isOnlyShow ? activeImages.map((url) => url) : [...prev]
-
-        if (!isOnlyShow) {
-          let hasChanges = false
-          activeImages.forEach((url, index) => {
-            if (index < maxFiles && !localFiles[index] && !removedInitialImages.has(index)) {
-              if (newUrls[index] !== url) {
-                newUrls[index] = url
-                hasChanges = true
-              }
-            }
-          })
-          return hasChanges ? newUrls : prev
-        }
-
-        return newUrls
-      })
-    }
-  }, [activeImages, maxFiles, localFiles, removedInitialImages, isOnlyShow])
 
   useEffect(() => {
     if (!isOnlyShow) {
@@ -811,13 +716,13 @@ export const CreateImagesInput: FC<CreateImagesInputProps> = ({
   }, [checkAndClearError, isOnlyShow])
 
   const uploadItems = useMemo(() => {
-    return Array.from({length: itemsToShow}).map((_, index) => (
+    return Array.from({ length: itemsToShow }).map((_, index) => (
       <ImageUploadItem
         key={index}
         index={index}
         error={index === 0 ? errorValue : ''}
         maxFiles={maxFiles}
-        inputIdPrefix={inputIdPrefix}
+        inputIdPrefix={prefix}
         previewUrl={previewUrls[index] || null}
         localFile={localFiles[index]}
         loadError={loadError[index] || false}
@@ -838,7 +743,7 @@ export const CreateImagesInput: FC<CreateImagesInputProps> = ({
   }, [
     itemsToShow,
     maxFiles,
-    inputIdPrefix,
+    prefix,
     previewUrls,
     localFiles,
     loadError,
@@ -848,12 +753,13 @@ export const CreateImagesInput: FC<CreateImagesInputProps> = ({
     acceptString,
     showBigFirstItem,
     isOnlyShow,
+    errorValue,
     handleFileChange,
     handleMultipleFilesChange,
     handleRemove,
     handleImageError,
     handleImageClick,
-    handleSwapWithMain
+    handleSwapWithMain,
   ])
 
   return (
@@ -864,7 +770,9 @@ export const CreateImagesInput: FC<CreateImagesInputProps> = ({
         {uploadItems}
       </div>
       {!isOnlyShow && (
-        <div className={styles.info__block}>{errorValue && <p className={styles.error__message}>{errorValue}</p>}</div>
+        <div className={styles.info__block}>
+          {errorValue && <p className={styles.error__message}>{errorValue}</p>}
+        </div>
       )}
 
       {isOnlyShow && isModalOpen && (
@@ -878,4 +786,3 @@ export const CreateImagesInput: FC<CreateImagesInputProps> = ({
     </div>
   )
 }
-

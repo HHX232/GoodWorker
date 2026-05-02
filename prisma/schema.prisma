@@ -7,11 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-generator erd {
-  provider = "prisma-erd-generator"
-  output   = "./ERD.md"
-}
-
 model RateLimit {
   id      String   @id @default(cuid())
   key     String   @unique
@@ -139,6 +134,23 @@ model Post {
   vipExpiresAt    DateTime?
 
   allowedStudents PostAllowedStudent[]
+}
+
+model Bookmark {
+  id          String   @id @default(uuid())
+  authorId    String
+  authorRole  Role
+  sourceType  String // "post" | "text" | "roadmap"
+  sourceId    String
+  text        String
+  xpath       String  @default("")
+  contextText String   @default("") // весь параграф
+  offset      Int      @default(0)
+  length      Int
+  createdAt   DateTime @default(now())
+
+  @@index([authorId])
+  @@index([sourceType, sourceId])
 }
 
 model PostAllowedStudent {

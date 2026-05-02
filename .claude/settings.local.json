@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(wmic logicaldisk *)"
+      "Bash(wmic logicaldisk *)",
+      "Bash(xargs cat *)",
+      "Bash(npx tsc *)"
     ]
   }
 }

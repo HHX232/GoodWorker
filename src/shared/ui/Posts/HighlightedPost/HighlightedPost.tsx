@@ -30,6 +30,7 @@ const HighlightedPost: FC<IHighlightedPost> = ({
           linear-gradient(0.00deg, rgba(0,0,0,0.5) 0%, rgba(38,38,38,0.54) 34.434%, rgba(58,58,58,0.15) 88.003%, rgba(58,58,58,0) 92.611%),
           url(${backgroundImage})
         `,
+        height:'100%',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat'

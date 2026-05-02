@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "analyze": "ANALYZE=true next build",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "seed:vip": "tsx prisma/seedVipPosts.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

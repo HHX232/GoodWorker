@@ -13,9 +13,10 @@
   background: #ffffff;
   border-radius: 10px;
   padding: 10px 14px;
-  max-height: 80px;
-  overflow: hidden;
   border: 1px solid #EDEEF3;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .text {
@@ -26,35 +27,59 @@
   overflow: hidden;
   text-overflow: ellipsis;
   margin: 0;
+  max-width: 100%;
 }
 
-// ── Стрелка ────────────────────────────────────
+.save_btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #1a1a2e;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  width: 100%;
+  transition: background 0.15s ease;
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: #2d2d4a;
+  }
+
+  &:active {
+    background: #111128;
+  }
+}
+
 .arrow {
   width: 0;
   height: 0;
   flex-shrink: 0;
 }
 
-// Попап СВЕРХУ текста → стрелка смотрит ВНИЗ
 .top .arrow {
   border-left: 7px solid transparent;
   border-right: 7px solid transparent;
   border-top: 7px solid #EDEEF3;
 }
 
-// Попап СНИЗУ текста → стрелка смотрит ВВЕРХ
 .bottom .arrow {
   border-left: 7px solid transparent;
   border-right: 7px solid transparent;
   border-bottom: 7px solid #EDEEF3;
 }
 
-// ── Выравнивание стрелки ───────────────────────
 .left .arrow   { margin-left: 16px; }
 .right .arrow  { margin-left: auto; margin-right: 16px; }
 .center .arrow { margin: 0 auto; }
 
-// ── Анимация ───────────────────────────────────
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }

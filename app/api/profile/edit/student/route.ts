@@ -5,7 +5,12 @@ import { auth } from '../../../../../auth'
 
 const updateStudentSchema = z.object({
   name: z.string().min(1, 'Name is required').optional(),
-  phone: z.string().min(7, 'Minimum 7 characters').optional().nullable(),
+  phone: z
+  .string()
+  .transform((v) => (v?.trim() === '' ? null : v))
+  .pipe(z.string().min(7, 'Minimum 7 characters').nullable())
+  .optional()
+  .nullable(),
   avatarUrl: z.string().optional().nullable(), 
 })
 

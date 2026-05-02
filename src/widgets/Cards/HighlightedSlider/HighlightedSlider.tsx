@@ -164,7 +164,7 @@ export  const HighlightedSlider: FC<IHighlightedSlider> = ({
                   id: post.author.id,
                   name: post.author.username,
                   image: post.author.avatar ?? '',
-                  dateActivity: 'Online',
+                  dateActivity: '',
                   role: post.author.role,
                 }}
               />

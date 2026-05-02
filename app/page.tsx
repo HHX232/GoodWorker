@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import HomePage from '@/_pages/PublickPages/HomePage/HomePage'
-import PostService, {IPostsQuery} from '@/features/services/PostService.service'
+import PostService, {IPostResponse, IPostsQuery} from '@/features/services/PostService.service'
 
 interface HomePageRouteProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>
@@ -18,6 +18,12 @@ export default async function Home({searchParams}: HomePageRouteProps) {
     search: typeof params.search === 'string' ? params.search : undefined
   }
 
-  const data = await PostService.getList(query)
-  return <HomePage initialData={data} initialQuery={query} />
+  const [data, vipData] = await Promise.all([
+    PostService.getList(query),
+    PostService.getList({onlyVip: true, limit: 8, visibility: 'any'}).catch(() => null)
+  ])
+
+  const vipPosts: IPostResponse[] = vipData?.posts ?? []
+
+  return <HomePage initialData={data} initialQuery={query} vipPosts={vipPosts} />
 }

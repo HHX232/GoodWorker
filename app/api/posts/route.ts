@@ -87,8 +87,18 @@ export async function GET(req: NextRequest) {
       prisma.post.count({where})
     ])
 
+    const postIds = posts.map((p) => p.id)
+    const avgRatings = await prisma.postRating.groupBy({
+      by: ['postId'],
+      where: {postId: {in: postIds}},
+      _avg: {stars: true}
+    })
+    const ratingMap = Object.fromEntries(avgRatings.map((r) => [r.postId, r._avg.stars ?? 0]))
+
+    const postsWithRating = posts.map((p) => ({...p, avgRating: ratingMap[p.id] ?? 0}))
+
     return NextResponse.json({
-      posts,
+      posts: postsWithRating,
       pagination: {page, limit, total, totalPages: Math.ceil(total / limit)}
     })
   } catch (error) {

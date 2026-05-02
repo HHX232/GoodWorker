@@ -6,13 +6,13 @@ import '@/shared/scss/config/mixins.scss'
 import '@/shared/scss/config/reset.scss'
 import '@/shared/scss/config/root.scss'
 import '@/shared/scss/main.scss'
-import {TextSelectionProvider} from '@/shared/ui/Providers/TextSelectionProvider/TextSelectionProvider'
+import { TextSelectionProvider } from '@/shared/ui/Providers/TextSelectionProvider/TextSelectionProvider'
 import Header from '@/widgets/BaseUI/Header/Header'
-import type {Metadata} from 'next'
-import {NextIntlClientProvider} from 'next-intl'
-import {getLocale, getMessages} from 'next-intl/server'
-import {Roboto} from 'next/font/google'
-import {Toaster} from 'sonner'
+import type { Metadata } from 'next'
+import { NextIntlClientProvider } from 'next-intl'
+import { getLocale, getMessages } from 'next-intl/server'
+import { Roboto } from 'next/font/google'
+import { Toaster } from 'sonner'
 
 const robotoSans = Roboto({
   weight: ['300', '400', '500', '600', '700'],
@@ -37,7 +37,7 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <DefaultProvider>
             <Header />
-            <Toaster position='top-right' richColors />
+            <Toaster style={{zIndex:1410000010}} position='top-right' richColors />
             <TextSelectionProvider>{children}</TextSelectionProvider>
             <div id='modal_portal' />
           </DefaultProvider>
