@@ -1,9 +1,11 @@
 'use client'
 
 import CommentService, { ICommentResponse } from '@/features/services/CommentService.service'
+import { usePostRating } from '@/features/hooks/Comments/usePostRating'
 import { useQueryParams } from '@/shared/helpers/setQueryParams'
 import { UserHeaderCardProps } from '@/shared/types'
-import { useEffect, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { SelectPhotoInput } from '../../inputs/SelectPhotoInput/SelectPhotoInput'
 import { ModalImageZoom } from '../../Modals/ModalImageZoom/ModalImageZoom'
@@ -174,39 +176,16 @@ export function PostCommentSection({
   const [drafts, setDrafts] = useState<DraftImage[]>([])
   const [sending, setSending] = useState(false)
 
-  const [userRating, setUserRating] = useState<number | null>(null)
-  const [avgRating, setAvgRating] = useState<number | null>(null)
-  const [ratingLoading, setRatingLoading] = useState(false)
+  const queryClient = useQueryClient()
+  const {data: ratingData} = usePostRating(postId)
+  const userRating = ratingData?.userRating ?? null
+  const avgRating = ratingData?.averageStars ?? null
+  const [pendingStars, setPendingStars] = useState<number | null>(null)
 
   const [zoomSrc, setZoomSrc] = useState<string | null>(null)
 
   const {getQueryParam, setQueryParams} = useQueryParams()
   const scrollToCommentId = getQueryParam('commentIdToScroll')
-
-  useEffect(() => {
-    CommentService.getRating(postId)
-      .then((r) => {
-        setUserRating(r.userRating)
-        setAvgRating(r.averageStars)
-      })
-      .catch(() => {})
-  }, [postId])
-
-const handleRating = async (stars: number) => {
-  if (ratingLoading) return
-  setRatingLoading(true)
-  const toastId = toast.loading('Saving rating…')
-  try {
-    const r = await CommentService.ratePost(postId, stars)
-    setUserRating(r.userRating)
-    setAvgRating(r.averageStars)
-    toast.success('Rating saved', {id: toastId})
-  } catch {
-    toast.error('Failed to save rating', {id: toastId})
-  } finally {
-    setRatingLoading(false)
-  }
-}
 
   const handleSelectFile = (file: File) => {
     const previewUrl = URL.createObjectURL(file)
@@ -223,20 +202,29 @@ const handleRating = async (stars: number) => {
 
 const handleSend = async () => {
   const trimmed = text.trim()
-  if (!trimmed && drafts.length === 0) return
-  const toastId = toast.loading('Sending comment…')
+  if (!trimmed && drafts.length === 0 && pendingStars === null) return
+  const toastId = toast.loading('Sending…')
   setSending(true)
   try {
-    await CommentService.create(postId, {text: trimmed, images: drafts.map((d) => d.file)})
+    await Promise.all([
+      trimmed || drafts.length > 0
+        ? CommentService.create(postId, {text: trimmed, images: drafts.map((d) => d.file)})
+        : Promise.resolve(),
+      pendingStars !== null ? CommentService.ratePost(postId, pendingStars) : Promise.resolve()
+    ])
     setText('')
     drafts.forEach((d) => URL.revokeObjectURL(d.previewUrl))
     setDrafts([])
-    setIsModalOpen(true)
-    toast.success('Comment posted', {id: toastId})
-  }catch (error) {
-
-  toast.error(getErrorMessage(error, 'Failed to send comment'), {id: toastId})
-}finally {
+    setPendingStars(null)
+    if (trimmed || drafts.length > 0) setIsModalOpen(true)
+    await Promise.all([
+      queryClient.invalidateQueries({queryKey: ['myComment', postId]}),
+      pendingStars !== null ? queryClient.invalidateQueries({queryKey: ['rating', postId]}) : Promise.resolve()
+    ])
+    toast.success('Posted!', {id: toastId})
+  } catch (error) {
+    toast.error(getErrorMessage(error, 'Failed to send'), {id: toastId})
+  } finally {
     setSending(false)
   }
 }
@@ -308,8 +296,10 @@ const handleSend = async () => {
         {/* Rating row */}
         <div className={styles.rating_row}>
           <span className={styles.rating_label}>Your rating:</span>
-          <StarRating value={userRating} onChange={handleRating} size={20} />
-          {userRating !== null && <span className={styles.rating_value}>({userRating}/5)</span>}
+          <StarRating value={pendingStars ?? userRating} onChange={setPendingStars} size={20} />
+          {(pendingStars ?? userRating) !== null && (
+            <span className={styles.rating_value}>({pendingStars ?? userRating}/5)</span>
+          )}
         </div>
 
         {/* Input bar */}
@@ -331,7 +321,7 @@ const handleSend = async () => {
             className={styles.send_button}
             aria-label='Send comment'
             onClick={handleSend}
-            disabled={sending || (!text.trim() && drafts.length === 0)}
+            disabled={sending || (!text.trim() && drafts.length === 0 && pendingStars === null)}
             style={{opacity: sending ? 0.5 : 1}}
           >
             <svg width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'>

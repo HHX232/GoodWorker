@@ -1,7 +1,33 @@
-'use client'
 import RoadMapViewer from '@/_pages/RoadMapPages/ViewRoadMap/InnerViewer'
-import '@xyflow/react/dist/style.css'
+import RoadmapService from '@/features/services/RoadmapService.service'
+import {Edge, Node} from '@xyflow/react'
 
-export default function RoadMapPage() {
-  return <RoadMapViewer />
+interface Props {
+  params: Promise<{id: string}>
+}
+
+export default async function RoadMapPage({params}: Props) {
+  const {id} = await params
+
+  const roadmap = await RoadmapService.getById(id).catch(() => null)
+
+  if (!roadmap) {
+    return (
+      <div style={{padding: 40, fontFamily: 'Roboto, sans-serif', color: '#141416'}}>
+        <h2>Роадмап не найден</h2>
+        <p style={{color: '#868897'}}>ID: {id}</p>
+      </div>
+    )
+  }
+
+  const content = roadmap.content as {nodes: Node<Record<string, unknown>>[]; edges: Edge[]}
+
+  return (
+    <RoadMapViewer
+      nodes={content?.nodes ?? []}
+      edges={content?.edges ?? []}
+      roadmapId={id}
+      initialAvgRating={roadmap.avgRating}
+    />
+  )
 }

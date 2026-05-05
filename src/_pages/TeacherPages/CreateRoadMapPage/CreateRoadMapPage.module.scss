@@ -4,7 +4,7 @@
   position: relative;
   height: calc(100vh - var(--header-height));
   position: fixed;
-  top: calc(var(--header-height) + 1px);
+  top: calc(var(--header-height) -27px);
   left: 0;
   background-color: #fff;
 }

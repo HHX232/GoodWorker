@@ -1,52 +1,88 @@
-// features/Bookmarks/BookmarkHighlighter.tsx
 'use client'
 
 import { useBookmarks } from '@/features/hooks/Bookmark/useBookmarks'
 import { highlightBookmark } from '@/shared/helpers/xpath/xpath'
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import styles from './BookmarkHighlighter.module.scss'
 
 interface Props {
   postId: string
 }
 
-export function BookmarkHighlighter({postId}: Props) {
-  const {bookmarks, remove} = useBookmarks('post', postId)
+interface TooltipState {
+  id: string
+  top: number
+  left: number
+}
+
+export function BookmarkHighlighter({ postId }: Props) {
+  const { bookmarks, remove } = useBookmarks('post', postId)
+  const initializedRef = useRef(false)
+  const [tooltip, setTooltip] = useState<TooltipState | null>(null)
 
   useEffect(() => {
     if (!bookmarks.length) return
-      console.log('bookmarks to highlight:', bookmarks.length)
+
+    const delay = initializedRef.current ? 0 : 800
+    initializedRef.current = true
 
     const timer = setTimeout(() => {
-          console.log('starting highlight...')
+      bookmarks.forEach((b) => highlightBookmark(b))
 
-      bookmarks.forEach((b) =>
-       {
-         const result = highlightBookmark(b)
-          console.log('highlight result:', result, b.text)
-         highlightBookmark({
-          id: b.id,
-          text: b.text,
-          contextText: b.contextText,
-          offset: b.offset,
-          length: b.length
-        })}
-        
-      )
-
-      // Клик по закладке — удалить
       document.querySelectorAll<HTMLElement>('.bookmark-highlight').forEach((el) => {
-        el.onclick = () => {
-          const id = el.dataset.bookmarkId
-          if (id && confirm('Удалить закладку?')) {
-            remove(id)
-            el.replaceWith(...Array.from(el.childNodes))
-          }
+        el.onclick = (e) => {
+          e.stopPropagation()
+          const rect = el.getBoundingClientRect()
+          setTooltip({
+            id: el.dataset.bookmarkId!,
+            top: rect.bottom + 6,
+            left: rect.left + rect.width / 2,
+          })
         }
       })
-    }, 1000)
+    }, delay)
 
     return () => clearTimeout(timer)
-  }, [bookmarks, remove])
+  }, [bookmarks])
 
-  return null
+  useEffect(() => {
+    if (!tooltip) return
+    const handleOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (!target.closest('[data-bookmark-tooltip]')) setTooltip(null)
+    }
+    document.addEventListener('mousedown', handleOutside)
+    return () => document.removeEventListener('mousedown', handleOutside)
+  }, [tooltip])
+
+  const handleConfirm = () => {
+    if (!tooltip) return
+    remove(tooltip.id)
+    const el = document.querySelector<HTMLElement>(`[data-bookmark-id="${tooltip.id}"]`)
+    if (el) el.replaceWith(...Array.from(el.childNodes))
+    setTooltip(null)
+  }
+
+  if (!tooltip) return null
+
+  return createPortal(
+    <div
+      data-bookmark-tooltip
+      className={styles.tooltip}
+      style={{ top: tooltip.top, left: tooltip.left }}
+    >
+      <div className={styles.arrow} />
+      <p className={styles.question}>Удалить закладку?</p>
+      <div className={styles.actions}>
+        <button className={styles.cancel_btn} onClick={() => setTooltip(null)}>
+          Отмена
+        </button>
+        <button className={styles.delete_btn} onClick={handleConfirm}>
+          Удалить
+        </button>
+      </div>
+    </div>,
+    document.body
+  )
 }

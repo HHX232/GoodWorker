@@ -42,6 +42,7 @@
     "bcryptjs": "^3.0.3",
     "cobe": "^2.0.1",
     "framer-motion": "^12.38.0",
+    "html-to-image": "^1.11.13",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.577.0",
     "next": "16.1.6",

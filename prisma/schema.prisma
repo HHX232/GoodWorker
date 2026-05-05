@@ -27,6 +27,8 @@ model Student {
   updatedAt              DateTime                 @updatedAt
   avatarUrl              String?
   password               String?
+  isVip                  Boolean                  @default(false)
+  vipExpiresAt           DateTime?
   complaints             Complaint[]
   errors                 StudentError[]
   favoritePosts          StudentFavoritePost[]
@@ -38,6 +40,7 @@ model Student {
   conferenceParticipants ConferenceParticipant[]
   postAllowedStudents    PostAllowedStudent[]
   lastSeenAt             DateTime?
+  transactions           VipTransaction[]
 }
 
 model Teacher {
@@ -53,6 +56,9 @@ model Teacher {
   password           String?
   pasportConfirmed   Boolean?
   phone              String?
+  isVip              Boolean           @default(false)
+  vipExpiresAt       DateTime?
+  transactions       VipTransaction[]
   complaints         Complaint[]
   posts              Post[]
   roadmaps           Roadmap[]
@@ -215,16 +221,50 @@ model StudentFavoritePost {
 }
 
 model Roadmap {
-  id         String                   @id @default(uuid())
-  teacherId  String
-  title      String
-  price      Float                    @default(0)
-  content    Json
-  createdAt  DateTime                 @default(now())
-  updatedAt  DateTime                 @updatedAt
-  complaints Complaint[]
-  teacher    Teacher                  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  progress   StudentRoadmapProgress[]
+  id              String                   @id @default(uuid())
+  teacherId       String
+  title           String
+  price           Float                    @default(0)
+  content         Json
+  previewImageUrl String?   // thumbnail, задаётся пользователем
+  treeSnapshotUrl String?   // auto-PNG дерева react-flow
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+  complaints      Complaint[]
+  teacher         Teacher                  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  progress        StudentRoadmapProgress[]
+  comments        RoadmapComment[]
+  ratings         RoadmapRating[]
+}
+
+model RoadmapComment {
+  id         String    @id @default(uuid())
+  roadmapId  String
+  authorId   String
+  authorRole Role
+  text       String
+  imageUrls  String[]  @default([])
+  editedAt   DateTime?
+  createdAt  DateTime  @default(now())
+  roadmap    Roadmap   @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+
+  @@unique([roadmapId, authorId])
+  @@index([roadmapId])
+  @@index([authorId])
+}
+
+model RoadmapRating {
+  id        String   @id @default(uuid())
+  roadmapId String
+  authorId  String
+  authorRole Role
+  stars     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  roadmap   Roadmap  @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+
+  @@unique([roadmapId, authorId])
+  @@index([roadmapId])
 }
 
 model StudentRoadmapProgress {
@@ -395,10 +435,55 @@ model ConferenceParticipant {
   @@index([studentId])
 }
 
+model PromoCode {
+  id              String          @id @default(uuid())
+  code            String          @unique
+  rewardType      PromoRewardType
+  discountPercent Int?
+  vipDays         Int             @default(30)
+  description     String
+  maxUses         Int?
+  usedCount       Int             @default(0)
+  expiresAt       DateTime?
+  isActive        Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  transactions    VipTransaction[]
+}
+
+model VipTransaction {
+  id              String          @id @default(uuid())
+  teacherId       String?
+  studentId       String?
+  userRole        Role
+  type            TransactionType
+  amount          Float           @default(0)
+  description     String
+  promoCodeId     String?
+  vipGrantedUntil DateTime?
+  createdAt       DateTime        @default(now())
+  teacher         Teacher?        @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  student         Student?        @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  promoCode       PromoCode?      @relation(fields: [promoCodeId], references: [id], onDelete: SetNull)
+
+  @@index([teacherId])
+  @@index([studentId])
+}
+
 enum Role {
   STUDENT
   TEACHER
   ADMIN
+}
+
+enum PromoRewardType {
+  FREE_VIP
+  DISCOUNT
+}
+
+enum TransactionType {
+  VIP_PURCHASE
+  VIP_PROMO
+  DEPOSIT
 }
 
 enum PostVisibility {

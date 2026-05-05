@@ -24,6 +24,10 @@
    }
 }
 
+:global(header) {
+   margin-bottom: 0 !important;
+}
+
 .paywallBtnActive {
    background: #141416;
    border-color: #141416;

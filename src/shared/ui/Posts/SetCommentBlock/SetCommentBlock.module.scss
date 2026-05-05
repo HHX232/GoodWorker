@@ -4,7 +4,7 @@
   gap: 18px;
   padding: 28px 32px;
   border-radius: 16px;
-  background: #f8f8fa;
+  background: #FFF;
   margin-top: 32px;
 
   @media (max-width: 600px) {
@@ -19,9 +19,11 @@
   color: #141416;
   margin: 0;
 }
-.stars{
+
+.stars {
   margin: 0 auto;
 }
+
 .stars_row {
   display: flex;
   align-items: center;
@@ -77,8 +79,14 @@
   gap: 12px;
   padding: 36px 32px;
   border-radius: 16px;
-  background: #f8f8fa;
+  background: #FFF;
   margin-top: 32px;
+}
+
+.extra_images {
+  width: 100%;
+  max-width: 100%;
+  justify-content: space-between;
 }
 
 .success_text {
@@ -102,4 +110,55 @@
     border-color: #141416;
     color: #141416;
   }
+}
+
+// ─── Existing saved images ──────────────────────────────────────────────────
+
+.existing_images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.existing_image_wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.remove_image_btn {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: #AC2525;
+  color: #fff;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+
+  &:hover {
+    background: #8b1e1e;
+  }
+}
+
+// ─── Loading skeleton ───────────────────────────────────────────────────────
+
+.skeleton {
+  height: 120px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }

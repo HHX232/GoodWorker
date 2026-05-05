@@ -218,7 +218,39 @@
     "removePost": "Убрать",
     "addCondition": "Добавить условие",
     "placeholderCondition": "Условие...",
-    "remove": "×"
+    "remove": "×",
+    "save": "Сохранить",
+    "saving": "Сохраняем...",
+    "saveSuccess": "Роадмап сохранён",
+    "saveError": "Ошибка при сохранении",
+    "validationErrors": "{count} блоков не заполнено",
+    "reviewBtn": "Оставить отзыв",
+    "reviewsCount": "{count} отзывов",
+    "reviewTitle": "Оставить отзыв",
+    "reviewComment": "Комментарий",
+    "reviewCommentPlaceholder": "Напишите ваш отзыв...",
+    "reviewPhotos": "Фото",
+    "reviewCancel": "Отмена",
+    "reviewSubmit": "Опубликовать",
+    "reviewUpdate": "Обновить",
+    "reviewSaving": "Сохраняем отзыв…",
+    "reviewSaved": "Отзыв сохранён!",
+    "reviewError": "Не удалось сохранить отзыв",
+    "publishSettings": "Настройки публикации",
+    "publishCancel": "Отмена",
+    "publishConfirm": "Опубликовать",
+    "priceLabel": "Цена (₽)",
+    "priceFree": "Бесплатно",
+    "currencyPreview": "Стоимость в других валютах",
+    "vipRequired": "Требуется VIP",
+    "vipRequiredDesc": "Для создания платных роадмапов необходим VIP-статус. Он открывает монетизацию и приоритетный показ в каталоге.",
+    "purchaseVip": "Приобрести VIP",
+    "vipChecking": "Проверяем статус VIP...",
+    "commentsBtn": "Комментарии",
+    "commentsTitle": "Комментарии",
+    "noComments": "Комментариев пока нет",
+    "leaveComment": "Оставить комментарий",
+    "loadingComments": "Загружаем..."
   },
   "fileBlock": {
     "filesNotAttached": "Файлы не прикреплены",
@@ -275,6 +307,28 @@
       "back": "Назад",
       "successRegister": "Аккаунт успешно создан!"
     }
+  },
+  "roadmapList": {
+    "title": "Роадмапы",
+    "searchPlaceholder": "Поиск по названию...",
+    "clearSearch": "Очистить",
+    "priceFrom": "Цена от",
+    "priceTo": "до",
+    "free": "Бесплатно",
+    "rating": "Рейтинг:"
+  },
+  "CreateImagesInput": {
+    "loadError": "Ошибка загрузки",
+    "uploadError": "Ошибка загрузки",
+    "invalidFileTypes": "Недопустимые форматы: {fileNames}",
+    "fileSizeExceeded": "Файлы превышают {maxSizeMB} МБ: {fileNames}",
+    "chooseImageOrVideo": "Выберите изображение или видео (не SVG)",
+    "fileSizeLimit": "Файл превышает {maxSizeMB} МБ",
+    "notEnoughSlots": "Не хватает слотов",
+    "availableSlots": "Доступно {available}, выбрано {selected}"
+  },
+  "previewText": {
+    "preview": "Превью",
+    "makePreview": "Сделать превью"
   }
-
 }

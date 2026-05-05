@@ -20,6 +20,7 @@ export interface ICreateBookmarkDto {
   xpath: string
   offset: number
   length: number
+  contextText?: string
 }
 
 function handleError(error: unknown, fallback: string): never {

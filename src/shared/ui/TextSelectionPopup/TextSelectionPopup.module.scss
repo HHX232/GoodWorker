@@ -30,32 +30,45 @@
   max-width: 100%;
 }
 
-.save_btn {
+.buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.save_btn,
+.copy_btn {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   padding: 6px 10px;
   border-radius: 6px;
-  background: #1a1a2e;
-  color: #ffffff;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   border: none;
-  width: 100%;
+  flex: 1;
   transition: background 0.15s ease;
 
   svg {
     flex-shrink: 0;
   }
+}
 
-  &:hover {
-    background: #2d2d4a;
-  }
+.save_btn {
+  background: #1a1a2e;
+  color: #ffffff;
 
-  &:active {
-    background: #111128;
-  }
+  &:hover { background: #2d2d4a; }
+  &:active { background: #111128; }
+}
+
+.copy_btn {
+  background: #f0f0f5;
+  color: #1a1a2e;
+
+  &:hover { background: #e2e2ec; }
+  &:active { background: #d4d4e0; }
 }
 
 .arrow {

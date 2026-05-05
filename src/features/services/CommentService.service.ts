@@ -119,6 +119,18 @@ const CommentService = {
     } catch (error) {
       handleError(error, 'Failed to rate post')
     }
+  },
+
+  async getMyComment(postId: string): Promise<ICommentResponse | null> {
+    try {
+      const res = await instance.get<ICommentResponse>(`/post/${postId}/comments/my`)
+      return res.data
+    } catch (error) {
+      if (error instanceof AxiosError && (error.response?.status === 404 || error.response?.status === 401)) {
+        return null
+      }
+      handleError(error, 'Failed to fetch my comment')
+    }
   }
 }
 

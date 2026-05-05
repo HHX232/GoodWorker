@@ -11,7 +11,51 @@ import style from './UserHeaderCard.module.scss'
 
 const DOTS_IMAGE = '/icons/base/threeDats.svg'
 const USER_STUB = '/stubs/stub-4.jpg'
+const PALETTES = [
+  {bg: '#1d4ed8', text: '#93c5fd'},
+  {bg: '#7c3aed', text: '#c4b5fd'},
+  {bg: '#0f766e', text: '#99f6e4'},
+  {bg: '#b45309', text: '#fde68a'},
+  {bg: '#be123c', text: '#fda4af'},
+  {bg: '#15803d', text: '#86efac'},
+  {bg: '#c2410c', text: '#fed7aa'},
+  {bg: '#1d4ed8', text: '#bfdbfe'}
+]
 
+export function getAvatarColor(name: string): {bg: string; text: string} {
+  let hash = 0
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return PALETTES[Math.abs(hash) % PALETTES.length]
+}
+const AvatarFallback: FC<{name: string; size?: 'lg' | 'sm'}> = ({name, size = 'lg'}) => {
+  const letter = name?.trim()?.[0]?.toUpperCase() ?? '?'
+  const {bg, text} = getAvatarColor(name ?? '')
+  const px = size === 'sm' ? 28 : 42
+
+  return (
+    <div
+      className={`${style.user_image} ${size === 'sm' ? style.little_image : ''}`}
+      style={{
+        width: px,
+        height: px,
+        borderRadius: '50%',
+        backgroundColor: bg,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: size === 'sm' ? 12 : 18,
+        fontWeight: 600,
+        color: text,
+        flexShrink: 0,
+        userSelect: 'none'
+      }}
+    >
+      {letter}
+    </div>
+  )
+}
 export const DotsMenu: FC<DotsMenuProps> = ({activeMenu, toggleMenu, handleShareClick, maxWidth = '24'}) => {
   return (
     <div className={style.dots_menu_box}>
@@ -60,7 +104,8 @@ const UserHeaderCard: FC<UserHeaderCardProps> = ({
     e.preventDefault()
     setActiveMenu((prev) => !prev)
   }
-
+  const [imgError, setImgError] = useState(false)
+  const showFallback = !image || imgError
   const handleShareClick = (e: React.MouseEvent<HTMLLIElement>) => {
     if (typeof window === 'undefined') return
     e.stopPropagation()
@@ -75,21 +120,29 @@ const UserHeaderCard: FC<UserHeaderCardProps> = ({
     <div className={style.user_box}>
       {useLink ? (
         <Link href={`/users/${userID}`}>
-          <Image
-            className={`${style.user_image} ${size === 'sm' && style.little_image}`}
-            src={image ?? USER_STUB}
-            alt='User avatar'
-            width={42}
-            height={42}
-          />
+          {showFallback ? (
+            <AvatarFallback name={name ?? ''} size={size} />
+          ) : (
+            <Image
+              className={`${style.user_image} ${size === 'sm' && style.little_image}`}
+              src={image!}
+              alt='User avatar'
+              width={42}
+              height={42}
+              onError={() => setImgError(true)}
+            />
+          )}
         </Link>
+      ) : showFallback ? (
+        <AvatarFallback name={name ?? ''} size={size} />
       ) : (
         <Image
           className={`${style.user_image} ${size === 'sm' && style.little_image}`}
-          src={image ?? USER_STUB}
+          src={image!}
           alt='User avatar'
           width={42}
           height={42}
+          onError={() => setImgError(true)}
         />
       )}
 

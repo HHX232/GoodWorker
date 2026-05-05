@@ -220,7 +220,39 @@
 
     "addCondition": "Add condition",
     "placeholderCondition": "Condition...",
-    "remove": "×"
+    "remove": "×",
+    "save": "Save",
+    "saving": "Saving...",
+    "saveSuccess": "Roadmap saved",
+    "saveError": "Failed to save",
+    "validationErrors": "{count} blocks are incomplete",
+    "reviewBtn": "Leave a review",
+    "reviewsCount": "{count} reviews",
+    "reviewTitle": "Leave a review",
+    "reviewComment": "Comment",
+    "reviewCommentPlaceholder": "Write your review...",
+    "reviewPhotos": "Photos",
+    "reviewCancel": "Cancel",
+    "reviewSubmit": "Publish",
+    "reviewUpdate": "Update",
+    "reviewSaving": "Saving review…",
+    "reviewSaved": "Review saved!",
+    "reviewError": "Failed to save review",
+    "publishSettings": "Publish settings",
+    "publishCancel": "Cancel",
+    "publishConfirm": "Publish",
+    "priceLabel": "Price (₽)",
+    "priceFree": "Free",
+    "currencyPreview": "Price in other currencies",
+    "vipRequired": "VIP required",
+    "vipRequiredDesc": "A VIP subscription is required to publish paid roadmaps. It unlocks monetization and priority placement in the catalog.",
+    "purchaseVip": "Get VIP",
+    "vipChecking": "Checking VIP status...",
+    "commentsBtn": "Comments",
+    "commentsTitle": "Comments",
+    "noComments": "No comments yet",
+    "leaveComment": "Leave a comment",
+    "loadingComments": "Loading..."
   },
   "fileBlock": {
     "filesNotAttached": "No files attached",
@@ -274,5 +306,28 @@
     "back": "Back",
     "successRegister": "Account created successfully!"
   }
-}
+  },
+  "roadmapList": {
+    "title": "Roadmaps",
+    "searchPlaceholder": "Search by title...",
+    "clearSearch": "Clear",
+    "priceFrom": "Price from",
+    "priceTo": "to",
+    "free": "Free",
+    "rating": "Rating:"
+  },
+  "CreateImagesInput": {
+    "loadError": "Failed to load",
+    "uploadError": "Upload error",
+    "invalidFileTypes": "Invalid file types: {fileNames}",
+    "fileSizeExceeded": "Files exceed {maxSizeMB} MB: {fileNames}",
+    "chooseImageOrVideo": "Choose an image or video (not SVG)",
+    "fileSizeLimit": "File exceeds {maxSizeMB} MB",
+    "notEnoughSlots": "Not enough slots",
+    "availableSlots": "Available {available}, selected {selected}"
+  },
+  "previewText": {
+    "preview": "Preview",
+    "makePreview": "Make preview"
+  }
 }

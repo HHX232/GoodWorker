@@ -3,7 +3,16 @@
     "allow": [
       "Bash(wmic logicaldisk *)",
       "Bash(xargs cat *)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(dir \"c:\\\\Users\\\\Мастер\\\\Desktop\\\\goodworkerremaster\\\\app\\\\api\" /s /b)",
+      "Bash(mkdir -p \"c:/Users/Мастер/Desktop/goodworkerremaster/app/api/roadmap/[id]\")",
+      "Bash(npx prisma *)",
+      "Bash(New-Item -ItemType Directory -Path \"c:\\\\Users\\\\Мастер\\\\Desktop\\\\goodworkerremaster\\\\src\\\\shared\\\\ui\\\\RoadMap\\\\RoadMapPreview\" -Force)",
+      "Bash(Out-Null)",
+      "Bash(Write-Output \"done\")"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\Мастер\\Desktop\\goodworkerremaster\\app\\api\\roadmap"
     ]
   }
 }

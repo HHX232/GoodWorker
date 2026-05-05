@@ -1,0 +1,166 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 480px;
+
+  @media (max-width: 560px) {
+    min-width: unset;
+  }
+}
+
+.empty {
+  text-align: center;
+  color: #868897;
+  font-size: 14px;
+  padding: 32px 0;
+  margin: 0;
+}
+
+.loader {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e8e8ef;
+  border-top-color: #141416;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// ── Comment item ──────────────────────────────────────────────────────────────
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 0;
+  border-bottom: 1px solid #f0f0f5;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.author_row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f0f0f5;
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar_img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar_initials {
+  font-size: 13px;
+  font-weight: 700;
+  color: #868897;
+  line-height: 1;
+}
+
+.author_info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.author_name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #141416;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.date {
+  font-size: 11px;
+  color: #b0b0b8;
+}
+
+.text {
+  font-size: 14px;
+  color: #141416;
+  line-height: 1.5;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.thumb {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  background: #f0f0f5;
+
+  &:hover {
+    opacity: 0.85;
+  }
+}
+
+// ── Footer ────────────────────────────────────────────────────────────────────
+
+.footer {
+  padding: 12px 24px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.leave_btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 38px;
+  padding: 0 20px;
+  border-radius: 10px;
+  background: #141416;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    opacity: 0.78;
+  }
+}

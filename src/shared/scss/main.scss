@@ -648,6 +648,15 @@ img {
   &:hover {
     background-color: rgba(255, 200, 80, 0.35);
   }
+
+  .bookmark-highlight {
+    background-color: rgba(59, 130, 246, 0.2);
+    border-left-color: #3b82f6;
+
+    &:hover {
+      background-color: rgba(59, 130, 246, 0.38);
+    }
+  }
 }
 .truncated__base64 {
   display: inline-block;

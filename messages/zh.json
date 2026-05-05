@@ -217,7 +217,39 @@
     "removePost": "移除",
     "addCondition": "添加条件",
     "placeholderCondition": "条件...",
-    "remove": "×"
+    "remove": "×",
+    "save": "保存",
+    "saving": "保存中...",
+    "saveSuccess": "路线图已保存",
+    "saveError": "保存失败",
+    "validationErrors": "{count} 个模块未填写",
+    "reviewBtn": "写评论",
+    "reviewsCount": "{count} 条评论",
+    "reviewTitle": "写评论",
+    "reviewComment": "评论",
+    "reviewCommentPlaceholder": "写下您的评论...",
+    "reviewPhotos": "照片",
+    "reviewCancel": "取消",
+    "reviewSubmit": "发布",
+    "reviewUpdate": "更新",
+    "reviewSaving": "正在保存评论…",
+    "reviewSaved": "评论已保存！",
+    "reviewError": "保存评论失败",
+    "publishSettings": "发布设置",
+    "publishCancel": "取消",
+    "publishConfirm": "发布",
+    "priceLabel": "价格 (₽)",
+    "priceFree": "免费",
+    "currencyPreview": "其他货币价格",
+    "vipRequired": "需要VIP",
+    "vipRequiredDesc": "发布付费路线图需要VIP订阅，解锁变现功能及目录优先展示。",
+    "purchaseVip": "获取VIP",
+    "vipChecking": "正在验证VIP状态...",
+    "commentsBtn": "评论",
+    "commentsTitle": "评论",
+    "noComments": "暂无评论",
+    "leaveComment": "留下评论",
+    "loadingComments": "加载中..."
   },
   "fileBlock": {
     "filesNotAttached": "未附加文件",
@@ -271,5 +303,28 @@
     "back": "返回",
     "successRegister": "账户创建成功！"
   }
-}
+  },
+  "roadmapList": {
+    "title": "路线图",
+    "searchPlaceholder": "按标题搜索...",
+    "clearSearch": "清除",
+    "priceFrom": "最低价格",
+    "priceTo": "至",
+    "free": "免费",
+    "rating": "评分："
+  },
+  "CreateImagesInput": {
+    "loadError": "加载失败",
+    "uploadError": "上传错误",
+    "invalidFileTypes": "无效文件类型：{fileNames}",
+    "fileSizeExceeded": "文件超过 {maxSizeMB} MB：{fileNames}",
+    "chooseImageOrVideo": "请选择图片或视频（非SVG）",
+    "fileSizeLimit": "文件超过 {maxSizeMB} MB",
+    "notEnoughSlots": "没有足够的空间",
+    "availableSlots": "可用 {available}，已选 {selected}"
+  },
+  "previewText": {
+    "preview": "预览",
+    "makePreview": "设为预览"
+  }
 }

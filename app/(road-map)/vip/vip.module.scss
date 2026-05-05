@@ -1,0 +1,211 @@
+.page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 64px;
+}
+
+// ── Hero ───────────────────────────────────────────────────────────────────
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+}
+
+.crown {
+  font-size: 64px;
+  line-height: 1;
+  filter: drop-shadow(0 4px 12px rgba(245, 158, 11, 0.4));
+}
+
+.hero_title {
+  font-size: 36px;
+  font-weight: 800;
+  color: #141416;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.hero_sub {
+  font-size: 16px;
+  color: #868897;
+  max-width: 480px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.cta_btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  height: 52px;
+  padding: 0 36px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.35);
+  transition: all 0.18s;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(245, 158, 11, 0.45);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.success_wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.success_badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 24px;
+  border-radius: 12px;
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.goto_btn {
+  height: 40px;
+  padding: 0 24px;
+  border-radius: 10px;
+  background: #141416;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.75;
+  }
+}
+
+.activate_wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 360px;
+  margin-top: 8px;
+}
+
+.promo_input {
+  width: 100%;
+}
+
+.vip_until {
+  font-size: 13px;
+  color: #15803d;
+  margin: 0;
+}
+
+.stub_note {
+  font-size: 12px;
+  color: #c0c0c0;
+  margin: 0;
+}
+
+// ── Benefits ───────────────────────────────────────────────────────────────
+.benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.benefits_title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #141416;
+  margin: 0;
+}
+
+.benefits_grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 400px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.benefit_card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px;
+  border-radius: 14px;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  transition: box-shadow 0.15s;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  }
+}
+
+.benefit_icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.benefit_name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #141416;
+  margin: 0;
+}
+
+.benefit_desc {
+  font-size: 13px;
+  color: #868897;
+  margin: 0;
+  line-height: 1.4;
+}

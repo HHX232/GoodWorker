@@ -37,8 +37,12 @@ export default function EntryPointBlock({nodeId}: {nodeId: string}) {
   const handlePreview = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    update({roadPreview: URL.createObjectURL(file)})
-    if (fileRef.current) fileRef.current.value = ''
+    const reader = new FileReader()
+    reader.onload = () => {
+      update({roadPreview: reader.result as string})
+      if (fileRef.current) fileRef.current.value = ''
+    }
+    reader.readAsDataURL(file)
   }
 
   return (

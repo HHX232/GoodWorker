@@ -220,7 +220,39 @@
     "removePost": "हटाएँ",
     "addCondition": "शर्त जोड़ें",
     "placeholderCondition": "शर्त...",
-    "remove": "×"
+    "remove": "×",
+    "save": "सहेजें",
+    "saving": "सहेज रहे हैं...",
+    "saveSuccess": "रोडमैप सहेजा गया",
+    "saveError": "सहेजने में विफल",
+    "validationErrors": "{count} ब्लॉक अधूरे हैं",
+    "reviewBtn": "समीक्षा छोड़ें",
+    "reviewsCount": "{count} समीक्षाएँ",
+    "reviewTitle": "समीक्षा छोड़ें",
+    "reviewComment": "टिप्पणी",
+    "reviewCommentPlaceholder": "अपनी समीक्षा लिखें...",
+    "reviewPhotos": "फ़ोटो",
+    "reviewCancel": "रद्द करें",
+    "reviewSubmit": "प्रकाशित करें",
+    "reviewUpdate": "अपडेट करें",
+    "reviewSaving": "समीक्षा सहेज रहे हैं…",
+    "reviewSaved": "समीक्षा सहेजी गई!",
+    "reviewError": "समीक्षा सहेजने में विफल",
+    "publishSettings": "प्रकाशन सेटिंग्स",
+    "publishCancel": "रद्द करें",
+    "publishConfirm": "प्रकाशित करें",
+    "priceLabel": "मूल्य (₽)",
+    "priceFree": "निःशुल्क",
+    "currencyPreview": "अन्य मुद्राओं में मूल्य",
+    "vipRequired": "VIP आवश्यक है",
+    "vipRequiredDesc": "भुगतान रोडमैप प्रकाशित करने के लिए VIP सदस्यता आवश्यक है।",
+    "purchaseVip": "VIP खरीदें",
+    "vipChecking": "VIP स्थिति जाँच रहे हैं...",
+    "commentsBtn": "टिप्पणियाँ",
+    "commentsTitle": "टिप्पणियाँ",
+    "noComments": "अभी तक कोई टिप्पणी नहीं",
+    "leaveComment": "टिप्पणी छोड़ें",
+    "loadingComments": "लोड हो रहा है..."
   },
   "fileBlock": {
     "filesNotAttached": "कोई फ़ाइल संलग्न नहीं",
@@ -274,5 +306,28 @@
     "back": "वापस",
     "successRegister": "खाता सफलतापूर्वक बना लिया गया है!"
   }
-}
+  },
+  "roadmapList": {
+    "title": "रोडमैप",
+    "searchPlaceholder": "शीर्षक से खोजें...",
+    "clearSearch": "साफ़ करें",
+    "priceFrom": "कीमत से",
+    "priceTo": "तक",
+    "free": "मुफ़्त",
+    "rating": "रेटिंग:"
+  },
+  "CreateImagesInput": {
+    "loadError": "लोड त्रुटि",
+    "uploadError": "अपलोड त्रुटि",
+    "invalidFileTypes": "अमान्य फ़ाइल प्रकार: {fileNames}",
+    "fileSizeExceeded": "फ़ाइलें {maxSizeMB} MB से अधिक: {fileNames}",
+    "chooseImageOrVideo": "छवि या वीडियो चुनें (SVG नहीं)",
+    "fileSizeLimit": "फ़ाइल {maxSizeMB} MB से अधिक है",
+    "notEnoughSlots": "पर्याप्त स्थान नहीं",
+    "availableSlots": "उपलब्ध {available}, चुने गए {selected}"
+  },
+  "previewText": {
+    "preview": "पूर्वावलोकन",
+    "makePreview": "पूर्वावलोकन बनाएं"
+  }
 }
