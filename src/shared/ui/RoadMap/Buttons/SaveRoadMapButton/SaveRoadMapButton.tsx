@@ -1,7 +1,7 @@
 'use client'
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {validateRoadMapNodes} from '@/features/helpers/validateRoadMapNodes'
-import RoadmapService from '@/features/services/RoadmapService.service'
+import RoadmapService, {RoadmapNodeAccessType} from '@/features/services/RoadmapService.service'
 import {RoadMapBlockType, RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
 import {PublishModal} from '@/shared/ui/RoadMap/PublishModal/PublishModal'
 import {Edge, Node, useReactFlow} from '@xyflow/react'
@@ -16,6 +16,7 @@ interface ValidatedDraft {
   edges: Edge[]
   title: string
   previewImageUrl: string | null
+  hasPaywalledNodes: boolean
 }
 
 export function SaveRoadMapButton() {
@@ -26,7 +27,6 @@ export function SaveRoadMapButton() {
   const [publishOpen, setPublishOpen] = useState(false)
   const [draft, setDraft] = useState<ValidatedDraft | null>(null)
 
-  // Step 1: validate → open publish modal
   const handleValidate = () => {
     const nodes = getNodes() as Node<RoadNodeData>[]
     const edges = getEdges()
@@ -52,13 +52,13 @@ export function SaveRoadMapButton() {
     const entryNode = nodes.find((n) => n.data.type === RoadMapBlockType.ENTRY_POINT)
     const title = (entryNode?.data as any)?.roadTitle?.trim() ?? ''
     const previewImageUrl = (entryNode?.data as any)?.roadPreview ?? null
+    const hasPaywalledNodes = nodes.some((n) => (n.data as any).isPaywallHidden === true)
 
-    setDraft({nodes, edges, title, previewImageUrl})
+    setDraft({nodes, edges, title, previewImageUrl, hasPaywalledNodes})
     setPublishOpen(true)
   }
 
-  // Step 2: confirmed price → capture + save
-  const handlePublish = async (price: number) => {
+  const handlePublish = async (price: number, nodeAccessType: RoadmapNodeAccessType | null) => {
     if (!draft) return
     setSaving(true)
     const toastId = toast.loading(t('saving'))
@@ -68,6 +68,7 @@ export function SaveRoadMapButton() {
         content: {nodes: draft.nodes, edges: draft.edges},
         price,
         previewImageUrl: draft.previewImageUrl,
+        nodeAccessType,
       })
       toast.success(t('saveSuccess'), {id: toastId})
       router.push(`/road-map/${roadmap.id}`)
@@ -101,6 +102,7 @@ export function SaveRoadMapButton() {
       <PublishModal
         isOpen={publishOpen}
         onClose={() => setPublishOpen(false)}
+        hasPaywalledNodes={draft?.hasPaywalledNodes ?? false}
         onConfirm={handlePublish}
       />
     </>

@@ -1,4 +1,5 @@
 'use client'
+import { RoadmapNodeAccessType } from '@/features/services/RoadmapService.service'
 import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
 import { FEATURED_CURRENCIES, formatConverted } from '@/shared/utils/currencyConverter'
 import { useTranslations } from 'next-intl'
@@ -6,15 +7,65 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import styles from './PublishModal.module.scss'
 
+type Step = 'access-type' | 'price'
+
 interface Props {
   isOpen: boolean
   onClose: () => void
-  onConfirm: (price: number) => void
+  hasPaywalledNodes: boolean
+  onConfirm: (price: number, nodeAccessType: RoadmapNodeAccessType | null) => void
 }
 
-export function PublishModal({ isOpen, onClose, onConfirm }: Props) {
+const ACCESS_OPTIONS: {
+  value: RoadmapNodeAccessType
+  label: string
+  desc: string
+  icon: React.ReactNode
+}[] = [
+  {
+    value: 'STUDENTS',
+    label: 'Доступ ученикам',
+    desc: 'Все ваши прикреплённые ученики увидят закрытые блоки',
+    icon: (
+      <svg width='18' height='18' viewBox='0 0 24 24' fill='none'>
+        <path d='M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' />
+        <circle cx='9' cy='7' r='4' stroke='currentColor' strokeWidth='1.8' />
+        <path d='M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' />
+      </svg>
+    ),
+  },
+  {
+    value: 'SELECTED',
+    label: 'Выбранным людям',
+    desc: 'Вы сами выберете, кому открыть доступ вручную',
+    icon: (
+      <svg width='18' height='18' viewBox='0 0 24 24' fill='none'>
+        <circle cx='12' cy='8' r='4' stroke='currentColor' strokeWidth='1.8' />
+        <path d='M4 20c0-4 3.6-7 8-7s8 3 8 7' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' />
+        <path d='M18 12l2 2 4-4' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round' />
+      </svg>
+    ),
+  },
+  {
+    value: 'PURCHASE',
+    label: 'Только купившим',
+    desc: 'Закрытые блоки откроются после оплаты',
+    icon: (
+      <svg width='18' height='18' viewBox='0 0 24 24' fill='none'>
+        <rect x='2' y='7' width='20' height='14' rx='2' stroke='currentColor' strokeWidth='1.8' />
+        <path d='M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2' stroke='currentColor' strokeWidth='1.8' />
+        <line x1='12' y1='12' x2='12' y2='16' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' />
+        <line x1='10' y1='14' x2='14' y2='14' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' />
+      </svg>
+    ),
+  },
+]
+
+export function PublishModal({ isOpen, onClose, hasPaywalledNodes, onConfirm }: Props) {
   const t = useTranslations('roadMap')
   const router = useRouter()
+  const [step, setStep] = useState<Step>(hasPaywalledNodes ? 'access-type' : 'price')
+  const [selectedAccess, setSelectedAccess] = useState<RoadmapNodeAccessType | null>(null)
   const [priceInput, setPriceInput] = useState('')
   const [isVip, setIsVip] = useState<boolean | null>(null)
   const [vipLoading, setVipLoading] = useState(false)
@@ -22,102 +73,169 @@ export function PublishModal({ isOpen, onClose, onConfirm }: Props) {
   const priceNum = Math.max(0, parseFloat(priceInput) || 0)
   const isPaid = priceNum > 0
 
-  // Fetch VIP status when modal opens
   useEffect(() => {
     if (!isOpen) return
     setPriceInput('')
+    setSelectedAccess(null)
+    setStep(hasPaywalledNodes ? 'access-type' : 'price')
     setIsVip(null)
+  }, [isOpen, hasPaywalledNodes])
+
+  useEffect(() => {
+    if (!isOpen || step !== 'price') return
     setVipLoading(true)
     fetch('/api/teacher/vip')
       .then((r) => r.json())
       .then((d) => setIsVip(d.isVip ?? false))
       .catch(() => setIsVip(false))
       .finally(() => setVipLoading(false))
-  }, [isOpen])
+  }, [isOpen, step])
 
-  const canConfirm = !isPaid || (isVip === true)
+  const canConfirmAccessType = selectedAccess !== null
+  const canConfirmPrice = !isPaid || isVip === true
 
-  const handleConfirm = () => {
-    onConfirm(priceNum)
+  const handleAccessNext = () => {
+    if (selectedAccess === 'PURCHASE') {
+      setStep('price')
+    } else {
+      onConfirm(0, selectedAccess)
+      onClose()
+    }
+  }
+
+  const handlePublish = () => {
+    onConfirm(priceNum, hasPaywalledNodes ? selectedAccess : null)
     onClose()
   }
+
+  const titleText = step === 'access-type' ? 'Условие доступа к закрытым блокам' : t('publishSettings')
+
+  const footer =
+    step === 'access-type' ? (
+      <div className={styles.footer}>
+        <button className={styles.cancel_btn} onClick={onClose}>
+          {t('publishCancel')}
+        </button>
+        <button
+          className={styles.confirm_btn}
+          onClick={handleAccessNext}
+          disabled={!canConfirmAccessType}
+        >
+          {selectedAccess === 'PURCHASE' ? 'Далее →' : t('publishConfirm')}
+        </button>
+      </div>
+    ) : (
+      <div className={styles.footer}>
+        {hasPaywalledNodes && (
+          <button className={styles.cancel_btn} onClick={() => setStep('access-type')}>
+            ← Назад
+          </button>
+        )}
+        {!hasPaywalledNodes && (
+          <button className={styles.cancel_btn} onClick={onClose}>
+            {t('publishCancel')}
+          </button>
+        )}
+        <button
+          className={styles.confirm_btn}
+          onClick={handlePublish}
+          disabled={!canConfirmPrice || vipLoading}
+        >
+          {t('publishConfirm')}
+        </button>
+      </div>
+    )
 
   return (
     <ModalWindowDefault
       isOpen={isOpen}
       onClose={onClose}
-      additionalTitle={<span style={{ fontWeight: 700, fontSize: 16 }}>{t('publishSettings')}</span>}
-      modalFooter={
-        <div className={styles.footer}>
-          <button className={styles.cancel_btn} onClick={onClose}>
-            {t('publishCancel')}
-          </button>
-          <button
-            className={styles.confirm_btn}
-            onClick={handleConfirm}
-            disabled={!canConfirm || vipLoading}
-          >
-            {t('publishConfirm')}
-          </button>
-        </div>
-      }
+      additionalTitle={<span style={{ fontWeight: 700, fontSize: 16 }}>{titleText}</span>}
+      modalFooter={footer}
     >
-      <div className={styles.content}>
-        {/* Price input */}
-        <div>
-          <p style={{ fontSize: 13, fontWeight: 600, color: '#868897', marginBottom: 8 }}>
-            {t('priceLabel')}
+      {step === 'access-type' ? (
+        <div className={styles.content}>
+          <p className={styles.access_hint}>
+            В вашем роадмапе есть закрытые блоки. Выберите, кто сможет их видеть:
           </p>
-          <div className={styles.price_row}>
-            <input
-              className={styles.price_input}
-              type='number'
-              min={0}
-              step={1}
-              placeholder='0'
-              value={priceInput}
-              onChange={(e) => setPriceInput(e.target.value)}
-            />
-            <span className={styles.currency_base}>₽</span>
-            {!isPaid && <span className={styles.free_badge}>{t('priceFree')}</span>}
+          <div className={styles.access_options}>
+            {ACCESS_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                className={`${styles.access_option} ${selectedAccess === opt.value ? styles.selected : ''}`}
+                onClick={() => setSelectedAccess(opt.value)}
+              >
+                <span className={styles.opt_icon}>{opt.icon}</span>
+                <span className={styles.opt_body}>
+                  <span className={styles.opt_label}>{opt.label}</span>
+                  <span className={styles.opt_desc}>{opt.desc}</span>
+                </span>
+                {opt.value === 'SELECTED' && (
+                  <span className={styles.stub_tag}>скоро</span>
+                )}
+              </button>
+            ))}
           </div>
         </div>
-
-        {/* Currency grid — only when price > 0 */}
-        {isPaid && (
+      ) : (
+        <div className={styles.content}>
           <div>
-            <p className={styles.grid_label}>{t('currencyPreview')}</p>
-            <div className={styles.currency_grid}>
-              {FEATURED_CURRENCIES.map((cur) => (
-                <div key={cur.code} className={styles.currency_cell}>
-                  <span className={styles.cell_flag}>{cur.flag}</span>
-                  <div className={styles.cell_body}>
-                    <span className={styles.cell_code}>{cur.code}</span>
-                    <span className={styles.cell_amount}>{formatConverted(priceNum, cur)}</span>
+            <p style={{ fontSize: 13, fontWeight: 600, color: '#868897', marginBottom: 8 }}>
+              {t('priceLabel')}
+            </p>
+            <div className={styles.price_row}>
+              <input
+                className={styles.price_input}
+                type='number'
+                min={0}
+                step={1}
+                placeholder='0'
+                value={priceInput}
+                onChange={(e) => setPriceInput(e.target.value)}
+              />
+              <span className={styles.currency_base}>₽</span>
+              {!isPaid && <span className={styles.free_badge}>{t('priceFree')}</span>}
+            </div>
+          </div>
+
+          {isPaid && (
+            <div>
+              <p className={styles.grid_label}>{t('currencyPreview')}</p>
+              <div className={styles.currency_grid}>
+                {FEATURED_CURRENCIES.map((cur) => (
+                  <div key={cur.code} className={styles.currency_cell}>
+                    <span className={styles.cell_flag}>{cur.flag}</span>
+                    <div className={styles.cell_body}>
+                      <span className={styles.cell_code}>{cur.code}</span>
+                      <span className={styles.cell_amount}>{formatConverted(priceNum, cur)}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* VIP notice — only when price > 0 and not VIP */}
-        {isPaid && !vipLoading && isVip === false && (
-          <div className={styles.vip_notice}>
-            <span className={styles.vip_icon}>👑</span>
-            <div className={styles.vip_text}>
-              <p className={styles.vip_title}>{t('vipRequired')}</p>
-              <p className={styles.vip_desc}>{t('vipRequiredDesc')}</p>
-              <button className={styles.vip_btn} onClick={() => { onClose(); router.push('/vip') }}>{t('purchaseVip')} →</button>
+          {isPaid && !vipLoading && isVip === false && (
+            <div className={styles.vip_notice}>
+              <span className={styles.vip_icon}>👑</span>
+              <div className={styles.vip_text}>
+                <p className={styles.vip_title}>{t('vipRequired')}</p>
+                <p className={styles.vip_desc}>{t('vipRequiredDesc')}</p>
+                <button
+                  className={styles.vip_btn}
+                  onClick={() => { onClose(); router.push('/vip') }}
+                >
+                  {t('purchaseVip')} →
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* VIP loading */}
-        {isPaid && vipLoading && (
-          <p style={{ fontSize: 13, color: '#868897' }}>{t('vipChecking')}</p>
-        )}
-      </div>
+          {isPaid && vipLoading && (
+            <p style={{ fontSize: 13, color: '#868897' }}>{t('vipChecking')}</p>
+          )}
+        </div>
+      )}
     </ModalWindowDefault>
   )
 }

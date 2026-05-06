@@ -175,6 +175,7 @@
   },
   "roadMap": {
     "postslabel": "Посты",
+    "ForComments":"Обратная связь",
     "linkTestLabel": "Ссылка на тест",
     "mediaInfoLabel": "Медиа информация",
     "infoTextLabel": "Текстовая информация",
@@ -250,7 +251,23 @@
     "commentsTitle": "Комментарии",
     "noComments": "Комментариев пока нет",
     "leaveComment": "Оставить комментарий",
-    "loadingComments": "Загружаем..."
+    "loadingComments": "Загружаем...",
+    "fbEditorLabel": "Редактор обратной связи",
+    "fbNoQuestions": "Вопросы ещё не добавлены",
+    "fbAddQuestion": "+ Добавить вопрос",
+    "fbAddNextQuestion": "+ Вопрос",
+    "fbSubmit": "Отправить ответы",
+    "fbSubmitted": "Ответы отправлены ✓",
+    "fbThankYou": "Спасибо за обратную связь!",
+    "fbFreeAnswerPlaceholder": "Введите ваш ответ...",
+    "fbSingle": "Один ответ",
+    "fbMulti": "Несколько ответов",
+    "fbFree": "Свободный ответ",
+    "fbQuestionPlaceholder": "Введите текст вопроса...",
+    "fbOptionPlaceholder": "Вариант ответа...",
+    "fbAddOption": "+ Вариант",
+    "fbEmptyQuestion": "Вопрос без текста",
+    "fbEmptyOption": "Вариант"
   },
   "fileBlock": {
     "filesNotAttached": "Файлы не прикреплены",

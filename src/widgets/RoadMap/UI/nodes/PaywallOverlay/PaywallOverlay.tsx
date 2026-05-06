@@ -1,8 +1,8 @@
+import {useRoadmapAccessContext} from '@/shared/ui/RoadMap/context/RoadmapAccessContext'
 import {BlockRoadParam, RoadMapBlockType} from '@/shared/types/RoadMap/RoadMap.types'
 import {Handle, Position} from '@xyflow/react'
-import styles from './PaywallOverlay.module.scss'
 import handleStyles from '../NodeInputs/NodeInputs.module.scss'
-import {toast} from 'sonner'
+import styles from './PaywallOverlay.module.scss'
 
 function FakeMediaBlock() {
   return (
@@ -213,10 +213,14 @@ interface PaywallOverlayProps {
 
 export function PaywallOverlay({type, nodeId, hasInput, hasOutput}: PaywallOverlayProps) {
   const FakeContent = FAKE_MAP[type]
+  const {nodeAccessType, openPurchaseModal} = useRoadmapAccessContext()
+
+  const handleLockClick = () => {
+    openPurchaseModal()
+  }
 
   return (
     <div className={styles.overlay}>
-      {/* ── Реальные хэндлы — невидимые, но в DOM для React Flow ── */}
       {hasInput && (
         <Handle
           position={Position.Left}
@@ -242,61 +246,12 @@ export function PaywallOverlay({type, nodeId, hasInput, hasOutput}: PaywallOverl
         </div>
       )}
       <div className={styles.blur} />
-      <button
-        className={styles.lockBadge}
-        onClick={() => {
-          toast.custom(
-            () => (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 14,
-                  background: '#fff',
-                  border: '0.5px solid rgba(0,0,0,0.12)',
-                  borderRadius: 12,
-                  padding: '16px 18px',
-                  width: 380,
-                  boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
-                  position: 'relative'
-                }}
-              >
-                <div
-                  style={{
-                    width: 38,
-                    height: 38,
-                    borderRadius: 8,
-                    flexShrink: 0,
-                    background: '#EEEDFE',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                >
-                  <svg width='16' height='16' viewBox='0 0 24 24' fill='none'>
-                    <rect x='3' y='11' width='18' height='11' rx='2' stroke='#534AB7' strokeWidth='1.8' />
-                    <path d='M7 11V7a5 5 0 0 1 10 0v4' stroke='#534AB7' strokeWidth='1.8' strokeLinecap='round' />
-                  </svg>
-                </div>
-                <div style={{flex: 1, paddingRight: 20}}>
-                  <p style={{margin: '0 0 3px', fontSize: 14, fontWeight: 500, color: '#141416', lineHeight: 1.4}}>
-                    Блок недоступен
-                  </p>
-                  <p style={{margin: 0, fontSize: 13, color: '#6b7280', lineHeight: 1.5}}>
-                    Приобретите курс или получите доступ от репетитора.
-                  </p>
-                </div>
-              </div>
-            ),
-            {duration: 14000}
-          )
-        }}
-      >
+      <button className={styles.lockBadge} onClick={handleLockClick}>
         <svg width='14' height='14' viewBox='0 0 24 24' fill='none'>
           <rect x='3' y='11' width='18' height='11' rx='2' stroke='currentColor' strokeWidth='2' />
           <path d='M7 11V7a5 5 0 0 1 10 0v4' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
         </svg>
-        Закрытый блок
+        {nodeAccessType === 'PURCHASE' ? 'Купить доступ' : 'Закрытый блок'}
       </button>
     </div>
   )

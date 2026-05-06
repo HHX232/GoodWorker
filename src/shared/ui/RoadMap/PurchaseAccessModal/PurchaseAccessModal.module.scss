@@ -1,0 +1,135 @@
+.content {
+  display: flex;
+  gap: 16px;
+  padding: 4px 0 8px;
+}
+
+.icon_wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #EEEDFE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.roadmap_title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #141416;
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+}
+
+.desc {
+  font-size: 13px;
+  color: #868897;
+  margin: 0;
+  line-height: 1.55;
+  font-family: 'Roboto', sans-serif;
+}
+
+.price_row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f5f5f5;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-top: 4px;
+}
+
+.price_label {
+  font-size: 13px;
+  color: #868897;
+  font-family: 'Roboto', sans-serif;
+}
+
+.price_value {
+  font-size: 15px;
+  font-weight: 700;
+  color: #141416;
+  font-family: 'Roboto', sans-serif;
+}
+
+.stub_notice {
+  font-size: 11px;
+  color: #f59e0b;
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+}
+
+.footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.cancel_btn {
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1px solid #e5e5e5;
+  background: transparent;
+  color: #868897;
+  font-size: 14px;
+  font-family: 'Roboto', sans-serif;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover:not(:disabled) {
+    background: #f5f5f5;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.buy_btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  background: #534AB7;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Roboto', sans-serif;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover:not(:disabled) {
+    background: #4338ca;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

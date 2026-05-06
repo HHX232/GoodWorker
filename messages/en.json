@@ -174,6 +174,7 @@
     "loadError": "Failed to load cards"
   },
   "roadMap": {
+     "ForComments":"Feedback",
     "postslabel": "Posts",
     "linkTestLabel": "Test Link",
     "mediaInfoLabel": "Media Info",
@@ -252,7 +253,23 @@
     "commentsTitle": "Comments",
     "noComments": "No comments yet",
     "leaveComment": "Leave a comment",
-    "loadingComments": "Loading..."
+    "loadingComments": "Loading...",
+    "fbEditorLabel": "Feedback editor",
+    "fbNoQuestions": "No questions added yet",
+    "fbAddQuestion": "+ Add question",
+    "fbAddNextQuestion": "+ Question",
+    "fbSubmit": "Submit answers",
+    "fbSubmitted": "Submitted ✓",
+    "fbThankYou": "Thank you for your feedback!",
+    "fbFreeAnswerPlaceholder": "Enter your answer...",
+    "fbSingle": "Single choice",
+    "fbMulti": "Multiple choice",
+    "fbFree": "Free answer",
+    "fbQuestionPlaceholder": "Enter question text...",
+    "fbOptionPlaceholder": "Answer option...",
+    "fbAddOption": "+ Option",
+    "fbEmptyQuestion": "Empty question",
+    "fbEmptyOption": "Option"
   },
   "fileBlock": {
     "filesNotAttached": "No files attached",

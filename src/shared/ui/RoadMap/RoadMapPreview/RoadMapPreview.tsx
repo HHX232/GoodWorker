@@ -14,6 +14,7 @@ interface RoadMapPreviewProps {
   previewImageUrl: string | null
   mediaPreviewUrls: string[]
   avgRating: number
+  nodeAccessType?: string | null
   _count: { comments: number; ratings: number }
   teacher: { id: string; name: string; avatarUrl: string | null }
   useLink?: boolean
@@ -44,10 +45,12 @@ export const RoadMapPreview: FC<RoadMapPreviewProps> = ({
   previewImageUrl,
   mediaPreviewUrls,
   avgRating,
+  nodeAccessType = null,
   _count,
   teacher,
   useLink = true,
 }) => {
+  const isPartiallyFree = price === 0 && nodeAccessType !== null
   const [priceHovered, setPriceHovered] = useState(false)
   const locale = useLocale()
   const activeCurrency = CURRENCIES.find((c) => c.code === (LOCALE_CURRENCY[locale] ?? 'RUB')) ?? RUB
@@ -129,6 +132,8 @@ export const RoadMapPreview: FC<RoadMapPreviewProps> = ({
               </div>
             )}
           </div>
+        ) : isPartiallyFree ? (
+          <span className={styles.partial_badge}>частично-бесплатно</span>
         ) : (
           <span className={styles.free_badge}>Бесплатно</span>
         )}

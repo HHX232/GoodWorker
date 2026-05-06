@@ -1,11 +1,12 @@
 // ActiveCommentBlock.tsx
-// Режим создания (isView=false): репетитор создаёт вопросы — листает через Swiper, данные в nodeData.activeComment
-// Режим прохождения (isView=true / onlyPass=true): студент отвечает, читает из nodeData.activeComment
+// Editor mode (isView=false): teacher creates questions stored in nodeData.activeComment
+// View mode (onlyPass=true): student answers; 1 submission per student per node stored via API
 
 import {getNodeHeaderIconColor} from '@/shared/helpers/Node/getNodeHeaderIconColor'
+import {useRoadmapAccessContext} from '@/shared/ui/RoadMap/context/RoadmapAccessContext'
 import {RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
 import {useReactFlow} from '@xyflow/react'
-import {useCallback, useMemo, useRef, useState} from 'react'
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {Swiper, SwiperSlide} from 'swiper/react'
 import type {Swiper as SwiperType} from 'swiper'
 import 'swiper/css'
@@ -38,11 +39,11 @@ interface ActiveCommentBlockProps {
 // ─────────────────────── CSS variable injection ───────────────────────
 
 function buildCssVars(headerColor?: string): React.CSSProperties {
-  if (!headerColor) return {}
-  const textColor = getNodeHeaderIconColor(headerColor) ?? '#2d3354'
+  const bg = headerColor || '#141416'
+  const text = headerColor ? (getNodeHeaderIconColor(headerColor) ?? '#fff') : '#fff'
   return {
-    '--accent-bg': headerColor,
-    '--accent-text': textColor,
+    '--accent-bg': bg,
+    '--accent-text': text,
   } as React.CSSProperties
 }
 
@@ -52,16 +53,22 @@ const uid = () => Math.random().toString(36).slice(2, 8)
 
 const defaultT = (key: string): string => {
   const map: Record<string, string> = {
-    addQuestion:         '+ Добавить вопрос',
-    questionPlaceholder: 'Введите текст вопроса...',
-    optionPlaceholder:   'Вариант ответа...',
-    addOption:           '+ Вариант',
-    single:              'Один ответ',
-    multi:               'Несколько ответов',
-    free:                'Свободный ответ',
-    submit:              'Отправить ответы',
-    submitted:           'Ответы отправлены ✓',
-    noQuestions:         'Вопросы ещё не добавлены',
+    fbEditorLabel:          'Редактор обратной связи',
+    fbNoQuestions:          'Вопросы ещё не добавлены',
+    fbAddQuestion:          '+ Добавить вопрос',
+    fbAddNextQuestion:      '+ Вопрос',
+    fbSubmit:               'Отправить ответы',
+    fbSubmitted:            'Ответы отправлены ✓',
+    fbThankYou:             'Спасибо за обратную связь!',
+    fbFreeAnswerPlaceholder:'Введите ваш ответ...',
+    fbSingle:               'Один ответ',
+    fbMulti:                'Несколько ответов',
+    fbFree:                 'Свободный ответ',
+    fbQuestionPlaceholder:  'Введите текст вопроса...',
+    fbOptionPlaceholder:    'Вариант ответа...',
+    fbAddOption:            '+ Вариант',
+    fbEmptyQuestion:        'Вопрос без текста',
+    fbEmptyOption:          'Вариант',
   }
   return map[key] ?? key
 }
@@ -87,7 +94,7 @@ function TypeToggle({
           onClick={() => onChange(tp)}
           type='button'
         >
-          {t(tp)}
+          {t(`fb${tp.charAt(0).toUpperCase()}${tp.slice(1)}`)}
         </button>
       ))}
     </div>
@@ -150,7 +157,7 @@ function EditorQuestion({
         className={s.questionTextarea}
         value={question.text}
         onChange={(e) => updateText(e.target.value)}
-        placeholder={t('questionPlaceholder')}
+        placeholder={t('fbQuestionPlaceholder')}
         rows={2}
       />
 
@@ -162,7 +169,6 @@ function EditorQuestion({
                 type='button'
                 className={`${s.correctToggle} ${opt.isCorrect ? s.correctToggleOn : ''}`}
                 onClick={() => toggleCorrect(opt.id)}
-                title='Отметить правильным'
               >
                 {opt.isCorrect ? '✓' : '○'}
               </button>
@@ -171,7 +177,7 @@ function EditorQuestion({
                 className={s.optionInput}
                 value={opt.text}
                 onChange={(e) => updateOption(opt.id, {text: e.target.value})}
-                placeholder={`${t('optionPlaceholder')} ${i + 1}`}
+                placeholder={`${t('fbOptionPlaceholder')} ${i + 1}`}
               />
 
               <button className={s.removeBtn} onClick={() => removeOption(opt.id)} type='button'>✕</button>
@@ -179,7 +185,7 @@ function EditorQuestion({
           ))}
 
           <button className={s.addOptionBtn} onClick={addOption} type='button'>
-            {t('addOption')}
+            {t('fbAddOption')}
           </button>
         </div>
       )}
@@ -194,11 +200,13 @@ function ViewQuestion({
   index,
   answer,
   onAnswer,
+  t,
 }: {
   question: Question
   index: number
   answer: string | string[]
   onAnswer: (val: string | string[]) => void
+  t: (k: string) => string
 }) {
   const toggleMulti = (id: string) => {
     const arr = Array.isArray(answer) ? answer : []
@@ -209,7 +217,7 @@ function ViewQuestion({
     <div className={s.viewQuestion}>
       <p className={s.viewQuestionText}>
         <span className={s.viewIndex}>{index + 1}.</span>{' '}
-        {question.text || <em style={{opacity: 0.4}}>Вопрос без текста</em>}
+        {question.text || <em style={{opacity: 0.4}}>{t('fbEmptyQuestion')}</em>}
       </p>
 
       {question.type === 'free' && (
@@ -217,7 +225,7 @@ function ViewQuestion({
           className={s.freeTextarea}
           value={typeof answer === 'string' ? answer : ''}
           onChange={(e) => onAnswer(e.target.value)}
-          placeholder='Введите ваш ответ...'
+          placeholder={t('fbFreeAnswerPlaceholder')}
           rows={3}
         />
       )}
@@ -229,7 +237,7 @@ function ViewQuestion({
             return (
               <label key={opt.id} className={`${s.viewOptionLabel} ${checked ? s.viewOptionChecked : ''}`}>
                 <span className={`${s.radioCircle} ${checked ? s.radioCircleOn : ''}`} />
-                {opt.text || <em style={{opacity: 0.4}}>Вариант</em>}
+                {opt.text || <em style={{opacity: 0.4}}>{t('fbEmptyOption')}</em>}
                 <input
                   type='radio'
                   name={question.id}
@@ -253,7 +261,7 @@ function ViewQuestion({
                 <span className={`${s.checkBox} ${checked ? s.checkBoxOn : ''}`}>
                   {checked ? '✓' : ''}
                 </span>
-                {opt.text || <em style={{opacity: 0.4}}>Вариант</em>}
+                {opt.text || <em style={{opacity: 0.4}}>{t('fbEmptyOption')}</em>}
                 <input
                   type='checkbox'
                   checked={checked}
@@ -276,6 +284,7 @@ function QuestionSlider({
   renderSlide,
   onAddQuestion,
   isEditor,
+  t,
 }: {
   questions: Question[]
   renderSlide: (q: Question, i: number) => React.ReactNode
@@ -343,10 +352,26 @@ function QuestionSlider({
             }}
             type='button'
           >
-            + Вопрос
+            {t('fbAddNextQuestion')}
           </button>
         )}
       </div>
+    </div>
+  )
+}
+
+// ─────────────────────── Thank-you screen ───────────────────────
+
+function ThankYouScreen({t}: {t: (k: string) => string}) {
+  return (
+    <div className={s.thankYouScreen}>
+      <div className={s.thankYouIcon}>
+        <svg width='32' height='32' viewBox='0 0 32 32' fill='none'>
+          <circle cx='16' cy='16' r='15' stroke='#4caf7d' strokeWidth='2' />
+          <path d='M9 16.5l5 5 9-9' stroke='#4caf7d' strokeWidth='2.2' strokeLinecap='round' strokeLinejoin='round' />
+        </svg>
+      </div>
+      <p className={s.thankYouText}>{t('fbThankYou')}</p>
     </div>
   )
 }
@@ -362,6 +387,7 @@ export default function ActiveCommentBlock({
   const t = tProp ?? defaultT
   const isView = onlyPass
   const cssVars = useMemo(() => buildCssVars(headerColor), [headerColor])
+  const {roadmapId} = useRoadmapAccessContext()
 
   const {getNode, updateNodeData} = useReactFlow()
 
@@ -369,7 +395,7 @@ export default function ActiveCommentBlock({
   const nodeData = getNode(nodeId)?.data as (RoadNodeData & {activeComment?: Question[]}) | undefined
   const savedQuestions: Question[] = nodeData?.activeComment ?? []
 
-  // Editor local state — initialised from nodeData.activeComment
+  // Editor local state
   const [questions, setQuestions] = useState<Question[]>(
     savedQuestions.length > 0
       ? savedQuestions
@@ -401,13 +427,33 @@ export default function ActiveCommentBlock({
   // View state
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({})
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
 
   const setAnswer = (qId: string, val: string | string[]) =>
     setAnswers((prev) => ({...prev, [qId]: val}))
 
-  const handleSubmit = () => {
-    console.log('Submitted answers for node', nodeId, answers)
-    setSubmitted(true)
+  // ── Check if already submitted on mount ──
+  useEffect(() => {
+    if (!isView || !roadmapId) return
+    fetch(`/api/roadmap/${roadmapId}/feedback?nodeId=${nodeId}`)
+      .then((r) => r.json())
+      .then((data) => { if (data.submitted) setSubmitted(true) })
+      .catch(() => {})
+  }, [isView, roadmapId, nodeId])
+
+  const handleSubmit = async () => {
+    if (!roadmapId || submitting) return
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/roadmap/${roadmapId}/feedback`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({nodeId, answers}),
+      })
+      if (res.ok) setSubmitted(true)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   // ── EDITOR MODE ──
@@ -415,14 +461,14 @@ export default function ActiveCommentBlock({
     return (
       <div className={s.root} style={cssVars}>
         <div className={s.editorLabel}>
-          <span>✏️</span> Редактор теста
+          <span>✏️</span> {t('fbEditorLabel')}
         </div>
 
         {questions.length === 0 ? (
           <>
-            <p className={s.emptyHint}>{t('noQuestions')}</p>
+            <p className={s.emptyHint}>{t('fbNoQuestions')}</p>
             <button className={s.addQuestionBtn} onClick={addQuestion} type='button'>
-              {t('addQuestion')}
+              {t('fbAddQuestion')}
             </button>
           </>
         ) : (
@@ -449,10 +495,18 @@ export default function ActiveCommentBlock({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const viewQuestions: Question[] = (getNode(nodeId)?.data as any)?.activeComment ?? []
 
+  if (submitted) {
+    return (
+      <div className={s.root} style={cssVars}>
+        <ThankYouScreen t={t} />
+      </div>
+    )
+  }
+
   return (
     <div className={s.root} style={cssVars}>
       {viewQuestions.length === 0 ? (
-        <p className={s.emptyHint}>{t('noQuestions')}</p>
+        <p className={s.emptyHint}>{t('fbNoQuestions')}</p>
       ) : (
         <>
           <QuestionSlider
@@ -465,17 +519,18 @@ export default function ActiveCommentBlock({
                 index={i}
                 answer={answers[q.id] ?? (q.type === 'multi' ? [] : '')}
                 onAnswer={(val) => setAnswer(q.id, val)}
+                t={t}
               />
             )}
           />
 
           <button
-            className={`${s.submitBtn} ${submitted ? s.submitBtnDone : ''}`}
+            className={`${s.submitBtn} ${submitting ? s.submitBtnLoading : ''}`}
             onClick={handleSubmit}
-            disabled={submitted}
+            disabled={submitting}
             type='button'
           >
-            {submitted ? t('submitted') : t('submit')}
+            {submitting ? '...' : t('fbSubmit')}
           </button>
         </>
       )}

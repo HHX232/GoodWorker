@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { title, content, price = 0, previewImageUrl } = body
+    const { title, content, price = 0, previewImageUrl, nodeAccessType = null } = body
 
     if (!title?.trim()) return NextResponse.json({ error: 'Title is required' }, { status: 400 })
     if (!content) return NextResponse.json({ error: 'Content is required' }, { status: 400 })
@@ -57,6 +57,7 @@ export async function POST(req: NextRequest) {
         price: Number(price) || 0,
         content,
         previewImageUrl: previewImageUrl ?? null,
+        nodeAccessType: nodeAccessType ?? null,
       },
       include: {
         teacher: { select: { id: true, name: true, avatarUrl: true } },
@@ -129,6 +130,7 @@ export async function GET(req: NextRequest) {
           content: true,
           createdAt: true,
           updatedAt: true,
+          nodeAccessType: true,
           teacher: { select: { id: true, name: true, avatarUrl: true } },
           _count: { select: { comments: true, ratings: true } },
         },

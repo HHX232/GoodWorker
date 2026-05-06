@@ -9,7 +9,12 @@
       "Bash(npx prisma *)",
       "Bash(New-Item -ItemType Directory -Path \"c:\\\\Users\\\\Мастер\\\\Desktop\\\\goodworkerremaster\\\\src\\\\shared\\\\ui\\\\RoadMap\\\\RoadMapPreview\" -Force)",
       "Bash(Out-Null)",
-      "Bash(Write-Output \"done\")"
+      "Bash(Write-Output \"done\")",
+      "Bash(grep -r \"RoadmapAccess\\\\|Purchase\\\\|Subscription\" /Users/nikitatisevic/Desktop/GoodWorkerRemaster --include=\"*.tsx\" --include=\"*.ts\" --include=\"*.jsx\" --include=\"*.js\" ! -path \"*/node_modules/*\" ! -path \"*/.next/*\")",
+      "Bash(grep -r \"isPaywallHidden\" /Users/nikitatisevic/Desktop/GoodWorkerRemaster --include=\"*.tsx\" --include=\"*.ts\" ! -path \"*/node_modules/*\" ! -path \"*/.next/*\")",
+      "Bash(grep -r \"price\\\\|purchase\\\\|payment\\\\|vip\" /Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/api --include=\"*.ts\" ! -path \"*/node_modules/*\")",
+      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('roadMap',{}\\), indent=2, ensure_ascii=False\\)\\)\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\Мастер\\Desktop\\goodworkerremaster\\app\\api\\roadmap"

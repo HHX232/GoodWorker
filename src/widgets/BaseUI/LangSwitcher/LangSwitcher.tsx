@@ -19,7 +19,7 @@ const LANGS: LangItem[] = [
   {code: 'hi', label: 'हिन्दी', flag: '🇮🇳'}
 ]
 
-export function LangSwitcher() {
+export function LangSwitcher({extraClass = ''}:{extraClass?:string}) {
   const locale = useLocale()
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -56,7 +56,7 @@ export function LangSwitcher() {
   }
 
   return (
-    <div className={`${styles.wrapper} ${isPending ? styles.pending : ''}`} ref={wrapperRef}>
+    <div className={`${styles.wrapper} ${isPending ? styles.pending : ''} ${extraClass}`} ref={wrapperRef}>
       <button
         type='button'
         className={styles.trigger}

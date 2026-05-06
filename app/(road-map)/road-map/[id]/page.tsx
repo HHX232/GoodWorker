@@ -27,6 +27,9 @@ export default async function RoadMapPage({params}: Props) {
       nodes={content?.nodes ?? []}
       edges={content?.edges ?? []}
       roadmapId={id}
+      roadmapTitle={roadmap.title}
+      roadmapPrice={roadmap.price}
+      nodeAccessType={roadmap.nodeAccessType ?? null}
       initialAvgRating={roadmap.avgRating}
     />
   )

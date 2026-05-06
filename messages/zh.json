@@ -175,6 +175,7 @@
   },
   "roadMap": {
     "postslabel": "帖子",
+     "ForComments":"反馈",
     "linkTestLabel": "链接测试",
     "mediaInfoLabel": "媒体信息",
     "infoTextLabel": "文本信息",
@@ -249,7 +250,23 @@
     "commentsTitle": "评论",
     "noComments": "暂无评论",
     "leaveComment": "留下评论",
-    "loadingComments": "加载中..."
+    "loadingComments": "加载中...",
+    "fbEditorLabel": "反馈编辑器",
+    "fbNoQuestions": "尚未添加问题",
+    "fbAddQuestion": "+ 添加问题",
+    "fbAddNextQuestion": "+ 问题",
+    "fbSubmit": "提交答案",
+    "fbSubmitted": "已提交 ✓",
+    "fbThankYou": "感谢您的反馈！",
+    "fbFreeAnswerPlaceholder": "请输入您的答案...",
+    "fbSingle": "单选",
+    "fbMulti": "多选",
+    "fbFree": "自由回答",
+    "fbQuestionPlaceholder": "请输入问题文本...",
+    "fbOptionPlaceholder": "答案选项...",
+    "fbAddOption": "+ 选项",
+    "fbEmptyQuestion": "空问题",
+    "fbEmptyOption": "选项"
   },
   "fileBlock": {
     "filesNotAttached": "未附加文件",

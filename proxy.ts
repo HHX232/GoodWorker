@@ -1,11 +1,12 @@
+import { ONLY_TEACHERS_PAGES } from "@/shared/constants/pages/pages.constants"
 import { NextResponse } from "next/server"
 import { auth } from "./auth"
 
 const teacherOnlyPaths = [
   "/statistics",
   "/calendar",
-  "/create-test",
   "/teacher-profile",
+  ...ONLY_TEACHERS_PAGES,
 ]
 
 const studentOnlyPaths = [

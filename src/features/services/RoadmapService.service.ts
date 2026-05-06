@@ -1,6 +1,22 @@
 import instance from '@/shared/api'
 import { AxiosError } from 'axios'
 
+export type RoadmapAccessGrant = 'TEACHER' | 'PURCHASE'
+export type RoadmapNodeAccessType = 'STUDENTS' | 'SELECTED' | 'PURCHASE'
+
+export interface IRoadmapAccessEntry {
+  roadmapId: string
+  studentId: string
+  grantedBy: RoadmapAccessGrant
+  createdAt: string
+  student: { id: string; name: string; avatarUrl: string | null; email: string }
+}
+
+export interface IRoadmapAccessCheck {
+  hasAccess: boolean
+  grantedBy?: RoadmapAccessGrant | 'owner'
+}
+
 export interface IRoadmapQuery {
   page?: number
   limit?: number
@@ -44,6 +60,7 @@ export interface IRoadmapItem {
   avgRating: number
   createdAt: string
   updatedAt: string
+  nodeAccessType: RoadmapNodeAccessType | null
   teacher: { id: string; name: string; avatarUrl: string | null }
   _count: { comments: number; ratings: number }
 }
@@ -91,14 +108,30 @@ const RoadmapService = {
     }
   },
 
+  async purchaseAccess(roadmapId: string): Promise<{ success: boolean }> {
+    try {
+      const res = await instance.post<{ success: boolean }>(`/roadmap/${roadmapId}/purchase`)
+      return res.data
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        throw new Error(error.response?.data?.error || 'Failed to purchase access')
+      }
+      throw error
+    }
+  },
+
   async create(dto: {
     title: string
     content: unknown
     price?: number
     previewImageUrl?: string | null
+    nodeAccessType?: RoadmapNodeAccessType | null
   }): Promise<IRoadmapItem> {
     try {
-      const res = await instance.post<IRoadmapItem>('/roadmap', dto)
+      const res = await instance.post<IRoadmapItem>('/roadmap', {
+        ...dto,
+        nodeAccessType: dto.nodeAccessType ?? null,
+      })
       return res.data
     } catch (error) {
       if (error instanceof AxiosError) {
@@ -192,6 +225,60 @@ const RoadmapService = {
     } catch (error) {
       if (error instanceof AxiosError) {
         throw new Error(error.response?.data?.error || 'Failed to set rating')
+      }
+      throw error
+    }
+  },
+
+  async checkAccess(roadmapId: string): Promise<IRoadmapAccessCheck> {
+    try {
+      const res = await instance.get<IRoadmapAccessCheck>(`/roadmap/${roadmapId}/access`)
+      return res.data
+    } catch (error) {
+      if (error instanceof AxiosError && error.response?.status === 401) {
+        return { hasAccess: false }
+      }
+      throw error
+    }
+  },
+
+  async grantAccess(
+    roadmapId: string,
+    studentId: string,
+    grantedBy: RoadmapAccessGrant = 'TEACHER'
+  ): Promise<IRoadmapAccessEntry> {
+    try {
+      const res = await instance.post<IRoadmapAccessEntry>(`/roadmap/${roadmapId}/access`, {
+        studentId,
+        grantedBy,
+      })
+      return res.data
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        throw new Error(error.response?.data?.error || 'Failed to grant access')
+      }
+      throw error
+    }
+  },
+
+  async revokeAccess(roadmapId: string, studentId: string): Promise<void> {
+    try {
+      await instance.delete(`/roadmap/${roadmapId}/access/${studentId}`)
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        throw new Error(error.response?.data?.error || 'Failed to revoke access')
+      }
+      throw error
+    }
+  },
+
+  async getAccessList(roadmapId: string): Promise<IRoadmapAccessEntry[]> {
+    try {
+      const res = await instance.get<IRoadmapAccessEntry[]>(`/roadmap/${roadmapId}/access/list`)
+      return res.data
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        throw new Error(error.response?.data?.error || 'Failed to fetch access list')
       }
       throw error
     }

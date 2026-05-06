@@ -163,6 +163,27 @@
   }
 }
 
+.caption_text {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  z-index: 2;
+  
+  max-width: fit-content;
+  padding: 4px 10px;
+  border-radius: 4px;
+  
+  font-size: 14px;
+  color: #ffffff;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  
+  // сильный блюр подложки
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  background: rgba(0, 0, 0, 0.15); // чуть тёмный тинт, чтоб текст читался
+}
+
 // ── Пустой плейсхолдер ────────────────────────────────────
 
 .empty_hint {

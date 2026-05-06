@@ -41,6 +41,8 @@ model Student {
   postAllowedStudents    PostAllowedStudent[]
   lastSeenAt             DateTime?
   transactions           VipTransaction[]
+  roadmapAccess          RoadmapAccess[]
+  nodeFeedbacks          RoadmapNodeFeedback[]
 }
 
 model Teacher {
@@ -221,20 +223,52 @@ model StudentFavoritePost {
 }
 
 model Roadmap {
-  id              String                   @id @default(uuid())
+  id              String                    @id @default(uuid())
   teacherId       String
   title           String
-  price           Float                    @default(0)
+  price           Float                     @default(0)
   content         Json
-  previewImageUrl String?   // thumbnail, задаётся пользователем
-  treeSnapshotUrl String?   // auto-PNG дерева react-flow
-  createdAt       DateTime                 @default(now())
-  updatedAt       DateTime                 @updatedAt
+  previewImageUrl String?
+  treeSnapshotUrl String?
+  nodeAccessType  RoadmapNodeAccessType?
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
   complaints      Complaint[]
-  teacher         Teacher                  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  teacher         Teacher                   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   progress        StudentRoadmapProgress[]
   comments        RoadmapComment[]
   ratings         RoadmapRating[]
+  accessList      RoadmapAccess[]
+  nodeFeedbacks   RoadmapNodeFeedback[]
+}
+
+model RoadmapAccess {
+  roadmapId String
+  studentId String
+  grantedBy RoadmapAccessGrant @default(TEACHER)
+  createdAt DateTime           @default(now())
+  roadmap   Roadmap            @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  student   Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([roadmapId, studentId])
+  @@index([roadmapId])
+  @@index([studentId])
+}
+
+model RoadmapNodeFeedback {
+  id        String   @id @default(uuid())
+  roadmapId String
+  nodeId    String
+  studentId String
+  answers   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  roadmap   Roadmap  @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([roadmapId, nodeId, studentId])
+  @@index([roadmapId])
+  @@index([studentId])
 }
 
 model RoadmapComment {
@@ -505,4 +539,15 @@ enum TranscriptStatus {
   PROCESSING
   DONE
   FAILED
+}
+
+enum RoadmapAccessGrant {
+  TEACHER
+  PURCHASE
+}
+
+enum RoadmapNodeAccessType {
+  STUDENTS
+  SELECTED
+  PURCHASE
 }

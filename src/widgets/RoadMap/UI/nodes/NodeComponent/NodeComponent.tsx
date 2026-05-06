@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import RoadMapBlockRegistry from '@/features/Roadmap/registry'
 import {RoadMapBlockType, RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
+import {useRoadmapAccessContext} from '@/shared/ui/RoadMap/context/RoadmapAccessContext'
 import {useViewMode} from '@/shared/ui/RoadMap/context/ViewModeContext'
 import {NodeProps} from '@xyflow/react'
 import {memo} from 'react'
@@ -16,9 +17,10 @@ const NodeComponent = memo((props: NodeProps) => {
   const nodeData = props.data as RoadNodeData
   const task = RoadMapBlockRegistry[nodeData.type]
   const viewMode = useViewMode()
+  const {hasAccess} = useRoadmapAccessContext()
   const isView = viewMode === 'view'
   const isHidden = (nodeData as any).isPaywallHidden ?? false
-  const isLockedInView = isView && isHidden
+  const isLockedInView = isView && isHidden && !hasAccess
   const isDivider = nodeData.type === RoadMapBlockType.DIVIDER
   const isEntryPoint = nodeData.type === RoadMapBlockType.ENTRY_POINT
   const blockContent = useNodeContent({nodeId: props.id, nodeData})

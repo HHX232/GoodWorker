@@ -37,6 +37,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
         include: {
           teacher: { select: { id: true, name: true, avatarUrl: true } },
           _count: { select: { comments: true, ratings: true } },
+          accessList: { select: { studentId: true, grantedBy: true } },
         },
       }),
       prisma.roadmapRating.aggregate({
@@ -73,7 +74,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
 
     const body = await req.json()
-    const { title, content, price, previewImageUrl } = body
+    const { title, content, price, previewImageUrl, nodeAccessType } = body
 
     const updated = await prisma.roadmap.update({
       where: { id },
@@ -81,8 +82,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         ...(title?.trim() && { title: title.trim() }),
         ...(content !== undefined && { content }),
         ...(price !== undefined && { price: Number(price) || 0 }),
-        // обновляем превью только если явно передано (null = сбросить, строка = новое)
         ...(previewImageUrl !== undefined && { previewImageUrl }),
+        ...(nodeAccessType !== undefined && { nodeAccessType: nodeAccessType ?? null }),
       },
       include: {
         teacher: { select: { id: true, name: true, avatarUrl: true } },
