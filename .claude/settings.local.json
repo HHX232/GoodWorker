@@ -14,7 +14,8 @@
       "Bash(grep -r \"isPaywallHidden\" /Users/nikitatisevic/Desktop/GoodWorkerRemaster --include=\"*.tsx\" --include=\"*.ts\" ! -path \"*/node_modules/*\" ! -path \"*/.next/*\")",
       "Bash(grep -r \"price\\\\|purchase\\\\|payment\\\\|vip\" /Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/api --include=\"*.ts\" ! -path \"*/node_modules/*\")",
       "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")",
-      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('roadMap',{}\\), indent=2, ensure_ascii=False\\)\\)\")"
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('roadMap',{}\\), indent=2, ensure_ascii=False\\)\\)\")",
+      "Bash(grep -r \"Пожаловаться\\\\|reportBtn\\\\|handleReport\\\\|submitComplaint\" /Users/nikitatisevic/Desktop/GoodWorkerRemaster --include=\"*.tsx\" --include=\"*.ts\" ! -path \"*/node_modules/*\" ! -path \"*/.next/*\" -n)"
     ],
     "additionalDirectories": [
       "c:\\Users\\Мастер\\Desktop\\goodworkerremaster\\app\\api\\roadmap"

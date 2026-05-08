@@ -1,4 +1,5 @@
 import {prisma} from '@/shared/prisma/prisma'
+import {createNotification, NOTIFICATION_TYPES} from '@/shared/lib/notifications'
 import {NextRequest, NextResponse} from 'next/server'
 import {auth} from '../../../../../auth'
 
@@ -84,7 +85,7 @@ export async function POST(req: NextRequest, {params}: RouteParams) {
       return NextResponse.json({error: 'Text is required'}, {status: 400})
     }
 
-    const post = await prisma.post.findUnique({where: {id: postId}, select: {id: true}})
+    const post = await prisma.post.findUnique({where: {id: postId}, select: {id: true, teacherId: true, title: true}})
     if (!post) return NextResponse.json({error: 'Post not found'}, {status: 404})
 
     // One comment per user per post
@@ -114,6 +115,23 @@ export async function POST(req: NextRequest, {params}: RouteParams) {
       author = await prisma.student.findUnique({where: {id: session.user.id}, select: selectFields})
     } else if (session.user.role === 'TEACHER') {
       author = await prisma.teacher.findUnique({where: {id: session.user.id}, select: selectFields})
+    }
+
+    // Notify post owner (teacher) about new comment — skip if commenter is the teacher themselves
+    if (post.teacherId && post.teacherId !== session.user.id) {
+      await createNotification({
+        type: NOTIFICATION_TYPES.NEW_COMMENT_ON_POST,
+        title: 'Новый комментарий',
+        body: `${author?.name ?? 'Пользователь'} оставил комментарий к посту «${post.title ?? 'Без названия'}»`,
+        payload: {
+          actorId: session.user.id,
+          actorName: author?.name ?? 'Пользователь',
+          actorRole: session.user.role,
+          postId,
+          postTitle: post.title ?? '',
+        },
+        teacherId: post.teacherId,
+      })
     }
 
     return NextResponse.json({...comment, author}, {status: 201})

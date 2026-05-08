@@ -6,6 +6,8 @@ interface RoadmapAccessContextValue {
   nodeAccessType: RoadmapNodeAccessType | null
   openPurchaseModal: () => void
   roadmapId: string
+  isOwner: boolean
+  roadmapPrice: number
 }
 
 export const RoadmapAccessContext = createContext<RoadmapAccessContextValue>({
@@ -13,6 +15,8 @@ export const RoadmapAccessContext = createContext<RoadmapAccessContextValue>({
   nodeAccessType: null,
   openPurchaseModal: () => {},
   roadmapId: '',
+  isOwner: false,
+  roadmapPrice: 0,
 })
 
 export const useRoadmapAccessContext = () => useContext(RoadmapAccessContext)

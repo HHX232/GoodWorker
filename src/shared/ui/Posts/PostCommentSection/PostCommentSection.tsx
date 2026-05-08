@@ -4,7 +4,7 @@ import CommentService, { ICommentResponse } from '@/features/services/CommentSer
 import { usePostRating } from '@/features/hooks/Comments/usePostRating'
 import { useQueryParams } from '@/shared/helpers/setQueryParams'
 import { UserHeaderCardProps } from '@/shared/types'
-import { useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { SelectPhotoInput } from '../../inputs/SelectPhotoInput/SelectPhotoInput'
@@ -169,8 +169,21 @@ export function PostCommentSection({
   totalComments: initialTotal,
   currentUserId
 }: PostCommentSectionProps) {
-  // Инлайн-блок использует только SSR-данные — не грузит ничего сам
   const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const {data: commentsData} = useInfiniteQuery({
+    queryKey: ['comments', postId],
+    queryFn: ({pageParam}) => CommentService.getList(postId, {page: pageParam as number, limit: 15}),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.pagination.page < lastPage.pagination.totalPages ? lastPage.pagination.page + 1 : undefined,
+    staleTime: 30_000,
+  })
+
+  const liveComments = commentsData
+    ? commentsData.pages.flatMap((p) => p.comments.map(commentToUI))
+    : initialComments
+  const liveTotal = commentsData?.pages[0]?.pagination.total ?? initialTotal
 
   const [text, setText] = useState('')
   const [drafts, setDrafts] = useState<DraftImage[]>([])
@@ -241,7 +254,7 @@ const handleSend = async () => {
         {/* Header */}
         <div className={styles.header}>
           <div className={styles.flex_wrapper}>
-            <p className={styles.total_comments}>Comments ({initialTotal})</p>
+            <p className={styles.total_comments}>Comments ({liveTotal})</p>
             {avgRating !== null && (
               <span style={{fontSize: 13, color: '#868897', display: 'flex', alignItems: 'center', gap: 4}}>
                 <StarRating value={Math.round(avgRating)} readonly size={14} />
@@ -257,7 +270,7 @@ const handleSend = async () => {
         {/* Превью — только SSR-данные, первые 3 */}
         <div className={styles.content}>
           <ul>
-            {initialComments.slice(0, 3).map((el) => {
+            {liveComments.slice(0, 3).map((el) => {
               const isLong = el.commentText.length > 50
               return (
                 <div className={styles.comment_item} key={el.id}>
@@ -285,9 +298,9 @@ const handleSend = async () => {
                 </div>
               )
             })}
-            {initialTotal > 3 && (
+            {liveTotal > 3 && (
               <button className={styles.show_all_bottom_button} onClick={() => setIsModalOpen(true)}>
-                Show all {initialTotal} comments
+                Show all {liveTotal} comments
               </button>
             )}
           </ul>

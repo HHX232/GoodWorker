@@ -1,0 +1,77 @@
+.modal_content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 4px 0 8px;
+  min-width: 360px;
+  max-width: 480px;
+}
+
+.node_info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f7f7f7;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #868897;
+}
+
+.node_type {
+  font-weight: 600;
+  color: #141416;
+}
+
+.section_title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #868897;
+  margin-bottom: 6px;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  background: #f7f7f7;
+}
+
+.submit_btn {
+  height: 40px;
+  padding: 0 24px;
+  border-radius: 8px;
+  background: #141416;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
+    opacity: 0.75;
+  }
+}
+
+.cancel_btn {
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 8px;
+  background: transparent;
+  color: #868897;
+  font-size: 14px;
+  border: 1px solid #e5e5e5;
+  cursor: pointer;
+  transition: border-color 0.15s;
+
+  &:hover {
+    border-color: #c0c0c0;
+  }
+}

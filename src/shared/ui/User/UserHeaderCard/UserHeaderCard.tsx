@@ -3,6 +3,7 @@
 import {useOnlineStatus} from '@/features/hooks/User/useOnlineStatus'
 import {formatActivity} from '@/shared/helpers/formatActivity'
 import {DotsMenuProps, UserHeaderCardProps} from '@/shared/types'
+import {PostComplaintModal} from '@/shared/ui/Posts/PostComplaintModal/PostComplaintModal'
 import Image from 'next/image'
 import Link from 'next/link'
 import {FC, useState} from 'react'
@@ -56,29 +57,75 @@ const AvatarFallback: FC<{name: string; size?: 'lg' | 'sm'}> = ({name, size = 'l
     </div>
   )
 }
-export const DotsMenu: FC<DotsMenuProps> = ({activeMenu, toggleMenu, handleShareClick, maxWidth = '24'}) => {
+export const DotsMenu: FC<DotsMenuProps> = ({activeMenu, toggleMenu, handleShareClick, cardId, cardTitle, maxWidth = '24'}) => {
+  const [copied, setCopied] = useState(false)
+  const [complaintOpen, setComplaintOpen] = useState(false)
+
+  const handleShare = (e: React.MouseEvent<HTMLLIElement>) => {
+    if (typeof window === 'undefined') return
+    e.stopPropagation()
+    if (handleShareClick) handleShareClick(e)
+    else if (cardId) navigator.clipboard.writeText(`https://goodworker.com/posts/${cardId}`).catch(() => {})
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const handleComplaint = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setComplaintOpen(true)
+  }
+
   return (
-    <div className={style.dots_menu_box}>
-      <Image
-        src={DOTS_IMAGE}
-        alt='menu'
-        width={Number(maxWidth)}
-        height={Number(maxWidth)}
-        style={{width: `${maxWidth}px`, height: 'auto'}}
-        onClick={toggleMenu}
-        className={style.dots_image}
-      />
-      {activeMenu && (
-        <ul style={{bottom: `-${Number(maxWidth) * 2.8}px`}} className={style.dots_menu}>
-          <li className={style.dots_menu_item}>
-            <p className={style.report}>Пожаловаться</p>
-          </li>
-          <li onClick={handleShareClick} className={style.dots_menu_item}>
-            <p className={style.share_item}>Поделиться</p>
-          </li>
-        </ul>
+    <>
+      <div className={style.dots_menu_box}>
+        <Image
+          src={DOTS_IMAGE}
+          alt='menu'
+          width={Number(maxWidth)}
+          height={Number(maxWidth)}
+          style={{width: `${maxWidth}px`, height: 'auto'}}
+          onClick={toggleMenu}
+          className={style.dots_image}
+        />
+        {activeMenu && (
+          <ul style={{bottom: `-${Number(maxWidth) * 2.8}px`}} className={style.dots_menu}>
+            <li className={`${style.dots_menu_item} ${style.dots_item_complaint}`} onClick={handleComplaint}>
+              <svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+                <path d='M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z'/>
+                <line x1='4' y1='22' x2='4' y2='15'/>
+              </svg>
+              Пожаловаться
+            </li>
+            <li className={`${style.dots_menu_item} ${style.dots_item_share} ${copied ? style.dots_item_copied : ''}`} onClick={handleShare}>
+              {copied ? (
+                <>
+                  <svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
+                    <polyline points='20 6 9 17 4 12'/>
+                  </svg>
+                  Скопировано!
+                </>
+              ) : (
+                <>
+                  <svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+                    <circle cx='18' cy='5' r='3'/><circle cx='6' cy='12' r='3'/><circle cx='18' cy='19' r='3'/>
+                    <line x1='8.59' y1='13.51' x2='15.42' y2='17.49'/><line x1='15.41' y1='6.51' x2='8.59' y2='10.49'/>
+                  </svg>
+                  Поделиться
+                </>
+              )}
+            </li>
+          </ul>
+        )}
+      </div>
+      {cardId && (
+        <PostComplaintModal
+          isOpen={complaintOpen}
+          onClose={() => setComplaintOpen(false)}
+          postId={cardId}
+          postTitle={cardTitle}
+        />
       )}
-    </div>
+    </>
   )
 }
 
@@ -106,16 +153,6 @@ const UserHeaderCard: FC<UserHeaderCardProps> = ({
   }
   const [imgError, setImgError] = useState(false)
   const showFallback = !image || imgError
-  const handleShareClick = (e: React.MouseEvent<HTMLLIElement>) => {
-    if (typeof window === 'undefined') return
-    e.stopPropagation()
-    const urlToCopy = `https://goodworker.com/posts/${cardID}`
-    navigator.clipboard
-      .writeText(urlToCopy)
-      .then(() => console.log('Ссылка скопирована!'))
-      .catch((err) => console.error('Ошибка копирования:', err))
-  }
-
   return (
     <div className={style.user_box}>
       {useLink ? (
@@ -201,7 +238,7 @@ const UserHeaderCard: FC<UserHeaderCardProps> = ({
           </div>
         )}
 
-        {!BlurDots && <DotsMenu activeMenu={activeMenu} toggleMenu={toggleMenu} handleShareClick={handleShareClick} />}
+        {!BlurDots && <DotsMenu activeMenu={activeMenu} toggleMenu={toggleMenu} cardId={cardID} />}
       </div>
     </div>
   )

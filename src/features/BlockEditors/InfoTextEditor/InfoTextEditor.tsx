@@ -10,9 +10,10 @@ interface Props {
   payload: InfoTextPayload
   onChange?: (payload: InfoTextPayload) => void
   viewOnly?: boolean
+  titleNode?: React.ReactNode
 }
 
-export const InfoTextEditor = ({payload, onChange, viewOnly = false}: Props) => {
+export const InfoTextEditor = ({payload, onChange, viewOnly = false, titleNode}: Props) => {
   const editable = !!onChange && !viewOnly
 
   const editor = useEditor({
@@ -30,6 +31,7 @@ export const InfoTextEditor = ({payload, onChange, viewOnly = false}: Props) => 
   if (!editable) {
     return (
       <div style={{background: '#fff', borderRadius: 12, padding: '12px 16px'}}>
+        {titleNode}
         <EditorContent editor={editor} className={styles.editor} />
       </div>
     )

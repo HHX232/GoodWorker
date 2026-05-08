@@ -2,6 +2,8 @@
 import PostService, {IPostResponse, IPostsQuery, IPostsResponse} from '@/features/services/PostService.service'
 import {NavBar} from '@/widgets/BaseUI'
 import {CardsCatalog, HighlightedSlider, type ISliderPost} from '@/widgets/Cards'
+import {NotificationsPanel} from '@/widgets/NotificationsPanel/NotificationsPanel'
+import {useTranslations} from 'next-intl'
 import styles from './HomePage.module.scss'
 
 interface HomePageProps {
@@ -42,6 +44,7 @@ const mapVipPost = (post: IPostResponse): ISliderPost => ({
 })
 
 function HomePage({initialData, initialQuery, vipPosts}: HomePageProps) {
+  const t = useTranslations('HomePage')
   const handleLoadMore = async (page: number) => {
     const res = await PostService.getList({...initialQuery, page})
     return res.posts.map(mapPost)
@@ -52,10 +55,11 @@ function HomePage({initialData, initialQuery, vipPosts}: HomePageProps) {
   return (
     <div className={`container default_content ${styles.content}`}>
       <NavBar />
+
       <div className={styles.main_content}>
         <HighlightedSlider posts={sliderPosts} />
         <div className={styles.title_box}>
-          <h1>All posts</h1>
+          <h1>{t('title')}</h1>
           <div className={styles.decor_line}></div>
         </div>
         <CardsCatalog
@@ -64,6 +68,11 @@ function HomePage({initialData, initialQuery, vipPosts}: HomePageProps) {
           hasMore={initialData.pagination.page < initialData.pagination.totalPages}
         />
       </div>
+
+      <div className={styles.sidebar}>
+        <NotificationsPanel />
+      </div>
+
       <div className='mobile_padding'></div>
     </div>
   )

@@ -1,0 +1,397 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  width: 700px;
+  max-width: 100%;
+  padding: 4px 0 8px;
+}
+
+// ── Section ───────────────────────────────────────────────
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.section_header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.section_title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #141416;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.section_sub {
+  font-size: 12px;
+  color: #868897;
+}
+
+// ── Chips row ─────────────────────────────────────────────
+.chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #868897;
+  background: #f7f7f7;
+  padding: 4px 11px;
+  border-radius: 50px;
+
+  strong {
+    color: #141416;
+    font-weight: 600;
+  }
+}
+
+.chip_dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+// ── Chart container ───────────────────────────────────────
+.chart_wrap {
+  height: 180px;
+  width: 100%;
+}
+
+// ── Tooltip ───────────────────────────────────────────────
+.tooltip {
+  background: #141416;
+  color: #fff;
+  border-radius: 8px;
+  padding: 7px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+
+  span:first-child {
+    color: #aaa;
+    font-size: 10px;
+  }
+
+  strong {
+    font-size: 14px;
+  }
+}
+
+// ── Complaints row ────────────────────────────────────────
+.complaints_row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+// ── Complaints badge ──────────────────────────────────────
+.complaints_badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+
+  &.ok {
+    background: #f0fdf4;
+    color: #15803d;
+  }
+
+  &.warn {
+    background: #fff1f2;
+    color: #be123c;
+  }
+}
+
+.complaints_dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  .ok & {
+    background: #22c55e;
+  }
+
+  .warn & {
+    background: #f43f5e;
+  }
+}
+
+// ── Test table ────────────────────────────────────────────
+.test_table {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.test_row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #f7f7f7;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.test_row_label {
+  color: #868897;
+}
+
+.test_row_stats {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.test_row_count {
+  color: #141416;
+  font-weight: 600;
+}
+
+.test_percent {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 50px;
+
+  &.high {
+    background: #f0fdf4;
+    color: #15803d;
+  }
+
+  &.mid {
+    background: #fefce8;
+    color: #854d0e;
+  }
+
+  &.low {
+    background: #fff1f2;
+    color: #be123c;
+  }
+}
+
+// ── Feedback section ──────────────────────────────────────
+.feedback_btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1.5px solid #e5e5e5;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  color: #141416;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+
+  &:hover {
+    border-color: #141416;
+    background: #fafafa;
+  }
+}
+
+.empty_hint {
+  font-size: 13px;
+  color: #bbb;
+  font-style: italic;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid #f0f0f0;
+  margin: 0;
+}
+
+// ── Loading / skeleton ────────────────────────────────────
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 180px;
+  color: #bbb;
+  font-size: 13px;
+}
+
+// ── Complaints list modal ─────────────────────────────────
+.complaints_list_wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 560px;
+  max-width: 100%;
+  min-height: 80px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 2px 0 8px;
+}
+
+.complaint_item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.complaint_item_header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.complaint_status {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.complaint_date {
+  font-size: 11px;
+  color: #bbb;
+}
+
+.complaint_text {
+  font-size: 13px;
+  color: #141416;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.sentinel {
+  height: 1px;
+  flex-shrink: 0;
+}
+
+// ── Complaint reply ───────────────────────────────────────
+.complaint_reply_box {
+  background: #f7f7f7;
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.complaint_reply_label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #868897;
+}
+
+.complaint_reply_text {
+  font-size: 13px;
+  color: #141416;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.complaint_reply_btn {
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6366f1;
+  background: none;
+  border: 1.5px solid #e0e0f8;
+  border-radius: 8px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover {
+    background: #f5f5ff;
+    border-color: #6366f1;
+  }
+}
+
+.complaint_reply_form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.complaint_reply_textarea {
+  width: 100%;
+  resize: vertical;
+  border: 1.5px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #141416;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: #6366f1;
+  }
+}
+
+.complaint_reply_actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.reply_cancel_btn {
+  font-size: 12px;
+  font-weight: 600;
+  color: #868897;
+  background: none;
+  border: 1.5px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 5px 14px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+
+  &:hover {
+    border-color: #868897;
+  }
+}
+
+.reply_send_btn {
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: #6366f1;
+  border: none;
+  border-radius: 8px;
+  padding: 5px 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: #4f46e5;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

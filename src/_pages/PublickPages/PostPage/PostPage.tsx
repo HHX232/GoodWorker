@@ -2,14 +2,18 @@
 'use client'
 
 import { PostBlockRenderer } from '@/_pages/CreatePostPage/PostBlockRenderer/PostBlockRenderer'
+import { PostBlockType } from '@/shared/types/Post/Post.type'
 
 import { UserRolesObject } from '@/shared/constants/user/user.const'
 import { UserPostInfo } from '@/shared/ui'
 import { CommentItem, PostCommentSection } from '@/shared/ui/Posts/PostCommentSection/PostCommentSection'
+import { PostComplaintModal } from '@/shared/ui/Posts/PostComplaintModal/PostComplaintModal'
 import { SetCommentBlock } from '@/shared/ui/Posts/SetCommentBlock/SetCommentBlock'
 import { NavBar } from '@/widgets/BaseUI'
 import { BorderTextHandler } from '@/widgets/Cards'
 import { Prisma, Role } from '@prisma/client'
+import { useTranslations } from 'next-intl'
+import { useState } from 'react'
 import styles from './PostPage.module.scss'
 import { BookmarkHighlighter } from '@/shared/ui/bookmark/BookmarkHighlighter'
 
@@ -79,6 +83,49 @@ function parsePostContent(content: Prisma.JsonValue): any[] {
   return obj.blocks as any[]
 }
 
+// ─── Report button ────────────────────────────────────────
+
+function ReportPostButton({postId, postTitle}: {postId: string; postTitle: string}) {
+  const t = useTranslations('PostPage')
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+          fontSize: 12,
+          color: '#bbb',
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          padding: '6px 0',
+          fontFamily: 'inherit',
+          transition: 'color 0.15s',
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.color = '#f43f5e')}
+        onMouseLeave={(e) => (e.currentTarget.style.color = '#bbb')}
+      >
+        <svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+          <path d='M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z' />
+          <line x1='4' y1='22' x2='4' y2='15' />
+        </svg>
+        {t('report')}
+      </button>
+      <PostComplaintModal
+        isOpen={open}
+        onClose={() => setOpen(false)}
+        postId={postId}
+        postTitle={postTitle}
+      />
+    </>
+  )
+}
+
+// ─── Page ─────────────────────────────────────────────────
+
 function PostPage({post, initialComments, currentUserId}: PostPageProps) {
   const resolvedComments: CommentItem[] = initialComments ?? (post.enrichedComments ?? []).map(enrichedToCommentItem)
 
@@ -94,10 +141,24 @@ function PostPage({post, initialComments, currentUserId}: PostPageProps) {
   }
 
   const blocks = parsePostContent(post.content)
-  const content = blocks.length > 0 ? <>
-    <PostBlockRenderer postId={post.id} blocks={blocks} />
-    <BookmarkHighlighter postId={post.id} />
-  </> : null
+
+  // Inject title into the first TEXT block; otherwise render it as a standalone header box
+  const firstBlockIsText = blocks[0]?.type === PostBlockType.TEXT
+  const titleNode = <h1 className={styles.post_title}>{post.title}</h1>
+
+  const standaloneTitle = (
+    <div style={{background: '#fff', borderRadius: 12, padding: '12px 16px'}}>
+      {titleNode}
+    </div>
+  )
+
+  const content = blocks.length > 0 ? (
+    <>
+      {!firstBlockIsText && standaloneTitle}
+      <PostBlockRenderer postId={post.id} blocks={blocks} titleNode={firstBlockIsText ? titleNode : undefined} />
+      <BookmarkHighlighter postId={post.id} />
+    </>
+  ) : standaloneTitle
 
   const commentSection = (
     <PostCommentSection
@@ -108,6 +169,10 @@ function PostPage({post, initialComments, currentUserId}: PostPageProps) {
     />
   )
 
+  const reportBtn = (
+    <ReportPostButton postId={post.id} postTitle={post.title} />
+  )
+
   return (
     <div className={`container default_content ${styles.extra_content}`}>
       <NavBar />
@@ -116,6 +181,7 @@ function PostPage({post, initialComments, currentUserId}: PostPageProps) {
       {/* mobile layout */}
       <div className={styles.mobile_wrapper}>
         <UserPostInfo {...userPostInfo} />
+        {reportBtn}
         {content}
         <SetCommentBlock postId={post.id} />
         {commentSection}
@@ -130,6 +196,7 @@ function PostPage({post, initialComments, currentUserId}: PostPageProps) {
       {/* desktop: right sticky sidebar */}
       <div className={`${styles.sticky_sidebar} ${styles.not_mobile_box}`}>
         <UserPostInfo {...userPostInfo} />
+        {reportBtn}
         <div style={{flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column'}}>{commentSection}</div>
       </div>
     </div>
@@ -138,4 +205,3 @@ function PostPage({post, initialComments, currentUserId}: PostPageProps) {
 
 export default PostPage
 export type { EnrichedComment, PostWithRelations }
-

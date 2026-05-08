@@ -63,7 +63,7 @@ const Card: FC<ICard> = ({
         })}
       </ul>
 
-      <PostFooterMain parentPostID={cardId} comments={comments} vues={vues} stars={stars} />
+      <PostFooterMain parentPostID={cardId} comments={comments} vues={vues} stars={stars} postTitle={title} />
 
       {useLink ? (
         <Link href={`/post/${cardId}`} className={style.link_button}>

@@ -8,7 +8,7 @@ import { InfiniteData, useInfiniteQuery, useQueryClient } from '@tanstack/react-
 import Image from 'next/image'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { CommentImages, CommentItem, DraftImage, DraftPreviews, commentToUI } from '../PostCommentSection'
+import { CommentImages, CommentItem, DraftImage, DraftPreviews, commentToUI, StarRating } from '../PostCommentSection'
 import styles from './Postcommentmodal.module.scss'
 // TODO разнести функции
 const LIMIT = 15
@@ -167,7 +167,7 @@ function CommentRow({
     const trimmed = editText.trim()
     if (!trimmed && editExistingUrls.length === 0 && editDrafts.length === 0) return
 
-    const toastId = toast.loading('Saving comment…')
+    const toastId = toast.loading('Сохраняем...')
     setSaving(true)
     try {
       const updated = await CommentService.update(postId, comment.id, {
@@ -179,25 +179,25 @@ function CommentRow({
       editDrafts.forEach((d) => URL.revokeObjectURL(d.previewUrl))
       setEditDrafts([])
       setEditing(false)
-      toast.success('Comment updated', {id: toastId})
+      toast.success('Комментарий обновлён', {id: toastId})
     } catch {
-      toast.error('Failed to update comment', {id: toastId})
+      toast.error('Не удалось обновить', {id: toastId})
     } finally {
       setSaving(false)
     }
   }
 
   const handleDelete = async () => {
-    if (!confirm('Delete this comment?')) return
+    if (!confirm('Удалить комментарий?')) return
 
-    const toastId = toast.loading('Deleting…')
+    const toastId = toast.loading('Удаляем...')
     setDeleting(true)
     try {
       await CommentService.delete(postId, comment.id)
       onDeleted(comment.id)
-      toast.success('Comment deleted', {id: toastId})
+      toast.success('Комментарий удалён', {id: toastId})
     } catch {
-      toast.error('Failed to delete comment', {id: toastId})
+      toast.error('Не удалось удалить', {id: toastId})
       setDeleting(false)
     }
   }
@@ -277,10 +277,10 @@ function CommentRow({
             <div style={{display: 'flex', alignItems: 'center', gap: 8, marginTop: 8}}>
               <SelectPhotoInput size='m' onSelectImageFile={handleSelectFile} />
               <button onClick={handleSave} disabled={saving} style={saveBtnStyle}>
-                {saving ? 'Saving…' : 'Save'}
+                {saving ? 'Сохраняем...' : 'Сохранить'}
               </button>
               <button onClick={handleCancelEdit} style={cancelBtnStyle}>
-                Cancel
+                Отмена
               </button>
             </div>
           </div>
@@ -313,6 +313,7 @@ export function PostCommentModal({isOpen, onClose, postId, scrollToCommentId, cu
   const [text, setText] = useState('')
   const [drafts, setDrafts] = useState<DraftImage[]>([])
   const [sending, setSending] = useState(false)
+  const [rating, setRating] = useState<number | null>(null)
 
   const handleSelectFile = (file: File) => {
     const previewUrl = URL.createObjectURL(file)
@@ -329,24 +330,25 @@ export function PostCommentModal({isOpen, onClose, postId, scrollToCommentId, cu
 
   const handleSend = async () => {
     const trimmed = text.trim()
-    if (!trimmed && drafts.length === 0) return
+    if (!trimmed && drafts.length === 0 && rating === null) return
 
-    const toastId = toast.loading('Sending comment…')
+    const toastId = toast.loading('Отправляем...')
     setSending(true)
     try {
-      const created = await CommentService.create(postId, {
-        text: trimmed,
-        images: drafts.map((d) => d.file)
-      })
-      addComment(created)
+      await Promise.all([
+        trimmed || drafts.length > 0
+          ? CommentService.create(postId, {text: trimmed, images: drafts.map((d) => d.file)}).then(addComment)
+          : Promise.resolve(),
+        rating !== null ? CommentService.ratePost(postId, rating) : Promise.resolve(),
+      ])
       setText('')
+      setRating(null)
       drafts.forEach((d) => URL.revokeObjectURL(d.previewUrl))
       setDrafts([])
-      toast.success('Comment posted', {id: toastId})
+      toast.success('Комментарий опубликован', {id: toastId})
     } catch (error) {
-      
-  toast.error(getErrorMessage(error, 'Failed to send comment'), {id: toastId})
-} finally {
+      toast.error(getErrorMessage(error, 'Не удалось отправить'), {id: toastId})
+    } finally {
       setSending(false)
     }
   }
@@ -368,31 +370,36 @@ export function PostCommentModal({isOpen, onClose, postId, scrollToCommentId, cu
 
   const footer = (
     <div className={styles.comment_input_bar}>
-      <SelectPhotoInput size='m' onSelectImageFile={handleSelectFile} />
-      <div className={styles.input_area}>
-        <DraftPreviews drafts={drafts} onRemove={handleRemoveDraft} />
-        <input
-          className={styles.comment_input}
-          type='text'
-          placeholder='Write your comment here'
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={handleKeyDown}
-          disabled={sending}
-        />
+      <div className={styles.stars_row}>
+        <StarRating value={rating} onChange={setRating} size={22} />
       </div>
-      <button
-        className={styles.send_button}
-        aria-label='Send comment'
-        onClick={handleSend}
-        disabled={sending || (!text.trim() && drafts.length === 0)}
-        style={{opacity: sending ? 0.5 : 1}}
-      >
-        <svg width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'>
-          <line x1='22' y1='2' x2='11' y2='13' />
-          <polygon points='22 2 15 22 11 13 2 9 22 2' />
-        </svg>
-      </button>
+      <div className={styles.input_row}>
+        <SelectPhotoInput size='m' onSelectImageFile={handleSelectFile} />
+        <div className={styles.input_area}>
+          <DraftPreviews drafts={drafts} onRemove={handleRemoveDraft} />
+          <input
+            className={styles.comment_input}
+            type='text'
+            placeholder='Напишите ваш комментарий...'
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={handleKeyDown}
+            disabled={sending}
+          />
+        </div>
+        <button
+          className={styles.send_button}
+          aria-label='Отправить комментарий'
+          onClick={handleSend}
+          disabled={sending || (!text.trim() && drafts.length === 0 && rating === null)}
+          style={{opacity: sending ? 0.5 : 1}}
+        >
+          <svg width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'>
+            <line x1='22' y1='2' x2='11' y2='13' />
+            <polygon points='22 2 15 22 11 13 2 9 22 2' />
+          </svg>
+        </button>
+      </div>
     </div>
   )
 
@@ -400,7 +407,7 @@ export function PostCommentModal({isOpen, onClose, postId, scrollToCommentId, cu
     <ModalWindowDefault
       isOpen={isOpen}
       onClose={onClose}
-      additionalTitle={<p className={styles.modal_title}>Comments ({total})</p>}
+      additionalTitle={<p className={styles.modal_title}>Комментарии ({total})</p>}
       modalFooter={footer}
     >
       <ul className={styles.comments_list}>
@@ -421,7 +428,7 @@ export function PostCommentModal({isOpen, onClose, postId, scrollToCommentId, cu
 
       {loading && (
         <p style={{textAlign: 'center', color: '#868897', fontSize: 13, padding: '12px 0'}}>
-          Loading…
+          Загрузка…
         </p>
       )}
     </ModalWindowDefault>

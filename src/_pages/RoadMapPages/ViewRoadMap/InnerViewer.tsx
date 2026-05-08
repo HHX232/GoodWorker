@@ -5,6 +5,7 @@ import {RoadmapAccessContext} from '@/shared/ui/RoadMap/context/RoadmapAccessCon
 import {ViewModeContext} from '@/shared/ui/RoadMap/context/ViewModeContext'
 import {PurchaseAccessModal} from '@/shared/ui/RoadMap/PurchaseAccessModal/PurchaseAccessModal'
 import {RoadmapReviewBar} from '@/shared/ui/RoadMap/RoadmapReviewBar/RoadmapReviewBar'
+import {RoadmapStatsModal} from '@/shared/ui/RoadMap/RoadmapStatsModal/RoadmapStatsModal'
 import DeletableEdge from '@/widgets/RoadMap/UI/nodes/DeletableEdge/DeletableEdge'
 import NodeComponent from '@/widgets/RoadMap/UI/nodes/NodeComponent/NodeComponent'
 import {
@@ -21,7 +22,7 @@ import {
   useNodesState
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 import {useRoadmapAccessContext} from '@/shared/ui/RoadMap/context/RoadmapAccessContext'
 
 const nodeTypes = {FlowScrapeNode: NodeComponent}
@@ -71,15 +72,51 @@ function BuyButton({price}: {price: number}) {
   )
 }
 
+function StatsButton({onClick}: {onClick: () => void}) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 7,
+        padding: '9px 16px',
+        borderRadius: 10,
+        border: 'none',
+        background: '#141416',
+        color: '#fff',
+        fontSize: 13,
+        fontWeight: 600,
+        fontFamily: 'Roboto, sans-serif',
+        cursor: 'pointer',
+        boxShadow: '0 2px 12px rgba(20,20,22,0.18)',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      <svg width='14' height='14' viewBox='0 0 24 24' fill='none'>
+        <rect x='3' y='12' width='4' height='9' rx='1' fill='currentColor' />
+        <rect x='10' y='7' width='4' height='14' rx='1' fill='currentColor' />
+        <rect x='17' y='3' width='4' height='18' rx='1' fill='currentColor' />
+      </svg>
+      Статистика
+    </button>
+  )
+}
+
 function InnerFlow({
   nodes: initialNodes,
   edges: initialEdges,
   roadmapId,
-  roadmapPrice = 0,
   initialAvgRating,
 }: RoadMapViewerProps) {
-  const {hasAccess, nodeAccessType} = useRoadmapAccessContext()
-  const showBuyButton = nodeAccessType !== null && !hasAccess
+  const {hasAccess, nodeAccessType, isOwner, roadmapPrice} = useRoadmapAccessContext()
+  const isPaid = nodeAccessType !== null || roadmapPrice > 0
+  const showBuyButton = isPaid && !hasAccess && !isOwner
+  const [statsOpen, setStatsOpen] = useState(false)
+
+  useEffect(() => {
+    fetch(`/api/roadmap/${roadmapId}/view`, {method: 'POST'}).catch(() => {})
+  }, [roadmapId])
 
   const [nodes, , onNodesChange] = useNodesState(
     initialNodes.map((n) => ({...n, type: 'FlowScrapeNode', dragging: false, selected: false}))
@@ -112,23 +149,35 @@ function InnerFlow({
       >
         <Background variant={BackgroundVariant.Dots} gap={15} />
         <Controls position='top-left' />
+
+        {/* Reviews + comments — center top */}
         <Panel
-          position='top-right'
-          style={{
-            left: '56px',
-            right: '10px',
-            top: '10px',
-            margin: 0,
-            pointerEvents: 'auto',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-          }}
+          position='top-center'
+          style={{top: '10px', margin: 0, pointerEvents: 'auto'}}
         >
-          {showBuyButton && <BuyButton price={roadmapPrice} />}
           <RoadmapReviewBar roadmapId={roadmapId} initialAvgRating={initialAvgRating} />
         </Panel>
+
+        {/* Buy / Stats — right top */}
+        <Panel
+          position='top-right'
+          style={{top: '10px', right: '10px', margin: 0, pointerEvents: 'auto'}}
+        >
+          {isOwner ? (
+            <StatsButton onClick={() => setStatsOpen(true)} />
+          ) : (
+            showBuyButton && <BuyButton price={roadmapPrice} />
+          )}
+        </Panel>
       </ReactFlow>
+
+      {isOwner && (
+        <RoadmapStatsModal
+          roadmapId={roadmapId}
+          isOpen={statsOpen}
+          onClose={() => setStatsOpen(false)}
+        />
+      )}
     </div>
   )
 }
@@ -136,13 +185,21 @@ function InnerFlow({
 export default function RoadMapViewer(props: RoadMapViewerProps) {
   const {data} = useRoadmapAccess(props.roadmapId)
   const hasAccess = data?.hasAccess ?? false
+  const isOwner = data?.grantedBy === 'owner'
   const nodeAccessType = props.nodeAccessType ?? null
   const [purchaseOpen, setPurchaseOpen] = useState(false)
 
   return (
     <ViewModeContext.Provider value='view'>
       <RoadmapAccessContext.Provider
-        value={{hasAccess, nodeAccessType, openPurchaseModal: () => setPurchaseOpen(true), roadmapId: props.roadmapId}}
+        value={{
+          hasAccess,
+          nodeAccessType,
+          openPurchaseModal: () => setPurchaseOpen(true),
+          roadmapId: props.roadmapId,
+          isOwner,
+          roadmapPrice: props.roadmapPrice ?? 0,
+        }}
       >
         <ReactFlowProvider>
           <InnerFlow {...props} />

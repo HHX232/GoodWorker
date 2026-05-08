@@ -1,4 +1,5 @@
 import { prisma } from '@/shared/prisma/prisma'
+import { createNotification, NOTIFICATION_TYPES } from '@/shared/lib/notifications'
 import { RoadmapAccessGrant } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../../auth'
@@ -66,13 +67,13 @@ export async function POST(req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const roadmap = await prisma.roadmap.findUnique({
+    const roadmapCheck = await prisma.roadmap.findUnique({
       where: { id: roadmapId },
-      select: { teacherId: true },
+      select: { teacherId: true, title: true },
     })
 
-    if (!roadmap) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-    if (roadmap.teacherId !== session.user.id) {
+    if (!roadmapCheck) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    if (roadmapCheck.teacherId !== session.user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -86,11 +87,28 @@ export async function POST(req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: 'studentId required' }, { status: 400 })
     }
 
-    const access = await prisma.roadmapAccess.upsert({
-      where: { roadmapId_studentId: { roadmapId, studentId } },
-      create: { roadmapId, studentId, grantedBy },
-      update: { grantedBy },
-      include: { student: { select: { id: true, name: true, avatarUrl: true } } },
+    const [access, student] = await Promise.all([
+      prisma.roadmapAccess.upsert({
+        where: { roadmapId_studentId: { roadmapId, studentId } },
+        create: { roadmapId, studentId, grantedBy },
+        update: { grantedBy },
+      }),
+      prisma.student.findUnique({ where: { id: studentId }, select: { name: true, avatarUrl: true } }),
+    ])
+
+    await createNotification({
+      type: NOTIFICATION_TYPES.NEW_STUDENT,
+      title: 'Новый ученик',
+      body: `${student?.name ?? 'Ученик'} получил доступ к роадмапу «${roadmapCheck.title ?? 'Без названия'}»`,
+      payload: {
+        actorId: studentId,
+        actorName: student?.name ?? 'Ученик',
+        actorRole: 'STUDENT',
+        actorAvatar: student?.avatarUrl ?? null,
+        roadmapId,
+        roadmapTitle: roadmapCheck.title ?? '',
+      },
+      teacherId: session.user.id,
     })
 
     return NextResponse.json(access)

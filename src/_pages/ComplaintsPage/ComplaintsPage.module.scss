@@ -1,0 +1,397 @@
+.page_wrap {
+  padding-bottom: 40px;
+}
+
+.content {
+  min-width: 0;
+  padding: 0 8px;
+}
+
+// ── Header ────────────────────────────────────────────────
+.page_header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 28px 0 20px;
+}
+
+.page_title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #141416;
+}
+
+.total_badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 50px;
+  background: #f0f0f3;
+  color: #868897;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+// ── Tabs ──────────────────────────────────────────────────
+.tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.tab {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 50px;
+  border: 1.5px solid #ebebeb;
+  background: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #868897;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: #d0d0d0;
+    color: #141416;
+  }
+}
+
+.tab_active {
+  background: #141416;
+  border-color: #141416;
+  color: #fff;
+
+  &:hover {
+    border-color: #141416;
+    color: #fff;
+  }
+}
+
+// ── List ──────────────────────────────────────────────────
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+// ── Card ──────────────────────────────────────────────────
+.card {
+  background: #fff;
+  border: 1.5px solid #ebebeb;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    border-color: #d0d0d0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  }
+}
+
+.card_expanded {
+  border-color: #d0d0d0;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.card_header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px 0;
+  cursor: pointer;
+  user-select: none;
+
+  &:focus-visible {
+    outline: 2px solid #6366f1;
+    outline-offset: -2px;
+  }
+}
+
+.card_meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.target_row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.target_kind {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #bbb;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.target_link {
+  font-size: 13px;
+  font-weight: 600;
+  color: #141416;
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 280px;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.target_label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #141416;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.date {
+  font-size: 11px;
+  color: #bbb;
+}
+
+.card_right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.status_badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 50px;
+  white-space: nowrap;
+}
+
+.has_reply_dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  flex-shrink: 0;
+}
+
+.chevron {
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.chevron_open {
+  transform: rotate(180deg);
+}
+
+.text_preview {
+  font-size: 12.5px;
+  color: #868897;
+  line-height: 1.55;
+  padding: 8px 16px 14px;
+  margin: 0;
+}
+
+// ── Expanded body ─────────────────────────────────────────
+.card_body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 16px 16px;
+}
+
+.divider {
+  height: 1px;
+  background: #f0f0f3;
+  margin: 0 -16px;
+}
+
+.section {}
+
+.section_label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #bbb;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 6px;
+}
+
+.full_text {
+  font-size: 13.5px;
+  color: #141416;
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.reporter_meta {
+  font-size: 11px;
+  color: #bbb;
+  margin: 6px 0 0;
+
+  span {
+    color: #868897;
+    font-weight: 600;
+  }
+}
+
+// ── Reply ─────────────────────────────────────────────────
+.reply_bubble {
+  background: #f7f7fa;
+  border-left: 3px solid #6366f1;
+  border-radius: 0 8px 8px 0;
+  padding: 10px 12px;
+
+  p {
+    font-size: 13px;
+    color: #141416;
+    line-height: 1.55;
+    margin: 0;
+    white-space: pre-wrap;
+  }
+}
+
+.reply_date {
+  display: block;
+  font-size: 10.5px;
+  color: #bbb;
+  margin-top: 5px;
+}
+
+.reply_input_row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reply_textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1.5px solid #ebebeb;
+  background: #fafafa;
+  font-size: 13px;
+  color: #141416;
+  line-height: 1.55;
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.15s;
+
+  &:focus {
+    border-color: #6366f1;
+    background: #fff;
+  }
+}
+
+.reply_btn {
+  align-self: flex-end;
+  height: 34px;
+  padding: 0 18px;
+  border-radius: 8px;
+  border: none;
+  background: #141416;
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+}
+
+// ── Admin status ──────────────────────────────────────────
+.status_row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.status_chip {
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 50px;
+  border: 1.5px solid #ebebeb;
+  background: #fff;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #868897;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: #d0d0d0;
+  }
+}
+
+.status_chip_active {
+  border-width: 1.5px;
+}
+
+// ── Empty / skeleton / spinner ────────────────────────────
+.skeleton {
+  height: 88px;
+  border-radius: 14px;
+  background: linear-gradient(90deg, #f5f5f5 25%, #ebebeb 50%, #f5f5f5 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 20px;
+  color: #bbb;
+
+  p {
+    font-size: 13px;
+    color: #ccc;
+  }
+}
+
+.spinner_wrap {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e5e5e5;
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

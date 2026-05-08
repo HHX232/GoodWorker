@@ -6,7 +6,9 @@ import {PRESET_COLORS} from '@/shared/constants/roadMap/roadMap.const'
 import {createRoadNode} from '@/shared/helpers/Node/CreateFlowNode'
 import {RoadMapBlockType, RoadNode} from '@/shared/types/RoadMap/RoadMap.types'
 import {Button} from '@/shared/ui/base/Buttons/Button/Button'
+import {useRoadmapAccessContext} from '@/shared/ui/RoadMap/context/RoadmapAccessContext'
 import {useViewMode} from '@/shared/ui/RoadMap/context/ViewModeContext'
+import {NodeComplaintModal} from '@/shared/ui/RoadMap/NodeComplaintModal/NodeComplaintModal'
 import {useReactFlow} from '@xyflow/react'
 import {CopyIcon, GripVerticalIcon, PaletteIcon, TrashIcon} from 'lucide-react'
 import {useTranslations} from 'next-intl'
@@ -35,6 +37,8 @@ export default function NodeHeader({
 
   const [pickerOpen, setPickerOpen] = useState(false)
   const [color, setColor] = useState(savedColor)
+  const [complaintOpen, setComplaintOpen] = useState(false)
+  const {roadmapId} = useRoadmapAccessContext()
   const pickerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -81,31 +85,48 @@ export default function NodeHeader({
           )}
 
           {onlyView ? (
-            <button className={styles.reportBtn} aria-label='Пожаловаться' title='Пожаловаться'>
-              <svg width='18' height='18' viewBox='0 0 24 24' fill='none'>
-                <path
-                  d='M12 7.75V13'
-                  stroke='currentColor'
-                  strokeWidth='1.5'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                />
-                <path
-                  d='M21.0802 8.58003V15.42C21.0802 16.54 20.4802 17.58 19.5102 18.15L13.5702 21.58C12.6002 22.14 11.4002 22.14 10.4202 21.58L4.48016 18.15C3.51016 17.59 2.91016 16.55 2.91016 15.42V8.58003C2.91016 7.46003 3.51016 6.41999 4.48016 5.84999L10.4202 2.42C11.3902 1.86 12.5902 1.86 13.5702 2.42L19.5102 5.84999C20.4802 6.41999 21.0802 7.45003 21.0802 8.58003Z'
-                  stroke='currentColor'
-                  strokeWidth='1.5'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                />
-                <path
-                  d='M12 16.2002V16.3002'
-                  stroke='currentColor'
-                  strokeWidth='2'
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                />
-              </svg>
-            </button>
+            <>
+              <button
+                className={styles.reportBtn}
+                aria-label='Пожаловаться'
+                title='Пожаловаться'
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setComplaintOpen(true)
+                }}
+              >
+                <svg width='18' height='18' viewBox='0 0 24 24' fill='none'>
+                  <path
+                    d='M12 7.75V13'
+                    stroke='currentColor'
+                    strokeWidth='1.5'
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                  />
+                  <path
+                    d='M21.0802 8.58003V15.42C21.0802 16.54 20.4802 17.58 19.5102 18.15L13.5702 21.58C12.6002 22.14 11.4002 22.14 10.4202 21.58L4.48016 18.15C3.51016 17.59 2.91016 16.55 2.91016 15.42V8.58003C2.91016 7.46003 3.51016 6.41999 4.48016 5.84999L10.4202 2.42C11.3902 1.86 12.5902 1.86 13.5702 2.42L19.5102 5.84999C20.4802 6.41999 21.0802 7.45003 21.0802 8.58003Z'
+                    stroke='currentColor'
+                    strokeWidth='1.5'
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                  />
+                  <path
+                    d='M12 16.2002V16.3002'
+                    stroke='currentColor'
+                    strokeWidth='2'
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                  />
+                </svg>
+              </button>
+              <NodeComplaintModal
+                isOpen={complaintOpen}
+                onClose={() => setComplaintOpen(false)}
+                roadmapId={roadmapId}
+                nodeId={nodeId}
+                nodeType={taskType}
+              />
+            </>
           ) : (
             <>
               <div style={{position: 'relative'}} ref={pickerRef}>

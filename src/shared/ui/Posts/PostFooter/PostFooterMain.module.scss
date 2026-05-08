@@ -63,3 +63,24 @@
 .comm_box_2 {
   margin-left: 16px;
 }
+
+.report_btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: #c0c0c0;
+  cursor: pointer;
+  margin-left: 8px;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: #fff1f2;
+    color: #f43f5e;
+  }
+}

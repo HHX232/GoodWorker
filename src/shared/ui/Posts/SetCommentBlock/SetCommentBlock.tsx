@@ -48,7 +48,7 @@ export function SetCommentBlock({postId}: SetCommentBlockProps) {
     if (!trimmed && newFiles.length === 0 && keepImageUrls.length === 0 && stars === null) return
 
     setSending(true)
-    const toastId = toast.loading(hasComment ? 'Saving changes…' : 'Publishing…')
+    const toastId = toast.loading(hasComment ? 'Сохранение...' : 'Публикуем...')
 
     try {
       await Promise.all([
@@ -73,9 +73,9 @@ export function SetCommentBlock({postId}: SetCommentBlockProps) {
         queryClient.invalidateQueries({queryKey: ['comments', postId]})
       ])
 
-      toast.success(hasComment ? 'Changes saved!' : 'Published!', {id: toastId})
+      toast.success(hasComment ? 'Изменения сохранены!' : 'Опубликовано!', {id: toastId})
     } catch {
-      toast.error('Failed to publish', {id: toastId})
+      toast.error('Не удалось опубликовать', {id: toastId})
     } finally {
       setSending(false)
     }
@@ -84,7 +84,7 @@ export function SetCommentBlock({postId}: SetCommentBlockProps) {
   if (commentLoading || ratingLoading) {
     return (
       <div className={styles.block}>
-        <p className={styles.heading}>Leave a review</p>
+        <p className={styles.heading}>Оставить отзыв</p>
         <div className={styles.skeleton} />
       </div>
     )
@@ -95,14 +95,14 @@ export function SetCommentBlock({postId}: SetCommentBlockProps) {
 
   return (
     <div className={styles.block}>
-      <p className={styles.heading}>Leave a review</p>
+      <p className={styles.heading}>Оставить отзыв</p>
 
       <div className={styles.stars_row}>
         <StarRating extraClass={styles.stars} value={stars} onChange={setStars} size={56} />
       </div>
 
       <TextAreaUI
-        placeholder='Share your thoughts about this post…'
+        placeholder='Поделитесь своими мыслями об этом посте...'
         currentValue={text}
         onSetValue={setText}
         autoResize
@@ -126,7 +126,7 @@ export function SetCommentBlock({postId}: SetCommentBlockProps) {
 
       <div className={styles.submit_row}>
         <button className={styles.submit_btn} onClick={handleSubmit} disabled={!canSubmit}>
-          {hasComment ? 'Save changes' : 'Publish'}
+          {hasComment ? 'Сохранить изменения' : 'Опубликовать'}
         </button>
       </div>
     </div>

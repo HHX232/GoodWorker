@@ -71,6 +71,10 @@ const postSlice = createSlice({
       state.categoryIds = action.payload
     },
 
+    initPostConstructor(_state, action: PayloadAction<Partial<PostConstructorState>>) {
+      return {...initialState, ...action.payload}
+    },
+
     resetPostConstructor() {
       return initialState
     }

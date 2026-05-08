@@ -7,9 +7,10 @@ import {TestBlock} from '@/entities/store/slices/tasksSlice.slice'
 import {useActions} from '@/features/hooks/store/useActions'
 import {useTypedSelector} from '@/features/hooks/store/useTypedSelector'
 import {RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
+import {useRoadmapAccessContext} from '@/shared/ui/RoadMap/context/RoadmapAccessContext'
 import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
 import {useReactFlow, useStore} from '@xyflow/react'
-import {useEffect, useState} from 'react'
+import {useCallback, useEffect, useState} from 'react'
 import styles from './ActiveTestParam.module.scss'
 import {BlockEditorSwitch} from './BlockEditorInline/BlockEditorSwitch'
 
@@ -46,6 +47,7 @@ export default function ActiveTestBlock({
 }) {
   const {updateNodeData} = useReactFlow()
   const {loadBlocksForNode, addActiveBlock, removeActiveBlock} = useActions()
+  const {roadmapId} = useRoadmapAccessContext()
 
   const nodeBlocks = useStore(
     (s) => ((s.nodeLookup.get(nodeId)?.data as RoadNodeData)?.activeTests ?? []) as TestBlock[]
@@ -83,13 +85,33 @@ export default function ActiveTestBlock({
 
   const current = blocks[activeIdx] ?? null
 
+  const handleResult = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (res: any) => {
+      if (!roadmapId) return
+      fetch(`/api/roadmap/${roadmapId}/feedback`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          nodeId,
+          answers: {
+            percent: res?.percent ?? null,
+            score: res?.totalScore ?? null,
+            maxScore: res?.maxScore ?? null,
+          },
+        }),
+      }).catch(() => {})
+    },
+    [roadmapId, nodeId]
+  )
+
   if (onlyPass) {
     return (
       <div className={`${styles.wrap} nodrag nopan`}>
         {nodeBlocks.length === 0 ? (
           <p className={styles.empty}>{t('noQuestions')}</p>
         ) : (
-          <TestPlayer showInlineResult blocks={nodeBlocks} singleBlock onResult={(res) => console.log(res)} />
+          <TestPlayer showInlineResult blocks={nodeBlocks} singleBlock onResult={handleResult} />
         )}
       </div>
     )

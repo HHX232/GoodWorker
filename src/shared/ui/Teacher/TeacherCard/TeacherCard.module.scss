@@ -1,0 +1,174 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  background: #fff;
+  border-radius: 14px;
+  width: 100%;
+  transition: box-shadow 0.18s;
+
+  &:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.avatar_wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatar_fallback {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.online_dot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #22c55e;
+  border: 2px solid #fff;
+}
+
+.header_info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.name_row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #141416;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.vip_badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: #1c1c1c;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.activity {
+  font-size: 12px;
+  color: #868897;
+}
+
+.activity_online {
+  color: #22c55e;
+}
+
+.categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.category_chip {
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: #f5f5f7;
+  font-size: 12px;
+  color: #555;
+  white-space: nowrap;
+}
+
+.stats {
+  display: flex;
+  gap: 20px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat_value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #141416;
+}
+
+.stat_label {
+  font-size: 11px;
+  color: #868897;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.link_btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1.5px solid #e8e8e8;
+  font-size: 13px;
+  color: #868897;
+  text-decoration: none;
+  width: fit-content;
+  transition: all 0.18s;
+
+  &:hover {
+    background: #141416;
+    border-color: #141416;
+    color: #fff;
+
+    svg path {
+      stroke: #fff;
+    }
+  }
+
+  svg {
+    flex-shrink: 0;
+    transition: stroke 0.18s;
+  }
+}

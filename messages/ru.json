@@ -175,7 +175,7 @@
   },
   "roadMap": {
     "postslabel": "Посты",
-    "ForComments":"Обратная связь",
+    "ForComments": "Обратная связь",
     "linkTestLabel": "Ссылка на тест",
     "mediaInfoLabel": "Медиа информация",
     "infoTextLabel": "Текстовая информация",
@@ -196,7 +196,6 @@
     "highlightText": "Выделить слова",
     "wordScramble": "Собрать слово",
     "dialogue": "Диалог",
-
     "noQuestions": "Нет вопросов",
     "addButton": "Добавить",
     "addFirstBlock": "Добавьте первый блок",
@@ -222,7 +221,7 @@
     "remove": "×",
     "save": "Сохранить",
     "saving": "Сохраняем...",
-    "saveSuccess": "Роадмап сохранён",
+    "saveSuccess": "Курс сохранён",
     "saveError": "Ошибка при сохранении",
     "validationErrors": "{count} блоков не заполнено",
     "reviewBtn": "Оставить отзыв",
@@ -244,7 +243,7 @@
     "priceFree": "Бесплатно",
     "currencyPreview": "Стоимость в других валютах",
     "vipRequired": "Требуется VIP",
-    "vipRequiredDesc": "Для создания платных роадмапов необходим VIP-статус. Он открывает монетизацию и приоритетный показ в каталоге.",
+    "vipRequiredDesc": "Для создания платных курсов необходим VIP-статус. Он открывает монетизацию и приоритетный показ в каталоге.",
     "purchaseVip": "Приобрести VIP",
     "vipChecking": "Проверяем статус VIP...",
     "commentsBtn": "Комментарии",
@@ -267,7 +266,59 @@
     "fbOptionPlaceholder": "Вариант ответа...",
     "fbAddOption": "+ Вариант",
     "fbEmptyQuestion": "Вопрос без текста",
-    "fbEmptyOption": "Вариант"
+    "fbEmptyOption": "Вариант",
+    "statsTitle": "Статистика курса",
+    "statsLoading": "Загрузка...",
+    "statsViewsComments": "Просмотры и комментарии",
+    "statsLast8Weeks": "за последние 8 недели",
+    "statsViews": "Просмотров",
+    "statsComments": "Комментариев",
+    "statsIncome": "Доход",
+    "statsPurchases": "Покупок",
+    "statsTotal": "Итого",
+    "statsPrice": "Цена",
+    "statsComplaints": "Жалобы",
+    "statsNoComplaints": "Нет открытых жалоб (всего {total})",
+    "statsOpenComplaints": "{open} открытых из {total}",
+    "statsViewComplaints": "Просмотреть жалобы",
+    "statsTests": "Тесты",
+    "statsTestsCount": "{count} прохождений",
+    "statsTestBlock": "Тест-блок #{num}",
+    "statsTestRuns": "прохожд.",
+    "statsFeedback": "Обратная связь",
+    "statsNoFeedback": "Нет блоков обратной связи",
+    "statsFeedbackBlocks": "Блоков",
+    "statsFeedbackAnswers": "Ответов",
+    "statsViewFeedback": "Просмотреть обратную связь",
+    "complaintsTitle": "Жалобы ({count})",
+    "complaintsEmpty": "Нет жалоб",
+    "complaintStatusOpen": "Открыта",
+    "complaintStatusInProgress": "В работе",
+    "complaintStatusAnswered": "Отвечено, на модерации",
+    "complaintStatusClosed": "Закрыта",
+    "complaintReplyBtn": "Ответить",
+    "complaintReplyCancel": "Отмена",
+    "complaintReplySend": "Отправить",
+    "complaintReplyPlaceholder": "Введите ответ на жалобу...",
+    "complaintReplyLabel": "Ваш ответ:",
+    "complaintReplied": "Ответ:",
+    "complaintReplySuccess": "Ответ отправлен",
+    "complaintReplyError": "Не удалось отправить ответ",
+    "feedbackModalTitle": "Обратная связь",
+    "feedbackEmpty": "Нет данных обратной связи",
+    "feedbackNodeTitle": "Блок обратной связи #{num}",
+    "feedbackNodeAnswers": "{count} ответов",
+    "feedbackNoAnswers": "Нет ответов",
+    "feedbackNoQuestions": "Нет настроенных вопросов",
+    "complaintModalTitle": "Пожаловаться на блок",
+    "complaintBlock": "Блок:",
+    "complaintDescribe": "Опишите проблему",
+    "complaintPlaceholder": "Что не так с этим блоком?",
+    "complaintCancel": "Отмена",
+    "complaintSubmit": "Отправить",
+    "complaintSuccess": "Жалоба отправлена",
+    "complaintError": "Не удалось отправить жалобу",
+    "complaintAlreadyReported": "Вы уже подавали жалобу на этот курс"
   },
   "fileBlock": {
     "filesNotAttached": "Файлы не прикреплены",
@@ -278,9 +329,6 @@
     "anyFormatMaxSize": "Любые форматы · до {maxSize} МБ · макс {maxFiles} файлов",
     "maxFilesLimit": "Максимум {maxFiles} файлов"
   },
-
-
-  
   "auth2": {
     "login": {
       "title": "Добро пожаловать",
@@ -326,7 +374,7 @@
     }
   },
   "roadmapList": {
-    "title": "Роадмапы",
+    "title": "Курсы",
     "searchPlaceholder": "Поиск по названию...",
     "clearSearch": "Очистить",
     "priceFrom": "Цена от",
@@ -347,5 +395,24 @@
   "previewText": {
     "preview": "Превью",
     "makePreview": "Сделать превью"
+  },
+  "HomePage": {
+    "title": "Все посты",
+    "noMore": "Больше постов нет"
+  },
+  "TeachersPage": {
+    "title": "Учителя",
+    "searchPlaceholder": "Поиск по имени...",
+    "categoryPlaceholder": "Фильтр по категории",
+    "empty": "Учителей не найдено",
+    "noMore": "Все учителя загружены"
+  },
+  "TeacherCard": {
+    "posts": "Постов",
+    "students": "Студентов",
+    "viewProfile": "Смотреть профиль"
+  },
+  "PostPage": {
+    "report": "Пожаловаться"
   }
 }

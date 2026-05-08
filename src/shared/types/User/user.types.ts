@@ -69,6 +69,8 @@ export interface DotsMenuProps {
   activeMenu: boolean
   toggleMenu: (e: React.MouseEvent) => void
   handleShareClick?: (e: React.MouseEvent<HTMLLIElement>) => void
+  cardId?: string
+  cardTitle?: string
   maxWidth?: string
 }
 

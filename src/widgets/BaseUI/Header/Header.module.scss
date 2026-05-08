@@ -74,8 +74,13 @@
    gap: 16px;
 }
 
-.profile_box {
-   width: 100px;
-   height: 80px;
-   background-color: red;
+.right_group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.extra_switcher {
+  margin-left: auto;
 }

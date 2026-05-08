@@ -1,0 +1,239 @@
+// ── Panel shell ───────────────────────────────────────────
+.panel {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-radius: 16px;
+  border: 1.5px solid #f0f0f0;
+  overflow: hidden;
+  height: 100%;
+  max-height: calc(100vh - 140px);
+  position: sticky;
+  max-height: 50%;
+  
+}
+
+// ── Header ────────────────────────────────────────────────
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 12px;
+  border-bottom: 1.5px solid #f0f0f0;
+  flex-shrink: 0;
+}
+
+.header_left {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.header_title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #141416;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 50px;
+  background: #6366f1;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.mark_all_btn {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6366f1;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  opacity: 0.8;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+
+  &:hover:not(:disabled) {
+    opacity: 1;
+  }
+
+  &:disabled {
+    color: #ccc;
+    cursor: default;
+    opacity: 1;
+  }
+}
+
+// ── Scrollable list ───────────────────────────────────────
+.list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 0;
+  scrollbar-width: thin;
+  scrollbar-color: #e5e5e5 transparent;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #e5e5e5;
+    border-radius: 4px;
+  }
+}
+
+// ── Sentinel / loader ────────────────────────────────────
+.sentinel {
+  height: 1px;
+}
+
+.loading_more {
+  display: flex;
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #e5e5e5;
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// ── Empty state ───────────────────────────────────────────
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 36px 20px;
+  color: #bbb;
+
+  p {
+    font-size: 12.5px;
+    color: #ccc;
+    text-align: center;
+  }
+}
+
+// ── View all footer ───────────────────────────────────────
+.view_all_footer {
+  flex-shrink: 0;
+  padding: 8px 10px 10px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.view_all_btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 32px;
+  border-radius: 8px;
+  background: #141416;
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.15s;
+
+  &:hover { opacity: 0.8; }
+}
+
+// ── History footer ────────────────────────────────────────
+.history_footer {
+  flex-shrink: 0;
+  border-top: 1px solid #f0f0f0;
+  padding: 8px 12px;
+}
+
+.history_btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #868897;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  transition: color 0.15s;
+
+  &:hover {
+    color: #141416;
+  }
+}
+
+// ── History modal list ─────────────────────────────────────
+.history_list {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+  min-width: 300px;
+}
+
+// ── Skeleton ──────────────────────────────────────────────
+.skeleton_row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 12px;
+}
+
+.skeleton_icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+.skeleton_content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.skeleton_title {
+  height: 11px;
+  width: 65%;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+.skeleton_body {
+  height: 9px;
+  width: 90%;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s 0.2s infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

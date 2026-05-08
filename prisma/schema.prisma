@@ -43,6 +43,8 @@ model Student {
   transactions           VipTransaction[]
   roadmapAccess          RoadmapAccess[]
   nodeFeedbacks          RoadmapNodeFeedback[]
+  roadmapViews           RoadmapView[]
+  notifications          Notification[]
 }
 
 model Teacher {
@@ -69,6 +71,8 @@ model Teacher {
   tests              Test[]
   conferences        Conference[]
   lastSeenAt         DateTime?
+  roadmapViews       RoadmapView[]
+  notifications      Notification[]
 }
 
 model TeacherStudent {
@@ -240,6 +244,22 @@ model Roadmap {
   ratings         RoadmapRating[]
   accessList      RoadmapAccess[]
   nodeFeedbacks   RoadmapNodeFeedback[]
+  views           RoadmapView[]
+}
+
+model RoadmapView {
+  id         String   @id @default(uuid())
+  roadmapId  String
+  viewerRole Role
+  studentId  String?
+  teacherId  String?
+  viewedAt   DateTime @default(now())
+  roadmap    Roadmap  @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  student    Student? @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  teacher    Teacher? @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+
+  @@unique([roadmapId, studentId])
+  @@index([roadmapId])
 }
 
 model RoadmapAccess {
@@ -395,6 +415,8 @@ model Complaint {
   text         String
   photoUrl     String?
   status       String   @default("pending")
+  reply        String?
+  repliedAt    DateTime?
   createdAt    DateTime @default(now())
   teacherId    String?
   studentId    String?
@@ -550,4 +572,35 @@ enum RoadmapNodeAccessType {
   STUDENTS
   SELECTED
   PURCHASE
+}
+
+// ─── Notifications ────────────────────────────────────────
+
+model Notification {
+  id          String   @id @default(uuid())
+  type        String
+  title       String
+  body        String
+  payload     Json?
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  teacherId   String?
+  studentId   String?
+  teacher     Teacher? @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  student     Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([teacherId, isRead])
+  @@index([studentId, isRead])
+  @@index([createdAt])
+}
+
+model NotificationSubscription {
+  id       String  @id @default(uuid())
+  userId   String
+  userRole String
+  type     String
+  enabled  Boolean @default(true)
+
+  @@unique([userId, type])
+  @@index([userId])
 }

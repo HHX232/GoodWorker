@@ -4,6 +4,18 @@
   min-width: 0;
 }
 
+.sidebar {
+  min-width: 0;
+      max-height: calc(100vh - 180px);
+     position: sticky;
+    top: 0;
+    overflow: hidden auto;
+  // hidden on tablet and below (grid collapses to 2 cols)
+  @media (max-width: 1040px) {
+    display: none;
+  }
+}
+
 .title_box {
   display: flex;
   margin-top: 24px;
