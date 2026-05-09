@@ -78,6 +78,9 @@ export default function RegisterPage() {
       }
 
       toast.success(t('codeSent'))
+      if (data.__devOtp) {
+        toast.info(`DEV — OTP: ${data.__devOtp}`, {duration: 30000})
+      }
       setStep('verify')
     } catch {
       toast.error(t('unexpectedError'))

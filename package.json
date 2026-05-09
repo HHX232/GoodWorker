@@ -9,7 +9,10 @@
     "lint": "eslint",
     "analyze": "ANALYZE=true next build",
     "seed": "tsx prisma/seed.ts",
-    "seed:vip": "tsx prisma/seedVipPosts.ts"
+    "seed:vip": "tsx prisma/seedVipPosts.ts",
+    "seed:users": "tsx prisma/seedUsers.ts",
+    "seed:content": "tsx prisma/seedContent.ts",
+    "seed:all": "tsx prisma/seedUsers.ts && tsx prisma/seedContent.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -74,7 +74,7 @@ const sendUserSchema = z
     await saveOtp(email, code)
     await sendOtp(email, code)
 
-    return NextResponse.json({ ok: true })
+    return NextResponse.json({ ok: true, __devOtp: process.env.NODE_ENV !== 'production' ? code : undefined })
 
   }
    if(body.step === 'send' && body.userType === 'User'){
@@ -103,10 +103,10 @@ const sendUserSchema = z
     await saveOtp(email, code)
     await sendOtp(email, code)
 
-    return NextResponse.json({ ok: true })
+    return NextResponse.json({ ok: true, __devOtp: process.env.NODE_ENV !== 'production' ? code : undefined })
 
   }
-   
+
   if (body.step === 'verify') {
   const parsed = verifySchema.safeParse(body)
   if (!parsed.success) {

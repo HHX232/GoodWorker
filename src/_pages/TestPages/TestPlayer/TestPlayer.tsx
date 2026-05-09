@@ -17,6 +17,7 @@ import {DialogueStudentView} from '@/widgets/Tasks/BlockEditor/DialogueEditor/Di
 import {FillTextEditor} from '@/widgets/Tasks/BlockEditor/FillTextEditor/FillTextEditor'
 import {HighlightStudentView} from '@/widgets/Tasks/BlockEditor/HighlightTextEditor/HighlightTextEditor'
 import {useState} from 'react'
+import {toast} from 'sonner'
 
 import {InfoTextEditor} from '@/features/BlockEditors/InfoTextEditor/InfoTextEditor'
 import {ChooseOptionStudent} from '@/widgets/Tasks/BlockEditor/ChooseOptionEditor/ChooseOptionStudent/ChooseOptionStudent'
@@ -94,6 +95,18 @@ export function BlockView({
   }
 }
 
+// Types that require an answer from the student (info blocks are excluded)
+const ANSWERABLE_TYPES = new Set<TaskBlockType>([
+  TaskBlockType.CHOOSE_OPTION,
+  TaskBlockType.FREE_ANSWER,
+  TaskBlockType.SEQUENCE,
+  TaskBlockType.MATCH_PAIRS,
+  TaskBlockType.HIGHLIGHT_TEXT,
+  TaskBlockType.WORD_SCRAMBLE,
+  TaskBlockType.DIALOGUE,
+  TaskBlockType.FILL_TEXT,
+])
+
 // ── BlockWrapper ──────────────────────────────────────────────────────────────
 
 const BLOCK_LABELS: Partial<Record<TaskBlockType, string>> = {
@@ -107,11 +120,11 @@ const BLOCK_LABELS: Partial<Record<TaskBlockType, string>> = {
   [TaskBlockType.FILL_TEXT]: 'Заполните пропуски'
 }
 
-export function BlockWrapper({block, children}: {block: TestBlock; children: React.ReactNode}) {
+export function BlockWrapper({block, children, hasError}: {block: TestBlock; children: React.ReactNode; hasError?: boolean}) {
   const label = BLOCK_LABELS[block.type as TaskBlockType]
   if (!label) return <>{children}</>
   return (
-    <div className={styles.block_card}>
+    <div className={`${styles.block_card} ${hasError ? styles.block_card_error : ''}`}>
       <span className={styles.block_label}>{label}</span>
       {children}
     </div>
@@ -134,10 +147,33 @@ export function TestPlayer({blocks, singleBlock = false, onResult, showInlineRes
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [result, setResult] = useState<TestResult | null>(null)
   const [activeIdx, setActiveIdx] = useState(0)
+  const [errorBlockIds, setErrorBlockIds] = useState<Set<string>>(new Set())
 
-  const setAnswer = (blockId: string, answer: StudentAnswer) => setAnswers((prev) => new Map(prev).set(blockId, answer))
+  const setAnswer = (blockId: string, answer: StudentAnswer) => {
+    setAnswers((prev) => new Map(prev).set(blockId, answer))
+    setErrorBlockIds((prev) => {
+      if (!prev.has(blockId)) return prev
+      const next = new Set(prev)
+      next.delete(blockId)
+      return next
+    })
+  }
 
   const handleSubmit = () => {
+    const unanswered = blocks
+      .filter((b) => ANSWERABLE_TYPES.has(b.type as TaskBlockType) && !answers.has(b.id))
+      .map((b) => b.id)
+
+    if (unanswered.length > 0) {
+      setErrorBlockIds(new Set(unanswered))
+      toast.error(`Ответьте на все вопросы (осталось ${unanswered.length})`)
+      if (singleBlock) {
+        const firstErrorIdx = blocks.findIndex((b) => unanswered.includes(b.id))
+        if (firstErrorIdx !== -1) setActiveIdx(firstErrorIdx)
+      }
+      return
+    }
+
     setIsSubmitted(true)
     const res = calculateResult(blocks, answers)
     onResult?.(res)
@@ -149,6 +185,7 @@ export function TestPlayer({blocks, singleBlock = false, onResult, showInlineRes
     setIsSubmitted(false)
     setResult(null)
     setActiveIdx(0)
+    setErrorBlockIds(new Set())
   }
 
   if (blocks.length === 0) return null
@@ -192,6 +229,7 @@ export function TestPlayer({blocks, singleBlock = false, onResult, showInlineRes
 
   if (singleBlock) {
     const current = blocks[activeIdx]
+    const currentHasError = errorBlockIds.has(current.id)
     return (
       <div className={styles.single}>
         {/* Навигация */}
@@ -200,10 +238,10 @@ export function TestPlayer({blocks, singleBlock = false, onResult, showInlineRes
             ←
           </button>
           <div className={styles.pills}>
-            {blocks.map((_, i) => (
+            {blocks.map((b, i) => (
               <button
                 key={i}
-                className={`${styles.pill} ${i === activeIdx ? styles.pill_active : ''}`}
+                className={`${styles.pill} ${i === activeIdx ? styles.pill_active : ''} ${errorBlockIds.has(b.id) ? styles.pill_error : ''}`}
                 onClick={() => setActiveIdx(i)}
               >
                 {i + 1}
@@ -220,7 +258,7 @@ export function TestPlayer({blocks, singleBlock = false, onResult, showInlineRes
         </div>
 
         {/* Текущий блок */}
-        <BlockWrapper block={current}>
+        <BlockWrapper block={current} hasError={currentHasError}>
           <BlockView block={current} onChange={setAnswer} isSubmitted={isSubmitted} />
         </BlockWrapper>
 
@@ -239,8 +277,8 @@ export function TestPlayer({blocks, singleBlock = false, onResult, showInlineRes
     <div className={styles.all}>
       <div className={styles.blocks}>
         {blocks.map((block) => (
-          <div key={block.id} className={styles.block}>
-            <BlockWrapper block={block}>
+          <div key={block.id} className={`${styles.block} ${errorBlockIds.has(block.id) ? styles.block_error : ''}`}>
+            <BlockWrapper block={block} hasError={errorBlockIds.has(block.id)}>
               <BlockView block={block} onChange={setAnswer} isSubmitted={isSubmitted} />
             </BlockWrapper>
           </div>
