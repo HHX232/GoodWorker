@@ -235,3 +235,32 @@
     transition: opacity 0.25s ease 0.15s, transform 0.25s ease 0.15s;
   }
 }
+
+.logout_btn {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  text-align: left;
+  width: 100%;
+  white-space: nowrap;
+  color: #ef4444;
+
+  .icon {
+    color: #ef4444;
+  }
+
+  .label {
+    color: #ef4444;
+  }
+
+  &:hover {
+    background-color: #fef2f2;
+  }
+}

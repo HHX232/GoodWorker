@@ -1,6 +1,6 @@
 'use client'
 
-import {useSession} from 'next-auth/react'
+import {useSession, signOut} from 'next-auth/react'
 import Link from 'next/link'
 import {usePathname} from 'next/navigation'
 import {useCallback, useEffect, useRef, useState} from 'react'
@@ -245,6 +245,22 @@ export function NavBar({extraClass}: {extraClass?: string}) {
                 {bottomItems.map((item) => (
                   <NavLink key={item.href} item={item} active={isActive(item.href)} />
                 ))}
+                {role && (
+                  <button
+                    className={styles.logout_btn}
+                    onClick={() => signOut({callbackUrl: '/login'})}
+                    title='Выйти'
+                  >
+                    <span className={styles.icon}>
+                      <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'>
+                        <path d='M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4' />
+                        <polyline points='16 17 21 12 16 7' />
+                        <line x1='21' y1='12' x2='9' y2='12' />
+                      </svg>
+                    </span>
+                    <span className={styles.label}>Выйти</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
