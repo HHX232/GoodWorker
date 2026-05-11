@@ -6,14 +6,13 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import styles from './VideoCallPage.module.scss'
 
-// ── Avatar helpers ────────────────────────────────────────────────────────────
+// ── Avatar ────────────────────────────────────────────────────────────────────
 const AVATAR_COLORS = ['#7c3aed','#db2777','#d97706','#059669','#0284c7','#dc2626','#ea580c','#65a30d']
-function avatarColor(name: string): string {
+function avatarColor(name: string) {
   let h = 0
   for (const c of name) h = (Math.imul(31, h) + c.charCodeAt(0)) | 0
   return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length]
 }
-
 function NameAvatar({ name }: { name: string }) {
   return (
     <div className={styles.nameAvatar} style={{ background: avatarColor(name) }}>
@@ -36,7 +35,7 @@ const TURN_CONFIG = {
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-interface ParticipantState {
+interface Participant {
   identity: string
   isLocal: boolean
   audioMuted: boolean
@@ -44,39 +43,33 @@ interface ParticipantState {
   audioTrackSid?: string
 }
 
-interface VideoCallPageProps {
+interface Props {
   userName: string
   autoJoinRoom?: string
+  roomId?: string
   ownerIdentity?: string
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
-export default function VideoCallPage({ userName, autoJoinRoom, ownerIdentity }: VideoCallPageProps) {
+export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIdentity }: Props) {
   const router = useRouter()
-  const [roomName, setRoomName] = useState(autoJoinRoom ?? '')
+  const [roomName] = useState(autoJoinRoom ?? '')
   const [status, setStatus] = useState('')
   const [connected, setConnected] = useState(false)
   const [micEnabled, setMicEnabled] = useState(true)
   const [camEnabled, setCamEnabled] = useState(true)
-  const [participants, setParticipants] = useState<ParticipantState[]>([])
+  const [participants, setParticipants] = useState<Participant[]>([])
   const [copied, setCopied] = useState(false)
-
   const roomRef = useRef<Room | null>(null)
+
   const isOwner = !!ownerIdentity && ownerIdentity === userName
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
-  const shareLink = useCallback(() => {
-    const url = `${window.location.origin}/call/${encodeURIComponent(roomName.trim())}`
-    navigator.clipboard.writeText(url).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    })
-  }, [roomName])
-
-  const addParticipant = useCallback((identity: string, isLocal = false) => {
+  // ── Participant state helpers ──────────────────────────────────────────────
+  const upsertParticipant = useCallback((identity: string, patch: Partial<Participant> = {}) => {
     setParticipants((prev) => {
-      if (prev.find((p) => p.identity === identity)) return prev
-      return [...prev, { identity, isLocal, audioMuted: false, videoMuted: false }]
+      const existing = prev.find((p) => p.identity === identity)
+      if (existing) return prev.map((p) => p.identity === identity ? { ...p, ...patch } : p)
+      return [...prev, { identity, isLocal: false, audioMuted: false, videoMuted: false, ...patch }]
     })
   }, [])
 
@@ -84,13 +77,9 @@ export default function VideoCallPage({ userName, autoJoinRoom, ownerIdentity }:
     setParticipants((prev) => prev.filter((p) => p.identity !== identity))
   }, [])
 
-  const patchParticipant = useCallback((identity: string, patch: Partial<ParticipantState>) => {
-    setParticipants((prev) => prev.map((p) => (p.identity === identity ? { ...p, ...patch } : p)))
-  }, [])
-
   const attachTrack = useCallback((identity: string, track: any) => {
     if (track.kind === 'video') {
-      const el = document.getElementById(`vcall-video-${identity}`) as HTMLVideoElement | null
+      const el = document.getElementById(`v-${identity}`) as HTMLVideoElement | null
       if (el) track.attach(el)
     } else if (track.kind === 'audio') {
       const a = track.attach() as HTMLAudioElement
@@ -99,13 +88,32 @@ export default function VideoCallPage({ userName, autoJoinRoom, ownerIdentity }:
     }
   }, [])
 
+  // ── Owner actions ──────────────────────────────────────────────────────────
   const muteParticipant = useCallback(async (identity: string, trackSid: string) => {
     await fetch('/api/livekit/mute', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ roomName: roomName.trim(), participantIdentity: identity, trackSid, muted: true }),
+      body: JSON.stringify({ roomName, participantIdentity: identity, trackSid, muted: true }),
     })
   }, [roomName])
+
+  const kickParticipant = useCallback(async (identity: string) => {
+    await fetch('/api/livekit/kick', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ roomName, participantIdentity: identity }),
+    })
+  }, [roomName])
+
+  const shareLink = useCallback(() => {
+    const url = roomId
+      ? `${window.location.origin}/call/${roomId}`
+      : window.location.href
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }, [roomId])
 
   // ── Join ───────────────────────────────────────────────────────────────────
   const joinRoom = useCallback(async () => {
@@ -122,22 +130,19 @@ export default function VideoCallPage({ userName, autoJoinRoom, ownerIdentity }:
       if (!res.ok) throw new Error(data.errorMessage ?? data.error ?? 'Token error')
 
       const livekitUrl = process.env.NEXT_PUBLIC_LIVEKIT_URL ?? 'wss://goodworker-livekit.up.railway.app'
-
       const room = new Room({
         rtcConfig: { iceServers: [{ ...TURN_CONFIG }], iceTransportPolicy: 'all' },
       } as any)
       roomRef.current = room
 
       room.on(RoomEvent.TrackSubscribed, (track: any, pub: any, participant: any) => {
-        addParticipant(participant.identity)
+        upsertParticipant(participant.identity)
         attachTrack(participant.identity, track)
-        if (track.kind === 'audio') {
-          patchParticipant(participant.identity, { audioTrackSid: pub.trackSid })
-        }
+        if (track.kind === 'audio') upsertParticipant(participant.identity, { audioTrackSid: pub.trackSid })
       })
       room.on(RoomEvent.TrackUnsubscribed, (track: any) => track.detach())
       room.on(RoomEvent.ParticipantConnected, (p: any) => {
-        addParticipant(p.identity)
+        upsertParticipant(p.identity)
         setStatus(`${p.identity} подключился`)
         setTimeout(() => setStatus(''), 3000)
       })
@@ -147,12 +152,12 @@ export default function VideoCallPage({ userName, autoJoinRoom, ownerIdentity }:
         setTimeout(() => setStatus(''), 3000)
       })
       room.on(RoomEvent.TrackMuted, (pub: any, p: any) => {
-        if (pub.kind === 'audio') patchParticipant(p.identity, { audioMuted: true })
-        if (pub.kind === 'video') patchParticipant(p.identity, { videoMuted: true })
+        if (pub.kind === 'audio') upsertParticipant(p.identity, { audioMuted: true })
+        if (pub.kind === 'video') upsertParticipant(p.identity, { videoMuted: true })
       })
       room.on(RoomEvent.TrackUnmuted, (pub: any, p: any) => {
-        if (pub.kind === 'audio') patchParticipant(p.identity, { audioMuted: false })
-        if (pub.kind === 'video') patchParticipant(p.identity, { videoMuted: false })
+        if (pub.kind === 'audio') upsertParticipant(p.identity, { audioMuted: false })
+        if (pub.kind === 'video') upsertParticipant(p.identity, { videoMuted: false })
       })
       room.on(RoomEvent.Disconnected, () => {
         setConnected(false)
@@ -162,26 +167,37 @@ export default function VideoCallPage({ userName, autoJoinRoom, ownerIdentity }:
       })
 
       await room.connect(livekitUrl, data.token)
-      setStatus('')
 
-      addParticipant(room.localParticipant.identity, true)
+      // add local participant
+      upsertParticipant(room.localParticipant.identity, { isLocal: true })
+
+      // add already-connected remote participants
+      room.remoteParticipants.forEach((p) => {
+        upsertParticipant(p.identity)
+        p.trackPublications.forEach((pub) => {
+          if (pub.track) {
+            attachTrack(p.identity, pub.track)
+            if (pub.kind === 'audio') upsertParticipant(p.identity, { audioTrackSid: pub.trackSid })
+          }
+        })
+      })
+
       await room.localParticipant.enableCameraAndMicrophone()
-
       const camTrack = room.localParticipant.getTrackPublication(Track.Source.Camera)?.track
       if (camTrack) setTimeout(() => attachTrack(room.localParticipant.identity, camTrack), 150)
 
+      setStatus('')
       setConnected(true)
     } catch (e: any) {
       setStatus('Ошибка: ' + e.message)
     }
-  }, [roomName, userName, addParticipant, removeParticipant, patchParticipant, attachTrack])
+  }, [roomName, userName, upsertParticipant, removeParticipant, attachTrack])
 
   const leaveRoom = useCallback(async () => {
     await roomRef.current?.disconnect()
     roomRef.current = null
     setConnected(false)
     setParticipants([])
-    setStatus('')
     router.push('/call')
   }, [router])
 
@@ -205,64 +221,64 @@ export default function VideoCallPage({ userName, autoJoinRoom, ownerIdentity }:
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // ── Layout logic ───────────────────────────────────────────────────────────
+  // ── Layout ─────────────────────────────────────────────────────────────────
+  // featured = owner (when current user is NOT the owner)
   const ownerPart = ownerIdentity ? participants.find((p) => p.identity === ownerIdentity) : null
-  const localPart = participants.find((p) => p.isLocal)
-  const otherParticipants = participants.filter((p) =>
-    p.identity !== ownerIdentity && !(ownerIdentity ? false : p.isLocal)
-  )
-  // speaker-view: owner is featured (large), others are small — unless current user IS the owner
-  const featuredPart = !isOwner && ownerPart ? ownerPart : null
-  const smallParticipants = featuredPart
-    ? participants.filter((p) => p.identity !== ownerPart?.identity)
+  const featuredPart = !isOwner ? ownerPart ?? null : null
+  const sideParts = featuredPart
+    ? participants.filter((p) => p.identity !== ownerIdentity)
     : participants
 
-  // ── Tile renderer ──────────────────────────────────────────────────────────
-  const renderTile = (p: ParticipantState, large = false) => (
-    <div
-      key={p.identity}
-      className={`${styles.tile} ${p.isLocal ? styles.tileLocal : ''} ${large ? styles.tileLarge : ''}`}
-    >
-      <video
-        id={`vcall-video-${p.identity}`}
-        className={styles.tileVideo}
-        autoPlay playsInline
-        muted={p.isLocal}
-      />
-      {(p.videoMuted || (!p.isLocal && !camEnabled && p.isLocal)) && (
-        <div className={styles.noCamera}>
-          <NameAvatar name={p.identity} />
+  // ── Tile ───────────────────────────────────────────────────────────────────
+  const renderTile = (p: Participant, large = false) => {
+    const showAvatar = p.videoMuted || (p.isLocal && !camEnabled)
+    return (
+      <div key={p.identity} className={`${styles.tile} ${p.isLocal ? styles.tileLocal : ''} ${large ? styles.tileLarge : ''}`}>
+        <video id={`v-${p.identity}`} className={styles.tileVideo} autoPlay playsInline muted={p.isLocal} />
+        {showAvatar && (
+          <div className={styles.noCamera}>
+            <NameAvatar name={p.identity} />
+          </div>
+        )}
+        <div className={styles.tileMeta}>
+          <span className={styles.tileName}>{p.identity}</span>
+          <div className={styles.tileBadges}>
+            {p.isLocal && <span className={styles.tileYou}>ВЫ</span>}
+            {ownerIdentity && p.identity === ownerIdentity && <span className={styles.tileOwner}>👑</span>}
+          </div>
         </div>
-      )}
-      {/* local cam off */}
-      {p.isLocal && !camEnabled && (
-        <div className={styles.noCamera}>
-          <NameAvatar name={p.identity} />
-        </div>
-      )}
-      <div className={styles.tileMeta}>
-        <span className={styles.tileName}>{p.identity}</span>
-        {p.isLocal && <span className={styles.tileYou}>ВЫ</span>}
-        {ownerIdentity && p.identity === ownerIdentity && !p.isLocal && (
-          <span className={styles.tileOwner}>ВЛАДЕЛЕЦ</span>
+        {p.audioMuted && <span className={styles.mutedBadge}>🔇</span>}
+
+        {/* owner controls */}
+        {isOwner && !p.isLocal && (
+          <div className={styles.ownerControls}>
+            {!p.audioMuted && p.audioTrackSid && (
+              <button
+                className={styles.ownerBtn}
+                onClick={() => muteParticipant(p.identity, p.audioTrackSid!)}
+                title="Заглушить"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                  <path d="M3 3l18 18M9 9v3a3 3 0 005.12 2.12M15 9.34V5a3 3 0 00-5.94-.6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+                Заглушить
+              </button>
+            )}
+            <button
+              className={`${styles.ownerBtn} ${styles.ownerBtnKick}`}
+              onClick={() => kickParticipant(p.identity)}
+              title="Исключить"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                <path d="M16 17l5-5-5-5M21 12H9M13 22H5a2 2 0 01-2-2V4a2 2 0 012-2h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Исключить
+            </button>
+          </div>
         )}
       </div>
-      {p.audioMuted && <span className={styles.mutedBadge}>🔇</span>}
-      {/* mute button — visible for owner on remote participants */}
-      {isOwner && !p.isLocal && p.audioTrackSid && !p.audioMuted && (
-        <button
-          className={styles.muteBadgeBtn}
-          onClick={() => muteParticipant(p.identity, p.audioTrackSid!)}
-          title="Заглушить"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <path d="M12 1a4 4 0 014 4v7a4 4 0 01-8 0V5a4 4 0 014-4zM19 10v2a7 7 0 01-14 0v-2"
-              stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
-        </button>
-      )}
-    </div>
-  )
+    )
+  }
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -284,38 +300,6 @@ export default function VideoCallPage({ userName, autoJoinRoom, ownerIdentity }:
               <span className={styles.lobbyUserDot} />
               <span>{userName}</span>
             </div>
-            {!autoJoinRoom && (
-              <>
-                <div className={styles.lobbyField}>
-                  <label className={styles.lobbyLabel}>Комната</label>
-                  <div className={styles.lobbyInputRow}>
-                    <input
-                      className={styles.lobbyInput}
-                      type="text"
-                      value={roomName}
-                      onChange={(e) => setRoomName(e.target.value)}
-                      placeholder="Название комнаты..."
-                      onKeyDown={(e) => e.key === 'Enter' && joinRoom()}
-                      autoFocus
-                    />
-                    <button className={styles.lobbyShareBtn} onClick={shareLink} disabled={!roomName.trim()}>
-                      {copied
-                        ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                        : <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      }
-                    </button>
-                  </div>
-                  {copied && <span className={styles.copiedHint}>Ссылка скопирована!</span>}
-                </div>
-                <button className={styles.lobbyBtn} onClick={joinRoom} disabled={!roomName.trim()}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                    <path d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <rect x="3" y="6" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="2"/>
-                  </svg>
-                  Войти в комнату
-                </button>
-              </>
-            )}
             {status && <p className={styles.lobbyStatus}>{status}</p>}
           </div>
         </div>
@@ -330,44 +314,37 @@ export default function VideoCallPage({ userName, autoJoinRoom, ownerIdentity }:
             </div>
             <div className={styles.topBarRight}>
               <span className={styles.topBarUser}>{userName}</span>
-              {isOwner && <span className={styles.ownerBadge}>Владелец</span>}
+              {isOwner && <span className={styles.ownerBadge}>👑 Владелец</span>}
             </div>
           </div>
 
-          {/* Video area */}
+          {/* Video */}
           {featuredPart ? (
-            /* Speaker view: owner large, others strip */
-            <div className={styles.speakerView}>
-              <div className={styles.featuredArea}>
+            <div className={styles.speakerLayout}>
+              <div className={styles.featured}>
                 {renderTile(featuredPart, true)}
               </div>
-              {smallParticipants.length > 0 && (
-                <div className={styles.stripArea}>
-                  {smallParticipants.map((p) => renderTile(p, false))}
+              {sideParts.length > 0 && (
+                <div className={styles.sideStrip}>
+                  {sideParts.map((p) => renderTile(p, false))}
                 </div>
               )}
             </div>
           ) : (
-            /* Grid view */
             <div className={styles.grid} data-count={participants.length}>
               {participants.length === 0 ? (
                 <div className={styles.waiting}>
                   <div className={styles.waitingPulse} />
                   <p>Ожидаем участников...</p>
                 </div>
-              ) : (
-                participants.map((p) => renderTile(p))
-              )}
+              ) : participants.map((p) => renderTile(p))}
             </div>
           )}
 
           {/* Controls */}
           <div className={styles.controls}>
             <div className={styles.controlsLeft}>
-              <button
-                className={`${styles.roundBtn} ${copied ? styles.roundBtnCopied : ''}`}
-                onClick={shareLink}
-              >
+              <button className={`${styles.roundBtn} ${copied ? styles.roundBtnCopied : ''}`} onClick={shareLink}>
                 <div className={styles.roundBtnIcon}>
                   {copied
                     ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -379,10 +356,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, ownerIdentity }:
             </div>
 
             <div className={styles.controlsCenter}>
-              <button
-                className={`${styles.roundBtn} ${micEnabled ? styles.roundBtnOn : styles.roundBtnOff}`}
-                onClick={toggleMic}
-              >
+              <button className={`${styles.roundBtn} ${micEnabled ? styles.roundBtnOn : styles.roundBtnOff}`} onClick={toggleMic}>
                 <div className={styles.roundBtnIcon}>
                   {micEnabled
                     ? <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 1a4 4 0 014 4v7a4 4 0 01-8 0V5a4 4 0 014-4zM19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -392,10 +366,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, ownerIdentity }:
                 <span className={styles.roundBtnLabel}>{micEnabled ? 'Микрофон' : 'Без звука'}</span>
               </button>
 
-              <button
-                className={`${styles.roundBtn} ${camEnabled ? styles.roundBtnOn : styles.roundBtnOff}`}
-                onClick={toggleCam}
-              >
+              <button className={`${styles.roundBtn} ${camEnabled ? styles.roundBtnOn : styles.roundBtnOff}`} onClick={toggleCam}>
                 <div className={styles.roundBtnIcon}>
                   {camEnabled
                     ? <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>

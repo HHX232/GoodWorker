@@ -6,10 +6,18 @@ const VideoCallPage = dynamic(() => import('@/widgets/VideoRoom/VideoCallPage'),
 
 interface Props {
   userName: string
-  room: string
+  roomName: string
+  roomId: string
   ownerIdentity: string
 }
 
-export default function RoomEntry({ userName, room, ownerIdentity }: Props) {
-  return <VideoCallPage userName={userName} autoJoinRoom={room} ownerIdentity={ownerIdentity} />
+export default function RoomEntry({ userName, roomName, roomId, ownerIdentity }: Props) {
+  return (
+    <VideoCallPage
+      userName={userName}
+      autoJoinRoom={roomName}
+      roomId={roomId}
+      ownerIdentity={ownerIdentity}
+    />
+  )
 }

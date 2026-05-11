@@ -20,12 +20,20 @@ export default function VideoRoom({ defaultName: _ }: VideoRoomProps) {
     setLoading(true)
     setError('')
     try {
-      await fetch('/api/call/rooms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomName: name }),
-      }).catch(() => null) // ignore network/parse errors — room is created on the page itself
-      router.push(`/call/${encodeURIComponent(name)}`)
+      let target = encodeURIComponent(name)
+      try {
+        const res = await fetch('/api/call/rooms', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ roomName: name }),
+        })
+        const text = await res.text()
+        const data = text ? JSON.parse(text) : {}
+        if (res.ok && data.id) target = data.id
+      } catch {
+        // DB unavailable — use encoded name as fallback
+      }
+      router.push(`/call/${target}`)
     } catch (e: any) {
       setError(e.message)
       setLoading(false)

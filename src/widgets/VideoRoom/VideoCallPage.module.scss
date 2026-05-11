@@ -397,42 +397,103 @@ $text-muted: #475569;
   font-weight: 600;
 }
 
-// ── Speaker view ───────────────────────────────────────────────────────────
+// ── Speaker layout (owner featured left, others strip right) ──────────────
 
-.speakerView {
+.speakerLayout {
   flex: 1;
   display: flex;
-  flex-direction: column;
-  overflow: hidden;
   gap: 8px;
   padding: 12px;
-  background: $bg;
-}
-
-.featuredArea {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
+  background: $bg;
+
+  @media (max-width: 700px) {
+    flex-direction: column;
+  }
 }
 
-.stripArea {
+.featured {
+  flex: 1;
+  min-width: 0;
   display: flex;
-  gap: 8px;
-  height: 120px;
-  flex-shrink: 0;
-  overflow-x: auto;
-  padding-bottom: 4px;
+  align-items: stretch;
 
   .tile {
-    width: 180px;
-    height: 120px;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    max-height: 100%;
+    border-radius: 14px;
     flex: none;
-    aspect-ratio: unset;
-    border-radius: 8px;
-    min-width: unset;
   }
+}
+
+.sideStrip {
+  width: 200px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+
+  @media (max-width: 700px) {
+    width: 100%;
+    flex-direction: row;
+    height: 110px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .tile {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    flex-shrink: 0;
+    border-radius: 10px;
+    min-width: unset;
+    max-width: unset;
+
+    @media (max-width: 700px) {
+      width: 160px;
+    }
+  }
+}
+
+// ── Owner controls on tile ─────────────────────────────────────────────────
+
+.ownerControls {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  opacity: 0;
+  transition: opacity 0.2s;
+
+  .tile:hover & { opacity: 1; }
+}
+
+.ownerBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: none;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+
+  &:hover { background: rgba(0,0,0,0.9); }
+}
+
+.ownerBtnKick {
+  color: $danger;
+  &:hover { background: rgba(239,68,68,0.85); color: #fff; }
 }
 
 .mutedBadge {
