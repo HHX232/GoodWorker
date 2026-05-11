@@ -1,0 +1,643 @@
+$bg: #080b13;
+$bg-card: #0e1120;
+$bg-tile: #111827;
+$border: rgba(255, 255, 255, 0.08);
+$accent: #AC8CFE;
+$danger: #ef4444;
+$success: #22c55e;
+$text: #f1f5f9;
+$text-dim: #94a3b8;
+$text-muted: #475569;
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
+.page {
+  height: calc(100vh - var(--header-height));
+  background: $bg;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: $text;
+}
+
+// ── Lobby ─────────────────────────────────────────────────────────────────────
+
+.lobby {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.lobbyCard {
+  background: $bg-card;
+  border: 1px solid $border;
+  padding: 48px 40px;
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.lobbyIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(172, 140, 254, 0.1);
+  border: 1px solid rgba(172, 140, 254, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.lobbyTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: $text;
+  margin: 0 0 8px;
+  letter-spacing: -0.3px;
+}
+
+.lobbySubtitle {
+  font-size: 14px;
+  color: $text-dim;
+  margin: 0 0 24px;
+  text-align: center;
+}
+
+.lobbyUser {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid $border;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  color: $text-dim;
+  margin-bottom: 32px;
+}
+
+.lobbyUserDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: $success;
+  flex-shrink: 0;
+}
+
+.lobbyField {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.lobbyLabel {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: $text-dim;
+}
+
+.lobbyInput {
+  width: 100%;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid $border;
+  color: $text;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+  border-radius: 0;
+
+  &::placeholder { color: $text-muted; }
+
+  &:focus {
+    border-color: $accent;
+    background: rgba(172, 140, 254, 0.05);
+  }
+}
+
+.lobbyBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 20px;
+  background: $accent;
+  color: #fff;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:hover:not(:disabled) { opacity: 0.88; }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+}
+
+.lobbyStatus {
+  margin: 16px 0 0;
+  font-size: 13px;
+  color: $text-dim;
+  text-align: center;
+}
+
+// ── Call layout ───────────────────────────────────────────────────────────────
+
+.call {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+// ── Top bar ───────────────────────────────────────────────────────────────────
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  border-bottom: 1px solid $border;
+  flex-shrink: 0;
+  background: $bg-card;
+}
+
+.topBarLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topBarDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: $success;
+  box-shadow: 0 0 6px $success;
+  flex-shrink: 0;
+}
+
+.topBarRoom {
+  font-size: 14px;
+  font-weight: 600;
+  color: $text;
+}
+
+.topBarStatus {
+  font-size: 12px;
+  color: $text-dim;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid $border;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.topBarRight {
+  font-size: 13px;
+  color: $text-dim;
+}
+
+.topBarUser {
+  background: rgba(172, 140, 254, 0.12);
+  border: 1px solid rgba(172, 140, 254, 0.25);
+  color: $accent;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+// ── Video grid ────────────────────────────────────────────────────────────────
+
+.grid {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 16px;
+  overflow: hidden;
+  align-content: center;
+  justify-content: center;
+  background: $bg;
+
+  &[data-count='1'] .tile {
+    width: min(100%, calc((100vh - var(--header-height) - 180px) * 16 / 9));
+    max-width: 100%;
+    aspect-ratio: 16 / 9;
+    flex: none;
+  }
+
+  &[data-count='2'] .tile {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 280px;
+    aspect-ratio: 16 / 9;
+  }
+
+  &[data-count='0'] {
+    align-items: center;
+  }
+}
+
+.tile {
+  position: relative;
+  background: $bg-tile;
+  border: 1px solid $border;
+  border-radius: 12px;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  flex: 1 1 calc(50% - 4px);
+  min-width: 280px;
+}
+
+.tileLocal {
+  border-color: rgba(172, 140, 254, 0.4);
+}
+
+.tileVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: $bg-tile;
+}
+
+.noCamera {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: $bg-tile;
+
+  span {
+    font-size: 13px;
+    color: $text-muted;
+  }
+}
+
+.tileMeta {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tileName {
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #fff;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tileYou {
+  background: rgba(172, 140, 254, 0.2);
+  border: 1px solid rgba(172, 140, 254, 0.4);
+  color: $accent;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+}
+
+.tileOwner {
+  background: rgba(251, 191, 36, 0.2);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  color: #fbbf24;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+}
+
+.tileLarge {
+  flex: none !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
+}
+
+// ── Name avatar ────────────────────────────────────────────────────────────
+
+.nameAvatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -1px;
+}
+
+// ── Mute btn on tile ───────────────────────────────────────────────────────
+
+.muteBadgeBtn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(239, 68, 68, 0.85);
+  border: none;
+  border-radius: 999px;
+  padding: 6px 10px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+  transition: background 0.2s;
+
+  &:hover { background: $danger; }
+
+  &::after { content: 'Заглушить'; }
+}
+
+// ── Owner badge in topbar ──────────────────────────────────────────────────
+
+.ownerBadge {
+  background: rgba(251, 191, 36, 0.15);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  color: #fbbf24;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+// ── Speaker view ───────────────────────────────────────────────────────────
+
+.speakerView {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  gap: 8px;
+  padding: 12px;
+  background: $bg;
+}
+
+.featuredArea {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.stripArea {
+  display: flex;
+  gap: 8px;
+  height: 120px;
+  flex-shrink: 0;
+  overflow-x: auto;
+  padding-bottom: 4px;
+
+  .tile {
+    width: 180px;
+    height: 120px;
+    flex: none;
+    aspect-ratio: unset;
+    border-radius: 8px;
+    min-width: unset;
+  }
+}
+
+.mutedBadge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 13px;
+}
+
+.waiting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  color: $text-muted;
+  font-size: 14px;
+
+  p { margin: 0; }
+}
+
+.waitingPulse {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid rgba(172, 140, 254, 0.3);
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border-radius: 50%;
+    background: rgba(172, 140, 254, 0.2);
+    animation: pulse 2s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.4; }
+}
+
+// ── Lobby input row ───────────────────────────────────────────────────────────
+
+.lobbyInputRow {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.lobbyShareBtn {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid $border;
+  background: rgba(255, 255, 255, 0.05);
+  color: $text-dim;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-radius: 0;
+
+  &:hover:not(:disabled) {
+    border-color: $accent;
+    color: $accent;
+    background: rgba(172, 140, 254, 0.08);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+}
+
+.copiedHint {
+  font-size: 12px;
+  color: $success;
+  margin-top: 4px;
+}
+
+// ── Controls bar ──────────────────────────────────────────────────────────────
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  border-top: 1px solid $border;
+  background: $bg-card;
+  flex-shrink: 0;
+
+  @media (max-width: 600px) {
+    padding: 14px 16px;
+    justify-content: center;
+    gap: 12px;
+  }
+}
+
+.controlsLeft,
+.controlsRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 120px;
+
+  @media (max-width: 600px) { display: none; }
+}
+
+.controlsRight { justify-content: flex-end; }
+
+.controlsCenter {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  @media (max-width: 600px) { gap: 12px; }
+}
+
+// ── Round buttons ─────────────────────────────────────────────────────────────
+
+.roundBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  transition: opacity 0.15s;
+
+  &:hover { opacity: 0.85; }
+  &:active { opacity: 0.7; }
+}
+
+.roundBtnIcon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  color: $text;
+  transition: all 0.2s;
+
+  @media (max-width: 600px) { width: 46px; height: 46px; }
+}
+
+.roundBtnLabel {
+  font-size: 11px;
+  font-weight: 500;
+  color: $text-dim;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
+
+  @media (max-width: 480px) { display: none; }
+}
+
+.roundBtnOn {
+  .roundBtnIcon {
+    background: rgba(34, 197, 94, 0.12);
+    border-color: rgba(34, 197, 94, 0.5);
+    color: $success;
+  }
+  .roundBtnLabel { color: $success; }
+}
+
+.roundBtnOff {
+  .roundBtnIcon {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: $danger;
+  }
+  .roundBtnLabel { color: $danger; }
+}
+
+.roundBtnLeave {
+  .roundBtnIcon {
+    background: $danger;
+    border-color: $danger;
+    color: #fff;
+    width: 52px;
+    height: 52px;
+  }
+  .roundBtnLabel { color: $danger; }
+
+  &:hover .roundBtnIcon {
+    background: darken(#ef4444, 8%);
+    border-color: darken(#ef4444, 8%);
+  }
+}
+
+.roundBtnCopied {
+  .roundBtnIcon {
+    background: rgba(34, 197, 94, 0.12);
+    border-color: rgba(34, 197, 94, 0.5);
+    color: $success;
+  }
+  .roundBtnLabel { color: $success; }
+}

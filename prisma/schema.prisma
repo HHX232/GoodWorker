@@ -594,6 +594,15 @@ model Notification {
   @@index([createdAt])
 }
 
+model VideoCallRoom {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  ownerIdentity String
+  ownerId       String
+  ownerRole     Role
+  createdAt     DateTime @default(now())
+}
+
 model NotificationSubscription {
   id       String  @id @default(uuid())
   userId   String
