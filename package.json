@@ -47,6 +47,8 @@
     "framer-motion": "^12.38.0",
     "html-to-image": "^1.11.13",
     "js-cookie": "^3.0.5",
+    "livekit-client": "^2.18.9",
+    "livekit-server-sdk": "^2.15.2",
     "lucide-react": "^0.577.0",
     "next": "16.1.6",
     "next-auth": "^5.0.0-beta.31",

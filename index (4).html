@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <title>LiveKit — Звонок</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: sans-serif; background: #1a1a2e; color: #eee; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; min-height: 100vh; }
+        h1 { margin-bottom: 30px; font-size: 1.5rem; }
+        #join-form { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 340px; }
+        input { padding: 10px 14px; border-radius: 8px; border: 1px solid #444; background: #16213e; color: #eee; font-size: 1rem; }
+        button { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 1rem; font-weight: 600; }
+        #btn-join  { background: #0f3460; color: #eee; }
+        #btn-leave { background: #c0392b; color: #fff; display: none; }
+        button:hover { opacity: 0.85; }
+        #status { margin: 16px 0; font-size: 0.9rem; color: #aaa; }
+        #participants { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 20px; width: 100%; }
+        .participant-tile { background: #16213e; border-radius: 12px; overflow: hidden; width: 280px; position: relative; }
+        .participant-tile video { width: 100%; display: block; background: #000; min-height: 160px; }
+        .participant-tile .name { position: absolute; bottom: 8px; left: 10px; background: rgba(0,0,0,0.6); padding: 2px 8px; border-radius: 6px; font-size: 0.8rem; }
+        .participant-tile .muted-icon { position: absolute; top: 8px; right: 10px; font-size: 1.1rem; display: none; }
+        .participant-tile.audio-muted .muted-icon { display: block; }
+        #controls { display: none; gap: 12px; margin-top: 16px; }
+        #controls.visible { display: flex; }
+        .ctrl-btn { padding: 8px 18px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.9rem; font-weight: 600; }
+        .ctrl-btn.on  { background: #27ae60; color: #fff; }
+        .ctrl-btn.off { background: #7f8c8d; color: #fff; }
+    </style>
+</head>
+<body>
+<h1>🎙 LiveKit Звонок</h1>
+<div id="join-form">
+    <input id="room-name"   placeholder="Название комнаты" value="test-room" />
+    <input id="participant" placeholder="Ваше имя"         value="User1" />
+    <button id="btn-join">Войти в комнату</button>
+</div>
+<p id="status"></p>
+<button id="btn-leave">Покинуть комнату</button>
+<div id="controls">
+    <button class="ctrl-btn on" id="btn-mic">🎙 Микрофон</button>
+    <button class="ctrl-btn on" id="btn-cam">📷 Камера</button>
+</div>
+<div id="participants"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
+<script>
+    // ─── URL'ы ────────────────────────────────────────────────────────────────
+    // Фронт раздаётся самим Spring Boot, поэтому BACKEND_URL = текущий origin.
+    // Менять ничего не нужно — работает и локально и на Railway автоматически.
+    const BACKEND_URL = 'https://goodworker-api.up.railway.app';
+    const LIVEKIT_URL = 'wss://goodworker-livekit.up.railway.app';
+
+    // TURN credentials от Metered.ca
+    // Замени на свои после регистрации на metered.ca
+    const TURN_CONFIG = window.TURN_CONFIG || {
+        username: 'c3f73daa4d6f7b1a2a77aa6c',
+        credential: 'xXcp3uLUlF8L/W8h',
+        urls: [
+            'stun:stun.relay.metered.ca:80',
+            'turn:global.relay.metered.ca:80',
+            'turn:global.relay.metered.ca:80?transport=tcp',
+            'turn:global.relay.metered.ca:443',
+            'turns:global.relay.metered.ca:443?transport=tcp'
+        ]
+    };
+
+    // ─── Состояние ────────────────────────────────────────────────────────────
+    let room = null;
+    let micEnabled = true;
+    let camEnabled = true;
+
+    const btnJoin  = document.getElementById('btn-join');
+    const btnLeave = document.getElementById('btn-leave');
+    const btnMic   = document.getElementById('btn-mic');
+    const btnCam   = document.getElementById('btn-cam');
+    const statusEl = document.getElementById('status');
+    const participantsEl = document.getElementById('participants');
+    const controlsEl    = document.getElementById('controls');
+
+    async function fetchToken(roomName, participantName) {
+        const res = await fetch(`${BACKEND_URL}/token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ roomName, participantName }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.errorMessage || 'Token error');
+        return data.token;
+    }
+
+    async function joinRoom() {
+        const roomName        = document.getElementById('room-name').value.trim();
+        const participantName = document.getElementById('participant').value.trim();
+        if (!roomName || !participantName) return alert('Заполните все поля');
+
+        setStatus('Получаем токен...');
+        try {
+            const token = await fetchToken(roomName, participantName);
+
+            room = new LivekitClient.Room({
+                // Передаём TURN серверы напрямую в WebRTC
+                // iceServers — стандартный RTCConfiguration параметр
+                rtcConfig: {
+                    iceServers: [{ ...TURN_CONFIG }],
+                    // all = пробовать и прямое UDP и TURN параллельно (ICE trickle)
+                    // relay = только TURN (надёжнее за фаерволами, чуть медленнее старт)
+                    iceTransportPolicy: 'all',
+                },
+            });
+
+            room.on(LivekitClient.RoomEvent.TrackSubscribed, (track, _, participant) => {
+                addTrackToTile(participant.identity, track);
+            });
+            room.on(LivekitClient.RoomEvent.TrackUnsubscribed, (track) => {
+                track.detach();
+            });
+            room.on(LivekitClient.RoomEvent.ParticipantConnected, (participant) => {
+                createTile(participant.identity);
+                setStatus(`${participant.identity} подключился`);
+            });
+            room.on(LivekitClient.RoomEvent.ParticipantDisconnected, (participant) => {
+                removeTile(participant.identity);
+                setStatus(`${participant.identity} отключился`);
+            });
+            room.on(LivekitClient.RoomEvent.TrackMuted, (pub, participant) => {
+                getTile(participant.identity)?.classList.toggle('audio-muted', pub.kind === 'audio');
+            });
+            room.on(LivekitClient.RoomEvent.TrackUnmuted, (pub, participant) => {
+                if (pub.kind === 'audio') getTile(participant.identity)?.classList.remove('audio-muted');
+            });
+
+            setStatus('Подключаемся...');
+            await room.connect(LIVEKIT_URL, token);
+            setStatus(`✅ В комнате: ${room.name}`);
+
+            createTile(room.localParticipant.identity, true);
+            await room.localParticipant.enableCameraAndMicrophone();
+
+            const camTrack = room.localParticipant
+                .getTrackPublication(LivekitClient.Track.Source.Camera)?.track;
+            if (camTrack) addTrackToTile(room.localParticipant.identity, camTrack);
+
+            btnJoin.style.display = 'none';
+            btnLeave.style.display = 'inline-block';
+            controlsEl.classList.add('visible');
+        } catch (e) {
+            setStatus('❌ Ошибка: ' + e.message);
+            console.error(e);
+        }
+    }
+
+    async function leaveRoom() {
+        if (room) { await room.disconnect(); room = null; }
+        participantsEl.innerHTML = '';
+        btnJoin.style.display = 'inline-block';
+        btnLeave.style.display = 'none';
+        controlsEl.classList.remove('visible');
+        setStatus('Вы покинули комнату');
+    }
+
+    async function toggleMic() {
+        if (!room) return;
+        micEnabled = !micEnabled;
+        await room.localParticipant.setMicrophoneEnabled(micEnabled);
+        btnMic.textContent = micEnabled ? '🎙 Микрофон' : '🔇 Микрофон';
+        btnMic.className = 'ctrl-btn ' + (micEnabled ? 'on' : 'off');
+    }
+
+    async function toggleCam() {
+        if (!room) return;
+        camEnabled = !camEnabled;
+        await room.localParticipant.setCameraEnabled(camEnabled);
+        btnCam.textContent = camEnabled ? '📷 Камера' : '🚫 Камера';
+        btnCam.className = 'ctrl-btn ' + (camEnabled ? 'on' : 'off');
+    }
+
+    function createTile(identity, isLocal = false) {
+        if (getTile(identity)) return;
+        const tile = document.createElement('div');
+        tile.className = 'participant-tile';
+        tile.id = 'tile-' + identity;
+        tile.innerHTML = `
+        <video id="video-${identity}" autoplay playsinline ${isLocal ? 'muted' : ''}></video>
+        <span class="name">${identity}${isLocal ? ' (вы)' : ''}</span>
+        <span class="muted-icon">🔇</span>
+      `;
+        participantsEl.appendChild(tile);
+    }
+
+    function removeTile(identity) { getTile(identity)?.remove(); }
+    function getTile(identity)    { return document.getElementById('tile-' + identity); }
+
+    function addTrackToTile(identity, track) {
+        createTile(identity);
+        if (track.kind === 'video') {
+            const v = document.getElementById('video-' + identity);
+            if (v) track.attach(v);
+        } else if (track.kind === 'audio') {
+            const a = track.attach();
+            a.style.display = 'none';
+            document.body.appendChild(a);
+        }
+    }
+
+    function setStatus(msg) { statusEl.textContent = msg; }
+
+    btnJoin.addEventListener('click', joinRoom);
+    btnLeave.addEventListener('click', leaveRoom);
+    btnMic.addEventListener('click', toggleMic);
+    btnCam.addEventListener('click', toggleCam);
+</script>
+</body>
+</html>

@@ -1,0 +1,324 @@
+// ── Design tokens ─────────────────────────────────────────────────────────────
+$border: #e0e0e0;
+$bg-card: #fff;
+$bg-input: #fff;
+$bg-tile: #f5f5f5;
+$accent: #0f3460;
+$danger: #c0392b;
+$success: #27ae60;
+$text: #000;
+$text-dim: #555;
+$text-muted: #999;
+
+// ── Wrapper ───────────────────────────────────────────────────────────────────
+
+.wrapper {
+  width: 100%;
+  border: 2px solid $border;
+  background: $bg-card;
+  overflow: hidden;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  border-bottom: 2px solid $border;
+}
+
+.headerIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #f0f0f0;
+  color: $accent;
+  flex-shrink: 0;
+}
+
+.headerTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: $text;
+  letter-spacing: 0.3px;
+}
+
+.statusBadge {
+  margin-left: auto;
+  font-size: 12px;
+  color: $text-muted;
+  background: #f5f5f5;
+  padding: 3px 10px;
+  border: 1px solid $border;
+  white-space: nowrap;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ── Join pane ─────────────────────────────────────────────────────────────────
+
+.joinPane {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  padding: 24px 20px;
+
+  @media (max-width: 560px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.joinField {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.joinLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: $text;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.joinInput {
+  padding: 12px 14px;
+  border: 2px solid $text;
+  background: $bg-input;
+  color: $text;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+
+  &::placeholder {
+    color: #aaa;
+  }
+
+  &:focus {
+    border-color: #555;
+  }
+}
+
+.joinBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border: none;
+  background: $accent;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+  flex-shrink: 0;
+
+  &:hover:not(:disabled) {
+    opacity: 0.85;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+// ── Room pane ─────────────────────────────────────────────────────────────────
+
+.roomPane {
+  display: flex;
+  flex-direction: column;
+}
+
+// ── Video grid ────────────────────────────────────────────────────────────────
+
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 20px 20px 16px;
+  min-height: 180px;
+  justify-content: center;
+
+  &[data-count='1'] .tile {
+    width: 100%;
+    max-width: 640px;
+    aspect-ratio: 16/9;
+  }
+
+  &[data-count='2'] .tile {
+    flex: 1 1 calc(50% - 6px);
+    min-width: 200px;
+    aspect-ratio: 16/9;
+  }
+
+  &[data-count='0'] {
+    align-items: center;
+  }
+}
+
+.tile {
+  position: relative;
+  overflow: hidden;
+  background: $bg-tile;
+  border: 2px solid $border;
+  min-height: 140px;
+  flex: 1 1 260px;
+  max-width: 480px;
+  aspect-ratio: 16/9;
+}
+
+.tileLocal {
+  border-color: $accent;
+}
+
+.tileVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: #ddd;
+}
+
+.noCamera {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eee;
+}
+
+.tileMeta {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tileName {
+  background: rgba(0, 0, 0, 0.6);
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #fff;
+  max-width: 70%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mutedIcon {
+  font-size: 14px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 3px 7px;
+}
+
+.localBadge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: $accent;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid $accent;
+  padding: 2px 7px;
+}
+
+.emptyRoom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 24px;
+  color: $text-muted;
+  font-size: 14px;
+  text-align: center;
+
+  p { margin: 0; }
+}
+
+// ── Controls bar ──────────────────────────────────────────────────────────────
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 20px 18px;
+  border-top: 2px solid $border;
+  flex-wrap: wrap;
+}
+
+.ctrlBtn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border: 2px solid $border;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: $text;
+
+  span {
+    @media (max-width: 420px) { display: none; }
+  }
+
+  &:hover { background: #f5f5f5; }
+}
+
+.ctrlOn {
+  border-color: $success;
+  color: $success;
+
+  &:hover { background: #f0fff4; }
+}
+
+.ctrlOff {
+  border-color: #ccc;
+  color: $text-muted;
+
+  &:hover { background: #f5f5f5; }
+}
+
+.leaveBtn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border: 2px solid $danger;
+  background: none;
+  color: $danger;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  span {
+    @media (max-width: 420px) { display: none; }
+  }
+
+  &:hover {
+    background: $danger;
+    color: #fff;
+  }
+}
