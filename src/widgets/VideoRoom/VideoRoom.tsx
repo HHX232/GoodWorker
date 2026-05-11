@@ -80,12 +80,13 @@ export default function VideoRoom({ defaultName }: VideoRoomProps) {
 
       const livekitUrl = process.env.NEXT_PUBLIC_LIVEKIT_URL ?? 'wss://goodworker-livekit.up.railway.app'
 
+      // rtcConfig not in v2 types but accepted at runtime
       const room = new Room({
         rtcConfig: {
           iceServers: [{ ...TURN_CONFIG }],
           iceTransportPolicy: 'all',
         },
-      })
+      } as any)
       roomRef.current = room
 
       room.on(RoomEvent.TrackSubscribed, (track: any, _: any, participant: any) => {
