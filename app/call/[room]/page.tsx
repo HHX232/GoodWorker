@@ -45,12 +45,23 @@ export default async function RoomPage({ params }: Props) {
     // table doesn't exist yet — current user is owner, room name = decoded param
   }
 
+  let localAvatarUrl: string | undefined
+  try {
+    const student = await prisma.student.findFirst({ where: { name: identity }, select: { avatarUrl: true } })
+    localAvatarUrl = student?.avatarUrl ?? undefined
+    if (!localAvatarUrl) {
+      const teacher = await prisma.teacher.findFirst({ where: { name: identity }, select: { avatarUrl: true } })
+      localAvatarUrl = teacher?.avatarUrl ?? undefined
+    }
+  } catch {}
+
   return (
     <RoomEntry
       userName={identity}
       roomName={roomName}
       roomId={roomId}
       ownerIdentity={ownerIdentity}
+      localAvatarUrl={localAvatarUrl}
     />
   )
 }
