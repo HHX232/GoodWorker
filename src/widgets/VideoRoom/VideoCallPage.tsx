@@ -314,11 +314,16 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
           </button>
         </div>
         <div className={styles.notesList}>
+          {transcription.srError && (
+            <p className={styles.notesSrError}>{transcription.srError}</p>
+          )}
           {visibleNotes.length === 0 ? (
             <p className={styles.notesEmpty}>
-              {transcription.browserHasSpeech
-                ? 'Говорите — текст появится здесь...'
-                : 'Браузер не поддерживает Speech Recognition. Используйте Chrome или Chromium.'}
+              {!transcription.browserHasSpeech
+                ? 'Браузер не поддерживает Speech Recognition. Используйте Chrome.'
+                : transcription.srError
+                ? 'Транскрипция недоступна — текст появится если подключён агент.'
+                : 'Говорите — текст появится здесь...'}
             </p>
           ) : (
             visibleNotes.map((n, i) => (

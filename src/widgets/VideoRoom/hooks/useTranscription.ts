@@ -3,20 +3,24 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { NoteEntry } from '../types'
 
-// Returns true only if the browser exposes a native Speech Recognition API.
-// Only Chrome and Chromium-based browsers support webkitSpeechRecognition.
 export function hasBrowserSpeechAPI(): boolean {
   if (typeof window === 'undefined') return false
   return 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window
 }
 
-// iOS Safari fires onend immediately and doesn't support continuous SR —
-// using it there causes rapid mic acquire/release (audible click loop).
 function isMobileSafariOrIOS(): boolean {
   if (typeof navigator === 'undefined') return false
   const ua = navigator.userAgent
   return /iP(hone|ad|od)/i.test(ua) || (/Macintosh/i.test(ua) && 'ontouchend' in document)
 }
+
+function isAndroid(): boolean {
+  if (typeof navigator === 'undefined') return false
+  return /Android/i.test(navigator.userAgent)
+}
+
+// Errors where restarting SR is pointless — mic is blocked or service is down.
+const FATAL_SR_ERRORS = ['not-allowed', 'audio-capture', 'service-not-allowed']
 
 interface UseTranscriptionOptions {
   connected: boolean
@@ -31,6 +35,7 @@ interface UseTranscriptionResult {
   callNotes: NoteEntry[]
   finalTranscript: string | null
   browserHasSpeech: boolean
+  srError: string | null
   handleRemoteMessage: (type: string, identity: string, text: string) => void
 }
 
@@ -44,28 +49,42 @@ export function useTranscription({
   const [remoteLiveTexts, setRemoteLiveTexts] = useState<Record<string, string>>({})
   const [callNotes, setCallNotes] = useState<NoteEntry[]>([])
   const [finalTranscript, setFinalTranscript] = useState<string | null>(null)
+  const [srError, setSrError] = useState<string | null>(null)
 
   const srRef = useRef<any>(null)
-  // Timers for auto-clearing remote live text after agent chunks
   const clearTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
 
   const browserHasSpeech = hasBrowserSpeechAPI()
 
-  // ── Chrome / Chromium Speech Recognition (live captions only) ─────────────
+  // ── Speech Recognition ─────────────────────────────────────────────────────
   useEffect(() => {
     if (!connected || !micEnabled || !browserHasSpeech) {
       setLiveText('')
       return
     }
-    // iOS fires onend immediately (no continuous support) → rapid mic click loop.
-    // Skip SR on iOS entirely; transcript comes from the agent instead.
+    // iOS fires onend immediately → rapid click loop; skip entirely.
     if (isMobileSafariOrIOS()) return
 
+    setSrError(null)
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     let shouldRestart = true
     let restartTimer: ReturnType<typeof setTimeout> | null = null
+    // Interim fallback: if isFinal never arrives (common on Android), commit after silence.
+    let interimBuffer = ''
+    let interimTimer: ReturnType<typeof setTimeout> | null = null
+
+    const commitInterim = () => {
+      const t = interimBuffer.trim()
+      interimBuffer = ''
+      if (!t) return
+      broadcast({ type: 'sr_final', identity: userName, text: t })
+      setCallNotes(prev => [...prev, { identity: userName, text: t }])
+    }
+
     const sr = new SR()
-    sr.continuous = true
+    // On Android, continuous=false produces more reliable final results.
+    // On desktop, continuous=true keeps recognition alive across long silences.
+    sr.continuous = !isAndroid()
     sr.interimResults = true
     sr.lang = 'ru-RU'
     sr.maxAlternatives = 1
@@ -77,10 +96,21 @@ export function useTranscription({
         if (event.results[i].isFinal) final += event.results[i][0].transcript
         else interim += event.results[i][0].transcript
       }
-      setLiveText(interim)
-      if (interim) broadcast({ type: 'sr_live', identity: userName, text: interim })
+
+      if (interim) {
+        setLiveText(interim)
+        broadcast({ type: 'sr_live', identity: userName, text: interim })
+        // Buffer interim — commit it if a final never arrives within 3 s
+        interimBuffer = interim
+        if (interimTimer) clearTimeout(interimTimer)
+        interimTimer = setTimeout(commitInterim, 3000)
+      }
+
       if (final) {
         const t = final.trim()
+        if (interimTimer) clearTimeout(interimTimer)
+        interimBuffer = ''
+        setLiveText('')
         if (!t) return
         broadcast({ type: 'sr_final', identity: userName, text: t })
         setCallNotes(prev => [...prev, { identity: userName, text: t }])
@@ -88,12 +118,20 @@ export function useTranscription({
     }
 
     sr.onerror = (event: any) => {
-      if (event.error === 'not-allowed') shouldRestart = false
+      if (FATAL_SR_ERRORS.includes(event.error)) {
+        shouldRestart = false
+        const msg =
+          event.error === 'not-allowed'        ? 'Нет доступа к микрофону' :
+          event.error === 'audio-capture'      ? 'Микрофон занят — конспект только через агента' :
+          /* service-not-allowed */              'Сервис распознавания недоступен'
+        setSrError(msg)
+      }
+      // 'no-speech' and 'network' are transient — we still restart below.
     }
 
-    // Chrome stops SR on silence — restart with a delay to avoid rapid mic clicks.
-    // Skip restart when the tab is hidden (screen locked / backgrounded on Android).
     sr.onend = () => {
+      // Commit any buffered interim before restarting
+      if (interimBuffer) commitInterim()
       if (!shouldRestart || document.hidden) return
       restartTimer = setTimeout(() => {
         if (!shouldRestart || document.hidden) return
@@ -107,6 +145,7 @@ export function useTranscription({
     return () => {
       shouldRestart = false
       if (restartTimer) clearTimeout(restartTimer)
+      if (interimTimer) clearTimeout(interimTimer)
       try { srRef.current?.stop() } catch {}
       srRef.current = null
       setLiveText('')
@@ -114,40 +153,28 @@ export function useTranscription({
   }, [connected, micEnabled, browserHasSpeech, broadcast, userName])
 
   // ── Handler for incoming data-channel messages ────────────────────────────
-  // Called by VideoCallPage's data router for:
-  //   sr_live / sr_final  — from Chrome SR of remote participants
-  //   transcript_chunk    — from the faster-whisper LiveKit agent
-  //   session_transcript  — full transcript published by agent on room close
   const handleRemoteMessage = useCallback(
     (type: string, identity: string, text: string) => {
-      // ── Chrome SR messages from other remote Chrome users ──
       if (type === 'sr_live') {
         setRemoteLiveTexts(prev => ({ ...prev, [identity]: text }))
         return
       }
       if (type === 'sr_final') {
         setRemoteLiveTexts(prev => ({ ...prev, [identity]: '' }))
-        // Always add remote SR finals — don't suppress even when agent is active
         if (text) setCallNotes(prev => [...prev, { identity, text }])
         return
       }
 
-      // ── Agent transcript_chunk (faster-whisper, every ~3 s) ──
       if (type === 'transcript_chunk') {
         if (!text) return
-
         setCallNotes(prev => [...prev, { identity, text }])
-
         const isLocal = identity === userName
         if (isLocal) {
-          // For the local user: only show agent caption when Chrome SR is unavailable
-          // (Chrome SR already provides faster interim captions when available)
           if (!browserHasSpeech) {
             setLiveText(text)
             setTimeout(() => setLiveText(''), 4000)
           }
         } else {
-          // For remote participants: show caption for 4 s then clear
           setRemoteLiveTexts(prev => ({ ...prev, [identity]: text }))
           if (clearTimersRef.current[identity]) clearTimeout(clearTimersRef.current[identity])
           clearTimersRef.current[identity] = setTimeout(() => {
@@ -157,12 +184,10 @@ export function useTranscription({
         return
       }
 
-      // ── Agent session_transcript (sent when the room closes) ──
       if (type === 'session_transcript') {
         if (text) setFinalTranscript(text)
       }
     },
-    // browserHasSpeech and userName don't change after mount; agentActiveRef is a ref
     [userName, browserHasSpeech],
   )
 
@@ -172,6 +197,7 @@ export function useTranscription({
     callNotes,
     finalTranscript,
     browserHasSpeech,
+    srError,
     handleRemoteMessage,
   }
 }
