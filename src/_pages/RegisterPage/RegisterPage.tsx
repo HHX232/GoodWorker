@@ -6,7 +6,7 @@ import {signIn} from 'next-auth/react'
 import {useTranslations} from 'next-intl'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 import {toast} from 'sonner'
 import styles from './RegisterPage.module.scss'
 
@@ -20,6 +20,13 @@ export default function RegisterPage() {
   const [step, setStep] = useState<Step>('send')
   const [role, setRole] = useState<Role>('User')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    document.body.style.overflow = 'auto'
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [])
 
   // send step fields
   const [name, setName] = useState('')

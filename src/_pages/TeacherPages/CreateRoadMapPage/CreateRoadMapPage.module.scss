@@ -2,15 +2,10 @@
   display: flex;
   width: 100vw;
   position: relative;
-  height: calc(100vh - var(--header-height));
+  height: calc(100vh - var(--header-height) + 26px);
   position: fixed;
   top: calc(var(--header-height) -27px);
   left: 0;
   background-color: #fff;
 }
 
-
-
-:global(header) {
-  border-bottom: 2px solid #EEEFF8;
-}

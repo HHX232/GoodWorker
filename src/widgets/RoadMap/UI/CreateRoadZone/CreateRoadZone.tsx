@@ -46,6 +46,14 @@ function CreateRoadZoneInner() {
   const {toggleRoadmapPaywallMode} = useActions()
   const isPaywallMode = useTypedSelector((state) => state.roadmapUISlice.isPaywallMode)
 
+  useEffect(() => {
+    const header = document.querySelector('header') as HTMLElement | null
+    if (header) header.style.marginBottom = '0'
+    return () => {
+      if (header) header.style.marginBottom = ''
+    }
+  }, [])
+
   const onDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
     if (event.dataTransfer) event.dataTransfer.dropEffect = 'move'

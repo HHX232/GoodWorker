@@ -23,9 +23,18 @@ import {CalendarTaskCreateModal} from '@/widgets/Calendar/Modals/CalendarTaskCre
 import {CalendarTaskModal} from '@/widgets/Calendar/Modals/CalendarTaskModal/CalendarTaskModal'
 import {MonthCalendar} from '@/widgets/Calendar/MonthCalendar/MonthCalendar'
 import {WeekCalendar} from '@/widgets/Calendar/WeekCalendar/WeekCalendar'
+import {useEffect} from 'react'
 import styles from './CalendarPage.module.scss'
 
 export function CalendarPage() {
+  useEffect(() => {
+    const header = document.querySelector('header') as HTMLElement | null
+    if (header) header.style.marginBottom = '1px'
+    return () => {
+      if (header) header.style.marginBottom = ''
+    }
+  }, [])
+
   const {
     addEvent,
     setView,
