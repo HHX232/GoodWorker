@@ -319,6 +319,31 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
     })
   }, [])
 
+  const reloadCamera = useCallback(async () => {
+    const room = roomRef.current
+    if (!room) return
+    setStatus('Перезагрузка камеры...')
+    try {
+      await room.localParticipant.setCameraEnabled(false)
+      upsert(userName, { videoMuted: true })
+      await new Promise(r => setTimeout(r, 600))
+      await room.localParticipant.setCameraEnabled(true)
+      setCamEnabled(true)
+      upsert(userName, { videoMuted: false })
+      // Retry attaching with backoff
+      const tryAttach = (attempt: number) => {
+        const track = room.localParticipant.getTrackPublication(Track.Source.Camera)?.track
+        if (track) { attachVideoWithRetry(userName, track); return }
+        if (attempt < 8) setTimeout(() => tryAttach(attempt + 1), 300 * (attempt + 1))
+      }
+      setTimeout(() => tryAttach(0), 400)
+    } catch (e) {
+      console.error('reloadCamera failed', e)
+    } finally {
+      setTimeout(() => setStatus(''), 3000)
+    }
+  }, [userName, upsert])
+
   const switchCamera = useCallback(async () => {
     const room = roomRef.current
     if (!room || videoDevices.length < 2) return
@@ -362,6 +387,7 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
     toggleLocalAudio,
     toggleMic,
     toggleCam,
+    reloadCamera,
     switchCamera,
     activeSpeakers,
     updateVideoQualities,

@@ -1051,14 +1051,62 @@ $text-muted: #94a3b8;
     min-width: unset;
   }
 
+  // Light backgrounds so buttons are readable on dark gradient overlay
   .pill {
     padding: 6px 12px;
     font-size: 12px;
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: $text;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    &:hover {
+      background: #fff;
+    }
+  }
+
+  .pillActive {
+    background: rgba(22, 163, 74, 0.12);
+    border-color: rgba(22, 163, 74, 0.35);
+    color: $success;
+
+    &:hover {
+      background: rgba(22, 163, 74, 0.2);
+      color: $success;
+    }
   }
 
   .roundIcon {
     width: 42px;
     height: 42px;
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .roundLabel {
+    color: $text;
+    text-shadow: none;
+  }
+
+  .roundOn .roundIcon {
+    background: rgba(22, 163, 74, 0.12);
+    border-color: rgba(22, 163, 74, 0.4);
+    color: $success;
+  }
+
+  .roundOff .roundIcon {
+    background: rgba(220, 38, 38, 0.1);
+    border-color: rgba(220, 38, 38, 0.35);
+    color: $danger;
+  }
+
+  .roundLeave .roundIcon {
+    background: $danger;
+    border-color: $danger;
+    color: #fff;
   }
 
   // ── Summary modal ──────────────────────────────────────────────────────────

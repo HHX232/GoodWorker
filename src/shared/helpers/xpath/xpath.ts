@@ -37,12 +37,12 @@ export function highlightBookmark(bookmark: {
   if (!bookmark.text) return false
   if (document.querySelector(`[data-bookmark-id="${bookmark.id}"]`)) return true
 
-  const sourceContainers = document.querySelectorAll<HTMLElement>(
-    `[data-source-type="post"][data-source-id="${bookmark.id.slice(0, 8)}"]`  // нет, используем sourceId
-  )
-  
   const containers = document.querySelectorAll<HTMLElement>('[data-source-type]')
-  
+
+  // Use contextText (the start text node's full content) to locate the correct node.
+  // Fall back to the first line of text if contextText is not set.
+  const searchStr = bookmark.contextText || bookmark.text.split('\n')[0]
+
   for (const container of Array.from(containers)) {
     if (container.offsetParent === null) continue
 
@@ -50,17 +50,23 @@ export function highlightBookmark(bookmark: {
     const allNodes: Text[] = []
     while (walker.nextNode()) allNodes.push(walker.currentNode as Text)
 
-    const targetNode = allNodes.find(n => n.textContent?.includes(bookmark.text)) ?? null
+    // Find a text node that contains (or equals) our search string
+    const targetNode = allNodes.find(n => {
+      const tc = n.textContent ?? ''
+      return tc === searchStr || tc.includes(searchStr)
+    }) ?? null
     if (!targetNode?.textContent) continue
 
-    const localOffset = targetNode.textContent.indexOf(bookmark.text)
-    if (localOffset === -1) continue
+    // Position start: find where searchStr starts in this node, then add offset
+    const nodeBase = targetNode.textContent.indexOf(searchStr)
+    const start = (nodeBase >= 0 ? nodeBase : 0) + bookmark.offset
+    const end = Math.min(start + bookmark.length, targetNode.textContent.length)
+    if (end <= start) continue
 
     try {
       const range = document.createRange()
-      range.setStart(targetNode, localOffset)
-      range.setEnd(targetNode, localOffset + bookmark.text.length)
-
+      range.setStart(targetNode, start)
+      range.setEnd(targetNode, end)
       const mark = document.createElement('mark')
       mark.dataset.bookmarkId = bookmark.id
       mark.className = 'bookmark-highlight'

@@ -125,7 +125,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   const canModerate = isOwner || isMainSpeaker
 
   // Destructure stable callbacks so useCallback deps are simple scalars/functions
-  const { broadcast, disconnect, joinRoom, mute, muteVideo, kick, toggleLocalAudio, toggleMic, toggleCam, switchCamera, updateVideoQualities } = room
+  const { broadcast, disconnect, joinRoom, mute, muteVideo, kick, toggleLocalAudio, toggleMic, toggleCam, reloadCamera, switchCamera, updateVideoQualities } = room
 
   // ── Room-level broadcast actions ──────────────────────────────────────────
   const changeLayout = useCallback((l: Layout) => {
@@ -156,7 +156,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
     if (callNotes.length > 0 || transcription.finalTranscript) {
       setShowSummary(true)
     } else {
-      disconnect().then(() => router.push('/call'))
+      disconnect().then(() => router.push('/profile'))
     }
   }, [callNotes, disconnect, router, broadcast, transcription.finalTranscript])
 
@@ -184,7 +184,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
     }
 
     await disconnect()
-    router.push('/call')
+    router.push('/profile')
   }, [disconnect, router, roomName, transcription, room.participants])
 
   // ── Sync video quality when main speaker or active speakers change ──────────
@@ -206,7 +206,9 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
     const captionText = p.isLocal
       ? transcription.liveText
       : (transcription.remoteLiveTexts[p.identity] || '')
-    const showCaption = p.identity === mainSpeaker && captionText.trim().length > 0
+    // Show caption on large tile OR on main speaker tile (even in PiP).
+    // This ensures the big visible tile always shows active speech.
+    const showCaption = captionText.trim().length > 0 && (large || p.identity === mainSpeaker)
 
     return (
       <div key={p.identity} className={`${styles.tile} ${p.isLocal ? styles.tileLocal : ''} ${large ? styles.tileLarge : ''} ${isPip ? styles.tilePip : ''}`}>
@@ -399,6 +401,15 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
             <span className={styles.roundLabel}>Камера ↕</span>
           </button>
         )}
+        <button className={styles.roundBtn} onClick={reloadCamera} title="Перезагрузить камеру">
+          <div className={styles.roundIcon}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="1 4 1 10 7 10"/>
+              <path d="M3.51 15a9 9 0 1 0 .49-4.95"/>
+            </svg>
+          </div>
+          <span className={styles.roundLabel}>Камера ↺</span>
+        </button>
       </div>
 
       <div className={styles.ctrlRight}>
