@@ -17,10 +17,6 @@ function isMobileDevice(): boolean {
 // Errors where restarting SR is pointless — mic is blocked or service is down.
 const FATAL_SR_ERRORS = ['not-allowed', 'audio-capture', 'service-not-allowed']
 
-// On mobile SR restarts cause an OS mic-acquire click. Use a long delay so
-// the click happens at most once every ~13 s instead of every ~1 s.
-const RESTART_DELAY_MS = isMobileDevice() ? 10_000 : 800
-
 interface UseTranscriptionOptions {
   connected: boolean
   micEnabled: boolean
@@ -61,6 +57,7 @@ export function useTranscription({
       setLiveText('')
       return
     }
+    if (isMobileDevice()) return
 
     setSrError(null)
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
@@ -131,7 +128,7 @@ export function useTranscription({
       restartTimer = setTimeout(() => {
         if (!shouldRestart || document.hidden) return
         try { sr.start() } catch {}
-      }, RESTART_DELAY_MS)
+      }, 800)
     }
 
     try { sr.start() } catch {}
