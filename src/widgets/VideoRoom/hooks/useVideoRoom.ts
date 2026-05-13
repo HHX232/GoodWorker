@@ -71,13 +71,18 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
     if (track.kind === Track.Kind.Video || track.kind === 'video') {
       attachVideoWithRetry(identity, track)
     } else if (track.kind === Track.Kind.Audio || track.kind === 'audio') {
-      // Remove any previous audio element for this identity to prevent double-playback
-      const prev = audioElsRef.current.get(identity)
-      if (prev) { prev.srcObject = null; prev.remove() }
-      const a = track.attach() as HTMLAudioElement
-      a.style.display = 'none'
-      document.body.appendChild(a)
-      audioElsRef.current.set(identity, a)
+      // Reuse the existing <audio> element for this participant — never destroy it.
+      // Reusing avoids the browser mic-acquire click that occurs when an audio element
+      // is removed and a new one created (common on Android during reconnects).
+      let el = audioElsRef.current.get(identity)
+      if (!el) {
+        el = document.createElement('audio')
+        el.style.display = 'none'
+        document.body.appendChild(el)
+        audioElsRef.current.set(identity, el)
+      }
+      track.attach(el)
+      el.muted = false
     }
   }, [])
 
@@ -226,11 +231,14 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
         }
       })
       room.on(RoomEvent.TrackUnsubscribed, (track: any, _pub: any, p: any) => {
-        track.detach()
-        // Also clean up manually-created audio element to prevent ghost playback
-        if ((track.kind === Track.Kind.Audio || track.kind === 'audio') && p?.identity) {
-          const el = audioElsRef.current.get(p.identity)
-          if (el) { el.srcObject = null; el.remove(); audioElsRef.current.delete(p.identity) }
+        if (track.kind === Track.Kind.Audio || track.kind === 'audio') {
+          // Keep the <audio> element alive — just mute it so there's no mic-release click.
+          // The element will be reused if the participant's audio track comes back.
+          const el = p?.identity ? audioElsRef.current.get(p.identity) : null
+          if (el) el.muted = true
+          track.detach()
+        } else {
+          track.detach()
         }
       })
 
