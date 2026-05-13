@@ -6,7 +6,7 @@ import styles from './TranscriptsModal.module.scss'
 interface TranscriptRoom {
   id: string
   name: string
-  topic: string | null
+  topic?: string | null
   createdAt: string
   endedAt: string | null
   transcriptRaw: string
