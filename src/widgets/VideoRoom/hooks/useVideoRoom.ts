@@ -42,7 +42,14 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
   const [activeSpeakers, setActiveSpeakers] = useState<string[]>([])
   const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([])
   const [agentIdentity, setAgentIdentity] = useState<string | null>(null)
+  const [debugLog, setDebugLog] = useState<string[]>([])
   const videoDeviceIdxRef = useRef(0)
+
+  const dlog = (msg: string) => {
+    const t = new Date().toISOString().slice(11, 19)
+    console.log(`[${t}] ${msg}`)
+    setDebugLog(prev => [`[${t}] ${msg}`, ...prev].slice(0, 80))
+  }
 
   const roomRef = useRef<Room | null>(null)
   const audioElsRef = useRef<Map<string, HTMLAudioElement>>(new Map())
@@ -223,7 +230,7 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
       roomRef.current = room
 
       room.on(RoomEvent.TrackSubscribed, (track: any, _pub: any, p: any) => {
-        console.log('[TS]', p.identity, track.kind)
+        dlog(`TS ${p.identity} ${track.kind}`)
         if (p.identity.startsWith('agent-')) return
         upsert(p.identity)
         if (track.kind === Track.Kind.Video || track.kind === 'video') {
@@ -263,7 +270,7 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
       }
 
       room.on(RoomEvent.ParticipantConnected, (p: any) => {
-        console.log('[PC]', p.identity)
+        dlog(`PC ${p.identity}`)
         if (p.identity.startsWith('agent-')) { setAgentIdentity(p.identity); return }
         upsert(p.identity)
         fetchAvatar(p.identity)
@@ -272,7 +279,7 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
         reattachAllVideo()
       })
       room.on(RoomEvent.ParticipantDisconnected, (p: any) => {
-        console.log('[PD]', p.identity)
+        dlog(`PD ${p.identity}`)
         if (p.identity.startsWith('agent-')) return
         const el = audioElsRef.current.get(p.identity)
         if (el) { el.srcObject = null; el.remove() }
@@ -306,15 +313,15 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
         try {
           const msg = JSON.parse(dec.current.decode(payload))
           const senderIdentity: string = participant?.identity ?? msg.identity ?? ''
-          console.log('[DR]', msg.type, 'from', senderIdentity)
+          dlog(`DR ${msg.type} ← ${senderIdentity.slice(0, 14)}`)
           onDataMessageRef.current(msg.type, msg, senderIdentity)
         } catch (e) {
-          console.error('[DR] parse error', e)
+          dlog(`DR parse error: ${e}`)
         }
       })
 
       await room.connect(lkUrl, data.token)
-      console.log('[room] connected, remoteParticipants:', room.remoteParticipants.size)
+      dlog(`connected, remote: ${room.remoteParticipants.size}`)
       upsert(room.localParticipant.identity, { isLocal: true, avatarUrl: localAvatarUrl })
       room.remoteParticipants.forEach(p => {
         if (p.identity.startsWith('agent-')) { setAgentIdentity(p.identity); return }
@@ -457,5 +464,6 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
     activeSpeakers,
     updateVideoQualities,
     agentIdentity,
+    debugLog,
   }
 }

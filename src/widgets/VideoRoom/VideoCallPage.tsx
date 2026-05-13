@@ -76,25 +76,6 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   const [debugChunks, setDebugChunks] = useState(0)
   const [debugMsgs, setDebugMsgs] = useState<string[]>([])
   const [showLogs, setShowLogs] = useState(false)
-  const [consoleLogs, setConsoleLogs] = useState<string[]>([])
-
-  // Intercept console on mobile so logs are visible without DevTools
-  useEffect(() => {
-    if (!isMobile) return
-    const ts = () => new Date().toISOString().slice(11, 19)
-    const push = (level: string, args: any[]) => {
-      const line = `[${ts()}] ${level} ${args.map(a => {
-        try { return typeof a === 'object' ? JSON.stringify(a) : String(a) } catch { return String(a) }
-      }).join(' ')}`
-      setConsoleLogs(prev => [line, ...prev].slice(0, 80))
-    }
-    const orig = { log: console.log, warn: console.warn, error: console.error }
-    console.log  = (...a) => { orig.log(...a);  push('LOG', a) }
-    console.warn = (...a) => { orig.warn(...a); push('WRN', a) }
-    console.error= (...a) => { orig.error(...a);push('ERR', a) }
-    return () => { console.log = orig.log; console.warn = orig.warn; console.error = orig.error }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   // Stable ref for the data-message router — updated on every render so the
   // LiveKit event listener (registered once) always calls the latest handler.
@@ -489,11 +470,11 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
                     ? <div className={styles.mobileLogEmpty}>нет сообщений</div>
                     : debugMsgs.map((m, i) => <div key={i} className={styles.mobileLogLine}>{m}</div>)
                   }
-                  <div className={styles.mobileLogDivider}>── console ──</div>
-                  {consoleLogs.length === 0
-                    ? <div className={styles.mobileLogEmpty}>нет логов</div>
-                    : consoleLogs.map((m, i) => (
-                      <div key={i} className={`${styles.mobileLogLine} ${m.includes('ERR') ? styles.mobileLogErr : m.includes('WRN') ? styles.mobileLogWrn : ''}`}>{m}</div>
+                  <div className={styles.mobileLogDivider}>── room events ──</div>
+                  {room.debugLog.length === 0
+                    ? <div className={styles.mobileLogEmpty}>нет событий</div>
+                    : room.debugLog.map((m, i) => (
+                      <div key={i} className={`${styles.mobileLogLine} ${m.toLowerCase().includes('error') ? styles.mobileLogErr : ''}`}>{m}</div>
                     ))
                   }
                 </div>
