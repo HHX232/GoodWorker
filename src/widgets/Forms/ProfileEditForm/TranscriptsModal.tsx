@@ -6,6 +6,7 @@ import styles from './TranscriptsModal.module.scss'
 interface TranscriptRoom {
   id: string
   name: string
+  topic: string | null
   createdAt: string
   endedAt: string | null
   transcriptRaw: string
@@ -73,6 +74,7 @@ export function TranscriptsModal({ isOpen, onClose }: Props) {
             </button>
             <div className={styles.detailMeta}>
               <span className={styles.detailName}>{selected.name}</span>
+              {selected.topic && <span className={styles.detailTopic}>{selected.topic}</span>}
               <span className={styles.detailDate}>{fmt(selected.createdAt)}</span>
             </div>
             <pre className={styles.transcript}>{selected.transcriptRaw}</pre>
@@ -94,6 +96,7 @@ export function TranscriptsModal({ isOpen, onClose }: Props) {
                 <span className={styles.rowIcon}><FileIcon /></span>
                 <span className={styles.rowContent}>
                   <span className={styles.rowName}>{room.name}</span>
+                  {room.topic && <span className={styles.rowTopic}>{room.topic}</span>}
                   <span className={styles.rowDate}>{fmt(room.createdAt)}</span>
                 </span>
                 <svg className={styles.rowArrow} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">

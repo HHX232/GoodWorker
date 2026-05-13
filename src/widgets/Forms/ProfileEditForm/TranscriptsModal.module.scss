@@ -132,6 +132,20 @@
   text-overflow: ellipsis;
 }
 
+.rowTopic {
+  font-size: 12px;
+  color: #7c3aed;
+  background: rgba(124, 58, 237, 0.07);
+  border: 1px solid rgba(124, 58, 237, 0.18);
+  padding: 1px 8px;
+  border-radius: 999px;
+  align-self: flex-start;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
 .rowDate {
   font-size: 12px;
   color: #94a3b8;
@@ -183,6 +197,16 @@
   font-size: 15px;
   font-weight: 700;
   color: #0f172a;
+}
+
+.detailTopic {
+  font-size: 12px;
+  color: #7c3aed;
+  background: rgba(124, 58, 237, 0.07);
+  border: 1px solid rgba(124, 58, 237, 0.18);
+  padding: 2px 10px;
+  border-radius: 999px;
+  align-self: flex-start;
 }
 
 .detailDate {

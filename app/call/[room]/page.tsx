@@ -31,6 +31,7 @@ export default async function RoomPage({ params }: Props) {
   const decodedName = (() => { try { return decodeURIComponent(roomId) } catch { return roomId } })()
   let roomName = decodedName
   let ownerIdentity = identity
+  let roomTopic: string | undefined
 
   try {
     // try by CUID first, then by name
@@ -40,6 +41,7 @@ export default async function RoomPage({ params }: Props) {
     if (dbRoom) {
       roomName = dbRoom.name
       ownerIdentity = dbRoom.ownerIdentity
+      roomTopic = dbRoom.topic ?? undefined
     }
   } catch {
     // table doesn't exist yet — current user is owner, room name = decoded param
@@ -62,6 +64,7 @@ export default async function RoomPage({ params }: Props) {
       roomId={roomId}
       ownerIdentity={ownerIdentity}
       localAvatarUrl={localAvatarUrl}
+      topic={roomTopic}
     />
   )
 }

@@ -1,0 +1,288 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+  min-width: 360px;
+
+  @media (max-width: 480px) {
+    min-width: unset;
+    padding: 16px;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #888;
+}
+
+// ── Access type radio group ────────────────────────────────────────────────────
+
+.radioGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.radioOption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 2px solid #e0e0e0;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+
+  &:hover {
+    border-color: #aaa;
+  }
+
+  &.selected {
+    border-color: #000;
+    background: #f8f8f8;
+  }
+}
+
+.radioCircle {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s;
+
+  .selected & {
+    border-color: #000;
+  }
+}
+
+.radioDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #000;
+}
+
+.radioText {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111;
+}
+
+// ── Students list ─────────────────────────────────────────────────────────────
+
+.studentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+  border: 2px solid #e0e0e0;
+  padding: 8px;
+}
+
+.studentRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.12s;
+
+  &:hover {
+    background: #f5f5f5;
+  }
+
+  &.checked {
+    background: #f0f0f0;
+  }
+}
+
+.studentCheckbox {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.12s, background 0.12s;
+
+  .checked & {
+    border-color: #000;
+    background: #000;
+  }
+}
+
+.checkIcon {
+  color: #fff;
+}
+
+.studentName {
+  font-size: 13px;
+  font-weight: 500;
+  color: #111;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.studentEmail {
+  font-size: 12px;
+  color: #888;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-left: auto;
+}
+
+// ── Email input ───────────────────────────────────────────────────────────────
+
+.emailInputRow {
+  display: flex;
+  gap: 8px;
+}
+
+.emailInput {
+  flex: 1;
+  padding: 10px 12px;
+  border: 2px solid #e0e0e0;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s;
+
+  &:focus {
+    border-color: #000;
+  }
+
+  &::placeholder {
+    color: #bbb;
+  }
+}
+
+.addEmailBtn {
+  padding: 10px 16px;
+  border: 2px solid #000;
+  background: #000;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+}
+
+.emailTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.emailTag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  font-size: 13px;
+  color: #333;
+}
+
+.removeTagBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: #888;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  line-height: 1;
+
+  &:hover {
+    color: #c00;
+  }
+}
+
+// ── Footer ────────────────────────────────────────────────────────────────────
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.cancelBtn {
+  padding: 10px 22px;
+  border: 2px solid #e0e0e0;
+  background: none;
+  color: #555;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s;
+
+  &:hover {
+    border-color: #aaa;
+  }
+}
+
+.createBtn {
+  padding: 10px 28px;
+  border: none;
+  background: #000;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:hover:not(:disabled) {
+    opacity: 0.8;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

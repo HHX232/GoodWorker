@@ -60,10 +60,11 @@ interface Props {
   roomId?: string
   ownerIdentity?: string
   localAvatarUrl?: string
+  topic?: string
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
-export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIdentity, localAvatarUrl }: Props) {
+export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIdentity, localAvatarUrl, topic }: Props) {
   const router = useRouter()
   const [roomName] = useState(autoJoinRoom ?? '')
   const [layout, setLayout] = useState<Layout>('pip')
@@ -485,6 +486,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
             <div className={styles.topBarLeft}>
               <span className={styles.topDot} />
               <span className={styles.topRoom}>{roomName}</span>
+              {topic && <span className={styles.topTopic}>{topic}</span>}
               {room.status && <span className={styles.topStatus}>{room.status}</span>}
             </div>
             <div className={styles.topBarRight}>

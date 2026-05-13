@@ -4,7 +4,7 @@ import OtpModal from '@/shared/ui/Modals/OtpModal/OtpModal'
 import ImageCropEditor from '@/widgets/BaseUI/ImageCropEditor/ImageCropEditor'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
-import {FC, useRef, useState} from 'react'
+import {FC, useEffect, useRef, useState} from 'react'
 import styles from './ProfileEditForm.module.scss'
 import {useUpdateProfile} from '@/features/hooks/User/useUpdateProfile'
 import {TranscriptsModal} from './TranscriptsModal'
@@ -28,6 +28,13 @@ interface ProfileEditFormProps {
 
 const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData}) => {
   const {mutateAsync: updateProfile} = useUpdateProfile(userType)
+
+  useEffect(() => {
+    document.body.style.setProperty('overflow', 'auto', 'important')
+    return () => {
+      document.body.style.removeProperty('overflow')
+    }
+  }, [])
 
   const [name, setName] = useState(initialData.name)
   const [phone, setPhone] = useState(initialData.phone ?? '')

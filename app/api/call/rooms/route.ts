@@ -14,6 +14,10 @@ export async function POST(req: NextRequest) {
     const name = roomName.trim()
     const identity = session.user.name ?? session.user.id
     const role = session.user.role as 'STUDENT' | 'TEACHER'
+    const topic: string | undefined = body?.topic?.trim() || undefined
+    const categoryId: string | undefined = body?.categoryId || undefined
+    const accessType: string = body?.accessType ?? 'ALL'
+    const allowedEmails: string[] = Array.isArray(body?.allowedEmails) ? body.allowedEmails : []
 
     const existing = await prisma.videoCallRoom.findUnique({ where: { name } })
     if (existing) {
@@ -21,7 +25,16 @@ export async function POST(req: NextRequest) {
     }
 
     const room = await prisma.videoCallRoom.create({
-      data: { name, ownerIdentity: identity, ownerId: session.user.id, ownerRole: role },
+      data: {
+        name,
+        ownerIdentity: identity,
+        ownerId: session.user.id,
+        ownerRole: role,
+        topic,
+        categoryId,
+        accessType: accessType as any,
+        allowedEmails,
+      },
     })
     return NextResponse.json({ id: room.id, ownerIdentity: room.ownerIdentity, isNew: true })
   } catch (e: any) {
@@ -41,7 +54,7 @@ export async function GET(req: NextRequest) {
     const room = await prisma.videoCallRoom.findUnique({ where: { id } })
     if (!room) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-    return NextResponse.json({ id: room.id, name: room.name, ownerIdentity: room.ownerIdentity })
+    return NextResponse.json({ id: room.id, name: room.name, ownerIdentity: room.ownerIdentity, topic: room.topic ?? null })
   } catch (e: any) {
     return NextResponse.json({ error: e.message ?? 'Internal error' }, { status: 500 })
   }

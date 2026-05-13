@@ -574,6 +574,13 @@ enum RoadmapNodeAccessType {
   PURCHASE
 }
 
+enum RoomAccessType {
+  ALL
+  NOBODY
+  MY_STUDENTS
+  SELECTED
+}
+
 // ─── Notifications ────────────────────────────────────────
 
 model Notification {
@@ -595,13 +602,18 @@ model Notification {
 }
 
 model VideoCallRoom {
-  id            String   @id @default(cuid())
-  name          String   @unique
+  id            String         @id @default(cuid())
+  name          String         @unique
   ownerIdentity String
   ownerId       String
   ownerRole     Role
-  createdAt     DateTime @default(now())
+  createdAt     DateTime       @default(now())
   endedAt       DateTime?
+
+  topic         String?
+  categoryId    String?
+  accessType    RoomAccessType @default(ALL)
+  allowedEmails String[]
 
   transcriptRaw  String?
   transcriptJson Json?

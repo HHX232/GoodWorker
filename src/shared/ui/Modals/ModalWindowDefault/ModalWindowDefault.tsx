@@ -36,12 +36,12 @@ const ModalWindowDefault: FC<IModalWindowDefaultProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden'
+      document.body.style.setProperty('overflow', 'hidden', 'important')
     } else {
-      document.body.style.overflow = 'auto'
+      document.body.style.setProperty('overflow', 'auto', 'important')
     }
     return () => {
-      document.body.style.overflow = 'auto'
+      document.body.style.setProperty('overflow', 'auto', 'important')
     }
   }, [isOpen])
 

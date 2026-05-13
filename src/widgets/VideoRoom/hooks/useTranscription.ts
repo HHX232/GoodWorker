@@ -78,7 +78,7 @@ export function useTranscription({
     const sr = new SR()
     sr.continuous = true
     sr.interimResults = true
-    sr.lang = ''  // browser/OS default language
+    sr.lang = 'ru-RU'
     sr.maxAlternatives = 1
 
     sr.onresult = (event: any) => {
