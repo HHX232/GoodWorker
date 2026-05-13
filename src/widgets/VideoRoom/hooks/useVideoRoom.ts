@@ -206,7 +206,16 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
           if (pub.track) attachTrack(p.identity, pub.track)
         })
       })
-      await room.localParticipant.enableCameraAndMicrophone()
+      await room.localParticipant.setMicrophoneEnabled(true, {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      })
+      try {
+        await room.localParticipant.setCameraEnabled(true)
+      } catch {
+        // no camera — continue without video
+      }
       const cam = room.localParticipant.getTrackPublication(Track.Source.Camera)?.track
       if (cam) setTimeout(() => attachTrack(room.localParticipant.identity, cam), 150)
       setStatus('')
