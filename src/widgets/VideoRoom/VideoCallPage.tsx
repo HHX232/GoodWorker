@@ -200,7 +200,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
     const captionText = p.isLocal
       ? transcription.liveText
       : (transcription.remoteLiveTexts[p.identity] || '')
-    const showCaption = p.identity === mainSpeaker && captionText.trim().length > 0
+    const showCaption = captionText.trim().length > 0
 
     return (
       <div key={p.identity} className={`${styles.tile} ${p.isLocal ? styles.tileLocal : ''} ${large ? styles.tileLarge : ''} ${isPip ? styles.tilePip : ''}`}>

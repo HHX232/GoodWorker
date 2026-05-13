@@ -729,6 +729,7 @@ $text-muted: #94a3b8;
   position: absolute;
   bottom: 46px;
   left: 10px;
+  z-index: 5;
   // Not right: 10px — anchored to the left only, natural text width
   max-width: calc(100% - 20px);
   background: rgba(18, 8, 36, 0.52);   // тёмно-фиолетовый, почти прозрачный
