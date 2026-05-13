@@ -8,15 +8,12 @@ export function hasBrowserSpeechAPI(): boolean {
   return 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window
 }
 
-function isMobileSafariOrIOS(): boolean {
+// Any mobile device: SR restarts cause an OS-level mic-acquire click on every cycle.
+// Mobile transcription is handled by the LiveKit agent (server-side, no browser mic).
+function isMobileDevice(): boolean {
   if (typeof navigator === 'undefined') return false
   const ua = navigator.userAgent
-  return /iP(hone|ad|od)/i.test(ua) || (/Macintosh/i.test(ua) && 'ontouchend' in document)
-}
-
-function isAndroid(): boolean {
-  if (typeof navigator === 'undefined') return false
-  return /Android/i.test(navigator.userAgent)
+  return /Android|iP(hone|ad|od)/i.test(ua) || (/Macintosh/i.test(ua) && 'ontouchend' in document)
 }
 
 // Errors where restarting SR is pointless — mic is blocked or service is down.
@@ -62,8 +59,9 @@ export function useTranscription({
       setLiveText('')
       return
     }
-    // iOS fires onend immediately → rapid click loop; skip entirely.
-    if (isMobileSafariOrIOS()) return
+    // On any mobile device SR restarts trigger a mic-acquire click every few seconds.
+    // Mobile transcription arrives via the LiveKit agent instead.
+    if (isMobileDevice()) return
 
     setSrError(null)
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
@@ -82,9 +80,7 @@ export function useTranscription({
     }
 
     const sr = new SR()
-    // On Android, continuous=false produces more reliable final results.
-    // On desktop, continuous=true keeps recognition alive across long silences.
-    sr.continuous = !isAndroid()
+    sr.continuous = true
     sr.interimResults = true
     sr.lang = 'ru-RU'
     sr.maxAlternatives = 1
