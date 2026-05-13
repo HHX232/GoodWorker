@@ -125,7 +125,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   const canModerate = isOwner || isMainSpeaker
 
   // Destructure stable callbacks so useCallback deps are simple scalars/functions
-  const { broadcast, disconnect, joinRoom, mute, kick, toggleLocalAudio, toggleMic, toggleCam } = room
+  const { broadcast, disconnect, joinRoom, mute, kick, toggleLocalAudio, toggleMic, toggleCam, setMainSpeakerQuality } = room
 
   // ── Room-level broadcast actions ──────────────────────────────────────────
   const changeLayout = useCallback((l: Layout) => {
@@ -136,7 +136,8 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   const transferSpeaker = useCallback((identity: string) => {
     setMainSpeaker(identity)
     broadcast({ type: 'speaker', identity })
-  }, [broadcast])
+    setMainSpeakerQuality(identity)
+  }, [broadcast, setMainSpeakerQuality])
 
   const shareLink = useCallback(() => {
     const url = roomId ? `${window.location.origin}/call/${roomId}` : window.location.href
@@ -186,6 +187,11 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
     router.push('/call')
   }, [disconnect, router, roomName, transcription, room.participants])
 
+  // ── Sync video quality when main speaker changes ───────────────────────────
+  useEffect(() => {
+    if (room.connected) setMainSpeakerQuality(mainSpeaker)
+  }, [mainSpeaker, room.connected, setMainSpeakerQuality])
+
   // ── Auto-join ──────────────────────────────────────────────────────────────
   useEffect(() => {
     if (autoJoinRoom) joinRoom()
@@ -200,7 +206,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
     const captionText = p.isLocal
       ? transcription.liveText
       : (transcription.remoteLiveTexts[p.identity] || '')
-    const showCaption = captionText.trim().length > 0
+    const showCaption = p.identity === mainSpeaker && captionText.trim().length > 0
 
     return (
       <div key={p.identity} className={`${styles.tile} ${p.isLocal ? styles.tileLocal : ''} ${large ? styles.tileLarge : ''} ${isPip ? styles.tilePip : ''}`}>

@@ -1,6 +1,6 @@
 'use client'
 
-import { Room, RoomEvent, Track } from 'livekit-client'
+import { Room, RoomEvent, Track, VideoPresets, VideoQuality } from 'livekit-client'
 import { useCallback, useRef, useState } from 'react'
 import type { Participant } from '../types'
 
@@ -123,9 +123,13 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
   const toggleMic = useCallback(async () => {
     if (!roomRef.current) return
     const next = !micEnabled
-    await roomRef.current.localParticipant.setMicrophoneEnabled(next)
-    setMicEnabled(next)
-    upsert(userName, { audioMuted: !next })
+    try {
+      await roomRef.current.localParticipant.setMicrophoneEnabled(next)
+      setMicEnabled(next)
+      upsert(userName, { audioMuted: !next })
+    } catch (e) {
+      console.error('toggleMic failed', e)
+    }
   }, [micEnabled, upsert, userName])
 
   const toggleCam = useCallback(async () => {
@@ -155,21 +159,36 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
         adaptiveStream: true,
         dynacast: true,
         rtcConfig: { iceServers: [{ ...TURN }], iceTransportPolicy: 'all' },
+        videoCaptureDefaults: {
+          resolution: VideoPresets.h720.resolution,
+        },
+        publishDefaults: {
+          videoSimulcastLayers: [VideoPresets.h180, VideoPresets.h360, VideoPresets.h720],
+          videoCodec: 'vp8',
+        },
       } as any)
       roomRef.current = room
 
       room.on(RoomEvent.TrackSubscribed, (track: any, _pub: any, p: any) => {
+        if (p.identity.startsWith('agent-')) return
         upsert(p.identity)
-        attachTrack(p.identity, track)
+        if (track.kind === Track.Kind.Video || track.kind === 'video') {
+          // Delay so React can render the <video> element before attaching
+          setTimeout(() => attachTrack(p.identity, track), 150)
+        } else {
+          attachTrack(p.identity, track)
+        }
       })
       room.on(RoomEvent.TrackUnsubscribed, (track: any) => track.detach())
       room.on(RoomEvent.ParticipantConnected, (p: any) => {
+        if (p.identity.startsWith('agent-')) return
         upsert(p.identity)
         fetchAvatar(p.identity)
         setStatus(`${p.identity} подключился`)
         setTimeout(() => setStatus(''), 3000)
       })
       room.on(RoomEvent.ParticipantDisconnected, (p: any) => {
+        if (p.identity.startsWith('agent-')) return
         audioElsRef.current.delete(p.identity)
         remove(p.identity)
         setStatus(`${p.identity} отключился`)
@@ -200,6 +219,7 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
       await room.connect(lkUrl, data.token)
       upsert(room.localParticipant.identity, { isLocal: true, avatarUrl: localAvatarUrl })
       room.remoteParticipants.forEach(p => {
+        if (p.identity.startsWith('agent-')) return
         upsert(p.identity)
         fetchAvatar(p.identity)
         p.trackPublications.forEach(pub => {
@@ -225,6 +245,19 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
     }
   }, [roomName, userName, localAvatarUrl, upsert, remove, attachTrack, fetchAvatar])
 
+  // Call this when the main speaker changes — bumps their video to HIGH, others to LOW
+  const setMainSpeakerQuality = useCallback((mainIdentity: string) => {
+    const room = roomRef.current
+    if (!room) return
+    room.remoteParticipants.forEach(p => {
+      const pub = p.getTrackPublication(Track.Source.Camera)
+      if (!pub) return
+      try {
+        pub.setVideoQuality(p.identity === mainIdentity ? VideoQuality.HIGH : VideoQuality.LOW)
+      } catch {}
+    })
+  }, [])
+
   const disconnect = useCallback(async () => {
     await roomRef.current?.disconnect()
     roomRef.current = null
@@ -249,5 +282,6 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
     toggleLocalAudio,
     toggleMic,
     toggleCam,
+    setMainSpeakerQuality,
   }
 }
