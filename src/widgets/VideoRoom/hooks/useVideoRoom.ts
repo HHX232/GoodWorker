@@ -214,7 +214,8 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
           resolution: VideoPresets.h1440.resolution,
         },
         publishDefaults: {
-          videoSimulcastLayers: [VideoPresets.h360, VideoPresets.h540, VideoPresets.h1080],
+          // 3 layers — HIGH maps to the top layer (h1440) so 2-person calls get full quality
+          videoSimulcastLayers: [VideoPresets.h360, VideoPresets.h720, VideoPresets.h1440],
           videoCodec: 'vp8',
         },
       } as any)
@@ -351,8 +352,9 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
     }
   }, [roomName, userName, localAvatarUrl, upsert, remove, attachTrack, fetchAvatar])
 
-  // ≤3 participants: main=HIGH, rest=MEDIUM
-  // 4+ participants: main=HIGH, active speaker=MEDIUM, rest=LOW
+  // 2 participants : everyone = HIGH (1440p — top simulcast layer)
+  // ≤3 participants: main = HIGH, rest = MEDIUM
+  // 4+             : main = HIGH, active speaker = MEDIUM, rest = LOW
   const updateVideoQualities = useCallback((mainIdentity: string, speakers: string[]) => {
     const room = roomRef.current
     if (!room) return
@@ -361,7 +363,9 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
       const pub = p.getTrackPublication(Track.Source.Camera)
       if (!pub) return
       let q: VideoQuality
-      if (p.identity === mainIdentity) {
+      if (count <= 2) {
+        q = VideoQuality.HIGH
+      } else if (p.identity === mainIdentity) {
         q = VideoQuality.HIGH
       } else if (count <= 3) {
         q = VideoQuality.MEDIUM
