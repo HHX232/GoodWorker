@@ -22,6 +22,7 @@ interface UseTranscriptionOptions {
   micEnabled: boolean
   userName: string
   broadcast: (msg: object) => void
+  agentPresent: boolean
 }
 
 interface UseTranscriptionResult {
@@ -39,6 +40,7 @@ export function useTranscription({
   micEnabled,
   userName,
   broadcast,
+  agentPresent,
 }: UseTranscriptionOptions): UseTranscriptionResult {
   const [liveText, setLiveText] = useState('')
   const [remoteLiveTexts, setRemoteLiveTexts] = useState<Record<string, string>>({})
@@ -48,6 +50,9 @@ export function useTranscription({
 
   const srRef = useRef<any>(null)
   const clearTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
+  // Ref so SR onresult can read latest value without restarting the effect
+  const agentPresentRef = useRef(agentPresent)
+  agentPresentRef.current = agentPresent
 
   const browserHasSpeech = hasBrowserSpeechAPI()
 
@@ -74,9 +79,12 @@ export function useTranscription({
       const t = interimBuffer.trim()
       interimBuffer = ''
       if (!t || t.split(/\s+/).length < 3 || interimConfidence < 0.4) return
+      if (!/[а-яёА-ЯЁ]/.test(t)) return
       interimConfidence = 0
       broadcast({ type: 'sr_final', identity: userName, text: t })
-      setCallNotes(prev => [...prev, { identity: userName, text: t }])
+      if (!agentPresentRef.current) {
+        setCallNotes(prev => [...prev, { identity: userName, text: t }])
+      }
     }
 
     const sr = new SR()
@@ -114,8 +122,13 @@ export function useTranscription({
         interimConfidence = 0
         setLiveText('')
         if (!t) return
+        // With ru-RU, discard results that contain no Cyrillic — browser hallucination
+        if (!/[а-яёА-ЯЁ]/.test(t)) return
         broadcast({ type: 'sr_final', identity: userName, text: t })
-        setCallNotes(prev => [...prev, { identity: userName, text: t }])
+        // When agent is transcribing, skip adding to callNotes to avoid duplicates
+        if (!agentPresentRef.current) {
+          setCallNotes(prev => [...prev, { identity: userName, text: t }])
+        }
       }
     }
 

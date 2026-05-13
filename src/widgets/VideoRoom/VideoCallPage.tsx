@@ -99,6 +99,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
     micEnabled: room.micEnabled,
     userName,
     broadcast: room.broadcast,
+    agentPresent: !!room.agentIdentity,
   })
 
   // Wire the data-channel router once (all deps are stable useCallbacks, so this runs once).
@@ -490,7 +491,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
               <span className={styles.topDot} />
               <span className={styles.topRoom}>{roomName}</span>
               {topic && <span className={styles.topTopic}>{topic}</span>}
-              {room.status && <span className={styles.topStatus}>{room.status}</span>}
+              {room.status && !room.status.startsWith('Ошибка') && <span className={styles.topStatus}>{room.status}</span>}
             </div>
             <div className={styles.topBarRight}>
               <span className={styles.topUser}>{userName}</span>
