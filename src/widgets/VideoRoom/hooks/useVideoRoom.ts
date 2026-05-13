@@ -223,6 +223,7 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
       roomRef.current = room
 
       room.on(RoomEvent.TrackSubscribed, (track: any, _pub: any, p: any) => {
+        console.log('[TS]', p.identity, track.kind)
         if (p.identity.startsWith('agent-')) return
         upsert(p.identity)
         if (track.kind === Track.Kind.Video || track.kind === 'video') {
@@ -262,6 +263,7 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
       }
 
       room.on(RoomEvent.ParticipantConnected, (p: any) => {
+        console.log('[PC]', p.identity)
         if (p.identity.startsWith('agent-')) { setAgentIdentity(p.identity); return }
         upsert(p.identity)
         fetchAvatar(p.identity)
@@ -270,6 +272,7 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
         reattachAllVideo()
       })
       room.on(RoomEvent.ParticipantDisconnected, (p: any) => {
+        console.log('[PD]', p.identity)
         if (p.identity.startsWith('agent-')) return
         const el = audioElsRef.current.get(p.identity)
         if (el) { el.srcObject = null; el.remove() }
@@ -303,11 +306,15 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
         try {
           const msg = JSON.parse(dec.current.decode(payload))
           const senderIdentity: string = participant?.identity ?? msg.identity ?? ''
+          console.log('[DR]', msg.type, 'from', senderIdentity)
           onDataMessageRef.current(msg.type, msg, senderIdentity)
-        } catch {}
+        } catch (e) {
+          console.error('[DR] parse error', e)
+        }
       })
 
       await room.connect(lkUrl, data.token)
+      console.log('[room] connected, remoteParticipants:', room.remoteParticipants.size)
       upsert(room.localParticipant.identity, { isLocal: true, avatarUrl: localAvatarUrl })
       room.remoteParticipants.forEach(p => {
         if (p.identity.startsWith('agent-')) { setAgentIdentity(p.identity); return }

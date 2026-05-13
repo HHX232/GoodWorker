@@ -71,8 +71,30 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   const [copied, setCopied] = useState(false)
   const [showSummary, setShowSummary] = useState(false)
   const [showNotes, setShowNotes] = useState(false)
+  const isMobile = typeof navigator !== 'undefined' && /Android|iP(hone|ad|od)/i.test(navigator.userAgent)
+
   const [debugChunks, setDebugChunks] = useState(0)
   const [debugMsgs, setDebugMsgs] = useState<string[]>([])
+  const [showLogs, setShowLogs] = useState(false)
+  const [consoleLogs, setConsoleLogs] = useState<string[]>([])
+
+  // Intercept console on mobile so logs are visible without DevTools
+  useEffect(() => {
+    if (!isMobile) return
+    const ts = () => new Date().toISOString().slice(11, 19)
+    const push = (level: string, args: any[]) => {
+      const line = `[${ts()}] ${level} ${args.map(a => {
+        try { return typeof a === 'object' ? JSON.stringify(a) : String(a) } catch { return String(a) }
+      }).join(' ')}`
+      setConsoleLogs(prev => [line, ...prev].slice(0, 80))
+    }
+    const orig = { log: console.log, warn: console.warn, error: console.error }
+    console.log  = (...a) => { orig.log(...a);  push('LOG', a) }
+    console.warn = (...a) => { orig.warn(...a); push('WRN', a) }
+    console.error= (...a) => { orig.error(...a);push('ERR', a) }
+    return () => { console.log = orig.log; console.warn = orig.warn; console.error = orig.error }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Stable ref for the data-message router — updated on every render so the
   // LiveKit event listener (registered once) always calls the latest handler.
@@ -127,8 +149,6 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
       }
     }
   }, [handleRemoteMessage])
-
-  const isMobile = typeof navigator !== 'undefined' && /Android|iP(hone|ad|od)/i.test(navigator.userAgent)
 
   const isOwner = !!ownerIdentity && ownerIdentity === userName
   const isMainSpeaker = mainSpeaker === userName
@@ -452,34 +472,33 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
       ) : (
         <div className={styles.call}>
           {isMobile && (
-            <div className={styles.mobileDebugPanel}>
-              <div className={styles.mobileDebugTitle}>📱 MOBILE DEBUG</div>
-              <div className={styles.mobileDebugRow}>
-                <span className={styles.mobileDebugKey}>agent</span>
-                <span className={styles.mobileDebugVal}>{room.agentIdentity ?? '—'}</span>
-              </div>
-              <div className={styles.mobileDebugRow}>
-                <span className={styles.mobileDebugKey}>chunks</span>
-                <span className={styles.mobileDebugVal}>{debugChunks}</span>
-              </div>
-              <div className={styles.mobileDebugRow}>
-                <span className={styles.mobileDebugKey}>SR</span>
-                <span className={styles.mobileDebugVal}>{transcription.browserHasSpeech ? 'yes' : 'no'}</span>
-              </div>
-              {transcription.srError && (
-                <div className={styles.mobileDebugRow}>
-                  <span className={styles.mobileDebugKey}>err</span>
-                  <span className={styles.mobileDebugVal + ' ' + styles.mobileDebugErr}>{transcription.srError}</span>
+            <>
+              <button className={styles.mobileLogBtn} onClick={() => setShowLogs(v => !v)}>
+                {showLogs ? '✕' : '🪲'} {debugChunks > 0 ? `${debugChunks}✓` : 'лог'}
+              </button>
+              {showLogs && (
+                <div className={styles.mobileLogPanel}>
+                  <div className={styles.mobileLogHeader}>
+                    <span>agent: {room.agentIdentity ?? '—'}</span>
+                    <span>chunks: {debugChunks}</span>
+                    <span>SR: {transcription.browserHasSpeech ? 'yes' : 'no'}</span>
+                    {transcription.srError && <span style={{color:'#f87171'}}>{transcription.srError}</span>}
+                  </div>
+                  <div className={styles.mobileLogDivider}>── data-channel ──</div>
+                  {debugMsgs.length === 0
+                    ? <div className={styles.mobileLogEmpty}>нет сообщений</div>
+                    : debugMsgs.map((m, i) => <div key={i} className={styles.mobileLogLine}>{m}</div>)
+                  }
+                  <div className={styles.mobileLogDivider}>── console ──</div>
+                  {consoleLogs.length === 0
+                    ? <div className={styles.mobileLogEmpty}>нет логов</div>
+                    : consoleLogs.map((m, i) => (
+                      <div key={i} className={`${styles.mobileLogLine} ${m.includes('ERR') ? styles.mobileLogErr : m.includes('WRN') ? styles.mobileLogWrn : ''}`}>{m}</div>
+                    ))
+                  }
                 </div>
               )}
-              <div className={styles.mobileDebugDivider} />
-              {debugMsgs.length === 0
-                ? <div className={styles.mobileDebugEmpty}>нет сообщений</div>
-                : debugMsgs.map((m, i) => (
-                  <div key={i} className={styles.mobileDebugMsg}>{m}</div>
-                ))
-              }
-            </div>
+            </>
           )}
           <div className={styles.topBar}>
             <div className={styles.topBarLeft}>
