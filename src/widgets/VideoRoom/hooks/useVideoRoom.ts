@@ -71,6 +71,9 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
     if (track.kind === Track.Kind.Video || track.kind === 'video') {
       attachVideoWithRetry(identity, track)
     } else if (track.kind === Track.Kind.Audio || track.kind === 'audio') {
+      // Remove any previous audio element for this identity to prevent double-playback
+      const prev = audioElsRef.current.get(identity)
+      if (prev) { prev.srcObject = null; prev.remove() }
       const a = track.attach() as HTMLAudioElement
       a.style.display = 'none'
       document.body.appendChild(a)
@@ -222,20 +225,49 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
           attachTrack(p.identity, track)
         }
       })
-      room.on(RoomEvent.TrackUnsubscribed, (track: any) => track.detach())
+      room.on(RoomEvent.TrackUnsubscribed, (track: any, _pub: any, p: any) => {
+        track.detach()
+        // Also clean up manually-created audio element to prevent ghost playback
+        if ((track.kind === Track.Kind.Audio || track.kind === 'audio') && p?.identity) {
+          const el = audioElsRef.current.get(p.identity)
+          if (el) { el.srcObject = null; el.remove(); audioElsRef.current.delete(p.identity) }
+        }
+      })
+
+      // Reattach all video tracks after someone joins/leaves — WebRTC renegotiation
+      // can silently break existing video streams on mobile.
+      const reattachAllVideo = () => {
+        setTimeout(() => {
+          room.remoteParticipants.forEach(rp => {
+            if (rp.identity.startsWith('agent-')) return
+            rp.trackPublications.forEach(pub => {
+              if (pub.track && pub.kind === Track.Kind.Video) {
+                attachVideoWithRetry(rp.identity, pub.track)
+              }
+            })
+          })
+          const localCam = room.localParticipant.getTrackPublication(Track.Source.Camera)?.track
+          if (localCam) attachVideoWithRetry(room.localParticipant.identity, localCam)
+        }, 800)
+      }
+
       room.on(RoomEvent.ParticipantConnected, (p: any) => {
         if (p.identity.startsWith('agent-')) return
         upsert(p.identity)
         fetchAvatar(p.identity)
         setStatus(`${p.identity} подключился`)
         setTimeout(() => setStatus(''), 3000)
+        reattachAllVideo()
       })
       room.on(RoomEvent.ParticipantDisconnected, (p: any) => {
         if (p.identity.startsWith('agent-')) return
+        const el = audioElsRef.current.get(p.identity)
+        if (el) { el.srcObject = null; el.remove() }
         audioElsRef.current.delete(p.identity)
         remove(p.identity)
         setStatus(`${p.identity} отключился`)
         setTimeout(() => setStatus(''), 3000)
+        reattachAllVideo()
       })
       room.on(RoomEvent.TrackMuted, (pub: any, p: any) => {
         if (pub.kind === Track.Kind.Audio || pub.kind === 'audio') upsert(p.identity, { audioMuted: true })

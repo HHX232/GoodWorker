@@ -452,8 +452,8 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
           <div className={styles.videoArea}>
             {renderVideo()}
             {layout === 'pip' && renderControls(true)}
+            {showNotes && renderNotesPanel()}
           </div>
-          {showNotes && renderNotesPanel()}
           {layout !== 'pip' && renderControls(false)}
         </div>
       )}

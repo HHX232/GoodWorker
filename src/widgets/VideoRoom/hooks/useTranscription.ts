@@ -92,11 +92,13 @@ export function useTranscription({
     }
 
     // Chrome stops SR on silence — restart with a delay to avoid rapid mic clicks.
+    // Skip restart when the tab is hidden (screen locked / backgrounded on Android).
     sr.onend = () => {
-      if (!shouldRestart) return
+      if (!shouldRestart || document.hidden) return
       restartTimer = setTimeout(() => {
+        if (!shouldRestart || document.hidden) return
         try { sr.start() } catch {}
-      }, 400)
+      }, 800)
     }
 
     try { sr.start() } catch {}

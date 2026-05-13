@@ -729,7 +729,9 @@ $text-muted: #94a3b8;
   position: absolute;
   bottom: 46px;
   left: 10px;
-  z-index: 5;
+  // On the large tile the controls overlay sits at the bottom, so captions
+  // on that tile need to clear it — handled via .tileLarge .liveCaption below.
+  z-index: 22;
   // Not right: 10px — anchored to the left only, natural text width
   max-width: calc(100% - 20px);
   background: rgba(18, 8, 36, 0.52);   // тёмно-фиолетовый, почти прозрачный
@@ -766,6 +768,11 @@ $text-muted: #94a3b8;
   box-shadow: 0 0 6px rgba(167, 139, 250, 0.7);
 }
 
+// On the pip large tile, push caption above the controls overlay (~80px) + 25px gap
+.tileLarge .liveCaption {
+  bottom: 110px;
+}
+
 @keyframes captionFadeIn {
   from { opacity: 0; transform: translateY(3px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -776,17 +783,28 @@ $text-muted: #94a3b8;
   50%       { opacity: 0.25; }
 }
 
-// ── Notes panel (strip above controls bar) ────────────────────────────────────
+// ── Notes panel (live transcript sidebar) ─────────────────────────────────────
 
 .notesPanel {
-  flex-shrink: 0;
-  max-height: 200px;
-  background: $bg-card;
-  border-top: 1px solid $border;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 272px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-left: 1px solid $border;
+  z-index: 25;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: slideInUp 0.2s ease;
+  animation: slideInRight 0.2s ease;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
 }
 
 .notesPanelHeader {
@@ -993,9 +1011,18 @@ $text-muted: #94a3b8;
     }
   }
 
-  // ── Notes panel: taller strip on mobile ───────────────────────────────────
+  // ── Notes panel: full-width slide from bottom on mobile ───────────────────
   .notesPanel {
-    max-height: 40dvh;
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 60dvh;
+    border-left: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 16px 16px 0 0;
+    animation: slideInUp 0.22s ease;
   }
 
   @keyframes slideInUp {
