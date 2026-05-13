@@ -99,6 +99,21 @@ $text-muted: #94a3b8;
   text-align: center;
 }
 
+.lobbyRetryBtn {
+  margin: 12px auto 0;
+  display: block;
+  padding: 8px 24px;
+  background: $accent;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  &:hover { opacity: 0.85; }
+}
+
 // ── Call layout ───────────────────────────────────────────────────────────────
 
 .call {

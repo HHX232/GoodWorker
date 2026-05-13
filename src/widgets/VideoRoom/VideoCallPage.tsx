@@ -449,6 +449,9 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
             <p className={styles.lobbySubtitle}>{autoJoinRoom ? `Подключаемся к «${autoJoinRoom}»...` : 'Введите название комнаты'}</p>
             <div className={styles.lobbyUser}><span className={styles.lobbyDot} />{userName}</div>
             {room.status && <p className={styles.lobbyStatus}>{room.status}</p>}
+            {room.status?.startsWith('Ошибка') && (
+              <button className={styles.lobbyRetryBtn} onClick={joinRoom}>Повторить</button>
+            )}
           </div>
         </div>
       ) : (

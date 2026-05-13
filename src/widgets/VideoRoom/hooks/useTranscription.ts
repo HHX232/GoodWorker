@@ -67,10 +67,14 @@ export function useTranscription({
     let interimBuffer = ''
     let interimTimer: ReturnType<typeof setTimeout> | null = null
 
+    // Commit buffered interim only on Android where isFinal never fires.
+    // Require at least 3 words to avoid committing noise fragments.
+    let interimConfidence = 0
     const commitInterim = () => {
       const t = interimBuffer.trim()
       interimBuffer = ''
-      if (!t) return
+      if (!t || t.split(/\s+/).length < 3 || interimConfidence < 0.4) return
+      interimConfidence = 0
       broadcast({ type: 'sr_final', identity: userName, text: t })
       setCallNotes(prev => [...prev, { identity: userName, text: t }])
     }
@@ -85,23 +89,29 @@ export function useTranscription({
       let interim = ''
       let final = ''
       for (let i = event.resultIndex; i < event.results.length; i++) {
-        if (event.results[i].isFinal) final += event.results[i][0].transcript
-        else interim += event.results[i][0].transcript
+        if (event.results[i].isFinal) {
+          // Skip low-confidence finals — these are usually noise/hallucinations
+          if (event.results[i][0].confidence < 0.5) continue
+          final += event.results[i][0].transcript
+        } else {
+          interim += event.results[i][0].transcript
+          interimConfidence = Math.max(interimConfidence, event.results[i][0].confidence ?? 0)
+        }
       }
 
       if (interim) {
         setLiveText(interim)
         broadcast({ type: 'sr_live', identity: userName, text: interim })
-        // Buffer interim — commit it if a final never arrives within 3 s
         interimBuffer = interim
         if (interimTimer) clearTimeout(interimTimer)
-        interimTimer = setTimeout(commitInterim, 3000)
+        interimTimer = setTimeout(commitInterim, 4000)
       }
 
       if (final) {
         const t = final.trim()
         if (interimTimer) clearTimeout(interimTimer)
         interimBuffer = ''
+        interimConfidence = 0
         setLiveText('')
         if (!t) return
         broadcast({ type: 'sr_final', identity: userName, text: t })
