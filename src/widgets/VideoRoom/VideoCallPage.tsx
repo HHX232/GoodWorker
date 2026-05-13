@@ -71,6 +71,8 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   const [copied, setCopied] = useState(false)
   const [showSummary, setShowSummary] = useState(false)
   const [showNotes, setShowNotes] = useState(false)
+  const [debugChunks, setDebugChunks] = useState(0)
+  const [debugMsgs, setDebugMsgs] = useState<string[]>([])
 
   // Stable ref for the data-message router — updated on every render so the
   // LiveKit event listener (registered once) always calls the latest handler.
@@ -100,6 +102,12 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   const { handleRemoteMessage } = transcription
   useEffect(() => {
     dataRouterRef.current = (type, payload, senderIdentity) => {
+      // Log every incoming data-channel message for the mobile debug panel
+      const preview = payload.text ?? payload.transcript ?? payload.layout ?? payload.identity ?? ''
+      const entry = `${type}${preview ? ' «' + String(preview).slice(0, 30) + '»' : ''} ← ${senderIdentity.slice(0, 12)}`
+      setDebugMsgs(prev => [entry, ...prev].slice(0, 12))
+      if (type === 'transcript_chunk') setDebugChunks(c => c + 1)
+
       if (type === 'layout') { setLayout(payload.layout); return }
       if (type === 'speaker') { setMainSpeaker(payload.identity); return }
 
@@ -119,6 +127,8 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
       }
     }
   }, [handleRemoteMessage])
+
+  const isMobile = typeof navigator !== 'undefined' && /Android|iP(hone|ad|od)/i.test(navigator.userAgent)
 
   const isOwner = !!ownerIdentity && ownerIdentity === userName
   const isMainSpeaker = mainSpeaker === userName
@@ -441,6 +451,36 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
         </div>
       ) : (
         <div className={styles.call}>
+          {isMobile && (
+            <div className={styles.mobileDebugPanel}>
+              <div className={styles.mobileDebugTitle}>📱 MOBILE DEBUG</div>
+              <div className={styles.mobileDebugRow}>
+                <span className={styles.mobileDebugKey}>agent</span>
+                <span className={styles.mobileDebugVal}>{room.agentIdentity ?? '—'}</span>
+              </div>
+              <div className={styles.mobileDebugRow}>
+                <span className={styles.mobileDebugKey}>chunks</span>
+                <span className={styles.mobileDebugVal}>{debugChunks}</span>
+              </div>
+              <div className={styles.mobileDebugRow}>
+                <span className={styles.mobileDebugKey}>SR</span>
+                <span className={styles.mobileDebugVal}>{transcription.browserHasSpeech ? 'yes' : 'no'}</span>
+              </div>
+              {transcription.srError && (
+                <div className={styles.mobileDebugRow}>
+                  <span className={styles.mobileDebugKey}>err</span>
+                  <span className={styles.mobileDebugVal + ' ' + styles.mobileDebugErr}>{transcription.srError}</span>
+                </div>
+              )}
+              <div className={styles.mobileDebugDivider} />
+              {debugMsgs.length === 0
+                ? <div className={styles.mobileDebugEmpty}>нет сообщений</div>
+                : debugMsgs.map((m, i) => (
+                  <div key={i} className={styles.mobileDebugMsg}>{m}</div>
+                ))
+              }
+            </div>
+          )}
           <div className={styles.topBar}>
             <div className={styles.topBarLeft}>
               <span className={styles.topDot} />

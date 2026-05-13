@@ -41,6 +41,7 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
   const [camEnabled, setCamEnabled] = useState(true)
   const [activeSpeakers, setActiveSpeakers] = useState<string[]>([])
   const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([])
+  const [agentIdentity, setAgentIdentity] = useState<string | null>(null)
   const videoDeviceIdxRef = useRef(0)
 
   const roomRef = useRef<Room | null>(null)
@@ -211,7 +212,7 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
         dynacast: true,
         rtcConfig: { iceServers: [{ ...TURN }], iceTransportPolicy: 'all' },
         videoCaptureDefaults: {
-          resolution: VideoPresets.h1440.resolution,
+          resolution: VideoPresets.h2160.resolution,
         },
         publishDefaults: {
           // 3 layers — HIGH maps to the top layer (h1440) so 2-person calls get full quality
@@ -261,7 +262,7 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
       }
 
       room.on(RoomEvent.ParticipantConnected, (p: any) => {
-        if (p.identity.startsWith('agent-')) return
+        if (p.identity.startsWith('agent-')) { setAgentIdentity(p.identity); return }
         upsert(p.identity)
         fetchAvatar(p.identity)
         setStatus(`${p.identity} подключился`)
@@ -309,7 +310,7 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
       await room.connect(lkUrl, data.token)
       upsert(room.localParticipant.identity, { isLocal: true, avatarUrl: localAvatarUrl })
       room.remoteParticipants.forEach(p => {
-        if (p.identity.startsWith('agent-')) return
+        if (p.identity.startsWith('agent-')) { setAgentIdentity(p.identity); return }
         upsert(p.identity)
         fetchAvatar(p.identity)
         p.trackPublications.forEach(pub => {
@@ -448,5 +449,6 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
     switchCamera,
     activeSpeakers,
     updateVideoQualities,
+    agentIdentity,
   }
 }
