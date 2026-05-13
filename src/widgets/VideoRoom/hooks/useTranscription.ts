@@ -8,8 +8,6 @@ export function hasBrowserSpeechAPI(): boolean {
   return 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window
 }
 
-// Any mobile device: SR restarts cause an OS-level mic-acquire click on every cycle.
-// Mobile transcription is handled by the LiveKit agent (server-side, no browser mic).
 function isMobileDevice(): boolean {
   if (typeof navigator === 'undefined') return false
   const ua = navigator.userAgent
@@ -18,6 +16,10 @@ function isMobileDevice(): boolean {
 
 // Errors where restarting SR is pointless — mic is blocked or service is down.
 const FATAL_SR_ERRORS = ['not-allowed', 'audio-capture', 'service-not-allowed']
+
+// On mobile SR restarts cause an OS mic-acquire click. Use a long delay so
+// the click happens at most once every ~13 s instead of every ~1 s.
+const RESTART_DELAY_MS = isMobileDevice() ? 10_000 : 800
 
 interface UseTranscriptionOptions {
   connected: boolean
@@ -59,9 +61,6 @@ export function useTranscription({
       setLiveText('')
       return
     }
-    // On any mobile device SR restarts trigger a mic-acquire click every few seconds.
-    // Mobile transcription arrives via the LiveKit agent instead.
-    if (isMobileDevice()) return
 
     setSrError(null)
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
@@ -118,7 +117,7 @@ export function useTranscription({
         shouldRestart = false
         const msg =
           event.error === 'not-allowed'        ? 'Нет доступа к микрофону' :
-          event.error === 'audio-capture'      ? 'Микрофон занят — конспект только через агента' :
+          event.error === 'audio-capture'      ? 'Микрофон занят другим потоком (WebRTC). Конспект недоступен.' :
           /* service-not-allowed */              'Сервис распознавания недоступен'
         setSrError(msg)
       }
@@ -132,7 +131,7 @@ export function useTranscription({
       restartTimer = setTimeout(() => {
         if (!shouldRestart || document.hidden) return
         try { sr.start() } catch {}
-      }, 800)
+      }, RESTART_DELAY_MS)
     }
 
     try { sr.start() } catch {}
