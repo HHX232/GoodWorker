@@ -47,6 +47,9 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
   const audioElsRef = useRef<Map<string, HTMLAudioElement>>(new Map())
   const enc = useRef(new TextEncoder())
   const dec = useRef(new TextDecoder())
+  // Tracks identities whose video was server-muted by us so TrackUnmuted events
+  // don't immediately revert the optimistic UI state.
+  const serverVideoMutedRef = useRef<Set<string>>(new Set())
   // Stable ref to the latest onDataMessage so the event listener never goes stale
   const onDataMessageRef = useRef(onDataMessage)
   onDataMessageRef.current = onDataMessage
@@ -126,14 +129,21 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
     })
     if (!trackSid) return
     upsert(identity, { videoMuted: true })
+    // Block TrackUnmuted from reverting state for 4 s after a server-initiated mute
+    serverVideoMutedRef.current.add(identity)
+    setTimeout(() => serverVideoMutedRef.current.delete(identity), 4000)
     try {
       const res = await fetch('/api/livekit/mute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ roomName, participantIdentity: identity, trackSid, muted: true }),
       })
-      if (!res.ok) upsert(identity, { videoMuted: false })
+      if (!res.ok) {
+        serverVideoMutedRef.current.delete(identity)
+        upsert(identity, { videoMuted: false })
+      }
     } catch {
+      serverVideoMutedRef.current.delete(identity)
       upsert(identity, { videoMuted: false })
     }
   }, [roomName, upsert])
@@ -233,7 +243,10 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
       })
       room.on(RoomEvent.TrackUnmuted, (pub: any, p: any) => {
         if (pub.kind === Track.Kind.Audio || pub.kind === 'audio') upsert(p.identity, { audioMuted: false })
-        if (pub.kind === Track.Kind.Video || pub.kind === 'video') upsert(p.identity, { videoMuted: false })
+        if (pub.kind === Track.Kind.Video || pub.kind === 'video') {
+          // Ignore spurious TrackUnmuted fired right after a server-initiated mute
+          if (!serverVideoMutedRef.current.has(p.identity)) upsert(p.identity, { videoMuted: false })
+        }
       })
       room.on(RoomEvent.Disconnected, () => {
         setConnected(false)

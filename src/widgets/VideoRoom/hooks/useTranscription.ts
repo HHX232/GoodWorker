@@ -10,6 +10,14 @@ export function hasBrowserSpeechAPI(): boolean {
   return 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window
 }
 
+// iOS Safari fires onend immediately and doesn't support continuous SR —
+// using it there causes rapid mic acquire/release (audible click loop).
+function isMobileSafariOrIOS(): boolean {
+  if (typeof navigator === 'undefined') return false
+  const ua = navigator.userAgent
+  return /iP(hone|ad|od)/i.test(ua) || (/Macintosh/i.test(ua) && 'ontouchend' in document)
+}
+
 interface UseTranscriptionOptions {
   connected: boolean
   micEnabled: boolean
@@ -49,8 +57,13 @@ export function useTranscription({
       setLiveText('')
       return
     }
+    // iOS fires onend immediately (no continuous support) → rapid mic click loop.
+    // Skip SR on iOS entirely; transcript comes from the agent instead.
+    if (isMobileSafariOrIOS()) return
+
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     let shouldRestart = true
+    let restartTimer: ReturnType<typeof setTimeout> | null = null
     const sr = new SR()
     sr.continuous = true
     sr.interimResults = true
@@ -64,14 +77,12 @@ export function useTranscription({
         if (event.results[i].isFinal) final += event.results[i][0].transcript
         else interim += event.results[i][0].transcript
       }
-      // Always show interim in the live caption overlay
       setLiveText(interim)
       if (interim) broadcast({ type: 'sr_live', identity: userName, text: interim })
       if (final) {
         const t = final.trim()
         if (!t) return
         broadcast({ type: 'sr_final', identity: userName, text: t })
-        // Always add own speech locally — agent may also add it later but completeness > dedup
         setCallNotes(prev => [...prev, { identity: userName, text: t }])
       }
     }
@@ -80,9 +91,12 @@ export function useTranscription({
       if (event.error === 'not-allowed') shouldRestart = false
     }
 
-    // Chrome stops SR on silence — restart automatically
+    // Chrome stops SR on silence — restart with a delay to avoid rapid mic clicks.
     sr.onend = () => {
-      if (shouldRestart) try { sr.start() } catch {}
+      if (!shouldRestart) return
+      restartTimer = setTimeout(() => {
+        try { sr.start() } catch {}
+      }, 400)
     }
 
     try { sr.start() } catch {}
@@ -90,6 +104,7 @@ export function useTranscription({
 
     return () => {
       shouldRestart = false
+      if (restartTimer) clearTimeout(restartTimer)
       try { srRef.current?.stop() } catch {}
       srRef.current = null
       setLiveText('')
