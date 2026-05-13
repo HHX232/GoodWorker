@@ -176,6 +176,26 @@ async def entrypoint(ctx: JobContext):
             del active_streams[identity]
             logger.info(f"Остановили транскрипцию для {identity}")
 
+    @room.on("data_received")
+    def on_data_received(data: bytes, participant: rtc.RemoteParticipant, *_):
+        try:
+            msg = json.loads(data)
+            if msg.get("type") == "transcript_request":
+                final = build_final_transcript()
+                all_entries = [e for entries in session_transcript.values() for e in entries]
+                asyncio.ensure_future(
+                    room.local_participant.publish_data(
+                        json.dumps({
+                            "type": "session_transcript",
+                            "transcript": final,
+                            "entries": all_entries,
+                        }, ensure_ascii=False).encode(),
+                        reliable=True,
+                    )
+                )
+        except Exception:
+            pass
+
     @room.on("participant_disconnected")
     def on_participant_disconnected(participant: rtc.RemoteParticipant):
         entries = session_transcript.get(participant.identity, [])

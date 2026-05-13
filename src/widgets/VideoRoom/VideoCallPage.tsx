@@ -150,12 +150,14 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   const { callNotes } = transcription
 
   const leaveRoom = useCallback(() => {
-    if (callNotes.length > 0) {
+    // Ask the agent for its accumulated transcript before showing summary
+    broadcast({ type: 'transcript_request' })
+    if (callNotes.length > 0 || transcription.finalTranscript) {
       setShowSummary(true)
     } else {
       disconnect().then(() => router.push('/call'))
     }
-  }, [callNotes, disconnect, router])
+  }, [callNotes, disconnect, router, broadcast, transcription.finalTranscript])
 
   const confirmLeave = useCallback(async () => {
     setShowSummary(false)

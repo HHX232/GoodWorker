@@ -114,10 +114,8 @@ export function useTranscription({
       }
       if (type === 'sr_final') {
         setRemoteLiveTexts(prev => ({ ...prev, [identity]: '' }))
-        // Add to notes only when the agent is not running
-        if (text && !agentActiveRef.current) {
-          setCallNotes(prev => [...prev, { identity, text }])
-        }
+        // Always add remote SR finals — don't suppress even when agent is active
+        if (text) setCallNotes(prev => [...prev, { identity, text }])
         return
       }
 
