@@ -185,11 +185,9 @@
     padding: 10px 0 6px;
   }
 
-
-
   .group {
     flex-direction: row;
-    justify-content: space-around;
+    justify-content: stretch;
     gap: 4px;
   }
 
@@ -199,6 +197,20 @@
     align-items: center;
     padding: 10px 8px;
     flex: 1;
+  }
+
+  .logout_btn {
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 8px;
+    width: auto;
+    gap: 0;
+
+    .label {
+      display: none;
+    }
   }
 
   .expandable {

@@ -77,9 +77,10 @@ export default function RegisterPage() {
         return
       }
 
-      toast.success(t('codeSent'))
       if (data.__devOtp) {
-        toast.info(`DEV — OTP: ${data.__devOtp}`, {duration: 30000})
+        toast.success(`На вашу почту придёт код — ${data.__devOtp}`, {duration: 30000})
+      } else {
+        toast.success(t('codeSent'))
       }
       setStep('verify')
     } catch {

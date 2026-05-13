@@ -108,6 +108,28 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
     }
   }, [roomName, upsert])
 
+  const muteVideo = useCallback(async (identity: string) => {
+    let trackSid: string | undefined
+    roomRef.current?.remoteParticipants.forEach(p => {
+      if (p.identity === identity) {
+        const pub = p.getTrackPublication(Track.Source.Camera)
+        if (pub?.trackSid) trackSid = pub.trackSid
+      }
+    })
+    if (!trackSid) return
+    upsert(identity, { videoMuted: true })
+    try {
+      const res = await fetch('/api/livekit/mute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomName, participantIdentity: identity, trackSid, muted: true }),
+      })
+      if (!res.ok) upsert(identity, { videoMuted: false })
+    } catch {
+      upsert(identity, { videoMuted: false })
+    }
+  }, [roomName, upsert])
+
   const kick = useCallback(async (identity: string) => {
     await fetch('/api/livekit/kick', {
       method: 'POST',
@@ -292,6 +314,7 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
     remove,
     attachTrack,
     mute,
+    muteVideo,
     kick,
     toggleLocalAudio,
     toggleMic,

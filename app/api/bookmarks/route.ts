@@ -33,9 +33,13 @@ export async function GET(req: NextRequest) {
   const sourceType = searchParams.get('sourceType')
   const sourceId = searchParams.get('sourceId')
 
+  const where: Record<string, unknown> = { authorId: session.user.id, authorRole: session.user.role }
+  if (sourceType) where.sourceType = sourceType
+  if (sourceId) where.sourceId = sourceId
+
   const bookmarks = await prisma.bookmark.findMany({
-    where: { authorId: session.user.id, authorRole: session.user.role, sourceType: sourceType!, sourceId: sourceId! },
-    orderBy: { createdAt: 'asc' }
+    where,
+    orderBy: { createdAt: 'desc' }
   })
 
   return NextResponse.json(bookmarks)

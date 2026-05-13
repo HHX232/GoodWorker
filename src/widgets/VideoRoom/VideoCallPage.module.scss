@@ -960,3 +960,115 @@ $text-muted: #94a3b8;
 
   &:hover { background: #b91c1c; }
 }
+
+// ── Mobile adaptations ────────────────────────────────────────────────────────
+
+@media (max-width: 640px) {
+  .page {
+    height: 100dvh;
+  }
+
+  // ── Top bar ────────────────────────────────────────────────────────────────
+  .topBar {
+    padding: 8px 12px;
+  }
+
+  .topOwner,
+  .topSpeaker {
+    display: none;
+  }
+
+  // ── PiP layout ─────────────────────────────────────────────────────────────
+  .pipTile {
+    width: 120px;
+    right: 8px;
+    top: calc(8px + var(--pip-index, 0) * 90px);
+  }
+
+  // Controls overlay: always visible on touch devices (no hover)
+  .controlsOverlay {
+    opacity: 1;
+    background: linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 100%);
+    border-top: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    padding-bottom: 8px;
+  }
+
+  // ── Grid layout ────────────────────────────────────────────────────────────
+  .gridArea {
+    &[data-count='3'],
+    &[data-count='4'] {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    &[data-count='1'],
+    &[data-count='2'] {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  // ── Notes panel: full-width overlay from bottom ────────────────────────────
+  .notesPanel {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 60dvh;
+    border-left: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 16px 16px 0 0;
+    animation: slideInUp 0.22s ease;
+  }
+
+  @keyframes slideInUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+
+  // ── Controls bar ───────────────────────────────────────────────────────────
+  .controls {
+    padding: 8px 10px 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .ctrlLeft {
+    display: flex;
+    order: 2;
+    min-width: unset;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .ctrlCenter {
+    order: 1;
+    gap: 10px;
+  }
+
+  .ctrlRight {
+    order: 1;
+    min-width: unset;
+  }
+
+  .pill {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .roundIcon {
+    width: 42px;
+    height: 42px;
+  }
+
+  // ── Summary modal ──────────────────────────────────────────────────────────
+  .summaryModal {
+    padding: 20px 16px 16px;
+    border-radius: 16px;
+    max-height: 85dvh;
+  }
+}

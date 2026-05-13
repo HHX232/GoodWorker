@@ -125,7 +125,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   const canModerate = isOwner || isMainSpeaker
 
   // Destructure stable callbacks so useCallback deps are simple scalars/functions
-  const { broadcast, disconnect, joinRoom, mute, kick, toggleLocalAudio, toggleMic, toggleCam, updateVideoQualities } = room
+  const { broadcast, disconnect, joinRoom, mute, muteVideo, kick, toggleLocalAudio, toggleMic, toggleCam, updateVideoQualities } = room
 
   // ── Room-level broadcast actions ──────────────────────────────────────────
   const changeLayout = useCallback((l: Layout) => {
@@ -233,7 +233,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
           <div className={styles.tileActions}>
             <button className={styles.actionBtn} onClick={() => toggleLocalAudio(p.identity)}>
               {p.localAudioMuted ? <IconVolumeOn /> : <IconVolumeOff />}
-              {p.localAudioMuted ? 'Вкл. аудио' : 'Откл. аудио'}
+              {p.localAudioMuted ? 'Снять заглушение' : 'Заглушить у себя'}
             </button>
             {canModerate && (<>
               {p.identity !== mainSpeaker && (
@@ -243,7 +243,12 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
               )}
               {!audioMuted && (
                 <button className={styles.actionBtn} onClick={() => mute(p.identity)}>
-                  <IconMicOff /> Заглушить
+                  <IconMicOff /> Запретить аудио
+                </button>
+              )}
+              {!p.videoMuted && (
+                <button className={styles.actionBtn} onClick={() => muteVideo(p.identity)}>
+                  <IconCamOff /> Запретить видео
                 </button>
               )}
               <button className={`${styles.actionBtn} ${styles.actionBtnDanger}`} onClick={() => kick(p.identity)}>
@@ -290,37 +295,41 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   }
 
   // ── Notes panel ────────────────────────────────────────────────────────────
-  const renderNotesPanel = () => (
-    <div className={styles.notesPanel}>
-      <div className={styles.notesPanelHeader}>
-        <span>Конспект</span>
-        {!transcription.browserHasSpeech && callNotes.length === 0 && (
-          <span className={styles.notesSrWarning}>Нужен агент или Chrome</span>
-        )}
-        <button className={styles.notesPanelClose} onClick={() => setShowNotes(false)}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
-        </button>
+  const renderNotesPanel = () => {
+    const locallyMuted = new Set(room.participants.filter(p => p.localAudioMuted).map(p => p.identity))
+    const visibleNotes = callNotes.filter(n => !locallyMuted.has(n.identity))
+    return (
+      <div className={styles.notesPanel}>
+        <div className={styles.notesPanelHeader}>
+          <span>Конспект</span>
+          {!transcription.browserHasSpeech && callNotes.length === 0 && (
+            <span className={styles.notesSrWarning}>Нужен агент или Chrome</span>
+          )}
+          <button className={styles.notesPanelClose} onClick={() => setShowNotes(false)}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </button>
+        </div>
+        <div className={styles.notesList}>
+          {visibleNotes.length === 0 ? (
+            <p className={styles.notesEmpty}>
+              {transcription.browserHasSpeech
+                ? 'Говорите — текст появится здесь...'
+                : 'Браузер не поддерживает Speech Recognition. Используйте Chrome или Chromium.'}
+            </p>
+          ) : (
+            visibleNotes.map((n, i) => (
+              <div key={i} className={styles.noteEntry}>
+                <span className={styles.noteAuthor}>{n.identity}</span>
+                <span className={styles.noteText}>{n.text}</span>
+              </div>
+            ))
+          )}
+        </div>
       </div>
-      <div className={styles.notesList}>
-        {callNotes.length === 0 ? (
-          <p className={styles.notesEmpty}>
-            {transcription.browserHasSpeech
-              ? 'Говорите — текст появится здесь...'
-              : 'Браузер не поддерживает Speech Recognition. Используйте Chrome или Chromium.'}
-          </p>
-        ) : (
-          callNotes.map((n, i) => (
-            <div key={i} className={styles.noteEntry}>
-              <span className={styles.noteAuthor}>{n.identity}</span>
-              <span className={styles.noteText}>{n.text}</span>
-            </div>
-          ))
-        )}
-      </div>
-    </div>
-  )
+    )
+  }
 
   // ── Summary modal ──────────────────────────────────────────────────────────
   const renderSummaryModal = () => {
