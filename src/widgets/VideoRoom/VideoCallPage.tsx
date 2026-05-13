@@ -122,7 +122,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
 
   const isOwner = !!ownerIdentity && ownerIdentity === userName
   const isMainSpeaker = mainSpeaker === userName
-  const canModerate = isOwner || isMainSpeaker
+  const canModerate = isOwner
 
   // Destructure stable callbacks so useCallback deps are simple scalars/functions
   const { broadcast, disconnect, joinRoom, mute, muteVideo, kick, toggleLocalAudio, toggleMic, toggleCam, reloadCamera, switchCamera, updateVideoQualities } = room
@@ -452,8 +452,8 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
           <div className={styles.videoArea}>
             {renderVideo()}
             {layout === 'pip' && renderControls(true)}
-            {showNotes && renderNotesPanel()}
           </div>
+          {showNotes && renderNotesPanel()}
           {layout !== 'pip' && renderControls(false)}
         </div>
       )}
