@@ -4,6 +4,13 @@
 
 import { Room, RoomEvent, Track, VideoPresets, VideoQuality } from 'livekit-client'
 import { useCallback, useRef, useState } from 'react'
+
+// Attach a video track with retries in case the DOM element isn't ready yet
+function attachVideoWithRetry(identity: string, track: any, attempts = 6, delay = 150) {
+  const el = document.getElementById(`v-${identity}`) as HTMLVideoElement | null
+  if (el) { track.attach(el); return }
+  if (attempts > 0) setTimeout(() => attachVideoWithRetry(identity, track, attempts - 1, delay * 1.5), delay)
+}
 import type { Participant } from '../types'
 
 const TURN = {
@@ -33,6 +40,8 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
   const [micEnabled, setMicEnabled] = useState(true)
   const [camEnabled, setCamEnabled] = useState(true)
   const [activeSpeakers, setActiveSpeakers] = useState<string[]>([])
+  const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([])
+  const videoDeviceIdxRef = useRef(0)
 
   const roomRef = useRef<Room | null>(null)
   const audioElsRef = useRef<Map<string, HTMLAudioElement>>(new Map())
@@ -57,8 +66,7 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
 
   const attachTrack = useCallback((identity: string, track: any) => {
     if (track.kind === Track.Kind.Video || track.kind === 'video') {
-      const el = document.getElementById(`v-${identity}`) as HTMLVideoElement | null
-      if (el) track.attach(el)
+      attachVideoWithRetry(identity, track)
     } else if (track.kind === Track.Kind.Audio || track.kind === 'audio') {
       const a = track.attach() as HTMLAudioElement
       a.style.display = 'none'
@@ -254,18 +262,35 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
           if (pub.track) attachTrack(p.identity, pub.track)
         })
       })
+      // LocalTrackPublished fires when our own camera/mic track is ready —
+      // more reliable than reading the publication right after setCameraEnabled.
+      room.on(RoomEvent.LocalTrackPublished, (pub: any) => {
+        if (pub.track && (pub.kind === Track.Kind.Video || pub.kind === 'video')) {
+          attachVideoWithRetry(room.localParticipant.identity, pub.track)
+        }
+      })
+
       await room.localParticipant.setMicrophoneEnabled(true, {
         echoCancellation: true,
         noiseSuppression: true,
-        autoGainControl: true,
+        autoGainControl: false, // AGC amplifies the feedback loop when two devices are nearby
       })
       try {
         await room.localParticipant.setCameraEnabled(true)
       } catch {
         // no camera — continue without video
       }
+      // Also try to attach immediately in case LocalTrackPublished already fired
       const cam = room.localParticipant.getTrackPublication(Track.Source.Camera)?.track
-      if (cam) setTimeout(() => attachTrack(room.localParticipant.identity, cam), 150)
+      if (cam) attachVideoWithRetry(room.localParticipant.identity, cam)
+
+      // Enumerate video devices for camera switching
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices()
+        const vids = devices.filter(d => d.kind === 'videoinput')
+        setVideoDevices(vids)
+      } catch {}
+
       setStatus('')
       setConnected(true)
     } catch (e: any) {
@@ -294,6 +319,23 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
     })
   }, [])
 
+  const switchCamera = useCallback(async () => {
+    const room = roomRef.current
+    if (!room || videoDevices.length < 2) return
+    try {
+      const nextIdx = (videoDeviceIdxRef.current + 1) % videoDevices.length
+      videoDeviceIdxRef.current = nextIdx
+      await room.switchActiveDevice('videoinput', videoDevices[nextIdx].deviceId)
+      // Re-attach after switch
+      setTimeout(() => {
+        const track = room.localParticipant.getTrackPublication(Track.Source.Camera)?.track
+        if (track) attachVideoWithRetry(room.localParticipant.identity, track)
+      }, 400)
+    } catch (e) {
+      console.error('switchCamera failed', e)
+    }
+  }, [videoDevices])
+
   const disconnect = useCallback(async () => {
     await roomRef.current?.disconnect()
     roomRef.current = null
@@ -305,6 +347,7 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
     participants,
     micEnabled,
     camEnabled,
+    videoDevices,
     roomRef,
     audioElsRef,
     broadcast,
@@ -319,6 +362,7 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
     toggleLocalAudio,
     toggleMic,
     toggleCam,
+    switchCamera,
     activeSpeakers,
     updateVideoQualities,
   }

@@ -12,7 +12,7 @@ $text-muted: #94a3b8;
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 .page {
-  height: calc(100vh - var(--header-height));
+  height: 100dvh;
   background: $bg;
   display: flex;
   flex-direction: column;
@@ -964,10 +964,6 @@ $text-muted: #94a3b8;
 // ── Mobile adaptations ────────────────────────────────────────────────────────
 
 @media (max-width: 640px) {
-  .page {
-    height: 100dvh;
-  }
-
   // ── Top bar ────────────────────────────────────────────────────────────────
   .topBar {
     padding: 8px 12px;

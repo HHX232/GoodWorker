@@ -125,7 +125,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   const canModerate = isOwner || isMainSpeaker
 
   // Destructure stable callbacks so useCallback deps are simple scalars/functions
-  const { broadcast, disconnect, joinRoom, mute, muteVideo, kick, toggleLocalAudio, toggleMic, toggleCam, updateVideoQualities } = room
+  const { broadcast, disconnect, joinRoom, mute, muteVideo, kick, toggleLocalAudio, toggleMic, toggleCam, switchCamera, updateVideoQualities } = room
 
   // ── Room-level broadcast actions ──────────────────────────────────────────
   const changeLayout = useCallback((l: Layout) => {
@@ -388,6 +388,17 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
           <div className={styles.roundIcon}>{room.camEnabled ? <IconCam /> : <IconCamOff />}</div>
           <span className={styles.roundLabel}>{room.camEnabled ? 'Камера' : 'Без камеры'}</span>
         </button>
+        {room.videoDevices.length > 1 && (
+          <button className={styles.roundBtn} onClick={switchCamera} title="Сменить камеру">
+            <div className={styles.roundIcon}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <path d="M12 17v-6M9 14l3-3 3 3"/>
+              </svg>
+            </div>
+            <span className={styles.roundLabel}>Камера ↕</span>
+          </button>
+        )}
       </div>
 
       <div className={styles.ctrlRight}>

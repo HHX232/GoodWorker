@@ -6,6 +6,7 @@ import { NotificationBell } from './NotificationBell'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
+import { usePathname } from 'next/navigation'
 import styles from './Header.module.scss'
 
 const LogoBigUrl = '/logos/BigLogo.svg'
@@ -13,6 +14,9 @@ const LogoMobileUrl = '/logos/MobileLogo.svg'
 
 function Header() {
   const t = useTranslations('Header')
+  const pathname = usePathname()
+
+  if (pathname === '/call' || pathname.startsWith('/call/')) return null
 
   return (
     <header className={styles.wrapper}>
