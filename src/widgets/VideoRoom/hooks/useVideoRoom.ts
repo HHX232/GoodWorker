@@ -160,10 +160,10 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
         dynacast: true,
         rtcConfig: { iceServers: [{ ...TURN }], iceTransportPolicy: 'all' },
         videoCaptureDefaults: {
-          resolution: VideoPresets.h720.resolution,
+          resolution: VideoPresets.h1440.resolution,
         },
         publishDefaults: {
-          videoSimulcastLayers: [VideoPresets.h180, VideoPresets.h360, VideoPresets.h720],
+          videoSimulcastLayers: [VideoPresets.h180, VideoPresets.h540, VideoPresets.h1080],
           videoCodec: 'vp8',
         },
       } as any)
