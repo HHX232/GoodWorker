@@ -601,6 +601,26 @@ model VideoCallRoom {
   ownerId       String
   ownerRole     Role
   createdAt     DateTime @default(now())
+  endedAt       DateTime?
+
+  transcriptRaw  String?
+  transcriptJson Json?
+
+  participants   VideoCallParticipant[]
+}
+
+model VideoCallParticipant {
+  id       String   @id @default(cuid())
+  roomId   String
+  identity String
+  userId   String?
+  userRole Role?
+  joinedAt DateTime @default(now())
+
+  room VideoCallRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
+  @@index([userId])
 }
 
 model NotificationSubscription {

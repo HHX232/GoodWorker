@@ -38,9 +38,6 @@ export function useTranscription({
   const [finalTranscript, setFinalTranscript] = useState<string | null>(null)
 
   const srRef = useRef<any>(null)
-  // Becomes true the moment the first transcript_chunk arrives from the agent.
-  // When the agent is active we skip adding Chrome SR finals to callNotes to avoid duplicates.
-  const agentActiveRef = useRef(false)
   // Timers for auto-clearing remote live text after agent chunks
   const clearTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
 
@@ -72,11 +69,10 @@ export function useTranscription({
       if (interim) broadcast({ type: 'sr_live', identity: userName, text: interim })
       if (final) {
         const t = final.trim()
+        if (!t) return
         broadcast({ type: 'sr_final', identity: userName, text: t })
-        // Only add to notes when the agent is NOT active (agent provides better results)
-        if (t && !agentActiveRef.current) {
-          setCallNotes(prev => [...prev, { identity: userName, text: t }])
-        }
+        // Always add own speech locally — agent may also add it later but completeness > dedup
+        setCallNotes(prev => [...prev, { identity: userName, text: t }])
       }
     }
 
@@ -121,7 +117,6 @@ export function useTranscription({
 
       // ── Agent transcript_chunk (faster-whisper, every ~3 s) ──
       if (type === 'transcript_chunk') {
-        agentActiveRef.current = true
         if (!text) return
 
         setCallNotes(prev => [...prev, { identity, text }])

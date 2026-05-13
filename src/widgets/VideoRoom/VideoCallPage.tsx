@@ -161,9 +161,30 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
 
   const confirmLeave = useCallback(async () => {
     setShowSummary(false)
+
+    // Save transcript to DB before disconnecting
+    const entries = transcription.finalTranscript
+      ? null  // raw string — send as-is
+      : transcription.callNotes
+    const transcriptRaw = transcription.finalTranscript
+      ?? transcription.callNotes.map(n => `${n.identity}: ${n.text}`).join('\n')
+
+    if (transcriptRaw) {
+      fetch('/api/call/transcript', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roomName,
+          transcriptRaw,
+          transcriptJson: entries ?? transcription.callNotes,
+          participants: room.participants.map(p => ({ identity: p.identity })),
+        }),
+      }).catch(() => {})
+    }
+
     await disconnect()
     router.push('/call')
-  }, [disconnect, router])
+  }, [disconnect, router, roomName, transcription, room.participants])
 
   // ── Auto-join ──────────────────────────────────────────────────────────────
   useEffect(() => {
