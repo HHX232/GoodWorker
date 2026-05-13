@@ -57,6 +57,16 @@ CREATE INDEX IF NOT EXISTS "VideoCallParticipant_roomId_idx" ON "VideoCallPartic
 -- CreateIndex
 CREATE INDEX IF NOT EXISTS "VideoCallParticipant_userId_idx" ON "VideoCallParticipant"("userId");
 
--- AddForeignKey
-ALTER TABLE "VideoCallParticipant" ADD CONSTRAINT "VideoCallParticipant_roomId_fkey"
-    FOREIGN KEY ("roomId") REFERENCES "VideoCallRoom"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+-- AddForeignKey (idempotent)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE constraint_name = 'VideoCallParticipant_roomId_fkey'
+      AND table_name = 'VideoCallParticipant'
+  ) THEN
+    ALTER TABLE "VideoCallParticipant"
+      ADD CONSTRAINT "VideoCallParticipant_roomId_fkey"
+      FOREIGN KEY ("roomId") REFERENCES "VideoCallRoom"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
