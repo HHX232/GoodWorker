@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/refs */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { Room, RoomEvent, Track, VideoPresets, VideoQuality } from 'livekit-client'
@@ -30,6 +32,7 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
   const [participants, setParticipants] = useState<Participant[]>([])
   const [micEnabled, setMicEnabled] = useState(true)
   const [camEnabled, setCamEnabled] = useState(true)
+  const [activeSpeakers, setActiveSpeakers] = useState<string[]>([])
 
   const roomRef = useRef<Room | null>(null)
   const audioElsRef = useRef<Map<string, HTMLAudioElement>>(new Map())
@@ -163,7 +166,7 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
           resolution: VideoPresets.h1440.resolution,
         },
         publishDefaults: {
-          videoSimulcastLayers: [VideoPresets.h180, VideoPresets.h540, VideoPresets.h1080],
+          videoSimulcastLayers: [VideoPresets.h360, VideoPresets.h540, VideoPresets.h1080],
           videoCodec: 'vp8',
         },
       } as any)
@@ -208,6 +211,9 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
         setStatus('')
         roomRef.current = null
       })
+      room.on(RoomEvent.ActiveSpeakersChanged, (speakers: any[]) => {
+        setActiveSpeakers(speakers.map((s: any) => s.identity).filter((id: string) => !id.startsWith('agent-')))
+      })
       room.on(RoomEvent.DataReceived, (payload: Uint8Array, participant: any) => {
         try {
           const msg = JSON.parse(dec.current.decode(payload))
@@ -245,16 +251,24 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
     }
   }, [roomName, userName, localAvatarUrl, upsert, remove, attachTrack, fetchAvatar])
 
-  // Call this when the main speaker changes — bumps their video to HIGH, others to LOW
-  const setMainSpeakerQuality = useCallback((mainIdentity: string) => {
+  // ≤3 participants: main=HIGH, rest=MEDIUM
+  // 4+ participants: main=HIGH, active speaker=MEDIUM, rest=LOW
+  const updateVideoQualities = useCallback((mainIdentity: string, speakers: string[]) => {
     const room = roomRef.current
     if (!room) return
+    const count = room.remoteParticipants.size + 1 // +1 for local
     room.remoteParticipants.forEach(p => {
       const pub = p.getTrackPublication(Track.Source.Camera)
       if (!pub) return
-      try {
-        pub.setVideoQuality(p.identity === mainIdentity ? VideoQuality.HIGH : VideoQuality.LOW)
-      } catch {}
+      let q: VideoQuality
+      if (p.identity === mainIdentity) {
+        q = VideoQuality.HIGH
+      } else if (count <= 3) {
+        q = VideoQuality.MEDIUM
+      } else {
+        q = speakers.includes(p.identity) ? VideoQuality.MEDIUM : VideoQuality.LOW
+      }
+      try { pub.setVideoQuality(q) } catch {}
     })
   }, [])
 
@@ -282,6 +296,7 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
     toggleLocalAudio,
     toggleMic,
     toggleCam,
-    setMainSpeakerQuality,
+    activeSpeakers,
+    updateVideoQualities,
   }
 }

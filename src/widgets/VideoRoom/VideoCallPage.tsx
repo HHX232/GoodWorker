@@ -125,7 +125,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   const canModerate = isOwner || isMainSpeaker
 
   // Destructure stable callbacks so useCallback deps are simple scalars/functions
-  const { broadcast, disconnect, joinRoom, mute, kick, toggleLocalAudio, toggleMic, toggleCam, setMainSpeakerQuality } = room
+  const { broadcast, disconnect, joinRoom, mute, kick, toggleLocalAudio, toggleMic, toggleCam, updateVideoQualities } = room
 
   // ── Room-level broadcast actions ──────────────────────────────────────────
   const changeLayout = useCallback((l: Layout) => {
@@ -136,8 +136,8 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   const transferSpeaker = useCallback((identity: string) => {
     setMainSpeaker(identity)
     broadcast({ type: 'speaker', identity })
-    setMainSpeakerQuality(identity)
-  }, [broadcast, setMainSpeakerQuality])
+    updateVideoQualities(identity, room.activeSpeakers)
+  }, [broadcast, updateVideoQualities, room.activeSpeakers])
 
   const shareLink = useCallback(() => {
     const url = roomId ? `${window.location.origin}/call/${roomId}` : window.location.href
@@ -187,10 +187,10 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
     router.push('/call')
   }, [disconnect, router, roomName, transcription, room.participants])
 
-  // ── Sync video quality when main speaker changes ───────────────────────────
+  // ── Sync video quality when main speaker or active speakers change ──────────
   useEffect(() => {
-    if (room.connected) setMainSpeakerQuality(mainSpeaker)
-  }, [mainSpeaker, room.connected, setMainSpeakerQuality])
+    if (room.connected) updateVideoQualities(mainSpeaker, room.activeSpeakers)
+  }, [mainSpeaker, room.connected, room.activeSpeakers, updateVideoQualities])
 
   // ── Auto-join ──────────────────────────────────────────────────────────────
   useEffect(() => {
