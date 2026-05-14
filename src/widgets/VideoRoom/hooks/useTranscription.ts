@@ -125,8 +125,9 @@ export function useTranscription({
         // With ru-RU, discard results that contain no Cyrillic — browser hallucination
         if (!/[а-яёА-ЯЁ]/.test(t)) return
         broadcast({ type: 'sr_final', identity: userName, text: t })
-        // When agent is transcribing, skip adding to callNotes to avoid duplicates
-        if (!agentPresentRef.current) {
+        // Chrome desktop: always use browser SR as source of truth for own speech
+        const usingBrowserSR = !isMobileDevice()
+        if (!agentPresentRef.current || usingBrowserSR) {
           setCallNotes(prev => [...prev, { identity: userName, text: t }])
         }
       }
@@ -182,8 +183,10 @@ export function useTranscription({
 
       if (type === 'transcript_chunk') {
         if (!text) return
-        setCallNotes(prev => [...prev, { identity, text }])
         const isLocal = identity === userName
+        // Chrome desktop: browser SR handles own speech — skip agent duplicate
+        if (isLocal && browserHasSpeech && !isMobileDevice()) return
+        setCallNotes(prev => [...prev, { identity, text }])
         if (isLocal) {
           if (!browserHasSpeech) {
             setLiveText(text)

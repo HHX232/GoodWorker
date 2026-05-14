@@ -360,6 +360,16 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
         setVideoDevices(vids)
       } catch {}
 
+      // Tell the agent what kind of device we are so it picks the right VAD mode
+      const isMob = /Android|iP(hone|ad|od)/i.test(navigator.userAgent) ||
+        (/Macintosh/i.test(navigator.userAgent) && 'ontouchend' in document)
+      try {
+        room.localParticipant.publishData(
+          enc.current.encode(JSON.stringify({ type: 'client_info', identity: room.localParticipant.identity, isMobile: isMob })),
+          { reliable: true },
+        )
+      } catch {}
+
       setStatus('')
       setConnected(true)
     } catch (e: any) {
