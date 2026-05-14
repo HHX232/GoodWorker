@@ -78,13 +78,12 @@ export function useTranscription({
     const commitInterim = () => {
       const t = interimBuffer.trim()
       interimBuffer = ''
-      if (!t || t.split(/\s+/).length < 3 || interimConfidence < 0.4) return
-      if (!/[а-яёА-ЯЁ]/.test(t)) return
       interimConfidence = 0
+      setLiveText('')  // always clear on timer/end regardless of quality checks
+      if (!t || t.split(/\s+/).length < 3) return
+      if (!/[а-яёА-ЯЁ]/.test(t)) return
       broadcast({ type: 'sr_final', identity: userName, text: t })
-      if (!agentPresentRef.current) {
-        setCallNotes(prev => [...prev, { identity: userName, text: t }])
-      }
+      setCallNotes(prev => [...prev, { identity: userName, text: t }])
     }
 
     const sr = new SR()
