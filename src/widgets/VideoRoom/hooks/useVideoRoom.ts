@@ -229,6 +229,9 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
       } as any)
       roomRef.current = room
 
+      const isMob = /Android|iP(hone|ad|od)/i.test(navigator.userAgent) ||
+        (/Macintosh/i.test(navigator.userAgent) && 'ontouchend' in document)
+
       room.on(RoomEvent.TrackSubscribed, (track: any, _pub: any, p: any) => {
         dlog(`TS ${p.identity} ${track.kind}`)
         if (p.identity.startsWith('agent-')) return
@@ -271,6 +274,14 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
 
       room.on(RoomEvent.ParticipantConnected, (p: any) => {
         dlog(`PC ${p.identity}`)
+        // Re-broadcast device type whenever anyone joins — the agent may arrive after us
+        // and will have missed the initial client_info we sent on connect.
+        try {
+          room.localParticipant.publishData(
+            enc.current.encode(JSON.stringify({ type: 'client_info', identity: room.localParticipant.identity, isMobile: isMob })),
+            { reliable: true },
+          )
+        } catch {}
         if (p.identity.startsWith('agent-')) { setAgentIdentity(p.identity); return }
         upsert(p.identity)
         fetchAvatar(p.identity)
@@ -360,9 +371,7 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
         setVideoDevices(vids)
       } catch {}
 
-      // Tell the agent what kind of device we are so it picks the right VAD mode
-      const isMob = /Android|iP(hone|ad|od)/i.test(navigator.userAgent) ||
-        (/Macintosh/i.test(navigator.userAgent) && 'ontouchend' in document)
+      // Send initial client_info (agent may not be in the room yet — ParticipantConnected will resend)
       try {
         room.localParticipant.publishData(
           enc.current.encode(JSON.stringify({ type: 'client_info', identity: room.localParticipant.identity, isMobile: isMob })),
