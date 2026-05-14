@@ -98,8 +98,8 @@ export function useTranscription({
       let final = ''
       for (let i = event.resultIndex; i < event.results.length; i++) {
         if (event.results[i].isFinal) {
-          // Skip low-confidence finals — these are usually noise/hallucinations
-          if (event.results[i][0].confidence < 0.5) continue
+          // Chrome returns confidence=0 for non-English — don't filter by confidence here;
+          // the Cyrillic check below is the quality gate for ru-RU
           final += event.results[i][0].transcript
         } else {
           interim += event.results[i][0].transcript
