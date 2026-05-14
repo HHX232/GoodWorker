@@ -125,10 +125,9 @@ export function useTranscription({
         // With ru-RU, discard results that contain no Cyrillic — browser hallucination
         if (!/[а-яёА-ЯЁ]/.test(t)) return
         broadcast({ type: 'sr_final', identity: userName, text: t })
-        // Only write to callNotes when no agent — agent is the source of truth for transcription
-        if (!agentPresentRef.current) {
-          setCallNotes(prev => [...prev, { identity: userName, text: t }])
-        }
+        // Chrome desktop SR is source of truth for own speech — always write to callNotes
+        // (SR useEffect is only reached on desktop, so this never runs on mobile)
+        setCallNotes(prev => [...prev, { identity: userName, text: t }])
       }
     }
 
@@ -183,13 +182,13 @@ export function useTranscription({
       if (type === 'transcript_chunk') {
         if (!text) return
         const isLocal = identity === userName
+        // Chrome desktop: browser SR already wrote own speech to callNotes — skip agent duplicate
+        if (isLocal && !isMobileDevice()) return
         setCallNotes(prev => [...prev, { identity, text }])
         if (isLocal) {
-          // Only show agent text as subtitle if browser SR isn't providing live subtitles
-          if (!browserHasSpeech) {
-            setLiveText(text)
-            setTimeout(() => setLiveText(''), 4000)
-          }
+          // Mobile: no browser SR, show agent chunk as subtitle briefly
+          setLiveText(text)
+          setTimeout(() => setLiveText(''), 4000)
         } else {
           setRemoteLiveTexts(prev => ({ ...prev, [identity]: text }))
           if (clearTimersRef.current[identity]) clearTimeout(clearTimersRef.current[identity])
