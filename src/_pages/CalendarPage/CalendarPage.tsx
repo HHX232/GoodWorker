@@ -27,13 +27,6 @@ import {useEffect, useRef} from 'react'
 import styles from './CalendarPage.module.scss'
 
 export function CalendarPage() {
-  useEffect(() => {
-    const header = document.querySelector('header') as HTMLElement | null
-    if (header) header.style.marginBottom = '1px'
-    return () => {
-      if (header) header.style.marginBottom = ''
-    }
-  }, [])
 
   const {
     addEvent,
