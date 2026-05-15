@@ -1,5 +1,5 @@
 import { prisma } from "@/shared/prisma/prisma"
-import ProfileEditForm from "@/widgets/Forms/ProfileEditForm/ProfileEditForm"
+import { TeacherDashboard } from "@/_pages/TeacherDashboard/TeacherDashboard"
 import { redirect } from "next/navigation"
 import { auth } from "../../../auth"
 
@@ -9,23 +9,25 @@ export default async function TeacherProfilePage() {
   if (!session) redirect("/login")
   if (session.user.role !== "TEACHER") redirect("/student-profile")
 
-  const teacher = await prisma.teacher.findUnique({
-    where: { id: session.user.id },
-    select: {
-      name: true,
-      email: true,
-      phone: true,
-      avatarUrl: true,
-    },
-  })
+  const id = session.user.id
+
+  const [teacher, studentCount, callCount] = await Promise.all([
+    prisma.teacher.findUnique({
+      where: { id },
+      select: { name: true, email: true, phone: true, avatarUrl: true },
+    }),
+    prisma.teacherStudent.count({ where: { teacherId: id } }),
+    prisma.videoCallRoom.count({ where: { ownerId: id } }),
+  ])
 
   if (!teacher) redirect("/login")
 
   return (
-    <ProfileEditForm
-      userType="Teacher"
+    <TeacherDashboard
       initialData={teacher}
-      statsId={session.user.id}
+      statsId={id}
+      studentCount={studentCount}
+      callCount={callCount}
     />
   )
 }

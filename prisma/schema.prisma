@@ -73,6 +73,21 @@ model Teacher {
   lastSeenAt         DateTime?
   roadmapViews       RoadmapView[]
   notifications      Notification[]
+  reviews            TeacherReview[]
+}
+
+model TeacherReview {
+  id         String   @id @default(uuid())
+  teacherId  String
+  authorId   String
+  authorRole String   @default("STUDENT")
+  authorName String
+  text       String
+  stars      Int
+  createdAt  DateTime @default(now())
+  teacher    Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@unique([teacherId, authorId])
 }
 
 model TeacherStudent {

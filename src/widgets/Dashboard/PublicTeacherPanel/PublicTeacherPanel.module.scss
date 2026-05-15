@@ -1,0 +1,193 @@
+.panel {
+  background: #ffffff;
+  border-left: 1px solid rgba(0, 0, 0, 0.07);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+}
+
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 20px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  &::-webkit-scrollbar { width: 3px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: #E0E0E0; border-radius: 2px; }
+}
+
+// ── Hero ────────────────────────────────────────────────────
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0 4px;
+  gap: 10px;
+}
+
+.avatarWrap {
+  position: relative;
+}
+
+.avatarRing {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #111118;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #EEEFF8;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.vipBadge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 22px;
+  height: 22px;
+  background: #111118;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.heroName {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111118;
+  text-align: center;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.heroRole {
+  font-size: 12px;
+  color: #8A8A9A;
+  background: #F5F5F9;
+  padding: 3px 12px;
+  border-radius: 99px;
+  margin-top: -2px;
+}
+
+.memberSince {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #ABABAB;
+  margin-top: 2px;
+}
+
+// ── Divider ─────────────────────────────────────────────────
+
+.divider {
+  height: 1px;
+  background: #EEEFF8;
+  margin: 0 -4px;
+}
+
+// ── Stats row ───────────────────────────────────────────────
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.statCard {
+  background: #F7F7FB;
+  border: 1px solid #EBEBEB;
+  border-radius: 12px;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.statIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.statValue {
+  font-size: 20px;
+  font-weight: 700;
+  color: #141416;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 10px;
+  color: #868897;
+}
+
+// ── Section ─────────────────────────────────────────────────
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sectionLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #ABABAB;
+}
+
+// ── Subject chips ───────────────────────────────────────────
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  padding: 5px 12px;
+  border-radius: 99px;
+  background: rgba(83, 74, 183, 0.08);
+  color: #534AB7;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+// ── About items ─────────────────────────────────────────────
+
+.aboutRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.aboutItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #444458;
+}
