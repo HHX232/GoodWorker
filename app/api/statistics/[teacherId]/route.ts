@@ -79,26 +79,12 @@ export async function GET(
     const totalProgress = Math.max(completedStudentsCount + activeProgressCount, 1)
 
     const heroStats = {
-      bars: [
-        {
-          label: 'Новые ученики',
-          value: Math.min(100, Math.round((newStudentsThisMonth / total) * 100)),
-          trend: (() => {
-            const d = newStudentsThisMonth - newStudentsPrevMonth
-            return d >= 0 ? `+${d} за мес.` : `−${Math.abs(d)} за мес.`
-          })(),
-        },
-        {
-          label: 'Прошли курс',
-          value: Math.min(100, Math.round((completedStudentsCount / total) * 100)),
-          trend: `${completedStudentsCount} завершили`,
-        },
-        {
-          label: 'Road-map в работе',
-          value: Math.min(100, Math.round((activeProgressCount / totalProgress) * 100)),
-          trend: `${activeProgressCount} активных`,
-        },
-      ],
+      newStudentsThisMonth,
+      newStudentsPrevMonth,
+      completedStudentsCount,
+      activeProgressCount,
+      totalStudents: studentCount,
+      totalProgress,
     }
 
     // Compute per-call durations (hours)

@@ -1,12 +1,16 @@
 'use client'
 import {useEffect, useRef, useState} from 'react'
+import {useTranslations} from 'next-intl'
 import styles from './StatsHero.module.scss'
 import {StatsHeroModalContent} from './StatsHeroModalContent/StatsHeroModalContent'
 
-interface HeroBar {
-  label: string
-  value: number
-  trend: string
+interface HeroStats {
+  newStudentsThisMonth: number
+  newStudentsPrevMonth: number
+  completedStudentsCount: number
+  activeProgressCount: number
+  totalStudents: number
+  totalProgress: number
 }
 
 interface StatsHeroProps {
@@ -14,17 +18,11 @@ interface StatsHeroProps {
   roadmaps?: number
   totalLessons?: number
   totalHours?: number
-  heroStats?: { bars: HeroBar[] }
+  heroStats?: HeroStats
   extraClass?: string
 }
 
-const DEFAULT_BARS: HeroBar[] = [
-  {label: 'Новые ученики', value: 0, trend: '—'},
-  {label: 'Прошли курс', value: 0, trend: '—'},
-  {label: 'Road-map в работе', value: 0, trend: '—'},
-]
-
-function Modal({isOpen, onClose}: {isOpen: boolean; onClose: () => void}) {
+function Modal({isOpen, onClose, detailedStatsLabel}: {isOpen: boolean; onClose: () => void; detailedStatsLabel: string}) {
   const backdropRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -45,7 +43,7 @@ function Modal({isOpen, onClose}: {isOpen: boolean; onClose: () => void}) {
     >
       <div className={styles.modal} role='dialog' aria-modal>
         <div className={styles.modal_header}>
-          <span className={styles.modal_title}>Подробная статистика</span>
+          <span className={styles.modal_title}>{detailedStatsLabel}</span>
           <button className={styles.modal_close} onClick={onClose} aria-label='Закрыть'>
             ×
           </button>
@@ -57,21 +55,50 @@ function Modal({isOpen, onClose}: {isOpen: boolean; onClose: () => void}) {
 }
 
 export function StatsHero({students = 0, roadmaps = 0, totalLessons = 0, totalHours = 0, heroStats, extraClass}: StatsHeroProps) {
+  const t = useTranslations('statsPage.hero')
   const [animated, setAnimated] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
 
   useEffect(() => {
-    const t = requestAnimationFrame(() => setAnimated(true))
-    return () => cancelAnimationFrame(t)
+    const anim = requestAnimationFrame(() => setAnimated(true))
+    return () => cancelAnimationFrame(anim)
   }, [])
 
-  const bars = heroStats?.bars ?? DEFAULT_BARS
+  const h = heroStats
+  const totalStudents = Math.max(h?.totalStudents ?? 1, 1)
+  const totalProgress = Math.max(h?.totalProgress ?? 1, 1)
+
+  const bars = h
+    ? [
+        {
+          label: t('barNewStudents'),
+          value: Math.min(100, Math.round(((h.newStudentsThisMonth) / totalStudents) * 100)),
+          trend: h.newStudentsThisMonth >= h.newStudentsPrevMonth
+            ? t('trendThisMonth', {n: h.newStudentsThisMonth - h.newStudentsPrevMonth})
+            : t('trendNegThisMonth', {n: h.newStudentsPrevMonth - h.newStudentsThisMonth}),
+        },
+        {
+          label: t('barPassedCourse'),
+          value: Math.min(100, Math.round((h.completedStudentsCount / totalStudents) * 100)),
+          trend: t('trendCompleted', {n: h.completedStudentsCount}),
+        },
+        {
+          label: t('barActiveRoadmap'),
+          value: Math.min(100, Math.round((h.activeProgressCount / totalProgress) * 100)),
+          trend: t('trendActive', {n: h.activeProgressCount}),
+        },
+      ]
+    : [
+        {label: t('barNewStudents'), value: 0, trend: '—'},
+        {label: t('barPassedCourse'), value: 0, trend: '—'},
+        {label: t('barActiveRoadmap'), value: 0, trend: '—'},
+      ]
 
   const metrics = [
-    {num: students, label: 'Учеников'},
-    {num: roadmaps, label: 'Road-map'},
-    {num: totalLessons, label: 'Уроков'},
-    {num: totalHours, label: 'Часов'},
+    {num: students, label: t('students')},
+    {num: roadmaps, label: t('roadmap')},
+    {num: totalLessons, label: t('lessons')},
+    {num: totalHours, label: t('hours')},
   ]
 
   return (
@@ -113,7 +140,7 @@ export function StatsHero({students = 0, roadmaps = 0, totalLessons = 0, totalHo
         </div>
 
         <button className={styles.more_btn} onClick={() => setModalOpen(true)}>
-          more
+          {t('more')}
           <svg viewBox='0 0 10 10' fill='none' xmlns='http://www.w3.org/2000/svg'>
             <path
               d='M2 5h6M5.5 2.5 8 5l-2.5 2.5'
@@ -126,7 +153,7 @@ export function StatsHero({students = 0, roadmaps = 0, totalLessons = 0, totalHo
         </button>
       </div>
 
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
+      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} detailedStatsLabel={t('detailedStats')} />
     </>
   )
 }

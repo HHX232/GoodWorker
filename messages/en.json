@@ -414,5 +414,61 @@
   },
   "PostPage": {
     "report": "Report"
+  },
+  "statsPage": {
+    "loading": "Loading statistics...",
+    "noData": "No data",
+    "hero": {
+      "detailedStats": "Detailed statistics",
+      "more": "more",
+      "students": "Students",
+      "roadmap": "Road-map",
+      "lessons": "Lessons",
+      "hours": "Hours",
+      "barNewStudents": "New students",
+      "barPassedCourse": "Completed course",
+      "barActiveRoadmap": "Active road-maps",
+      "trendThisMonth": "+{n} this month",
+      "trendNegThisMonth": "−{n} this month",
+      "trendCompleted": "{n} completed",
+      "trendActive": "{n} active"
+    },
+    "hoursChart": {
+      "title": "Session hours",
+      "totalFor": "Total for {month}",
+      "peak": "Peak",
+      "avg": "Average",
+      "activeDays": "Active days",
+      "dayTooltip": "day {day}",
+      "hoursUnit": "h"
+    },
+    "subjectsPie": {
+      "title": "Hours by subject",
+      "totalHours": "hours",
+      "lessonCount": "les."
+    },
+    "weekCalendar": {
+      "title": "Schedule",
+      "date": "Date",
+      "time": "Time",
+      "duration": "Duration",
+      "subject": "Subject",
+      "defaultLesson": "Lesson",
+      "minutes": "min"
+    },
+    "topSubjects": {
+      "title": "Top subjects",
+      "period": "all time",
+      "noData": "No data",
+      "lessons": "les.",
+      "hours": "h"
+    },
+    "subjectModal": {
+      "lessons": "Lessons",
+      "hours": "Hours",
+      "avg": "Average",
+      "noLessons": "No lessons in history",
+      "participants": "part."
+    }
   }
 }

@@ -414,5 +414,61 @@
   },
   "PostPage": {
     "report": "举报"
+  },
+  "statsPage": {
+    "loading": "加载统计中...",
+    "noData": "暂无数据",
+    "hero": {
+      "detailedStats": "详细统计",
+      "more": "更多",
+      "students": "学生",
+      "roadmap": "路线图",
+      "lessons": "课程",
+      "hours": "小时",
+      "barNewStudents": "新学生",
+      "barPassedCourse": "已完成课程",
+      "barActiveRoadmap": "进行中路线图",
+      "trendThisMonth": "+{n} 本月",
+      "trendNegThisMonth": "−{n} 本月",
+      "trendCompleted": "{n} 已完成",
+      "trendActive": "{n} 进行中"
+    },
+    "hoursChart": {
+      "title": "课时统计",
+      "totalFor": "{month} 合计",
+      "peak": "峰值",
+      "avg": "平均",
+      "activeDays": "有课天数",
+      "dayTooltip": "{day} 日",
+      "hoursUnit": "时"
+    },
+    "subjectsPie": {
+      "title": "科目课时",
+      "totalHours": "小时",
+      "lessonCount": "课"
+    },
+    "weekCalendar": {
+      "title": "课程表",
+      "date": "日期",
+      "time": "时间",
+      "duration": "时长",
+      "subject": "科目",
+      "defaultLesson": "课程",
+      "minutes": "分钟"
+    },
+    "topSubjects": {
+      "title": "热门科目",
+      "period": "全部时间",
+      "noData": "暂无数据",
+      "lessons": "课",
+      "hours": "时"
+    },
+    "subjectModal": {
+      "lessons": "课程数",
+      "hours": "小时数",
+      "avg": "平均",
+      "noLessons": "暂无历史课程",
+      "participants": "人"
+    }
   }
 }

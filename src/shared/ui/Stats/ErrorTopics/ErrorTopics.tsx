@@ -1,4 +1,5 @@
 'use client'
+import {useTranslations} from 'next-intl'
 import styles from './ErrorTopics.module.scss'
 
 export interface TopicSubject {
@@ -30,6 +31,7 @@ export function ErrorTopics({
   subjects?: TopicSubject[]
   onSubjectClick?: (subject: TopicSubject) => void
 }) {
+  const t = useTranslations('statsPage.topSubjects')
   const items = (subjects ?? []).slice(0, 5)
   const max = items.length > 0 ? Math.max(...items.map((s) => s.count)) : 1
 
@@ -37,10 +39,10 @@ export function ErrorTopics({
     return (
       <div className={`${styles.card} ${extraClass ?? ''}`}>
         <div className={styles.header}>
-          <p className={styles.title}>Топ предметов</p>
+          <p className={styles.title}>{t('title')}</p>
         </div>
         <div style={{flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-          <p style={{fontSize: 13, color: '#bbb', textAlign: 'center'}}>Нет данных</p>
+          <p style={{fontSize: 13, color: '#bbb', textAlign: 'center'}}>{t('noData')}</p>
         </div>
       </div>
     )
@@ -49,8 +51,8 @@ export function ErrorTopics({
   return (
     <div className={`${styles.card} ${extraClass ?? ''}`}>
       <div className={styles.header}>
-        <p className={styles.title}>Топ предметов</p>
-        <span className={styles.period}>всё время</span>
+        <p className={styles.title}>{t('title')}</p>
+        <span className={styles.period}>{t('period')}</span>
       </div>
 
       <div className={`${styles.list} ${styles.list_hoverable}`}>
@@ -67,7 +69,7 @@ export function ErrorTopics({
                 <span className={styles.item__topic}>{item.name}</span>
               </div>
               <div className={styles.item__right}>
-                <span className={styles.item__count}>{item.count} ур.</span>
+                <span className={styles.item__count}>{item.count} {t('lessons')}</span>
                 {onSubjectClick && <span className={styles.arrow}>↗</span>}
               </div>
             </div>
@@ -75,7 +77,7 @@ export function ErrorTopics({
               <div className={styles.bar_fill} style={{width: `${(item.count / max) * 100}%`, background: item.color}} />
             </div>
             <div className={styles.item__bottom}>
-              <span className={styles.item__subject}>{item.hours} ч</span>
+              <span className={styles.item__subject}>{item.hours} {t('hours')}</span>
               <StreakDots count={item.count} max={max} />
             </div>
           </div>

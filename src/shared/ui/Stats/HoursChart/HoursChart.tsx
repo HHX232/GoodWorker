@@ -1,16 +1,16 @@
 'use client'
 import {useMemo, useState} from 'react'
+import {useTranslations} from 'next-intl'
 import {Bar, BarChart, CartesianGrid, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts'
 import ModalWindowDefault from '../../Modals/ModalWindowDefault/ModalWindowDefault'
 import styles from './HoursChart.module.scss'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const CustomTooltip = ({active, payload, label}: any) => {
+function CustomTooltip({active, payload, label, dayLabel, hoursUnit}: {active?: boolean; payload?: {value: number}[]; label?: string; dayLabel: string; hoursUnit: string}) {
   if (active && payload?.length) {
     return (
       <div className={styles.tooltip}>
-        <span className={styles.tooltip__day}>{label} число</span>
-        <span className={styles.tooltip__val}>{payload[0].value} ч</span>
+        <span className={styles.tooltip__day}>{dayLabel.replace('{day}', label ?? '')}</span>
+        <span className={styles.tooltip__val}>{payload[0].value} {hoursUnit}</span>
       </div>
     )
   }
@@ -24,6 +24,7 @@ function HoursChart({
   extraClass?: string
   monthsData?: Record<string, {day: string; hours: number}[]>
 }) {
+  const t = useTranslations('statsPage.hoursChart')
   const MONTHS = monthsData ? Object.keys(monthsData) : []
   const [selectedMonth, setSelectedMonth] = useState<string>('')
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
@@ -56,9 +57,9 @@ function HoursChart({
       </ModalWindowDefault>
       <div className={styles.chart_header}>
         <div className={styles.chart_header__left}>
-          <h3 className={styles.chart_title}>Часы занятий</h3>
+          <h3 className={styles.chart_title}>{t('title')}</h3>
           <p className={styles.chart_subtitle}>
-            Итого за {activeMonth}: <strong>{totalHours} ч</strong>
+            {t('totalFor', {month: activeMonth})}: <strong>{totalHours} {t('hoursUnit')}</strong>
           </p>
         </div>
 
@@ -80,15 +81,15 @@ function HoursChart({
       <div className={styles.chart_chips}>
         <div className={styles.chip}>
           <span className={styles.chip_dot} style={{background: '#1a1a1a'}} />
-          Пик: {maxDay.day} — <strong>{maxDay.hours} ч</strong>
+          {t('peak')}: {maxDay.day} — <strong>{maxDay.hours} {t('hoursUnit')}</strong>
         </div>
         <div className={styles.chip}>
           <span className={styles.chip_dot} style={{background: '#d4d4d4', border: '1px solid #bbb'}} />
-          Среднее: <strong>{avgHours} ч/день</strong>
+          {t('avg')}: <strong>{avgHours} {t('hoursUnit')}</strong>
         </div>
         <div className={styles.chip}>
           <span className={styles.chip_dot} style={{background: '#888'}} />
-          Дней с занятиями: <strong>{activeDays}</strong>
+          {t('activeDays')}: <strong>{activeDays}</strong>
         </div>
       </div>
 
@@ -116,9 +117,9 @@ function HoursChart({
               axisLine={false}
               tickLine={false}
               width={26}
-              tickFormatter={(v) => `${v}ч`}
+              tickFormatter={(v) => `${v}${t('hoursUnit')}`}
             />
-            <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(0,0,0,0.03)'}} />
+            <Tooltip content={<CustomTooltip dayLabel={t('dayTooltip')} hoursUnit={t('hoursUnit')} />} cursor={{fill: 'rgba(0,0,0,0.03)'}} />
             <Bar
               dataKey='hours'
               radius={[4, 4, 0, 0]}

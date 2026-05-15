@@ -1,6 +1,7 @@
 'use client'
 import Image from 'next/image'
 import {useMemo, useRef, useState} from 'react'
+import {useTranslations} from 'next-intl'
 import ModalWindowDefault from '../../Modals/ModalWindowDefault/ModalWindowDefault'
 import styles from './WeekCalendar.module.scss'
 
@@ -104,7 +105,7 @@ function formatDate(date: Date) {
   return `${date.getDate()} ${MONTH_NAMES_RU[date.getMonth()]} ${date.getFullYear()}`
 }
 
-function LessonDetail({lesson}: {lesson: Lesson}) {
+function LessonDetail({lesson, t}: {lesson: Lesson; t: ReturnType<typeof useTranslations>}) {
   const endTime = formatEndTime(lesson.time, lesson.duration)
   return (
     <div style={{padding: '8px 0 4px', display: 'flex', flexDirection: 'column', gap: 16}}>
@@ -130,19 +131,19 @@ function LessonDetail({lesson}: {lesson: Lesson}) {
 
       <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12}}>
         <div style={{background: '#f8f8f8', borderRadius: 12, padding: '12px 14px'}}>
-          <p style={{margin: 0, fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px'}}>Дата</p>
+          <p style={{margin: 0, fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px'}}>{t('date')}</p>
           <p style={{margin: '4px 0 0', fontSize: 14, fontWeight: 600, color: '#1a1a1a'}}>{formatDate(lesson.date)}</p>
         </div>
         <div style={{background: '#f8f8f8', borderRadius: 12, padding: '12px 14px'}}>
-          <p style={{margin: 0, fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px'}}>Время</p>
+          <p style={{margin: 0, fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px'}}>{t('time')}</p>
           <p style={{margin: '4px 0 0', fontSize: 14, fontWeight: 600, color: '#1a1a1a'}}>{lesson.time}–{endTime}</p>
         </div>
         <div style={{background: '#f8f8f8', borderRadius: 12, padding: '12px 14px'}}>
-          <p style={{margin: 0, fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px'}}>Длительность</p>
-          <p style={{margin: '4px 0 0', fontSize: 14, fontWeight: 600, color: '#1a1a1a'}}>{lesson.duration} мин</p>
+          <p style={{margin: 0, fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px'}}>{t('duration')}</p>
+          <p style={{margin: '4px 0 0', fontSize: 14, fontWeight: 600, color: '#1a1a1a'}}>{lesson.duration} {t('minutes')}</p>
         </div>
         <div style={{background: '#f8f8f8', borderRadius: 12, padding: '12px 14px'}}>
-          <p style={{margin: 0, fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px'}}>Предмет</p>
+          <p style={{margin: 0, fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px'}}>{t('subject')}</p>
           <p style={{margin: '4px 0 0', fontSize: 14, fontWeight: 600, color: '#1a1a1a'}}>{lesson.subject}</p>
         </div>
       </div>
@@ -151,6 +152,7 @@ function LessonDetail({lesson}: {lesson: Lesson}) {
 }
 
 export function WeekCalendar({extraClass, lessons: propLessons}: {extraClass?: string; lessons?: CalendarLesson[]}) {
+  const t = useTranslations('statsPage.weekCalendar')
   const today = useMemo(() => new Date(), [])
 
   const allLessons: Lesson[] = useMemo(
@@ -201,7 +203,7 @@ export function WeekCalendar({extraClass, lessons: propLessons}: {extraClass?: s
     <div className={`${styles.card} ${extraClass ?? ''}`}>
       {/* ── Header ── */}
       <div className={styles.header}>
-        <h3 className={styles.title}>Расписание</h3>
+        <h3 className={styles.title}>{t('title')}</h3>
         <div className={styles.nav}>
           <button className={styles.nav_btn} onClick={() => setWeekStart(addDays(weekStart, -7))} aria-label='Назад'>
             <svg width='14' height='14' viewBox='0 0 24 24' fill='none'>
@@ -327,9 +329,9 @@ export function WeekCalendar({extraClass, lessons: propLessons}: {extraClass?: s
       <ModalWindowDefault
         isOpen={!!selectedLesson}
         onClose={() => setSelectedLesson(null)}
-        additionalTitle={<span style={{fontSize: 14, fontWeight: 700, color: '#1a1a1a'}}>{selectedLesson?.subject ?? 'Занятие'}</span>}
+        additionalTitle={<span style={{fontSize: 14, fontWeight: 700, color: '#1a1a1a'}}>{selectedLesson?.subject ?? t('defaultLesson')}</span>}
       >
-        {selectedLesson && <LessonDetail lesson={selectedLesson} />}
+        {selectedLesson && <LessonDetail lesson={selectedLesson} t={t} />}
       </ModalWindowDefault>
     </div>
   )

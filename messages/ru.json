@@ -414,5 +414,61 @@
   },
   "PostPage": {
     "report": "Пожаловаться"
+  },
+  "statsPage": {
+    "loading": "Загружаем статистику...",
+    "noData": "Нет данных",
+    "hero": {
+      "detailedStats": "Подробная статистика",
+      "more": "more",
+      "students": "Учеников",
+      "roadmap": "Road-map",
+      "lessons": "Уроков",
+      "hours": "Часов",
+      "barNewStudents": "Новые ученики",
+      "barPassedCourse": "Прошли курс",
+      "barActiveRoadmap": "Road-map в работе",
+      "trendThisMonth": "+{n} за мес.",
+      "trendNegThisMonth": "−{n} за мес.",
+      "trendCompleted": "{n} завершили",
+      "trendActive": "{n} активных"
+    },
+    "hoursChart": {
+      "title": "Часы занятий",
+      "totalFor": "Итого за {month}",
+      "peak": "Пик",
+      "avg": "Среднее",
+      "activeDays": "Дней с занятиями",
+      "dayTooltip": "{day} число",
+      "hoursUnit": "ч"
+    },
+    "subjectsPie": {
+      "title": "Часы по предметам",
+      "totalHours": "часов",
+      "lessonCount": "ур."
+    },
+    "weekCalendar": {
+      "title": "Расписание",
+      "date": "Дата",
+      "time": "Время",
+      "duration": "Длительность",
+      "subject": "Предмет",
+      "defaultLesson": "Занятие",
+      "minutes": "мин"
+    },
+    "topSubjects": {
+      "title": "Топ предметов",
+      "period": "всё время",
+      "noData": "Нет данных",
+      "lessons": "ур.",
+      "hours": "ч"
+    },
+    "subjectModal": {
+      "lessons": "Уроков",
+      "hours": "Часов",
+      "avg": "Среднее",
+      "noLessons": "Нет уроков в истории",
+      "participants": "уч."
+    }
   }
 }

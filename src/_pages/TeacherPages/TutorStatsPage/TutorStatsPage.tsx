@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { ErrorTopics, TopicSubject } from '@/shared/ui/Stats/ErrorTopics/ErrorTopics'
 import HoursChart from '@/shared/ui/Stats/HoursChart/HoursChart'
 import { StatsHero } from '@/shared/ui/Stats/StatsHero/StatsHero'
@@ -36,10 +37,13 @@ interface CalendarEvent {
   subject?: string
 }
 
-interface HeroBar {
-  label: string
-  value: number
-  trend: string
+interface HeroStats {
+  newStudentsThisMonth: number
+  newStudentsPrevMonth: number
+  completedStudentsCount: number
+  activeProgressCount: number
+  totalStudents: number
+  totalProgress: number
 }
 
 interface StatsData {
@@ -53,7 +57,7 @@ interface StatsData {
   recentCalls: RecentCall[]
   calendarLessons: CalendarLesson[]
   calendarEvents: CalendarEvent[]
-  heroStats: { bars: HeroBar[] }
+  heroStats: HeroStats
 }
 
 function calendarEventToLesson(e: CalendarEvent): CalendarLesson {
@@ -89,6 +93,8 @@ function SubjectCallsModal({
   calls: RecentCall[]
   onClose: () => void
 }) {
+  const t = useTranslations('statsPage.subjectModal')
+  const tHours = useTranslations('statsPage.hoursChart')
   const filtered = calls.filter((c) => (c.topic?.trim() || 'Без темы') === subject.name)
 
   return (
@@ -105,23 +111,23 @@ function SubjectCallsModal({
       <div style={{ padding: '4px 0' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>
           <div style={{ background: '#f8f8f8', borderRadius: 12, padding: '12px 14px' }}>
-            <p style={{ margin: 0, fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Уроков</p>
+            <p style={{ margin: 0, fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('lessons')}</p>
             <p style={{ margin: '4px 0 0', fontSize: 20, fontWeight: 800, color: '#1a1a1a' }}>{subject.count}</p>
           </div>
           <div style={{ background: '#f8f8f8', borderRadius: 12, padding: '12px 14px' }}>
-            <p style={{ margin: 0, fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Часов</p>
+            <p style={{ margin: 0, fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('hours')}</p>
             <p style={{ margin: '4px 0 0', fontSize: 20, fontWeight: 800, color: '#1a1a1a' }}>{subject.hours}</p>
           </div>
           <div style={{ background: '#f8f8f8', borderRadius: 12, padding: '12px 14px' }}>
-            <p style={{ margin: 0, fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Среднее</p>
+            <p style={{ margin: 0, fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('avg')}</p>
             <p style={{ margin: '4px 0 0', fontSize: 20, fontWeight: 800, color: '#1a1a1a' }}>
-              {subject.count > 0 ? (subject.hours / subject.count).toFixed(1) : 0} ч
+              {subject.count > 0 ? (subject.hours / subject.count).toFixed(1) : 0} {tHours('hoursUnit')}
             </p>
           </div>
         </div>
 
         {filtered.length === 0 ? (
-          <p style={{ color: '#bbb', textAlign: 'center', fontSize: 13, padding: '20px 0' }}>Нет уроков в истории</p>
+          <p style={{ color: '#bbb', textAlign: 'center', fontSize: 13, padding: '20px 0' }}>{t('noLessons')}</p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 360, overflowY: 'auto' }}>
             {filtered.map((call) => (
@@ -139,11 +145,11 @@ function SubjectCallsModal({
                 <div>
                   <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#1a1a1a' }}>{formatDate(call.createdAt)}</p>
                   <p style={{ margin: '2px 0 0', fontSize: 11, color: '#aaa' }}>
-                    {formatTime(call.createdAt)} · {call.participantCount} уч.
+                    {formatTime(call.createdAt)} · {call.participantCount} {t('participants')}
                   </p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#1a1a1a' }}>{call.durationHours} ч</p>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#1a1a1a' }}>{call.durationHours} {tHours('hoursUnit')}</p>
                 </div>
               </div>
             ))}
@@ -155,6 +161,7 @@ function SubjectCallsModal({
 }
 
 export default function TutorStatsPage({ teacherId }: { teacherId: string }) {
+  const t = useTranslations('statsPage')
   const [data, setData] = useState<StatsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -167,14 +174,14 @@ export default function TutorStatsPage({ teacherId }: { teacherId: string }) {
         if (d.error) { setError(d.error); return }
         setData(d)
       })
-      .catch(() => setError('Ошибка загрузки статистики'))
+      .catch(() => setError(t('loading')))
       .finally(() => setLoading(false))
-  }, [teacherId])
+  }, [teacherId, t])
 
   if (loading) {
     return (
       <div className={`container ${styles.dop_container}`}>
-        <div className={styles.loading}>Загружаем статистику...</div>
+        <div className={styles.loading}>{t('loading')}</div>
       </div>
     )
   }
@@ -182,7 +189,7 @@ export default function TutorStatsPage({ teacherId }: { teacherId: string }) {
   if (error || !data) {
     return (
       <div className={`container ${styles.dop_container}`}>
-        <div className={styles.error}>{error ?? 'Нет данных'}</div>
+        <div className={styles.error}>{error ?? t('noData')}</div>
       </div>
     )
   }

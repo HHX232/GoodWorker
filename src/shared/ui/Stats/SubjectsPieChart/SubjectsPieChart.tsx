@@ -1,5 +1,6 @@
 'use client'
 import {useCallback, useState} from 'react'
+import {useTranslations} from 'next-intl'
 import {Cell, Pie, PieChart, ResponsiveContainer, Sector} from 'recharts'
 import styles from './SubjectsPieChart.module.scss'
 
@@ -35,6 +36,7 @@ interface SubjectItem {
 }
 
 export function SubjectsPieChart({extraClass, data: propData}: {extraClass?: string; data?: SubjectItem[]}) {
+  const t = useTranslations('statsPage.subjectsPie')
   const data = propData && propData.length > 0 ? propData : FALLBACK_DATA
   const total = data.reduce((s, d) => s + d.hours, 0)
 
@@ -55,7 +57,7 @@ export function SubjectsPieChart({extraClass, data: propData}: {extraClass?: str
 
   return (
     <div className={`${styles.card} ${extraClass ?? ''}`}>
-      <p className={styles.title}>Часы по предметам</p>
+      <p className={styles.title}>{t('title')}</p>
 
       {/* Pie */}
       <div className={styles.chart_wrap}>
@@ -99,7 +101,7 @@ export function SubjectsPieChart({extraClass, data: propData}: {extraClass?: str
           ) : (
             <>
               <span className={styles.center_num}>{total}</span>
-              <span className={styles.center_sub}>часов</span>
+              <span className={styles.center_sub}>{t('totalHours')}</span>
             </>
           )}
         </div>
@@ -127,7 +129,7 @@ export function SubjectsPieChart({extraClass, data: propData}: {extraClass?: str
                   <span className={styles.legend__pct}>{pct}%</span>
                   <span className={styles.legend__val}>{d.hours} ч</span>
                   {d.count !== undefined && d.count > 0 && (
-                    <span className={styles.legend__count}>{d.count} ур.</span>
+                    <span className={styles.legend__count}>{d.count} {t('lessonCount')}</span>
                   )}
                 </div>
               </div>

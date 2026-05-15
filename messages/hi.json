@@ -414,5 +414,61 @@
   },
   "PostPage": {
     "report": "रिपोर्ट करें"
+  },
+  "statsPage": {
+    "loading": "सांख्यिकी लोड हो रही है...",
+    "noData": "कोई डेटा नहीं",
+    "hero": {
+      "detailedStats": "विस्तृत सांख्यिकी",
+      "more": "और",
+      "students": "छात्र",
+      "roadmap": "रोडमैप",
+      "lessons": "पाठ",
+      "hours": "घंटे",
+      "barNewStudents": "नए छात्र",
+      "barPassedCourse": "कोर्स पूरा किया",
+      "barActiveRoadmap": "सक्रिय रोडमैप",
+      "trendThisMonth": "+{n} इस महीने",
+      "trendNegThisMonth": "−{n} इस महीने",
+      "trendCompleted": "{n} पूर्ण",
+      "trendActive": "{n} सक्रिय"
+    },
+    "hoursChart": {
+      "title": "सत्र घंटे",
+      "totalFor": "{month} के लिए कुल",
+      "peak": "शीर्ष",
+      "avg": "औसत",
+      "activeDays": "सक्रिय दिन",
+      "dayTooltip": "{day} तारीख",
+      "hoursUnit": "घं"
+    },
+    "subjectsPie": {
+      "title": "विषय अनुसार घंटे",
+      "totalHours": "घंटे",
+      "lessonCount": "पाठ"
+    },
+    "weekCalendar": {
+      "title": "कार्यक्रम",
+      "date": "तारीख",
+      "time": "समय",
+      "duration": "अवधि",
+      "subject": "विषय",
+      "defaultLesson": "पाठ",
+      "minutes": "मिनट"
+    },
+    "topSubjects": {
+      "title": "शीर्ष विषय",
+      "period": "सब समय",
+      "noData": "कोई डेटा नहीं",
+      "lessons": "पाठ",
+      "hours": "घं"
+    },
+    "subjectModal": {
+      "lessons": "पाठ",
+      "hours": "घंटे",
+      "avg": "औसत",
+      "noLessons": "इतिहास में कोई पाठ नहीं",
+      "participants": "प्रतिभागी"
+    }
   }
 }
