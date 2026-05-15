@@ -26,7 +26,7 @@ import {WeekCalendar} from '@/widgets/Calendar/WeekCalendar/WeekCalendar'
 import {useEffect, useRef} from 'react'
 import styles from './CalendarPage.module.scss'
 
-export function CalendarPage() {
+export function CalendarPage({ teacherId }: { teacherId: string }) {
 
   const {
     addEvent,
@@ -58,11 +58,11 @@ export function CalendarPage() {
   useEffect(() => {
     if (loaded.current) return
     loaded.current = true
-    fetch('/api/teacher/calendar')
+    fetch(`/api/teacher/calendar?teacherId=${teacherId}`)
       .then((r) => r.json())
       .then((d) => { if (Array.isArray(d.events) && d.events.length > 0) setEvents(d.events) })
       .catch(() => {})
-  }, [setEvents])
+  }, [setEvents, teacherId])
 
   // Save to DB whenever events change (debounced 1.5s)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
@@ -71,7 +71,7 @@ export function CalendarPage() {
     if (initialMount.current) { initialMount.current = false; return }
     clearTimeout(saveTimer.current)
     saveTimer.current = setTimeout(() => {
-      fetch('/api/teacher/calendar', {
+      fetch(`/api/teacher/calendar?teacherId=${teacherId}`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({events}),
