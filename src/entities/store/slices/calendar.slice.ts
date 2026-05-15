@@ -1,4 +1,3 @@
-import {MOCK_EVENTS, MOCK_STUDENTS, MOCK_TASKS} from '@/shared/helpers/calendar/calendar.mock'
 import {CalendarEvent, CalendarStudent, CalendarTask} from '@/shared/types/Calendar/calendar.types'
 import {createSlice, PayloadAction} from '@reduxjs/toolkit'
 import {nanoid} from 'nanoid'
@@ -25,10 +24,10 @@ export interface CalendarState {
 }
 
 const initialState: CalendarState = {
-  events: MOCK_EVENTS,
+  events: [],
   createTaskIsOpen: false,
-  tasks: MOCK_TASKS,
-  students: MOCK_STUDENTS,
+  tasks: [],
+  students: [],
   selectedEventId: null,
   selectedTaskId: null,
   currentDate: new Date().toISOString(),
@@ -50,6 +49,12 @@ const calendarSlice = createSlice({
 
     setEvents(state, action: PayloadAction<CalendarEvent[]>) {
       state.events = action.payload
+    },
+    setTasks(state, action: PayloadAction<CalendarTask[]>) {
+      state.tasks = action.payload
+    },
+    setStudents(state, action: PayloadAction<CalendarStudent[]>) {
+      state.students = action.payload
     },
     addEvent(state, action: PayloadAction<Omit<CalendarEvent, 'id'>>) {
       state.events.push({...action.payload, id: nanoid()})
@@ -184,6 +189,8 @@ const calendarSlice = createSlice({
 
 export const {
   setEvents,
+  setTasks,
+  setStudents,
   addEvent,
   updateEvent,
   deleteEvent,

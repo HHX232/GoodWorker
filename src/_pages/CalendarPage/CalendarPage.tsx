@@ -13,6 +13,7 @@ import {
 } from '@/features/Calendar/selectors/selector'
 import {useActions} from '@/features/hooks/store/useActions'
 import {useTypedSelector} from '@/features/hooks/store/useTypedSelector'
+import {CalendarStudent} from '@/shared/types/Calendar/calendar.types'
 import {CalendarEvent} from '@/shared/types/Calendar/calendar.types'
 import {CalendarHeader} from '@/widgets/Calendar/CalendarHeader/CalendarHeader'
 import {CalendarSidebar} from '@/widgets/Calendar/CalendarSidebar/CalendarSidebar'
@@ -31,6 +32,8 @@ export function CalendarPage({ teacherId }: { teacherId: string }) {
   const {
     addEvent,
     setEvents,
+    setTasks,
+    setStudents,
     setView,
     updateEvent,
     deleteEvent,
@@ -53,18 +56,31 @@ export function CalendarPage({ teacherId }: { teacherId: string }) {
   const weekDays = useTypedSelector(selectWeekDays)
   const events = useTypedSelector(selectEvents)
 
-  // Load from DB on mount
+  // Load events, tasks and students from DB on mount
   const loaded = useRef(false)
   useEffect(() => {
     if (loaded.current) return
     loaded.current = true
+
     fetch(`/api/teacher/calendar?teacherId=${teacherId}`)
       .then((r) => r.json())
-      .then((d) => { if (Array.isArray(d.events) && d.events.length > 0) setEvents(d.events) })
+      .then((d) => {
+        if (Array.isArray(d.events) && d.events.length > 0) setEvents(d.events)
+        if (Array.isArray(d.tasks) && d.tasks.length > 0) setTasks(d.tasks)
+      })
       .catch(() => {})
-  }, [setEvents, teacherId])
 
-  // Save to DB whenever events change (debounced 1.5s)
+    fetch(`/api/teacher/students?teacherId=${teacherId}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (Array.isArray(d.students)) setStudents(d.students as CalendarStudent[])
+      })
+      .catch(() => {})
+  }, [setEvents, setTasks, setStudents, teacherId])
+
+  const tasks = useTypedSelector(selectTasks)
+
+  // Save to DB whenever events or tasks change (debounced 1.5s)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const initialMount = useRef(true)
   useEffect(() => {
@@ -74,12 +90,11 @@ export function CalendarPage({ teacherId }: { teacherId: string }) {
       fetch(`/api/teacher/calendar?teacherId=${teacherId}`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({events}),
+        body: JSON.stringify({events, tasks}),
       }).catch(() => {})
     }, 1500)
     return () => clearTimeout(saveTimer.current)
-  }, [events])
-  const tasks = useTypedSelector(selectTasks)
+  }, [events, tasks])
   const students = useTypedSelector(selectStudents)
   const selectedEvent = useTypedSelector(selectSelectedEvent)
   const selectedTask = useTypedSelector(selectSelectedTask)

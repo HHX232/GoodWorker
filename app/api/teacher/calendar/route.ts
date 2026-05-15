@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { id, role } = session.user as { id: string; role: string }
-  if (role !== 'TEACHER' && role !== 'ADMIN') return NextResponse.json({ events: [] })
+  if (role !== 'TEACHER' && role !== 'ADMIN') return NextResponse.json({ events: [], tasks: [] })
 
   const teacherId = await resolveTeacherId(req, id, role)
   if (!teacherId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -23,8 +23,11 @@ export async function GET(req: NextRequest) {
     select: { calendar: true },
   })
 
-  const calendarData = teacher?.calendar as { events?: unknown[] } | null
-  return NextResponse.json({ events: calendarData?.events ?? [] })
+  const calendarData = teacher?.calendar as { events?: unknown[]; tasks?: unknown[] } | null
+  return NextResponse.json({
+    events: calendarData?.events ?? [],
+    tasks: calendarData?.tasks ?? [],
+  })
 }
 
 export async function POST(req: NextRequest) {
@@ -37,11 +40,11 @@ export async function POST(req: NextRequest) {
   const teacherId = await resolveTeacherId(req, id, role)
   if (!teacherId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const { events } = await req.json()
+  const { events, tasks } = await req.json()
 
   await prisma.teacher.update({
     where: { id: teacherId },
-    data: { calendar: { events } },
+    data: { calendar: { events: events ?? [], tasks: tasks ?? [] } },
   })
 
   return NextResponse.json({ ok: true })
