@@ -11,6 +11,12 @@ function attachVideoWithRetry(identity: string, track: any, attempts = 6, delay 
   if (el) { track.attach(el); return }
   if (attempts > 0) setTimeout(() => attachVideoWithRetry(identity, track, attempts - 1, delay * 1.5), delay)
 }
+
+function attachVideoToEl(elId: string, track: any, attempts = 6, delay = 150) {
+  const el = document.getElementById(elId) as HTMLVideoElement | null
+  if (el) { track.attach(el); return }
+  if (attempts > 0) setTimeout(() => attachVideoToEl(elId, track, attempts - 1, delay * 1.5), delay)
+}
 import type { Participant } from '../types'
 
 const TURN = {
@@ -43,6 +49,8 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
   const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([])
   const [agentIdentity, setAgentIdentity] = useState<string | null>(null)
   const [debugLog, setDebugLog] = useState<string[]>([])
+  const [screenShareEnabled, setScreenShareEnabled] = useState(false)
+  const [sharingIdentity, setSharingIdentity] = useState<string | null>(null)
   const videoDeviceIdxRef = useRef(0)
 
   const dlog = (msg: string) => {
@@ -232,9 +240,14 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
       const isMob = /Android|iP(hone|ad|od)/i.test(navigator.userAgent) ||
         (/Macintosh/i.test(navigator.userAgent) && 'ontouchend' in document)
 
-      room.on(RoomEvent.TrackSubscribed, (track: any, _pub: any, p: any) => {
-        dlog(`TS ${p.identity} ${track.kind}`)
+      room.on(RoomEvent.TrackSubscribed, (track: any, pub: any, p: any) => {
+        dlog(`TS ${p.identity} ${track.kind} ${pub.source ?? ''}`)
         if (p.identity.startsWith('agent-')) return
+        if (pub.source === Track.Source.ScreenShare) {
+          setSharingIdentity(p.identity)
+          setTimeout(() => attachVideoToEl(`ss-${p.identity}`, track), 150)
+          return
+        }
         upsert(p.identity)
         if (track.kind === Track.Kind.Video || track.kind === 'video') {
           // Delay so React can render the <video> element before attaching
@@ -243,7 +256,12 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
           attachTrack(p.identity, track)
         }
       })
-      room.on(RoomEvent.TrackUnsubscribed, (track: any, _pub: any, p: any) => {
+      room.on(RoomEvent.TrackUnsubscribed, (track: any, pub: any, p: any) => {
+        if (pub.source === Track.Source.ScreenShare) {
+          track.detach()
+          setSharingIdentity(prev => prev === p.identity ? null : prev)
+          return
+        }
         if (track.kind === Track.Kind.Audio || track.kind === 'audio') {
           // Keep the <audio> element alive — just mute it so there's no mic-release click.
           // The element will be reused if the participant's audio track comes back.
@@ -342,11 +360,23 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
           if (pub.track) attachTrack(p.identity, pub.track)
         })
       })
-      // LocalTrackPublished fires when our own camera/mic track is ready —
-      // more reliable than reading the publication right after setCameraEnabled.
+      // LocalTrackPublished fires when our own camera/mic/screen track is ready.
       room.on(RoomEvent.LocalTrackPublished, (pub: any) => {
+        if (pub.source === Track.Source.ScreenShare && pub.track) {
+          setSharingIdentity(room.localParticipant.identity)
+          setScreenShareEnabled(true)
+          attachVideoToEl(`ss-${room.localParticipant.identity}`, pub.track)
+          return
+        }
         if (pub.track && (pub.kind === Track.Kind.Video || pub.kind === 'video')) {
           attachVideoWithRetry(room.localParticipant.identity, pub.track)
+        }
+      })
+      // User stopped sharing via browser native UI
+      room.on(RoomEvent.LocalTrackUnpublished, (pub: any) => {
+        if (pub.source === Track.Source.ScreenShare) {
+          setScreenShareEnabled(false)
+          setSharingIdentity(null)
         }
       })
 
@@ -452,6 +482,24 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
     }
   }, [videoDevices])
 
+  const toggleScreenShare = useCallback(async () => {
+    const room = roomRef.current
+    if (!room) return
+    try {
+      if (screenShareEnabled) {
+        await room.localParticipant.setScreenShareEnabled(false)
+        // State is cleared in LocalTrackUnpublished handler
+      } else {
+        await room.localParticipant.setScreenShareEnabled(true)
+        // State is set in LocalTrackPublished handler
+      }
+    } catch (e) {
+      console.error('toggleScreenShare failed', e)
+      setScreenShareEnabled(false)
+      setSharingIdentity(null)
+    }
+  }, [screenShareEnabled])
+
   const disconnect = useCallback(async () => {
     await roomRef.current?.disconnect()
     roomRef.current = null
@@ -484,5 +532,8 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
     updateVideoQualities,
     agentIdentity,
     debugLog,
+    screenShareEnabled,
+    sharingIdentity,
+    toggleScreenShare,
   }
 }

@@ -1,88 +1,32 @@
 'use client'
 import Image from 'next/image'
 import {useMemo, useRef, useState} from 'react'
+import ModalWindowDefault from '../../Modals/ModalWindowDefault/ModalWindowDefault'
 import styles from './WeekCalendar.module.scss'
+
+export interface CalendarLesson {
+  id: string
+  studentName: string
+  studentAvatar?: string | null
+  subject: string
+  time: string     // "HH:MM"
+  duration: number // minutes
+  date: string     // ISO datetime string
+}
 
 interface Lesson {
   id: string
   studentName: string
-  studentAvatar: string
+  studentAvatar: string | null
   subject: string
   time: string
   duration: number
   date: Date
 }
 
-const today = new Date(2024, 8, 24)
-
-const mockLessons: Lesson[] = [
-  {
-    id: '1',
-    studentName: 'Алексей М.',
-    studentAvatar: 'https://i.pravatar.cc/40?img=11',
-    subject: 'Алгебра',
-    time: '09:00',
-    duration: 60,
-    date: new Date(2024, 8, 24)
-  },
-  {
-    id: '2',
-    studentName: 'Мария К.',
-    studentAvatar: 'https://i.pravatar.cc/40?img=20',
-    subject: 'Геометрия',
-    time: '11:30',
-    duration: 90,
-    date: new Date(2024, 8, 24)
-  },
-  {
-    id: '3',
-    studentName: 'Денис В.',
-    studentAvatar: 'https://i.pravatar.cc/40?img=33',
-    subject: 'Математика ЕГЭ',
-    time: '14:00',
-    duration: 60,
-    date: new Date(2024, 8, 25)
-  },
-  {
-    id: '4',
-    studentName: 'Ольга Р.',
-    studentAvatar: 'https://i.pravatar.cc/40?img=45',
-    subject: 'Алгебра',
-    time: '10:00',
-    duration: 60,
-    date: new Date(2024, 8, 26)
-  },
-  {
-    id: '5',
-    studentName: 'Иван С.',
-    studentAvatar: 'https://i.pravatar.cc/40?img=52',
-    subject: 'Тригонометрия',
-    time: '16:00',
-    duration: 90,
-    date: new Date(2024, 8, 27)
-  },
-  {
-    id: '6',
-    studentName: 'Алексей М.',
-    studentAvatar: 'https://i.pravatar.cc/40?img=11',
-    subject: 'Алгебра',
-    time: '09:00',
-    duration: 60,
-    date: new Date(2024, 8, 28)
-  },
-  {
-    id: '7',
-    studentName: 'Мария К.',
-    studentAvatar: 'https://i.pravatar.cc/40?img=20',
-    subject: 'Геометрия',
-    time: '15:30',
-    duration: 45,
-    date: new Date(2024, 8, 28)
-  }
-]
-
 const WEEK_DAYS_SHORT = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 const MONTH_NAMES_SHORT = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
+const MONTH_NAMES_RU = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
 
 const START_HOUR = 8
 const END_HOUR = 20
@@ -117,9 +61,7 @@ function timeToMinutes(t: string) {
 
 function formatEndTime(time: string, duration: number) {
   const t = timeToMinutes(time) + duration
-  return `${Math.floor(t / 60)
-    .toString()
-    .padStart(2, '0')}:${(t % 60).toString().padStart(2, '0')}`
+  return `${Math.floor(t / 60).toString().padStart(2, '0')}:${(t % 60).toString().padStart(2, '0')}`
 }
 
 function buildHourMap(weekLessons: Lesson[], weekDays: Date[]) {
@@ -158,27 +100,71 @@ function buildColumnFlexes(weekDays: Date[], weekLessons: Lesson[]): number[] {
   return weekDays.map((day) => (weekLessons.some((l) => isSameDay(l.date, day)) ? COL_FLEX_BUSY : COL_FLEX_EMPTY))
 }
 
-function findNextLessonId(lessons: Lesson[], ref: Date): string | null {
-  const refMin = ref.getHours() * 60 + ref.getMinutes()
-  let best: Lesson | null = null
-  let bestDelta = Infinity
-  for (const l of lessons) {
-    const dayDiff =
-      (Date.UTC(l.date.getFullYear(), l.date.getMonth(), l.date.getDate()) -
-        Date.UTC(ref.getFullYear(), ref.getMonth(), ref.getDate())) /
-      86400000
-    if (dayDiff < 0) continue
-    const delta = dayDiff * 1440 + timeToMinutes(l.time) - refMin
-    if (delta >= 0 && delta < bestDelta) {
-      bestDelta = delta
-      best = l
-    }
-  }
-  return best?.id ?? null
+function formatDate(date: Date) {
+  return `${date.getDate()} ${MONTH_NAMES_RU[date.getMonth()]} ${date.getFullYear()}`
 }
 
-export function WeekCalendar({extraClass}: {extraClass?: string}) {
-  const [weekStart, setWeekStart] = useState<Date>(getWeekStart(today))
+function LessonDetail({lesson}: {lesson: Lesson}) {
+  const endTime = formatEndTime(lesson.time, lesson.duration)
+  return (
+    <div style={{padding: '8px 0 4px', display: 'flex', flexDirection: 'column', gap: 16}}>
+      <div style={{display: 'flex', alignItems: 'center', gap: 12}}>
+        {lesson.studentAvatar ? (
+          <Image
+            width={48}
+            height={48}
+            src={lesson.studentAvatar}
+            alt={lesson.studentName}
+            style={{borderRadius: '50%', objectFit: 'cover'}}
+          />
+        ) : (
+          <div style={{width: 48, height: 48, borderRadius: '50%', background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, color: '#bbb'}}>
+            {lesson.studentName.charAt(0)}
+          </div>
+        )}
+        <div>
+          <p style={{margin: 0, fontSize: 16, fontWeight: 700, color: '#1a1a1a'}}>{lesson.studentName}</p>
+          <p style={{margin: '2px 0 0', fontSize: 13, color: '#888'}}>{lesson.subject}</p>
+        </div>
+      </div>
+
+      <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12}}>
+        <div style={{background: '#f8f8f8', borderRadius: 12, padding: '12px 14px'}}>
+          <p style={{margin: 0, fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px'}}>Дата</p>
+          <p style={{margin: '4px 0 0', fontSize: 14, fontWeight: 600, color: '#1a1a1a'}}>{formatDate(lesson.date)}</p>
+        </div>
+        <div style={{background: '#f8f8f8', borderRadius: 12, padding: '12px 14px'}}>
+          <p style={{margin: 0, fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px'}}>Время</p>
+          <p style={{margin: '4px 0 0', fontSize: 14, fontWeight: 600, color: '#1a1a1a'}}>{lesson.time}–{endTime}</p>
+        </div>
+        <div style={{background: '#f8f8f8', borderRadius: 12, padding: '12px 14px'}}>
+          <p style={{margin: 0, fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px'}}>Длительность</p>
+          <p style={{margin: '4px 0 0', fontSize: 14, fontWeight: 600, color: '#1a1a1a'}}>{lesson.duration} мин</p>
+        </div>
+        <div style={{background: '#f8f8f8', borderRadius: 12, padding: '12px 14px'}}>
+          <p style={{margin: 0, fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px'}}>Предмет</p>
+          <p style={{margin: '4px 0 0', fontSize: 14, fontWeight: 600, color: '#1a1a1a'}}>{lesson.subject}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export function WeekCalendar({extraClass, lessons: propLessons}: {extraClass?: string; lessons?: CalendarLesson[]}) {
+  const today = useMemo(() => new Date(), [])
+
+  const allLessons: Lesson[] = useMemo(
+    () =>
+      (propLessons ?? []).map((cl) => ({
+        ...cl,
+        studentAvatar: cl.studentAvatar ?? null,
+        date: new Date(cl.date),
+      })),
+    [propLessons]
+  )
+
+  const [weekStart, setWeekStart] = useState<Date>(() => getWeekStart(new Date()))
+  const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null)
   const gridRef = useRef<HTMLDivElement>(null)
 
   const weekDays = useMemo(() => Array.from({length: 7}, (_, i) => addDays(weekStart, i)), [weekStart])
@@ -196,9 +182,12 @@ export function WeekCalendar({extraClass}: {extraClass?: string}) {
       return `${sDay}–${eDay} ${sMonth}${yearSuffix}`
     }
     return `${sDay} ${sMonth} – ${eDay} ${eMonth}${yearSuffix}`
-  }, [weekStart, weekEnd])
+  }, [weekStart, weekEnd, today])
 
-  const weekLessons = useMemo(() => mockLessons.filter((l) => weekDays.some((d) => isSameDay(d, l.date))), [weekDays])
+  const weekLessons = useMemo(
+    () => allLessons.filter((l) => weekDays.some((d) => isSameDay(d, l.date))),
+    [allLessons, weekDays]
+  )
 
   const {tops, totalHeight, topForMinute, heightForLesson} = useMemo(
     () => buildHourMap(weekLessons, weekDays),
@@ -206,8 +195,6 @@ export function WeekCalendar({extraClass}: {extraClass?: string}) {
   )
 
   const colFlexes = useMemo(() => buildColumnFlexes(weekDays, weekLessons), [weekDays, weekLessons])
-
-  const nextId = useMemo(() => findNextLessonId(mockLessons, today), [])
   const hours = Array.from({length: TOTAL_HOURS + 1}, (_, i) => START_HOUR + i)
 
   return (
@@ -218,13 +205,7 @@ export function WeekCalendar({extraClass}: {extraClass?: string}) {
         <div className={styles.nav}>
           <button className={styles.nav_btn} onClick={() => setWeekStart(addDays(weekStart, -7))} aria-label='Назад'>
             <svg width='14' height='14' viewBox='0 0 24 24' fill='none'>
-              <path
-                d='M15 18l-6-6 6-6'
-                stroke='currentColor'
-                strokeWidth='2.5'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-              />
+              <path d='M15 18l-6-6 6-6' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round' />
             </svg>
           </button>
           <button className={styles.nav_btn_today} onClick={() => setWeekStart(getWeekStart(today))}>
@@ -232,13 +213,7 @@ export function WeekCalendar({extraClass}: {extraClass?: string}) {
           </button>
           <button className={styles.nav_btn} onClick={() => setWeekStart(addDays(weekStart, 7))} aria-label='Вперёд'>
             <svg width='14' height='14' viewBox='0 0 24 24' fill='none'>
-              <path
-                d='M9 18l6-6-6-6'
-                stroke='currentColor'
-                strokeWidth='2.5'
-                strokeLinecap='round'
-                strokeLinejoin='round'
-              />
+              <path d='M9 18l6-6-6-6' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round' />
             </svg>
           </button>
         </div>
@@ -253,11 +228,7 @@ export function WeekCalendar({extraClass}: {extraClass?: string}) {
           return (
             <div
               key={i}
-              className={[
-                styles.day_header,
-                isToday ? styles.day_header_today : '',
-                !hasBusy ? styles.day_header_empty : ''
-              ]
+              className={[styles.day_header, isToday ? styles.day_header_today : '', !hasBusy ? styles.day_header_empty : '']
                 .filter(Boolean)
                 .join(' ')}
               style={{flex: colFlexes[i]}}
@@ -289,7 +260,7 @@ export function WeekCalendar({extraClass}: {extraClass?: string}) {
                   className={[
                     styles.column,
                     isSameDay(day, today) ? styles.column_today : '',
-                    dayLessons.length === 0 ? styles.column_empty : ''
+                    dayLessons.length === 0 ? styles.column_empty : '',
                   ]
                     .filter(Boolean)
                     .join(' ')}
@@ -299,27 +270,19 @@ export function WeekCalendar({extraClass}: {extraClass?: string}) {
                     const top = topForMinute(timeToMinutes(lesson.time))
                     const height = Math.max(heightForLesson(lesson.time, lesson.duration), 28)
                     const isShort = height < 52
-                    const isNext = lesson.id === nextId
 
                     return (
                       <div
                         key={lesson.id}
-                        className={[
-                          styles.lesson_block,
-                          isShort ? styles.lesson_block_short : '',
-                          isNext ? styles.lesson_block_next : ''
-                        ]
-                          .filter(Boolean)
-                          .join(' ')}
-                        style={{top, height}}
+                        className={[styles.lesson_block, isShort ? styles.lesson_block_short : ''].filter(Boolean).join(' ')}
+                        style={{top, height, cursor: 'pointer'}}
+                        onClick={() => setSelectedLesson(lesson)}
                       >
-                        <span className={styles.lesson_block__arrow} aria-hidden>
-                          ↗
-                        </span>
-                        {!isNext && <div className={styles.lesson_block__accent} />}
+                        <span className={styles.lesson_block__arrow} aria-hidden>↗</span>
+                        <div className={styles.lesson_block__accent} />
 
                         <div className={styles.lesson_block__body}>
-                          {!isShort && (
+                          {!isShort && lesson.studentAvatar && (
                             <Image
                               width={24}
                               height={24}
@@ -359,6 +322,15 @@ export function WeekCalendar({extraClass}: {extraClass?: string}) {
             })()}
         </div>
       </div>
+
+      {/* ── Lesson detail modal ── */}
+      <ModalWindowDefault
+        isOpen={!!selectedLesson}
+        onClose={() => setSelectedLesson(null)}
+        additionalTitle={<span style={{fontSize: 14, fontWeight: 700, color: '#1a1a1a'}}>{selectedLesson?.subject ?? 'Занятие'}</span>}
+      >
+        {selectedLesson && <LessonDetail lesson={selectedLesson} />}
+      </ModalWindowDefault>
     </div>
   )
 }

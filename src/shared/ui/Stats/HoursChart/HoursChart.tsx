@@ -4,15 +4,6 @@ import {Bar, BarChart, CartesianGrid, Cell, ReferenceLine, ResponsiveContainer, 
 import ModalWindowDefault from '../../Modals/ModalWindowDefault/ModalWindowDefault'
 import styles from './HoursChart.module.scss'
 
-const monthsData: Record<string, {day: string; hours: number}[]> = {
-  Январь: Array.from({length: 31}, (_, i) => ({day: String(i + 1), hours: Math.round(Math.random() * 6 * 10) / 10})),
-  Февраль: Array.from({length: 28}, (_, i) => ({day: String(i + 1), hours: Math.round(Math.random() * 6 * 10) / 10})),
-  Март: Array.from({length: 31}, (_, i) => ({day: String(i + 1), hours: Math.round(Math.random() * 10 * 10) / 10})),
-  Апрель: Array.from({length: 30}, (_, i) => ({day: String(i + 1), hours: Math.round(Math.random() * 5 * 10) / 10}))
-}
-
-const MONTHS = Object.keys(monthsData)
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CustomTooltip = ({active, payload, label}: any) => {
   if (active && payload?.length) {
@@ -26,16 +17,29 @@ const CustomTooltip = ({active, payload, label}: any) => {
   return null
 }
 
-function HoursChart({extraClass}: {extraClass?: string}) {
-  const [selectedMonth, setSelectedMonth] = useState('Март')
+function HoursChart({
+  extraClass,
+  monthsData,
+}: {
+  extraClass?: string
+  monthsData?: Record<string, {day: string; hours: number}[]>
+}) {
+  const MONTHS = monthsData ? Object.keys(monthsData) : []
+  const [selectedMonth, setSelectedMonth] = useState<string>('')
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
 
-  const data = monthsData[selectedMonth]
+  // Pick the latest month by default when data loads
+  const activeMonth = selectedMonth && monthsData?.[selectedMonth] ? selectedMonth : (MONTHS[MONTHS.length - 1] ?? '')
+  const data = (monthsData?.[activeMonth] ?? []).filter((_, i, arr) => {
+    // Show every other day label if there are many bars, but keep all data
+    return arr.length <= 31
+  })
 
   const totalHours = useMemo(() => data.reduce((s, d) => s + d.hours, 0).toFixed(1), [data])
-  const maxDay = useMemo(() => data.reduce((a, b) => (a.hours > b.hours ? a : b)), [data])
-  const avgHours = useMemo(() => (+totalHours / data.filter((d) => d.hours > 0).length).toFixed(1), [data, totalHours])
-  const avg = useMemo(() => +totalHours / data.filter((d) => d.hours > 0).length, [data, totalHours])
+  const maxDay = useMemo(() => data.length ? data.reduce((a, b) => (a.hours > b.hours ? a : b)) : {day: '—', hours: 0}, [data])
+  const activeDays = useMemo(() => data.filter((d) => d.hours > 0).length, [data])
+  const avgHours = useMemo(() => activeDays > 0 ? (+totalHours / activeDays).toFixed(1) : '0.0', [totalHours, activeDays])
+  const avg = useMemo(() => activeDays > 0 ? +totalHours / activeDays : 0, [totalHours, activeDays])
 
   const getBarColor = (entry: {day: string; hours: number}, idx: number) => {
     if (hoveredIdx !== null) {
@@ -54,7 +58,7 @@ function HoursChart({extraClass}: {extraClass?: string}) {
         <div className={styles.chart_header__left}>
           <h3 className={styles.chart_title}>Часы занятий</h3>
           <p className={styles.chart_subtitle}>
-            Итого за {selectedMonth}: <strong>{totalHours} ч</strong>
+            Итого за {activeMonth}: <strong>{totalHours} ч</strong>
           </p>
         </div>
 
@@ -62,7 +66,7 @@ function HoursChart({extraClass}: {extraClass?: string}) {
           {MONTHS.map((m, i) => (
             <button
               key={m}
-              className={`${styles.month_tab} ${selectedMonth === m ? styles.month_tab_active : ''}`}
+              className={`${styles.month_tab} ${activeMonth === m ? styles.month_tab_active : ''}`}
               style={{animationDelay: `${i * 40}ms`}}
               onClick={() => setSelectedMonth(m)}
             >
@@ -84,7 +88,7 @@ function HoursChart({extraClass}: {extraClass?: string}) {
         </div>
         <div className={styles.chip}>
           <span className={styles.chip_dot} style={{background: '#888'}} />
-          Дней с занятиями: <strong>{data.filter((d) => d.hours > 0).length}</strong>
+          Дней с занятиями: <strong>{activeDays}</strong>
         </div>
       </div>
 

@@ -111,7 +111,12 @@ export function useTranscription({
         broadcast({ type: 'sr_live', identity: userName, text: interim })
         interimBuffer = interim
         if (interimTimer) clearTimeout(interimTimer)
-        interimTimer = setTimeout(commitInterim, 4000)
+        if (interimBuffer.length >= 400) {
+          // Force-stop SR: triggers onend → commitInterim, then SR auto-restarts
+          try { sr.stop() } catch {}
+        } else {
+          interimTimer = setTimeout(commitInterim, 4000)
+        }
       }
 
       if (final) {

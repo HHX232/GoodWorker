@@ -8,15 +8,9 @@ import ModalWindowDefault from '../../Modals/ModalWindowDefault/ModalWindowDefau
 import {ReceiptFullPreview} from '../Receipt/ReceiptFullPreview'
 import {ReceiptMiniPreview} from '../Receipt/ReceiptMiniPreview'
 
-const mockTutor = {
-  avatarUrl: 'https://i.pravatar.cc/200?img=47',
-  name: 'Ekaterina Ivanova',
-  minPrice: 800,
-  currency: '₽',
-  rating: 4.9,
-  reviews: 134,
-  experience: 5,
-  receipts: mockReceipts
+interface TeacherInfo {
+  name: string
+  avatarUrl?: string | null
 }
 
 type ModalState = {type: 'none'} | {type: 'list'} | {type: 'receipt'; receipt: Receipt}
@@ -35,8 +29,11 @@ function ReceiptsListContent({receipts, onSelect}: {receipts: Receipt[]; onSelec
   )
 }
 
-function StatsHeroCard({extraClass}: {extraClass?: string}) {
+function StatsHeroCard({extraClass, teacher}: {extraClass?: string; teacher?: TeacherInfo}) {
   const [modal, setModal] = useState<ModalState>({type: 'none'})
+
+  const displayName = teacher?.name ?? 'Учитель'
+  const displayAvatar = teacher?.avatarUrl ?? null
 
   const isOpen = modal.type !== 'none'
   const closeAll = () => setModal({type: 'none'})
@@ -46,7 +43,7 @@ function StatsHeroCard({extraClass}: {extraClass?: string}) {
 
   const modalTitle =
     modal.type === 'list'
-      ? `Чеки (${mockTutor.receipts.length})`
+      ? `Чеки (${mockReceipts.length})`
       : modal.type === 'receipt'
       ? modal.receipt.subject
       : ''
@@ -55,20 +52,23 @@ function StatsHeroCard({extraClass}: {extraClass?: string}) {
     <>
       <div className={`${styles.avatar_card} ${extraClass ?? ''}`}>
         <div className={styles.avatar_img_wrap}>
-          <Image
-            width={300}
-            height={300}
-            src={mockTutor.avatarUrl}
-            alt={mockTutor.name}
-            className={styles.avatar_img}
-          />
+          {displayAvatar ? (
+            <Image
+              width={300}
+              height={300}
+              src={displayAvatar}
+              alt={displayName}
+              className={styles.avatar_img}
+            />
+          ) : (
+            <div className={styles.avatar_img} style={{background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 64, color: '#ccc'}}>
+              {displayName.charAt(0)}
+            </div>
+          )}
           <div className={styles.blur_box}>
             <div className={styles.left_name_text}>
-              <h2 className={styles.avatar_name}>{mockTutor.name}</h2>
-              <span>Стаж: {mockTutor.experience} лет</span>
-            </div>
-            <div className={styles.right_name_text}>
-              от {mockTutor.minPrice} {mockTutor.currency}
+              <h2 className={styles.avatar_name}>{displayName}</h2>
+              <span>Учитель</span>
             </div>
           </div>
         </div>
@@ -76,7 +76,7 @@ function StatsHeroCard({extraClass}: {extraClass?: string}) {
         <div className={styles.avatar_info}>
           <h2>Чеки</h2>
           <div className={styles.receipts_row}>
-            {mockTutor.receipts.slice(0, 2).map((r) => (
+            {mockReceipts.slice(0, 2).map((r) => (
               <button key={r.id} type='button' className={styles.receipt_mini} onClick={() => openReceipt(r)}>
                 <p className={styles.rm_date}>{r.date.slice(0, 6)}</p>
                 <p className={styles.rm_subj}>{r.subject}</p>
@@ -100,8 +100,8 @@ function StatsHeroCard({extraClass}: {extraClass?: string}) {
           </div>
 
           <div className={styles.review_box}>
-            <span className={styles.avatar_reviews}>{mockTutor.reviews} отзывов</span>
-            <div className={styles.avatar_badge}>★ {mockTutor.rating}</div>
+            <span className={styles.avatar_reviews}>Профиль</span>
+            <div className={styles.avatar_badge}>★ 5.0</div>
           </div>
         </div>
       </div>
@@ -112,7 +112,7 @@ function StatsHeroCard({extraClass}: {extraClass?: string}) {
         onClose={closeAll}
         additionalTitle={<p className={styles.modal_title}>{modalTitle}</p>}
       >
-        {modal.type === 'list' && <ReceiptsListContent receipts={mockTutor.receipts} onSelect={openReceipt} />}
+        {modal.type === 'list' && <ReceiptsListContent receipts={mockReceipts} onSelect={openReceipt} />}
         {modal.type === 'receipt' && <ReceiptFullPreview receipt={modal.receipt} onBack={backToList} />}
       </ModalWindowDefault>
     </>

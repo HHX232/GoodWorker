@@ -160,6 +160,13 @@
    text-align: right;
 }
 
+.legend__count {
+   font-size: 10px;
+   color: #94a3b8;
+   font-weight: 400;
+   white-space: nowrap;
+}
+
 // ── Progress bar ──────────────────────────────────
 .bar_track {
    height: 3px;

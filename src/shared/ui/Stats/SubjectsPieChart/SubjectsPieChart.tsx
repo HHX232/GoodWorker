@@ -3,15 +3,9 @@ import {useCallback, useState} from 'react'
 import {Cell, Pie, PieChart, ResponsiveContainer, Sector} from 'recharts'
 import styles from './SubjectsPieChart.module.scss'
 
-const data = [
-  {name: 'Математика', hours: 10, color: '#1a1a1a'},
-  {name: 'Физика', hours: 6, color: '#444444'},
-  {name: 'Английский', hours: 5, color: '#787878'},
-  {name: 'Химия', hours: 4, color: '#ababab'},
-  {name: 'Русский', hours: 3, color: '#d4d4d4'}
+const FALLBACK_DATA = [
+  {name: 'Нет данных', hours: 1, count: 0, color: '#e0e0e0'},
 ]
-
-const total = data.reduce((s, d) => s + d.hours, 0)
 
 // Active sector shape — расширяет сектор при наведении
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -33,7 +27,17 @@ const ActiveShape = (props: any) => {
   )
 }
 
-export function SubjectsPieChart({extraClass}: {extraClass?: string}) {
+interface SubjectItem {
+  name: string
+  hours: number
+  count?: number
+  color: string
+}
+
+export function SubjectsPieChart({extraClass, data: propData}: {extraClass?: string; data?: SubjectItem[]}) {
+  const data = propData && propData.length > 0 ? propData : FALLBACK_DATA
+  const total = data.reduce((s, d) => s + d.hours, 0)
+
   const [activeIdx, setActiveIdx] = useState<number | null>(null)
   const [selected, setSelected] = useState<number | null>(null)
 
@@ -122,6 +126,9 @@ export function SubjectsPieChart({extraClass}: {extraClass?: string}) {
                 <div className={styles.legend__right}>
                   <span className={styles.legend__pct}>{pct}%</span>
                   <span className={styles.legend__val}>{d.hours} ч</span>
+                  {d.count !== undefined && d.count > 0 && (
+                    <span className={styles.legend__count}>{d.count} ур.</span>
+                  )}
                 </div>
               </div>
 

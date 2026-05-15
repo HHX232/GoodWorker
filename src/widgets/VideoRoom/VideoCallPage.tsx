@@ -7,6 +7,7 @@ import styles from './VideoCallPage.module.scss'
 import {
   IconCrown, IconMicOff, IconMicOn, IconStar, IconVolumeOff, IconVolumeOn,
   IconNotes, IconCam, IconCamOff, IconLink, IconCheck, IconKick, IconCopy, IconPhone, IconVideo,
+  IconScreenShare, IconScreenShareOff,
 } from './icons'
 import { LAYOUTS, LAYOUT_LABELS, type Layout, type Participant } from './types'
 import { useVideoRoom } from './hooks/useVideoRoom'
@@ -29,6 +30,37 @@ function nameColor(n: string) {
 function Avatar({ name, url }: { name: string; url?: string }) {
   if (url) return <Image width={100} height={100}  className={styles.avatarImg} src={url} alt={name} />
   return <div className={styles.avatar} style={{ background: nameColor(name) }}>{name[0]?.toUpperCase()}</div>
+}
+
+// ── Live caption widget (collapsible) ────────────────────────────────────────
+function LiveCaptionWidget({ captionText }: { captionText: string }) {
+  const [collapsed, setCollapsed] = useState(false)
+  const hasText = captionText.trim().length > 0
+  return (
+    <div className={`${styles.liveCaption} ${collapsed ? styles.liveCaptionCollapsed : ''}`}>
+      <button
+        className={styles.liveCaptionHeader}
+        onClick={() => setCollapsed(c => !c)}
+        aria-label={collapsed ? 'Развернуть субтитры' : 'Свернуть субтитры'}
+      >
+        <span>Субтитры</span>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+          <path
+            d={collapsed ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'}
+            stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+      {!collapsed && (
+        <div className={styles.liveCaptionBody}>
+          {hasText
+            ? <><span className={styles.liveCaptionDot} /><span>{captionText}</span></>
+            : <span className={styles.liveCaptionPlaceholder}>Говорите...</span>
+          }
+        </div>
+      )}
+    </div>
+  )
 }
 
 // ── Draggable PiP tile ────────────────────────────────────────────────────────
@@ -77,6 +109,14 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   const [debugChunks, setDebugChunks] = useState(0)
   const [debugMsgs, setDebugMsgs] = useState<string[]>([])
   const [showLogs, setShowLogs] = useState(false)
+
+  // Toast state
+  const [toast, setToast] = useState<{ message: string; loading: boolean } | null>(null)
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Controls auto-hide state
+  const [controlsActive, setControlsActive] = useState(true)
+  const controlsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Stable ref for the data-message router — updated on every render so the
   // LiveKit event listener (registered once) always calls the latest handler.
@@ -138,7 +178,8 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   const canModerate = isOwner
 
   // Destructure stable callbacks so useCallback deps are simple scalars/functions
-  const { broadcast, disconnect, joinRoom, mute, muteVideo, kick, toggleLocalAudio, toggleMic, toggleCam, reloadCamera, switchCamera, updateVideoQualities } = room
+  const { broadcast, disconnect, joinRoom, mute, muteVideo, kick, toggleLocalAudio, toggleMic, toggleCam, reloadCamera, switchCamera, updateVideoQualities, toggleScreenShare } = room
+  const { screenShareEnabled, sharingIdentity } = room
 
   // ── Room-level broadcast actions ──────────────────────────────────────────
   const changeLayout = useCallback((l: Layout) => {
@@ -159,6 +200,46 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
       setTimeout(() => setCopied(false), 2000)
     })
   }, [roomId])
+
+  // ── Toast helpers ──────────────────────────────────────────────────────────
+  const showToast = useCallback((message: string, loading = true) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
+    setToast({ message, loading })
+    if (!loading) {
+      toastTimerRef.current = setTimeout(() => setToast(null), 2200)
+    }
+  }, [])
+
+  // ── Camera actions with toast ──────────────────────────────────────────────
+  const handleReloadCamera = useCallback(async () => {
+    showToast('Перезапуск камеры...')
+    await reloadCamera()
+    showToast('Камера перезапущена', false)
+  }, [reloadCamera, showToast])
+
+  const handleSwitchCamera = useCallback(async () => {
+    showToast('Смена камеры...')
+    await switchCamera()
+    showToast('Камера изменена', false)
+  }, [switchCamera, showToast])
+
+  const handleToggleScreenShare = useCallback(async () => {
+    showToast(screenShareEnabled ? 'Остановка демонстрации...' : 'Запуск демонстрации...')
+    await toggleScreenShare()
+    setToast(null)
+  }, [screenShareEnabled, toggleScreenShare, showToast])
+
+  // ── Controls auto-hide ─────────────────────────────────────────────────────
+  const resetControlsTimer = useCallback(() => {
+    setControlsActive(true)
+    if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current)
+    controlsTimerRef.current = setTimeout(() => setControlsActive(false), 3000)
+  }, [])
+
+  const hideControlsNow = useCallback(() => {
+    if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current)
+    setControlsActive(false)
+  }, [])
 
   // ── Leave ──────────────────────────────────────────────────────────────────
   const { callNotes } = transcription
@@ -219,9 +300,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
     const captionText = p.isLocal
       ? transcription.liveText
       : (transcription.remoteLiveTexts[p.identity] || '')
-    // Show caption on large tile OR on main speaker tile (even in PiP).
-    // This ensures the big visible tile always shows active speech.
-    const showCaption = captionText.trim().length > 0 && (large || p.identity === mainSpeaker)
+    const showCaption = large || p.identity === mainSpeaker
 
     return (
       <div key={p.identity} className={`${styles.tile} ${p.isLocal ? styles.tileLocal : ''} ${large ? styles.tileLarge : ''} ${isPip ? styles.tilePip : ''}`}>
@@ -237,12 +316,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
         {audioMuted && <span className={styles.mutedIcon}><IconMicOff /></span>}
         {p.localAudioMuted && <span className={styles.localMutedIcon}><IconVolumeOff /></span>}
 
-        {showCaption && (
-          <div className={styles.liveCaption}>
-            <span className={styles.liveCaptionDot} />
-            <span>{captionText}</span>
-          </div>
-        )}
+        {showCaption && <LiveCaptionWidget captionText={captionText} />}
 
         {!p.isLocal && (
           <div className={styles.tileActions}>
@@ -378,7 +452,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
 
   // ── Controls bar ──────────────────────────────────────────────────────────
   const renderControls = (overlay: boolean) => (
-    <div className={`${styles.controls} ${overlay ? styles.controlsOverlay : ''}`}>
+    <div className={`${styles.controls} ${overlay ? styles.controlsOverlay : ''} ${overlay && controlsActive ? styles.controlsOverlayActive : ''}`}>
       <div className={styles.ctrlLeft}>
         <button className={`${styles.pill} ${copied ? styles.pillActive : ''}`} onClick={shareLink}>
           {copied ? <IconCheck /> : <IconLink />}
@@ -409,7 +483,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
           <span className={styles.roundLabel}>{room.camEnabled ? 'Камера' : 'Без камеры'}</span>
         </button>
         {room.videoDevices.length > 1 && (
-          <button className={styles.roundBtn} onClick={switchCamera} title="Сменить камеру">
+          <button className={styles.roundBtn} onClick={handleSwitchCamera} title="Сменить камеру">
             <div className={styles.roundIcon}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
@@ -419,7 +493,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
             <span className={styles.roundLabel}>Камера ↕</span>
           </button>
         )}
-        <button className={styles.roundBtn} onClick={reloadCamera} title="Перезагрузить камеру">
+        <button className={styles.roundBtn} onClick={handleReloadCamera} title="Перезагрузить камеру">
           <div className={styles.roundIcon}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="1 4 1 10 7 10"/>
@@ -427,6 +501,16 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
             </svg>
           </div>
           <span className={styles.roundLabel}>Камера ↺</span>
+        </button>
+        <button
+          className={`${styles.roundBtn} ${screenShareEnabled ? styles.roundOn : ''}`}
+          onClick={handleToggleScreenShare}
+          title="Демонстрация экрана"
+        >
+          <div className={styles.roundIcon}>
+            {screenShareEnabled ? <IconScreenShareOff /> : <IconScreenShare />}
+          </div>
+          <span className={styles.roundLabel}>{screenShareEnabled ? 'Стоп экран' : 'Экран'}</span>
         </button>
       </div>
 
@@ -438,6 +522,33 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
       </div>
     </div>
   )
+
+  // ── Screen share panel ────────────────────────────────────────────────────
+  const renderScreenSharePanel = () => {
+    if (!sharingIdentity) return null
+    const isLocal = sharingIdentity === userName
+    return (
+      <div className={styles.screenSharePanel}>
+        <div className={styles.screenShareHeader}>
+          <span>
+            {isLocal ? 'Вы демонстрируете экран' : `${sharingIdentity} демонстрирует экран`}
+          </span>
+          {isLocal && (
+            <button className={styles.screenShareStopBtn} onClick={handleToggleScreenShare}>
+              Остановить
+            </button>
+          )}
+        </div>
+        <video
+          id={`ss-${sharingIdentity}`}
+          className={styles.screenShareVideo}
+          autoPlay
+          playsInline
+          muted={isLocal}
+        />
+      </div>
+    )
+  }
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -500,12 +611,29 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
             </div>
           </div>
 
-          <div className={styles.videoArea}>
+          <div
+            className={styles.videoArea}
+            onMouseMove={resetControlsTimer}
+            onMouseLeave={hideControlsNow}
+          >
             {renderVideo()}
+            {renderScreenSharePanel()}
             {layout === 'pip' && renderControls(true)}
             {showNotes && renderNotesPanel()}
           </div>
           {layout !== 'pip' && renderControls(false)}
+        </div>
+      )}
+
+      {toast && (
+        <div className={`${styles.toast} ${toast.loading ? styles.toastLoading : styles.toastDone}`}>
+          {toast.loading && <span className={styles.toastSpinner} />}
+          {!toast.loading && (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          )}
+          <span>{toast.message}</span>
         </div>
       )}
 

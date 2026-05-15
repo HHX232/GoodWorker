@@ -85,6 +85,22 @@ export const IconPhone = () => (
   </svg>
 )
 
+export const IconScreenShare = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+    <rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="1.8"/>
+    <path d="M8 21h8M12 17v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+    <path d="M9 10l3-3 3 3M12 7v6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+)
+
+export const IconScreenShareOff = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+    <path d="M3 3l18 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+    <path d="M22 17H7M2 7.76V17a2 2 0 002 2h3M22 3H5a2 2 0 00-1.76 1.06" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+    <path d="M8 21h8M12 17v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+  </svg>
+)
+
 export const IconVideo = () => (
   <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
     <path d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>

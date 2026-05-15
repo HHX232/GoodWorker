@@ -7,6 +7,7 @@ interface StatsHeroProps {
   students?: number
   roadmaps?: number
   totalLessons?: number
+  totalHours?: number
   extraClass?: string
 }
 
@@ -48,7 +49,7 @@ function Modal({isOpen, onClose}: {isOpen: boolean; onClose: () => void}) {
   )
 }
 
-export function StatsHero({students = 78, roadmaps = 56, totalLessons = 203, extraClass}: StatsHeroProps) {
+export function StatsHero({students = 0, roadmaps = 0, totalLessons = 0, totalHours = 0, extraClass}: StatsHeroProps) {
   const [animated, setAnimated] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
 
@@ -60,7 +61,8 @@ export function StatsHero({students = 78, roadmaps = 56, totalLessons = 203, ext
   const metrics = [
     {num: students, label: 'Учеников'},
     {num: roadmaps, label: 'Road-map'},
-    {num: totalLessons, label: 'Уроков'}
+    {num: totalLessons, label: 'Уроков'},
+    {num: totalHours, label: 'Часов'},
   ]
 
   return (

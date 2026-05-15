@@ -24,9 +24,10 @@ interface ProfileData {
 interface ProfileEditFormProps {
   userType: UserType
   initialData: ProfileData
+  statsId?: string
 }
 
-const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData}) => {
+const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, statsId}) => {
   const {mutateAsync: updateProfile} = useUpdateProfile(userType)
 
   useEffect(() => {
@@ -260,6 +261,16 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData}) => {
               </svg>
               Сохранённые закладки
             </button>
+            {userType === 'Teacher' && statsId && (
+              <a href={`/statistics/${statsId}`} className={styles.actionBtn}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="20" x2="18" y2="10" />
+                  <line x1="12" y1="20" x2="12" y2="4" />
+                  <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+                Статистика
+              </a>
+            )}
           </div>
         </div>
 

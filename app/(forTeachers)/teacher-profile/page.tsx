@@ -25,6 +25,7 @@ export default async function TeacherProfilePage() {
     <ProfileEditForm
       userType="Teacher"
       initialData={teacher}
+      statsId={session.user.id}
     />
   )
 }
