@@ -30,7 +30,7 @@ export async function GET(
 
     const teacher = await prisma.teacher.findUnique({
       where: { id: teacherId },
-      select: { id: true, name: true, avatarUrl: true },
+      select: { id: true, name: true, avatarUrl: true, calendar: true },
     })
     if (!teacher) return NextResponse.json({ error: 'Teacher not found' }, { status: 404 })
 
@@ -47,6 +47,60 @@ export async function GET(
     const studentCount = await prisma.teacherStudent.count({ where: { teacherId } })
     const roadmapCount = await prisma.roadmap.count({ where: { teacherId } })
 
+    // ── Hero bar stats ───────────────────────────────────────────────────────
+    const now = new Date()
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    const startOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+
+    const [newStudentsThisMonth, newStudentsPrevMonth] = await Promise.all([
+      prisma.teacherStudent.count({ where: { teacherId, linkedAt: { gte: startOfMonth } } }),
+      prisma.teacherStudent.count({ where: { teacherId, linkedAt: { gte: startOfPrevMonth, lt: startOfMonth } } }),
+    ])
+
+    const teacherRoadmapIds = await prisma.roadmap
+      .findMany({ where: { teacherId }, select: { id: true } })
+      .then((rs) => rs.map((r) => r.id))
+
+    const [completedProgressRaw, activeProgressCount] = teacherRoadmapIds.length > 0
+      ? await Promise.all([
+          prisma.studentRoadmapProgress.findMany({
+            where: { roadmapId: { in: teacherRoadmapIds }, completedAt: { not: null } },
+            select: { studentId: true },
+            distinct: ['studentId'],
+          }),
+          prisma.studentRoadmapProgress.count({
+            where: { roadmapId: { in: teacherRoadmapIds }, completedAt: null },
+          }),
+        ])
+      : [[], 0]
+
+    const completedStudentsCount = completedProgressRaw.length
+    const total = Math.max(studentCount, 1)
+    const totalProgress = Math.max(completedStudentsCount + activeProgressCount, 1)
+
+    const heroStats = {
+      bars: [
+        {
+          label: 'Новые ученики',
+          value: Math.min(100, Math.round((newStudentsThisMonth / total) * 100)),
+          trend: (() => {
+            const d = newStudentsThisMonth - newStudentsPrevMonth
+            return d >= 0 ? `+${d} за мес.` : `−${Math.abs(d)} за мес.`
+          })(),
+        },
+        {
+          label: 'Прошли курс',
+          value: Math.min(100, Math.round((completedStudentsCount / total) * 100)),
+          trend: `${completedStudentsCount} завершили`,
+        },
+        {
+          label: 'Road-map в работе',
+          value: Math.min(100, Math.round((activeProgressCount / totalProgress) * 100)),
+          trend: `${activeProgressCount} активных`,
+        },
+      ],
+    }
+
     // Compute per-call durations (hours)
     const callsWithDuration = calls.map((c) => {
       const ms = c.endedAt!.getTime() - c.createdAt.getTime()
@@ -57,7 +111,6 @@ export async function GET(
     const totalHours = callsWithDuration.reduce((s, c) => s + c.durationHours, 0)
 
     // ── Monthly chart data (last 6 months) ──────────────────────────────────
-    const now = new Date()
     const monthsData: Record<string, { day: string; hours: number }[]> = {}
 
     // Build 6-month window
@@ -147,8 +200,12 @@ export async function GET(
         }
       })
 
+    // ── Calendar events from teacher's calendar JSON ─────────────────────────
+    const calendarJson = teacher.calendar as { events?: unknown[] } | null
+    const calendarEvents = Array.isArray(calendarJson?.events) ? calendarJson!.events : []
+
     return NextResponse.json({
-      teacher,
+      teacher: { id: teacher.id, name: teacher.name, avatarUrl: teacher.avatarUrl },
       totalCalls,
       totalHours: +totalHours.toFixed(1),
       studentCount,
@@ -157,6 +214,8 @@ export async function GET(
       subjectData,
       recentCalls,
       calendarLessons,
+      calendarEvents,
+      heroStats,
     })
   } catch (e: any) {
     return NextResponse.json({ error: e.message ?? 'Internal error' }, { status: 500 })

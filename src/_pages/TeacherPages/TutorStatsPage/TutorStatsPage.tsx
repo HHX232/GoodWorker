@@ -26,6 +26,22 @@ interface RecentCall {
   participantCount: number
 }
 
+interface CalendarEvent {
+  id: string
+  title: string
+  startTime: string
+  endTime: string
+  date: string
+  studentName?: string
+  subject?: string
+}
+
+interface HeroBar {
+  label: string
+  value: number
+  trend: string
+}
+
 interface StatsData {
   teacher: { id: string; name: string; avatarUrl: string | null }
   totalCalls: number
@@ -36,6 +52,22 @@ interface StatsData {
   subjectData: SubjectItem[]
   recentCalls: RecentCall[]
   calendarLessons: CalendarLesson[]
+  calendarEvents: CalendarEvent[]
+  heroStats: { bars: HeroBar[] }
+}
+
+function calendarEventToLesson(e: CalendarEvent): CalendarLesson {
+  const [sh, sm] = e.startTime.split(':').map(Number)
+  const [eh, em] = e.endTime.split(':').map(Number)
+  const duration = Math.max(1, eh * 60 + em - (sh * 60 + sm))
+  return {
+    id: `evt-${e.id}`,
+    studentName: e.studentName ?? e.title,
+    subject: e.subject ?? 'Событие',
+    time: e.startTime,
+    duration,
+    date: `${e.date}T${e.startTime}:00`,
+  }
 }
 
 function formatDate(iso: string) {
@@ -163,13 +195,20 @@ export default function TutorStatsPage({ teacherId }: { teacherId: string }) {
           roadmaps={data.roadmapCount}
           totalLessons={data.totalCalls}
           totalHours={data.totalHours}
+          heroStats={data.heroStats}
         />
 
         <div className={styles.page}>
           <StatsHeroCard extraClass={styles.hero_card} teacher={data.teacher} />
           <HoursChart extraClass={styles.hours_chart} monthsData={data.monthsData} />
           <SubjectsPieChart extraClass={styles.sub_pie} data={data.subjectData} />
-          <WeekCalendar extraClass={styles.week_calendar} lessons={data.calendarLessons} />
+          <WeekCalendar
+            extraClass={styles.week_calendar}
+            lessons={[
+              ...data.calendarLessons,
+              ...data.calendarEvents.map(calendarEventToLesson),
+            ]}
+          />
           <ErrorTopics
             extraClass={styles.error_topics}
             subjects={data.subjectData}

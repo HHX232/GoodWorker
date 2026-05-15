@@ -27,6 +27,7 @@ export function CreateRoomModal({isOpen, onClose, onConfirm, loading}: CreateRoo
   const isTeacher = session?.user?.role === 'TEACHER'
 
   const [topic, setTopic] = useState('')
+  const [topicError, setTopicError] = useState(false)
   const [categoryIds, setCategoryIds] = useState<string[]>([])
   const [accessType, setAccessType] = useState<AccessType>('ALL')
   const [students, setStudents] = useState<Student[]>([])
@@ -62,6 +63,10 @@ export function CreateRoomModal({isOpen, onClose, onConfirm, loading}: CreateRoo
   const removeEmail = (email: string) => setExtraEmails((prev) => prev.filter((e) => e !== email))
 
   const handleSubmit = () => {
+    if (isTeacher && !topic.trim()) {
+      setTopicError(true)
+      return
+    }
     const studentEmails = students.filter((s) => selectedStudentIds.has(s.id)).map((s) => s.email)
     const allEmails = Array.from(new Set([...studentEmails, ...extraEmails]))
     onConfirm({
@@ -100,14 +105,19 @@ export function CreateRoomModal({isOpen, onClose, onConfirm, loading}: CreateRoo
     >
       <div className={styles.body}>
         <div className={styles.field}>
-          <span className={styles.label}>Тема занятия</span>
+          <span className={styles.label}>
+            Тема занятия{isTeacher && <span style={{color: '#e53e3e', marginLeft: 3}}>*</span>}
+          </span>
           <input
-            className={styles.emailInput}
+            className={`${styles.emailInput} ${topicError ? styles.emailInput_error : ''}`}
             type="text"
             value={topic}
-            onChange={(e) => setTopic(e.target.value)}
+            onChange={(e) => { setTopic(e.target.value); if (topicError) setTopicError(false) }}
             placeholder="Например: Квадратные уравнения"
           />
+          {topicError && (
+            <span style={{fontSize: 12, color: '#e53e3e', marginTop: 2}}>Укажите тему занятия</span>
+          )}
         </div>
 
         <div className={styles.field}>

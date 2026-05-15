@@ -23,7 +23,7 @@ import {CalendarTaskCreateModal} from '@/widgets/Calendar/Modals/CalendarTaskCre
 import {CalendarTaskModal} from '@/widgets/Calendar/Modals/CalendarTaskModal/CalendarTaskModal'
 import {MonthCalendar} from '@/widgets/Calendar/MonthCalendar/MonthCalendar'
 import {WeekCalendar} from '@/widgets/Calendar/WeekCalendar/WeekCalendar'
-import {useEffect} from 'react'
+import {useEffect, useRef} from 'react'
 import styles from './CalendarPage.module.scss'
 
 export function CalendarPage() {
@@ -37,6 +37,7 @@ export function CalendarPage() {
 
   const {
     addEvent,
+    setEvents,
     setView,
     updateEvent,
     deleteEvent,
@@ -58,6 +59,33 @@ export function CalendarPage() {
   } = useActions()
   const weekDays = useTypedSelector(selectWeekDays)
   const events = useTypedSelector(selectEvents)
+
+  // Load from DB on mount
+  const loaded = useRef(false)
+  useEffect(() => {
+    if (loaded.current) return
+    loaded.current = true
+    fetch('/api/teacher/calendar')
+      .then((r) => r.json())
+      .then((d) => { if (Array.isArray(d.events) && d.events.length > 0) setEvents(d.events) })
+      .catch(() => {})
+  }, [setEvents])
+
+  // Save to DB whenever events change (debounced 1.5s)
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const initialMount = useRef(true)
+  useEffect(() => {
+    if (initialMount.current) { initialMount.current = false; return }
+    clearTimeout(saveTimer.current)
+    saveTimer.current = setTimeout(() => {
+      fetch('/api/teacher/calendar', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({events}),
+      }).catch(() => {})
+    }, 1500)
+    return () => clearTimeout(saveTimer.current)
+  }, [events])
   const tasks = useTypedSelector(selectTasks)
   const students = useTypedSelector(selectStudents)
   const selectedEvent = useTypedSelector(selectSelectedEvent)

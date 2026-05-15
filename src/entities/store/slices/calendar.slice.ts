@@ -48,6 +48,9 @@ const calendarSlice = createSlice({
   reducers: {
     // ── Events ──────────────────────────────────
 
+    setEvents(state, action: PayloadAction<CalendarEvent[]>) {
+      state.events = action.payload
+    },
     addEvent(state, action: PayloadAction<Omit<CalendarEvent, 'id'>>) {
       state.events.push({...action.payload, id: nanoid()})
     },
@@ -180,6 +183,7 @@ const calendarSlice = createSlice({
 })
 
 export const {
+  setEvents,
   addEvent,
   updateEvent,
   deleteEvent,

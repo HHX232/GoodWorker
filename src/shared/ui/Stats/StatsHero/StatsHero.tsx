@@ -3,18 +3,25 @@ import {useEffect, useRef, useState} from 'react'
 import styles from './StatsHero.module.scss'
 import {StatsHeroModalContent} from './StatsHeroModalContent/StatsHeroModalContent'
 
+interface HeroBar {
+  label: string
+  value: number
+  trend: string
+}
+
 interface StatsHeroProps {
   students?: number
   roadmaps?: number
   totalLessons?: number
   totalHours?: number
+  heroStats?: { bars: HeroBar[] }
   extraClass?: string
 }
 
-const bars = [
-  {label: 'Новые ученики', value: 15, trend: '+3%'},
-  {label: 'Прошли курс', value: 15, trend: '−1%'},
-  {label: 'Road-map в работе', value: 60, trend: '+8%'}
+const DEFAULT_BARS: HeroBar[] = [
+  {label: 'Новые ученики', value: 0, trend: '—'},
+  {label: 'Прошли курс', value: 0, trend: '—'},
+  {label: 'Road-map в работе', value: 0, trend: '—'},
 ]
 
 function Modal({isOpen, onClose}: {isOpen: boolean; onClose: () => void}) {
@@ -49,7 +56,7 @@ function Modal({isOpen, onClose}: {isOpen: boolean; onClose: () => void}) {
   )
 }
 
-export function StatsHero({students = 0, roadmaps = 0, totalLessons = 0, totalHours = 0, extraClass}: StatsHeroProps) {
+export function StatsHero({students = 0, roadmaps = 0, totalLessons = 0, totalHours = 0, heroStats, extraClass}: StatsHeroProps) {
   const [animated, setAnimated] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
 
@@ -57,6 +64,8 @@ export function StatsHero({students = 0, roadmaps = 0, totalLessons = 0, totalHo
     const t = requestAnimationFrame(() => setAnimated(true))
     return () => cancelAnimationFrame(t)
   }, [])
+
+  const bars = heroStats?.bars ?? DEFAULT_BARS
 
   const metrics = [
     {num: students, label: 'Учеников'},

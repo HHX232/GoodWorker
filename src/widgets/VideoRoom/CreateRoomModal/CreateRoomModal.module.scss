@@ -173,6 +173,15 @@
   }
 }
 
+.emailInput_error {
+  border-color: #e53e3e !important;
+  background: #fff5f5;
+
+  &:focus {
+    border-color: #c53030 !important;
+  }
+}
+
 .addEmailBtn {
   padding: 10px 16px;
   border: 2px solid #000;
