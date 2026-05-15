@@ -61,13 +61,11 @@ export function CalendarSidebar({tasks, students, onTaskClick, onTaskToggle}: Ca
               <path d='M6 9l6 6 6-6' stroke='#FFF' strokeWidth='2' strokeLinecap='round' />
             </svg>
           </button>
-          <button
-            onClick={() => {
-              setCreateTaskModalStatus(true)
-            }}
-            style={{color: '#FFF'}}
-          >
-            add task
+          <button className={styles.addTaskBtn} onClick={() => setCreateTaskModalStatus(true)}>
+            <svg width='11' height='11' viewBox='0 0 24 24' fill='none'>
+              <path d='M12 5v14M5 12h14' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+            </svg>
+            Добавить задачу
           </button>
           {!weekCollapsed &&
             weekTasks.map((task) => (
@@ -95,7 +93,12 @@ export function CalendarSidebar({tasks, students, onTaskClick, onTaskToggle}: Ca
               <path d='M6 9l6 6 6-6' stroke='#FFF' strokeWidth='2' strokeLinecap='round' />
             </svg>
           </button>
-          <button onClick={() => {}}>Создать задачу</button>
+          <button className={styles.addTaskBtn} onClick={() => setCreateTaskModalStatus(true)}>
+            <svg width='11' height='11' viewBox='0 0 24 24' fill='none'>
+              <path d='M12 5v14M5 12h14' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
+            </svg>
+            Добавить задачу
+          </button>
           {!monthCollapsed &&
             monthTasks.map((task) => (
               <TaskItem
