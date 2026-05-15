@@ -272,8 +272,8 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, stats
                 Статистика
               </Link>
             )}
-            {userType === 'Teacher' && (
-              <Link href="/calendar" className={styles.actionBtn}>
+            {userType === 'Teacher' && statsId && (
+              <Link href={`/calendar/${statsId}`} className={styles.actionBtn}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                   <line x1="16" y1="2" x2="16" y2="6" />
