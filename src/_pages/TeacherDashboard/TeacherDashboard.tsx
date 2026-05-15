@@ -133,6 +133,7 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
         statsId={statsId}
         studentCount={studentCount}
         callCount={callCount}
+        isOwner={true}
       />
 
       <DashboardProfilePanel

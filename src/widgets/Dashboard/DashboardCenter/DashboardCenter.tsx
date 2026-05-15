@@ -1,8 +1,11 @@
 'use client'
 
+import { ServiceCard } from '@/shared/ui/Service/ServiceCard/ServiceCard'
+import { CreatePickerModal } from '@/widgets/Dashboard/CreatePickerModal/CreatePickerModal'
+import { CreateServiceModal } from '@/widgets/Dashboard/CreateServiceModal/CreateServiceModal'
 import Card from '@/shared/ui/Posts/Card/Card'
 import { RoadMapPreview } from '@/shared/ui/RoadMap/RoadMapPreview/RoadMapPreview'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
 import styles from './DashboardCenter.module.scss'
 
@@ -31,48 +34,23 @@ interface PostItem {
   teacher: { id: string; name: string; avatarUrl: string | null }
 }
 
+interface ServiceItem {
+  id: string
+  title: string
+  photoUrl: string | null
+  duration: number
+  timeFrom: string
+  timeTo: string
+  isGroup: boolean
+  price: number
+  category?: { translations: { langCode: string; name: string }[] } | null
+}
+
 interface Props {
   statsId: string
   studentCount: number
   callCount: number
-}
-
-function IconVideo() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-      <path d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14" />
-      <rect x="1" y="6" width="14" height="12" rx="2" />
-    </svg>
-  )
-}
-
-function IconBook() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-      <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
-      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
-    </svg>
-  )
-}
-
-function IconFileCheck() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <polyline points="9 15 11 17 15 13" />
-    </svg>
-  )
-}
-
-function IconTarget() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-      <circle cx="12" cy="12" r="10" />
-      <circle cx="12" cy="12" r="6" />
-      <circle cx="12" cy="12" r="2" />
-    </svg>
-  )
+  isOwner?: boolean
 }
 
 function IconInbox() {
@@ -80,6 +58,15 @@ function IconInbox() {
     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ABABAB" strokeWidth="1.5" strokeLinecap="round">
       <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
       <path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z" />
+    </svg>
+  )
+}
+
+function IconPlus() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
     </svg>
   )
 }
@@ -105,30 +92,29 @@ function mapPost(p: PostItem) {
   }
 }
 
-export function DashboardCenter({ statsId, studentCount, callCount }: Props) {
+export function DashboardCenter({ statsId, studentCount, callCount, isOwner = false }: Props) {
   const t = useTranslations('dashboard')
+  const locale = useLocale()
   const [tab, setTab] = useState<Tab>('all')
   const [roadmaps, setRoadmaps] = useState<RoadmapItem[]>([])
   const [posts, setPosts] = useState<PostItem[]>([])
+  const [services, setServices] = useState<ServiceItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [serviceModalOpen, setServiceModalOpen] = useState(false)
 
   useEffect(() => {
     setLoading(true)
     Promise.all([
       fetch(`/api/roadmap?teacherId=${statsId}&limit=6`).then(r => r.json()),
       fetch(`/api/posts?teacherId=${statsId}&limit=6`).then(r => r.json()),
-    ]).then(([rmData, postsData]) => {
+      fetch(`/api/services?teacherId=${statsId}`).then(r => r.json()),
+    ]).then(([rmData, postsData, svcData]) => {
       if (Array.isArray(rmData.roadmaps)) setRoadmaps(rmData.roadmaps)
       if (Array.isArray(postsData.posts)) setPosts(postsData.posts)
+      if (Array.isArray(svcData.services)) setServices(svcData.services)
     }).catch(() => {}).finally(() => setLoading(false))
   }, [statsId])
-
-  const SERVICES = [
-    { icon: <IconVideo />, key: 'individual' as const },
-    { icon: <IconBook />,  key: 'group' as const },
-    { icon: <IconFileCheck />, key: 'homework' as const },
-    { icon: <IconTarget />, key: 'consultation' as const },
-  ]
 
   const TABS: { key: Tab; label: string }[] = [
     { key: 'all',      label: t('tabAll') },
@@ -180,8 +166,13 @@ export function DashboardCenter({ statsId, studentCount, callCount }: Props) {
 
   const visibleRoadmaps = showRoadmaps ? (tab === 'all' ? roadmaps.slice(0, 3) : roadmaps) : []
   const visiblePosts    = showPosts    ? (tab === 'all' ? posts.slice(0, 3)    : posts)    : []
+  const visibleServices = showServices ? (tab === 'all' ? services.slice(0, 2) : services) : []
 
-  const isEmpty = !loading && visibleRoadmaps.length === 0 && visiblePosts.length === 0 && !showServices
+  const isEmpty = !loading
+    && visibleRoadmaps.length === 0
+    && visiblePosts.length === 0
+    && visibleServices.length === 0
+    && !isOwner
 
   return (
     <div className={styles.center}>
@@ -216,6 +207,14 @@ export function DashboardCenter({ statsId, studentCount, callCount }: Props) {
       ) : (
         <div className={styles.grid}>
 
+          {/* Create card — always first when owner */}
+          {isOwner && (
+            <div className={styles.createCard} onClick={() => setPickerOpen(true)}>
+              <span className={styles.createIcon}><IconPlus /></span>
+              <span className={styles.createLabel}>Создать</span>
+            </div>
+          )}
+
           {isEmpty && (
             <div className={styles.empty}>
               <span className={styles.emptyIcon}><IconInbox /></span>
@@ -234,17 +233,44 @@ export function DashboardCenter({ statsId, studentCount, callCount }: Props) {
           ))}
 
           {/* Services */}
-          {showServices && SERVICES.map(s => (
-            <div key={s.key} className={styles.serviceCard}>
-              <span className={styles.serviceIcon}>{s.icon}</span>
-              <div className={styles.serviceTitle}>{t(`services.${s.key}.title`)}</div>
-              <div className={styles.serviceDesc}>{t(`services.${s.key}.desc`)}</div>
-              <span className={styles.soonBadge}>{t('soonBadge')}</span>
-            </div>
+          {visibleServices.map(s => (
+            <ServiceCard
+              key={s.id}
+              id={s.id}
+              title={s.title}
+              photoUrl={s.photoUrl}
+              duration={s.duration}
+              timeFrom={s.timeFrom}
+              timeTo={s.timeTo}
+              isGroup={s.isGroup}
+              price={s.price}
+              category={s.category}
+              locale={locale}
+            />
           ))}
+
+          {/* Empty services hint for owner */}
+          {isOwner && showServices && services.length === 0 && (
+            <div className={styles.servicesHint}>
+              Нажмите «Создать», чтобы добавить первую услугу
+            </div>
+          )}
 
         </div>
       )}
+
+      <CreatePickerModal
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        onService={() => setServiceModalOpen(true)}
+      />
+
+      <CreateServiceModal
+        open={serviceModalOpen}
+        onClose={() => setServiceModalOpen(false)}
+        teacherId={statsId}
+        onCreated={(svc) => setServices(prev => [svc as ServiceItem, ...prev])}
+      />
     </div>
   )
 }

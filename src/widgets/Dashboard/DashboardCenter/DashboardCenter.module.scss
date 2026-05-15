@@ -121,6 +121,52 @@
   font-size: 13px;
 }
 
+// ── Create card ────────────────────────────────────────────
+
+.createCard {
+  background: #F7F7FB;
+  border: 2px dashed #DADCEB;
+  border-radius: 12px;
+  min-height: 135px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+
+  &:hover {
+    border-color: #534AB7;
+    background: rgba(83, 74, 183, 0.04);
+
+    .createIcon { color: #534AB7; }
+    .createLabel { color: #534AB7; }
+  }
+}
+
+.createIcon {
+  color: #ABABAB;
+  transition: color 0.15s;
+  line-height: 1;
+}
+
+.createLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ABABAB;
+  transition: color 0.15s;
+}
+
+// ── Services hint ───────────────────────────────────────────
+
+.servicesHint {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  color: #ABABAB;
+  padding: 8px 0;
+}
+
 // ── Services placeholder ───────────────────────────────────
 
 .serviceCard {
