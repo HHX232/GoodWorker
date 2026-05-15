@@ -16,9 +16,11 @@ export async function GET() {
       select: {
         id: true,
         name: true,
+        topic: true,
         createdAt: true,
         endedAt: true,
         transcriptRaw: true,
+        transcriptJson: true,
       },
     })
 
