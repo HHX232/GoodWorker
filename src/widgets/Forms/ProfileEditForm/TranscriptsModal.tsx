@@ -77,17 +77,12 @@ function ChatView({ room }: { room: TranscriptRoom }) {
         import('./TranscriptChatPDF'),
       ])
 
-      const date = new Date(room.createdAt).toLocaleDateString('ru-RU', {
-        day: '2-digit', month: 'long', year: 'numeric',
-        hour: '2-digit', minute: '2-digit',
-      })
-
       const blob = await pdf(
         <TranscriptPDFDoc
           entries={entries}
           roomName={room.name}
           topic={room.topic}
-          date={date}
+          createdAt={room.createdAt}
         />
       ).toBlob()
 

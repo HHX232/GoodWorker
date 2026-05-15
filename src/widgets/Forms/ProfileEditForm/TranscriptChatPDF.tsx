@@ -1,4 +1,18 @@
-import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer'
+import { Document, Font, Page, StyleSheet, Text, View } from '@react-pdf/renderer'
+
+Font.register({
+  family: 'Roboto',
+  fonts: [
+    {
+      src: 'https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Me5WZLCzYlKw.ttf',
+      fontWeight: 400,
+    },
+    {
+      src: 'https://fonts.gstatic.com/s/roboto/v30/KFOlCnqEu92Fr1MmEU9fBBc9.ttf',
+      fontWeight: 700,
+    },
+  ],
+})
 
 export interface NoteEntry {
   identity: string
@@ -9,97 +23,137 @@ interface Props {
   entries: NoteEntry[]
   roomName: string
   topic?: string | null
-  date: string
+  createdAt: string
 }
 
-const styles = StyleSheet.create({
+const MONTHS = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря']
+
+function fmtDate(iso: string): string {
+  const d = new Date(iso)
+  const day = d.getDate()
+  const mon = MONTHS[d.getMonth()]
+  const yr  = d.getFullYear()
+  const hh  = String(d.getHours()).padStart(2, '0')
+  const mm  = String(d.getMinutes()).padStart(2, '0')
+  return `${day} ${mon} ${yr}, ${hh}:${mm}`
+}
+
+const PURPLE = '#7c3aed'
+const PAGE_H_PAD = 24
+const PAGE_W = 595
+const BUBBLE_MAX = (PAGE_W - PAGE_H_PAD * 2) * 0.74
+
+const s = StyleSheet.create({
   page: {
     backgroundColor: '#f8fafc',
-    padding: 0,
-    fontFamily: 'Helvetica',
+    fontFamily: 'Roboto',
+    paddingBottom: 32,
   },
   headerBar: {
     backgroundColor: '#ffffff',
-    borderBottom: '1pt solid #e2e8f0',
-    padding: '20pt 28pt 16pt',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+    borderBottomStyle: 'solid',
+    paddingHorizontal: PAGE_H_PAD,
+    paddingTop: 20,
+    paddingBottom: 16,
   },
   headerTitle: {
     fontSize: 16,
-    fontFamily: 'Helvetica-Bold',
+    fontWeight: 700,
     color: '#0f172a',
-    marginBottom: 4,
+    marginBottom: 5,
   },
-  headerTopic: {
-    fontSize: 11,
-    color: '#7c3aed',
-    backgroundColor: 'rgba(124,58,237,0.07)',
-    borderRadius: 999,
-    paddingLeft: 8,
-    paddingRight: 8,
-    paddingTop: 2,
-    paddingBottom: 2,
+  topicBadge: {
+    fontSize: 10,
+    color: PURPLE,
+    backgroundColor: 'rgba(124,58,237,0.08)',
+    borderRadius: 99,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
     alignSelf: 'flex-start',
-    marginBottom: 4,
+    marginBottom: 5,
   },
   headerDate: {
     fontSize: 10,
     color: '#94a3b8',
   },
-  chatArea: {
-    padding: '16pt 20pt',
-    display: 'flex',
+
+  feed: {
+    paddingHorizontal: PAGE_H_PAD,
+    paddingTop: 14,
     flexDirection: 'column',
-    gap: 10,
+    gap: 8,
   },
-  bubbleWrapMine: {
-    display: 'flex',
+
+  // ── Mine (right) ──
+  rowMine: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginBottom: 6,
+  },
+  colMine: {
     flexDirection: 'column',
     alignItems: 'flex-end',
-    marginBottom: 8,
+    maxWidth: BUBBLE_MAX,
   },
-  bubbleWrapTheirs: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    marginBottom: 8,
-  },
-  identity: {
-    fontSize: 8.5,
+  identityMine: {
+    fontSize: 8,
+    fontWeight: 700,
     color: '#94a3b8',
-    fontFamily: 'Helvetica-Bold',
-    marginBottom: 3,
-    paddingHorizontal: 4,
+    marginBottom: 2,
+    paddingHorizontal: 3,
   },
   bubbleMine: {
-    backgroundColor: '#7c3aed',
+    backgroundColor: PURPLE,
     borderRadius: 12,
     borderBottomRightRadius: 3,
-    paddingVertical: 8,
     paddingHorizontal: 12,
-    maxWidth: '72%',
+    paddingVertical: 8,
   },
   bubbleMineText: {
     fontSize: 11,
     color: '#ffffff',
-    lineHeight: 1.55,
+    lineHeight: 1.6,
+  },
+
+  // ── Theirs (left) ──
+  rowTheirs: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    marginBottom: 6,
+  },
+  colTheirs: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    maxWidth: BUBBLE_MAX,
+  },
+  identityTheirs: {
+    fontSize: 8,
+    fontWeight: 700,
+    color: '#94a3b8',
+    marginBottom: 2,
+    paddingHorizontal: 3,
   },
   bubbleTheirs: {
     backgroundColor: '#ffffff',
     borderRadius: 12,
     borderBottomLeftRadius: 3,
-    paddingVertical: 8,
     paddingHorizontal: 12,
-    maxWidth: '72%',
-    border: '1pt solid #e2e8f0',
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderStyle: 'solid',
   },
   bubbleTheirsText: {
     fontSize: 11,
     color: '#1e293b',
-    lineHeight: 1.55,
+    lineHeight: 1.6,
   },
+
   footer: {
     position: 'absolute',
-    bottom: 14,
+    bottom: 12,
     left: 0,
     right: 0,
     textAlign: 'center',
@@ -110,42 +164,48 @@ const styles = StyleSheet.create({
   },
 })
 
-export function TranscriptPDFDoc({ entries, roomName, topic, date }: Props) {
+export function TranscriptPDFDoc({ entries, roomName, topic, createdAt }: Props) {
   const firstIdentity = entries[0]?.identity ?? ''
 
   return (
     <Document>
-      <Page size="A4" style={styles.page}>
-        {/* Header */}
-        <View style={styles.headerBar}>
-          <Text style={styles.headerTitle}>{roomName}</Text>
-          {topic ? <Text style={styles.headerTopic}>{topic}</Text> : null}
-          <Text style={styles.headerDate}>{date}</Text>
+      <Page size="A4" style={s.page}>
+
+        <View style={s.headerBar}>
+          <Text style={s.headerTitle}>{roomName}</Text>
+          {topic ? <Text style={s.topicBadge}>{topic}</Text> : null}
+          <Text style={s.headerDate}>{fmtDate(createdAt)}</Text>
         </View>
 
-        {/* Chat messages */}
-        <View style={styles.chatArea}>
+        <View style={s.feed}>
           {entries.map((entry, i) => {
-            const isMine = entry.identity === firstIdentity
-            return (
-              <View key={i} style={isMine ? styles.bubbleWrapMine : styles.bubbleWrapTheirs}>
-                <Text style={styles.identity}>{entry.identity}</Text>
-                <View style={isMine ? styles.bubbleMine : styles.bubbleTheirs}>
-                  <Text style={isMine ? styles.bubbleMineText : styles.bubbleTheirsText}>
-                    {entry.text}
-                  </Text>
+            const mine = entry.identity === firstIdentity
+            return mine ? (
+              <View key={i} style={s.rowMine}>
+                <View style={s.colMine}>
+                  <Text style={s.identityMine}>{entry.identity}</Text>
+                  <View style={s.bubbleMine}>
+                    <Text style={s.bubbleMineText}>{entry.text}</Text>
+                  </View>
+                </View>
+              </View>
+            ) : (
+              <View key={i} style={s.rowTheirs}>
+                <View style={s.colTheirs}>
+                  <Text style={s.identityTheirs}>{entry.identity}</Text>
+                  <View style={s.bubbleTheirs}>
+                    <Text style={s.bubbleTheirsText}>{entry.text}</Text>
+                  </View>
                 </View>
               </View>
             )
           })}
         </View>
 
-        {/* Footer */}
-        <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>
-            Экспортировано {new Date().toLocaleDateString('ru-RU')}
-          </Text>
+        <View style={s.footer} fixed>
+          <Text style={s.footerText}>Экспортировано {fmtDate(new Date().toISOString())}</Text>
         </View>
+
       </Page>
     </Document>
   )
