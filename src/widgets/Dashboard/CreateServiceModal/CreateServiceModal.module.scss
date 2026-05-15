@@ -2,7 +2,7 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
-  z-index: 200;
+  z-index: 1100;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -121,20 +121,130 @@
   line-height: 1.5;
 }
 
-.select {
-  @extend .input;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23868897' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 13px center;
-  padding-right: 36px;
-  cursor: pointer;
-}
-
 .row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
+}
+
+// ── Duration button group ────────────────────────────────────
+
+.durationGroup {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.durationBtn {
+  padding: 7px 13px;
+  border-radius: 8px;
+  border: 1.5px solid #E0E0EA;
+  background: #fafafa;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  color: #868897;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover { border-color: #534AB7; color: #534AB7; }
+}
+
+.durationBtnActive {
+  background: #534AB7;
+  border-color: #534AB7;
+  color: #fff;
+}
+
+// ── Time select dropdown ─────────────────────────────────────
+
+.timeRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.timeRowLabel {
+  font-size: 13px;
+  color: #868897;
+  flex-shrink: 0;
+}
+
+.timeSelect {
+  position: relative;
+  flex: 1;
+}
+
+.timeBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1.5px solid #E0E0EA;
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #fafafa;
+  color: #141416;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+
+  &:hover { border-color: #534AB7; background: #fff; }
+
+  svg:first-child { color: #868897; flex-shrink: 0; }
+  // push caret to right
+  span { flex: 1; text-align: left; }
+}
+
+.timeCaret {
+  color: #868897;
+  transition: transform 0.15s;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.timeCaretOpen {
+  transform: rotate(180deg);
+}
+
+.timeDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1.5px solid #E0E0EA;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  max-height: 180px;
+  overflow-y: auto;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+
+  &::-webkit-scrollbar { width: 3px; }
+  &::-webkit-scrollbar-thumb { background: #D0D0DA; border-radius: 2px; }
+}
+
+.timeOption {
+  padding: 8px 12px;
+  text-align: left;
+  border: none;
+  background: none;
+  font-size: 13px;
+  font-family: inherit;
+  color: #141416;
+  cursor: pointer;
+  transition: background 0.1s;
+
+  &:hover { background: #F5F5FA; }
+}
+
+.timeOptionActive {
+  background: #EEF2FF;
+  color: #534AB7;
+  font-weight: 600;
 }
 
 // ── Photo upload ─────────────────────────────────────────────

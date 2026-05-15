@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 import styles from './CreatePickerModal.module.scss'
 
 interface Props {
@@ -60,6 +61,13 @@ const OPTIONS = [
 
 export function CreatePickerModal({ open, onClose, onService }: Props) {
   const router = useRouter()
+
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden'
+      return () => { document.body.style.overflow = '' }
+    }
+  }, [open])
 
   if (!open) return null
 
