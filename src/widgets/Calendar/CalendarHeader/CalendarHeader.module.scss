@@ -93,9 +93,15 @@
    align-items: center;
    gap: 6px;
    transition: background 0.15s ease;
+   font-family: inherit;
 
-   &:hover {
+   &:hover:not(:disabled) {
       background: #2c2c2e;
+   }
+
+   &:disabled {
+      opacity: 0.55;
+      cursor: default;
    }
 }
 

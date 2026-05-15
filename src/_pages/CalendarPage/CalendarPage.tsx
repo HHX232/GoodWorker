@@ -24,7 +24,7 @@ import {CalendarTaskCreateModal} from '@/widgets/Calendar/Modals/CalendarTaskCre
 import {CalendarTaskModal} from '@/widgets/Calendar/Modals/CalendarTaskModal/CalendarTaskModal'
 import {MonthCalendar} from '@/widgets/Calendar/MonthCalendar/MonthCalendar'
 import {WeekCalendar} from '@/widgets/Calendar/WeekCalendar/WeekCalendar'
-import {useEffect, useRef} from 'react'
+import {useEffect, useRef, useState} from 'react'
 import styles from './CalendarPage.module.scss'
 
 export function CalendarPage({ teacherId }: { teacherId: string }) {
@@ -102,9 +102,49 @@ export function CalendarPage({ teacherId }: { teacherId: string }) {
   const isOpen = useTypedSelector((state) => state.calendar.createTaskIsOpen)
   const view = useTypedSelector((state) => state.calendar.view)
 
+  const [exporting, setExporting] = useState(false)
+
   const currentDate = weekDays[0] ?? new Date()
   const currentDateRaw = useTypedSelector((state) => state.calendar.currentDate)
   const currentDateObj = new Date(currentDateRaw)
+
+  const MONTHS_GEN = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря']
+
+  const handleExportPDF = async () => {
+    if (exporting) return
+    setExporting(true)
+    try {
+      const [regularBuf, boldBuf] = await Promise.all([
+        fetch('/fonts/Roboto-Regular.ttf').then(r => r.arrayBuffer()),
+        fetch('/fonts/Roboto-Bold.ttf').then(r => r.arrayBuffer()),
+      ])
+      const [{ pdf, Font }, { CalendarPDFDoc }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('@/widgets/Calendar/CalendarPDF'),
+      ])
+      Font.reset()
+      Font.register({
+        family: 'Roboto',
+        fonts: [
+          { src: URL.createObjectURL(new Blob([regularBuf], { type: 'font/ttf' })), fontWeight: 400 },
+          { src: URL.createObjectURL(new Blob([boldBuf], { type: 'font/ttf' })), fontWeight: 700 },
+        ],
+      })
+      const d = currentDateObj
+      const monthLabel = `${d.getDate()} ${MONTHS_GEN[d.getMonth()]} ${d.getFullYear()}`
+      const blob = await pdf(
+        <CalendarPDFDoc events={events} tasks={tasks} monthLabel={monthLabel} />
+      ).toBlob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `расписание_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } finally {
+      setExporting(false)
+    }
+  }
   const handleEditEvent = (event: CalendarEvent) => {
     selectEvent(null)
     openCreateModal({editEventId: event.id})
@@ -158,6 +198,8 @@ export function CalendarPage({ teacherId }: { teacherId: string }) {
             setCurrentDate(d.toISOString())
           }}
           onAdd={() => openCreateModal({})}
+          onExportPDF={handleExportPDF}
+          exporting={exporting}
         />
         {view === 'week' && (
           <WeekCalendar

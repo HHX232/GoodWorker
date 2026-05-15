@@ -1,18 +1,4 @@
-import { Document, Font, Page, StyleSheet, Text, View } from '@react-pdf/renderer'
-
-Font.register({
-  family: 'Roboto',
-  fonts: [
-    {
-      src: 'https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Me5WZLCzYlKw.ttf',
-      fontWeight: 400,
-    },
-    {
-      src: 'https://fonts.gstatic.com/s/roboto/v30/KFOlCnqEu92Fr1MmEU9fBBc9.ttf',
-      fontWeight: 700,
-    },
-  ],
-})
+import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer'
 
 export interface NoteEntry {
   identity: string
@@ -203,7 +189,7 @@ export function TranscriptPDFDoc({ entries, roomName, topic, createdAt }: Props)
         </View>
 
         <View style={s.footer} fixed>
-          <Text style={s.footerText}>Экспортировано {fmtDate(new Date().toISOString())}</Text>
+          <Text style={s.footerText}>GoodWorker — Экспортировано {fmtDate(new Date().toISOString())}</Text>
         </View>
 
       </Page>

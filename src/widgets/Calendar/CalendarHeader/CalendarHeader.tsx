@@ -15,6 +15,8 @@ interface CalendarHeaderProps {
   onToday: () => void
   onAdd: () => void
   onDateSelect?: (date: Date) => void
+  onExportPDF?: () => void
+  exporting?: boolean
 }
 
 export function CalendarHeader({
@@ -25,7 +27,9 @@ export function CalendarHeader({
   onAdd,
   onViewChange,
   view,
-  onDateSelect
+  onDateSelect,
+  onExportPDF,
+  exporting,
 }: CalendarHeaderProps) {
   const [pickerOpen, setPickerOpen] = useState(false)
   const pickerRef = useRef<HTMLDivElement>(null)
@@ -115,17 +119,14 @@ export function CalendarHeader({
           </svg>
           Запись
         </button>
-        <button className={styles.share}>
+        <button className={styles.share} onClick={onExportPDF} disabled={exporting}>
           <svg width='13' height='13' viewBox='0 0 24 24' fill='none'>
-            <path
-              d='M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13'
-              stroke='#ffffff'
-              strokeWidth='1.8'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-            />
+            <path d='M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z' stroke='#ffffff' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round' />
+            <polyline points='14 2 14 8 20 8' stroke='#ffffff' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round' />
+            <line x1='16' y1='13' x2='8' y2='13' stroke='#ffffff' strokeWidth='1.8' strokeLinecap='round' />
+            <line x1='16' y1='17' x2='8' y2='17' stroke='#ffffff' strokeWidth='1.8' strokeLinecap='round' />
           </svg>
-          Поделиться
+          {exporting ? 'Генерация...' : 'Скачать PDF'}
         </button>
       </div>
     </div>

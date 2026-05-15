@@ -72,10 +72,24 @@ function ChatView({ room }: { room: TranscriptRoom }) {
     if (exporting || entries.length === 0) return
     setExporting(true)
     try {
-      const [{ pdf }, { TranscriptPDFDoc }] = await Promise.all([
+      const [regularBuf, boldBuf] = await Promise.all([
+        fetch('/fonts/Roboto-Regular.ttf').then(r => r.arrayBuffer()),
+        fetch('/fonts/Roboto-Bold.ttf').then(r => r.arrayBuffer()),
+      ])
+
+      const [{ pdf, Font }, { TranscriptPDFDoc }] = await Promise.all([
         import('@react-pdf/renderer'),
         import('./TranscriptChatPDF'),
       ])
+
+      Font.reset()
+      Font.register({
+        family: 'Roboto',
+        fonts: [
+          { src: URL.createObjectURL(new Blob([regularBuf], { type: 'font/ttf' })), fontWeight: 400 },
+          { src: URL.createObjectURL(new Blob([boldBuf], { type: 'font/ttf' })), fontWeight: 700 },
+        ],
+      })
 
       const blob = await pdf(
         <TranscriptPDFDoc
