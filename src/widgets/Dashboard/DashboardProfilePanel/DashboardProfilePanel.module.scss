@@ -312,3 +312,32 @@
 .videoChevronOpen {
   transform: rotate(180deg);
 }
+
+// ── Experience section ─────────────────────────────────────
+
+.expHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.expAddBtn { font-size: 11px; color: #6366f1; background: none; border: none; cursor: pointer; font-family: inherit; padding: 0; }
+.expForm { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.expYears { display: flex; gap: 6px; }
+.expTextarea { font-family: inherit; font-size: 12px; border: 1px solid #EBEBEB; border-radius: 8px; padding: 7px 10px; resize: none; outline: none; }
+.expEmpty { font-size: 12px; color: #ABABAB; margin: 4px 0 0; }
+.expList { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.expItem { border: 1px solid #F0F0F0; border-radius: 10px; padding: 8px 10px; }
+.expItemTop { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }
+.expItemInfo { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.expTitle { font-size: 12px; font-weight: 600; color: #1C1C22; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.expOrg { font-size: 11px; color: #6B6B7A; }
+.expYearsLabel { font-size: 11px; color: #ABABAB; }
+.expDesc { font-size: 11px; color: #6B6B7A; margin: 4px 0 0; line-height: 1.4; }
+.expItemActions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.expVerifiedBadge { font-size: 11px; color: #22c55e; font-weight: 700; cursor: default; }
+.expDocBtn { display: flex; align-items: center; gap: 2px; font-size: 11px; color: #6366f1; background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: 4px; font-family: inherit; }
+.expDeleteBtn { font-size: 14px; color: #ABABAB; background: none; border: none; cursor: pointer; padding: 0 2px; line-height: 1; &:hover { color: #EF4444; } }
+
+// ── Identity section ───────────────────────────────────────
+
+.identityRow { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.identityStatus { font-size: 12px; flex: 1; }
+.identityPending { color: #ABABAB; }
+.identityUploaded { color: #f59e0b; }
+.identityConfirmed { color: #22c55e; font-weight: 600; cursor: default; }

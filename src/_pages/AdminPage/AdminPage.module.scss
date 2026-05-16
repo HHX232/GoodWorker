@@ -705,6 +705,23 @@
   &:hover { border-color: #22c55e; }
 }
 
+// ── Verifications tab ─────────────────────────────────────
+
+.verif_list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.verif_card { border: 1px solid #EBEBEB; border-radius: 12px; padding: 10px 12px; }
+.verif_card_top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.verif_info { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.verif_name { font-size: 13px; font-weight: 600; color: #1C1C22; }
+.verif_sub { font-size: 11px; color: #868897; }
+.verif_actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+.verif_check { font-size: 13px; color: #22c55e; font-weight: 700; cursor: default; }
+.verif_docs_count { font-size: 11px; color: #868897; }
+.verif_doc_previews { display: flex; gap: 4px; }
+.verif_doc_link { display: block; }
+.verif_doc_thumb { width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid #EBEBEB; }
+.verif_btn { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 6px; border: 1.5px solid #D1D5DB; background: #fff; color: #6B6B7A; cursor: pointer; font-family: inherit; &:disabled { opacity: 0.4; cursor: not-allowed; } }
+.verif_btn_active { border-color: #22c55e44; background: #f0fdf4; color: #22c55e; }
+
 // ── Forbidden / loading ───────────────────────────────────
 .loading {
   padding: 60px 20px;

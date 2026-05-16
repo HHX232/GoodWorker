@@ -4,10 +4,195 @@ import Image from 'next/image'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { useTranslations } from 'next-intl'
-import { RefObject, useState } from 'react'
+import { RefObject, useEffect, useRef, useState } from 'react'
 import styles from './DashboardProfilePanel.module.scss'
 
 const VideoRoom = dynamic(() => import('@/widgets/VideoRoom/VideoRoom'), { ssr: false })
+
+// ─── ExpItem type ─────────────────────────────────────────
+
+interface ExpItem {
+  id: string
+  title: string
+  organization: string | null
+  yearFrom: number
+  yearTo: number | null
+  description: string | null
+  documentUrls: string[]
+  verifiedAt: string | null
+}
+
+// ─── ExperienceSection ────────────────────────────────────
+
+function ExperienceSection() {
+  const [items, setItems] = useState<ExpItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({ title: '', organization: '', yearFrom: '', yearTo: '', description: '' })
+  const docInputRef = useRef<HTMLInputElement | null>(null)
+  const [uploadingId, setUploadingId] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/teacher/experience')
+      .then(r => r.json())
+      .then(d => { if (d.experiences) setItems(d.experiences) })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  const handleAdd = async () => {
+    if (!form.title || !form.yearFrom) return
+    setSaving(true)
+    try {
+      const res = await fetch('/api/teacher/experience', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, yearFrom: Number(form.yearFrom), yearTo: form.yearTo ? Number(form.yearTo) : null }),
+      })
+      const d = await res.json()
+      if (d.experience) { setItems(p => [d.experience, ...p]); setShowForm(false); setForm({ title: '', organization: '', yearFrom: '', yearTo: '', description: '' }) }
+    } finally { setSaving(false) }
+  }
+
+  const handleDelete = async (id: string) => {
+    await fetch(`/api/teacher/experience/${id}`, { method: 'DELETE' })
+    setItems(p => p.filter(e => e.id !== id))
+  }
+
+  const handleDocUpload = (id: string) => {
+    setUploadingId(id)
+    docInputRef.current?.click()
+  }
+
+  const handleDocFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? [])
+    if (!files.length || !uploadingId) return
+    const item = items.find(i => i.id === uploadingId)
+    if (!item) return
+    const newUrls = await Promise.all(files.map(f => new Promise<string>((res) => {
+      const reader = new FileReader()
+      reader.onload = () => res(reader.result as string)
+      reader.readAsDataURL(f)
+    })))
+    const merged = [...(item.documentUrls ?? []), ...newUrls]
+    const resp = await fetch(`/api/teacher/experience/${uploadingId}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ documentUrls: merged }),
+    })
+    const d = await resp.json()
+    if (d.experience) setItems(p => p.map(i => i.id === uploadingId ? d.experience : i))
+    setUploadingId(null)
+    e.target.value = ''
+  }
+
+  if (loading) return null
+  return (
+    <>
+      <div className={styles.divider} />
+      <div className={styles.section}>
+        <div className={styles.expHeader}>
+          <div className={styles.sectionLabel}>Опыт работы</div>
+          <button className={styles.expAddBtn} onClick={() => setShowForm(p => !p)}>{showForm ? 'Отмена' : '+ Добавить'}</button>
+        </div>
+        {showForm && (
+          <div className={styles.expForm}>
+            <input className={styles.input} placeholder="Должность / специализация*" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} />
+            <input className={styles.input} placeholder="Место работы / организация" value={form.organization} onChange={e => setForm(p => ({ ...p, organization: e.target.value }))} />
+            <div className={styles.expYears}>
+              <input className={styles.input} type="number" placeholder="Год начала*" value={form.yearFrom} onChange={e => setForm(p => ({ ...p, yearFrom: e.target.value }))} />
+              <input className={styles.input} type="number" placeholder="Год конца (пусто = н.в.)" value={form.yearTo} onChange={e => setForm(p => ({ ...p, yearTo: e.target.value }))} />
+            </div>
+            <textarea className={styles.expTextarea} placeholder="Описание (необязательно)" rows={2} value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
+            <button className={styles.saveBtn} onClick={handleAdd} disabled={saving || !form.title || !form.yearFrom}>{saving ? 'Сохранение…' : 'Сохранить'}</button>
+          </div>
+        )}
+        {items.length === 0 && !showForm && <p className={styles.expEmpty}>Опыт не добавлен</p>}
+        <div className={styles.expList}>
+          {items.map(item => (
+            <div key={item.id} className={styles.expItem}>
+              <div className={styles.expItemTop}>
+                <div className={styles.expItemInfo}>
+                  <span className={styles.expTitle}>{item.title}</span>
+                  {item.organization && <span className={styles.expOrg}>{item.organization}</span>}
+                  <span className={styles.expYearsLabel}>{item.yearFrom}–{item.yearTo ?? 'н.в.'}</span>
+                </div>
+                <div className={styles.expItemActions}>
+                  {item.verifiedAt && (
+                    <span className={styles.expVerifiedBadge} title={`Подтверждено ${new Date(item.verifiedAt).toLocaleDateString('ru')}`}>✓</span>
+                  )}
+                  <button className={styles.expDocBtn} onClick={() => handleDocUpload(item.id)} title="Прикрепить документы">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" /></svg>
+                    {item.documentUrls?.length > 0 ? item.documentUrls.length : ''}
+                  </button>
+                  <button className={styles.expDeleteBtn} onClick={() => handleDelete(item.id)}>×</button>
+                </div>
+              </div>
+              {item.description && <p className={styles.expDesc}>{item.description}</p>}
+            </div>
+          ))}
+        </div>
+        <input ref={docInputRef} type="file" accept="image/jpeg,image/jpg,image/png,image/webp" multiple style={{ display: 'none' }} onChange={handleDocFiles} />
+      </div>
+    </>
+  )
+}
+
+// ─── IdentitySection ──────────────────────────────────────
+
+function IdentitySection() {
+  const [docUrl, setDocUrl] = useState<string | null>(null)
+  const [confirmed, setConfirmed] = useState<boolean | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [uploading, setUploading] = useState(false)
+  const fileRef = useRef<HTMLInputElement | null>(null)
+
+  useEffect(() => {
+    fetch('/api/teacher/identity')
+      .then(r => r.json())
+      .then(d => { setDocUrl(d.passportDocumentUrl ?? null); setConfirmed(d.pasportConfirmed ?? null) })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    const reader = new FileReader()
+    reader.onload = async () => {
+      const url = reader.result as string
+      await fetch('/api/teacher/identity', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ passportDocumentUrl: url }),
+      })
+      setDocUrl(url)
+      setUploading(false)
+    }
+    reader.readAsDataURL(file)
+    e.target.value = ''
+  }
+
+  if (loading) return null
+  return (
+    <>
+      <div className={styles.divider} />
+      <div className={styles.section}>
+        <div className={styles.sectionLabel}>Подтверждение личности</div>
+        <div className={styles.identityRow}>
+          <div className={styles.identityStatus}>
+            {!docUrl && <span className={styles.identityPending}>Паспорт не загружен</span>}
+            {docUrl && !confirmed && <span className={styles.identityUploaded}>Паспорт загружен — на проверке</span>}
+            {docUrl && confirmed && <span className={styles.identityConfirmed} title="Личность подтверждена администратором">✓ Личность подтверждена</span>}
+          </div>
+          <button className={styles.securityBtn} onClick={() => fileRef.current?.click()} disabled={uploading}>
+            {uploading ? '…' : docUrl ? 'Заменить' : 'Загрузить'}
+          </button>
+        </div>
+        <input ref={fileRef} type="file" accept="image/jpeg,image/jpg,image/png,image/webp" style={{ display: 'none' }} onChange={handleFile} />
+      </div>
+    </>
+  )
+}
 
 interface Props {
   name: string
@@ -119,6 +304,8 @@ export function DashboardProfilePanel({
           )}
         </div>
 
+        <ExperienceSection />
+
         <div className={styles.divider} />
 
         {/* Security */}
@@ -139,6 +326,8 @@ export function DashboardProfilePanel({
             <button className={styles.securityBtn} onClick={onChangePassword}>{t('change')}</button>
           </div>
         </div>
+
+        <IdentitySection />
 
         <div className={styles.divider} />
 

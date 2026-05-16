@@ -654,9 +654,149 @@ function PromoCodesTab() {
   )
 }
 
+// ─── Verifications tab ────────────────────────────────────
+
+interface ExperienceVerifItem {
+  id: string
+  title: string
+  organization: string | null
+  yearFrom: number
+  yearTo: number | null
+  documentUrls: string[]
+  verifiedAt: string | null
+  teacher: { id: string; name: string; email: string }
+}
+
+interface IdentityVerifItem {
+  id: string
+  name: string
+  email: string
+  passportDocumentUrl: string
+  pasportConfirmed: boolean | null
+}
+
+function VerificationsTab() {
+  const [experiences, setExperiences] = useState<ExperienceVerifItem[]>([])
+  const [identities, setIdentities] = useState<IdentityVerifItem[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const load = useCallback(async () => {
+    const res = await fetch('/api/admin/verifications')
+    if (!res.ok) return
+    const d = await res.json()
+    setExperiences(d.experiences ?? [])
+    setIdentities(d.identities ?? [])
+  }, [])
+
+  useEffect(() => { setLoading(true); load().finally(() => setLoading(false)) }, [load])
+
+  const verifyExp = async (id: string, verify: boolean) => {
+    const res = await fetch(`/api/admin/verifications/experience/${id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ verify }),
+    })
+    if (!res.ok) { const d = await res.json(); toast.error(d.error ?? 'Ошибка'); return }
+    const d = await res.json()
+    setExperiences(p => p.map(e => e.id === id ? { ...e, verifiedAt: d.experience.verifiedAt } : e))
+    toast.success(verify ? 'Подтверждено' : 'Подтверждение снято')
+  }
+
+  const verifyIdentity = async (teacherId: string, verify: boolean) => {
+    const res = await fetch(`/api/admin/verifications/identity/${teacherId}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ verify }),
+    })
+    if (!res.ok) { toast.error('Ошибка'); return }
+    setIdentities(p => p.map(i => i.id === teacherId ? { ...i, pasportConfirmed: verify } : i))
+    toast.success(verify ? 'Личность подтверждена' : 'Подтверждение снято')
+  }
+
+  return (
+    <div className={styles.tab_content}>
+      <h3 className={styles.promo_section_title}>Опыт работы репетиторов</h3>
+      {loading ? (
+        Array.from({ length: 3 }).map((_, i) => <div key={i} className={styles.skeleton} />)
+      ) : experiences.length === 0 ? (
+        <div className={styles.empty}><p>Нет записей об опыте</p></div>
+      ) : (
+        <div className={styles.verif_list}>
+          {experiences.map(exp => (
+            <div key={exp.id} className={styles.verif_card}>
+              <div className={styles.verif_card_top}>
+                <div className={styles.verif_info}>
+                  <span className={styles.verif_name}>{exp.teacher.name}</span>
+                  <span className={styles.verif_sub}>{exp.title}{exp.organization ? ` · ${exp.organization}` : ''} · {exp.yearFrom}–{exp.yearTo ?? 'н.в.'}</span>
+                </div>
+                <div className={styles.verif_actions}>
+                  {exp.verifiedAt && (
+                    <span className={styles.verif_check} title={`Подтверждено ${new Date(exp.verifiedAt).toLocaleDateString('ru')}`}>✓</span>
+                  )}
+                  <span className={styles.verif_docs_count} title={exp.documentUrls.length === 0 ? 'Нет документов' : `${exp.documentUrls.length} документ(ов)`}>
+                    {exp.documentUrls.length === 0 ? '📎 нет' : `📎 ${exp.documentUrls.length}`}
+                  </span>
+                  {exp.documentUrls.length > 0 && (
+                    <div className={styles.verif_doc_previews}>
+                      {exp.documentUrls.map((url, i) => (
+                        <a key={i} href={url} target="_blank" rel="noreferrer" className={styles.verif_doc_link}>
+                          <img src={url} alt={`doc ${i+1}`} className={styles.verif_doc_thumb} />
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                  <button
+                    className={`${styles.verif_btn} ${exp.verifiedAt ? styles.verif_btn_active : ''}`}
+                    onClick={() => verifyExp(exp.id, !exp.verifiedAt)}
+                    disabled={!exp.verifiedAt && exp.documentUrls.length === 0}
+                    title={!exp.verifiedAt && exp.documentUrls.length === 0 ? 'Нет документов для подтверждения' : ''}
+                  >
+                    {exp.verifiedAt ? 'Снять ✓' : 'Подтвердить'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className={styles.divider} style={{ margin: '12px 0' }} />
+      <h3 className={styles.promo_section_title}>Подтверждение личности</h3>
+      {loading ? null : identities.length === 0 ? (
+        <div className={styles.empty}><p>Нет загруженных паспортов</p></div>
+      ) : (
+        <div className={styles.verif_list}>
+          {identities.map(item => (
+            <div key={item.id} className={styles.verif_card}>
+              <div className={styles.verif_card_top}>
+                <div className={styles.verif_info}>
+                  <span className={styles.verif_name}>{item.name}</span>
+                  <span className={styles.verif_sub}>{item.email}</span>
+                </div>
+                <div className={styles.verif_actions}>
+                  {item.pasportConfirmed && (
+                    <span className={styles.verif_check} title="Личность подтверждена">✓</span>
+                  )}
+                  <a href={item.passportDocumentUrl} target="_blank" rel="noreferrer" className={styles.verif_doc_link}>
+                    <img src={item.passportDocumentUrl} alt="passport" className={styles.verif_doc_thumb} />
+                  </a>
+                  <button
+                    className={`${styles.verif_btn} ${item.pasportConfirmed ? styles.verif_btn_active : ''}`}
+                    onClick={() => verifyIdentity(item.id, !item.pasportConfirmed)}
+                  >
+                    {item.pasportConfirmed ? 'Снять ✓' : 'Подтвердить'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Page ─────────────────────────────────────────────────
 
-type AdminTab = 'complaints' | 'notifications' | 'promo'
+type AdminTab = 'complaints' | 'notifications' | 'promo' | 'verifications'
 
 export function AdminPage() {
   const { data: session, status } = useSession()
@@ -729,11 +869,22 @@ export function AdminPage() {
             </svg>
             Промокоды
           </button>
+          <button
+            className={`${styles.main_tab} ${activeTab === 'verifications' ? styles.main_tab_active : ''}`}
+            onClick={() => setActiveTab('verifications')}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+              <polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+            Верификации
+          </button>
         </div>
 
         {activeTab === 'complaints' && <ComplaintsTab />}
         {activeTab === 'notifications' && <NotificationsTab />}
         {activeTab === 'promo' && <PromoCodesTab />}
+        {activeTab === 'verifications' && <VerificationsTab />}
       </div>
     </div>
   )

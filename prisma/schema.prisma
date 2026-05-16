@@ -80,6 +80,23 @@ model Teacher {
   notifications      Notification[]
   reviews            TeacherReview[]
   services           Service[]
+  passportDocumentUrl String?
+  experiences         TeacherExperience[]
+}
+
+model TeacherExperience {
+  id              String    @id @default(uuid())
+  teacherId       String
+  title           String
+  organization    String?
+  yearFrom        Int
+  yearTo          Int?
+  description     String?
+  documentUrls    String[]  @default([])
+  verifiedAt      DateTime?
+  verifiedByAdmin String?
+  createdAt       DateTime  @default(now())
+  teacher         Teacher   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 }
 
 model TeacherReview {
