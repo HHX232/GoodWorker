@@ -4,4 +4,34 @@
   height: calc(100vh - 83px);
   overflow: hidden;
   background: #EEEFF8;
+
+  // ── Tablet: hide left sidebar ─────────────────────────────
+  @media (max-width: 1100px) {
+    grid-template-columns: 1fr 296px;
+
+    > :first-child {
+      display: none;
+    }
+  }
+
+  // ── Small tablet / mobile: stack vertically ───────────────
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: calc(100vh - 83px);
+    overflow: visible;
+
+    > :first-child { display: none; }
+
+    > :nth-child(2) {
+      height: auto;
+      overflow-y: visible;
+    }
+
+    > :last-child {
+      height: auto;
+      border-left: none;
+      border-top: 1px solid rgba(0, 0, 0, 0.07);
+    }
+  }
 }
