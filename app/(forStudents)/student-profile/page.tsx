@@ -1,6 +1,5 @@
 import { prisma } from "@/shared/prisma/prisma"
-import { StudentErrorsList } from "@/shared/ui/Stats/StudentErrorsWidget/StudentErrorsList"
-import ProfileEditForm from "@/widgets/Forms/ProfileEditForm/ProfileEditForm"
+import { StudentDashboard } from "@/_pages/StudentDashboard/StudentDashboard"
 import { redirect } from "next/navigation"
 import { auth } from "../../../auth"
 
@@ -10,8 +9,10 @@ export default async function StudentProfilePage() {
   if (!session) redirect("/login")
   if (session.user.role !== "STUDENT") redirect("/teacher-profile")
 
+  const id = session.user.id
+
   const student = await prisma.student.findUnique({
-    where: { id: session.user.id },
+    where: { id },
     select: {
       name: true,
       email: true,
@@ -23,12 +24,6 @@ export default async function StudentProfilePage() {
   if (!student) redirect("/login")
 
   return (
-    <>
-      <ProfileEditForm
-        userType="Student"
-        initialData={student}
-      />
-      <StudentErrorsList />
-    </>
+    <StudentDashboard initialData={student} />
   )
 }

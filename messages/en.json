@@ -523,10 +523,75 @@
     "hoursLabel": "{count} sessions conducted",
     "roadmapsLabel": "Road maps & materials",
     "services": {
-      "individual": { "title": "Individual lessons", "desc": "Personal sessions on your schedule." },
-      "group": { "title": "Group courses", "desc": "Learning in small groups on relevant topics." },
-      "homework": { "title": "Homework review", "desc": "Detailed feedback on assignments." },
-      "consultation": { "title": "Consultations", "desc": "One-off sessions on specific questions." }
-    }
+      "individual": {
+        "title": "Individual lessons",
+        "desc": "Personal sessions on your schedule."
+      },
+      "group": {
+        "title": "Group courses",
+        "desc": "Learning in small groups on relevant topics."
+      },
+      "homework": {
+        "title": "Homework review",
+        "desc": "Detailed feedback on assignments."
+      },
+      "consultation": {
+        "title": "Consultations",
+        "desc": "One-off sessions on specific questions."
+      }
+    },
+    "student": "Student",
+    "teachers": "Teachers",
+    "searchTeacherPlaceholder": "Search teacher...",
+    "noTeachers": "No teachers yet",
+    "lessons": "Lessons",
+    "errorsLabel": "Errors",
+    "memberSinceStudent": "Member since",
+    "myStats": "My statistics",
+    "tabErrors": "Errors",
+    "tabRoadmaps": "Roadmaps",
+    "saveShort": "Save",
+    "savingShort": "Saving…",
+    "saveErrorDefault": "Failed to save",
+    "changeEmailTitle": "Change email",
+    "changeEmailDesc": "Enter your new email. We'll send a confirmation code to it.",
+    "changePasswordTitle": "Change password",
+    "changePasswordDesc": "We'll send a confirmation code to your current email.",
+    "newEmail": "New email",
+    "newPassword": "New password",
+    "emailUpdated": "Email updated. Please sign in again.",
+    "passwordMinLength": "Password must be at least 6 characters",
+    "invalidEmail": "Enter a valid email",
+    "callNotes": "Call transcripts",
+    "emptyContent": "Nothing here yet",
+    "allSubjects": "All"
+  },
+  "studentStats": {
+    "title": "My statistics",
+    "loading": "Loading…",
+    "noData": "No data",
+    "postsRead": "Posts read",
+    "roadmaps": "Roadmaps",
+    "videoCalls": "Video lessons",
+    "testsPassed": "Tests passed",
+    "avgScore": "Avg score",
+    "errors": "Errors",
+    "activityByWeek": "Activity by week",
+    "errorsByWeek": "Errors by week",
+    "topErrorTopics": "Common error topics",
+    "chartPosts": "Posts",
+    "chartRoadmaps": "Roadmaps",
+    "chartCalls": "Video lessons",
+    "chartTests": "Tests — avg score",
+    "emptyPosts": "No posts read",
+    "emptyRoadmaps": "No roadmaps yet",
+    "emptyCalls": "No lessons yet",
+    "emptyTests": "No tests yet",
+    "emptyErrors": "No errors yet",
+    "unitPosts": "posts",
+    "unitRoadmaps": "maps",
+    "unitCalls": "lessons",
+    "unitErrors": "errors",
+    "tooltipTests": "{score}% · {count} tests"
   }
 }

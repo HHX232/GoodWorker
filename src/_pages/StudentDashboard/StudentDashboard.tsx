@@ -4,13 +4,14 @@ import OtpModal from '@/shared/ui/Modals/OtpModal/OtpModal'
 import ImageCropEditor from '@/widgets/BaseUI/ImageCropEditor/ImageCropEditor'
 import { BookmarksModal } from '@/widgets/Forms/ProfileEditForm/BookmarksModal'
 import { TranscriptsModal } from '@/widgets/Forms/ProfileEditForm/TranscriptsModal'
-import { DashboardCenter } from '@/widgets/Dashboard/DashboardCenter/DashboardCenter'
-import { DashboardProfilePanel } from '@/widgets/Dashboard/DashboardProfilePanel/DashboardProfilePanel'
-import { DashboardStudentSidebar } from '@/widgets/Dashboard/DashboardStudentSidebar/DashboardStudentSidebar'
+import { StudentCenter } from '@/widgets/Dashboard/StudentCenter/StudentCenter'
+import { StudentProfilePanel } from '@/widgets/Dashboard/StudentProfilePanel/StudentProfilePanel'
+import { StudentStatsModal } from '@/widgets/Dashboard/StudentStatsModal/StudentStatsModal'
+import { StudentTeachersSidebar } from '@/widgets/Dashboard/StudentTeachersSidebar/StudentTeachersSidebar'
 import { useTranslations } from 'next-intl'
-import { FC, useRef, useState } from 'react'
+import { FC, useEffect, useRef, useState } from 'react'
 import { useUpdateProfile } from '@/features/hooks/User/useUpdateProfile'
-import styles from './TeacherDashboard.module.scss'
+import styles from './StudentDashboard.module.scss'
 
 interface ProfileData {
   name: string
@@ -19,16 +20,64 @@ interface ProfileData {
   avatarUrl: string | null
 }
 
-interface Props {
-  initialData: ProfileData
-  statsId: string
-  studentCount: number
-  callCount: number
+interface Teacher {
+  id: string
+  name: string
+  avatarUrl: string | null
+  initials: string
+  avatarColor: string
+  avatarTextColor: string
+  subject: string
+  linkedAt: string
 }
 
-export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount, callCount }) => {
+interface RoadmapAccess {
+  roadmapId: string
+  roadmap: {
+    id: string
+    title: string
+    previewImageUrl: string | null
+    price: number
+    teacher: { id: string; name: string; avatarUrl: string | null }
+    _count: { comments: number; ratings: number }
+  }
+}
+
+interface ServiceBooking {
+  id: string
+  status: string
+  finalPrice: number
+  createdAt: string
+  service: {
+    id: string
+    title: string
+    duration: number
+    timeFrom: string
+    timeTo: string
+    price: number
+    photoUrl: string | null
+    category: { translations: { langCode: string; name: string }[] } | null
+    teacher: { id: string; name: string; avatarUrl: string | null }
+  }
+}
+
+interface ProfileApiResponse {
+  memberSince: string
+  teacherCount: number
+  callCount: number
+  errorCount: number
+  teachers: Teacher[]
+  roadmapAccess: RoadmapAccess[]
+  serviceBookings: ServiceBooking[]
+}
+
+interface Props {
+  initialData: ProfileData
+}
+
+export const StudentDashboard: FC<Props> = ({ initialData }) => {
   const t = useTranslations('dashboard')
-  const { mutateAsync: updateProfile } = useUpdateProfile('Teacher')
+  const { mutateAsync: updateProfile } = useUpdateProfile('Student')
 
   const [name, setName] = useState(initialData.name)
   const [phone, setPhone] = useState(initialData.phone ?? '')
@@ -45,9 +94,20 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
   const [passwordModalOpen, setPasswordModalOpen] = useState(false)
   const [newEmail, setNewEmail] = useState('')
   const [newPassword, setNewPassword] = useState('')
-
   const [transcriptsOpen, setTranscriptsOpen] = useState(false)
   const [bookmarksOpen, setBookmarksOpen] = useState(false)
+  const [statsOpen, setStatsOpen] = useState(false)
+
+  const [profileData, setProfileData] = useState<ProfileApiResponse | null>(null)
+  const [profileLoading, setProfileLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/student/profile')
+      .then(r => r.json())
+      .then(d => { if (!d.error) setProfileData(d) })
+      .catch(() => {})
+      .finally(() => setProfileLoading(false))
+  }, [])
 
   const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -76,7 +136,7 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 3000)
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : 'Failed to save')
+      setSaveError(err instanceof Error ? err.message : t('saveErrorDefault'))
     } finally {
       setSaving(false)
     }
@@ -87,20 +147,20 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
     const res = await fetch('/api/profile/edit/change-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ step: 'send', newEmail, userType: 'Teacher' }),
+      body: JSON.stringify({ step: 'send', newEmail, userType: 'Student' }),
     })
     const data = await res.json()
-    if (!res.ok) throw new Error(data.error ?? 'Failed to send code')
+    if (!res.ok) throw new Error(data.error ?? 'Ошибка отправки')
   }
 
   const handleVerifyEmailOtp = async (otp: string) => {
     const res = await fetch('/api/profile/edit/change-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ step: 'verify', newEmail, otp, userType: 'Teacher' }),
+      body: JSON.stringify({ step: 'verify', newEmail, otp, userType: 'Student' }),
     })
     const data = await res.json()
-    if (!res.ok) throw new Error(data.error ?? 'Invalid code')
+    if (!res.ok) throw new Error(data.error ?? 'Неверный код')
     alert(t('emailUpdated'))
     window.location.href = '/login'
   }
@@ -109,10 +169,10 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
     const res = await fetch('/api/profile/change-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ step: 'send', userType: 'Teacher' }),
+      body: JSON.stringify({ step: 'send', userType: 'Student' }),
     })
     const data = await res.json()
-    if (!res.ok) throw new Error(data.error ?? 'Failed to send code')
+    if (!res.ok) throw new Error(data.error ?? 'Ошибка отправки')
   }
 
   const handleVerifyPasswordOtp = async (otp: string) => {
@@ -120,30 +180,36 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
     const res = await fetch('/api/profile/change-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ step: 'verify', otp, newPassword, userType: 'Teacher' }),
+      body: JSON.stringify({ step: 'verify', otp, newPassword, userType: 'Student' }),
     })
     const data = await res.json()
-    if (!res.ok) throw new Error(data.error ?? 'Invalid code')
+    if (!res.ok) throw new Error(data.error ?? 'Неверный код')
     setNewPassword('')
   }
 
   return (
     <div className={styles.dashboard}>
-      <DashboardStudentSidebar teacherId={statsId} />
-
-      <DashboardCenter
-        statsId={statsId}
-        studentCount={studentCount}
-        callCount={callCount}
-        isOwner={true}
+      <StudentTeachersSidebar
+        teachers={profileData?.teachers ?? []}
+        loading={profileLoading}
       />
 
-      <DashboardProfilePanel
+      <StudentCenter
+        teacherCount={profileData?.teacherCount ?? 0}
+        callCount={profileData?.callCount ?? 0}
+        errorCount={profileData?.errorCount ?? 0}
+        roadmapAccess={profileData?.roadmapAccess ?? []}
+        serviceBookings={profileData?.serviceBookings ?? []}
+        loading={profileLoading}
+      />
+
+      <StudentProfilePanel
         name={name}
         email={initialData.email}
         phone={phone}
         avatarUrl={avatarUrl}
-        statsId={statsId}
+        memberSince={profileData?.memberSince ?? new Date().toISOString()}
+        errorCount={profileData?.errorCount ?? 0}
         saving={saving}
         saveError={saveError}
         saveSuccess={saveSuccess}
@@ -157,6 +223,7 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
         onChangePassword={() => setPasswordModalOpen(true)}
         onTranscripts={() => setTranscriptsOpen(true)}
         onBookmarks={() => setBookmarksOpen(true)}
+        onStats={() => setStatsOpen(true)}
       />
 
       <input
@@ -166,9 +233,6 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
         style={{ display: 'none' }}
         onChange={handleAvatarFileChange}
       />
-
-      <TranscriptsModal isOpen={transcriptsOpen} onClose={() => setTranscriptsOpen(false)} />
-      <BookmarksModal isOpen={bookmarksOpen} onClose={() => setBookmarksOpen(false)} />
 
       {cropSrc && (
         <ImageCropEditor
@@ -181,6 +245,10 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
           aspectRatio={1}
         />
       )}
+
+      <TranscriptsModal isOpen={transcriptsOpen} onClose={() => setTranscriptsOpen(false)} />
+      <BookmarksModal isOpen={bookmarksOpen} onClose={() => setBookmarksOpen(false)} />
+      <StudentStatsModal isOpen={statsOpen} onClose={() => setStatsOpen(false)} />
 
       <OtpModal
         isOpen={emailModalOpen}

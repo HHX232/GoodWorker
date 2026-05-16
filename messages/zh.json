@@ -523,10 +523,75 @@
     "hoursLabel": "已完成 {count} 次课",
     "roadmapsLabel": "路线图与材料",
     "services": {
-      "individual": { "title": "个人课程", "desc": "按您的时间表进行个性化辅导。" },
-      "group": { "title": "小组课程", "desc": "在小组中学习相关主题。" },
-      "homework": { "title": "作业批改", "desc": "对作业进行详细反馈。" },
-      "consultation": { "title": "咨询", "desc": "针对特定问题的一次性咨询。" }
-    }
+      "individual": {
+        "title": "个人课程",
+        "desc": "按您的时间表进行个性化辅导。"
+      },
+      "group": {
+        "title": "小组课程",
+        "desc": "在小组中学习相关主题。"
+      },
+      "homework": {
+        "title": "作业批改",
+        "desc": "对作业进行详细反馈。"
+      },
+      "consultation": {
+        "title": "咨询",
+        "desc": "针对特定问题的一次性咨询。"
+      }
+    },
+    "student": "学生",
+    "teachers": "教师",
+    "searchTeacherPlaceholder": "搜索教师...",
+    "noTeachers": "暂无教师",
+    "lessons": "课程",
+    "errorsLabel": "错误",
+    "memberSinceStudent": "加入于",
+    "myStats": "我的统计",
+    "tabErrors": "错误",
+    "tabRoadmaps": "路线图",
+    "saveShort": "保存",
+    "savingShort": "保存中…",
+    "saveErrorDefault": "保存失败",
+    "changeEmailTitle": "修改邮箱",
+    "changeEmailDesc": "请输入新邮箱，我们会向其发送验证码。",
+    "changePasswordTitle": "修改密码",
+    "changePasswordDesc": "我们将向您的当前邮箱发送验证码。",
+    "newEmail": "新邮箱",
+    "newPassword": "新密码",
+    "emailUpdated": "邮箱已更新，请重新登录。",
+    "passwordMinLength": "密码至少需要6个字符",
+    "invalidEmail": "请输入有效的邮箱",
+    "callNotes": "通话记录",
+    "emptyContent": "暂无内容",
+    "allSubjects": "全部"
+  },
+  "studentStats": {
+    "title": "我的统计",
+    "loading": "加载中…",
+    "noData": "暂无数据",
+    "postsRead": "已读帖子",
+    "roadmaps": "路线图",
+    "videoCalls": "视频课程",
+    "testsPassed": "已完成测试",
+    "avgScore": "平均分",
+    "errors": "错误",
+    "activityByWeek": "每周活动",
+    "errorsByWeek": "每周错误",
+    "topErrorTopics": "常见错误主题",
+    "chartPosts": "帖子",
+    "chartRoadmaps": "路线图",
+    "chartCalls": "视频课程",
+    "chartTests": "测试 — 平均分",
+    "emptyPosts": "尚未阅读帖子",
+    "emptyRoadmaps": "暂无路线图",
+    "emptyCalls": "暂无课程",
+    "emptyTests": "暂无测试",
+    "emptyErrors": "暂无错误",
+    "unitPosts": "篇",
+    "unitRoadmaps": "个",
+    "unitCalls": "节",
+    "unitErrors": "个",
+    "tooltipTests": "{score}% · {count}个测试"
   }
 }

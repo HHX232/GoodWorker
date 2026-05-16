@@ -1,0 +1,138 @@
+.center {
+  overflow-y: auto;
+  height: 100%;
+  padding: 20px 20px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: #D8D8E0; border-radius: 2px; }
+}
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.statCard {
+  background: #ffffff;
+  border: 1px solid #DADCEB;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: default;
+}
+
+.statIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.statValue {
+  font-size: 24px;
+  font-weight: 700;
+  color: #141416;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin-bottom: 3px;
+}
+
+.statLabel {
+  font-size: 12px;
+  color: #868897;
+}
+
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #DADCEB;
+  padding-bottom: 0;
+}
+
+.tab {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #868897;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+
+  &:hover { color: #141416; }
+}
+
+.tabActive {
+  color: #141416;
+  font-weight: 600;
+  border-bottom-color: #141416;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 48px 0;
+  color: #868897;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.loading {
+  text-align: center;
+  padding: 48px 0;
+  color: #868897;
+  font-size: 13px;
+}
+
+.bookingCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bookingMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px;
+}
+
+.bookingTeacher {
+  font-size: 12px;
+  color: #868897;
+  flex: 1;
+}
+
+.bookingPrice {
+  font-size: 13px;
+  font-weight: 700;
+  color: #141416;
+}
+
+.errorsSection {
+  margin-top: 8px;
+}

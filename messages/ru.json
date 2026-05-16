@@ -523,10 +523,75 @@
     "hoursLabel": "{count} проведённых занятий",
     "roadmapsLabel": "Роад-мэпы и материалы",
     "services": {
-      "individual": { "title": "Индивидуальные уроки", "desc": "Персональные занятия по вашему расписанию." },
-      "group": { "title": "Групповые курсы", "desc": "Обучение в небольших группах по актуальным темам." },
-      "homework": { "title": "Проверка ДЗ", "desc": "Разбор домашних заданий с подробными комментариями." },
-      "consultation": { "title": "Консультации", "desc": "Разовые консультации по конкретным вопросам." }
-    }
+      "individual": {
+        "title": "Индивидуальные уроки",
+        "desc": "Персональные занятия по вашему расписанию."
+      },
+      "group": {
+        "title": "Групповые курсы",
+        "desc": "Обучение в небольших группах по актуальным темам."
+      },
+      "homework": {
+        "title": "Проверка ДЗ",
+        "desc": "Разбор домашних заданий с подробными комментариями."
+      },
+      "consultation": {
+        "title": "Консультации",
+        "desc": "Разовые консультации по конкретным вопросам."
+      }
+    },
+    "student": "Ученик",
+    "teachers": "Учителя",
+    "searchTeacherPlaceholder": "Поиск учителя...",
+    "noTeachers": "Нет учителей",
+    "lessons": "Занятия",
+    "errorsLabel": "Ошибок",
+    "memberSinceStudent": "Участник с",
+    "myStats": "Моя статистика",
+    "tabErrors": "Ошибки",
+    "tabRoadmaps": "Дорожные карты",
+    "saveShort": "Сохранить",
+    "savingShort": "Сохранение…",
+    "saveErrorDefault": "Ошибка сохранения",
+    "changeEmailTitle": "Изменить email",
+    "changeEmailDesc": "Введите новый email. Мы отправим на него код подтверждения.",
+    "changePasswordTitle": "Изменить пароль",
+    "changePasswordDesc": "Мы отправим код подтверждения на ваш текущий email.",
+    "newEmail": "Новый email",
+    "newPassword": "Новый пароль",
+    "emailUpdated": "Email обновлён. Войдите снова.",
+    "passwordMinLength": "Пароль должен содержать минимум 6 символов",
+    "invalidEmail": "Введите корректный email",
+    "callNotes": "Конспекты звонков",
+    "emptyContent": "Пока ничего нет",
+    "allSubjects": "Все"
+  },
+  "studentStats": {
+    "title": "Моя статистика",
+    "loading": "Загрузка…",
+    "noData": "Нет данных",
+    "postsRead": "Постов прочитано",
+    "roadmaps": "Дорожных карт",
+    "videoCalls": "Видеоуроков",
+    "testsPassed": "Тестов пройдено",
+    "avgScore": "Средний балл",
+    "errors": "Ошибок",
+    "activityByWeek": "Активность по неделям",
+    "errorsByWeek": "Ошибки по неделям",
+    "topErrorTopics": "Частые ошибки по темам",
+    "chartPosts": "Посты",
+    "chartRoadmaps": "Дорожные карты",
+    "chartCalls": "Видеоуроки",
+    "chartTests": "Тесты — средний балл",
+    "emptyPosts": "Постов не читали",
+    "emptyRoadmaps": "Дорожных карт нет",
+    "emptyCalls": "Занятий пока не было",
+    "emptyTests": "Тестов пока нет",
+    "emptyErrors": "Ошибок пока нет",
+    "unitPosts": "постов",
+    "unitRoadmaps": "карт",
+    "unitCalls": "занятий",
+    "unitErrors": "ошибок",
+    "tooltipTests": "{score}% · {count} тестов"
   }
 }

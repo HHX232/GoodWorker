@@ -523,10 +523,75 @@
     "hoursLabel": "{count} सत्र आयोजित किए",
     "roadmapsLabel": "रोड मैप और सामग्री",
     "services": {
-      "individual": { "title": "व्यक्तिगत पाठ", "desc": "आपके शेड्यूल पर व्यक्तिगत सत्र।" },
-      "group": { "title": "समूह पाठ्यक्रम", "desc": "छोटे समूहों में प्रासंगिक विषयों पर सीखना।" },
-      "homework": { "title": "गृहकार्य समीक्षा", "desc": "असाइनमेंट पर विस्तृत प्रतिक्रिया।" },
-      "consultation": { "title": "परामर्श", "desc": "विशिष्ट प्रश्नों पर एकबारगी सत्र।" }
-    }
+      "individual": {
+        "title": "व्यक्तिगत पाठ",
+        "desc": "आपके शेड्यूल पर व्यक्तिगत सत्र।"
+      },
+      "group": {
+        "title": "समूह पाठ्यक्रम",
+        "desc": "छोटे समूहों में प्रासंगिक विषयों पर सीखना।"
+      },
+      "homework": {
+        "title": "गृहकार्य समीक्षा",
+        "desc": "असाइनमेंट पर विस्तृत प्रतिक्रिया।"
+      },
+      "consultation": {
+        "title": "परामर्श",
+        "desc": "विशिष्ट प्रश्नों पर एकबारगी सत्र।"
+      }
+    },
+    "student": "छात्र",
+    "teachers": "शिक्षक",
+    "searchTeacherPlaceholder": "शिक्षक खोजें...",
+    "noTeachers": "कोई शिक्षक नहीं",
+    "lessons": "पाठ",
+    "errorsLabel": "त्रुटियाँ",
+    "memberSinceStudent": "सदस्य बने",
+    "myStats": "मेरी सांख्यिकी",
+    "tabErrors": "त्रुटियाँ",
+    "tabRoadmaps": "रोडमैप",
+    "saveShort": "सहेजें",
+    "savingShort": "सहेजा जा रहा है…",
+    "saveErrorDefault": "सहेजने में विफल",
+    "changeEmailTitle": "ईमेल बदलें",
+    "changeEmailDesc": "नया ईमेल दर्ज करें। हम उस पर एक पुष्टि कोड भेजेंगे।",
+    "changePasswordTitle": "पासवर्ड बदलें",
+    "changePasswordDesc": "हम आपके वर्तमान ईमेल पर एक पुष्टि कोड भेजेंगे।",
+    "newEmail": "नया ईमेल",
+    "newPassword": "नया पासवर्ड",
+    "emailUpdated": "ईमेल अपडेट हुआ। कृपया फिर से साइन इन करें।",
+    "passwordMinLength": "पासवर्ड कम से कम 6 वर्णों का होना चाहिए",
+    "invalidEmail": "वैध ईमेल दर्ज करें",
+    "callNotes": "कॉल नोट्स",
+    "emptyContent": "अभी कुछ नहीं है",
+    "allSubjects": "सभी"
+  },
+  "studentStats": {
+    "title": "मेरी सांख्यिकी",
+    "loading": "लोड हो रहा है…",
+    "noData": "कोई डेटा नहीं",
+    "postsRead": "पढ़े गए पोस्ट",
+    "roadmaps": "रोडमैप",
+    "videoCalls": "वीडियो पाठ",
+    "testsPassed": "परीक्षण पूर्ण",
+    "avgScore": "औसत अंक",
+    "errors": "त्रुटियाँ",
+    "activityByWeek": "साप्ताहिक गतिविधि",
+    "errorsByWeek": "साप्ताहिक त्रुटियाँ",
+    "topErrorTopics": "सामान्य त्रुटि विषय",
+    "chartPosts": "पोस्ट",
+    "chartRoadmaps": "रोडमैप",
+    "chartCalls": "वीडियो पाठ",
+    "chartTests": "परीक्षण — औसत अंक",
+    "emptyPosts": "कोई पोस्ट नहीं पढ़ा",
+    "emptyRoadmaps": "कोई रोडमैप नहीं",
+    "emptyCalls": "कोई पाठ नहीं",
+    "emptyTests": "कोई परीक्षण नहीं",
+    "emptyErrors": "कोई त्रुटि नहीं",
+    "unitPosts": "पोस्ट",
+    "unitRoadmaps": "मैप",
+    "unitCalls": "पाठ",
+    "unitErrors": "त्रुटियाँ",
+    "tooltipTests": "{score}% · {count} परीक्षण"
   }
 }
