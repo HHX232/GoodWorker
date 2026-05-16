@@ -13,6 +13,7 @@ export interface ServiceCardProps {
   price: number
   category?: { translations: { langCode: string; name: string }[] } | null
   locale?: string
+  onBook?: () => void
 }
 
 const GRADIENTS = [
@@ -84,6 +85,7 @@ export function ServiceCard({
   price,
   category,
   locale = 'ru',
+  onBook,
 }: ServiceCardProps) {
   const categoryName = getCategoryName(category, locale)
   const gradient = pickGradient(title)
@@ -126,6 +128,16 @@ export function ServiceCard({
           <span className={styles.price}>{price.toLocaleString('ru-RU')} ₽</span>
         </div>
       </div>
+
+      {/* Book button */}
+      {onBook && (
+        <button
+          className={styles.bookBtn}
+          onClick={e => { e.stopPropagation(); onBook() }}
+        >
+          Записаться
+        </button>
+      )}
     </div>
   )
 }

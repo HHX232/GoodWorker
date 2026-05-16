@@ -118,3 +118,22 @@
   color: #ffffff;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
+
+.bookBtn {
+  position: relative;
+  z-index: 2;
+  margin: 0 12px 12px;
+  width: calc(100% - 24px);
+  padding: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #534AB7;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover { background: #ffffff; }
+}

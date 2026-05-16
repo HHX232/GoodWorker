@@ -3,8 +3,10 @@
 import { ServiceCard } from '@/shared/ui/Service/ServiceCard/ServiceCard'
 import { CreatePickerModal } from '@/widgets/Dashboard/CreatePickerModal/CreatePickerModal'
 import { CreateServiceModal } from '@/widgets/Dashboard/CreateServiceModal/CreateServiceModal'
+import { BookServiceModal } from '@/widgets/Dashboard/BookServiceModal/BookServiceModal'
 import Card from '@/shared/ui/Posts/Card/Card'
 import { RoadMapPreview } from '@/shared/ui/RoadMap/RoadMapPreview/RoadMapPreview'
+import { useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
 import styles from './DashboardCenter.module.scss'
@@ -95,6 +97,7 @@ function mapPost(p: PostItem) {
 export function DashboardCenter({ statsId, studentCount, callCount, isOwner = false }: Props) {
   const t = useTranslations('dashboard')
   const locale = useLocale()
+  const { data: session } = useSession()
   const [tab, setTab] = useState<Tab>('all')
   const [roadmaps, setRoadmaps] = useState<RoadmapItem[]>([])
   const [posts, setPosts] = useState<PostItem[]>([])
@@ -102,6 +105,9 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
   const [loading, setLoading] = useState(true)
   const [pickerOpen, setPickerOpen] = useState(false)
   const [serviceModalOpen, setServiceModalOpen] = useState(false)
+  const [bookingService, setBookingService] = useState<ServiceItem | null>(null)
+
+  const canBook = !isOwner && session?.user?.role === 'STUDENT'
 
   useEffect(() => {
     setLoading(true)
@@ -246,6 +252,7 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
               price={s.price}
               category={s.category}
               locale={locale}
+              onBook={canBook ? () => setBookingService(s) : undefined}
             />
           ))}
 
@@ -270,6 +277,12 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
         onClose={() => setServiceModalOpen(false)}
         teacherId={statsId}
         onCreated={(svc) => setServices(prev => [svc as ServiceItem, ...prev])}
+      />
+
+      <BookServiceModal
+        open={bookingService !== null}
+        onClose={() => setBookingService(null)}
+        service={bookingService}
       />
     </div>
   )
