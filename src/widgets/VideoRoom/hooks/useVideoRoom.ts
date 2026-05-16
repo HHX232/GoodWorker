@@ -380,6 +380,14 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
         }
       })
 
+      // Send client_info BEFORE publishing mic so the agent knows isMobile before the first audio chunk arrives
+      try {
+        room.localParticipant.publishData(
+          enc.current.encode(JSON.stringify({ type: 'client_info', identity: room.localParticipant.identity, isMobile: isMob })),
+          { reliable: true },
+        )
+      } catch {}
+
       await room.localParticipant.setMicrophoneEnabled(true, {
         echoCancellation: true,
         noiseSuppression: true,
@@ -399,14 +407,6 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
         const devices = await navigator.mediaDevices.enumerateDevices()
         const vids = devices.filter(d => d.kind === 'videoinput')
         setVideoDevices(vids)
-      } catch {}
-
-      // Send initial client_info (agent may not be in the room yet — ParticipantConnected will resend)
-      try {
-        room.localParticipant.publishData(
-          enc.current.encode(JSON.stringify({ type: 'client_info', identity: room.localParticipant.identity, isMobile: isMob })),
-          { reliable: true },
-        )
       } catch {}
 
       setStatus('')

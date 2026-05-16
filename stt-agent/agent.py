@@ -48,9 +48,6 @@ def load_model() -> WhisperModel:
 
 whisper = load_model()
 
-# RMS threshold below which audio is treated as "quiet mic" (mobile without AGC).
-# Desktop mics with normal gain are typically > 0.03; mobile without AGC are typically < 0.02.
-QUIET_RMS_THRESHOLD = 0.03
 TARGET_RMS = 0.10
 
 
@@ -60,26 +57,19 @@ def transcribe_chunk(audio_data: np.ndarray, is_mobile: bool = False) -> tuple[s
 
     rms = float(np.sqrt(np.mean(audio_data ** 2)))
 
-    # Absolute silence — skip regardless of mobile flag
     if rms < 0.0002:
         logger.info(f"chunk skipped (silence) rms={rms:.5f} mobile={is_mobile}")
         return "", None
 
-    # Detect quiet audio before normalization — quiet = mobile mic without AGC
-    is_quiet_mic = rms < QUIET_RMS_THRESHOLD
-
-    # Normalize so Whisper gets usable signal level
+    # Mobile mics without AGC capture very quiet audio — normalize before Whisper
     if rms < TARGET_RMS:
-        gain = TARGET_RMS / rms
-        audio_data = np.clip(audio_data * gain, -1.0, 1.0)
+        audio_data = np.clip(audio_data * (TARGET_RMS / rms), -1.0, 1.0)
 
-    # Disable VAD when:
-    #   a) client explicitly flagged as mobile via client_info
-    #   b) audio was quiet before normalization (mobile mic without AGC)
-    # VAD discards audio below its speech threshold — quiet mobile audio gets wrongly filtered.
-    use_vad = not (is_mobile or is_quiet_mic)
+    # Only disable VAD when client explicitly flagged as mobile via client_info.
+    # Disabling VAD for desktop would let background noise through as phantom phrases.
+    use_vad = not is_mobile
 
-    logger.info(f"chunk rms={rms:.5f} mobile={is_mobile} quiet_mic={is_quiet_mic} vad={use_vad}")
+    logger.info(f"chunk rms={rms:.5f} mobile={is_mobile} vad={use_vad}")
 
     transcribe_kwargs: dict = dict(
         language=FORCE_LANGUAGE,
