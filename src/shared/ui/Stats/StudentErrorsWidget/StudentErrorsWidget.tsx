@@ -22,9 +22,11 @@ function IconAlert() {
 export function StudentErrorsWidget({
   extraClass,
   data,
+  title = 'Ошибки учеников',
 }: {
   extraClass?: string
   data?: ErrorStat[]
+  title?: string
 }) {
   const items = (data ?? []).slice(0, 8)
   const max = items.length > 0 ? Math.max(...items.map(e => e.count)) : 1
@@ -32,7 +34,7 @@ export function StudentErrorsWidget({
   return (
     <div className={`${styles.card} ${extraClass ?? ''}`}>
       <div className={styles.header}>
-        <p className={styles.title}>Ошибки учеников</p>
+        <p className={styles.title}>{title}</p>
         {items.length > 0 && (
           <span className={styles.badge}>{items.reduce((s, e) => s + e.count, 0)} всего</span>
         )}

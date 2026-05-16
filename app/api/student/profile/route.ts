@@ -30,7 +30,7 @@ export async function GET() {
 
     const studentId = session.user.id
 
-    const [student, errorCount, callCount, personalServices] = await Promise.all([
+    const [student, errorsRaw, callCount, personalServices] = await Promise.all([
       prisma.student.findUnique({
         where: { id: studentId },
         select: {
@@ -82,7 +82,7 @@ export async function GET() {
           },
         },
       }),
-      prisma.studentError.count({ where: { studentId } }),
+      prisma.studentError.findMany({ where: { studentId }, select: { isCorrection: true } }),
       prisma.conferenceParticipant.count({ where: { studentId, role: 'STUDENT' } }),
       prisma.service.findMany({
         where: {
@@ -115,6 +115,9 @@ export async function GET() {
     ])
 
     if (!student) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+    const errorCount = errorsRaw.filter(e => !e.isCorrection).length
+    const correctedCount = errorsRaw.filter(e => e.isCorrection).length
 
     // Build teachers with palette
     const teachers = student.teachers.map(ts => {
@@ -150,6 +153,7 @@ export async function GET() {
       teacherCount: teachers.length,
       callCount,
       errorCount,
+      correctedCount,
       teachers: teachersWithSubject,
       roadmapAccess: student.roadmapAccess.map(ra => ({
         roadmapId: ra.roadmapId,

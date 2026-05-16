@@ -1373,3 +1373,217 @@ $text-muted: #94a3b8;
     max-height: 85dvh;
   }
 }
+
+// ── Error confirmation modal ───────────────────────────────────────────────
+
+.errorConfirmModal {
+  background: $bg-card;
+  border-radius: 16px;
+  padding: 28px 24px 24px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.22);
+  animation: modalSlideUp 0.22s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.errorConfirmDesc {
+  font-size: 13px;
+  color: $text-dim;
+  text-align: center;
+  margin: 0;
+}
+
+.errorConfirmCounts {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  padding: 8px 0;
+}
+
+.errorConfirmCount {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.errorConfirmCountNum {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.errorConfirmCountLabel {
+  font-size: 12px;
+  color: $text-dim;
+}
+
+.errorPreviewList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.errorPreviewItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.errorPreviewError {
+  background: rgba(220, 38, 38, 0.07);
+  border: 1px solid rgba(220, 38, 38, 0.18);
+}
+
+.errorPreviewCorrection {
+  background: rgba(34, 197, 94, 0.07);
+  border: 1px solid rgba(34, 197, 94, 0.18);
+}
+
+.errorPreviewBadge {
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 12px;
+  margin-top: 1px;
+}
+
+.errorPreviewText {
+  color: $text;
+}
+
+.errorPreviewMore {
+  font-size: 11px;
+  color: $text-dim;
+  text-align: center;
+  margin: 2px 0 0;
+}
+
+.errorEditList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.errorEditItem {
+  border-radius: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.errorEditError {
+  border-color: rgba(220, 38, 38, 0.25);
+  background: rgba(220, 38, 38, 0.04);
+}
+
+.errorEditCorrection {
+  border-color: rgba(34, 197, 94, 0.25);
+  background: rgba(34, 197, 94, 0.04);
+}
+
+.errorEditTop {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+
+.errorTypeBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.errorTypeBadgeBad {
+  background: rgba(220, 38, 38, 0.15);
+  color: #f87171;
+}
+
+.errorTypeBadgeOk {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.errorWho {
+  font-size: 11px;
+  color: $text-dim;
+}
+
+.errorExpandBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $text-dim;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+
+  &:hover { color: $text; }
+}
+
+.errorRemoveBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $text-dim;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 2px;
+
+  &:hover { color: #f87171; }
+}
+
+.errorEditDesc {
+  font-size: 12px;
+  color: $text;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.errorFragment {
+  margin-top: 7px;
+  padding: 7px 9px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 6px;
+  border-left: 2px solid rgba(255,255,255,0.12);
+}
+
+.errorFragmentLabel {
+  display: block;
+  font-size: 10px;
+  color: $text-dim;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.errorFragmentText {
+  font-size: 12px;
+  color: $text;
+  font-style: italic;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.analyzingSpinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255,255,255,0.1);
+  border-top-color: #818cf8;
+  border-radius: 50%;
+  margin: 16px auto 4px;
+  animation: spin 0.8s linear infinite;
+}

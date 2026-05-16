@@ -101,13 +101,17 @@ export async function POST(req: NextRequest) {
               sourceId,
               description: detected_error.description,
               fragment: detected_error.fragment ?? null,
+              isCorrection: detected_error.type === 'correction',
               categories: validCatIds.length
                 ? {
                     create: validCatIds.map(categoryId => ({ categoryId })),
                   }
                 : undefined,
             },
-            include: { categories: { include: { category: { include: { translations: { where: { langCode: 'ru' } } } } } } },
+            include: {
+              student: { select: { name: true } },
+              categories: { include: { category: { include: { translations: { where: { langCode: 'ru' } } } } } },
+            },
           })
           result.push(error)
         }

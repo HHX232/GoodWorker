@@ -60,6 +60,7 @@ interface StatsData {
   calendarEvents: CalendarEvent[]
   heroStats: HeroStats
   errorStats: ErrorStat[]
+  correctionStats?: ErrorStat[]
 }
 
 function calendarEventToLesson(e: CalendarEvent): CalendarLesson {
@@ -222,6 +223,13 @@ export default function TutorStatsPage({ teacherId }: { teacherId: string }) {
             extraClass={styles.error_topics}
             data={data.errorStats}
           />
+          {data.correctionStats && data.correctionStats.length > 0 && (
+            <StudentErrorsWidget
+              extraClass={styles.error_topics}
+              data={data.correctionStats}
+              title="Исправлено учениками"
+            />
+          )}
           <ErrorTopics
             extraClass={styles.error_topics_subjects}
             subjects={data.subjectData}

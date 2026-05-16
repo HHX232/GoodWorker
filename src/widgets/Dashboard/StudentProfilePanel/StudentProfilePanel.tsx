@@ -68,6 +68,7 @@ interface Props {
   avatarUrl: string | null
   memberSince: string
   errorCount: number
+  correctedCount: number
   saving: boolean
   saveError: string
   saveSuccess: boolean
@@ -90,6 +91,7 @@ function formatMemberSince(iso: string): string {
 
 export function StudentProfilePanel({
   name, email, phone, avatarUrl, memberSince, errorCount,
+  correctedCount,
   saving, saveError, saveSuccess,
   avatarInputRef,
   onNameChange, onPhoneChange,
@@ -134,8 +136,13 @@ export function StudentProfilePanel({
         {/* Quick stats */}
         <div className={styles.miniStats}>
           <div className={styles.miniStat}>
-            <div className={styles.miniStatValue}>{errorCount}</div>
+            <div className={styles.miniStatValue} style={{ color: '#EF4444' }}>{errorCount}</div>
             <div className={styles.miniStatLabel}>{t('errorsLabel')}</div>
+          </div>
+          <div className={styles.miniStatDivider} />
+          <div className={styles.miniStat}>
+            <div className={styles.miniStatValue} style={{ color: '#22c55e' }}>{correctedCount}</div>
+            <div className={styles.miniStatLabel}>{t('correctedLabel')}</div>
           </div>
           <div className={styles.miniStatDivider} />
           <div className={styles.miniStat}>

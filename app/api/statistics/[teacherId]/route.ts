@@ -202,31 +202,46 @@ export async function GET(
       '#059669', '#0891B2', '#2563EB', '#7C3AED', '#C026D3',
     ]
 
-    let errorStats: { categoryId: string; name: string; count: number; color: string }[] = []
-    if (myStudentIds.length > 0) {
-      const rawErrCats = await prisma.studentErrorCategory.findMany({
-        where: { error: { studentId: { in: myStudentIds }, sourceType: 'video_call' } },
-        include: {
-          category: { include: { translations: { where: { langCode: 'ru' } } } },
-        },
-      })
+    const CORRECTION_COLORS = [
+      '#16a34a', '#0891B2', '#059669', '#0d9488', '#65A30D',
+      '#7C3AED', '#2563EB', '#CA8A04', '#EA580C', '#C026D3',
+    ]
 
-      const catMap: Record<string, { name: string; count: number }> = {}
-      for (const sec of rawErrCats) {
-        const name = sec.category.translations[0]?.name ?? sec.category.slug
-        if (!catMap[sec.categoryId]) catMap[sec.categoryId] = { name, count: 0 }
-        catMap[sec.categoryId].count++
+    let errorStats: { categoryId: string; name: string; count: number; color: string }[] = []
+    let correctionStats: { categoryId: string; name: string; count: number; color: string }[] = []
+
+    if (myStudentIds.length > 0) {
+      const [rawErrCats, rawCorrCats] = await Promise.all([
+        prisma.studentErrorCategory.findMany({
+          where: { error: { studentId: { in: myStudentIds }, sourceType: 'video_call', isCorrection: false } },
+          include: { category: { include: { translations: { where: { langCode: 'ru' } } } } },
+        }),
+        prisma.studentErrorCategory.findMany({
+          where: { error: { studentId: { in: myStudentIds }, sourceType: 'video_call', isCorrection: true } },
+          include: { category: { include: { translations: { where: { langCode: 'ru' } } } } },
+        }),
+      ])
+
+      const buildStats = (
+        rows: typeof rawErrCats,
+        colors: string[],
+      ) => {
+        const catMap: Record<string, { name: string; count: number }> = {}
+        for (const sec of rows) {
+          const name = sec.category.translations[0]?.name ?? sec.category.slug
+          if (!catMap[sec.categoryId]) catMap[sec.categoryId] = { name, count: 0 }
+          catMap[sec.categoryId].count++
+        }
+        return Object.entries(catMap)
+          .map(([categoryId, { name, count }], i) => ({
+            categoryId, name, count, color: colors[i % colors.length],
+          }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 10)
       }
 
-      errorStats = Object.entries(catMap)
-        .map(([categoryId, { name, count }], i) => ({
-          categoryId,
-          name,
-          count,
-          color: ERROR_COLORS[i % ERROR_COLORS.length],
-        }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 10)
+      errorStats = buildStats(rawErrCats, ERROR_COLORS)
+      correctionStats = buildStats(rawCorrCats, CORRECTION_COLORS)
     }
 
     return NextResponse.json({
@@ -242,6 +257,7 @@ export async function GET(
       calendarEvents,
       heroStats,
       errorStats,
+      correctionStats,
     })
   } catch (e: any) {
     return NextResponse.json({ error: e.message ?? 'Internal error' }, { status: 500 })

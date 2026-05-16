@@ -79,6 +79,7 @@ interface ProfileApiResponse {
   teacherCount: number
   callCount: number
   errorCount: number
+  correctedCount: number
   teachers: Teacher[]
   roadmapAccess: RoadmapAccess[]
   serviceBookings: ServiceBooking[]
@@ -225,6 +226,7 @@ export const StudentDashboard: FC<Props> = ({ initialData }) => {
         avatarUrl={avatarUrl}
         memberSince={profileData?.memberSince ?? new Date().toISOString()}
         errorCount={profileData?.errorCount ?? 0}
+        correctedCount={profileData?.correctedCount ?? 0}
         saving={saving}
         saveError={saveError}
         saveSuccess={saveSuccess}

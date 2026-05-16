@@ -86,6 +86,15 @@ function DraggablePip({ children, index }: { children: React.ReactNode; index: n
   )
 }
 
+interface AnalyzedError {
+  id: string
+  description: string | null
+  fragment: string | null
+  isCorrection: boolean
+  student: { name: string }
+  categories: { category: { translations: { name: string }[] } }[]
+}
+
 interface Props {
   userName: string
   autoJoinRoom?: string
@@ -109,6 +118,14 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   const [debugChunks, setDebugChunks] = useState(0)
   const [debugMsgs, setDebugMsgs] = useState<string[]>([])
   const [showLogs, setShowLogs] = useState(false)
+
+  // Teacher-only: post-call error confirmation
+  const [showAnalyzing, setShowAnalyzing] = useState(false)
+  const [analyzedErrors, setAnalyzedErrors] = useState<AnalyzedError[]>([])
+  const [showErrorConfirm, setShowErrorConfirm] = useState(false)
+  const [errorEditMode, setErrorEditMode] = useState(false)
+  const [removedErrorIds, setRemovedErrorIds] = useState<Set<string>>(new Set())
+  const [expandedErrorId, setExpandedErrorId] = useState<string | null>(null)
 
   // Toast state
   const [toast, setToast] = useState<{ message: string; loading: boolean } | null>(null)
@@ -257,29 +274,66 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   const confirmLeave = useCallback(async () => {
     setShowSummary(false)
 
-    // Save transcript to DB before disconnecting
-    const entries = transcription.finalTranscript
-      ? null  // raw string — send as-is
-      : transcription.callNotes
     const transcriptRaw = transcription.finalTranscript
       ?? transcription.callNotes.map(n => `${n.identity}: ${n.text}`).join('\n')
 
+    // Save transcript
     if (transcriptRaw) {
-      fetch('/api/call/transcript', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          roomName,
-          transcriptRaw,
-          transcriptJson: entries ?? transcription.callNotes,
-          participants: room.participants.map(p => ({ identity: p.identity })),
-        }),
-      }).catch(() => {})
+      try {
+        await fetch('/api/call/transcript', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            roomName,
+            transcriptRaw,
+            transcriptJson: transcription.finalTranscript ? null : transcription.callNotes,
+            participants: room.participants.map(p => ({ identity: p.identity })),
+          }),
+        })
+      } catch {}
+    }
+
+    // Teacher-only: analyze errors before disconnecting
+    if (isOwner) {
+      setShowAnalyzing(true)
+      try {
+        const res = await fetch('/api/call/analyze-errors', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ roomName }),
+        })
+        const data = await res.json()
+        if (Array.isArray(data.errors) && data.errors.length > 0) {
+          setAnalyzedErrors(data.errors)
+          setRemovedErrorIds(new Set())
+          setErrorEditMode(false)
+          setExpandedErrorId(null)
+          setShowAnalyzing(false)
+          setShowErrorConfirm(true)
+          return
+        }
+      } catch {}
+      setShowAnalyzing(false)
     }
 
     await disconnect()
     router.push('/profile')
-  }, [disconnect, router, roomName, transcription, room.participants])
+  }, [isOwner, disconnect, router, roomName, transcription, room.participants,
+      setShowAnalyzing, setAnalyzedErrors, setRemovedErrorIds, setErrorEditMode,
+      setExpandedErrorId, setShowErrorConfirm])
+
+  const confirmErrors = useCallback(async () => {
+    if (removedErrorIds.size > 0) {
+      await Promise.all(
+        Array.from(removedErrorIds).map(id =>
+          fetch(`/api/call/analyze-errors/${id}`, { method: 'DELETE' }).catch(() => {})
+        )
+      )
+    }
+    setShowErrorConfirm(false)
+    await disconnect()
+    router.push('/profile')
+  }, [removedErrorIds, disconnect, router])
 
   // ── Sync video quality when main speaker or active speakers change ──────────
   useEffect(() => {
@@ -445,6 +499,105 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
               Выйти из звонка
             </button>
           </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Error confirmation modal (teacher only) ───────────────────────────────
+  const renderErrorConfirmModal = () => {
+    const visible = analyzedErrors.filter(e => !removedErrorIds.has(e.id))
+    const errors = visible.filter(e => !e.isCorrection)
+    const corrections = visible.filter(e => e.isCorrection)
+
+    return (
+      <div className={styles.summaryOverlay}>
+        <div className={styles.errorConfirmModal}>
+          <h2 className={styles.summaryTitle}>Итоги занятия</h2>
+          <p className={styles.errorConfirmDesc}>Система обнаружила на этом занятии:</p>
+
+          <div className={styles.errorConfirmCounts}>
+            <div className={styles.errorConfirmCount}>
+              <span className={styles.errorConfirmCountNum} style={{ color: '#DC2626' }}>{errors.length}</span>
+              <span className={styles.errorConfirmCountLabel}>ошибок</span>
+            </div>
+            <div className={styles.errorConfirmCount}>
+              <span className={styles.errorConfirmCountNum} style={{ color: '#22c55e' }}>{corrections.length}</span>
+              <span className={styles.errorConfirmCountLabel}>исправлений</span>
+            </div>
+          </div>
+
+          {!errorEditMode ? (
+            <>
+              <div className={styles.errorPreviewList}>
+                {visible.slice(0, 5).map(e => (
+                  <div key={e.id} className={`${styles.errorPreviewItem} ${e.isCorrection ? styles.errorPreviewCorrection : styles.errorPreviewError}`}>
+                    <span className={styles.errorPreviewBadge}>{e.isCorrection ? '✓' : '!'}</span>
+                    <span className={styles.errorPreviewText}>{e.description}</span>
+                  </div>
+                ))}
+                {visible.length > 5 && (
+                  <p className={styles.errorPreviewMore}>+ ещё {visible.length - 5}</p>
+                )}
+              </div>
+              <div className={styles.summaryActions}>
+                <button className={styles.pill} onClick={() => setErrorEditMode(true)}>
+                  Редактировать
+                </button>
+                <button className={styles.summaryLeaveBtn} onClick={confirmErrors}>
+                  Согласен — завершить
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className={styles.errorEditList}>
+                {visible.length === 0 && (
+                  <p className={styles.notesEmpty}>Все записи удалены</p>
+                )}
+                {visible.map(e => (
+                  <div key={e.id} className={`${styles.errorEditItem} ${e.isCorrection ? styles.errorEditCorrection : styles.errorEditError}`}>
+                    <div className={styles.errorEditTop}>
+                      <span className={`${styles.errorTypeBadge} ${e.isCorrection ? styles.errorTypeBadgeOk : styles.errorTypeBadgeBad}`}>
+                        {e.isCorrection ? 'Исправлено' : 'Ошибка'}
+                      </span>
+                      <span className={styles.errorWho}>{e.student.name}</span>
+                      <div style={{ flex: 1 }} />
+                      {e.fragment && (
+                        <button
+                          className={styles.errorExpandBtn}
+                          onClick={() => setExpandedErrorId(prev => prev === e.id ? null : e.id)}
+                          title="Показать фрагмент конспекта"
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                            <polyline points={expandedErrorId === e.id ? '18 15 12 9 6 15' : '6 9 12 15 18 9'} />
+                          </svg>
+                        </button>
+                      )}
+                      <button
+                        className={styles.errorRemoveBtn}
+                        onClick={() => setRemovedErrorIds(prev => { const s = new Set(prev); s.add(e.id); return s })}
+                        title="Убрать"
+                      >×</button>
+                    </div>
+                    <p className={styles.errorEditDesc}>{e.description}</p>
+                    {expandedErrorId === e.id && e.fragment && (
+                      <div className={styles.errorFragment}>
+                        <span className={styles.errorFragmentLabel}>Фрагмент конспекта:</span>
+                        <p className={styles.errorFragmentText}>«{e.fragment}»</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className={styles.summaryActions}>
+                <button className={styles.pill} onClick={() => setErrorEditMode(false)}>← Назад</button>
+                <button className={styles.summaryLeaveBtn} onClick={confirmErrors}>
+                  Подтвердить и завершить
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     )
@@ -638,6 +791,20 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
       )}
 
       {showSummary && renderSummaryModal()}
+
+      {showAnalyzing && (
+        <div className={styles.summaryOverlay}>
+          <div className={styles.summaryModal}>
+            <h2 className={styles.summaryTitle}>Анализ урока…</h2>
+            <p style={{ fontSize: 13, color: '#868897', textAlign: 'center', margin: '4px 0 0' }}>
+              Обнаруживаем ошибки и исправления
+            </p>
+            <div className={styles.analyzingSpinner} />
+          </div>
+        </div>
+      )}
+
+      {showErrorConfirm && renderErrorConfirmModal()}
     </div>
   )
 }

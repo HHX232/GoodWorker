@@ -83,6 +83,9 @@ export async function GET() {
       }),
     ])
 
+    const totalCorrected = errors.filter(e => e.isCorrection).length
+    const actualErrors = errors.filter(e => !e.isCorrection)
+
     // ── Error categories ─────────────────────────────────────
     const ERROR_COLORS = [
       '#6366F1', '#EC4899', '#F59E0B', '#10B981',
@@ -90,7 +93,7 @@ export async function GET() {
       '#F97316', '#84CC16',
     ]
     const catMap: Record<string, { name: string; count: number }> = {}
-    for (const err of errors) {
+    for (const err of actualErrors) {
       for (const c of err.categories) {
         const name = c.category.translations[0]?.name ?? c.category.slug
         if (!catMap[c.categoryId]) catMap[c.categoryId] = { name, count: 0 }
@@ -103,7 +106,7 @@ export async function GET() {
       .slice(0, 10)
 
     // ── Errors over time ─────────────────────────────────────
-    const errorsOverTime = fillWeeks(buildWeeks(), errors.map(e => new Date(e.createdAt)))
+    const errorsOverTime = fillWeeks(buildWeeks(), actualErrors.map(e => new Date(e.createdAt)))
 
     // ── Test scores over time (weekly avg) ───────────────────
     const scoreWeeks = buildWeeks()
@@ -148,7 +151,8 @@ export async function GET() {
       : null
 
     return NextResponse.json({
-      totalErrors: errors.length,
+      totalErrors: actualErrors.length,
+      totalCorrected,
       totalAttempts: attempts.length,
       totalPostViews: postViews.length,
       totalRoadmaps: roadmapProgress.length,
