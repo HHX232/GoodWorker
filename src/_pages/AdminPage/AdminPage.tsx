@@ -56,6 +56,7 @@ function ComplaintCard({ item, onReplied }: { item: ComplaintItem; onReplied: (i
   const [expanded, setExpanded] = useState(false)
   const [replyText, setReplyText] = useState('')
   const [sending, setSending] = useState(false)
+  const [markingValuable, setMarkingValuable] = useState(false)
   const [statusValue, setStatusValue] = useState(item.status)
   const target = targetLabel(item)
   const activeCfg = STATUS_CFG[statusValue] ?? STATUS_CFG.pending
@@ -92,6 +93,23 @@ function ComplaintCard({ item, onReplied }: { item: ComplaintItem; onReplied: (i
       toast.success('Статус обновлён')
     } catch {
       toast.error('Не удалось обновить статус')
+    }
+  }
+
+  const handleMarkValuable = async () => {
+    setMarkingValuable(true)
+    try {
+      const res = await fetch('/api/admin/feedback-valuable', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ complaintId: item.id }),
+      })
+      if (!res.ok) throw new Error()
+      toast.success('Уведомление о ценном отзыве отправлено')
+    } catch {
+      toast.error('Не удалось отправить уведомление')
+    } finally {
+      setMarkingValuable(false)
     }
   }
 
@@ -170,6 +188,19 @@ function ComplaintCard({ item, onReplied }: { item: ComplaintItem; onReplied: (i
               ))}
             </div>
           </div>
+
+          {item.targetType === 'PLATFORM' && (
+            <div className={styles.section}>
+              <p className={styles.section_label}>Действия</p>
+              <button
+                className={styles.valuable_btn}
+                onClick={handleMarkValuable}
+                disabled={markingValuable}
+              >
+                {markingValuable ? 'Отправка…' : '⭐ Ценный отзыв — уведомить пользователя'}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -378,9 +409,254 @@ function NotificationsTab() {
   )
 }
 
+// ─── Promo codes tab ──────────────────────────────────────
+
+interface PromoCodeItem {
+  id: string
+  code: string
+  rewardType: 'FREE_VIP' | 'DISCOUNT'
+  discountPercent: number | null
+  vipDays: number
+  description: string
+  maxUses: number | null
+  usedCount: number
+  expiresAt: string | null
+  isActive: boolean
+  createdAt: string
+}
+
+interface ServicePromoCodeItem {
+  id: string
+  code: string
+  discount: number
+  usageLimit: number | null
+  usedCount: number
+  createdAt: string
+  service: { id: string; title: string }
+}
+
+function PromoCodesTab() {
+  const [codes, setCodes] = useState<PromoCodeItem[]>([])
+  const [serviceCodes, setServiceCodes] = useState<ServicePromoCodeItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [creating, setCreating] = useState(false)
+  const [showForm, setShowForm] = useState(false)
+
+  const [form, setForm] = useState({
+    rewardType: 'FREE_VIP' as 'FREE_VIP' | 'DISCOUNT',
+    code: '',
+    autoCode: true,
+    description: '',
+    discountPercent: '',
+    vipDays: '30',
+    maxUses: '',
+    expiresAt: '',
+  })
+
+  const load = useCallback(async () => {
+    const res = await fetch('/api/admin/promo-codes')
+    if (!res.ok) return
+    const data = await res.json()
+    setCodes(data.codes)
+    setServiceCodes(data.serviceCodes)
+  }, [])
+
+  useEffect(() => {
+    setLoading(true)
+    load().finally(() => setLoading(false))
+  }, [load])
+
+  const handleCreate = async () => {
+    if (!form.description.trim()) { toast.error('Укажите описание'); return }
+    setCreating(true)
+    try {
+      const res = await fetch('/api/admin/promo-codes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rewardType: form.rewardType,
+          code: form.autoCode ? undefined : form.code,
+          autoCode: form.autoCode,
+          description: form.description,
+          discountPercent: form.rewardType === 'DISCOUNT' ? form.discountPercent : undefined,
+          vipDays: form.rewardType === 'FREE_VIP' ? form.vipDays : undefined,
+          maxUses: form.maxUses || undefined,
+          expiresAt: form.expiresAt || undefined,
+        }),
+      })
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error) }
+      toast.success('Промокод создан')
+      setShowForm(false)
+      setForm({ rewardType: 'FREE_VIP', code: '', autoCode: true, description: '', discountPercent: '', vipDays: '30', maxUses: '', expiresAt: '' })
+      await load()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Ошибка при создании')
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  const toggleActive = async (item: PromoCodeItem) => {
+    try {
+      const res = await fetch(`/api/admin/promo-codes/${item.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: !item.isActive }),
+      })
+      if (!res.ok) throw new Error()
+      setCodes(prev => prev.map(c => c.id === item.id ? { ...c, isActive: !item.isActive } : c))
+      toast.success(item.isActive ? 'Промокод деактивирован' : 'Промокод активирован')
+    } catch {
+      toast.error('Не удалось обновить статус')
+    }
+  }
+
+  return (
+    <div className={styles.tab_content}>
+      <div className={styles.promo_header}>
+        <h3 className={styles.promo_section_title}>Платформенные промокоды</h3>
+        <button className={styles.create_promo_btn} onClick={() => setShowForm(p => !p)}>
+          {showForm ? 'Отмена' : '+ Создать промокод'}
+        </button>
+      </div>
+
+      {showForm && (
+        <div className={styles.promo_form}>
+          <div className={styles.promo_form_row}>
+            <label className={styles.notif_label}>Тип</label>
+            <div className={styles.status_row}>
+              {(['FREE_VIP', 'DISCOUNT'] as const).map(t => (
+                <button
+                  key={t}
+                  className={`${styles.status_chip} ${form.rewardType === t ? styles.status_chip_active : ''}`}
+                  style={form.rewardType === t ? { background: '#eef2ff', color: '#6366f1', borderColor: '#6366f144' } : {}}
+                  onClick={() => setForm(p => ({ ...p, rewardType: t }))}
+                >
+                  {t === 'FREE_VIP' ? 'VIP (бесплатно)' : 'Скидка'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className={styles.promo_form_row}>
+            <label className={styles.notif_label}>Код</label>
+            <div className={styles.promo_code_row}>
+              <label className={styles.promo_checkbox_label}>
+                <input
+                  type="checkbox"
+                  checked={form.autoCode}
+                  onChange={e => setForm(p => ({ ...p, autoCode: e.target.checked }))}
+                />
+                Автогенерация
+              </label>
+              {!form.autoCode && (
+                <input
+                  className={styles.notif_input}
+                  placeholder="MYCODE123"
+                  value={form.code}
+                  onChange={e => setForm(p => ({ ...p, code: e.target.value.toUpperCase() }))}
+                  style={{ flex: 1 }}
+                />
+              )}
+            </div>
+          </div>
+
+          <div className={styles.promo_form_row}>
+            <label className={styles.notif_label}>Описание</label>
+            <input className={styles.notif_input} placeholder="Описание промокода" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
+          </div>
+
+          {form.rewardType === 'FREE_VIP' && (
+            <div className={styles.promo_form_row}>
+              <label className={styles.notif_label}>Дней VIP</label>
+              <input className={styles.notif_input} type="number" min="1" placeholder="30" value={form.vipDays} onChange={e => setForm(p => ({ ...p, vipDays: e.target.value }))} />
+            </div>
+          )}
+
+          {form.rewardType === 'DISCOUNT' && (
+            <div className={styles.promo_form_row}>
+              <label className={styles.notif_label}>Скидка (%)</label>
+              <input className={styles.notif_input} type="number" min="1" max="100" placeholder="10" value={form.discountPercent} onChange={e => setForm(p => ({ ...p, discountPercent: e.target.value }))} />
+            </div>
+          )}
+
+          <div className={styles.promo_form_row}>
+            <label className={styles.notif_label}>Макс. использований <span className={styles.notif_optional}>(пусто = без лимита)</span></label>
+            <input className={styles.notif_input} type="number" min="1" placeholder="100" value={form.maxUses} onChange={e => setForm(p => ({ ...p, maxUses: e.target.value }))} />
+          </div>
+
+          <div className={styles.promo_form_row}>
+            <label className={styles.notif_label}>Действует до <span className={styles.notif_optional}>(необязательно)</span></label>
+            <input className={styles.notif_input} type="date" value={form.expiresAt} onChange={e => setForm(p => ({ ...p, expiresAt: e.target.value }))} />
+          </div>
+
+          <div className={styles.notif_actions}>
+            <button className={styles.send_btn} onClick={handleCreate} disabled={creating}>
+              {creating ? 'Создание…' : 'Создать'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {loading ? (
+        Array.from({ length: 3 }).map((_, i) => <div key={i} className={styles.skeleton} />)
+      ) : codes.length === 0 ? (
+        <div className={styles.empty}><p>Промокодов нет</p></div>
+      ) : (
+        <div className={styles.promo_list}>
+          {codes.map(item => (
+            <div key={item.id} className={`${styles.promo_card} ${!item.isActive ? styles.promo_card_inactive : ''}`}>
+              <div className={styles.promo_card_top}>
+                <span className={styles.promo_code_badge}>{item.code}</span>
+                <span className={`${styles.promo_type_badge} ${item.rewardType === 'FREE_VIP' ? styles.promo_vip : styles.promo_discount}`}>
+                  {item.rewardType === 'FREE_VIP' ? `VIP ${item.vipDays}д` : `−${item.discountPercent}%`}
+                </span>
+                <span className={styles.promo_uses}>{item.usedCount}{item.maxUses ? `/${item.maxUses}` : ''} использ.</span>
+                <div style={{ flex: 1 }} />
+                <button
+                  className={`${styles.promo_toggle_btn} ${item.isActive ? styles.promo_toggle_active : ''}`}
+                  onClick={() => toggleActive(item)}
+                >
+                  {item.isActive ? 'Активен' : 'Неактивен'}
+                </button>
+              </div>
+              <p className={styles.promo_desc}>{item.description}</p>
+              {item.expiresAt && (
+                <span className={styles.promo_expires}>до {new Date(item.expiresAt).toLocaleDateString('ru')}</span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {serviceCodes.length > 0 && (
+        <>
+          <div className={styles.divider} style={{ margin: '8px 0' }} />
+          <h3 className={styles.promo_section_title}>Сервисные промокоды учителей</h3>
+          <div className={styles.promo_list}>
+            {serviceCodes.map(item => (
+              <div key={item.id} className={styles.promo_card}>
+                <div className={styles.promo_card_top}>
+                  <span className={styles.promo_code_badge}>{item.code}</span>
+                  <span className={`${styles.promo_type_badge} ${styles.promo_discount}`}>−{item.discount}%</span>
+                  <span className={styles.promo_uses}>{item.usedCount}{item.usageLimit ? `/${item.usageLimit}` : ''} использ.</span>
+                  <div style={{ flex: 1 }} />
+                </div>
+                <p className={styles.promo_desc}>
+                  Сервис: <a href={`/service/${item.service.id}`} className={styles.target_link} target="_blank">{item.service.title}</a>
+                </p>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 // ─── Page ─────────────────────────────────────────────────
 
-type AdminTab = 'complaints' | 'notifications'
+type AdminTab = 'complaints' | 'notifications' | 'promo'
 
 export function AdminPage() {
   const { data: session, status } = useSession()
@@ -440,10 +716,24 @@ export function AdminPage() {
             </svg>
             Уведомления
           </button>
+          <button
+            className={`${styles.main_tab} ${activeTab === 'promo' ? styles.main_tab_active : ''}`}
+            onClick={() => setActiveTab('promo')}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 12 20 22 4 22 4 12" />
+              <rect x="2" y="7" width="20" height="5" />
+              <line x1="12" y1="22" x2="12" y2="7" />
+              <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
+              <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+            </svg>
+            Промокоды
+          </button>
         </div>
 
         {activeTab === 'complaints' && <ComplaintsTab />}
         {activeTab === 'notifications' && <NotificationsTab />}
+        {activeTab === 'promo' && <PromoCodesTab />}
       </div>
     </div>
   )

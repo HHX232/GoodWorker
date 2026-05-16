@@ -4,10 +4,62 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import dynamic from 'next/dynamic'
-import { RefObject, useState } from 'react'
+import { RefObject, useEffect, useState } from 'react'
 import styles from './StudentProfilePanel.module.scss'
 
 const VideoRoom = dynamic(() => import('@/widgets/VideoRoom/VideoRoom'), { ssr: false })
+
+interface UpcomingMeeting {
+  id: string
+  title: string
+  scheduledAt: string
+  roomName: string
+  teacher: { id: string; name: string; avatarUrl: string | null }
+}
+
+function UpcomingMeetingsSection({ t }: { t: ReturnType<typeof useTranslations> }) {
+  const [meetings, setMeetings] = useState<UpcomingMeeting[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/student/upcoming-meetings')
+      .then(r => r.json())
+      .then(d => { if (!d.error) setMeetings(d.conferences) })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) return null
+  if (meetings.length === 0) return null
+
+  return (
+    <>
+      <div className={styles.divider} />
+      <div className={styles.section}>
+        <div className={styles.sectionLabel}>{t('upcomingMeetings')}</div>
+        <div className={styles.meetingsList}>
+          {meetings.map(m => {
+            const date = new Date(m.scheduledAt)
+            const dateStr = date.toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' })
+            const timeStr = date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+            return (
+              <div key={m.id} className={styles.meetingCard}>
+                <div className={styles.meetingDateTime}>
+                  <span className={styles.meetingDate}>{dateStr}</span>
+                  <span className={styles.meetingTime}>{timeStr}</span>
+                </div>
+                <div className={styles.meetingInfo}>
+                  <span className={styles.meetingTitle}>{m.title}</span>
+                  <span className={styles.meetingTeacher}>{m.teacher.name}</span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </>
+  )
+}
 
 interface Props {
   name: string
@@ -91,6 +143,8 @@ export function StudentProfilePanel({
             <div className={styles.miniStatLabel}>{t('memberSinceStudent')}</div>
           </div>
         </div>
+
+        <UpcomingMeetingsSection t={t} />
 
         <div className={styles.divider} />
 

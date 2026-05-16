@@ -34,6 +34,13 @@ export default auth((req) => {
   const isStudentOnly = studentOnlyPaths.some((p) => path.startsWith(p))
   const isAuthRequired = authPaths.some((p) => path.startsWith(p))
   const isPublicRoute = publicRoutes.some((p) => path.startsWith(p))
+  const isAdminOnly = path.startsWith('/admin')
+
+  if (isAdminOnly) {
+    if (!isLoggedIn || role !== 'ADMIN') {
+      return NextResponse.redirect(new URL('/', req.url))
+    }
+  }
 
   if ((isTeacherOnly || isStudentOnly || isAuthRequired) && !isLoggedIn) {
     return NextResponse.redirect(new URL("/login", req.url))

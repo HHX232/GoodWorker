@@ -108,6 +108,7 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Prop
   const [promoCode, setPromoCode] = useState('')
   const [promoDiscount, setPromoDiscount] = useState('')
   const [promoLimit, setPromoLimit] = useState('')
+  const [promoConditions, setPromoConditions] = useState('')
   const [categories, setCategories] = useState<CategoryOption[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -148,7 +149,7 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Prop
       setCategoryIds([]); setDuration(60)
       setTimeFrom('09:00'); setTimeTo('21:00')
       setIsGroup(false); setPrice('')
-      setPromoOpen(false); setPromoCode(''); setPromoDiscount(''); setPromoLimit('')
+      setPromoOpen(false); setPromoCode(''); setPromoDiscount(''); setPromoLimit(''); setPromoConditions('')
       setError('')
     }
   }, [open])
@@ -188,6 +189,7 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Prop
           code: promoCode.trim().toUpperCase(),
           discount: Number(promoDiscount),
           usageLimit: promoLimit ? Number(promoLimit) : undefined,
+          conditions: promoConditions.trim() || undefined,
         }
       }
       const res = await fetch('/api/services', {
@@ -387,6 +389,17 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Prop
                       <label className={styles.label}>Лимит</label>
                       <input className={styles.input} type="number" min={1} value={promoLimit} onChange={e => setPromoLimit(e.target.value)} placeholder="∞" />
                     </div>
+                  </div>
+                  <div className={styles.field}>
+                    <label className={styles.label}>Условие выдачи <span style={{ fontWeight: 400, color: '#bbb' }}>(необязательно)</span></label>
+                    <input
+                      className={styles.input}
+                      type="text"
+                      value={promoConditions}
+                      onChange={e => setPromoConditions(e.target.value)}
+                      placeholder="Например: после 5 видеоуроков, за прохождение роадмапа..."
+                      maxLength={200}
+                    />
                   </div>
                 </div>
               )}

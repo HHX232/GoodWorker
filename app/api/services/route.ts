@@ -69,6 +69,7 @@ export async function POST(req: NextRequest) {
                   code: promoCode.code,
                   discount: Number(promoCode.discount),
                   usageLimit: promoCode.usageLimit ? Number(promoCode.usageLimit) : null,
+                  conditions: promoCode.conditions ?? null,
                 },
               },
             }

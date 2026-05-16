@@ -2,6 +2,7 @@
 
 import OtpModal from '@/shared/ui/Modals/OtpModal/OtpModal'
 import ImageCropEditor from '@/widgets/BaseUI/ImageCropEditor/ImageCropEditor'
+import { CreateImagesInput } from '@/shared/ui/inputs/CreateImagesInput/CreateImagesInput'
 import Image from 'next/image'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
@@ -71,10 +72,6 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, stats
   const [cropOpen, setCropOpen] = useState(false)
   const avatarInputRef = useRef<HTMLInputElement>(null)
 
-  const [coverCropSrc, setCoverCropSrc] = useState<string | null>(null)
-  const [coverCropOpen, setCoverCropOpen] = useState(false)
-  const coverInputRef = useRef<HTMLInputElement>(null)
-
   const [emailModalOpen, setEmailModalOpen] = useState(false)
   const [passwordModalOpen, setPasswordModalOpen] = useState(false)
   const [newEmail, setNewEmail] = useState('')
@@ -101,22 +98,16 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, stats
     setCropSrc(null)
   }
 
-  const handleCoverFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+  const handleCoverFilesChange = (files: File[]) => {
+    const file = files[0]
     if (!file) return
-    const url = URL.createObjectURL(file)
-    setCoverCropSrc(url)
-    setCoverCropOpen(true)
-    e.target.value = ''
-  }
-
-  const handleCoverCropSave = (croppedFile: File) => {
     const reader = new FileReader()
     reader.onload = () => setCoverPhotoUrl(reader.result as string)
-    reader.readAsDataURL(croppedFile)
-    setCoverCropOpen(false)
-    if (coverCropSrc) URL.revokeObjectURL(coverCropSrc)
-    setCoverCropSrc(null)
+    reader.readAsDataURL(file)
+  }
+
+  const handleCoverActiveChange = (urls: string[]) => {
+    setCoverPhotoUrl(urls.length > 0 ? urls[0] : null)
   }
 
   const cleanSocialLinks = () => {
@@ -285,30 +276,14 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, stats
               {/* Cover photo */}
               <div className={styles.field}>
                 <label className={styles.label}>Фото для раздела «О преподавателе»</label>
-                {coverPhotoUrl ? (
-                  <div className={styles.coverWrap}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={coverPhotoUrl} alt="Cover" className={styles.coverImg} />
-                    <div className={styles.coverBtns}>
-                      <button type="button" className={styles.avatarBtn} onClick={() => coverInputRef.current?.click()}>
-                        Заменить
-                      </button>
-                      <button type="button" className={styles.avatarBtnDanger} onClick={() => setCoverPhotoUrl(null)}>
-                        Удалить
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <button type="button" className={styles.avatarBtn} style={{alignSelf: 'flex-start'}} onClick={() => coverInputRef.current?.click()}>
-                    Загрузить фото
-                  </button>
-                )}
-                <input
-                  ref={coverInputRef}
-                  type="file"
-                  accept="image/jpeg,image/jpg,image/png,image/webp"
-                  style={{display: 'none'}}
-                  onChange={handleCoverFileChange}
+                <CreateImagesInput
+                  maxFiles={1}
+                  activeImages={coverPhotoUrl ? [coverPhotoUrl] : []}
+                  onFilesChange={handleCoverFilesChange}
+                  onActiveImagesChange={handleCoverActiveChange}
+                  allowedTypes={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
+                  showBigFirstItem={false}
+                  inputIdPrefix="cover-photo"
                 />
               </div>
 
@@ -451,22 +426,6 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, stats
           cropShape="circle"
           cropSize={300}
           aspectRatio={1}
-        />
-      )}
-
-      {coverCropSrc && (
-        <ImageCropEditor
-          imageUrl={coverCropSrc}
-          isOpen={coverCropOpen}
-          onClose={() => {
-            setCoverCropOpen(false)
-            if (coverCropSrc) URL.revokeObjectURL(coverCropSrc)
-            setCoverCropSrc(null)
-          }}
-          onSave={handleCoverCropSave}
-          cropShape="square"
-          cropSize={600}
-          aspectRatio={16 / 9}
         />
       )}
 

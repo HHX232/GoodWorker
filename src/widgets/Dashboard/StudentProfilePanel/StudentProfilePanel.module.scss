@@ -330,3 +330,65 @@
 .videoChevronOpen {
   transform: rotate(180deg);
 }
+
+// ── Upcoming meetings ────────────────────────────────────────
+
+.meetingsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.meetingCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #F7F7FB;
+  border: 1px solid #EBEBEB;
+  border-radius: 10px;
+}
+
+.meetingDateTime {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  min-width: 40px;
+}
+
+.meetingDate {
+  font-size: 11px;
+  font-weight: 700;
+  color: #534AB7;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.meetingTime {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111118;
+  line-height: 1.2;
+}
+
+.meetingInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.meetingTitle {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #111118;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meetingTeacher {
+  font-size: 11px;
+  color: #8A8A9A;
+}

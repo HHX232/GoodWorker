@@ -1,6 +1,14 @@
 import { prisma } from '@/shared/prisma/prisma'
+import { createNotification } from '@/shared/lib/notifications'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../auth'
+
+function generateCode(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  let code = ''
+  for (let i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)]
+  return code
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,6 +22,10 @@ export async function POST(req: NextRequest) {
 
     const fullText = subject?.trim() ? `[${subject.trim()}]\n${text.trim()}` : text.trim()
 
+    const prevCount = await prisma.complaint.count({
+      where: { reporterId: session.user.id, targetType: 'PLATFORM' },
+    })
+
     const complaint = await prisma.complaint.create({
       data: {
         reporterId: session.user.id,
@@ -24,6 +36,39 @@ export async function POST(req: NextRequest) {
         status: 'pending',
       },
     })
+
+    if (prevCount === 0) {
+      let code = generateCode()
+      let attempts = 0
+      while (attempts < 5) {
+        const exists = await prisma.promoCode.findUnique({ where: { code } })
+        if (!exists) break
+        code = generateCode()
+        attempts++
+      }
+
+      await prisma.promoCode.create({
+        data: {
+          code,
+          rewardType: 'FREE_VIP',
+          vipDays: 7,
+          description: 'Бонус за первую обратную связь',
+          maxUses: 1,
+          isActive: true,
+        },
+      })
+
+      const isTeacher = session.user.role === 'TEACHER'
+      await createNotification({
+        type: 'SYSTEM',
+        title: 'Спасибо за обратную связь!',
+        body: `Вы получили промокод за первый отзыв: ${code}`,
+        payload: {
+          html: `<p>Спасибо, что поделились мнением! Ваш промокод: <strong>${code}</strong> — активирует 7 дней VIP-статуса бесплатно.</p>`,
+        },
+        ...(isTeacher ? { teacherId: session.user.id } : { studentId: session.user.id }),
+      })
+    }
 
     return NextResponse.json(complaint, { status: 201 })
   } catch (error) {

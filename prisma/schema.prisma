@@ -142,6 +142,7 @@ model ServicePromoCode {
   discount   Int
   usageLimit Int?
   usedCount  Int      @default(0)
+  conditions String?
   createdAt  DateTime @default(now())
   service    Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 
