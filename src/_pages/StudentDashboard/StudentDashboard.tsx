@@ -61,6 +61,19 @@ interface ServiceBooking {
   }
 }
 
+interface PersonalService {
+  id: string
+  title: string
+  description: string | null
+  duration: number
+  timeFrom: string
+  timeTo: string
+  price: number
+  photoUrl: string | null
+  teacher: { id: string; name: string; avatarUrl: string | null }
+  category: { translations: { langCode: string; name: string }[] } | null
+}
+
 interface ProfileApiResponse {
   memberSince: string
   teacherCount: number
@@ -69,6 +82,7 @@ interface ProfileApiResponse {
   teachers: Teacher[]
   roadmapAccess: RoadmapAccess[]
   serviceBookings: ServiceBooking[]
+  personalServices: PersonalService[]
 }
 
 interface Props {
@@ -200,6 +214,7 @@ export const StudentDashboard: FC<Props> = ({ initialData }) => {
         errorCount={profileData?.errorCount ?? 0}
         roadmapAccess={profileData?.roadmapAccess ?? []}
         serviceBookings={profileData?.serviceBookings ?? []}
+        personalServices={profileData?.personalServices ?? []}
         loading={profileLoading}
       />
 

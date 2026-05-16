@@ -1,4 +1,5 @@
 import { prisma } from '@/shared/prisma/prisma'
+import { createNotification } from '@/shared/lib/notifications'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../auth'
 
@@ -16,6 +17,7 @@ export async function GET(req: NextRequest) {
       include: {
         category: { include: { translations: true } },
         promoCodes: true,
+        targetStudent: { select: { id: true, name: true } },
       },
       orderBy: { createdAt: 'desc' },
     })
@@ -44,6 +46,8 @@ export async function POST(req: NextRequest) {
       isGroup,
       price,
       promoCode,
+      targetStudentId,
+      isPersonal,
     } = body
 
     if (!title || !duration || !timeFrom || !timeTo || price == null) {
@@ -62,6 +66,8 @@ export async function POST(req: NextRequest) {
         timeTo,
         isGroup: Boolean(isGroup),
         price: Number(price),
+        isPersonal: Boolean(isPersonal),
+        targetStudentId: (isPersonal && targetStudentId) ? targetStudentId : null,
         ...(promoCode
           ? {
               promoCodes: {
@@ -78,8 +84,18 @@ export async function POST(req: NextRequest) {
       include: {
         category: { include: { translations: true } },
         promoCodes: true,
+        targetStudent: { select: { id: true, name: true } },
       },
     })
+
+    if (isPersonal && targetStudentId) {
+      await createNotification({
+        type: 'SYSTEM',
+        title: 'Личная услуга от преподавателя',
+        body: `Преподаватель создал для вас личное предложение: «${title}» — ${Number(price)} ₽`,
+        studentId: targetStudentId,
+      })
+    }
 
     return NextResponse.json({ service }, { status: 201 })
   } catch {

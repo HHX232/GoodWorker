@@ -7,6 +7,47 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
 import styles from './StudentCenter.module.scss'
 
+interface PersonalService {
+  id: string
+  title: string
+  description: string | null
+  duration: number
+  timeFrom: string
+  timeTo: string
+  price: number
+  photoUrl: string | null
+  teacher: { id: string; name: string; avatarUrl: string | null }
+  category: { translations: { langCode: string; name: string }[] } | null
+}
+
+function PersonalServiceCard({
+  service,
+  onAccepted,
+}: {
+  service: PersonalService
+  onAccepted: (id: string) => void
+}) {
+  const [accepting, setAccepting] = useState(false)
+  const handleAccept = async () => {
+    setAccepting(true)
+    const res = await fetch(`/api/services/${service.id}/accept`, { method: 'POST' })
+    if (res.ok) onAccepted(service.id)
+    setAccepting(false)
+  }
+  return (
+    <div className={styles.personalCard}>
+      <div className={styles.personalCardInfo}>
+        <div className={styles.personalCardTitle}>{service.title}</div>
+        <div className={styles.personalCardTeacher}>{service.teacher.name}</div>
+        <div className={styles.personalCardPrice}>{service.price} ₽ · {service.duration} мин</div>
+      </div>
+      <button className={styles.acceptBtn} onClick={handleAccept} disabled={accepting}>
+        {accepting ? '…' : 'Принять'}
+      </button>
+    </div>
+  )
+}
+
 type Tab = 'all' | 'roadmaps' | 'services' | 'errors'
 
 interface RoadmapAccess {
@@ -45,6 +86,7 @@ interface Props {
   errorCount: number
   roadmapAccess: RoadmapAccess[]
   serviceBookings: ServiceBooking[]
+  personalServices: PersonalService[]
   loading: boolean
 }
 
@@ -79,8 +121,13 @@ function BookingStatusBadge({ status }: { status: string }) {
 
 export function StudentCenter({
   teacherCount, callCount, errorCount,
-  roadmapAccess, serviceBookings, loading,
+  roadmapAccess, serviceBookings, personalServices, loading,
 }: Props) {
+  const [localPersonalServices, setLocalPersonalServices] = useState<PersonalService[]>(personalServices)
+
+  const handlePersonalAccepted = (id: string) => {
+    setLocalPersonalServices(prev => prev.filter(s => s.id !== id))
+  }
   const t = useTranslations('dashboard')
   const locale = useLocale()
   const [tab, setTab] = useState<Tab>('all')
@@ -167,6 +214,15 @@ export function StudentCenter({
         <div className={styles.loading}>{t('loading')}</div>
       ) : (
         <>
+          {localPersonalServices.length > 0 && (
+            <div className={styles.personalSection}>
+              <div className={styles.personalLabel}>Личные предложения от преподавателей</div>
+              {localPersonalServices.map(ps => (
+                <PersonalServiceCard key={ps.id} service={ps} onAccepted={handlePersonalAccepted} />
+              ))}
+            </div>
+          )}
+
           <div className={styles.grid}>
             {isEmpty && (
               <div className={styles.empty}>

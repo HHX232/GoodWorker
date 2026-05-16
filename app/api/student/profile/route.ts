@@ -30,7 +30,7 @@ export async function GET() {
 
     const studentId = session.user.id
 
-    const [student, errorCount, callCount] = await Promise.all([
+    const [student, errorCount, callCount, personalServices] = await Promise.all([
       prisma.student.findUnique({
         where: { id: studentId },
         select: {
@@ -84,6 +84,34 @@ export async function GET() {
       }),
       prisma.studentError.count({ where: { studentId } }),
       prisma.conferenceParticipant.count({ where: { studentId, role: 'STUDENT' } }),
+      prisma.service.findMany({
+        where: {
+          targetStudentId: studentId,
+          isPersonal: true,
+          bookings: { none: { studentId } },
+        },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          duration: true,
+          timeFrom: true,
+          timeTo: true,
+          price: true,
+          photoUrl: true,
+          teacher: { select: { id: true, name: true, avatarUrl: true } },
+          category: {
+            select: {
+              translations: {
+                where: { langCode: 'ru' },
+                select: { langCode: true, name: true },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+      }),
     ])
 
     if (!student) return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -136,6 +164,7 @@ export async function GET() {
         createdAt: sb.createdAt.toISOString(),
         service: sb.service,
       })),
+      personalServices,
     })
   } catch (e) {
     console.error('[GET /api/student/profile]', e)

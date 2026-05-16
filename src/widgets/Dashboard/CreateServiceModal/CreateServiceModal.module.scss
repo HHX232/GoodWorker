@@ -471,3 +471,22 @@
   &:hover { background: #4540A0; }
   &:disabled { opacity: 0.5; cursor: default; }
 }
+
+.personalSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.personalToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #444;
+  cursor: pointer;
+}
+
+.studentPicker {
+  padding-left: 24px;
+}

@@ -112,6 +112,10 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Prop
   const [categories, setCategories] = useState<CategoryOption[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [isPersonal, setIsPersonal] = useState(false)
+  const [personalStudentId, setPersonalStudentId] = useState('')
+  const [students, setStudents] = useState<{ id: string; name: string; avatarUrl: string | null }[]>([])
+  const [studentsLoading, setStudentsLoading] = useState(false)
 
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -151,6 +155,7 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Prop
       setIsGroup(false); setPrice('')
       setPromoOpen(false); setPromoCode(''); setPromoDiscount(''); setPromoLimit(''); setPromoConditions('')
       setError('')
+      setIsPersonal(false); setPersonalStudentId(''); setStudents([])
     }
   }, [open])
 
@@ -191,6 +196,10 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Prop
           usageLimit: promoLimit ? Number(promoLimit) : undefined,
           conditions: promoConditions.trim() || undefined,
         }
+      }
+      if (isPersonal && personalStudentId) {
+        body.isPersonal = true
+        body.targetStudentId = personalStudentId
       }
       const res = await fetch('/api/services', {
         method: 'POST',
@@ -349,6 +358,47 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Prop
                 />
                 <span className={styles.priceSuffix}>₽</span>
               </div>
+            </div>
+
+            {/* Personal service */}
+            <div className={styles.personalSection}>
+              <label className={styles.personalToggle}>
+                <input
+                  type="checkbox"
+                  checked={isPersonal}
+                  onChange={e => {
+                    setIsPersonal(e.target.checked)
+                    if (e.target.checked && students.length === 0) {
+                      setStudentsLoading(true)
+                      fetch('/api/call/my-students')
+                        .then(r => r.json())
+                        .then(d => setStudents(d.students ?? []))
+                        .finally(() => setStudentsLoading(false))
+                    }
+                  }}
+                />
+                Личная услуга для конкретного ученика
+              </label>
+              {isPersonal && (
+                <div className={styles.studentPicker}>
+                  {studentsLoading ? (
+                    <span>Загрузка учеников…</span>
+                  ) : students.length === 0 ? (
+                    <span style={{ fontSize: 12, color: '#bbb' }}>Нет связанных учеников</span>
+                  ) : (
+                    <select
+                      className={styles.input}
+                      value={personalStudentId}
+                      onChange={e => setPersonalStudentId(e.target.value)}
+                    >
+                      <option value="">— Выберите ученика —</option>
+                      {students.map(s => (
+                        <option key={s.id} value={s.id}>{s.name}</option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Promo code */}
