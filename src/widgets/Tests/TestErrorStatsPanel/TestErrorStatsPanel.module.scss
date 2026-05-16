@@ -1,0 +1,261 @@
+.panel {
+  background: #ffffff;
+  border: 1px solid #EAEAF0;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.12s;
+
+  &:hover { background: #FAFAFA; }
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.headerIcon {
+  width: 32px;
+  height: 32px;
+  background: #FEF2F2;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #DC2626;
+  flex-shrink: 0;
+}
+
+.headerTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #141416;
+}
+
+.headerSub {
+  font-size: 12px;
+  color: #868897;
+}
+
+.caret {
+  color: #868897;
+  transition: transform 0.2s;
+}
+
+.caretOpen { transform: rotate(180deg); }
+
+.body {
+  border-top: 1px solid #EAEAF0;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+// ── Top categories ────────────────────────────────────────────────────────────
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sectionTitle {
+  font-size: 11px;
+  font-weight: 700;
+  color: #868897;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.catList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.catItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.catRank {
+  font-size: 11px;
+  color: #ABABAB;
+  font-weight: 600;
+  width: 16px;
+  flex-shrink: 0;
+}
+
+.catBar {
+  flex: 1;
+}
+
+.catName {
+  font-size: 13px;
+  font-weight: 500;
+  color: #141416;
+}
+
+.catTrack {
+  height: 4px;
+  background: #F3F3F8;
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 3px;
+}
+
+.catFill {
+  height: 100%;
+  background: #DC2626;
+  border-radius: 99px;
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.catCount {
+  font-size: 12px;
+  font-weight: 700;
+  color: #DC2626;
+  flex-shrink: 0;
+}
+
+// ── Per-student ───────────────────────────────────────────────────────────────
+
+.studentList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.studentItem {
+  background: #F7F7FB;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.studentHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  cursor: pointer;
+
+  &:hover { background: #F0F0F8; }
+}
+
+.studentInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #DADAE8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #534AB7;
+  flex-shrink: 0;
+  overflow: hidden;
+
+  img { width: 100%; height: 100%; object-fit: cover; }
+}
+
+.studentName {
+  font-size: 13px;
+  font-weight: 600;
+  color: #141416;
+}
+
+.studentMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.attemptCount {
+  font-size: 11px;
+  color: #868897;
+}
+
+.percentBadge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+
+.percentGood { background: #D1FAE5; color: #059669; }
+.percentMid  { background: #FEF9C3; color: #92400E; }
+.percentBad  { background: #FEF2F2; color: #DC2626; }
+
+.studentErrors {
+  border-top: 1px solid #EAEAF0;
+  padding: 8px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.errRow {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.errDesc {
+  font-size: 12px;
+  color: #3A3A4A;
+  line-height: 1.4;
+}
+
+.errFragment {
+  font-size: 11px;
+  color: #868897;
+  font-style: italic;
+  background: #F0F0F8;
+  border-left: 2px solid #DADAE8;
+  padding: 2px 6px;
+  border-radius: 0 4px 4px 0;
+}
+
+.errCats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.catChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 600;
+  background: #EEF2FF;
+  color: #534AB7;
+}
+
+.empty {
+  padding: 24px;
+  text-align: center;
+  color: #ABABAB;
+  font-size: 13px;
+}

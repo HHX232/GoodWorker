@@ -10,7 +10,9 @@ import instance, {axiosClassic} from '@/shared/api'
 import {ITestFull} from '@/shared/types/Tasks/test.types'
 import {ResultToast} from '@/shared/ui/Tasks/ResultToast/ResultToast'
 import {NavBar} from '@/widgets/BaseUI'
+import {TestErrorStatsPanel} from '@/widgets/Tests/TestErrorStatsPanel/TestErrorStatsPanel'
 import {SavedTest} from '@/widgets/Tasks/Storage/testStorage'
+import {useSession} from 'next-auth/react'
 import {toast} from 'sonner'
 import styles from './TakeTestPage.module.scss'
 import {TestPlayer} from './TestPlayer/TestPlayer'
@@ -41,6 +43,8 @@ export function BlockWrapper({block, children}: {block: TestBlock; children: Rea
 export default function TakeTestPage() {
   const params = useParams()
   const testId = params?.testId as string
+  const { data: session } = useSession()
+  const isTeacher = session?.user?.role === 'TEACHER'
 
   const [test, setTest] = useState<SavedTest | null>(null)
   const [answers, setAnswers] = useState<Map<string, StudentAnswer>>(new Map())
@@ -122,6 +126,7 @@ export default function TakeTestPage() {
     <div className={`container default_content ${styles.content}`}>
       <NavBar />
       <div className={styles.main_content}>
+        {isTeacher && <TestErrorStatsPanel testId={testId} />}
         <h1>{test.title}</h1>
         <TestPlayer showInlineResult={false} blocks={test.blocks} onResult={handleResult} />
       </div>

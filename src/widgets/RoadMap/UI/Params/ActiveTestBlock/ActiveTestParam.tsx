@@ -98,6 +98,7 @@ export default function ActiveTestBlock({
             percent: res?.percent ?? null,
             score: res?.totalScore ?? null,
             maxScore: res?.maxScore ?? null,
+            blocks: res?.blocks ?? [],
           },
         }),
       }).catch(() => {})
