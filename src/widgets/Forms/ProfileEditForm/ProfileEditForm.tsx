@@ -15,11 +15,22 @@ const VideoRoom = dynamic(() => import('@/widgets/VideoRoom/VideoRoom'), {ssr: f
 
 type UserType = 'Student' | 'Teacher'
 
+interface SocialLinks {
+  vk?: string | null
+  telegram?: string | null
+  instagram?: string | null
+  youtube?: string | null
+  website?: string | null
+}
+
 interface ProfileData {
   name: string
   email: string
   phone: string | null
   avatarUrl: string | null
+  bio?: string | null
+  coverPhotoUrl?: string | null
+  socialLinks?: SocialLinks | Record<string, string> | null
 }
 
 interface ProfileEditFormProps {
@@ -45,9 +56,24 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, stats
   const [saveError, setSaveError] = useState('')
   const [saveSuccess, setSaveSuccess] = useState(false)
 
+  // Teacher-only fields
+  const [bio, setBio] = useState(initialData.bio ?? '')
+  const [coverPhotoUrl, setCoverPhotoUrl] = useState<string | null>(initialData.coverPhotoUrl ?? null)
+  const [socialLinks, setSocialLinks] = useState({
+    vk:        (initialData.socialLinks as SocialLinks | null)?.vk        ?? '',
+    telegram:  (initialData.socialLinks as SocialLinks | null)?.telegram  ?? '',
+    instagram: (initialData.socialLinks as SocialLinks | null)?.instagram ?? '',
+    youtube:   (initialData.socialLinks as SocialLinks | null)?.youtube   ?? '',
+    website:   (initialData.socialLinks as SocialLinks | null)?.website   ?? '',
+  })
+
   const [cropSrc, setCropSrc] = useState<string | null>(null)
   const [cropOpen, setCropOpen] = useState(false)
   const avatarInputRef = useRef<HTMLInputElement>(null)
+
+  const [coverCropSrc, setCoverCropSrc] = useState<string | null>(null)
+  const [coverCropOpen, setCoverCropOpen] = useState(false)
+  const coverInputRef = useRef<HTMLInputElement>(null)
 
   const [emailModalOpen, setEmailModalOpen] = useState(false)
   const [passwordModalOpen, setPasswordModalOpen] = useState(false)
@@ -75,12 +101,46 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, stats
     setCropSrc(null)
   }
 
+  const handleCoverFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const url = URL.createObjectURL(file)
+    setCoverCropSrc(url)
+    setCoverCropOpen(true)
+    e.target.value = ''
+  }
+
+  const handleCoverCropSave = (croppedFile: File) => {
+    const reader = new FileReader()
+    reader.onload = () => setCoverPhotoUrl(reader.result as string)
+    reader.readAsDataURL(croppedFile)
+    setCoverCropOpen(false)
+    if (coverCropSrc) URL.revokeObjectURL(coverCropSrc)
+    setCoverCropSrc(null)
+  }
+
+  const cleanSocialLinks = () => {
+    const filtered = Object.fromEntries(
+      Object.entries(socialLinks).filter(([, v]) => v?.trim())
+    )
+    return Object.keys(filtered).length ? filtered : null
+  }
+
   const handleSave = async () => {
     setSaving(true)
     setSaveError('')
     setSaveSuccess(false)
     try {
-      await updateProfile({name: name.trim(), phone: phone.trim() || null, avatarUrl})
+      await updateProfile({
+        name: name.trim(),
+        phone: phone.trim() || null,
+        avatarUrl,
+        ...(userType === 'Teacher' && {
+          bio: bio.trim() || null,
+          coverPhotoUrl,
+          socialLinks: cleanSocialLinks(),
+        }),
+      })
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 3000)
     } catch (error) {
@@ -216,6 +276,88 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, stats
 
         <div className={styles.divider} />
 
+        {/* ── Teacher: Bio + Cover photo ── */}
+        {userType === 'Teacher' && (
+          <>
+            <div className={styles.card}>
+              <div className={styles.cardLabel}>О себе</div>
+
+              {/* Cover photo */}
+              <div className={styles.field}>
+                <label className={styles.label}>Фото для раздела «О преподавателе»</label>
+                {coverPhotoUrl ? (
+                  <div className={styles.coverWrap}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={coverPhotoUrl} alt="Cover" className={styles.coverImg} />
+                    <div className={styles.coverBtns}>
+                      <button type="button" className={styles.avatarBtn} onClick={() => coverInputRef.current?.click()}>
+                        Заменить
+                      </button>
+                      <button type="button" className={styles.avatarBtnDanger} onClick={() => setCoverPhotoUrl(null)}>
+                        Удалить
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button type="button" className={styles.avatarBtn} style={{alignSelf: 'flex-start'}} onClick={() => coverInputRef.current?.click()}>
+                    Загрузить фото
+                  </button>
+                )}
+                <input
+                  ref={coverInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  style={{display: 'none'}}
+                  onChange={handleCoverFileChange}
+                />
+              </div>
+
+              {/* Bio */}
+              <div className={styles.field}>
+                <label className={styles.label}>Описание (до 2000 символов)</label>
+                <textarea
+                  className={styles.textarea}
+                  rows={5}
+                  placeholder="Расскажите о себе, своём опыте и подходе к обучению..."
+                  value={bio}
+                  onChange={e => setBio(e.target.value)}
+                  maxLength={2000}
+                />
+                <span className={styles.charCount}>{bio.length} / 2000</span>
+              </div>
+            </div>
+
+            <div className={styles.divider} />
+
+            {/* ── Teacher: Social links ── */}
+            <div className={styles.card}>
+              <div className={styles.cardLabel}>Социальные сети</div>
+              <div className={styles.fields}>
+                {([
+                  {key: 'vk',        label: 'ВКонтакте',  placeholder: 'https://vk.com/username'},
+                  {key: 'telegram',  label: 'Telegram',    placeholder: 'https://t.me/username'},
+                  {key: 'instagram', label: 'Instagram',   placeholder: 'https://instagram.com/username'},
+                  {key: 'youtube',   label: 'YouTube',     placeholder: 'https://youtube.com/@channel'},
+                  {key: 'website',   label: 'Сайт',        placeholder: 'https://example.com'},
+                ] as const).map(({key, label, placeholder}) => (
+                  <div key={key} className={styles.field}>
+                    <label className={styles.label}>{label}</label>
+                    <input
+                      className={styles.input}
+                      type="url"
+                      placeholder={placeholder}
+                      value={socialLinks[key]}
+                      onChange={e => setSocialLinks(prev => ({...prev, [key]: e.target.value}))}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className={styles.divider} />
+          </>
+        )}
+
         {/* ── Security ── */}
         <div className={styles.card}>
           <div className={styles.cardLabel}>Security</div>
@@ -309,6 +451,22 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, stats
           cropShape="circle"
           cropSize={300}
           aspectRatio={1}
+        />
+      )}
+
+      {coverCropSrc && (
+        <ImageCropEditor
+          imageUrl={coverCropSrc}
+          isOpen={coverCropOpen}
+          onClose={() => {
+            setCoverCropOpen(false)
+            if (coverCropSrc) URL.revokeObjectURL(coverCropSrc)
+            setCoverCropSrc(null)
+          }}
+          onSave={handleCoverCropSave}
+          cropShape="square"
+          cropSize={600}
+          aspectRatio={16 / 9}
         />
       )}
 

@@ -58,11 +58,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           const ok = await bcrypt.compare(password, teacher.password)
           if (!ok) return null
 
+          const adminRecord = await prisma.adminEmail.findUnique({
+            where: { email: teacher.email },
+            select: { id: true },
+          })
+
           return {
             id: teacher.id,
             name: teacher.name,
             email: teacher.email,
-            role: "TEACHER",
+            role: adminRecord ? "ADMIN" : "TEACHER",
           }
         }
 

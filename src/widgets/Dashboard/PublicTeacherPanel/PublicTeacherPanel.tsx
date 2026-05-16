@@ -15,6 +15,29 @@ interface Category {
   translations: CategoryTranslation[]
 }
 
+const SOCIAL_ICONS: Record<string, { label: string; icon: React.ReactNode }> = {
+  vk: {
+    label: 'ВКонтакте',
+    icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15.684 0H8.316C1.592 0 0 1.592 0 8.316v7.368C0 22.408 1.592 24 8.316 24h7.368C22.408 24 24 22.408 24 15.684V8.316C24 1.592 22.408 0 15.684 0zm3.692 17.123h-1.744c-.66 0-.862-.525-2.049-1.714-1.033-1-1.49-.85-1.49.35v1.56c0 .4-.13.55-.72.55-1.293 0-2.734-.786-3.74-2.254C8.22 13.17 7.5 11.02 7.5 10.5c0-.28.1-.44.46-.44h1.744c.34 0 .47.16.6.54.65 1.96 1.73 3.68 2.18 3.68.17 0 .25-.08.25-.52V11.7c-.05-.93-.54-1.01-.54-1.34 0-.18.14-.37.38-.37h2.74c.3 0 .4.16.4.5v3.21c0 .3.13.4.21.4.17 0 .31-.1.62-.41 1.16-1.3 1.99-3.3 1.99-3.3.11-.24.3-.47.65-.47h1.744c.52 0 .63.27.52.54-.42.98-1.45 2.82-1.45 2.82-.15.24-.2.35 0 .62.14.2.6.61 1 1.01.87.87 1.53 1.6 1.72 2.1.19.5-.06.75-.55.75z"/></svg>,
+  },
+  telegram: {
+    label: 'Telegram',
+    icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.833.941z"/></svg>,
+  },
+  instagram: {
+    label: 'Instagram',
+    icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>,
+  },
+  youtube: {
+    label: 'YouTube',
+    icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>,
+  },
+  website: {
+    label: 'Сайт',
+    icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
+  },
+}
+
 interface Props {
   name: string
   avatarUrl: string | null
@@ -25,10 +48,14 @@ interface Props {
   callCount: number
   categories: Category[]
   locale?: string
+  bio?: string | null
+  coverPhotoUrl?: string | null
+  socialLinks?: Record<string, string> | null
 }
 
 export function PublicTeacherPanel({
   name, avatarUrl, isVip, createdAt, studentCount, postCount, callCount, categories, locale = 'en',
+  bio, coverPhotoUrl, socialLinks,
 }: Props) {
   const t = useTranslations('dashboard')
 
@@ -143,26 +170,72 @@ export function PublicTeacherPanel({
 
         <div className={styles.divider} />
 
-        {/* About stub */}
+        {/* About */}
         <div className={styles.section}>
           <div className={styles.sectionLabel}>{t('aboutLabel')}</div>
-          <div className={styles.aboutRow}>
-            <div className={styles.aboutItem}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#534AB7" strokeWidth="2" strokeLinecap="round">
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-              <span>{t('hoursLabel', { count: callCount })}</span>
+
+          {coverPhotoUrl && (
+            <div className={styles.coverPhoto}>
+              <Image
+                src={coverPhotoUrl}
+                alt={name}
+                width={300}
+                height={169}
+                className={styles.coverImg}
+              />
             </div>
-            <div className={styles.aboutItem}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#534AB7" strokeWidth="2" strokeLinecap="round">
-                <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
-                <path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z" />
-              </svg>
-              <span>{t('roadmapsLabel')}</span>
+          )}
+
+          {bio ? (
+            <p className={styles.bio}>{bio}</p>
+          ) : (
+            <div className={styles.aboutRow}>
+              <div className={styles.aboutItem}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#534AB7" strokeWidth="2" strokeLinecap="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                <span>{t('hoursLabel', { count: callCount })}</span>
+              </div>
+              <div className={styles.aboutItem}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#534AB7" strokeWidth="2" strokeLinecap="round">
+                  <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
+                  <path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z" />
+                </svg>
+                <span>{t('roadmapsLabel')}</span>
+              </div>
             </div>
-          </div>
+          )}
         </div>
+
+        {/* Social links */}
+        {socialLinks && Object.keys(socialLinks).some(k => socialLinks[k]) && (
+          <>
+            <div className={styles.divider} />
+            <div className={styles.section}>
+              <div className={styles.sectionLabel}>Соцсети</div>
+              <div className={styles.socialLinks}>
+                {Object.entries(SOCIAL_ICONS).map(([key, cfg]) => {
+                  const url = socialLinks[key]
+                  if (!url) return null
+                  return (
+                    <a
+                      key={key}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.socialLink}
+                      title={cfg.label}
+                    >
+                      {cfg.icon}
+                      <span>{cfg.label}</span>
+                    </a>
+                  )
+                })}
+              </div>
+            </div>
+          </>
+        )}
 
       </div>
     </aside>

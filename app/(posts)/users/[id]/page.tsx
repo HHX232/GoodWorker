@@ -20,6 +20,9 @@ export default async function UserPublicPage({ params }: Props) {
         isVip: true,
         createdAt: true,
         langCode: true,
+        bio: true,
+        coverPhotoUrl: true,
+        socialLinks: true,
         categories: {
           select: {
             category: {
@@ -55,6 +58,9 @@ export default async function UserPublicPage({ params }: Props) {
       callCount={callCount}
       categories={categories}
       locale={locale}
+      bio={teacher.bio}
+      coverPhotoUrl={teacher.coverPhotoUrl}
+      socialLinks={teacher.socialLinks as Record<string, string> | null}
     />
   )
 }

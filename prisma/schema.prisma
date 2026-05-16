@@ -63,6 +63,9 @@ model Teacher {
   phone              String?
   isVip              Boolean           @default(false)
   vipExpiresAt       DateTime?
+  bio                String?
+  coverPhotoUrl      String?
+  socialLinks        Json?
   transactions       VipTransaction[]
   complaints         Complaint[]
   posts              Post[]
@@ -716,4 +719,10 @@ model NotificationSubscription {
 
   @@unique([userId, type])
   @@index([userId])
+}
+
+model AdminEmail {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
 }

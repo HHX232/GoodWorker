@@ -17,6 +17,9 @@ export default async function TeacherProfileEditPage() {
       email: true,
       phone: true,
       avatarUrl: true,
+      bio: true,
+      coverPhotoUrl: true,
+      socialLinks: true,
     },
   })
 
@@ -27,7 +30,10 @@ export default async function TeacherProfileEditPage() {
   return (
     <ProfileEditForm
       userType="Teacher"
-      initialData={teacher}
+      initialData={{
+        ...teacher,
+        socialLinks: teacher.socialLinks as Record<string, string> | null,
+      }}
     />
   )
 }

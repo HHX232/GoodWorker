@@ -304,6 +304,53 @@
   }
 }
 
+// ── Teacher: Bio + Cover ─────────────────────────────────────────────────────
+
+.textarea {
+  width: 100%;
+  padding: 10px 13px;
+  border: 1.5px solid #e5e5e5;
+  border-radius: 10px;
+  background: #fafafa;
+  font-size: 13.5px;
+  color: #111;
+  line-height: 1.6;
+  outline: none;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color 0.15s, background 0.15s;
+  box-sizing: border-box;
+
+  &::placeholder { color: #bbb; }
+  &:focus { border-color: #534AB7; background: #fff; }
+}
+
+.charCount {
+  font-size: 11px;
+  color: #bbb;
+  text-align: right;
+  margin-top: -8px;
+}
+
+.coverWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.coverImg {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1.5px solid #e5e5e5;
+}
+
+.coverBtns {
+  display: flex;
+  gap: 8px;
+}
+
 // ── Mobile ────────────────────────────────────────────────────────────────────
 
 @media (max-width: 480px) {

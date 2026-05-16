@@ -27,11 +27,15 @@ interface Props {
   callCount: number
   categories: Category[]
   locale?: string
+  bio?: string | null
+  coverPhotoUrl?: string | null
+  socialLinks?: Record<string, string> | null
 }
 
 export function TeacherPublicProfile({
   teacherId, name, avatarUrl, isVip, createdAt,
   studentCount, postCount, callCount, categories, locale,
+  bio, coverPhotoUrl, socialLinks,
 }: Props) {
   return (
     <div className={styles.dashboard}>
@@ -47,6 +51,9 @@ export function TeacherPublicProfile({
         callCount={callCount}
         categories={categories}
         locale={locale}
+        bio={bio}
+        coverPhotoUrl={coverPhotoUrl}
+        socialLinks={socialLinks}
       />
     </div>
   )

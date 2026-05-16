@@ -6,6 +6,7 @@ const prisma = new PrismaClient()
 const TEACHER_EMAIL = 'teacher@seed.dev'
 const STUDENT_EMAIL = 'student@seed.dev'
 const PASSWORD = 'password123'
+const ADMIN_EMAILS = [TEACHER_EMAIL]
 
 async function main() {
   const hash = await bcrypt.hash(PASSWORD, 10)
@@ -108,8 +109,18 @@ async function main() {
   }
   console.log(`✅ ${notifications.length} notifications created for teacher`)
 
+  // ── AdminEmail whitelist ─────────────────────────────────
+  for (const email of ADMIN_EMAILS) {
+    await prisma.adminEmail.upsert({
+      where: { email },
+      update: {},
+      create: { email },
+    })
+  }
+  console.log(`✅ Admin emails seeded: ${ADMIN_EMAILS.join(', ')}`)
+
   console.log('\n--- Seed credentials ---')
-  console.log(`Teacher: ${TEACHER_EMAIL} / ${PASSWORD}`)
+  console.log(`Teacher (admin): ${TEACHER_EMAIL} / ${PASSWORD}`)
   console.log(`Student: ${STUDENT_EMAIL} / ${PASSWORD}`)
 }
 
