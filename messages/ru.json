@@ -564,7 +564,10 @@
     "invalidEmail": "Введите корректный email",
     "callNotes": "Конспекты звонков",
     "emptyContent": "Пока ничего нет",
-    "allSubjects": "Все"
+    "allSubjects": "Все",
+    "complaintsLink": "Жалобы",
+    "notificationsLink": "Уведомления",
+    "feedbackLink": "Обратная связь"
   },
   "studentStats": {
     "title": "Моя статистика",

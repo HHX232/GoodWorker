@@ -564,7 +564,10 @@
     "invalidEmail": "Enter a valid email",
     "callNotes": "Call transcripts",
     "emptyContent": "Nothing here yet",
-    "allSubjects": "All"
+    "allSubjects": "All",
+    "complaintsLink": "Complaints",
+    "notificationsLink": "Notifications",
+    "feedbackLink": "Feedback"
   },
   "studentStats": {
     "title": "My statistics",
