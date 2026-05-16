@@ -190,6 +190,45 @@ export async function GET(
     const calendarJson = teacher.calendar as { events?: unknown[] } | null
     const calendarEvents = Array.isArray(calendarJson?.events) ? calendarJson!.events : []
 
+    // ── AI-detected error stats per category ─────────────────────────────────
+    const teacherStudentIds = await prisma.teacherStudent.findMany({
+      where: { teacherId },
+      select: { studentId: true },
+    })
+    const myStudentIds = teacherStudentIds.map((ts) => ts.studentId)
+
+    const ERROR_COLORS = [
+      '#DC2626', '#EA580C', '#D97706', '#CA8A04', '#65A30D',
+      '#059669', '#0891B2', '#2563EB', '#7C3AED', '#C026D3',
+    ]
+
+    let errorStats: { categoryId: string; name: string; count: number; color: string }[] = []
+    if (myStudentIds.length > 0) {
+      const rawErrCats = await prisma.studentErrorCategory.findMany({
+        where: { error: { studentId: { in: myStudentIds }, sourceType: 'video_call' } },
+        include: {
+          category: { include: { translations: { where: { langCode: 'ru' } } } },
+        },
+      })
+
+      const catMap: Record<string, { name: string; count: number }> = {}
+      for (const sec of rawErrCats) {
+        const name = sec.category.translations[0]?.name ?? sec.category.slug
+        if (!catMap[sec.categoryId]) catMap[sec.categoryId] = { name, count: 0 }
+        catMap[sec.categoryId].count++
+      }
+
+      errorStats = Object.entries(catMap)
+        .map(([categoryId, { name, count }], i) => ({
+          categoryId,
+          name,
+          count,
+          color: ERROR_COLORS[i % ERROR_COLORS.length],
+        }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10)
+    }
+
     return NextResponse.json({
       teacher: { id: teacher.id, name: teacher.name, avatarUrl: teacher.avatarUrl },
       totalCalls,
@@ -202,6 +241,7 @@ export async function GET(
       calendarLessons,
       calendarEvents,
       heroStats,
+      errorStats,
     })
   } catch (e: any) {
     return NextResponse.json({ error: e.message ?? 'Internal error' }, { status: 500 })

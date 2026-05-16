@@ -1,0 +1,203 @@
+.wrap {
+  background: #ffffff;
+  border: 1px solid #EAEAF0;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid #EAEAF0;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #141416;
+  margin: 0;
+}
+
+.toggle {
+  display: flex;
+  background: #F5F5FA;
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.toggleBtn {
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #868897;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover { color: #141416; }
+}
+
+.toggleActive {
+  background: #ffffff;
+  color: #141416;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.body {
+  padding: 4px 0 8px;
+  max-height: 520px;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar { width: 3px; }
+  &::-webkit-scrollbar-thumb { background: #DADAE8; border-radius: 2px; }
+}
+
+.empty {
+  padding: 48px 20px;
+  text-align: center;
+  color: #ABABAB;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.emptyIcon {
+  line-height: 1;
+  opacity: 0.5;
+}
+
+// ── By-time list ──────────────────────────────────────────────────────────────
+
+.errorItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #F3F3F8;
+  transition: background 0.1s;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: #FAFAFA; }
+}
+
+.errorMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.errorDate {
+  font-size: 11px;
+  color: #ABABAB;
+  font-weight: 500;
+}
+
+.catChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: #EEF2FF;
+  color: #534AB7;
+}
+
+.errorDesc {
+  font-size: 13px;
+  color: #3A3A4A;
+  line-height: 1.5;
+}
+
+.errorFragment {
+  font-size: 12px;
+  color: #868897;
+  background: #F7F7FB;
+  border-left: 2px solid #DADAE8;
+  padding: 4px 8px;
+  border-radius: 0 6px 6px 0;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+// ── By-frequency list ─────────────────────────────────────────────────────────
+
+.freqItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  border-bottom: 1px solid #F3F3F8;
+  gap: 12px;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: #FAFAFA; }
+}
+
+.freqLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.freqRank {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ABABAB;
+  width: 18px;
+  flex-shrink: 0;
+}
+
+.freqBar {
+  flex: 1;
+  min-width: 0;
+}
+
+.freqName {
+  font-size: 13px;
+  font-weight: 600;
+  color: #141416;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.freqTrack {
+  height: 3px;
+  background: #EAEAF0;
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.freqFill {
+  height: 100%;
+  background: #534AB7;
+  border-radius: 99px;
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.freqCount {
+  font-size: 13px;
+  font-weight: 700;
+  color: #534AB7;
+  flex-shrink: 0;
+}
+
+.freqLast {
+  font-size: 10px;
+  color: #ABABAB;
+  flex-shrink: 0;
+}

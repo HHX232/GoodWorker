@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { ErrorTopics, TopicSubject } from '@/shared/ui/Stats/ErrorTopics/ErrorTopics'
+import { StudentErrorsWidget, ErrorStat } from '@/shared/ui/Stats/StudentErrorsWidget/StudentErrorsWidget'
 import HoursChart from '@/shared/ui/Stats/HoursChart/HoursChart'
 import { StatsHero } from '@/shared/ui/Stats/StatsHero/StatsHero'
 import StatsHeroCard from '@/shared/ui/Stats/StatsHeroCard/StatsHeroCard'
@@ -58,6 +59,7 @@ interface StatsData {
   calendarLessons: CalendarLesson[]
   calendarEvents: CalendarEvent[]
   heroStats: HeroStats
+  errorStats: ErrorStat[]
 }
 
 function calendarEventToLesson(e: CalendarEvent): CalendarLesson {
@@ -216,8 +218,12 @@ export default function TutorStatsPage({ teacherId }: { teacherId: string }) {
               ...data.calendarEvents.map(calendarEventToLesson),
             ]}
           />
-          <ErrorTopics
+          <StudentErrorsWidget
             extraClass={styles.error_topics}
+            data={data.errorStats}
+          />
+          <ErrorTopics
+            extraClass={styles.error_topics_subjects}
             subjects={data.subjectData}
             onSubjectClick={(s) => setSelectedSubject(s)}
           />

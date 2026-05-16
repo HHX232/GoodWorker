@@ -1,4 +1,5 @@
 import { prisma } from "@/shared/prisma/prisma"
+import { StudentErrorsList } from "@/shared/ui/Stats/StudentErrorsWidget/StudentErrorsList"
 import ProfileEditForm from "@/widgets/Forms/ProfileEditForm/ProfileEditForm"
 import { redirect } from "next/navigation"
 import { auth } from "../../../auth"
@@ -22,9 +23,12 @@ export default async function StudentProfilePage() {
   if (!student) redirect("/login")
 
   return (
-    <ProfileEditForm
-      userType="Student"
-      initialData={student}
-    />
+    <>
+      <ProfileEditForm
+        userType="Student"
+        initialData={student}
+      />
+      <StudentErrorsList />
+    </>
   )
 }
