@@ -1,22 +1,8 @@
-// ── Design tokens ─────────────────────────────────────────────────────────────
-$border: #e0e0e0;
-$bg-card: #fff;
-$bg-input: #fff;
-$bg-tile: #f5f5f5;
-$accent: #0f3460;
-$danger: #c0392b;
-$success: #27ae60;
-$text: #000;
-$text-dim: #555;
-$text-muted: #999;
-
 // ── Wrapper ───────────────────────────────────────────────────────────────────
 
 .wrapper {
   width: 100%;
-  border: 2px solid $border;
-  background: $bg-card;
-  overflow: hidden;
+  margin-top: 8px;
 }
 
 // ── Header ────────────────────────────────────────────────────────────────────
@@ -25,38 +11,40 @@ $text-muted: #999;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 16px 20px;
-  border-bottom: 2px solid $border;
+  padding: 0 0 10px 0;
+  border-bottom: 1px solid #F0F0F5;
 }
 
 .headerIcon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: #f0f0f0;
-  color: $accent;
+  width: 28px;
+  height: 28px;
+  background: #534AB71A;
+  border-radius: 8px;
+  color: #534AB7;
   flex-shrink: 0;
 }
 
 .headerTitle {
   margin: 0;
-  font-size: 16px;
+  font-size: 12px;
   font-weight: 700;
-  color: $text;
+  color: #111118;
   letter-spacing: 0.3px;
 }
 
 .statusBadge {
   margin-left: auto;
-  font-size: 12px;
-  color: $text-muted;
-  background: #f5f5f5;
+  font-size: 11px;
+  color: #8A8A9A;
+  background: #FAFAFA;
   padding: 3px 10px;
-  border: 1px solid $border;
+  border: 1px solid #EBEBEB;
+  border-radius: 8px;
   white-space: nowrap;
-  max-width: 240px;
+  max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -65,13 +53,14 @@ $text-muted: #999;
 
 .joinPane {
   display: flex;
-  align-items: flex-end;
-  gap: 16px;
-  padding: 24px 20px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 12px 0 0;
 
-  @media (max-width: 560px) {
-    flex-direction: column;
-    align-items: stretch;
+  @media (min-width: 420px) {
+    flex-direction: row;
+    align-items: flex-end;
   }
 }
 
@@ -79,53 +68,59 @@ $text-muted: #999;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .joinLabel {
-  font-size: 13px;
-  font-weight: 600;
-  color: $text;
-  letter-spacing: 0.5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #8A8A9A;
   text-transform: uppercase;
+  letter-spacing: 0.6px;
 }
 
 .joinInput {
-  padding: 12px 14px;
-  border: 2px solid $text;
-  background: $bg-input;
-  color: $text;
-  font-size: 15px;
-  outline: none;
-  transition: border-color 0.2s;
   width: 100%;
+  padding: 9px 13px;
+  border: 1px solid #EBEBEB;
+  border-radius: 10px;
+  background: #FAFAFA;
+  color: #111118;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.18s, background 0.18s;
+  box-sizing: border-box;
 
   &::placeholder {
-    color: #aaa;
+    color: #8A8A9A;
   }
 
   &:focus {
-    border-color: #555;
+    border-color: #534AB7;
+    background: #fff;
   }
 }
 
 .joinBtn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 22px;
+  gap: 7px;
+  padding: 9px 16px;
   border: none;
-  background: $accent;
+  border-radius: 10px;
+  background: #111118;
   color: #fff;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
+  font-family: inherit;
   cursor: pointer;
   white-space: nowrap;
-  transition: opacity 0.2s;
   flex-shrink: 0;
+  transition: background 0.18s, opacity 0.18s;
 
   &:hover:not(:disabled) {
-    opacity: 0.85;
+    background: #2c2c38;
   }
 
   &:disabled {
@@ -171,8 +166,9 @@ $text-muted: #999;
 .tile {
   position: relative;
   overflow: hidden;
-  background: $bg-tile;
-  border: 2px solid $border;
+  background: #f5f5f5;
+  border: 1px solid #EBEBEB;
+  border-radius: 10px;
   min-height: 140px;
   flex: 1 1 260px;
   max-width: 480px;
@@ -180,7 +176,7 @@ $text-muted: #999;
 }
 
 .tileLocal {
-  border-color: $accent;
+  border-color: #534AB7;
 }
 
 .tileVideo {
@@ -213,6 +209,7 @@ $text-muted: #999;
 .tileName {
   background: rgba(0, 0, 0, 0.6);
   padding: 3px 10px;
+  border-radius: 6px;
   font-size: 12px;
   font-weight: 500;
   color: #fff;
@@ -226,6 +223,7 @@ $text-muted: #999;
   font-size: 14px;
   background: rgba(0, 0, 0, 0.6);
   padding: 3px 7px;
+  border-radius: 6px;
 }
 
 .localBadge {
@@ -235,9 +233,10 @@ $text-muted: #999;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.8px;
-  color: $accent;
+  color: #534AB7;
   background: rgba(255, 255, 255, 0.9);
-  border: 1px solid $accent;
+  border: 1px solid #534AB7;
+  border-radius: 6px;
   padding: 2px 7px;
 }
 
@@ -247,8 +246,8 @@ $text-muted: #999;
   align-items: center;
   gap: 12px;
   padding: 40px 24px;
-  color: $text-muted;
-  font-size: 14px;
+  color: #8A8A9A;
+  font-size: 13px;
   text-align: center;
 
   p { margin: 0; }
@@ -262,7 +261,7 @@ $text-muted: #999;
   justify-content: center;
   gap: 10px;
   padding: 14px 20px 18px;
-  border-top: 2px solid $border;
+  border-top: 1px solid #EBEBEB;
   flex-wrap: wrap;
 }
 
@@ -271,33 +270,35 @@ $text-muted: #999;
   align-items: center;
   gap: 7px;
   padding: 9px 18px;
-  border: 2px solid $border;
+  border: 1px solid #EBEBEB;
+  border-radius: 10px;
   background: #fff;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
+  font-family: inherit;
   cursor: pointer;
-  transition: all 0.2s;
-  color: $text;
+  transition: background 0.18s;
+  color: #111118;
 
   span {
     @media (max-width: 420px) { display: none; }
   }
 
-  &:hover { background: #f5f5f5; }
+  &:hover { background: #FAFAFA; }
 }
 
 .ctrlOn {
-  border-color: $success;
-  color: $success;
+  border-color: #534AB7;
+  color: #534AB7;
 
-  &:hover { background: #f0fff4; }
+  &:hover { background: #534AB70D; }
 }
 
 .ctrlOff {
-  border-color: #ccc;
-  color: $text-muted;
+  border-color: #EBEBEB;
+  color: #8A8A9A;
 
-  &:hover { background: #f5f5f5; }
+  &:hover { background: #FAFAFA; }
 }
 
 .leaveBtn {
@@ -305,20 +306,28 @@ $text-muted: #999;
   align-items: center;
   gap: 7px;
   padding: 9px 18px;
-  border: 2px solid $danger;
+  border: 1px solid #f0d0d0;
+  border-radius: 10px;
   background: none;
-  color: $danger;
-  font-size: 13px;
+  color: #c0392b;
+  font-size: 12px;
   font-weight: 600;
+  font-family: inherit;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.18s, color 0.18s;
 
   span {
     @media (max-width: 420px) { display: none; }
   }
 
   &:hover {
-    background: $danger;
+    background: #c0392b;
     color: #fff;
   }
+}
+
+// ── Spinner ───────────────────────────────────────────────────────────────────
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

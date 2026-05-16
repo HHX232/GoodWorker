@@ -298,3 +298,35 @@
 
   &:hover { text-decoration: underline; }
 }
+
+// ── VideoRoom toggle ───────────────────────────────────────
+
+.videoToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 13px;
+  background: #F5F5F9;
+  border: 1px solid #EBEBEB;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #111118;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  width: 100%;
+  text-align: left;
+  transition: background 0.15s;
+
+  &:hover { background: #ECEAE6; }
+}
+
+.videoChevron {
+  color: #ABABAB;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.videoChevronOpen {
+  transform: rotate(180deg);
+}

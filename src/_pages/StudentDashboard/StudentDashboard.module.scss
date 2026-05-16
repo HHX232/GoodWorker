@@ -4,4 +4,40 @@
   height: calc(100vh - 83px);
   overflow: hidden;
   background: #EEEFF8;
+
+  // ── Tablet: hide left sidebar, collapse right panel ──────────────
+  @media (max-width: 1100px) {
+    grid-template-columns: 1fr 296px;
+    grid-template-rows: 1fr;
+
+    // Left sidebar becomes hidden — use the mobile drawer pattern
+    > :first-child {
+      display: none;
+    }
+  }
+
+  // ── Small tablet: stack center + right panel vertically ──────────
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+    height: auto;
+    min-height: calc(100vh - 83px);
+    overflow: visible;
+
+    // Show all columns stacked
+    > :first-child { display: none; }
+
+    // Center scrolls freely
+    > :nth-child(2) {
+      height: auto;
+      overflow-y: visible;
+    }
+
+    // Right panel: auto height, no fixed height
+    > :last-child {
+      height: auto;
+      border-left: none;
+      border-top: 1px solid rgba(0, 0, 0, 0.07);
+    }
+  }
 }
