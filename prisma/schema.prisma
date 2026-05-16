@@ -462,6 +462,7 @@ model StudentError {
   sourceId    String
   attemptId   String?
   description String?
+  fragment    String?
   createdAt   DateTime               @default(now())
   attempt     StudentTestAttempt?    @relation(fields: [attemptId], references: [id], onDelete: SetNull)
   student     Student                @relation(fields: [studentId], references: [id], onDelete: Cascade)
