@@ -18,7 +18,7 @@ import numpy as np
 from dotenv import load_dotenv
 from faster_whisper import WhisperModel
 from livekit import rtc
-from livekit.agents import JobContext, WorkerOptions, cli
+from livekit.agents import AutoSubscribe, JobContext, WorkerOptions, cli
 
 load_dotenv()
 
@@ -48,35 +48,55 @@ def load_model() -> WhisperModel:
 
 whisper = load_model()
 
+# RMS threshold below which audio is treated as "quiet mic" (mobile without AGC).
+# Desktop mics with normal gain are typically > 0.03; mobile without AGC are typically < 0.02.
+QUIET_RMS_THRESHOLD = 0.03
+TARGET_RMS = 0.10
+
 
 def transcribe_chunk(audio_data: np.ndarray, is_mobile: bool = False) -> tuple[str, str | None]:
     if len(audio_data) < SAMPLE_RATE * 0.3:
         return "", None
 
     rms = float(np.sqrt(np.mean(audio_data ** 2)))
-    logger.info(f"chunk rms={rms:.4f} samples={len(audio_data)} mobile={is_mobile}")
 
+    # Absolute silence — skip regardless of mobile flag
     if rms < 0.0002:
+        logger.info(f"chunk skipped (silence) rms={rms:.5f} mobile={is_mobile}")
         return "", None
 
-    # Mobile mics capture at much lower volume — normalize so Whisper can hear speech
-    TARGET_RMS = 0.10
-    if rms < TARGET_RMS:
-        audio_data = np.clip(audio_data * (TARGET_RMS / rms), -1.0, 1.0)
+    # Detect quiet audio before normalization — quiet = mobile mic without AGC
+    is_quiet_mic = rms < QUIET_RMS_THRESHOLD
 
-    segments, info = whisper.transcribe(
-        audio_data,
+    # Normalize so Whisper gets usable signal level
+    if rms < TARGET_RMS:
+        gain = TARGET_RMS / rms
+        audio_data = np.clip(audio_data * gain, -1.0, 1.0)
+
+    # Disable VAD when:
+    #   a) client explicitly flagged as mobile via client_info
+    #   b) audio was quiet before normalization (mobile mic without AGC)
+    # VAD discards audio below its speech threshold — quiet mobile audio gets wrongly filtered.
+    use_vad = not (is_mobile or is_quiet_mic)
+
+    logger.info(f"chunk rms={rms:.5f} mobile={is_mobile} quiet_mic={is_quiet_mic} vad={use_vad}")
+
+    transcribe_kwargs: dict = dict(
         language=FORCE_LANGUAGE,
         beam_size=1,
-        # VAD filters silence, but mobile audio is quiet enough that VAD discards speech too
-        vad_filter=not is_mobile,
-        vad_parameters=dict(min_silence_duration_ms=300) if not is_mobile else {},
+        vad_filter=use_vad,
         condition_on_previous_text=False,
     )
+    if use_vad:
+        transcribe_kwargs["vad_parameters"] = dict(min_silence_duration_ms=300)
+
+    segments, info = whisper.transcribe(audio_data, **transcribe_kwargs)
 
     text = " ".join(s.text.strip() for s in segments).strip()
     if len(text) < 3:
+        logger.info(f"chunk filtered (too short): '{text}'")
         return "", None
+
     logger.info(f"whisper → '{text}' lang={info.language}")
     return text, info.language
 
@@ -117,7 +137,7 @@ async def transcribe_participant_audio(
             buffer = []
             buffer_samples = 0
 
-            # Read isMobile at chunk time so client_info updates take effect without restarting the stream
+            # Read isMobile at chunk time — client_info may arrive after stream starts
             is_mobile = participant_is_mobile.get(identity, False)
             text, lang = await asyncio.get_event_loop().run_in_executor(
                 None, transcribe_chunk, chunk, is_mobile
@@ -137,10 +157,14 @@ async def transcribe_participant_audio(
             }
             session_transcript[identity].append(entry)
 
-            await room.local_participant.publish_data(
-                json.dumps({"type": "transcript_chunk", **entry}, ensure_ascii=False).encode(),
-                reliable=True,
-            )
+            try:
+                await room.local_participant.publish_data(
+                    json.dumps({"type": "transcript_chunk", **entry}, ensure_ascii=False).encode(),
+                    reliable=True,
+                )
+                logger.info(f"[{identity}] published chunk ok")
+            except Exception as pub_err:
+                logger.error(f"[{identity}] publish_data failed: {pub_err}")
 
 
 def build_final_transcript() -> str:
@@ -156,13 +180,29 @@ def build_final_transcript() -> str:
     return "\n".join(lines)
 
 
+def start_transcription(
+    identity: str,
+    track: rtc.Track,
+    participant: rtc.RemoteParticipant,
+    room: rtc.Room,
+    active_streams: dict,
+):
+    if identity in active_streams and not active_streams[identity].done():
+        return
+    logger.info(f"Начинаем транскрипцию для {identity}")
+    task = asyncio.ensure_future(
+        transcribe_participant_audio(rtc.AudioStream(track), participant, room)
+    )
+    active_streams[identity] = task
+
+
 async def entrypoint(ctx: JobContext):
     logger.info(f"Агент подключается к комнате: {ctx.room.name}")
-    await ctx.connect()
 
     room = ctx.room
     active_streams: dict[str, asyncio.Task] = {}
 
+    # Register handlers BEFORE connect so no events are missed
     @room.on("track_subscribed")
     def on_track_subscribed(
         track: rtc.Track,
@@ -171,11 +211,7 @@ async def entrypoint(ctx: JobContext):
     ):
         if track.kind != rtc.TrackKind.KIND_AUDIO:
             return
-        logger.info(f"Новый аудиотрек от {participant.identity}")
-        task = asyncio.ensure_future(
-            transcribe_participant_audio(rtc.AudioStream(track), participant, room)
-        )
-        active_streams[participant.identity] = task
+        start_transcription(participant.identity, track, participant, room, active_streams)
 
     @room.on("track_unsubscribed")
     def on_track_unsubscribed(
@@ -190,9 +226,15 @@ async def entrypoint(ctx: JobContext):
             logger.info(f"Остановили транскрипцию для {identity}")
 
     @room.on("data_received")
-    def on_data_received(data: bytes, participant: rtc.RemoteParticipant, *_):
+    def on_data_received(*args):
         try:
-            msg = json.loads(data)
+            # Handle both old (bytes first) and new (DataPacket first) SDK signatures
+            raw = args[0] if args else b""
+            if hasattr(raw, "data"):
+                raw = raw.data
+            if not isinstance(raw, (bytes, bytearray)):
+                return
+            msg = json.loads(raw)
             if msg.get("type") == "client_info":
                 identity = msg.get("identity", "")
                 is_mobile = bool(msg.get("isMobile", False))
@@ -244,6 +286,27 @@ async def entrypoint(ctx: JobContext):
                 reliable=True,
             )
         )
+
+    await ctx.connect(auto_subscribe=AutoSubscribe.AUDIO_ONLY)
+    logger.info(f"Агент подключён. Участников в комнате: {len(room.remote_participants)}")
+
+    # Subscribe to audio tracks already published before the agent joined.
+    # publication.track is None if not yet subscribed — set_subscribed(True) triggers subscription;
+    # track_subscribed will fire when the track arrives.
+    for participant in room.remote_participants.values():
+        for publication in participant.track_publications.values():
+            if publication.kind != rtc.TrackKind.KIND_AUDIO:
+                continue
+            track = publication.track
+            if track:
+                logger.info(f"Уже подписан на трек от {participant.identity}")
+                start_transcription(participant.identity, track, participant, room, active_streams)
+            else:
+                logger.info(f"Форсируем подписку на трек от {participant.identity}")
+                try:
+                    publication.set_subscribed(True)
+                except Exception as e:
+                    logger.warning(f"set_subscribed failed for {participant.identity}: {e}")
 
     await asyncio.sleep(float("inf"))
 
