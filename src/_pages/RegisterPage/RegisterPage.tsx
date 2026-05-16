@@ -34,6 +34,7 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [agreeConsent, setAgreeConsent] = useState(false)
 
   function toggleCategory(id: string) {
     setSelectedCategories((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]))
@@ -54,6 +55,10 @@ export default function RegisterPage() {
     }
     if (role === 'Teacher' && selectedCategories.length === 0) {
       toast.error(t('categoriesRequired'))
+      return
+    }
+    if (!agreeConsent) {
+      toast.error(t('consentRequired'))
       return
     }
 
@@ -202,7 +207,22 @@ export default function RegisterPage() {
               />
             )}
 
-            <button className={styles.btn} onClick={handleSend} disabled={loading}>
+            <label className={styles.consentRow}>
+              <input
+                type="checkbox"
+                className={styles.consentCheck}
+                checked={agreeConsent}
+                onChange={e => setAgreeConsent(e.target.checked)}
+              />
+              <span className={styles.consentText}>
+                {t('consentText')}{' '}
+                <Link href="/privacy" className={styles.link} target="_blank">{t('privacyLink')}</Link>
+                {' '}{t('consentAnd')}{' '}
+                <Link href="/terms" className={styles.link} target="_blank">{t('termsLink')}</Link>
+              </span>
+            </label>
+
+            <button className={styles.btn} onClick={handleSend} disabled={loading || !agreeConsent}>
               {loading ? t('loading') : t('sendCode')}
             </button>
 

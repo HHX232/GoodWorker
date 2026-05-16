@@ -195,6 +195,29 @@
   }
 }
 
+.consentRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 14px;
+  cursor: pointer;
+}
+
+.consentCheck {
+  margin-top: 2px;
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  accent-color: #0a0c12;
+}
+
+.consentText {
+  font-size: 12px;
+  color: #6b6b6b;
+  line-height: 1.5;
+}
+
 .backBtn {
   display: inline-flex;
   align-items: center;

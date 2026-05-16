@@ -370,7 +370,12 @@
       "noCode": "Didn't receive the code?",
       "resend": "Resend",
       "back": "Back",
-      "successRegister": "Account created successfully!"
+      "successRegister": "Account created successfully!",
+      "consentRequired": "You must agree to the personal data processing terms",
+      "consentText": "I agree to the",
+      "privacyLink": "privacy policy",
+      "consentAnd": "and",
+      "termsLink": "terms of service"
     }
   },
   "roadmapList": {
