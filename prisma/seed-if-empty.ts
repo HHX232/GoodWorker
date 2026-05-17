@@ -18,6 +18,7 @@ async function main() {
   const seeds = [
     'prisma/seed.ts',
     'prisma/seedUsers.ts',
+    'prisma/seedErrors.ts',
     'prisma/seedContent.ts',
     'prisma/seedVipPosts.ts',
     'prisma/seedposts.ts',
