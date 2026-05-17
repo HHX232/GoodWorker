@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl'
 import { useEffect, useMemo, useState } from 'react'
 import styles from './DashboardStudentSidebar.module.scss'
+import { StudentDetailModal } from '@/widgets/Dashboard/StudentDetailModal/StudentDetailModal'
 
 interface Student {
   id: string
@@ -68,6 +69,7 @@ export function DashboardStudentSidebar({ teacherId }: Props) {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [activeSubject, setActiveSubject] = useState('All')
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
 
   useEffect(() => {
     Promise.all([
@@ -127,6 +129,18 @@ export function DashboardStudentSidebar({ teacherId }: Props) {
         </div>
       </div>
 
+      {selectedStudent && (
+        <StudentDetailModal
+          studentId={selectedStudent.id}
+          studentName={selectedStudent.name}
+          studentInitials={selectedStudent.initials}
+          avatarColor={selectedStudent.avatarColor}
+          avatarTextColor={selectedStudent.avatarTextColor}
+          subject={selectedStudent.subject}
+          onClose={() => setSelectedStudent(null)}
+        />
+      )}
+
       <div className={styles.list}>
         {loading && <div className={styles.loading}>{t('loading')}</div>}
 
@@ -145,7 +159,7 @@ export function DashboardStudentSidebar({ teacherId }: Props) {
             : null
 
           return (
-            <div key={student.id} className={styles.card}>
+            <div key={student.id} className={styles.card} onClick={() => setSelectedStudent(student)}>
               <div className={styles.cardTop}>
                 <div
                   className={styles.avatar}

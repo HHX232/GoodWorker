@@ -1,0 +1,91 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #0f172a;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.headerActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.hideBtn {
+  font-size: 13px;
+  font-weight: 500;
+  color: #94a3b8;
+  background: transparent;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all 0.12s;
+
+  &:hover {
+    background: #1e293b;
+    color: #fff;
+  }
+}
+
+.stopBtn {
+  font-size: 12px;
+  font-weight: 500;
+  color: #fca5a5;
+  background: transparent;
+  border: 1px solid #7f1d1d;
+  border-radius: 6px;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all 0.12s;
+
+  &:hover {
+    background: #7f1d1d;
+    color: #fff;
+  }
+}
+
+.canvas {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+
+  // Excalidraw fills the container
+  :global(.excalidraw) {
+    width: 100% !important;
+    height: 100% !important;
+  }
+  :global(.excalidraw-container) {
+    width: 100% !important;
+    height: 100% !important;
+  }
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #64748b;
+  font-size: 14px;
+}

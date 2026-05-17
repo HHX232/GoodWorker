@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { TestBlock } from '@/entities/store/slices/tasksSlice.slice'
 import { BlockView, BlockWrapper } from '@/_pages/TestPages/TestPlayer/TestPlayer'
 import { StudentAnswer, calculateResult } from '@/features/Tasks/TaskResult/scoreBlock'
 import { TaskBlockType } from '@/shared/types/Tasks/TaskType.type'
 import { ChooseOptionPayload, FreeAnswerPayload } from '@/shared/types/Tasks/TaskPayload.type'
+import { IconMinimize, IconXSmall } from '../icons'
 import styles from './CallTestPanel.module.scss'
 
 export type AnswerRecord = Record<string, any>
@@ -111,6 +112,7 @@ export function CallTestStudentView({ blocks, title, onAnswer, onSubmit, submitt
           ))}
         </div>
         <button className={styles.navBtn} disabled={activeIdx === blocks.length - 1} onClick={() => setActiveIdx(i => i + 1)}>→</button>
+        <button className={styles.submitBtn} onClick={handleSubmit}>Сдать</button>
       </div>
 
       <div className={styles.blockArea}>
@@ -120,10 +122,6 @@ export function CallTestStudentView({ blocks, title, onAnswer, onSubmit, submitt
           </BlockWrapper>
         )}
       </div>
-
-      {activeIdx === blocks.length - 1 && (
-        <button className={styles.submitBtn} onClick={handleSubmit}>Отправить ответы</button>
-      )}
     </div>
   )
 }
@@ -137,49 +135,189 @@ interface CallTestTeacherViewProps {
   studentCount: number
   isOneOnOne: boolean
   studentIdentity?: string
+  participants?: string[]
   onStop: () => void
+  onHide?: () => void
 }
 
-export function CallTestTeacherView({ blocks, title, studentProgress, studentCount, isOneOnOne, studentIdentity, onStop }: CallTestTeacherViewProps) {
+export function CallTestTeacherView({ blocks, title, studentProgress, studentCount, isOneOnOne, studentIdentity, participants, onStop, onHide }: CallTestTeacherViewProps) {
   const answerableBlocks = blocks.filter(b => ANSWERABLE.has(b.type as string))
   const [activeIdx, setActiveIdx] = useState(0)
+  const [showScores, setShowScores] = useState(false)
+  const [selectedStudent, setSelectedStudent] = useState<string | null>(null)
+  const [modalStudent, setModalStudent] = useState<string | null>(null)
+
   const submitted = Object.values(studentProgress).filter(p => p.submitted).length
   const current = answerableBlocks[activeIdx]
 
+  // All known participants: union of passed list + anyone who has sent answers
+  const allIdentities = React.useMemo(() => {
+    const set = new Set<string>([
+      ...(participants ?? []),
+      ...Object.keys(studentProgress),
+    ])
+    return Array.from(set)
+  }, [participants, studentProgress])
+
   return (
     <div className={styles.teacherView}>
+      {modalStudent && (
+        <ParticipantAnswersModal
+          identity={modalStudent}
+          blocks={blocks}
+          progress={studentProgress[modalStudent]}
+          onClose={() => setModalStudent(null)}
+        />
+      )}
+
       <div className={styles.teacherHeader}>
-        <span className={styles.testTitle}>{title}</span>
-        <div className={styles.teacherMeta}>
-          <span className={styles.submittedBadge}>{submitted}/{studentCount} сдали</span>
-          <button className={styles.stopBtn} onClick={onStop} title="Завершить тест">✕ Стоп</button>
+        <div className={styles.teacherActions}>
+          {onHide && (
+            <button className={styles.hideBtn} onClick={onHide} title="Свернуть тест"><IconMinimize /></button>
+          )}
+          <button className={styles.stopBtn} onClick={onStop} title="Завершить тест"><IconXSmall /> Стоп</button>
         </div>
+        <span className={styles.testTitle}>{title}</span>
+        <span className={styles.submittedBadge}>{submitted}/{studentCount} сдали</span>
       </div>
+
+      {allIdentities.length > 0 && (
+        <div className={styles.participantStrip}>
+          <button
+            className={`${styles.partChip} ${!selectedStudent ? styles.partChipActive : ''}`}
+            onClick={() => setSelectedStudent(null)}
+          >
+            Все
+          </button>
+          {allIdentities.map(identity => {
+            const prog = studentProgress[identity]
+            const hasSubmitted = prog?.submitted === true
+            const hasAnswers = prog && Object.keys(prog.answers).length > 0
+            let score: number | null = null
+            if (hasSubmitted) {
+              const answersMap = new Map(Object.entries(prog.answers)) as Map<string, StudentAnswer>
+              const res = calculateResult(blocks, answersMap)
+              score = res.percent
+            }
+            const isActive = selectedStudent === identity
+            return (
+              <button
+                key={identity}
+                className={`${styles.partChip} ${isActive ? styles.partChipActive : ''} ${hasSubmitted ? styles.partChipSubmitted : hasAnswers ? styles.partChipInProgress : ''}`}
+                onClick={() => {
+                  setSelectedStudent(prev => prev === identity ? null : identity)
+                  if (hasSubmitted) setModalStudent(identity)
+                }}
+                title={hasSubmitted ? 'Посмотреть ответы' : undefined}
+              >
+                <span className={styles.partChipName}>{identity.length > 12 ? identity.slice(0, 12) + '…' : identity}</span>
+                {hasSubmitted && score !== null && <span className={styles.partChipScore}>{score}%</span>}
+                {hasSubmitted && <span className={styles.partChipStatus}>✓</span>}
+                {!hasSubmitted && hasAnswers && <span className={styles.partChipDot} />}
+              </button>
+            )
+          })}
+        </div>
+      )}
 
       {answerableBlocks.length === 0 ? (
         <p className={styles.emptyNote}>Нет вопросов</p>
       ) : (
         <>
           <div className={styles.questionNav}>
-            <button className={styles.navBtn} disabled={activeIdx === 0} onClick={() => setActiveIdx(i => i - 1)}>←</button>
+            <button className={styles.navBtn} disabled={showScores || activeIdx === 0} onClick={() => setActiveIdx(i => i - 1)}>←</button>
             <div className={styles.pills}>
               {answerableBlocks.map((b, i) => (
-                <button key={b.id} onClick={() => setActiveIdx(i)}
-                  className={`${styles.pill} ${i === activeIdx ? styles.pillActive : ''}`}
+                <button key={b.id} onClick={() => { setActiveIdx(i); setShowScores(false) }}
+                  className={`${styles.pill} ${!showScores && i === activeIdx ? styles.pillActive : ''}`}
                 >{i + 1}</button>
               ))}
+              <button
+                onClick={() => setShowScores(s => !s)}
+                className={`${styles.pill} ${showScores ? styles.pillActive : ''}`}
+                title="Итоги"
+              >★</button>
             </div>
-            <button className={styles.navBtn} disabled={activeIdx === answerableBlocks.length - 1} onClick={() => setActiveIdx(i => i + 1)}>→</button>
+            <button className={styles.navBtn} disabled={showScores || activeIdx === answerableBlocks.length - 1} onClick={() => setActiveIdx(i => i + 1)}>→</button>
           </div>
 
           <div className={styles.statsArea}>
-            {current && (isOneOnOne && studentIdentity
-              ? <BlockLiveView block={current} progress={studentProgress[studentIdentity]} />
-              : <BlockStatsView block={current} studentProgress={studentProgress} />
+            {showScores ? (
+              <ScoreDistributionView blocks={blocks} studentProgress={studentProgress} selectedStudent={selectedStudent} />
+            ) : current && (
+              selectedStudent
+                ? <BlockLiveView block={current} progress={studentProgress[selectedStudent]} />
+                : <BlockStatsView block={current} studentProgress={studentProgress} />
             )}
           </div>
         </>
       )}
+    </div>
+  )
+}
+
+// ── Participant answers modal ─────────────────────────────────────────────────
+
+interface ParticipantAnswersModalProps {
+  identity: string
+  blocks: TestBlock[]
+  progress: StudentProgress | undefined
+  onClose: () => void
+}
+
+function ParticipantAnswersModal({ identity, blocks, progress, onClose }: ParticipantAnswersModalProps) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  const answerableBlocks = blocks.filter(b => ANSWERABLE.has(b.type as string))
+
+  let scoreData: { percent: number; totalScore: number; maxScore: number } | null = null
+  if (progress?.submitted) {
+    const answersMap = new Map(Object.entries(progress.answers)) as Map<string, StudentAnswer>
+    const res = calculateResult(blocks, answersMap)
+    scoreData = { percent: res.percent, totalScore: res.totalScore, maxScore: res.maxScore }
+  }
+
+  const { label, color } = scoreData ? gradeColor(scoreData.percent) : { label: '', color: '#94a3b8' }
+
+  return (
+    <div className={styles.modalOverlay} onMouseDown={e => { if (e.target === e.currentTarget) onClose() }}>
+      <div className={styles.modalBox}>
+        <div className={styles.modalHeader}>
+          <div className={styles.modalTitle}>{identity}</div>
+          <button className={styles.modalClose} onClick={onClose}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        {!progress?.submitted ? (
+          <div className={styles.modalEmpty}>Участник ещё не сдал тест</div>
+        ) : (
+          <div className={styles.modalBody}>
+            {scoreData && (
+              <div className={styles.modalScore}>
+                <div className={styles.modalRing} style={{ borderColor: color }}>
+                  <span className={styles.modalRingPct} style={{ color }}>{scoreData.percent}%</span>
+                  <span className={styles.modalRingLabel} style={{ color }}>{label}</span>
+                </div>
+                <span className={styles.modalScoreText}>{scoreData.totalScore} / {scoreData.maxScore} баллов</span>
+              </div>
+            )}
+
+            {answerableBlocks.map((block, i) => (
+              <div key={block.id} className={styles.modalQuestion}>
+                <div className={styles.modalQNum}>Вопрос {i + 1}</div>
+                <BlockLiveView block={block} progress={progress} />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -252,6 +390,78 @@ function BlockStatsView({ block, studentProgress }: { block: TestBlock; studentP
   return (
     <div className={styles.statsBlock}>
       <p className={styles.statsFooter}>Ответили: {allAnswers.length}</p>
+    </div>
+  )
+}
+
+// ── Score distribution (teacher overview / per-student result) ────────────────
+
+function ScoreDistributionView({ blocks, studentProgress, selectedStudent }: {
+  blocks: TestBlock[]
+  studentProgress: Record<string, StudentProgress>
+  selectedStudent: string | null
+}) {
+  const submittedEntries = Object.entries(studentProgress).filter(([, p]) => p.submitted)
+
+  if (selectedStudent) {
+    const progress = studentProgress[selectedStudent]
+    if (!progress?.submitted) {
+      return <div className={styles.statsBlock}><p className={styles.emptyNote}>Не сдал</p></div>
+    }
+    const answersMap = new Map(Object.entries(progress.answers)) as Map<string, StudentAnswer>
+    const res = calculateResult(blocks, answersMap)
+    const { label } = gradeColor(res.percent)
+    const answerableBlocks = blocks.filter(b => ANSWERABLE.has(b.type as string))
+    return (
+      <div className={styles.studentReview}>
+        <div className={styles.studentResultRing}>
+          <span className={styles.resultPct}>{res.percent}%</span>
+          <span className={styles.resultLabel}>{label}</span>
+        </div>
+        <p className={styles.resultScore}>{res.totalScore} / {res.maxScore} баллов</p>
+        {answerableBlocks.map((block, i) => (
+          <div key={block.id} className={styles.reviewQuestionWrap}>
+            <p className={styles.reviewQNum}>Вопрос {i + 1}</p>
+            <BlockLiveView block={block} progress={progress} />
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  if (submittedEntries.length === 0) {
+    return <div className={styles.statsBlock}><p className={styles.emptyNote}>Никто не сдал</p></div>
+  }
+
+  const buckets = [
+    { label: 'Отлично', min: 90, count: 0 },
+    { label: 'Хорошо',  min: 70, count: 0 },
+    { label: 'Удовл.',  min: 50, count: 0 },
+    { label: 'Слабо',   min:  0, count: 0 },
+  ]
+  for (const [, progress] of submittedEntries) {
+    const answersMap = new Map(Object.entries(progress.answers)) as Map<string, StudentAnswer>
+    const res = calculateResult(blocks, answersMap)
+    const bucket = buckets.find(b => res.percent >= b.min)
+    if (bucket) bucket.count++
+  }
+  const max = Math.max(...buckets.map(b => b.count), 1)
+
+  return (
+    <div className={styles.statsBlock}>
+      <p className={styles.statsQuestion}>Итоги теста</p>
+      <div className={styles.bars}>
+        {buckets.map(b => (
+          <div key={b.label} className={styles.barRow}>
+            <span className={styles.barLabel}>{b.label}</span>
+            <div className={styles.barTrack}>
+              <div className={styles.barFill} style={{ width: `${(b.count / max) * 100}%`, background: '#334155' }} />
+            </div>
+            <span className={styles.barCount}>{b.count}</span>
+          </div>
+        ))}
+      </div>
+      <p className={styles.statsFooter}>Сдали: {submittedEntries.length} / {Object.keys(studentProgress).length}</p>
     </div>
   )
 }

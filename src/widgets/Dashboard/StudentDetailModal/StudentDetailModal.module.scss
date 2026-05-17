@@ -1,0 +1,442 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal {
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+}
+
+// ── Header ──────────────────────────────────────────────────
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+}
+
+.studentInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.studentName {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111;
+}
+
+.studentSubject {
+  font-size: 12px;
+  color: #534AB7;
+  margin-top: 1px;
+  font-weight: 500;
+}
+
+.studentEmail {
+  font-size: 11px;
+  color: #aaa;
+  margin-top: 1px;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+  flex-shrink: 0;
+
+  &:hover { color: #555; }
+}
+
+// ── Tabs ────────────────────────────────────────────────────
+
+.tabs {
+  display: flex;
+  gap: 0;
+  padding: 0 12px;
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 11px 12px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #aaa;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+
+  &:hover { color: #555; }
+}
+
+.tabActive {
+  color: #111;
+  border-bottom-color: #111;
+  font-weight: 600;
+}
+
+.tabBadge {
+  background: #f0f0f0;
+  color: #666;
+  border-radius: 9px;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+// ── Body ────────────────────────────────────────────────────
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.loading {
+  padding: 40px;
+  text-align: center;
+  color: #bbb;
+  font-size: 13px;
+}
+
+.section {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 32px 16px;
+  color: #ccc;
+  font-size: 13px;
+
+  svg { opacity: 0.3; color: #999; }
+}
+
+// ── Meetings ────────────────────────────────────────────────
+
+.meetingList {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.meetingCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.meetingIcon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: #f0f0f0;
+  color: #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.meetingInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.meetingTitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: #111;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meetingTime {
+  font-size: 11px;
+  color: #aaa;
+  margin-top: 2px;
+}
+
+.cancelBtn {
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+  flex-shrink: 0;
+
+  &:hover { color: #e53e3e; }
+}
+
+.scheduleLink {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px dashed #ddd;
+  border-radius: 10px;
+  padding: 9px 14px;
+  color: #999;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  width: 100%;
+
+  &:hover { border-color: #999; color: #333; }
+}
+
+// ── Errors ──────────────────────────────────────────────────
+
+.errorList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.errorCard {
+  position: relative;
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
+  border-radius: 10px;
+  padding: 10px 36px 10px 12px;
+}
+
+.errorCardFixed {
+  background: #f0fff4;
+  border-color: #c6f6d5;
+}
+
+.errorMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.errorDate {
+  font-size: 10.5px;
+  color: #aaa;
+}
+
+.fixedBadge {
+  font-size: 10px;
+  color: #38a169;
+  background: #c6f6d5;
+  border-radius: 6px;
+  padding: 1px 6px;
+  font-weight: 600;
+}
+
+.errorFragment {
+  font-size: 12.5px;
+  color: #333;
+  font-style: italic;
+  margin-bottom: 4px;
+}
+
+.errorDesc {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.catRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.catTag {
+  font-size: 10.5px;
+  background: #f0f0f0;
+  color: #666;
+  border-radius: 6px;
+  padding: 2px 7px;
+}
+
+.deleteErrBtn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+
+  &:hover { color: #e53e3e; }
+}
+
+// ── Schedule ─────────────────────────────────────────────────
+
+.schedForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.formLabel {
+  font-size: 11.5px;
+  color: #999;
+  font-weight: 500;
+}
+
+.formInput {
+  background: #fafafa;
+  border: 1px solid #e0e0e0;
+  border-radius: 9px;
+  padding: 9px 12px;
+  font-size: 13.5px;
+  color: #111;
+  outline: none;
+  transition: border-color 0.15s;
+  color-scheme: light;
+
+  &::placeholder { color: #ccc; }
+  &:focus { border-color: #999; }
+  &:disabled { opacity: 0.5; }
+}
+
+.durationRow {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.durationBtn {
+  padding: 7px 13px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fafafa;
+  font-size: 12.5px;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover { border-color: #999; color: #111; }
+}
+
+.durationBtnActive {
+  border-color: #111;
+  background: #111;
+  color: #fff;
+}
+
+.conflictBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 9px;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: #92400e;
+  line-height: 1.4;
+
+  svg { flex-shrink: 0; margin-top: 1px; }
+}
+
+.errorBanner {
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
+  border-radius: 9px;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: #c53030;
+}
+
+.successBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f0fff4;
+  border: 1px solid #c6f6d5;
+  border-radius: 9px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  color: #276749;
+}
+
+.submitBtn {
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 11px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+
+  &:hover:not(:disabled) { background: #333; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}

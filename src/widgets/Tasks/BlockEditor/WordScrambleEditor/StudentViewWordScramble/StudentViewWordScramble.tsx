@@ -5,7 +5,7 @@ import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
 import {DndContext, DragEndEvent, PointerSensor, closestCenter, useSensor, useSensors} from '@dnd-kit/core'
 import {SortableContext, arrayMove, horizontalListSortingStrategy, useSortable} from '@dnd-kit/sortable'
 import {CSS} from '@dnd-kit/utilities'
-import {CheckCircle2Icon, XCircleIcon} from 'lucide-react'
+import {CheckCircle2Icon, LightbulbIcon, XCircleIcon} from 'lucide-react'
 import {useState} from 'react'
 import styles from '../WordScrambleEditor.module.scss'
 
@@ -120,7 +120,7 @@ export const StudentViewWordScramble = ({
 
   return (
     <div className={styles.student_wrap}>
-      {hint && <p className={styles.student_hint_text}>💡 {hint}</p>}
+      {hint && <p className={styles.student_hint_text}><LightbulbIcon size={14} /> {hint}</p>}
 
       <p className={styles.student_instruction}>
         {mode === 'letters' ? 'Собери слово из букв:' : 'Составь предложение из слов:'}

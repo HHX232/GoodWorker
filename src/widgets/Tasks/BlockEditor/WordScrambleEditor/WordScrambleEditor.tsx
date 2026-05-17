@@ -1,7 +1,7 @@
 'use client'
 import {useActions} from '@/features/hooks/store/useActions'
 import {WordScrambleMode, WordScramblePayload} from '@/shared/types/Tasks/TaskPayload.type'
-import {EyeIcon, PencilIcon, ShuffleIcon} from 'lucide-react'
+import {CaseSensitiveIcon, EyeIcon, LetterTextIcon, PencilIcon, ShuffleIcon} from 'lucide-react'
 import {useMemo, useState} from 'react'
 import styles from './WordScrambleEditor.module.scss'
 import {getShuffledItems, StudentViewWordScramble} from './StudentViewWordScramble/StudentViewWordScramble'
@@ -58,7 +58,9 @@ export const WordScrambleEditor = ({blockId, payload}: Props) => {
                   className={`${styles.mode_tab} ${payload.mode === m ? styles.mode_tab_active : ''}`}
                   onClick={() => update({mode: m, source: null})}
                 >
-                  {m === 'letters' ? '🔤 Буквы слова' : '📝 Слова предложения'}
+                  {m === 'letters'
+                    ? <><CaseSensitiveIcon size={14} /> Буквы слова</>
+                    : <><LetterTextIcon size={14} /> Слова предложения</>}
                 </button>
               ))}
             </div>

@@ -39,6 +39,12 @@
     "chooseOption": "Choose the correct option(s)",
     "matchPairs": "Match the pairs",
     "freeAnswer": "Enter your answer",
+    "highlightText": "Highlight words",
+    "wordScramble": "Unscramble",
+    "dialogue": "Dialogue",
+    "infoText": "Text block",
+    "infoMedia": "Media block",
+    "infoAudio": "Audio block",
     "deleteBlock": "Delete block"
   },
   "CollectionsMenu": {

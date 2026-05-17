@@ -4,6 +4,7 @@ import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
 import {DndContext, DragEndEvent, PointerSensor, closestCenter, useSensor, useSensors} from '@dnd-kit/core'
 import {SortableContext, arrayMove, horizontalListSortingStrategy, useSortable} from '@dnd-kit/sortable'
 import {CSS} from '@dnd-kit/utilities'
+import {LightbulbIcon} from 'lucide-react'
 import {useState} from 'react'
 import styles from './WordScrambleStudent.module.scss'
 import {seededShuffleStudentView} from '@/features/Roadmap/helpers/seededShuffleStudentView'
@@ -54,7 +55,7 @@ export function WordScrambleStudent({
 
   return (
     <div className={styles.block}>
-      {payload.hint && <p className={styles.hint}>💡 {payload.hint}</p>}
+      {payload.hint && <p className={styles.hint}><LightbulbIcon size={14} /> {payload.hint}</p>}
       <p className={styles.instruction}>
         {payload.mode === 'letters' ? 'Собери слово из букв:' : 'Составь предложение из слов:'}
       </p>

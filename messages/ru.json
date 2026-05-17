@@ -39,6 +39,12 @@
     "chooseOption": "Выберите верный вариант/ы",
     "matchPairs": "Соедините пары",
     "freeAnswer": "Введите ответ",
+    "highlightText": "Выделите слова",
+    "wordScramble": "Составьте слово",
+    "dialogue": "Диалог",
+    "infoText": "Текстовый блок",
+    "infoMedia": "Медиа блок",
+    "infoAudio": "Аудио блок",
     "deleteBlock": "Удалить блок"
   },
   "CollectionsMenu": {

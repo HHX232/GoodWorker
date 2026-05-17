@@ -83,6 +83,21 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
     setParticipants(prev => prev.filter(p => p.identity !== identity))
   }, [])
 
+  const reattachAllVideo = useCallback(() => {
+    const r = roomRef.current
+    if (!r) return
+    setTimeout(() => {
+      r.remoteParticipants.forEach((rp: any) => {
+        if (rp.identity.startsWith('agent-')) return
+        rp.trackPublications.forEach((pub: any) => {
+          if (pub.track && pub.kind === Track.Kind.Video) attachVideoWithRetry(rp.identity, pub.track)
+        })
+      })
+      const localCam = r.localParticipant?.getTrackPublication(Track.Source.Camera)?.track
+      if (localCam) attachVideoWithRetry(r.localParticipant.identity, localCam)
+    }, 600)
+  }, [])
+
   const attachTrack = useCallback((identity: string, track: any) => {
     if (track.kind === Track.Kind.Video || track.kind === 'video') {
       attachVideoWithRetry(identity, track)
@@ -535,5 +550,6 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
     screenShareEnabled,
     sharingIdentity,
     toggleScreenShare,
+    reattachAllVideo,
   }
 }

@@ -106,3 +106,31 @@ export const IconVideo = () => (
     <path d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 )
+
+export const IconClipboard = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+)
+
+export const IconPalette = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/>
+    <circle cx="6.5" cy="11.5" r="1.25" fill="currentColor"/>
+    <circle cx="9.5" cy="7.5" r="1.25" fill="currentColor"/>
+    <circle cx="14.5" cy="7.5" r="1.25" fill="currentColor"/>
+    <circle cx="17.5" cy="11.5" r="1.25" fill="currentColor"/>
+  </svg>
+)
+
+export const IconMinimize = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+    <path d="M8 3v3a2 2 0 01-2 2H3M21 8h-3a2 2 0 01-2-2V3M3 16h3a2 2 0 012 2v3M16 21v-3a2 2 0 012-2h3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+)
+
+export const IconXSmall = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+  </svg>
+)

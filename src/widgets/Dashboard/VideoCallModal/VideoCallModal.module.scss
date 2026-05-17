@@ -1,0 +1,283 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 16px;
+  padding: 32px 28px 28px;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+}
+
+.closeBtn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: none;
+  border: none;
+  color: #bbb;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+
+  &:hover { color: #333; }
+}
+
+.icon {
+  width: 46px;
+  height: 46px;
+  background: #f3f3f3;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: #999;
+  margin: 0 0 6px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.input {
+  width: 100%;
+  background: #fafafa;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: #111;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+
+  &::placeholder { color: #bbb; }
+  &:focus { border-color: #999; }
+  &:disabled { opacity: 0.5; }
+}
+
+.select {
+  width: 100%;
+  background: #fafafa;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: #111;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+
+  &:focus { border-color: #999; }
+  &:disabled { opacity: 0.5; }
+}
+
+.fieldLabel {
+  font-size: 11.5px;
+  color: #999;
+  font-weight: 500;
+  align-self: flex-start;
+  margin-bottom: -4px;
+}
+
+.accessRow {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+
+.accessBtn {
+  flex: 1;
+  padding: 8px 6px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fafafa;
+  font-size: 11.5px;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+
+  &:hover { border-color: #aaa; color: #111; }
+}
+
+.accessBtnActive {
+  border-color: #111;
+  background: #111;
+  color: #fff;
+}
+
+.textarea {
+  width: 100%;
+  background: #fafafa;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #111;
+  outline: none;
+  resize: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+  font-family: inherit;
+
+  &::placeholder { color: #bbb; }
+  &:focus { border-color: #999; }
+}
+
+.error {
+  font-size: 12px;
+  color: #e53e3e;
+  margin: 0;
+  text-align: center;
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
+  border-radius: 8px;
+  padding: 8px 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.submitBtn {
+  width: 100%;
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 11px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+
+  &:hover:not(:disabled) { background: #333; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 12.5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  transition: color 0.15s;
+
+  &:hover { color: #333; }
+}
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background: #f0f0f0;
+  margin: 2px 0;
+}
+
+.selectedPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.selectedLabel {
+  font-size: 11px;
+  color: #aaa;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.studentList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 160px;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.studentRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.12s;
+
+  &:hover { background: #f5f5f5; }
+}
+
+.checkbox {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  cursor: pointer;
+  accent-color: #111;
+}
+
+.studentRowName {
+  font-size: 13px;
+  color: #111;
+  font-weight: 500;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.studentRowEmail {
+  font-size: 11px;
+  color: #bbb;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.selectedCount {
+  font-size: 11.5px;
+  color: #555;
+  font-weight: 500;
+}

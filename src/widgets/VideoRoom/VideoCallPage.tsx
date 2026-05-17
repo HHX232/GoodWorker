@@ -7,14 +7,13 @@ import styles from './VideoCallPage.module.scss'
 import {
   IconCrown, IconMicOff, IconMicOn, IconStar, IconVolumeOff, IconVolumeOn,
   IconNotes, IconCam, IconCamOff, IconLink, IconCheck, IconKick, IconCopy, IconPhone, IconVideo,
-  IconScreenShare, IconScreenShareOff,
+  IconScreenShare, IconScreenShareOff, IconClipboard, IconPalette,
 } from './icons'
 import { LAYOUTS, LAYOUT_LABELS, type Layout, type Participant } from './types'
 import { useVideoRoom } from './hooks/useVideoRoom'
 import { useTranscription } from './hooks/useTranscription'
 import Image from 'next/image'
 import { TestBlock } from '@/entities/store/slices/tasksSlice.slice'
-import { TaskBlockType } from '@/shared/types/Tasks/TaskType.type'
 import {
   CallTestStudentView,
   CallTestTeacherView,
@@ -23,6 +22,8 @@ import {
   serializeAnswer,
 } from './CallTestPanel/CallTestPanel'
 import { StudentAnswer } from '@/features/Tasks/TaskResult/scoreBlock'
+import { QuickTestBuilder } from './QuickTestBuilder/QuickTestBuilder'
+import { CallWhiteboard } from './CallWhiteboard/CallWhiteboard'
 
 // ── Layout icons (JSX — can't go in .ts) ──────────────────────────────────────
 const LAYOUT_ICONS: Record<Layout, React.ReactNode> = {
@@ -137,19 +138,18 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   const [removedErrorIds, setRemovedErrorIds] = useState<Set<string>>(new Set())
   const [expandedErrorId, setExpandedErrorId] = useState<string | null>(null)
 
-  // ── Call test state ────────────────────────────────────────────────────────
-  const [callTest, setCallTest] = useState<{ testId: string | null; title: string; blocks: TestBlock[] } | null>(null)
+  // ── Call test / whiteboard state ───────────────────────────────────────────
+  const [callTest, setCallTest] = useState<{ testId: string | null; title: string; blocks: TestBlock[]; mode?: 'test' | 'whiteboard' } | null>(null)
   const callTestRef = useRef(callTest)
-  callTestRef.current = callTest
   const [callTestProgress, setCallTestProgress] = useState<Record<string, StudentProgress>>({})
   const [localTestSubmitted, setLocalTestSubmitted] = useState(false)
   const [showTestPicker, setShowTestPicker] = useState(false)
-  const [testPickerTab, setTestPickerTab] = useState<'list' | 'quick'>('list')
+  const [testPickerTab, setTestPickerTab] = useState<'list' | 'quick' | 'board'>('list')
+  // Whiteboard: remote elements and image files received via data-channel
+  const [whiteboardElements, setWhiteboardElements] = useState<any[] | null>(null)
+  const [whiteboardFiles, setWhiteboardFiles] = useState<Record<string, any> | null>(null)
   const [pickerTests, setPickerTests] = useState<{ id: string; title: string; content: { blocks: TestBlock[] } }[]>([])
   const [pickerLoading, setPickerLoading] = useState(false)
-  const [quickQuestions, setQuickQuestions] = useState<
-    { text: string; options: string[]; correctIdx: number }[]
-  >([{ text: '', options: ['', ''], correctIdx: 0 }])
 
   // Toast state
   const [toast, setToast] = useState<{ message: string; loading: boolean } | null>(null)
@@ -163,6 +163,9 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   // LiveKit event listener (registered once) always calls the latest handler.
   const dataRouterRef = useRef<((type: string, payload: Record<string, any>, senderIdentity: string) => void) | null>(null)
 
+  // Buffer for reassembling chunked large messages (e.g. whiteboard with images)
+  const chunkBufferRef = useRef<Map<string, { parts: string[]; received: number; total: number }>>(new Map())
+
   // ── Hooks (order matters: room first, then transcription which needs broadcast) ──
   const room = useVideoRoom({
     roomName,
@@ -174,6 +177,18 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
       [],
     ),
   })
+
+  // Hoist stable values before the data-router useEffect so the Compiler sees them declared first
+  const isOwner = !ownerIdentity || ownerIdentity === userName
+  const { broadcast, disconnect, joinRoom, mute, muteVideo, kick, toggleLocalAudio, toggleMic, toggleCam, reloadCamera, switchCamera, updateVideoQualities, toggleScreenShare } = room
+  const { screenShareEnabled, sharingIdentity } = room
+
+  // Keep refs in sync via effect (React Compiler forbids ref writes during render)
+  useEffect(() => { callTestRef.current = callTest }, [callTest])
+  const whiteboardElementsRef = useRef<any[] | null>(null)
+  useEffect(() => { whiteboardElementsRef.current = whiteboardElements }, [whiteboardElements])
+  // Tracks previous testIsMain value so we only reload camera on hide/stop, not on initial mount
+  const testWasMainRef = useRef(false)
 
   const transcription = useTranscription({
     connected: room.connected,
@@ -193,6 +208,25 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
       const entry = `${type}${preview ? ' «' + String(preview).slice(0, 30) + '»' : ''} ← ${senderIdentity.slice(0, 12)}`
       setDebugMsgs(prev => [entry, ...prev].slice(0, 12))
       if (type === 'transcript_chunk') setDebugChunks(c => c + 1)
+
+      // ── Chunk reassembly (for large whiteboard payloads) ──────────────────
+      if (type === '_chunk') {
+        const { id, i, n, d } = payload
+        if (!chunkBufferRef.current.has(id)) {
+          chunkBufferRef.current.set(id, { parts: new Array(n).fill(''), received: 0, total: n })
+        }
+        const buf = chunkBufferRef.current.get(id)!
+        buf.parts[i] = d as string
+        buf.received++
+        if (buf.received === buf.total) {
+          chunkBufferRef.current.delete(id)
+          try {
+            const full = JSON.parse(buf.parts.join(''))
+            dataRouterRef.current?.(full.type, full, senderIdentity)
+          } catch {}
+        }
+        return
+      }
 
       if (type === 'layout') { setLayout(payload.layout); return }
       if (type === 'speaker') { setMainSpeaker(payload.identity); return }
@@ -228,7 +262,29 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
         // Student is requesting test state — re-broadcast if we're the owner and test is active
         if (isOwner && callTestRef.current) {
           const t = callTestRef.current
-          broadcast({ type: 'call_test_start', testId: t.testId, title: t.title, blocks: t.blocks })
+          if (t.mode === 'whiteboard') {
+            broadcast({ type: 'call_whiteboard_start' })
+            if (whiteboardElementsRef.current && whiteboardElementsRef.current.length > 0) {
+              broadcast({ type: 'call_whiteboard_update', elements: whiteboardElementsRef.current })
+            }
+          } else {
+            broadcast({ type: 'call_test_start', testId: t.testId, title: t.title, blocks: t.blocks })
+          }
+        }
+        return
+      }
+
+      // ── Whiteboard messages ────────────────────────────────────────────────
+      if (type === 'call_whiteboard_start') {
+        setCallTest({ testId: null, title: 'Доска', blocks: [], mode: 'whiteboard' })
+        setWhiteboardElements(null)
+        setWhiteboardFiles(null)
+        return
+      }
+      if (type === 'call_whiteboard_update') {
+        if (payload.elements) setWhiteboardElements(payload.elements)
+        if (payload.files && Object.keys(payload.files).length > 0) {
+          setWhiteboardFiles(prev => ({ ...prev, ...payload.files }))
         }
         return
       }
@@ -250,13 +306,20 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
     }
   }, [handleRemoteMessage])
 
-  const isOwner = !!ownerIdentity && ownerIdentity === userName
   const isMainSpeaker = mainSpeaker === userName
   const canModerate = isOwner
 
-  // Destructure stable callbacks so useCallback deps are simple scalars/functions
-  const { broadcast, disconnect, joinRoom, mute, muteVideo, kick, toggleLocalAudio, toggleMic, toggleCam, reloadCamera, switchCamera, updateVideoQualities, toggleScreenShare } = room
-  const { screenShareEnabled, sharingIdentity } = room
+  // ── Chunked broadcast (splits messages >55 KB to stay under LiveKit's 65535-byte limit) ──
+  const CHUNK_SIZE = 50_000
+  const broadcastChunked = useCallback((msg: object) => {
+    const str = JSON.stringify(msg)
+    if (str.length <= CHUNK_SIZE) { broadcast(msg); return }
+    const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+    const total = Math.ceil(str.length / CHUNK_SIZE)
+    for (let idx = 0; idx < total; idx++) {
+      broadcast({ type: '_chunk', id, i: idx, n: total, d: str.slice(idx * CHUNK_SIZE, (idx + 1) * CHUNK_SIZE) })
+    }
+  }, [broadcast])
 
   // ── Room-level broadcast actions ──────────────────────────────────────────
   const changeLayout = useCallback((l: Layout) => {
@@ -417,6 +480,21 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [participantCount])
 
+  // ── Reload camera when test/whiteboard tile leaves main slot ─────────────
+  // Fires after React paints new DOM. Only acts on the false→true→false transition
+  // (testWasMainRef guards against the initial mount where testIsMain is already false).
+  const testIsMainForEffect = callTest !== null && mainSpeaker === '__test__'
+  useEffect(() => {
+    const wasMain = testWasMainRef.current
+    testWasMainRef.current = testIsMainForEffect
+    if (wasMain && !testIsMainForEffect) {
+      // Slight delay so React finishes mounting video elements before reload
+      const t = setTimeout(() => reloadCamera(), 800)
+      return () => clearTimeout(t)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [testIsMainForEffect])
+
   // ── Auto-join ──────────────────────────────────────────────────────────────
   useEffect(() => {
     if (autoJoinRoom) joinRoom()
@@ -516,17 +594,26 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
         </div>
       )
     }
+    // In split/grid: whiteboard that's been hidden shows as a floating PiP;
+    // regular test tiles stay in the grid so progress counters remain visible.
+    const whiteboardPip = !testIsMain && callTest?.mode === 'whiteboard' && (
+      <DraggablePip key="__test__" index={sideParts.length}>
+        {renderTestTile(false)}
+      </DraggablePip>
+    )
     if (layout === 'split') return (
       <div className={styles.splitArea}>
         {room.participants.map(p => renderTile(p))}
-        {callTest && renderTestTile(false)}
+        {callTest && callTest.mode !== 'whiteboard' && renderTestTile(false)}
+        {whiteboardPip}
       </div>
     )
-    const totalCount = room.participants.length + (callTest ? 1 : 0)
+    const totalCount = room.participants.length + (callTest && callTest.mode !== 'whiteboard' ? 1 : 0)
     return (
       <div className={styles.gridArea} data-count={totalCount}>
         {room.participants.map(p => renderTile(p))}
-        {callTest && renderTestTile(false)}
+        {callTest && callTest.mode !== 'whiteboard' && renderTestTile(false)}
+        {whiteboardPip}
       </div>
     )
   }
@@ -712,9 +799,35 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   const stopTest = useCallback(() => {
     setCallTest(null)
     setCallTestProgress({})
+    setWhiteboardElements(null)
     broadcast({ type: 'call_test_stop' })
     setMainSpeaker(ownerIdentity ?? userName)
     broadcast({ type: 'speaker', identity: ownerIdentity ?? userName })
+  }, [broadcast, ownerIdentity, userName])
+
+  const launchWhiteboard = useCallback(() => {
+    setCallTest({ testId: null, title: 'Доска', blocks: [], mode: 'whiteboard' })
+    setWhiteboardElements(null)
+    broadcast({ type: 'call_whiteboard_start' })
+    setShowTestPicker(false)
+    setMainSpeaker('__test__')
+    broadcast({ type: 'speaker', identity: '__test__' })
+  }, [broadcast])
+
+  const broadcastWhiteboard = useCallback((elements: readonly any[], files: Record<string, any>) => {
+    setWhiteboardElements(elements as any[])
+    broadcastChunked({ type: 'call_whiteboard_update', elements, files })
+  }, [broadcastChunked])
+
+  // Students minimize the whiteboard locally (don't broadcast speaker change)
+  const localHideWhiteboard = useCallback(() => {
+    setMainSpeaker(ownerIdentity ?? userName)
+  }, [ownerIdentity, userName])
+
+  const hideTest = useCallback(() => {
+    const fallback = ownerIdentity ?? userName
+    setMainSpeaker(fallback)
+    broadcast({ type: 'speaker', identity: fallback })
   }, [broadcast, ownerIdentity, userName])
 
   const openTestPicker = useCallback(async () => {
@@ -738,6 +851,25 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
     const total = students.length
 
     if (large) {
+      // ── Whiteboard mode ──────────────────────────────────────────────────
+      if (callTest.mode === 'whiteboard') {
+        return (
+          <div key="__test__" className={`${styles.tile} ${styles.tileLarge} ${styles.testTileLarge}`}>
+            <div className={styles.testTileContent}>
+              <CallWhiteboard
+                isOwner={isOwner}
+                remoteElements={isOwner ? null : whiteboardElements}
+                remoteFiles={isOwner ? null : whiteboardFiles}
+                onBroadcast={broadcastWhiteboard}
+                onStop={stopTest}
+                onHide={isOwner ? hideTest : localHideWhiteboard}
+              />
+            </div>
+          </div>
+        )
+      }
+
+      // ── Test mode ────────────────────────────────────────────────────────
       return (
         <div key="__test__" className={`${styles.tile} ${styles.tileLarge} ${styles.testTileLarge}`}>
           <div className={styles.tileMeta}>
@@ -752,7 +884,9 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
                 studentCount={total}
                 isOneOnOne={isOneOnOne}
                 studentIdentity={students[0]?.identity}
+                participants={students.map(p => p.identity)}
                 onStop={stopTest}
+                onHide={hideTest}
               />
             ) : (
               <CallTestStudentView
@@ -774,6 +908,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
     }
 
     // Small preview tile
+    const tileIcon = callTest.mode === 'whiteboard' ? '🎨' : '📋'
     return (
       <div
         key="__test__"
@@ -784,11 +919,11 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
         }}
       >
         <div className={styles.noVideo}>
-          <div className={styles.testTileIcon}>📋</div>
+          <div className={styles.testTileIcon}>{tileIcon}</div>
         </div>
         <div className={styles.testTilePreviewMeta}>
           <span className={styles.testTilePreviewTitle}>{callTest.title}</span>
-          {isOwner && total > 0 && (
+          {isOwner && total > 0 && callTest.mode !== 'whiteboard' && (
             <span className={styles.testTilePreviewProgress}>{submitted}/{total} сдали</span>
           )}
         </div>
@@ -798,46 +933,6 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
 
   // ── Test picker modal ─────────────────────────────────────────────────────
   const renderTestPickerModal = () => {
-    const addQuestion = () =>
-      setQuickQuestions(prev => [...prev, { text: '', options: ['', ''], correctIdx: 0 }])
-
-    const removeQuestion = (i: number) =>
-      setQuickQuestions(prev => prev.filter((_, idx) => idx !== i))
-
-    const updateQuestion = (i: number, text: string) =>
-      setQuickQuestions(prev => prev.map((q, idx) => idx === i ? { ...q, text } : q))
-
-    const updateOption = (qi: number, oi: number, text: string) =>
-      setQuickQuestions(prev => prev.map((q, idx) =>
-        idx === qi ? { ...q, options: q.options.map((o, j) => j === oi ? text : o) } : q
-      ))
-
-    const setCorrect = (qi: number, oi: number) =>
-      setQuickQuestions(prev => prev.map((q, idx) => idx === qi ? { ...q, correctIdx: oi } : q))
-
-    const addOption = (qi: number) =>
-      setQuickQuestions(prev => prev.map((q, idx) =>
-        idx === qi && q.options.length < 4 ? { ...q, options: [...q.options, ''] } : q
-      ))
-
-    const startQuick = () => {
-      const valid = quickQuestions.filter(q => q.text.trim() && q.options.some(o => o.trim()))
-      if (valid.length === 0) return
-      const blocks: TestBlock[] = valid.map((q, i) => ({
-        id: `quick-${i}-${Date.now()}`,
-        type: TaskBlockType.CHOOSE_OPTION,
-        payload: {
-          question: q.text,
-          options: q.options
-            .map((text, j) => ({ id: `opt-${j}`, text }))
-            .filter(o => o.text.trim()),
-          correctId: `opt-${q.correctIdx}`,
-        },
-      }))
-      launchTest(null, 'Быстрый тест', blocks)
-      setQuickQuestions([{ text: '', options: ['', ''], correctIdx: 0 }])
-    }
-
     return (
       <div className={styles.testPickerOverlay}>
         <div className={styles.testPickerModal}>
@@ -855,6 +950,10 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
               className={`${styles.testPickerTab} ${testPickerTab === 'quick' ? styles.testPickerTabActive : ''}`}
               onClick={() => setTestPickerTab('quick')}
             >Быстрый тест</button>
+            <button
+              className={`${styles.testPickerTab} ${testPickerTab === 'board' ? styles.testPickerTabActive : ''}`}
+              onClick={() => setTestPickerTab('board')}
+            >🎨 Доска</button>
           </div>
 
           <div className={styles.testPickerBody}>
@@ -880,55 +979,18 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
             )}
 
             {testPickerTab === 'quick' && (
-              <div className={styles.quickCreator}>
-                {quickQuestions.map((q, qi) => (
-                  <div key={qi} className={styles.quickQuestion}>
-                    <div className={styles.quickQuestionHeader}>
-                      <span className={styles.quickQuestionNum}>Вопрос {qi + 1}</span>
-                      {quickQuestions.length > 1 && (
-                        <button className={styles.quickRemoveBtn} onClick={() => removeQuestion(qi)}>✕</button>
-                      )}
-                    </div>
-                    <input
-                      className={styles.quickInput}
-                      placeholder="Текст вопроса..."
-                      value={q.text}
-                      onChange={e => updateQuestion(qi, e.target.value)}
-                    />
-                    <p className={styles.quickCorrectHint}>Отметьте правильный ответ (●)</p>
-                    <div className={styles.quickOptions}>
-                      {q.options.map((opt, oi) => (
-                        <div key={oi} className={styles.quickOptionRow}>
-                          <input
-                            type="radio"
-                            className={styles.quickOptionRadio}
-                            checked={q.correctIdx === oi}
-                            onChange={() => setCorrect(qi, oi)}
-                          />
-                          <input
-                            className={`${styles.quickOptionInput} ${q.correctIdx === oi ? styles.quickOptionCorrect : ''}`}
-                            placeholder={`Вариант ${oi + 1}`}
-                            value={opt}
-                            onChange={e => updateOption(qi, oi, e.target.value)}
-                          />
-                        </div>
-                      ))}
-                      {q.options.length < 4 && (
-                        <button className={styles.quickAddOptionBtn} onClick={() => addOption(qi)}>
-                          + вариант
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                <div className={styles.quickCreatorActions}>
-                  <button className={styles.quickAddQuestionBtn} onClick={addQuestion}>+ Вопрос</button>
-                  <button
-                    className={styles.quickStartBtn}
-                    disabled={quickQuestions.every(q => !q.text.trim())}
-                    onClick={startQuick}
-                  >▶ Запустить</button>
-                </div>
+              <QuickTestBuilder onLaunch={(blocks) => launchTest(null, 'Быстрый тест', blocks)} />
+            )}
+
+            {testPickerTab === 'board' && (
+              <div className={styles.boardLaunchTab}>
+                <div className={styles.boardLaunchIcon}>🎨</div>
+                <p className={styles.boardLaunchDesc}>
+                  Откройте общую доску для рисования — все участники увидят её в реальном времени.
+                </p>
+                <button className={styles.testLaunchBtn} onClick={launchWhiteboard}>
+                  ▶ Открыть доску
+                </button>
               </div>
             )}
           </div>
@@ -959,9 +1021,14 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
           <IconNotes /> Конспект
         </button>
         {isOwner && !callTest && (
-          <button className={styles.pill} onClick={openTestPicker}>
-            📋 Тест
-          </button>
+          <>
+            <button className={styles.pill} onClick={openTestPicker}>
+              <IconClipboard /> Тест
+            </button>
+            <button className={styles.pill} onClick={launchWhiteboard}>
+              <IconPalette /> Доска
+            </button>
+          </>
         )}
         {callTest && (
           <button
@@ -971,7 +1038,8 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
               broadcast({ type: 'speaker', identity: '__test__' })
             }}
           >
-            📋 {callTest.title}
+            {callTest.mode === 'whiteboard' ? <IconPalette /> : <IconClipboard />}
+            {callTest.title}
           </button>
         )}
         {!isOwner && !callTest && (
@@ -980,57 +1048,59 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
             onClick={() => broadcast({ type: 'call_test_request' })}
             title="Запросить тест у учителя"
           >
-            📋 Тест?
+            <IconClipboard /> Тест?
           </button>
         )}
       </div>
 
-      <div className={styles.ctrlCenter}>
-        <button className={`${styles.roundBtn} ${room.micEnabled ? styles.roundOn : styles.roundOff}`} onClick={toggleMic}>
-          <div className={styles.roundIcon}>{room.micEnabled ? <IconMicOn /> : <IconMicOff />}</div>
-          <span className={styles.roundLabel}>{room.micEnabled ? 'Микрофон' : 'Без звука'}</span>
-        </button>
-        <button className={`${styles.roundBtn} ${room.camEnabled ? styles.roundOn : styles.roundOff}`} onClick={toggleCam}>
-          <div className={styles.roundIcon}>{room.camEnabled ? <IconCam /> : <IconCamOff />}</div>
-          <span className={styles.roundLabel}>{room.camEnabled ? 'Камера' : 'Без камеры'}</span>
-        </button>
-        {room.videoDevices.length > 1 && (
-          <button className={styles.roundBtn} onClick={handleSwitchCamera} title="Сменить камеру">
+      <div className={styles.ctrlBottomRow}>
+        <div className={styles.ctrlCenter}>
+          <button className={`${styles.roundBtn} ${room.micEnabled ? styles.roundOn : styles.roundOff}`} onClick={toggleMic}>
+            <div className={styles.roundIcon}>{room.micEnabled ? <IconMicOn /> : <IconMicOff />}</div>
+            <span className={styles.roundLabel}>{room.micEnabled ? 'Микрофон' : 'Без звука'}</span>
+          </button>
+          <button className={`${styles.roundBtn} ${room.camEnabled ? styles.roundOn : styles.roundOff}`} onClick={toggleCam}>
+            <div className={styles.roundIcon}>{room.camEnabled ? <IconCam /> : <IconCamOff />}</div>
+            <span className={styles.roundLabel}>{room.camEnabled ? 'Камера' : 'Без камеры'}</span>
+          </button>
+          {room.videoDevices.length > 1 && (
+            <button className={styles.roundBtn} onClick={handleSwitchCamera} title="Сменить камеру">
+              <div className={styles.roundIcon}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                  <path d="M12 17v-6M9 14l3-3 3 3"/>
+                </svg>
+              </div>
+              <span className={styles.roundLabel}>Камера ↕</span>
+            </button>
+          )}
+          <button className={styles.roundBtn} onClick={handleReloadCamera} title="Перезагрузить камеру">
             <div className={styles.roundIcon}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                <path d="M12 17v-6M9 14l3-3 3 3"/>
+                <polyline points="1 4 1 10 7 10"/>
+                <path d="M3.51 15a9 9 0 1 0 .49-4.95"/>
               </svg>
             </div>
-            <span className={styles.roundLabel}>Камера ↕</span>
+            <span className={styles.roundLabel}>Камера ↺</span>
           </button>
-        )}
-        <button className={styles.roundBtn} onClick={handleReloadCamera} title="Перезагрузить камеру">
-          <div className={styles.roundIcon}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="1 4 1 10 7 10"/>
-              <path d="M3.51 15a9 9 0 1 0 .49-4.95"/>
-            </svg>
-          </div>
-          <span className={styles.roundLabel}>Камера ↺</span>
-        </button>
-        <button
-          className={`${styles.roundBtn} ${screenShareEnabled ? styles.roundOn : ''}`}
-          onClick={handleToggleScreenShare}
-          title="Демонстрация экрана"
-        >
-          <div className={styles.roundIcon}>
-            {screenShareEnabled ? <IconScreenShareOff /> : <IconScreenShare />}
-          </div>
-          <span className={styles.roundLabel}>{screenShareEnabled ? 'Стоп экран' : 'Экран'}</span>
-        </button>
-      </div>
+          <button
+            className={`${styles.roundBtn} ${screenShareEnabled ? styles.roundOn : ''}`}
+            onClick={handleToggleScreenShare}
+            title="Демонстрация экрана"
+          >
+            <div className={styles.roundIcon}>
+              {screenShareEnabled ? <IconScreenShareOff /> : <IconScreenShare />}
+            </div>
+            <span className={styles.roundLabel}>{screenShareEnabled ? 'Стоп экран' : 'Экран'}</span>
+          </button>
+        </div>
 
-      <div className={styles.ctrlRight}>
-        <button className={`${styles.roundBtn} ${styles.roundLeave}`} onClick={leaveRoom}>
-          <div className={styles.roundIcon}><IconPhone /></div>
-          <span className={styles.roundLabel}>Завершить</span>
-        </button>
+        <div className={styles.ctrlRight}>
+          <button className={`${styles.roundBtn} ${styles.roundLeave}`} onClick={leaveRoom}>
+            <div className={styles.roundIcon}><IconPhone /></div>
+            <span className={styles.roundLabel}>Завершить</span>
+          </button>
+        </div>
       </div>
     </div>
   )
