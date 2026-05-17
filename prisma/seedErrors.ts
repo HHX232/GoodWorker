@@ -156,8 +156,18 @@ async function main() {
     return match?.id ?? null
   }
 
+  // Wipe existing seed errors for this student+sourceId pair so re-runs are idempotent
+  const existing = await prisma.studentError.findMany({
+    where: { studentId: student.id, sourceType: 'conference', sourceId },
+    select: { id: true },
+  })
+  if (existing.length > 0) {
+    await prisma.studentErrorCategory.deleteMany({ where: { errorId: { in: existing.map(e => e.id) } } })
+    await prisma.studentError.deleteMany({ where: { id: { in: existing.map(e => e.id) } } })
+    console.log(`🗑  Deleted ${existing.length} existing seed errors (re-seeding)`)
+  }
+
   let created = 0
-  let skipped = 0
 
   for (const e of ERRORS) {
     const err = await prisma.studentError.create({
@@ -178,7 +188,6 @@ async function main() {
       const id = findCategoryId(name)
       if (id) catIds.push(id)
     }
-    // Deduplicate
     const unique = [...new Set(catIds)]
     for (const categoryId of unique) {
       await prisma.studentErrorCategory.create({
@@ -192,7 +201,7 @@ async function main() {
     created++
   }
 
-  console.log(`\n✔ Done. Created ${created} StudentError records (skipped ${skipped}).`)
+  console.log(`\n✔ Done. Created ${created} StudentError records.`)
   console.log(`  Student: ${student.email} (${student.id})`)
   console.log(`  Teacher: ${teacher.email} (${teacher.id})`)
 }

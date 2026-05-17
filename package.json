@@ -12,6 +12,7 @@
     "seed:vip": "tsx prisma/seedVipPosts.ts",
     "seed:users": "tsx prisma/seedUsers.ts",
     "seed:content": "tsx prisma/seedContent.ts",
+    "seed:errors": "tsx prisma/seedErrors.ts",
     "seed:all": "tsx prisma/seed.ts && tsx prisma/seedUsers.ts && tsx prisma/seedContent.ts && tsx prisma/seedVipPosts.ts && tsx prisma/seedposts.ts"
   },
   "prisma": {
