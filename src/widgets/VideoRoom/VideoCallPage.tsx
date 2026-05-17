@@ -139,6 +139,8 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
 
   // ── Call test state ────────────────────────────────────────────────────────
   const [callTest, setCallTest] = useState<{ testId: string | null; title: string; blocks: TestBlock[] } | null>(null)
+  const callTestRef = useRef(callTest)
+  callTestRef.current = callTest
   const [callTestProgress, setCallTestProgress] = useState<Record<string, StudentProgress>>({})
   const [localTestSubmitted, setLocalTestSubmitted] = useState(false)
   const [showTestPicker, setShowTestPicker] = useState(false)
@@ -220,6 +222,14 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
         setCallTest(null)
         setCallTestProgress({})
         setLocalTestSubmitted(false)
+        return
+      }
+      if (type === 'call_test_request') {
+        // Student is requesting test state — re-broadcast if we're the owner and test is active
+        if (isOwner && callTestRef.current) {
+          const t = callTestRef.current
+          broadcast({ type: 'call_test_start', testId: t.testId, title: t.title, blocks: t.blocks })
+        }
         return
       }
 
@@ -389,6 +399,23 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   useEffect(() => {
     if (room.connected) updateVideoQualities(mainSpeaker, room.activeSpeakers)
   }, [mainSpeaker, room.connected, room.activeSpeakers, updateVideoQualities])
+
+  // ── Test sync: teacher re-broadcasts when someone joins; student requests ──
+  const participantCount = room.participants.length
+  useEffect(() => {
+    if (!room.connected || participantCount === 0) return
+    if (isOwner) {
+      // Re-announce test to newly joined participants
+      if (callTestRef.current) {
+        const t = callTestRef.current
+        broadcast({ type: 'call_test_start', testId: t.testId, title: t.title, blocks: t.blocks })
+      }
+    } else {
+      // Ask teacher to send current test state
+      broadcast({ type: 'call_test_request' })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [participantCount])
 
   // ── Auto-join ──────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -945,6 +972,15 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
             }}
           >
             📋 {callTest.title}
+          </button>
+        )}
+        {!isOwner && !callTest && (
+          <button
+            className={styles.pill}
+            onClick={() => broadcast({ type: 'call_test_request' })}
+            title="Запросить тест у учителя"
+          >
+            📋 Тест?
           </button>
         )}
       </div>
