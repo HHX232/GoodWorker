@@ -13,6 +13,16 @@ import { LAYOUTS, LAYOUT_LABELS, type Layout, type Participant } from './types'
 import { useVideoRoom } from './hooks/useVideoRoom'
 import { useTranscription } from './hooks/useTranscription'
 import Image from 'next/image'
+import { TestBlock } from '@/entities/store/slices/tasksSlice.slice'
+import { TaskBlockType } from '@/shared/types/Tasks/TaskType.type'
+import {
+  CallTestStudentView,
+  CallTestTeacherView,
+  StudentProgress,
+  AnswerRecord,
+  serializeAnswer,
+} from './CallTestPanel/CallTestPanel'
+import { StudentAnswer } from '@/features/Tasks/TaskResult/scoreBlock'
 
 // ── Layout icons (JSX — can't go in .ts) ──────────────────────────────────────
 const LAYOUT_ICONS: Record<Layout, React.ReactNode> = {
@@ -127,6 +137,18 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   const [removedErrorIds, setRemovedErrorIds] = useState<Set<string>>(new Set())
   const [expandedErrorId, setExpandedErrorId] = useState<string | null>(null)
 
+  // ── Call test state ────────────────────────────────────────────────────────
+  const [callTest, setCallTest] = useState<{ testId: string | null; title: string; blocks: TestBlock[] } | null>(null)
+  const [callTestProgress, setCallTestProgress] = useState<Record<string, StudentProgress>>({})
+  const [localTestSubmitted, setLocalTestSubmitted] = useState(false)
+  const [showTestPicker, setShowTestPicker] = useState(false)
+  const [testPickerTab, setTestPickerTab] = useState<'list' | 'quick'>('list')
+  const [pickerTests, setPickerTests] = useState<{ id: string; title: string; content: { blocks: TestBlock[] } }[]>([])
+  const [pickerLoading, setPickerLoading] = useState(false)
+  const [quickQuestions, setQuickQuestions] = useState<
+    { text: string; options: string[]; correctIdx: number }[]
+  >([{ text: '', options: ['', ''], correctIdx: 0 }])
+
   // Toast state
   const [toast, setToast] = useState<{ message: string; loading: boolean } | null>(null)
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -172,6 +194,34 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
 
       if (type === 'layout') { setLayout(payload.layout); return }
       if (type === 'speaker') { setMainSpeaker(payload.identity); return }
+
+      // ── Call test messages ─────────────────────────────────────────────────
+      if (type === 'call_test_start') {
+        setCallTest({ testId: payload.testId ?? null, title: payload.title, blocks: payload.blocks })
+        setCallTestProgress({})
+        setLocalTestSubmitted(false)
+        return
+      }
+      if (type === 'call_test_answer') {
+        setCallTestProgress(prev => {
+          const cur = prev[senderIdentity] ?? { answers: {}, submitted: false }
+          return { ...prev, [senderIdentity]: { ...cur, answers: { ...cur.answers, [payload.blockId]: payload.answer } } }
+        })
+        return
+      }
+      if (type === 'call_test_submit') {
+        setCallTestProgress(prev => {
+          const cur = prev[senderIdentity] ?? { answers: {}, submitted: false }
+          return { ...prev, [senderIdentity]: { ...cur, answers: payload.answers ?? cur.answers, submitted: true } }
+        })
+        return
+      }
+      if (type === 'call_test_stop') {
+        setCallTest(null)
+        setCallTestProgress({})
+        setLocalTestSubmitted(false)
+        return
+      }
 
       // Chrome SR messages — senderIdentity IS the speaker
       if (type === 'sr_live' || type === 'sr_final') {
@@ -405,7 +455,9 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   }
 
   // ── Video layout ──────────────────────────────────────────────────────────
+  const testIsMain = callTest !== null && mainSpeaker === '__test__'
   const mainPart = (() => {
+    if (testIsMain) return null
     if (layout === 'pip' && room.participants.length === 2) {
       return room.participants.find(p => !p.isLocal) ?? room.participants[0]
     }
@@ -420,19 +472,34 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
     if (layout === 'pip') {
       return (
         <div className={styles.pipArea}>
-          {mainPart && renderTile(mainPart, true)}
-          {room.participants.length > 1 && sideParts.map((p, i) => (
+          {testIsMain
+            ? renderTestTile(true)
+            : mainPart && renderTile(mainPart, true)
+          }
+          {/* side pips: real participants */}
+          {(testIsMain ? room.participants : sideParts).map((p, i) => (
             <DraggablePip key={p.identity} index={i}>{renderTile(p, false, true)}</DraggablePip>
           ))}
+          {/* test as small pip when not main */}
+          {!testIsMain && callTest && (
+            <DraggablePip key="__test__" index={sideParts.length}>
+              {renderTestTile(false)}
+            </DraggablePip>
+          )}
         </div>
       )
     }
     if (layout === 'split') return (
-      <div className={styles.splitArea}>{room.participants.map(p => renderTile(p))}</div>
-    )
-    return (
-      <div className={styles.gridArea} data-count={room.participants.length}>
+      <div className={styles.splitArea}>
         {room.participants.map(p => renderTile(p))}
+        {callTest && renderTestTile(false)}
+      </div>
+    )
+    const totalCount = room.participants.length + (callTest ? 1 : 0)
+    return (
+      <div className={styles.gridArea} data-count={totalCount}>
+        {room.participants.map(p => renderTile(p))}
+        {callTest && renderTestTile(false)}
       </div>
     )
   }
@@ -603,6 +670,246 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
     )
   }
 
+  // ── Call test helpers ─────────────────────────────────────────────────────
+  const launchTest = useCallback((testId: string | null, title: string, blocks: TestBlock[]) => {
+    const payload = { type: 'call_test_start', testId, title, blocks }
+    setCallTest({ testId, title, blocks })
+    setCallTestProgress({})
+    setLocalTestSubmitted(false)
+    broadcast(payload)
+    setShowTestPicker(false)
+    setMainSpeaker('__test__')
+    broadcast({ type: 'speaker', identity: '__test__' })
+  }, [broadcast])
+
+  const stopTest = useCallback(() => {
+    setCallTest(null)
+    setCallTestProgress({})
+    broadcast({ type: 'call_test_stop' })
+    setMainSpeaker(ownerIdentity ?? userName)
+    broadcast({ type: 'speaker', identity: ownerIdentity ?? userName })
+  }, [broadcast, ownerIdentity, userName])
+
+  const openTestPicker = useCallback(async () => {
+    setShowTestPicker(true)
+    setTestPickerTab('list')
+    setPickerLoading(true)
+    try {
+      const res = await fetch('/api/tests')
+      const data = await res.json()
+      if (Array.isArray(data)) setPickerTests(data)
+    } catch {}
+    setPickerLoading(false)
+  }, [])
+
+  // ── Virtual test tile ─────────────────────────────────────────────────────
+  const renderTestTile = (large: boolean) => {
+    if (!callTest) return null
+    const students = room.participants.filter(p => !p.isLocal)
+    const isOneOnOne = students.length === 1
+    const submitted = Object.values(callTestProgress).filter(p => p.submitted).length
+    const total = students.length
+
+    if (large) {
+      return (
+        <div key="__test__" className={`${styles.tile} ${styles.tileLarge} ${styles.testTileLarge}`}>
+          <div className={styles.tileMeta}>
+            <span className={styles.tileName}>📋 {callTest.title}</span>
+          </div>
+          <div className={styles.testTileContent}>
+            {isOwner ? (
+              <CallTestTeacherView
+                blocks={callTest.blocks}
+                title={callTest.title}
+                studentProgress={callTestProgress}
+                studentCount={total}
+                isOneOnOne={isOneOnOne}
+                studentIdentity={students[0]?.identity}
+                onStop={stopTest}
+              />
+            ) : (
+              <CallTestStudentView
+                blocks={callTest.blocks}
+                title={callTest.title}
+                onAnswer={(blockId, answer) =>
+                  broadcast({ type: 'call_test_answer', blockId, answer: serializeAnswer(answer as StudentAnswer) })
+                }
+                onSubmit={(answers: AnswerRecord) => {
+                  setLocalTestSubmitted(true)
+                  broadcast({ type: 'call_test_submit', answers })
+                }}
+                submitted={localTestSubmitted}
+              />
+            )}
+          </div>
+        </div>
+      )
+    }
+
+    // Small preview tile
+    return (
+      <div
+        key="__test__"
+        className={`${styles.tile} ${styles.testTileSmall}`}
+        onClick={() => {
+          setMainSpeaker('__test__')
+          broadcast({ type: 'speaker', identity: '__test__' })
+        }}
+      >
+        <div className={styles.noVideo}>
+          <div className={styles.testTileIcon}>📋</div>
+        </div>
+        <div className={styles.testTilePreviewMeta}>
+          <span className={styles.testTilePreviewTitle}>{callTest.title}</span>
+          {isOwner && total > 0 && (
+            <span className={styles.testTilePreviewProgress}>{submitted}/{total} сдали</span>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // ── Test picker modal ─────────────────────────────────────────────────────
+  const renderTestPickerModal = () => {
+    const addQuestion = () =>
+      setQuickQuestions(prev => [...prev, { text: '', options: ['', ''], correctIdx: 0 }])
+
+    const removeQuestion = (i: number) =>
+      setQuickQuestions(prev => prev.filter((_, idx) => idx !== i))
+
+    const updateQuestion = (i: number, text: string) =>
+      setQuickQuestions(prev => prev.map((q, idx) => idx === i ? { ...q, text } : q))
+
+    const updateOption = (qi: number, oi: number, text: string) =>
+      setQuickQuestions(prev => prev.map((q, idx) =>
+        idx === qi ? { ...q, options: q.options.map((o, j) => j === oi ? text : o) } : q
+      ))
+
+    const setCorrect = (qi: number, oi: number) =>
+      setQuickQuestions(prev => prev.map((q, idx) => idx === qi ? { ...q, correctIdx: oi } : q))
+
+    const addOption = (qi: number) =>
+      setQuickQuestions(prev => prev.map((q, idx) =>
+        idx === qi && q.options.length < 4 ? { ...q, options: [...q.options, ''] } : q
+      ))
+
+    const startQuick = () => {
+      const valid = quickQuestions.filter(q => q.text.trim() && q.options.some(o => o.trim()))
+      if (valid.length === 0) return
+      const blocks: TestBlock[] = valid.map((q, i) => ({
+        id: `quick-${i}-${Date.now()}`,
+        type: TaskBlockType.CHOOSE_OPTION,
+        payload: {
+          question: q.text,
+          options: q.options
+            .map((text, j) => ({ id: `opt-${j}`, text }))
+            .filter(o => o.text.trim()),
+          correctId: `opt-${q.correctIdx}`,
+        },
+      }))
+      launchTest(null, 'Быстрый тест', blocks)
+      setQuickQuestions([{ text: '', options: ['', ''], correctIdx: 0 }])
+    }
+
+    return (
+      <div className={styles.testPickerOverlay}>
+        <div className={styles.testPickerModal}>
+          <div className={styles.testPickerHeader}>
+            <p className={styles.testPickerTitle}>Запустить тест</p>
+            <button className={styles.testPickerClose} onClick={() => setShowTestPicker(false)}>✕</button>
+          </div>
+
+          <div className={styles.testPickerTabs}>
+            <button
+              className={`${styles.testPickerTab} ${testPickerTab === 'list' ? styles.testPickerTabActive : ''}`}
+              onClick={() => setTestPickerTab('list')}
+            >Мои тесты</button>
+            <button
+              className={`${styles.testPickerTab} ${testPickerTab === 'quick' ? styles.testPickerTabActive : ''}`}
+              onClick={() => setTestPickerTab('quick')}
+            >Быстрый тест</button>
+          </div>
+
+          <div className={styles.testPickerBody}>
+            {testPickerTab === 'list' && (
+              <div className={styles.testList}>
+                {pickerLoading && <p className={styles.testListEmpty}>Загрузка...</p>}
+                {!pickerLoading && pickerTests.length === 0 && (
+                  <p className={styles.testListEmpty}>Нет тестов. Создайте тест в конструкторе.</p>
+                )}
+                {pickerTests.map(t => (
+                  <div key={t.id} className={styles.testListItem}>
+                    <div>
+                      <div className={styles.testListName}>{t.title}</div>
+                      <div className={styles.testListMeta}>{t.content.blocks.length} блоков</div>
+                    </div>
+                    <button
+                      className={styles.testLaunchBtn}
+                      onClick={() => launchTest(t.id, t.title, t.content.blocks)}
+                    >▶ Запустить</button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {testPickerTab === 'quick' && (
+              <div className={styles.quickCreator}>
+                {quickQuestions.map((q, qi) => (
+                  <div key={qi} className={styles.quickQuestion}>
+                    <div className={styles.quickQuestionHeader}>
+                      <span className={styles.quickQuestionNum}>Вопрос {qi + 1}</span>
+                      {quickQuestions.length > 1 && (
+                        <button className={styles.quickRemoveBtn} onClick={() => removeQuestion(qi)}>✕</button>
+                      )}
+                    </div>
+                    <input
+                      className={styles.quickInput}
+                      placeholder="Текст вопроса..."
+                      value={q.text}
+                      onChange={e => updateQuestion(qi, e.target.value)}
+                    />
+                    <p className={styles.quickCorrectHint}>Отметьте правильный ответ (●)</p>
+                    <div className={styles.quickOptions}>
+                      {q.options.map((opt, oi) => (
+                        <div key={oi} className={styles.quickOptionRow}>
+                          <input
+                            type="radio"
+                            className={styles.quickOptionRadio}
+                            checked={q.correctIdx === oi}
+                            onChange={() => setCorrect(qi, oi)}
+                          />
+                          <input
+                            className={`${styles.quickOptionInput} ${q.correctIdx === oi ? styles.quickOptionCorrect : ''}`}
+                            placeholder={`Вариант ${oi + 1}`}
+                            value={opt}
+                            onChange={e => updateOption(qi, oi, e.target.value)}
+                          />
+                        </div>
+                      ))}
+                      {q.options.length < 4 && (
+                        <button className={styles.quickAddOptionBtn} onClick={() => addOption(qi)}>
+                          + вариант
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                <div className={styles.quickCreatorActions}>
+                  <button className={styles.quickAddQuestionBtn} onClick={addQuestion}>+ Вопрос</button>
+                  <button
+                    className={styles.quickStartBtn}
+                    disabled={quickQuestions.every(q => !q.text.trim())}
+                    onClick={startQuick}
+                  >▶ Запустить</button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   // ── Controls bar ──────────────────────────────────────────────────────────
   const renderControls = (overlay: boolean) => (
     <div className={`${styles.controls} ${overlay ? styles.controlsOverlay : ''} ${overlay && controlsActive ? styles.controlsOverlayActive : ''}`}>
@@ -624,6 +931,19 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
         >
           <IconNotes /> Конспект
         </button>
+        {isOwner && !callTest && (
+          <button className={styles.pill} onClick={openTestPicker}>
+            📋 Тест
+          </button>
+        )}
+        {isOwner && callTest && (
+          <button className={`${styles.pill} ${styles.pillActive}`} onClick={() => {
+            setMainSpeaker('__test__')
+            broadcast({ type: 'speaker', identity: '__test__' })
+          }}>
+            📋 {callTest.title}
+          </button>
+        )}
       </div>
 
       <div className={styles.ctrlCenter}>
@@ -791,6 +1111,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
       )}
 
       {showSummary && renderSummaryModal()}
+      {showTestPicker && renderTestPickerModal()}
 
       {showAnalyzing && (
         <div className={styles.summaryOverlay}>
