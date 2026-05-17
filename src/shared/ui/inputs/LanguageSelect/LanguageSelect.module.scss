@@ -1,0 +1,52 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #141416;
+}
+
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1.5px solid #e8e8e8;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 13px;
+  color: #555;
+
+  &:hover {
+    border-color: #141416;
+    background: #f7f7f7;
+  }
+
+  &.selected {
+    border-color: #141416;
+    background: #141416;
+    color: #fff;
+  }
+}
+
+.flag {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.native {
+  font-size: 12px;
+  font-weight: 500;
+}

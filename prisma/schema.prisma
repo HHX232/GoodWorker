@@ -67,6 +67,7 @@ model Teacher {
   bio                String?
   coverPhotoUrl      String?
   socialLinks        Json?
+  languages          String[]          @default(["ru"])
   transactions       VipTransaction[]
   complaints         Complaint[]
   posts              Post[]
@@ -114,20 +115,22 @@ model TeacherReview {
 }
 
 model Service {
-  id              String             @id @default(uuid())
-  teacherId       String
-  title           String
-  description     String?
-  photoUrl        String?
-  categoryId      String?
-  duration        Int
-  timeFrom        String
-  timeTo          String
-  isGroup         Boolean            @default(false)
-  price           Float
-  createdAt       DateTime           @default(now())
-  targetStudentId String?
-  isPersonal      Boolean            @default(false)
+  id                     String             @id @default(uuid())
+  teacherId              String
+  title                  String
+  description            String?
+  photoUrl               String?
+  categoryId             String?
+  duration               Int
+  timeFrom               String
+  timeTo                 String
+  isGroup                Boolean            @default(false)
+  price                  Float
+  createdAt              DateTime           @default(now())
+  targetStudentId        String?
+  isPersonal             Boolean            @default(false)
+  titleTranslations      Json?
+  descriptionTranslations Json?
   teacher         Teacher            @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   category        Category?          @relation(fields: [categoryId], references: [id])
   promoCodes      ServicePromoCode[]
@@ -241,6 +244,10 @@ model Post {
   isVip           Boolean   @default(false)
   vipExpiresAt    DateTime?
 
+  titleTranslations           Json?
+  additionalTitleTranslations Json?
+  contentTranslations         Json?
+
   allowedStudents PostAllowedStudent[]
 }
 
@@ -287,15 +294,16 @@ model PostView {
 }
 
 model PostComment {
-  id         String    @id @default(uuid())
-  postId     String
-  authorId   String
-  authorRole Role
-  text       String
-  imageUrls  String[]  @default([])
-  editedAt   DateTime?
-  createdAt  DateTime  @default(now())
-  post       Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  id               String    @id @default(uuid())
+  postId           String
+  authorId         String
+  authorRole       Role
+  text             String
+  imageUrls        String[]  @default([])
+  editedAt         DateTime?
+  createdAt        DateTime  @default(now())
+  textTranslations Json?
+  post             Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
 
 model PostRating {
@@ -323,16 +331,18 @@ model StudentFavoritePost {
 }
 
 model Roadmap {
-  id              String                    @id @default(uuid())
-  teacherId       String
-  title           String
-  price           Float                     @default(0)
-  content         Json
-  previewImageUrl String?
-  treeSnapshotUrl String?
-  nodeAccessType  RoadmapNodeAccessType?
-  createdAt       DateTime                  @default(now())
-  updatedAt       DateTime                  @updatedAt
+  id                  String                    @id @default(uuid())
+  teacherId           String
+  title               String
+  price               Float                     @default(0)
+  content             Json
+  previewImageUrl     String?
+  treeSnapshotUrl     String?
+  nodeAccessType      RoadmapNodeAccessType?
+  titleTranslations   Json?
+  contentTranslations Json?
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
   complaints      Complaint[]
   teacher         Teacher                   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   progress        StudentRoadmapProgress[]

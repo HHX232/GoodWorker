@@ -2,6 +2,7 @@ import { prisma } from '@/shared/prisma/prisma'
 import { createNotification } from '@/shared/lib/notifications'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../auth'
+import { enrichServiceWithAI } from '@/lib/postAI'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -87,6 +88,10 @@ export async function POST(req: NextRequest) {
         targetStudent: { select: { id: true, name: true } },
       },
     })
+
+    if (process.env.GEMINI_API_KEY) {
+      enrichServiceWithAI(service.id).catch((e) => console.error('[serviceAI]', e))
+    }
 
     if (isPersonal && targetStudentId) {
       await createNotification({

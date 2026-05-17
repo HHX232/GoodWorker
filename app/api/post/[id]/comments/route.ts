@@ -2,6 +2,7 @@ import {prisma} from '@/shared/prisma/prisma'
 import {createNotification, NOTIFICATION_TYPES} from '@/shared/lib/notifications'
 import {NextRequest, NextResponse} from 'next/server'
 import {auth} from '../../../../../auth'
+import {enrichCommentWithAI, localizeComment} from '@/lib/postAI'
 
 interface RouteParams {
   params: Promise<{id: string}>
@@ -60,7 +61,10 @@ export async function GET(req: NextRequest, {params}: RouteParams) {
       ...teachers.map((t): [string, AuthorRecord] => [t.id, t])
     ])
 
-    const enriched = comments.map((c) => ({...c, author: authorMap.get(c.authorId) ?? null}))
+    const lang = req.nextUrl.searchParams.get('lang') ?? 'ru'
+    const enriched = comments.map((c) =>
+      localizeComment({...c, author: authorMap.get(c.authorId) ?? null}, lang)
+    )
 
     return NextResponse.json({
       comments: enriched,
@@ -132,6 +136,10 @@ export async function POST(req: NextRequest, {params}: RouteParams) {
         },
         teacherId: post.teacherId,
       })
+    }
+
+    if (process.env.GEMINI_API_KEY) {
+      enrichCommentWithAI(comment.id).catch(e => console.error('[commentAI]', e))
     }
 
     return NextResponse.json({...comment, author}, {status: 201})

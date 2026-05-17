@@ -3,6 +3,7 @@ import {NextRequest, NextResponse} from 'next/server'
 import {auth} from '../../../../auth'
 import {canViewPost} from '@/features/helpers/Post/canViewPost'
 import {PostVisibility} from '@prisma/client'
+import {localizePost} from '@/lib/postAI'
 
 function extractMediaUrls(content: {blocks?: {type: string; payload: {url?: string | null}}[]} | null): string[] {
   if (!content?.blocks) return []
@@ -154,7 +155,8 @@ export async function GET(req: NextRequest, {params}: Params) {
         }
       }
     }
-    return NextResponse.json(post)
+    const lang = req.nextUrl.searchParams.get('lang') ?? 'ru'
+    return NextResponse.json(localizePost(post, lang))
   } catch (error) {
     console.error('[GET /api/posts/:id]', error)
     return NextResponse.json({error: 'Internal server error'}, {status: 500})

@@ -1,6 +1,7 @@
 import { RoadMapListPage } from '@/_pages/RoadMapPages/RoadMapListPage/RoadMapListPage'
 import RoadmapService, { IRoadmapQuery } from '@/features/services/RoadmapService.service'
 import { Suspense } from 'react'
+import { getLocale } from 'next-intl/server'
 
 interface WorkflowsListRouteProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>
@@ -8,6 +9,7 @@ interface WorkflowsListRouteProps {
 
 export default async function WorkflowsListPage({ searchParams }: WorkflowsListRouteProps) {
   const params = await searchParams
+  const locale = await getLocale()
 
   const query: IRoadmapQuery = {
     page: 1,
@@ -17,6 +19,7 @@ export default async function WorkflowsListPage({ searchParams }: WorkflowsListR
     maxPrice: typeof params.maxPrice === 'string' ? Number(params.maxPrice) : undefined,
     minRating: typeof params.minRating === 'string' ? Number(params.minRating) : undefined,
     teacherId: typeof params.teacherId === 'string' ? params.teacherId : undefined,
+    lang: locale,
   }
 
   const initialData = await RoadmapService.getList(query).catch(() => ({

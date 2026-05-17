@@ -668,7 +668,14 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
     return (
       <div className={styles.summaryOverlay}>
         <div className={styles.summaryModal}>
-          <h2 className={styles.summaryTitle}>Конспект звонка</h2>
+          <div className={styles.summaryHeader}>
+            <h2 className={styles.summaryTitle}>Конспект звонка</h2>
+            <button className={styles.closeBtn} onClick={() => setShowSummary(false)} aria-label="Закрыть">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
           <pre className={styles.summaryBody}>{text || 'Нет записей'}</pre>
           <div className={styles.summaryActions}>
             {text && (

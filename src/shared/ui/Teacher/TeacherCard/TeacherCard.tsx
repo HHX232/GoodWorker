@@ -3,6 +3,7 @@
 import {useOnlineStatus} from '@/features/hooks/User/useOnlineStatus'
 import {formatActivity} from '@/shared/helpers/formatActivity'
 import {ITeacherListItem} from '@/features/services/TeacherService.service'
+import {TEACHER_LANGUAGES} from '@/shared/ui/inputs/LanguageSelect/LanguageSelect'
 import {getAvatarColor} from '@/shared/ui/User/UserHeaderCard/UserHeaderCard'
 import {useLocale, useTranslations} from 'next-intl'
 import Image from 'next/image'
@@ -27,6 +28,11 @@ const TeacherCard: FC<Props> = ({teacher}) => {
   const categories = teacher.categories.slice(0, 3).map(({category}) => {
     const translation = category.translations.find((tr) => tr.langCode === locale)
     return translation?.name ?? category.slug
+  })
+
+  const langs = (teacher.languages ?? []).slice(0, 4).map((code) => {
+    const def = TEACHER_LANGUAGES.find((l) => l.code === code)
+    return def ? {code, flag: def.flag} : {code, flag: '🌐'}
   })
 
   return (
@@ -66,6 +72,16 @@ const TeacherCard: FC<Props> = ({teacher}) => {
           {categories.map((cat) => (
             <span key={cat} className={styles.category_chip}>
               {cat}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {langs.length > 0 && (
+        <div className={styles.languages}>
+          {langs.map(({code, flag}) => (
+            <span key={code} className={styles.lang_chip} title={code.toUpperCase()}>
+              {flag} {code.toUpperCase()}
             </span>
           ))}
         </div>

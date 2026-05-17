@@ -1,6 +1,7 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
+import { enrichRoadmapWithAI, localizeRoadmap } from '@/lib/postAI'
 
 interface Params {
   params: Promise<{ id: string }>
@@ -27,7 +28,7 @@ function extractMediaPreviewUrls(content: unknown): string[] {
   }
 }
 
-export async function GET(_req: NextRequest, { params }: Params) {
+export async function GET(req: NextRequest, { params }: Params) {
   try {
     const { id } = await params
 
@@ -48,10 +49,13 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
     if (!roadmap) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
+    const lang = req.nextUrl.searchParams.get('lang') ?? 'ru'
+    const localized = localizeRoadmap(roadmap, lang)
+
     return NextResponse.json({
-      ...roadmap,
+      ...localized,
       avgRating: avgResult._avg.stars ?? 0,
-      mediaPreviewUrls: extractMediaPreviewUrls(roadmap.content),
+      mediaPreviewUrls: extractMediaPreviewUrls(localized.content),
     })
   } catch (error) {
     console.error('[GET /api/roadmap/:id]', error)
@@ -90,6 +94,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         _count: { select: { comments: true, ratings: true } },
       },
     })
+
+    if (process.env.GEMINI_API_KEY && (content !== undefined || title?.trim())) {
+      enrichRoadmapWithAI(id).catch((e) => console.error('[roadmapAI]', e))
+    }
 
     return NextResponse.json({
       ...updated,

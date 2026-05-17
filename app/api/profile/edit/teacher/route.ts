@@ -28,6 +28,7 @@ const updateTeacherSchema = z.object({
   bio:           z.string().max(2000).optional().nullable(),
   coverPhotoUrl: z.string().optional().nullable(),
   socialLinks:   socialLinksSchema,
+  languages:     z.array(z.string()).optional(),
 })
 
 export async function PATCH(req: NextRequest) {
@@ -61,6 +62,7 @@ export async function PATCH(req: NextRequest) {
       ...(parsed.data.bio            !== undefined && { bio:            parsed.data.bio }),
       ...(parsed.data.coverPhotoUrl  !== undefined && { coverPhotoUrl:  parsed.data.coverPhotoUrl }),
       ...(parsed.data.socialLinks    !== undefined && { socialLinks:    parsed.data.socialLinks ?? undefined }),
+      ...(parsed.data.languages      !== undefined && parsed.data.languages.length > 0 && { languages: parsed.data.languages }),
     },
     select: {
       id: true,
@@ -72,6 +74,7 @@ export async function PATCH(req: NextRequest) {
       bio: true,
       coverPhotoUrl: true,
       socialLinks: true,
+      languages: true,
     },
   })
 

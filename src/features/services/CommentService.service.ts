@@ -53,11 +53,12 @@ export interface IUpdateCommentDto {
 }
 
 const CommentService = {
-  async getList(postId: string, query: {page?: number; limit?: number} = {}): Promise<ICommentsListResponse> {
+  async getList(postId: string, query: {page?: number; limit?: number; lang?: string} = {}): Promise<ICommentsListResponse> {
     try {
       const params = new URLSearchParams()
       if (query.page) params.set('page', String(query.page))
       if (query.limit) params.set('limit', String(query.limit))
+      if (query.lang) params.set('lang', query.lang)
       const res = await instance.get<ICommentsListResponse>(`/post/${postId}/comments?${params.toString()}`)
       return res.data
     } catch (error) {
@@ -121,9 +122,10 @@ const CommentService = {
     }
   },
 
-  async getMyComment(postId: string): Promise<ICommentResponse | null> {
+  async getMyComment(postId: string, lang?: string): Promise<ICommentResponse | null> {
     try {
-      const res = await instance.get<ICommentResponse>(`/post/${postId}/comments/my`)
+      const params = lang ? `?lang=${lang}` : ''
+      const res = await instance.get<ICommentResponse>(`/post/${postId}/comments/my${params}`)
       return res.data
     } catch (error) {
       if (error instanceof AxiosError && (error.response?.status === 404 || error.response?.status === 401)) {

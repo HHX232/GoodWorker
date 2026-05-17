@@ -18,6 +18,7 @@ export interface IPostsQuery {
   visibility?: 'PUBLIC' | 'PRIVATE' | 'any'
   search?: string
   onlyVip?: boolean
+  lang?: string
 }
 
 export interface IPostsResponse {
@@ -81,6 +82,7 @@ const PostService = {
       if (query.visibility && query.visibility !== 'any') params.set('visibility', query.visibility)
       if (query.search) params.set('search', query.search)
       if (query.onlyVip) params.set('onlyVip', 'true')
+      if (query.lang) params.set('lang', query.lang)
       const response = await instance.get<IPostsResponse>(`/posts?${params.toString()}`)
       return response.data
     } catch (error) {
@@ -103,9 +105,10 @@ const PostService = {
     }
   },
 
-  async getById(postId: string): Promise<IPostResponse> {
+  async getById(postId: string, lang?: string): Promise<IPostResponse> {
     try {
-      const response = await instance.get<IPostResponse>(`/post/${postId}`)
+      const params = lang ? `?lang=${lang}` : ''
+      const response = await instance.get<IPostResponse>(`/post/${postId}${params}`)
       return response.data
     } catch (error) {
       if (error instanceof AxiosError) {

@@ -15,6 +15,7 @@ export interface ITeacherListItem {
   avatarUrl: string | null
   isVip: boolean
   lastSeenAt: string | null
+  languages: string[]
   categories: ITeacherCategory[]
   _count: {posts: number; students: number}
 }

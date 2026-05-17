@@ -25,6 +25,7 @@ export interface IRoadmapQuery {
   minPrice?: number
   maxPrice?: number
   minRating?: number
+  lang?: string
 }
 
 export interface IRoadmapComment {
@@ -86,6 +87,7 @@ const RoadmapService = {
       if (query.minPrice !== undefined) params.set('minPrice', String(query.minPrice))
       if (query.maxPrice !== undefined) params.set('maxPrice', String(query.maxPrice))
       if (query.minRating !== undefined) params.set('minRating', String(query.minRating))
+      if (query.lang) params.set('lang', query.lang)
       const res = await instance.get<IRoadmapsResponse>(`/roadmap?${params.toString()}`)
       return res.data
     } catch (error) {
@@ -96,9 +98,10 @@ const RoadmapService = {
     }
   },
 
-  async getById(id: string): Promise<IRoadmapItem & { content: unknown }> {
+  async getById(id: string, lang?: string): Promise<IRoadmapItem & { content: unknown }> {
     try {
-      const res = await instance.get<IRoadmapItem & { content: unknown }>(`/roadmap/${id}`)
+      const params = lang ? `?lang=${lang}` : ''
+      const res = await instance.get<IRoadmapItem & { content: unknown }>(`/roadmap/${id}${params}`)
       return res.data
     } catch (error) {
       if (error instanceof AxiosError) {

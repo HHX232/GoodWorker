@@ -34,6 +34,7 @@ export async function GET(req: NextRequest) {
           avatarUrl: true,
           isVip: true,
           lastSeenAt: true,
+          languages: true,
           categories: {
             select: {
               category: {

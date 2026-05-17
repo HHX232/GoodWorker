@@ -1,6 +1,7 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../auth'
+import { enrichRoadmapWithAI, localizeRoadmap } from '@/lib/postAI'
 
 function extractMediaPreviewUrls(content: unknown): string[] {
   try {
@@ -65,6 +66,10 @@ export async function POST(req: NextRequest) {
       },
     })
 
+    if (process.env.GEMINI_API_KEY) {
+      enrichRoadmapWithAI(roadmap.id).catch((e) => console.error('[roadmapAI]', e))
+    }
+
     return NextResponse.json(
       { ...roadmap, mediaPreviewUrls: extractMediaPreviewUrls(content) },
       { status: 201 }
@@ -125,6 +130,7 @@ export async function GET(req: NextRequest) {
         select: {
           id: true,
           title: true,
+          titleTranslations: true,
           price: true,
           previewImageUrl: true,
           content: true,
@@ -149,11 +155,16 @@ export async function GET(req: NextRequest) {
       : []
     const avgMap = new Map(avgGroups.map((g) => [g.roadmapId, g._avg.stars ?? 0]))
 
-    const items = roadmaps.map(({ content, ...r }) => ({
-      ...r,
-      avgRating: avgMap.get(r.id) ?? 0,
-      mediaPreviewUrls: extractMediaPreviewUrls(content),
-    }))
+    const lang = searchParams.get('lang') ?? 'ru'
+    const items = roadmaps.map(({ content, titleTranslations, ...r }) => {
+      const localized = localizeRoadmap({ title: r.title, titleTranslations }, lang)
+      return {
+        ...r,
+        title: localized.title,
+        avgRating: avgMap.get(r.id) ?? 0,
+        mediaPreviewUrls: extractMediaPreviewUrls(content),
+      }
+    })
 
     return NextResponse.json({
       roadmaps: items,

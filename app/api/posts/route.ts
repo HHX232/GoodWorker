@@ -1,6 +1,7 @@
 import {prisma} from '@/shared/prisma/prisma'
 import {NextRequest, NextResponse} from 'next/server'
 import {auth} from '../../../auth'
+import {localizePost} from '@/lib/postAI'
 
 async function getCategorySubtree(categoryId: string): Promise<string[]> {
   const result = await prisma.$queryRaw<{id: string}[]>`
@@ -95,7 +96,8 @@ export async function GET(req: NextRequest) {
     })
     const ratingMap = Object.fromEntries(avgRatings.map((r) => [r.postId, r._avg.stars ?? 0]))
 
-    const postsWithRating = posts.map((p) => ({...p, avgRating: ratingMap[p.id] ?? 0}))
+    const lang = searchParams.get('lang') ?? 'ru'
+    const postsWithRating = posts.map((p) => localizePost({...p, avgRating: ratingMap[p.id] ?? 0}, lang))
 
     return NextResponse.json({
       posts: postsWithRating,

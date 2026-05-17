@@ -33,7 +33,8 @@ const sendUserSchema = z
   .nullable(),
     password: z.string({ error: 'Minimum 6 characters' }).min(6, 'Minimum 6 characters').default(''),
     langCode: z.string().default('ru'),
-    categoryIds: z.array(z.string()).min(1, 'At least one category is required').default([])
+    categoryIds: z.array(z.string()).min(1, 'At least one category is required').default([]),
+    languages: z.array(z.string()).default(['ru'])
   })
 
   const verifySchema = z.object({
@@ -147,6 +148,9 @@ const sendUserSchema = z
           phone,
           password: hashedPassword,
           langCode: body.langCode ?? 'ru',
+          languages: Array.isArray(body.languages) && body.languages.length > 0
+            ? body.languages
+            : ['ru'],
           categories: {
             create: (body.categoryIds as string[]).map((categoryId: string) => ({
               categoryId,

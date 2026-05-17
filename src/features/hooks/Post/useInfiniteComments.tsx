@@ -2,6 +2,7 @@
 import CommentService, { ICommentResponse } from '@/features/services/CommentService.service'
 import { CommentItem } from '@/shared/ui/Posts/PostCommentSection/PostCommentSection'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useLocale } from 'next-intl'
 
 function commentToUI(c: ICommentResponse): CommentItem {
   return {
@@ -21,6 +22,7 @@ function commentToUI(c: ICommentResponse): CommentItem {
 }
 
 export function useInfiniteComments(postId: string, limit = 15) {
+  const locale = useLocale()
   const [comments, setComments] = useState<CommentItem[]>([])
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
@@ -31,7 +33,7 @@ export function useInfiniteComments(postId: string, limit = 15) {
   const loadPage = useCallback(async (pageNum: number) => {
     setLoading(true)
     try {
-      const res = await CommentService.getList(postId, {page: pageNum, limit})
+      const res = await CommentService.getList(postId, {page: pageNum, limit, lang: locale})
       setComments((prev) =>
         pageNum === 1 ? res.comments.map(commentToUI) : [...prev, ...res.comments.map(commentToUI)]
       )
@@ -40,7 +42,7 @@ export function useInfiniteComments(postId: string, limit = 15) {
     } finally {
       setLoading(false)
     }
-  }, [postId, limit])
+  }, [postId, limit, locale])
 
   // Загрузка первой страницы
   useEffect(() => {
@@ -48,7 +50,7 @@ export function useInfiniteComments(postId: string, limit = 15) {
     setPage(1)
     setHasMore(true)
     loadPage(1)
-  }, [postId, loadPage])
+  }, [postId, locale, loadPage])
 
   // IntersectionObserver для подгрузки
   useEffect(() => {

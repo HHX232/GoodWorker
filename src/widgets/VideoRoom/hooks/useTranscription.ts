@@ -14,8 +14,10 @@ function isMobileDevice(): boolean {
   return /Android|iP(hone|ad|od)/i.test(ua) || (/Macintosh/i.test(ua) && 'ontouchend' in document)
 }
 
-// Errors where restarting SR is pointless — mic is blocked or service is down.
-const FATAL_SR_ERRORS = ['not-allowed', 'audio-capture', 'service-not-allowed']
+// Errors where restarting SR is pointless — mic is permanently blocked or service is down.
+// 'audio-capture' is intentionally excluded: it fires transiently during WebRTC renegotiation
+// (when a new participant joins) and SR recovers on restart.
+const FATAL_SR_ERRORS = ['not-allowed', 'service-not-allowed']
 
 interface UseTranscriptionOptions {
   connected: boolean

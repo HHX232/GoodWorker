@@ -1,6 +1,7 @@
 import {prisma} from '@/shared/prisma/prisma'
 import {NextRequest, NextResponse} from 'next/server'
 import {auth} from '../../../../../../auth'
+import {enrichCommentWithAI} from '@/lib/postAI'
 
 interface RouteParams {
   params: Promise<{id: string; commentId: string}>
@@ -63,6 +64,11 @@ export async function PATCH(req: NextRequest, {params}: RouteParams) {
         editedAt: new Date()
       }
     })
+
+    // Re-translate when text changed
+    if (typeof text === 'string' && text.trim() && process.env.GEMINI_API_KEY) {
+      enrichCommentWithAI(updated.id).catch(e => console.error('[commentAI]', e))
+    }
 
     const author = await resolveAuthor(updated.authorId, updated.authorRole)
     return NextResponse.json({...updated, author})

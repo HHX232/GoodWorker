@@ -3,6 +3,7 @@
 import OtpModal from '@/shared/ui/Modals/OtpModal/OtpModal'
 import ImageCropEditor from '@/widgets/BaseUI/ImageCropEditor/ImageCropEditor'
 import { CreateImagesInput } from '@/shared/ui/inputs/CreateImagesInput/CreateImagesInput'
+import LanguageSelect from '@/shared/ui/inputs/LanguageSelect/LanguageSelect'
 import Image from 'next/image'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
@@ -32,6 +33,7 @@ interface ProfileData {
   bio?: string | null
   coverPhotoUrl?: string | null
   socialLinks?: SocialLinks | Record<string, string> | null
+  languages?: string[]
 }
 
 interface ProfileEditFormProps {
@@ -60,6 +62,7 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, stats
   // Teacher-only fields
   const [bio, setBio] = useState(initialData.bio ?? '')
   const [coverPhotoUrl, setCoverPhotoUrl] = useState<string | null>(initialData.coverPhotoUrl ?? null)
+  const [languages, setLanguages] = useState<string[]>(initialData.languages?.length ? initialData.languages : ['ru'])
   const [socialLinks, setSocialLinks] = useState({
     vk:        (initialData.socialLinks as SocialLinks | null)?.vk        ?? '',
     telegram:  (initialData.socialLinks as SocialLinks | null)?.telegram  ?? '',
@@ -130,6 +133,7 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, stats
           bio: bio.trim() || null,
           coverPhotoUrl,
           socialLinks: cleanSocialLinks(),
+          languages,
         }),
       })
       setSaveSuccess(true)
@@ -300,6 +304,14 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, stats
                 />
                 <span className={styles.charCount}>{bio.length} / 2000</span>
               </div>
+            </div>
+
+            <div className={styles.divider} />
+
+            {/* ── Teacher: Languages ── */}
+            <div className={styles.card}>
+              <div className={styles.cardLabel}>Языки преподавания</div>
+              <LanguageSelect value={languages} onChange={setLanguages} label='' />
             </div>
 
             <div className={styles.divider} />

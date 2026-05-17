@@ -20,6 +20,7 @@ export default async function TeacherProfileEditPage() {
       bio: true,
       coverPhotoUrl: true,
       socialLinks: true,
+      languages: true,
     },
   })
 
@@ -33,6 +34,7 @@ export default async function TeacherProfileEditPage() {
       initialData={{
         ...teacher,
         socialLinks: teacher.socialLinks as Record<string, string> | null,
+        languages: teacher.languages,
       }}
     />
   )

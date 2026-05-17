@@ -2,6 +2,7 @@
 
 import {InputOtp, TextInputUI} from '@/shared/ui/inputs'
 import {CategorySelect} from '@/shared/ui/inputs/CategorySelect/CategorySelect'
+import LanguageSelect from '@/shared/ui/inputs/LanguageSelect/LanguageSelect'
 import {signIn} from 'next-auth/react'
 import {useTranslations} from 'next-intl'
 import Link from 'next/link'
@@ -34,11 +35,8 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>(['ru'])
   const [agreeConsent, setAgreeConsent] = useState(false)
-
-  function toggleCategory(id: string) {
-    setSelectedCategories((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]))
-  }
 
   async function handleSend() {
     if (!name.trim()) {
@@ -75,6 +73,7 @@ export default function RegisterPage() {
       }
       if (role === 'Teacher') {
         body.categoryIds = selectedCategories
+        body.languages = selectedLanguages
       }
 
       const res = await fetch('/api/auth/register', {
@@ -117,7 +116,7 @@ export default function RegisterPage() {
           phone,
           password,
           langCode: 'ru',
-          ...(role === 'Teacher' ? {categoryIds: selectedCategories} : {})
+          ...(role === 'Teacher' ? {categoryIds: selectedCategories, languages: selectedLanguages} : {})
         })
       })
       const data = await res.json()
@@ -198,13 +197,20 @@ export default function RegisterPage() {
             </div>
 
             {role === 'Teacher' && (
-              <CategorySelect
-                canSelectMany={true}
-                maxLevel={1}
-                value={selectedCategories}
-                onChange={setSelectedCategories}
-                placeholder='Выберите предметы'
-              />
+              <>
+                <CategorySelect
+                  canSelectMany={true}
+                  maxLevel={1}
+                  value={selectedCategories}
+                  onChange={setSelectedCategories}
+                  placeholder='Выберите предметы'
+                />
+                <LanguageSelect
+                  value={selectedLanguages}
+                  onChange={setSelectedLanguages}
+                  label='Языки преподавания'
+                />
+              </>
             )}
 
             <label className={styles.consentRow}>

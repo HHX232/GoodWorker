@@ -1,6 +1,7 @@
 import RoadMapViewer from '@/_pages/RoadMapPages/ViewRoadMap/InnerViewer'
 import RoadmapService from '@/features/services/RoadmapService.service'
 import {Edge, Node} from '@xyflow/react'
+import {getLocale} from 'next-intl/server'
 
 interface Props {
   params: Promise<{id: string}>
@@ -8,8 +9,9 @@ interface Props {
 
 export default async function RoadMapPage({params}: Props) {
   const {id} = await params
+  const locale = await getLocale()
 
-  const roadmap = await RoadmapService.getById(id).catch(() => null)
+  const roadmap = await RoadmapService.getById(id, locale).catch(() => null)
 
   if (!roadmap) {
     return (

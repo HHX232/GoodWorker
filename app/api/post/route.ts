@@ -3,6 +3,7 @@ import {prisma} from '@/shared/prisma/prisma'
 import {PostVisibility} from '@prisma/client'
 import {NextRequest, NextResponse} from 'next/server'
 import {auth} from '../../../auth'
+import {enrichPostWithAI} from '@/lib/postAI'
 
 function extractMediaUrls(content: {blocks?: {type: string; payload: {url?: string | null}}[]} | null): string[] {
   if (!content?.blocks) return []
@@ -62,6 +63,11 @@ export async function POST(req: NextRequest) {
       },
       include: {allowedStudents: true}
     })
+
+    // Fire-and-forget: translate + auto-categorize in background via Gemini
+    if (process.env.GEMINI_API_KEY) {
+      enrichPostWithAI(post.id).catch(e => console.error('[postAI]', e))
+    }
 
     return NextResponse.json(post, {status: 201})
   } catch (error) {
