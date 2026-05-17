@@ -936,11 +936,14 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
             📋 Тест
           </button>
         )}
-        {isOwner && callTest && (
-          <button className={`${styles.pill} ${styles.pillActive}`} onClick={() => {
-            setMainSpeaker('__test__')
-            broadcast({ type: 'speaker', identity: '__test__' })
-          }}>
+        {callTest && (
+          <button
+            className={`${styles.pill} ${mainSpeaker === '__test__' ? styles.pillActive : ''}`}
+            onClick={() => {
+              setMainSpeaker('__test__')
+              broadcast({ type: 'speaker', identity: '__test__' })
+            }}
+          >
             📋 {callTest.title}
           </button>
         )}
