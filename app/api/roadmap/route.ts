@@ -115,6 +115,7 @@ export async function GET(req: NextRequest) {
         : undefined
 
     const where = {
+      moderationStatus: 'PUBLISHED' as const,
       ...(teacherId && { teacherId }),
       ...(search && { title: { contains: search, mode: 'insensitive' as const } }),
       ...(priceFilter && { price: priceFilter }),

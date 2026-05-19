@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 import { GoogleAICacheManager } from '@google/generative-ai/server'
 import { prisma } from '@/shared/prisma/prisma'
 import type { CategoryRef } from '@/shared/lib/gemini'
+import type { Prisma } from '@prisma/client'
 
 const LANGS = ['ru', 'en', 'hi', 'zh'] as const
 type Lang = typeof LANGS[number]
@@ -171,9 +172,9 @@ Return exactly this JSON structure:
   await prisma.post.update({
     where: { id: postId },
     data: {
-      titleTranslations: parsed.titleTranslations ?? undefined,
-      additionalTitleTranslations: parsed.additionalTitleTranslations ?? undefined,
-      contentTranslations,
+      titleTranslations: (parsed.titleTranslations ?? undefined) as Prisma.InputJsonValue | undefined,
+      additionalTitleTranslations: (parsed.additionalTitleTranslations ?? undefined) as Prisma.InputJsonValue | undefined,
+      contentTranslations: contentTranslations as Prisma.InputJsonValue,
       ...(!post.categoryId && parsed.suggestedCategoryId
         ? { categoryId: parsed.suggestedCategoryId }
         : {}),
@@ -636,8 +637,8 @@ Response format:
   await prisma.roadmap.update({
     where: { id: roadmapId },
     data: {
-      ...(titleEntry ? { titleTranslations: titleEntry } : {}),
-      contentTranslations,
+      ...(titleEntry ? { titleTranslations: titleEntry as Prisma.InputJsonValue } : {}),
+      contentTranslations: contentTranslations as Prisma.InputJsonValue,
     },
   })
 }

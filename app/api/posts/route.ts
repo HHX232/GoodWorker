@@ -67,6 +67,7 @@ export async function GET(req: NextRequest) {
     const where = {
       AND: [
         visibilityWhere,
+        { moderationStatus: 'PUBLISHED' as const },
         ...(onlyVip ? [{isVip: true, vipExpiresAt: {gt: now}}] : []),
         ...(categoryIds ? [{categoryId: {in: categoryIds}}] : []),
         ...(teacherId ? [{teacherId}] : []),
