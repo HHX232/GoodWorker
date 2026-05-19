@@ -22,19 +22,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const { email, password } = parsed.data
 
-        const student = await prisma.student.findUnique({
+        type WithBan = { id: string; name: string; email: string; password: string | null; isBanned?: boolean }
+
+        const student: WithBan | null = await (prisma.student as { findUnique: (a: unknown) => Promise<WithBan | null> }).findUnique({
           where: { email },
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            password: true,
-          },
-        })
+          select: { id: true, name: true, email: true, password: true, isBanned: true },
+        }).catch(() =>
+          prisma.student.findUnique({
+            where: { email },
+            select: { id: true, name: true, email: true, password: true },
+          })
+        )
 
         if (student?.password) {
           const ok = await bcrypt.compare(password, student.password)
           if (!ok) return null
+
+          if (student.isBanned) return null
 
           return {
             id: student.id,
@@ -44,19 +48,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           }
         }
 
-        const teacher = await prisma.teacher.findUnique({
+        const teacher: WithBan | null = await (prisma.teacher as { findUnique: (a: unknown) => Promise<WithBan | null> }).findUnique({
           where: { email },
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            password: true,
-          },
-        })
+          select: { id: true, name: true, email: true, password: true, isBanned: true },
+        }).catch(() =>
+          prisma.teacher.findUnique({
+            where: { email },
+            select: { id: true, name: true, email: true, password: true },
+          })
+        )
 
         if (teacher?.password) {
           const ok = await bcrypt.compare(password, teacher.password)
           if (!ok) return null
+
+          if (teacher.isBanned) return null
 
           const adminRecord = await prisma.adminEmail.findUnique({
             where: { email: teacher.email },

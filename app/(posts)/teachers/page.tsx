@@ -25,6 +25,7 @@ async function getInitialTeachers() {
             }
           }
         },
+        languages: true,
         _count: {select: {posts: true, students: true}}
       }
     }),

@@ -8,9 +8,9 @@ export default async function ProfileProxy() {
     redirect("/login")
   }
 
-  if (session.user.role === "TEACHER") {
-    redirect("/teacher-profile")
+  if (session.user.role === "STUDENT") {
+    redirect("/student-profile")
   }
 
-  redirect("/student-profile")
+  redirect("/teacher-profile")
 }

@@ -7,7 +7,7 @@ export default async function TeacherProfilePage() {
   const session = await auth()
 
   if (!session) redirect("/login")
-  if (session.user.role !== "TEACHER") redirect("/student-profile")
+  if (session.user.role === "STUDENT") redirect("/student-profile")
 
   const id = session.user.id
 
