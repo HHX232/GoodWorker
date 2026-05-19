@@ -23,6 +23,8 @@ model Student {
   email                  String                   @unique
   phone                  String?
   langCode               String                   @default("ru")
+  telegramChatId         BigInt?
+  telegramLinkToken      String?                  @unique
   createdAt              DateTime                 @default(now())
   updatedAt              DateTime                 @updatedAt
   avatarUrl              String?
@@ -40,6 +42,9 @@ model Student {
   conferenceParticipants ConferenceParticipant[]
   postAllowedStudents    PostAllowedStudent[]
   lastSeenAt             DateTime?
+  isBanned               Boolean   @default(false)
+  bannedAt               DateTime?
+  banReason              String?
   transactions           VipTransaction[]
   roadmapAccess          RoadmapAccess[]
   nodeFeedbacks          RoadmapNodeFeedback[]
@@ -56,6 +61,8 @@ model Teacher {
   email              String            @unique
   avatarUrl          String?
   langCode           String            @default("ru")
+  telegramChatId     BigInt?
+  telegramLinkToken  String?           @unique
   calendar           Json?
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
@@ -77,6 +84,9 @@ model Teacher {
   tests              Test[]
   conferences        Conference[]
   lastSeenAt         DateTime?
+  isBanned           Boolean   @default(false)
+  bannedAt           DateTime?
+  banReason          String?
   roadmapViews       RoadmapView[]
   notifications      Notification[]
   reviews            TeacherReview[]
@@ -135,6 +145,7 @@ model Service {
   category        Category?          @relation(fields: [categoryId], references: [id])
   promoCodes      ServicePromoCode[]
   bookings        ServiceBooking[]
+  conferences     Conference[]
   targetStudent   Student?           @relation("PersonalServices", fields: [targetStudentId], references: [id], onDelete: SetNull)
 }
 
@@ -243,6 +254,7 @@ model Post {
   additionalTitle String?
   isVip           Boolean   @default(false)
   vipExpiresAt    DateTime?
+  moderationStatus ModerationStatus @default(PUBLISHED)
 
   titleTranslations           Json?
   additionalTitleTranslations Json?
@@ -343,6 +355,7 @@ model Roadmap {
   contentTranslations Json?
   createdAt           DateTime                  @default(now())
   updatedAt           DateTime                  @updatedAt
+  moderationStatus    ModerationStatus          @default(PUBLISHED)
   complaints      Complaint[]
   teacher         Teacher                   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   progress        StudentRoadmapProgress[]
@@ -565,12 +578,15 @@ model Conference {
   transcriptJson   Json?
   transcriptStatus TranscriptStatus @default(NONE)
 
-  mediaNodes Json?
+  mediaNodes      Json?
+  durationMinutes Int?
+  serviceId       String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   teacher      Teacher                 @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  service      Service?                @relation(fields: [serviceId], references: [id], onDelete: SetNull)
   participants ConferenceParticipant[]
   categories   ConferenceCategory[]
 }
@@ -655,6 +671,12 @@ enum PostVisibility {
   STUDENTS
   SELECTED
   PRIVATE
+}
+
+enum ModerationStatus {
+  PUBLISHED
+  PENDING
+  BLOCKED
 }
 
 enum ConferenceStatus {

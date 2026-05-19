@@ -2,6 +2,7 @@
 
 import {formatDateRu} from '@/shared/helpers/calendar/calendar.helpers'
 import {CalendarTask} from '@/shared/types/Calendar/calendar.types'
+import {useLocale, useTranslations} from 'next-intl'
 import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
 import {nanoid} from 'nanoid'
 import {useEffect, useState} from 'react'
@@ -14,13 +15,17 @@ interface CalendarTaskModalProps {
   onSave: (task: CalendarTask) => void
 }
 
-const PRIORITY_MAP = {
-  low: {label: 'Низкий', bg: '#EAF3DE', color: '#3B6D11'},
-  medium: {label: 'Средний', bg: '#FAEEDA', color: '#633806'},
-  high: {label: 'Высокий', bg: '#FCEBEB', color: '#A32D2D'}
-}
-
 export function CalendarTaskModal({task, onClose, onToggle, onSave}: CalendarTaskModalProps) {
+  const t = useTranslations('calendar.taskModal')
+  const locale = useLocale()
+  const intlLocale = locale === 'ru' ? 'ru-RU' : 'en-US'
+
+  const PRIORITY_MAP = {
+    low: {label: t('priorityLow'), bg: '#EAF3DE', color: '#3B6D11'},
+    medium: {label: t('priorityMedium'), bg: '#FAEEDA', color: '#633806'},
+    high: {label: t('priorityHigh'), bg: '#FCEBEB', color: '#A32D2D'}
+  }
+
   const [isEditing, setIsEditing] = useState(false)
   const [form, setForm] = useState<CalendarTask | null>(null)
   const [newItemText, setNewItemText] = useState('')
@@ -86,7 +91,7 @@ export function CalendarTaskModal({task, onClose, onToggle, onSave}: CalendarTas
   const viewFooter = (
     <div className={styles.footer}>
       <button className={styles.btnSecondary} onClick={onClose}>
-        Закрыть
+        {t('close')}
       </button>
       <button
         className={styles.editBtn}
@@ -96,14 +101,14 @@ export function CalendarTaskModal({task, onClose, onToggle, onSave}: CalendarTas
         }}
       >
         <PencilIcon />
-        Редактировать
+        {t('edit')}
       </button>
       <button
         className={`${styles.toggleBtn} ${task.completed ? styles.toggleBtnDone : ''}`}
         onClick={() => onToggle(task.id)}
       >
         <CheckCircleIcon />
-        {task.completed ? 'Снять выполнение' : 'Выполнено'}
+        {task.completed ? t('unmarkDone') : t('markDone')}
       </button>
     </div>
   )
@@ -111,10 +116,10 @@ export function CalendarTaskModal({task, onClose, onToggle, onSave}: CalendarTas
   const editFooter = (
     <div className={styles.footer}>
       <button className={styles.btnSecondary} onClick={cancelEdit}>
-        Отмена
+        {t('cancel')}
       </button>
       <button className={styles.btnPrimary} onClick={handleSave}>
-        Сохранить
+        {t('save')}
       </button>
     </div>
   )
@@ -125,7 +130,7 @@ export function CalendarTaskModal({task, onClose, onToggle, onSave}: CalendarTas
     <>
       <div className={styles.header}>
         <div className={styles.headerLeft}>
-          <div className={styles.eyebrow}>Задача</div>
+          <div className={styles.eyebrow}>{t('taskLabel')}</div>
           <div className={styles.title}>{task.title}</div>
         </div>
         <button className={styles.closeBtn} onClick={onClose}>
@@ -140,30 +145,30 @@ export function CalendarTaskModal({task, onClose, onToggle, onSave}: CalendarTas
 
         <div className={styles.metaGrid}>
           {task.dueDate && (
-            <MetaCard icon={<CalIcon />} label='Срок'>
-              {formatDateRu(task.dueDate)}
+            <MetaCard icon={<CalIcon />} label={t('dueDateLabel')}>
+              {formatDateRu(task.dueDate, intlLocale)}
             </MetaCard>
           )}
           {task.category && (
-            <MetaCard icon={<TagIcon />} label='Категория'>
+            <MetaCard icon={<TagIcon />} label={t('categoryLabel')}>
               {task.category}
             </MetaCard>
           )}
           {priority && (
-            <MetaCard icon={<FlagIcon />} label='Приоритет'>
+            <MetaCard icon={<FlagIcon />} label={t('priorityLabel')}>
               <span className={styles.pill} style={{background: priority.bg, color: priority.color}}>
                 {priority.label}
               </span>
             </MetaCard>
           )}
-          <MetaCard icon={<CheckCircleIcon />} label='Статус'>
+          <MetaCard icon={<CheckCircleIcon />} label={t('statusLabel')}>
             <span
               className={styles.pill}
               style={
                 task.completed ? {background: '#E1F5EE', color: '#085041'} : {background: '#f4f4f7', color: '#666'}
               }
             >
-              {task.completed ? 'Выполнено' : 'В процессе'}
+              {task.completed ? t('statusDone') : t('statusInProgress')}
             </span>
           </MetaCard>
         </div>
@@ -171,7 +176,7 @@ export function CalendarTaskModal({task, onClose, onToggle, onSave}: CalendarTas
         {task.checklistItems && task.checklistItems.length > 0 && (
           <div className={styles.checklistView}>
             <span className={styles.checklistViewLabel}>
-              Чеклист
+              {t('checklistLabel')}
               <span className={styles.checklistViewCount}>
                 {task.checklistItems.filter((i) => i.completed).length}/{task.checklistItems.length}
               </span>
@@ -218,8 +223,8 @@ export function CalendarTaskModal({task, onClose, onToggle, onSave}: CalendarTas
     <>
       <div className={styles.header}>
         <div className={styles.headerLeft}>
-          <div className={styles.eyebrow}>Редактирование</div>
-          <div className={styles.title}>Изменить задачу</div>
+          <div className={styles.eyebrow}>{t('editingLabel')}</div>
+          <div className={styles.title}>{t('editTitle')}</div>
         </div>
         <button className={styles.closeBtn} onClick={cancelEdit}>
           <svg width='12' height='12' viewBox='0 0 24 24' fill='none'>
@@ -229,9 +234,8 @@ export function CalendarTaskModal({task, onClose, onToggle, onSave}: CalendarTas
       </div>
 
       <div className={styles.body}>
-        {/* Название */}
         <div className={styles.field}>
-          <label className={styles.fieldLabel}>Название</label>
+          <label className={styles.fieldLabel}>{t('titleLabel')}</label>
           <input
             className={styles.input}
             value={form.title}
@@ -240,9 +244,8 @@ export function CalendarTaskModal({task, onClose, onToggle, onSave}: CalendarTas
           />
         </div>
 
-        {/* Описание */}
         <div className={styles.field}>
-          <label className={styles.fieldLabel}>Описание</label>
+          <label className={styles.fieldLabel}>{t('descLabel')}</label>
           <textarea
             className={styles.textarea}
             rows={2}
@@ -251,10 +254,9 @@ export function CalendarTaskModal({task, onClose, onToggle, onSave}: CalendarTas
           />
         </div>
 
-        {/* Срок + Категория */}
         <div className={styles.fieldRow}>
           <div className={styles.field}>
-            <label className={styles.fieldLabel}>Срок</label>
+            <label className={styles.fieldLabel}>{t('dueDateLabel')}</label>
             <input
               className={styles.input}
               type='date'
@@ -263,19 +265,18 @@ export function CalendarTaskModal({task, onClose, onToggle, onSave}: CalendarTas
             />
           </div>
           <div className={styles.field}>
-            <label className={styles.fieldLabel}>Категория</label>
+            <label className={styles.fieldLabel}>{t('categoryLabel')}</label>
             <input
               className={styles.input}
-              placeholder='Математика...'
+              placeholder={t('categoryLabel')}
               value={form.category ?? ''}
               onChange={(e) => setField('category', e.target.value || undefined)}
             />
           </div>
         </div>
 
-        {/* Приоритет */}
         <div className={styles.field}>
-          <label className={styles.fieldLabel}>Приоритет</label>
+          <label className={styles.fieldLabel}>{t('priorityLabel')}</label>
           <div className={styles.priorityGroup}>
             {(['low', 'medium', 'high'] as const).map((p) => (
               <button
@@ -286,16 +287,15 @@ export function CalendarTaskModal({task, onClose, onToggle, onSave}: CalendarTas
                 }`}
                 onClick={() => setField('priority', p)}
               >
-                {p === 'low' ? 'Низкий' : p === 'medium' ? 'Средний' : 'Высокий'}
+                {t(`priority${p.charAt(0).toUpperCase() + p.slice(1)}` as 'priorityLow' | 'priorityMedium' | 'priorityHigh')}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Чеклист */}
         <div className={styles.field}>
           <div className={styles.checklistHeader}>
-            <label className={styles.fieldLabel}>Чеклист</label>
+            <label className={styles.fieldLabel}>{t('checklistLabel')}</label>
             {(form.checklistItems?.length ?? 0) > 0 && (
               <span className={styles.checklistProgress}>
                 {form.checklistItems?.filter((i) => i.completed).length}/{form.checklistItems?.length}
@@ -354,7 +354,7 @@ export function CalendarTaskModal({task, onClose, onToggle, onSave}: CalendarTas
             <div className={styles.checklistAddDot} />
             <input
               className={styles.checklistAddInput}
-              placeholder='Добавить пункт...'
+              placeholder={t('checklistLabel')}
               value={newItemText}
               onChange={(e) => setNewItemText(e.target.value)}
               onKeyDown={(e) => {

@@ -1,6 +1,7 @@
 'use client'
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import Link from 'next/link'
+import {useTranslations} from 'next-intl'
 import {NotificationItem, RowNotification} from './RowNotification'
 import {NotificationDetailModal} from './NotificationDetailModal'
 import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
@@ -25,14 +26,14 @@ function SkeletonRow() {
 
 // ─── Empty state ─────────────────────────────────────────
 
-function EmptyState() {
+function EmptyState({text}: {text: string}) {
   return (
     <div className={styles.empty}>
       <svg width='36' height='36' viewBox='0 0 24 24' fill='none' stroke='#d1d5db' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round'>
         <path d='M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9' />
         <path d='M13.73 21a2 2 0 0 1-3.46 0' />
       </svg>
-      <p>Уведомлений пока нет</p>
+      <p>{text}</p>
     </div>
   )
 }
@@ -54,6 +55,7 @@ function buildGroups(items: NotificationItem[]) {
 // ─── Panel ───────────────────────────────────────────────
 
 export function NotificationsPanel() {
+  const t = useTranslations('notifications')
   const [items, setItems] = useState<NotificationItem[]>([])
   const [loading, setLoading] = useState(true)
   const [unreadCount, setUnreadCount] = useState(0)
@@ -193,7 +195,7 @@ export function NotificationsPanel() {
               <path d='M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9' />
               <path d='M13.73 21a2 2 0 0 1-3.46 0' />
             </svg>
-            <span className={styles.header_title}>Уведомления</span>
+            <span className={styles.header_title}>{t('title')}</span>
             {badgeCount > 0 && (
               <span className={styles.badge}>{badgeCount > 99 ? '99+' : badgeCount}</span>
             )}
@@ -203,7 +205,7 @@ export function NotificationsPanel() {
             onClick={handleMarkAllRead}
             disabled={unreadCount === 0}
           >
-            Прочитать всё
+            {t('markAllRead')}
           </button>
         </div>
 
@@ -216,7 +218,7 @@ export function NotificationsPanel() {
               <SkeletonRow />
             </>
           ) : grouped.length === 0 ? (
-            <EmptyState />
+            <EmptyState text={t('emptyPanel')} />
           ) : (
             <>
               {grouped.map(({representative, all}) => (
@@ -246,7 +248,7 @@ export function NotificationsPanel() {
                 <circle cx='12' cy='12' r='10' />
                 <polyline points='12 6 12 12 16 14' />
               </svg>
-              История ({archivedItems.length})
+              {t('history', {count: archivedItems.length})}
             </button>
           </div>
         )}
@@ -254,7 +256,7 @@ export function NotificationsPanel() {
         {/* View all */}
         <div className={styles.view_all_footer}>
           <Link href='/notifications' className={styles.view_all_btn}>
-            Смотреть все уведомления
+            {t('viewAll')}
           </Link>
         </div>
       </div>
@@ -263,7 +265,7 @@ export function NotificationsPanel() {
       <ModalWindowDefault
         isOpen={historyOpen}
         onClose={() => setHistoryOpen(false)}
-        additionalTitle={<span style={{fontWeight: 700, fontSize: 15}}>История уведомлений</span>}
+        additionalTitle={<span style={{fontWeight: 700, fontSize: 15}}>{t('historyTitle')}</span>}
       >
         <div className={styles.history_list}>
           {archivedGrouped.map(({representative, all}) => (

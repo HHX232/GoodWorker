@@ -91,7 +91,7 @@ export async function DELETE(req: NextRequest, {params}: RouteParams) {
     const isAdmin = session.user.role === 'ADMIN'
 
     let isPostTeacher = false
-    if (session.user.role === 'TEACHER') {
+    if ((session.user.role === 'TEACHER' || session.user.role === 'ADMIN')) {
       const post = await prisma.post.findUnique({where: {id: postId}, select: {teacherId: true}})
       isPostTeacher = post?.teacherId === session.user.id
     }

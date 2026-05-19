@@ -117,7 +117,7 @@ export async function POST(req: NextRequest, {params}: RouteParams) {
     let author: AuthorRecord | null = null
     if (session.user.role === 'STUDENT') {
       author = await prisma.student.findUnique({where: {id: session.user.id}, select: selectFields})
-    } else if (session.user.role === 'TEACHER') {
+    } else if ((session.user.role === 'TEACHER' || session.user.role === 'ADMIN')) {
       author = await prisma.teacher.findUnique({where: {id: session.user.id}, select: selectFields})
     }
 

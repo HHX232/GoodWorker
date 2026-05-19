@@ -2,8 +2,9 @@
 
 import { CategorySelect } from '@/shared/ui/inputs/CategorySelect/CategorySelect'
 import { ServiceCard } from '@/shared/ui/Service/ServiceCard/ServiceCard'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import styles from './CreateServiceModal.module.scss'
 
 interface CategoryOption {
@@ -20,14 +21,7 @@ interface Props {
   onCreated: (service: unknown) => void
 }
 
-const DURATION_OPTIONS = [
-  { label: '30 мин', value: 30 },
-  { label: '45 мин', value: 45 },
-  { label: '1 ч',   value: 60 },
-  { label: '1.5 ч', value: 90 },
-  { label: '2 ч',   value: 120 },
-  { label: '3 ч',   value: 180 },
-]
+const DURATION_VALUES = [30, 45, 60, 90, 120, 180]
 
 const TIME_OPTIONS: string[] = []
 for (let h = 0; h < 24; h++) {
@@ -94,6 +88,7 @@ function TimeSelect({ value, onChange }: { value: string; onChange: (v: string) 
 
 export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Props) {
   const locale = useLocale()
+  const t = useTranslations('dashboard.createService')
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -172,11 +167,12 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Prop
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!title.trim()) { setError('Введите название'); return }
-    if (!price || Number(price) <= 0) { setError('Введите цену'); return }
+    if (!title.trim()) { setError(t('errorTitle')); return }
+    if (!price || Number(price) <= 0) { setError(t('errorPrice')); return }
 
     setSubmitting(true)
     setError('')
+    const tid = toast.loading('Создание услуги...')
     try {
       const body: Record<string, unknown> = {
         title: title.trim(),
@@ -207,14 +203,27 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Prop
         body: JSON.stringify(body),
       })
       const data = await res.json()
-      if (!res.ok) { setError(data.error ?? 'Ошибка при создании'); return }
+      if (!res.ok) {
+        const msg = data.error ?? t('errorCreate')
+        setError(msg)
+        toast.error(msg, { id: tid })
+        return
+      }
+      toast.success('Услуга создана!', { id: tid })
       onCreated(data.service)
       onClose()
     } catch {
-      setError('Ошибка сети')
+      setError(t('errorNetwork'))
+      toast.error('Ошибка соединения. Попробуйте ещё раз.', { id: tid })
     } finally {
       setSubmitting(false)
     }
+  }
+
+  function formatDuration(mins: number): string {
+    if (mins < 60) return `${mins} ${t('minUnit')}`
+    const h = mins / 60
+    return `${h} ${t('hourUnit')}`
   }
 
   const selectedCategory = categories.find(c => c.id === categoryIds[0]) ?? null
@@ -225,8 +234,8 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Prop
 
         {/* Header */}
         <div className={styles.header}>
-          <h2 className={styles.heading}>Новая услуга</h2>
-          <button className={styles.closeBtn} onClick={onClose} aria-label="Закрыть">
+          <h2 className={styles.heading}>{t('heading')}</h2>
+          <button className={styles.closeBtn} onClick={onClose} aria-label={t('close')}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -239,7 +248,7 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Prop
 
             {/* Photo */}
             <div className={styles.field}>
-              <label className={styles.label}>Фото</label>
+              <label className={styles.label}>{t('photoLabel')}</label>
               <div
                 className={styles.photoArea}
                 style={photoUrl ? { backgroundImage: `url(${photoUrl})` } : {}}
@@ -252,7 +261,7 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Prop
                       <circle cx="8.5" cy="8.5" r="1.5" />
                       <polyline points="21 15 16 10 5 21" />
                     </svg>
-                    <span>Добавить фото</span>
+                    <span>{t('photoAdd')}</span>
                   </span>
                 )}
                 {photoUrl && (
@@ -266,25 +275,25 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Prop
 
             {/* Title */}
             <div className={styles.field}>
-              <label className={styles.label}>Название *</label>
+              <label className={styles.label}>{t('titleLabel')}</label>
               <input
                 className={styles.input}
                 type="text"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
-                placeholder="Например: Индивидуальный урок английского"
+                placeholder={t('titlePlaceholder')}
                 maxLength={120}
               />
             </div>
 
             {/* Description */}
             <div className={styles.field}>
-              <label className={styles.label}>Описание</label>
+              <label className={styles.label}>{t('descLabel')}</label>
               <textarea
                 className={styles.textarea}
                 value={description}
                 onChange={e => setDescription(e.target.value)}
-                placeholder="Расскажите о содержании занятия..."
+                placeholder={t('descPlaceholder')}
                 rows={3}
                 maxLength={500}
               />
@@ -292,28 +301,28 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Prop
 
             {/* Category — reuse existing CategorySelect */}
             <div className={styles.field}>
-              <label className={styles.label}>Категория</label>
+              <label className={styles.label}>{t('categoryLabel')}</label>
               <CategorySelect
                 canSelectMany={false}
                 maxLevel={1}
                 value={categoryIds}
                 onChange={setCategoryIds}
-                placeholder="— Выберите категорию —"
+                placeholder={t('categoryPlaceholder')}
               />
             </div>
 
             {/* Duration */}
             <div className={styles.field}>
-              <label className={styles.label}>Продолжительность</label>
+              <label className={styles.label}>{t('durationLabel')}</label>
               <div className={styles.durationGroup}>
-                {DURATION_OPTIONS.map(d => (
+                {DURATION_VALUES.map(v => (
                   <button
-                    key={d.value}
+                    key={v}
                     type="button"
-                    className={`${styles.durationBtn} ${duration === d.value ? styles.durationBtnActive : ''}`}
-                    onClick={() => setDuration(d.value)}
+                    className={`${styles.durationBtn} ${duration === v ? styles.durationBtnActive : ''}`}
+                    onClick={() => setDuration(v)}
                   >
-                    {d.label}
+                    {formatDuration(v)}
                   </button>
                 ))}
               </div>
@@ -321,31 +330,31 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Prop
 
             {/* Time range */}
             <div className={styles.field}>
-              <label className={styles.label}>Время приёма</label>
+              <label className={styles.label}>{t('timeRangeLabel')}</label>
               <div className={styles.timeRow}>
-                <span className={styles.timeRowLabel}>с</span>
+                <span className={styles.timeRowLabel}>{t('timeFrom')}</span>
                 <TimeSelect value={timeFrom} onChange={setTimeFrom} />
-                <span className={styles.timeRowLabel}>по</span>
+                <span className={styles.timeRowLabel}>{t('timeTo')}</span>
                 <TimeSelect value={timeTo} onChange={setTimeTo} />
               </div>
             </div>
 
             {/* Type toggle */}
             <div className={styles.field}>
-              <label className={styles.label}>Формат</label>
+              <label className={styles.label}>{t('formatLabel')}</label>
               <div className={styles.toggle}>
                 <button type="button" className={`${styles.toggleBtn} ${!isGroup ? styles.toggleActive : ''}`} onClick={() => setIsGroup(false)}>
-                  Личная
+                  {t('formatPersonal')}
                 </button>
                 <button type="button" className={`${styles.toggleBtn} ${isGroup ? styles.toggleActive : ''}`} onClick={() => setIsGroup(true)}>
-                  Групповая
+                  {t('formatGroup')}
                 </button>
               </div>
             </div>
 
             {/* Price */}
             <div className={styles.field}>
-              <label className={styles.label}>Цена *</label>
+              <label className={styles.label}>{t('priceLabel')}</label>
               <div className={styles.priceWrap}>
                 <input
                   className={styles.input}
@@ -377,21 +386,21 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Prop
                     }
                   }}
                 />
-                Личная услуга для конкретного ученика
+                {t('personalLabel')}
               </label>
               {isPersonal && (
                 <div className={styles.studentPicker}>
                   {studentsLoading ? (
-                    <span>Загрузка учеников…</span>
+                    <span>{t('loadingStudents')}</span>
                   ) : students.length === 0 ? (
-                    <span style={{ fontSize: 12, color: '#bbb' }}>Нет связанных учеников</span>
+                    <span style={{ fontSize: 12, color: '#bbb' }}>{t('noStudents')}</span>
                   ) : (
                     <select
                       className={styles.input}
                       value={personalStudentId}
                       onChange={e => setPersonalStudentId(e.target.value)}
                     >
-                      <option value="">— Выберите ученика —</option>
+                      <option value="">{t('selectStudent')}</option>
                       {students.map(s => (
                         <option key={s.id} value={s.id}>{s.name}</option>
                       ))}
@@ -407,13 +416,13 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Prop
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                   {promoOpen ? <polyline points="18 15 12 9 6 15" /> : <polyline points="6 9 12 15 18 9" />}
                 </svg>
-                {promoOpen ? 'Скрыть промокод' : 'Добавить промокод'}
+                {promoOpen ? t('promoHide') : t('promoAdd')}
               </button>
               {promoOpen && (
                 <div className={styles.promoFields}>
                   <div className={styles.row}>
                     <div className={styles.field} style={{ flex: 2 }}>
-                      <label className={styles.label}>Код</label>
+                      <label className={styles.label}>{t('promoCode')}</label>
                       <div className={styles.promoCodeRow}>
                         <input
                           className={styles.input}
@@ -423,7 +432,7 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Prop
                           placeholder="SUMMER20"
                           maxLength={20}
                         />
-                        <button type="button" className={styles.genBtn} onClick={() => setPromoCode(randomCode())} title="Сгенерировать">
+                        <button type="button" className={styles.genBtn} onClick={() => setPromoCode(randomCode())} title={t('promoGenerate')}>
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                             <polyline points="23 4 23 10 17 10" />
                             <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
@@ -432,22 +441,22 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Prop
                       </div>
                     </div>
                     <div className={styles.field}>
-                      <label className={styles.label}>Скидка %</label>
+                      <label className={styles.label}>{t('promoDiscount')}</label>
                       <input className={styles.input} type="number" min={1} max={100} value={promoDiscount} onChange={e => setPromoDiscount(e.target.value)} placeholder="10" />
                     </div>
                     <div className={styles.field}>
-                      <label className={styles.label}>Лимит</label>
+                      <label className={styles.label}>{t('promoLimit')}</label>
                       <input className={styles.input} type="number" min={1} value={promoLimit} onChange={e => setPromoLimit(e.target.value)} placeholder="∞" />
                     </div>
                   </div>
                   <div className={styles.field}>
-                    <label className={styles.label}>Условие выдачи <span style={{ fontWeight: 400, color: '#bbb' }}>(необязательно)</span></label>
+                    <label className={styles.label}>{t('promoConditions')} <span style={{ fontWeight: 400, color: '#bbb' }}>{t('promoConditionsHint')}</span></label>
                     <input
                       className={styles.input}
                       type="text"
                       value={promoConditions}
                       onChange={e => setPromoConditions(e.target.value)}
-                      placeholder="Например: после 5 видеоуроков, за прохождение роадмапа..."
+                      placeholder={t('promoConditionsPlaceholder')}
                       maxLength={200}
                     />
                   </div>
@@ -460,11 +469,11 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Prop
 
           {/* ── RIGHT: Live preview ── */}
           <div className={styles.preview}>
-            <div className={styles.previewLabel}>Предпросмотр</div>
+            <div className={styles.previewLabel}>{t('preview')}</div>
             <div className={styles.previewCard}>
               <ServiceCard
                 id="preview"
-                title={title || 'Название услуги'}
+                title={title || t('previewTitle')}
                 photoUrl={photoUrl}
                 duration={duration}
                 timeFrom={timeFrom}
@@ -480,9 +489,9 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Prop
 
         {/* Footer */}
         <div className={styles.footer}>
-          <button type="button" className={styles.cancelBtn} onClick={onClose} disabled={submitting}>Отмена</button>
+          <button type="button" className={styles.cancelBtn} onClick={onClose} disabled={submitting}>{t('cancel')}</button>
           <button type="submit" form="service-form" className={styles.submitBtn} disabled={submitting}>
-            {submitting ? 'Сохранение...' : 'Создать услугу'}
+            {submitting ? t('saving') : t('create')}
           </button>
         </div>
       </div>

@@ -19,7 +19,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
     if (!roadmap) return NextResponse.json({ ok: false })
 
     // Не считаем просмотры владельца
-    if (session.user.role === 'TEACHER' && roadmap.teacherId === session.user.id) {
+    if ((session.user.role === 'TEACHER' || session.user.role === 'ADMIN') && roadmap.teacherId === session.user.id) {
       return NextResponse.json({ ok: false })
     }
 

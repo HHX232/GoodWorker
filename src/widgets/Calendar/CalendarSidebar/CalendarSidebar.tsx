@@ -4,6 +4,7 @@ import {selectMonthTasks, selectPendingTasksCount, selectWeekTasks} from '@/feat
 import {useActions} from '@/features/hooks/store/useActions'
 import {useTypedSelector} from '@/features/hooks/store/useTypedSelector'
 import {CalendarStudent, CalendarTask} from '@/shared/types/Calendar/calendar.types'
+import {useTranslations} from 'next-intl'
 import {JSX, useState} from 'react'
 import styles from './CalendarSidebar.module.scss'
 
@@ -15,6 +16,7 @@ interface CalendarSidebarProps {
 }
 
 export function CalendarSidebar({tasks, students, onTaskClick, onTaskToggle}: CalendarSidebarProps) {
+  const t = useTranslations('calendar.sidebar')
   const [collapsed, setCollapsed] = useState(false)
   const [weekCollapsed, setWeekCollapsed] = useState(false)
   const [monthCollapsed, setMonthCollapsed] = useState(false)
@@ -29,9 +31,9 @@ export function CalendarSidebar({tasks, students, onTaskClick, onTaskToggle}: Ca
       <button
         className={styles.collapseBtn}
         onClick={() => setCollapsed((v) => !v)}
-        aria-label={collapsed ? 'Развернуть' : 'Свернуть'}
+        aria-label={t('collapse')}
       >
-        {!collapsed && <p>Свернуть</p>}
+        {!collapsed && <p>{t('collapse')}</p>}
         <svg width='12' height='12' viewBox='0 0 24 24' fill='none'>
           <path d='M15 18l-6-6 6-6' stroke='#FFFFFF' strokeWidth='2' strokeLinecap='round' />
         </svg>
@@ -40,17 +42,17 @@ export function CalendarSidebar({tasks, students, onTaskClick, onTaskToggle}: Ca
       {/* ── Контент — скрывается при collapse ── */}
       <div className={styles.scrollContent}>
         <nav className={styles.section}>
-          <span className={styles.sectionLabel}>Навигация</span>
-          <NavItem icon='calendar' label='Календарь' active />
-          <NavItem icon='check' label='Задачи' badge={pendingCount} />
-          <NavItem icon='users' label='Ученики' badge={students.length} />
+          <span className={styles.sectionLabel}>{t('navigation')}</span>
+          <NavItem icon='calendar' label={t('calendarNav')} active />
+          <NavItem icon='check' label={t('tasksNav')} badge={pendingCount} />
+          <NavItem icon='users' label={t('studentsNav')} badge={students.length} />
         </nav>
 
         <div className={styles.divider} />
 
         <div className={styles.section}>
           <button className={styles.sectionToggle} onClick={() => setWeekCollapsed((v) => !v)}>
-            <span className={styles.sectionLabel}>Задачи на неделю</span>
+            <span className={styles.sectionLabel}>{t('weekTasks')}</span>
             <svg
               width='10'
               height='10'
@@ -65,7 +67,7 @@ export function CalendarSidebar({tasks, students, onTaskClick, onTaskToggle}: Ca
             <svg width='11' height='11' viewBox='0 0 24 24' fill='none'>
               <path d='M12 5v14M5 12h14' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
             </svg>
-            Добавить задачу
+            {t('addTask')}
           </button>
           {!weekCollapsed &&
             weekTasks.map((task) => (
@@ -82,7 +84,7 @@ export function CalendarSidebar({tasks, students, onTaskClick, onTaskToggle}: Ca
 
         <div className={styles.section}>
           <button className={styles.sectionToggle} onClick={() => setMonthCollapsed((v) => !v)}>
-            <span className={styles.sectionLabel}>Задачи на месяц</span>
+            <span className={styles.sectionLabel}>{t('monthTasks')}</span>
             <svg
               width='10'
               height='10'
@@ -97,7 +99,7 @@ export function CalendarSidebar({tasks, students, onTaskClick, onTaskToggle}: Ca
             <svg width='11' height='11' viewBox='0 0 24 24' fill='none'>
               <path d='M12 5v14M5 12h14' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
             </svg>
-            Добавить задачу
+            {t('addTask')}
           </button>
           {!monthCollapsed &&
             monthTasks.map((task) => (
@@ -114,7 +116,7 @@ export function CalendarSidebar({tasks, students, onTaskClick, onTaskToggle}: Ca
 
         <div className={styles.section}>
           <button className={styles.sectionToggle} onClick={() => setStudentsCollapsed((v) => !v)}>
-            <span className={styles.sectionLabel}>Ученики</span>
+            <span className={styles.sectionLabel}>{t('studentsNav')}</span>
             <svg
               width='10'
               height='10'
@@ -143,17 +145,15 @@ export function CalendarSidebar({tasks, students, onTaskClick, onTaskToggle}: Ca
         </div>
 
         <div className={styles.plan}>
-          <div className={styles.planTitle}>Pro план</div>
-          <div className={styles.planDesc}>Безлимитные ученики, аналитика и экспорт расписания</div>
-          <div className={styles.planPrice}>
-            990 ₽ <span>/ месяц</span>
-          </div>
+          <div className={styles.planTitle}>{t('proPlan')}</div>
+          <div className={styles.planDesc}>{t('proPlanDesc')}</div>
+          <div className={styles.planPrice}>{t('proPlanPrice')}</div>
           <div className={styles.planFeats}>
-            <PlanFeat>Неограниченные ученики</PlanFeat>
-            <PlanFeat>Экспорт в PDF / Google Cal</PlanFeat>
-            <PlanFeat>Аналитика прогресса</PlanFeat>
+            <PlanFeat>{t('feat1')}</PlanFeat>
+            <PlanFeat>{t('feat2')}</PlanFeat>
+            <PlanFeat>{t('feat3')}</PlanFeat>
           </div>
-          <button className={styles.planBtn}>Перейти на Pro</button>
+          <button className={styles.planBtn}>{t('proPlanUpgrade')}</button>
         </div>
       </div>
     </aside>
@@ -208,6 +208,7 @@ function NavItem({icon, label, active, badge}: {icon: string; label: string; act
 }
 
 function TaskItem({task, onClick, onToggle}: {task: CalendarTask; onClick: () => void; onToggle: () => void}) {
+  const t = useTranslations('calendar.sidebar')
   return (
     <div className={styles.taskItem} onClick={onClick}>
       <button
@@ -216,7 +217,7 @@ function TaskItem({task, onClick, onToggle}: {task: CalendarTask; onClick: () =>
           e.stopPropagation()
           onToggle()
         }}
-        aria-label={task.completed ? 'Снять выполнение' : 'Отметить выполненным'}
+        aria-label={task.completed ? t('unmarkDone') : t('markDone')}
       >
         {task.completed && (
           <svg width='9' height='9' viewBox='0 0 12 12' fill='none'>
@@ -227,7 +228,7 @@ function TaskItem({task, onClick, onToggle}: {task: CalendarTask; onClick: () =>
       <div className={styles.taskContent}>
         <span className={`${styles.taskTitle} ${task.completed ? styles.taskTitleDone : ''}`}>{task.title}</span>
         <span className={styles.taskMeta}>
-          {task.completed ? 'Выполнено' : `${task.dueDate ?? ''} · ${task.category ?? ''}`}
+          {task.completed ? t('taskDone') : `${task.dueDate ?? ''} · ${task.category ?? ''}`}
         </span>
       </div>
     </div>

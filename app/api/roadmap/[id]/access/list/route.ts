@@ -12,7 +12,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const { id: roadmapId } = await params
     const session = await auth()
 
-    if (!session?.user?.id || session.user.role !== 'TEACHER') {
+    if (!session?.user?.id || session.user.role !== 'TEACHER' && session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

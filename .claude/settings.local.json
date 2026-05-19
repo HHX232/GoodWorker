@@ -116,7 +116,16 @@
       "Bash(grep -n \"useEffect\\\\|getElementById\\\\|srcObject\\\\|attach\\\\|videoTrack\\\\|v-\\\\${\" /Users/nikitatisevic/Desktop/GoodWorkerRemaster/src/widgets/VideoRoom/VideoCallPage.tsx)",
       "Bash(grep -n \"getElementById\\\\|srcObject\\\\|attachTrack\\\\|v-\\\\${p\\\\|v-\\\\${\" /Users/nikitatisevic/Desktop/GoodWorkerRemaster/src/widgets/VideoRoom/VideoCallPage.tsx)",
       "Bash(grep -rn \"getElementById\\\\|srcObject\\\\|v-\\\\${\" /Users/nikitatisevic/Desktop/GoodWorkerRemaster/src/widgets/VideoRoom/)",
-      "Bash(node -e \"const l = require\\('/Users/nikitatisevic/Desktop/GoodWorkerRemaster/node_modules/lucide-react'\\); console.log\\(Object.keys\\(l\\).filter\\(k => /lightbulb|type|text|case|letter|align|shuffle|pencil/i.test\\(k\\)\\).join\\(', '\\)\\)\")"
+      "Bash(node -e \"const l = require\\('/Users/nikitatisevic/Desktop/GoodWorkerRemaster/node_modules/lucide-react'\\); console.log\\(Object.keys\\(l\\).filter\\(k => /lightbulb|type|text|case|letter|align|shuffle|pencil/i.test\\(k\\)\\).join\\(', '\\)\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('/Users/nikitatisevic/Desktop/GoodWorkerRemaster/messages/en.json', 'utf8'\\)\\); console.log\\('en.json: valid'\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('/Users/nikitatisevic/Desktop/GoodWorkerRemaster/messages/ru.json', 'utf8'\\)\\); console.log\\('ru.json: valid'\\)\")",
+      "Bash(python3 -c ' *)",
+      "Bash(git config *)",
+      "Read(//Users/nikitatisevic/**)",
+      "Bash(security find-internet-password *)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' -H 'Authorization: token __TRACKED_VAR__' https://api.github.com/user)",
+      "Bash(curl -s -X POST -H 'Authorization: token __TRACKED_VAR__' -H 'Content-Type: application/json' https://api.github.com/user/repos -d '{\"name\":\"goodworker-tg-bot\",\"description\":\"Telegram notification bot for GoodWorker — sends lesson reminders to users\",\"private\":false}')",
+      "Bash(curl -s -X POST -H 'Authorization: token __TRACKED_VAR__' -H 'Content-Type: application/json' https://api.github.com/user/repos -d '{\"name\":\"goodworker-tg-bot\",\"description\":\"Telegram notification bot for GoodWorker\",\"private\":false}')"
     ],
     "additionalDirectories": [
       "c:\\Users\\Мастер\\Desktop\\goodworkerremaster\\app\\api\\roadmap",

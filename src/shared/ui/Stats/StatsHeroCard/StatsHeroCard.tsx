@@ -1,12 +1,14 @@
 'use client'
 import Image from 'next/image'
 import {useState} from 'react'
+import {useLocale, useTranslations} from 'next-intl'
 
 import styles from './StatsHeroCard.module.scss'
 import {mockReceipts, Receipt} from '@/shared/types/Receipt/receipt.types'
 import ModalWindowDefault from '../../Modals/ModalWindowDefault/ModalWindowDefault'
 import {ReceiptFullPreview} from '../Receipt/ReceiptFullPreview'
 import {ReceiptMiniPreview} from '../Receipt/ReceiptMiniPreview'
+import {getDisplayName} from '@/shared/utils/transliterate'
 
 interface TeacherInfo {
   name: string
@@ -31,8 +33,11 @@ function ReceiptsListContent({receipts, onSelect}: {receipts: Receipt[]; onSelec
 
 function StatsHeroCard({extraClass, teacher}: {extraClass?: string; teacher?: TeacherInfo}) {
   const [modal, setModal] = useState<ModalState>({type: 'none'})
+  const locale = useLocale()
+  const t = useTranslations('statsPage.heroCard')
 
-  const displayName = teacher?.name ?? 'Учитель'
+  const rawName = teacher?.name ?? t('teacher')
+  const displayName = getDisplayName(rawName, locale)
   const displayAvatar = teacher?.avatarUrl ?? null
 
   const isOpen = modal.type !== 'none'
@@ -43,7 +48,7 @@ function StatsHeroCard({extraClass, teacher}: {extraClass?: string; teacher?: Te
 
   const modalTitle =
     modal.type === 'list'
-      ? `Чеки (${mockReceipts.length})`
+      ? t('receiptsCount', {count: mockReceipts.length})
       : modal.type === 'receipt'
       ? modal.receipt.subject
       : ''
@@ -68,13 +73,13 @@ function StatsHeroCard({extraClass, teacher}: {extraClass?: string; teacher?: Te
           <div className={styles.blur_box}>
             <div className={styles.left_name_text}>
               <h2 className={styles.avatar_name}>{displayName}</h2>
-              <span>Учитель</span>
+              <span>{t('teacher')}</span>
             </div>
           </div>
         </div>
 
         <div className={styles.avatar_info}>
-          <h2>Чеки</h2>
+          <h2>{t('receipts')}</h2>
           <div className={styles.receipts_row}>
             {mockReceipts.slice(0, 2).map((r) => (
               <button key={r.id} type='button' className={styles.receipt_mini} onClick={() => openReceipt(r)}>
@@ -86,7 +91,7 @@ function StatsHeroCard({extraClass, teacher}: {extraClass?: string; teacher?: Te
               </button>
             ))}
 
-            <button type='button' className={styles.arrow_btn} onClick={openList} aria-label='Все чеки'>
+            <button type='button' className={styles.arrow_btn} onClick={openList} aria-label={t('allReceipts')}>
               <svg viewBox='0 0 13 13' fill='none'>
                 <path
                   d='M2 6.5h9M7.5 3 11 6.5 7.5 10'
@@ -100,7 +105,7 @@ function StatsHeroCard({extraClass, teacher}: {extraClass?: string; teacher?: Te
           </div>
 
           <div className={styles.review_box}>
-            <span className={styles.avatar_reviews}>Профиль</span>
+            <span className={styles.avatar_reviews}>{t('profile')}</span>
             <div className={styles.avatar_badge}>★ 5.0</div>
           </div>
         </div>

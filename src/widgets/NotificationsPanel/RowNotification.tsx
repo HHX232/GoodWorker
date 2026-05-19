@@ -1,4 +1,5 @@
 'use client'
+import {useLocale} from 'next-intl'
 import styles from './RowNotification.module.scss'
 
 // ─── Types ───────────────────────────────────────────────
@@ -42,7 +43,7 @@ export const TYPE_CONFIG: Record<string, TypeConfig> = {
         <line x1='12' y1='9' x2='12' y2='13' /><line x1='12' y1='17' x2='12.01' y2='17' />
       </svg>
     ),
-    actionLabel: 'Открыть жалобы',
+    actionLabel: 'Open complaints',
     getHref: () => '/complaints',
   },
   COMPLAINT_REPLIED: {
@@ -54,7 +55,7 @@ export const TYPE_CONFIG: Record<string, TypeConfig> = {
         <polyline points='9 17 4 12 9 7' /><path d='M20 18v-2a4 4 0 0 0-4-4H4' />
       </svg>
     ),
-    actionLabel: 'Посмотреть ответ',
+    actionLabel: 'View reply',
     getHref: () => '/complaints',
   },
   COMPLAINT_CLOSED: {
@@ -77,7 +78,7 @@ export const TYPE_CONFIG: Record<string, TypeConfig> = {
         <path d='M23 21v-2a4 4 0 0 0-3-3.87' /><path d='M16 3.13a4 4 0 0 1 0 7.75' />
       </svg>
     ),
-    actionLabel: 'Курс',
+    actionLabel: 'Course',
     getHref: (p) => p.roadmapId ? `/road-map/${p.roadmapId}` : null,
   },
   ROADMAP_PURCHASE: {
@@ -88,7 +89,7 @@ export const TYPE_CONFIG: Record<string, TypeConfig> = {
         <line x1='12' y1='1' x2='12' y2='23' /><path d='M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6' />
       </svg>
     ),
-    actionLabel: 'Статистика',
+    actionLabel: 'Statistics',
     getHref: (p) => p.roadmapId ? `/road-map/${p.roadmapId}` : null,
   },
   NEW_COMMENT_ON_POST: {
@@ -99,7 +100,7 @@ export const TYPE_CONFIG: Record<string, TypeConfig> = {
         <path d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z' />
       </svg>
     ),
-    actionLabel: 'Перейти к посту',
+    actionLabel: 'Go to post',
     getHref: (p) => p.postId ? `/post/${p.postId}` : null,
   },
   NEW_REVIEW: {
@@ -110,7 +111,7 @@ export const TYPE_CONFIG: Record<string, TypeConfig> = {
         <polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2' />
       </svg>
     ),
-    actionLabel: 'Курс',
+    actionLabel: 'Course',
     getHref: (p) => p.roadmapId ? `/road-map/${p.roadmapId}` : null,
   },
   NEW_POST: {
@@ -122,7 +123,7 @@ export const TYPE_CONFIG: Record<string, TypeConfig> = {
         <polyline points='14 2 14 8 20 8' /><line x1='16' y1='13' x2='8' y2='13' /><line x1='16' y1='17' x2='8' y2='17' />
       </svg>
     ),
-    actionLabel: 'Читать пост',
+    actionLabel: 'Read post',
     getHref: (p) => p.postId ? `/post/${p.postId}` : null,
   },
   SYSTEM: {
@@ -150,22 +151,25 @@ export const FALLBACK_CONFIG: TypeConfig = {
 
 // ─── Helpers ──────────────────────────────────────────────
 
-export function relativeTime(iso: string): string {
+export function relativeTime(iso: string, locale = 'ru'): string {
   const diff = Date.now() - new Date(iso).getTime()
   const min = Math.floor(diff / 60000)
-  if (min < 1) return 'только что'
-  if (min < 60) return `${min} мин.`
+  const isEn = locale === 'en'
+  if (min < 1) return isEn ? 'just now' : 'только что'
+  if (min < 60) return isEn ? `${min} min.` : `${min} мин.`
   const hrs = Math.floor(min / 60)
-  if (hrs < 24) return `${hrs} ч.`
+  if (hrs < 24) return isEn ? `${hrs} h.` : `${hrs} ч.`
   const days = Math.floor(hrs / 24)
-  if (days < 7) return `${days} д.`
-  return new Date(iso).toLocaleDateString('ru', {day: '2-digit', month: 'short'})
+  if (days < 7) return isEn ? `${days} d.` : `${days} д.`
+  const intlLocale = isEn ? 'en-US' : 'ru-RU'
+  return new Date(iso).toLocaleDateString(intlLocale, {day: '2-digit', month: 'short'})
 }
 
 // ─── Compact row (mini panel) ─────────────────────────────
 
 export function RowNotification({item, count = 1, allItems, onOpen}: Props) {
   const cfg = TYPE_CONFIG[item.type] ?? FALLBACK_CONFIG
+  const locale = useLocale()
   const items = allItems ?? [item]
   const hasUnread = items.some((n) => !n.isRead)
 
@@ -191,7 +195,7 @@ export function RowNotification({item, count = 1, allItems, onOpen}: Props) {
               </span>
             )}
           </div>
-          <span className={styles.time}>{relativeTime(item.createdAt)}</span>
+          <span className={styles.time}>{relativeTime(item.createdAt, locale)}</span>
         </div>
       </div>
 

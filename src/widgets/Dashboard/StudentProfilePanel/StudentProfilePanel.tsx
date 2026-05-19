@@ -7,6 +7,73 @@ import { RefObject, useEffect, useState } from 'react'
 import styles from './StudentProfilePanel.module.scss'
 
 import { VideoCallModal } from '@/widgets/Dashboard/VideoCallModal/VideoCallModal'
+import { toast } from 'sonner'
+
+function PromoCodeSection({ t }: { t: ReturnType<typeof useTranslations> }) {
+  const [code, setCode] = useState('')
+  const [applying, setApplying] = useState(false)
+
+  const handleApply = async () => {
+    const trimmed = code.trim().toUpperCase()
+    if (!trimmed) return
+    setApplying(true)
+    try {
+      const res = await fetch('/api/activate-promocode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: trimmed }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        const msgMap: Record<string, string> = {
+          INVALID_PROMO: t('promoInvalid'),
+          PROMO_EXPIRED: t('promoExpired'),
+          PROMO_EXHAUSTED: t('promoExhausted'),
+          ALREADY_USED: t('promoAlreadyUsed'),
+        }
+        toast.error(msgMap[data.error] ?? t('promoNetworkError'))
+      } else {
+        const until = new Date(data.vipUntil).toLocaleDateString()
+        toast.success(t('promoSuccess', { date: until }))
+        setCode('')
+      }
+    } catch {
+      toast.error(t('promoNetworkError'))
+    } finally {
+      setApplying(false)
+    }
+  }
+
+  return (
+    <>
+      <div className={styles.divider} />
+      <div className={styles.section}>
+        <div className={styles.sectionLabel}>{t('promoSection')}</div>
+        <div className={styles.field}>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input
+              className={styles.input}
+              type="text"
+              value={code}
+              onChange={e => setCode(e.target.value.toUpperCase())}
+              placeholder={t('promoInputPlaceholder')}
+              maxLength={32}
+              onKeyDown={e => e.key === 'Enter' && handleApply()}
+            />
+            <button
+              className={styles.saveBtn}
+              onClick={handleApply}
+              disabled={applying || !code.trim()}
+              style={{ whiteSpace: 'nowrap' }}
+            >
+              {applying ? t('promoApplying') : t('promoApplyBtn')}
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
 
 interface UpcomingMeeting {
   id: string
@@ -280,6 +347,8 @@ export function StudentProfilePanel({
           </button>
         </div>
         {videoOpen && <VideoCallModal defaultName={name} onClose={() => setVideoOpen(false)} />}
+
+        <PromoCodeSection t={t} />
 
         <div className={styles.divider} />
 

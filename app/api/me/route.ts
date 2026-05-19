@@ -10,9 +10,9 @@ export async function GET() {
     return NextResponse.json({error: 'Unauthorized'}, {status: 401})
   }
 
-  const {id, role} = session.user as {id: string; role: 'STUDENT' | 'TEACHER'}
+  const {id, role} = session.user as {id: string; role: 'STUDENT' | 'TEACHER' | 'ADMIN'}
 
-  if (role === 'TEACHER') {
+  if (role === 'TEACHER' || role === 'ADMIN') {
     const teacher = await prisma.teacher.findUnique({
       where: {id},
       select: {

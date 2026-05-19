@@ -17,6 +17,11 @@ export interface CalendarEvent {
   subject?: string
   description?: string
   status?: 'scheduled' | 'completed' | 'cancelled'
+  serviceId?: string
+  serviceTitle?: string
+  servicePrice?: number
+  serviceDurationMinutes?: number
+  durationMinutes?: number
 }
 
 export interface CalendarTask {

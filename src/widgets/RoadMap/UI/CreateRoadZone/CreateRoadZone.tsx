@@ -25,6 +25,7 @@ import {
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import {EyeOffIcon, LockIcon} from 'lucide-react'
+import {useTranslations} from 'next-intl'
 import {useCallback, useEffect, useRef} from 'react'
 import {AutoLayoutButton} from '../../AutoLayoutButton/AutoLayoutButton'
 import DeletableEdge from '../nodes/DeletableEdge/DeletableEdge'
@@ -43,6 +44,7 @@ function CreateRoadZoneInner() {
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
   const {screenToFlowPosition, getNodes, getEdges, updateNodeData} = useReactFlow()
 
+  const t = useTranslations('roadMap')
   const {toggleRoadmapPaywallMode} = useActions()
   const isPaywallMode = useTypedSelector((state) => state.roadmapUISlice.isPaywallMode)
 
@@ -182,7 +184,7 @@ function CreateRoadZoneInner() {
         {isPaywallMode && (
           <div className={styles.paywallBanner}>
             <EyeOffIcon size={14} />
-            Режим paywall — нажмите на блок чтобы скрыть его и всё дерево после него
+            {t('paywallBannerText')}
           </div>
         )}
 
@@ -214,10 +216,10 @@ function CreateRoadZoneInner() {
                 onClick={() => {
                   toggleRoadmapPaywallMode()
                 }}
-                title='Режим paywall'
+                title={t('paywallModeTitle')}
               >
                 <LockIcon size={14} />
-                {isPaywallMode ? 'Выйти' : 'Paywall'}
+                {isPaywallMode ? t('paywallExit') : 'Paywall'}
               </button>
 
               <SaveRoadMapButton />

@@ -2,6 +2,7 @@ import { generateOtp, saveOtp, sendOtp, verifyOtp } from '@/shared/api/otp'
 import { getIp, limits } from '@/shared/api/rate-limit'
 import { tooManyRequests } from '@/shared/api/rate-limit-response'
 import { prisma } from '@/shared/prisma/prisma'
+import { applyPromoCode } from '@/lib/applyPromoCode'
 import bcrypt from 'bcryptjs'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -163,8 +164,15 @@ const sendUserSchema = z
       return NextResponse.json({ error: 'Неверный userType' }, { status: 400 })
     }
 
-    // ❌ Убрали signIn отсюда — фронт вызывает его сам после 201
-    return NextResponse.json(user, { status: 201 })
+    // Apply promo code silently if provided — registration always succeeds regardless
+    const promoCode: string | undefined = body.promoCode?.trim()
+    let promoResult = null
+    if (promoCode && user) {
+      const userRole = body.userType === 'Teacher' ? 'TEACHER' : 'STUDENT'
+      promoResult = await applyPromoCode(user.id, userRole, promoCode).catch(() => null)
+    }
+
+    return NextResponse.json({ ...user, promoResult }, { status: 201 })
 
   } catch (e) {
     console.error('VERIFY ERROR:', e)

@@ -6,6 +6,7 @@ import {ViewModeContext} from '@/shared/ui/RoadMap/context/ViewModeContext'
 import {PurchaseAccessModal} from '@/shared/ui/RoadMap/PurchaseAccessModal/PurchaseAccessModal'
 import {RoadmapReviewBar} from '@/shared/ui/RoadMap/RoadmapReviewBar/RoadmapReviewBar'
 import {RoadmapStatsModal} from '@/shared/ui/RoadMap/RoadmapStatsModal/RoadmapStatsModal'
+import {useLocale, useTranslations} from 'next-intl'
 import DeletableEdge from '@/widgets/RoadMap/UI/nodes/DeletableEdge/DeletableEdge'
 import NodeComponent from '@/widgets/RoadMap/UI/nodes/NodeComponent/NodeComponent'
 import {
@@ -37,11 +38,13 @@ interface RoadMapViewerProps {
   roadmapPrice?: number
   nodeAccessType?: RoadmapNodeAccessType | null
   initialAvgRating?: number
+  originalLanguage?: string | null
 }
 
 function BuyButton({price}: {price: number}) {
   const {openPurchaseModal} = useRoadmapAccessContext()
-  const label = price > 0 ? `Приобрести роадмап · ${price} ₽` : 'Приобрести доступ'
+  const t = useTranslations('roadmapViewer')
+  const label = price > 0 ? `${t('buy')} · ${price} ₽` : t('buyAccess')
 
   return (
     <button
@@ -73,6 +76,7 @@ function BuyButton({price}: {price: number}) {
 }
 
 function StatsButton({onClick}: {onClick: () => void}) {
+  const t = useTranslations('roadmapViewer')
   return (
     <button
       onClick={onClick}
@@ -98,7 +102,7 @@ function StatsButton({onClick}: {onClick: () => void}) {
         <rect x='10' y='7' width='4' height='14' rx='1' fill='currentColor' />
         <rect x='17' y='3' width='4' height='18' rx='1' fill='currentColor' />
       </svg>
-      Статистика
+      {t('stats')}
     </button>
   )
 }
@@ -108,8 +112,13 @@ function InnerFlow({
   edges: initialEdges,
   roadmapId,
   initialAvgRating,
+  originalLanguage,
 }: RoadMapViewerProps) {
   const {hasAccess, nodeAccessType, isOwner, roadmapPrice} = useRoadmapAccessContext()
+  const locale = useLocale()
+  const t = useTranslations('roadmapPreview')
+  const tLangs = useTranslations('roadmapPreview.languages')
+  const showLangBadge = originalLanguage && originalLanguage !== locale
   const isPaid = nodeAccessType !== null || roadmapPrice > 0
   const showBuyButton = isPaid && !hasAccess && !isOwner
   const [statsOpen, setStatsOpen] = useState(false)
@@ -149,6 +158,28 @@ function InnerFlow({
       >
         <Background variant={BackgroundVariant.Dots} gap={15} />
         <Controls position='top-left' />
+
+        {/* Language indicator — top-left below controls */}
+        {showLangBadge && (
+          <Panel
+            position='top-left'
+            style={{top: '50px', left: '10px', margin: 0, pointerEvents: 'none'}}
+          >
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '5px 12px', borderRadius: 8,
+              background: 'rgba(83,74,183,0.1)', color: '#534AB7',
+              fontSize: 12, fontWeight: 600, fontFamily: 'Roboto, sans-serif',
+              boxShadow: '0 1px 6px rgba(83,74,183,0.12)',
+            }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              </svg>
+              {t('originalLang')}: {tLangs(originalLanguage as Parameters<typeof tLangs>[0]) ?? originalLanguage}
+            </div>
+          </Panel>
+        )}
 
         {/* Reviews + comments — center top */}
         <Panel
@@ -202,7 +233,7 @@ export default function RoadMapViewer(props: RoadMapViewerProps) {
         }}
       >
         <ReactFlowProvider>
-          <InnerFlow {...props} />
+          <InnerFlow {...props} originalLanguage={props.originalLanguage} />
 
           <PurchaseAccessModal
             isOpen={purchaseOpen}

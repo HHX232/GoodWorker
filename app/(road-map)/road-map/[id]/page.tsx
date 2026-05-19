@@ -33,6 +33,7 @@ export default async function RoadMapPage({params}: Props) {
       roadmapPrice={roadmap.price}
       nodeAccessType={roadmap.nodeAccessType ?? null}
       initialAvgRating={roadmap.avgRating}
+      originalLanguage={roadmap.originalLanguage ?? null}
     />
   )
 }

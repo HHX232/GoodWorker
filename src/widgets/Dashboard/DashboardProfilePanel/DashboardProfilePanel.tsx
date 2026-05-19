@@ -7,6 +7,74 @@ import { RefObject, useEffect, useRef, useState } from 'react'
 import styles from './DashboardProfilePanel.module.scss'
 
 import { VideoCallModal } from '@/widgets/Dashboard/VideoCallModal/VideoCallModal'
+import { toast } from 'sonner'
+
+// ─── PromoCodeSection ─────────────────────────────────────
+
+function PromoCodeSection() {
+  const t = useTranslations('dashboard')
+  const [code, setCode] = useState('')
+  const [applying, setApplying] = useState(false)
+
+  const handleApply = async () => {
+    const trimmed = code.trim().toUpperCase()
+    if (!trimmed) return
+    setApplying(true)
+    try {
+      const res = await fetch('/api/activate-promocode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: trimmed }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        const msgMap: Record<string, string> = {
+          INVALID_PROMO: t('promoInvalid'),
+          PROMO_EXPIRED: t('promoExpired'),
+          PROMO_EXHAUSTED: t('promoExhausted'),
+          ALREADY_USED: t('promoAlreadyUsed'),
+        }
+        toast.error(msgMap[data.error] ?? t('promoNetworkError'))
+      } else {
+        const until = new Date(data.vipUntil).toLocaleDateString()
+        toast.success(t('promoSuccess', { date: until }))
+        setCode('')
+      }
+    } catch {
+      toast.error(t('promoNetworkError'))
+    } finally {
+      setApplying(false)
+    }
+  }
+
+  return (
+    <>
+      <div className={styles.divider} />
+      <div className={styles.section}>
+        <div className={styles.sectionLabel}>{t('promoSection')}</div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <input
+            className={styles.input}
+            type="text"
+            value={code}
+            onChange={e => setCode(e.target.value.toUpperCase())}
+            placeholder={t('promoInputPlaceholder')}
+            maxLength={32}
+            onKeyDown={e => e.key === 'Enter' && handleApply()}
+          />
+          <button
+            className={styles.saveBtn}
+            onClick={handleApply}
+            disabled={applying || !code.trim()}
+            style={{ whiteSpace: 'nowrap' }}
+          >
+            {applying ? t('promoApplying') : t('promoApplyBtn')}
+          </button>
+        </div>
+      </div>
+    </>
+  )
+}
 
 // ─── ExpItem type ─────────────────────────────────────────
 
@@ -24,6 +92,7 @@ interface ExpItem {
 // ─── ExperienceSection ────────────────────────────────────
 
 function ExperienceSection() {
+  const t = useTranslations('dashboard')
   const [items, setItems] = useState<ExpItem[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -90,22 +159,22 @@ function ExperienceSection() {
       <div className={styles.divider} />
       <div className={styles.section}>
         <div className={styles.expHeader}>
-          <div className={styles.sectionLabel}>Опыт работы</div>
-          <button className={styles.expAddBtn} onClick={() => setShowForm(p => !p)}>{showForm ? 'Отмена' : '+ Добавить'}</button>
+          <div className={styles.sectionLabel}>{t('expSection')}</div>
+          <button className={styles.expAddBtn} onClick={() => setShowForm(p => !p)}>{showForm ? t('expCancel') : t('expAdd')}</button>
         </div>
         {showForm && (
           <div className={styles.expForm}>
-            <input className={styles.input} placeholder="Должность / специализация*" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} />
-            <input className={styles.input} placeholder="Место работы / организация" value={form.organization} onChange={e => setForm(p => ({ ...p, organization: e.target.value }))} />
+            <input className={styles.input} placeholder={t('expPositionPlaceholder')} value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} />
+            <input className={styles.input} placeholder={t('expOrgPlaceholder')} value={form.organization} onChange={e => setForm(p => ({ ...p, organization: e.target.value }))} />
             <div className={styles.expYears}>
-              <input className={styles.input} type="number" placeholder="Год начала*" value={form.yearFrom} onChange={e => setForm(p => ({ ...p, yearFrom: e.target.value }))} />
-              <input className={styles.input} type="number" placeholder="Год конца (пусто = н.в.)" value={form.yearTo} onChange={e => setForm(p => ({ ...p, yearTo: e.target.value }))} />
+              <input className={styles.input} type="number" placeholder={t('expYearFromPlaceholder')} value={form.yearFrom} onChange={e => setForm(p => ({ ...p, yearFrom: e.target.value }))} />
+              <input className={styles.input} type="number" placeholder={t('expYearToPlaceholder')} value={form.yearTo} onChange={e => setForm(p => ({ ...p, yearTo: e.target.value }))} />
             </div>
-            <textarea className={styles.expTextarea} placeholder="Описание (необязательно)" rows={2} value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
-            <button className={styles.saveBtn} onClick={handleAdd} disabled={saving || !form.title || !form.yearFrom}>{saving ? 'Сохранение…' : 'Сохранить'}</button>
+            <textarea className={styles.expTextarea} placeholder={t('expDescPlaceholder')} rows={2} value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
+            <button className={styles.saveBtn} onClick={handleAdd} disabled={saving || !form.title || !form.yearFrom}>{saving ? t('expSaving') : t('expSave')}</button>
           </div>
         )}
-        {items.length === 0 && !showForm && <p className={styles.expEmpty}>Опыт не добавлен</p>}
+        {items.length === 0 && !showForm && <p className={styles.expEmpty}>{t('expEmpty')}</p>}
         <div className={styles.expList}>
           {items.map(item => (
             <div key={item.id} className={styles.expItem}>
@@ -113,13 +182,13 @@ function ExperienceSection() {
                 <div className={styles.expItemInfo}>
                   <span className={styles.expTitle}>{item.title}</span>
                   {item.organization && <span className={styles.expOrg}>{item.organization}</span>}
-                  <span className={styles.expYearsLabel}>{item.yearFrom}–{item.yearTo ?? 'н.в.'}</span>
+                  <span className={styles.expYearsLabel}>{item.yearFrom}–{item.yearTo ?? t('expPresent')}</span>
                 </div>
                 <div className={styles.expItemActions}>
                   {item.verifiedAt && (
-                    <span className={styles.expVerifiedBadge} title={`Подтверждено ${new Date(item.verifiedAt).toLocaleDateString('ru')}`}>✓</span>
+                    <span className={styles.expVerifiedBadge} title={`${new Date(item.verifiedAt).toLocaleDateString()}`}>✓</span>
                   )}
-                  <button className={styles.expDocBtn} onClick={() => handleDocUpload(item.id)} title="Прикрепить документы">
+                  <button className={styles.expDocBtn} onClick={() => handleDocUpload(item.id)} title={t('expAttachDocs')}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" /></svg>
                     {item.documentUrls?.length > 0 ? item.documentUrls.length : ''}
                   </button>
@@ -139,6 +208,7 @@ function ExperienceSection() {
 // ─── IdentitySection ──────────────────────────────────────
 
 function IdentitySection() {
+  const t = useTranslations('dashboard')
   const [docUrl, setDocUrl] = useState<string | null>(null)
   const [confirmed, setConfirmed] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(true)
@@ -176,15 +246,15 @@ function IdentitySection() {
     <>
       <div className={styles.divider} />
       <div className={styles.section}>
-        <div className={styles.sectionLabel}>Подтверждение личности</div>
+        <div className={styles.sectionLabel}>{t('identitySection')}</div>
         <div className={styles.identityRow}>
           <div className={styles.identityStatus}>
-            {!docUrl && <span className={styles.identityPending}>Паспорт не загружен</span>}
-            {docUrl && !confirmed && <span className={styles.identityUploaded}>Паспорт загружен — на проверке</span>}
-            {docUrl && confirmed && <span className={styles.identityConfirmed} title="Личность подтверждена администратором">✓ Личность подтверждена</span>}
+            {!docUrl && <span className={styles.identityPending}>{t('identityNotUploaded')}</span>}
+            {docUrl && !confirmed && <span className={styles.identityUploaded}>{t('identityUploaded')}</span>}
+            {docUrl && confirmed && <span className={styles.identityConfirmed} title={t('identityConfirmedTooltip')}>{t('identityConfirmed')}</span>}
           </div>
           <button className={styles.securityBtn} onClick={() => fileRef.current?.click()} disabled={uploading}>
-            {uploading ? '…' : docUrl ? 'Заменить' : 'Загрузить'}
+            {uploading ? '…' : docUrl ? t('identityReplace') : t('identityUpload')}
           </button>
         </div>
         <input ref={fileRef} type="file" accept="image/jpeg,image/jpg,image/png,image/webp" style={{ display: 'none' }} onChange={handleFile} />
@@ -397,6 +467,8 @@ export function DashboardProfilePanel({
             </Link>
           </div>
         </div>
+
+        <PromoCodeSection />
 
         <div className={styles.divider} />
 

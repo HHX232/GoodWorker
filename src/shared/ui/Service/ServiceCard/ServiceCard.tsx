@@ -13,7 +13,20 @@ export interface ServiceCardProps {
   price: number
   category?: { translations: { langCode: string; name: string }[] } | null
   locale?: string
+  originalLangCode?: string
+  isTranslated?: boolean
   onBook?: () => void
+}
+
+const LANG_NAMES: Record<string, string> = {
+  ru: 'Russian', en: 'English', hi: 'Hindi', zh: 'Chinese', de: 'German', fr: 'French', es: 'Spanish',
+}
+
+const LOCALE_STRINGS: Record<string, { min: string; h: string; book: string }> = {
+  ru: { min: 'мин', h: 'ч', book: 'Записаться' },
+  en: { min: 'min', h: 'h', book: 'Book' },
+  hi: { min: 'मिनट', h: 'घं', book: 'बुक करें' },
+  zh: { min: '分钟', h: '时', book: '预订' },
 }
 
 const GRADIENTS = [
@@ -29,11 +42,11 @@ function pickGradient(title: string): string {
   return GRADIENTS[code % GRADIENTS.length]
 }
 
-function fmtDuration(mins: number): string {
-  if (mins < 60) return `${mins} мин`
+function fmtDuration(mins: number, locale: string): string {
+  const s = LOCALE_STRINGS[locale] ?? LOCALE_STRINGS.ru
+  if (mins < 60) return `${mins} ${s.min}`
   const h = mins / 60
-  if (h === Math.floor(h)) return `${h} ч`
-  return `${h} ч`
+  return `${h} ${s.h}`
 }
 
 function getCategoryName(
@@ -85,14 +98,16 @@ export function ServiceCard({
   price,
   category,
   locale = 'ru',
+  originalLangCode,
+  isTranslated,
   onBook,
 }: ServiceCardProps) {
   const categoryName = getCategoryName(category, locale)
   const gradient = pickGradient(title)
+  const ls = LOCALE_STRINGS[locale] ?? LOCALE_STRINGS.ru
 
   return (
     <div className={styles.card}>
-      {/* Background */}
       <div
         className={styles.bg}
         style={
@@ -101,15 +116,20 @@ export function ServiceCard({
             : { background: gradient }
         }
       />
-      {/* Overlay for readability */}
       <div className={styles.overlay} />
 
-      {/* Top: title */}
       <div className={styles.top}>
         <h3 className={styles.title}>{title}</h3>
+        {isTranslated && originalLangCode && (
+          <span className={styles.translatedBadge}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+              <path d="M5 8l6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6" />
+            </svg>
+            {LANG_NAMES[originalLangCode] ?? originalLangCode}
+          </span>
+        )}
       </div>
 
-      {/* Bottom info row */}
       <div className={styles.bottom}>
         <div className={styles.bottomLeft}>
           {categoryName && (
@@ -117,25 +137,24 @@ export function ServiceCard({
           )}
           <span className={styles.badge}>
             <IconClock />
-            {fmtDuration(duration)}
+            {fmtDuration(duration, locale)}
           </span>
         </div>
         <div className={styles.bottomRight}>
-          <span className={styles.typeIcon} title={isGroup ? 'Групповая' : 'Личная'}>
+          <span className={styles.typeIcon} title={isGroup ? 'Group' : 'Personal'}>
             {isGroup ? <IconGroup /> : <IconPerson />}
           </span>
           <span className={styles.timeRange}>{timeFrom}–{timeTo}</span>
-          <span className={styles.price}>{price.toLocaleString('ru-RU')} ₽</span>
+          <span className={styles.price}>{price.toLocaleString()} ₽</span>
         </div>
       </div>
 
-      {/* Book button */}
       {onBook && (
         <button
           className={styles.bookBtn}
           onClick={e => { e.stopPropagation(); onBook() }}
         >
-          Записаться
+          {ls.book}
         </button>
       )}
     </div>

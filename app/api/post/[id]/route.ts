@@ -20,7 +20,7 @@ export async function PATCH(req: NextRequest, {params}: Params) {
   try {
     const {id} = await params
     const session = await auth()
-    if (!session?.user?.id || session.user.role !== 'TEACHER') {
+    if (!session?.user?.id || session.user.role !== 'TEACHER' && session.user.role !== 'ADMIN') {
       return NextResponse.json({error: 'Unauthorized'}, {status: 401})
     }
 
@@ -78,7 +78,7 @@ export async function DELETE(req: NextRequest, {params}: Params) {
   try {
     const {id} = await params
     const session = await auth()
-    if (!session?.user?.id || session.user.role !== 'TEACHER') {
+    if (!session?.user?.id || session.user.role !== 'TEACHER' && session.user.role !== 'ADMIN') {
       return NextResponse.json({error: 'Unauthorized'}, {status: 401})
     }
 
@@ -110,6 +110,11 @@ export async function GET(req: NextRequest, {params}: Params) {
     })
 
     if (!post) return NextResponse.json({error: 'Not found'}, {status: 404})
+
+    // @ts-ignore
+    if (post.moderationStatus && post.moderationStatus !== 'PUBLISHED' && session?.user?.role !== 'ADMIN') {
+      return NextResponse.json({error: 'Not found'}, {status: 404})
+    }
 
     const visible = await canViewPost({
       post,

@@ -6,7 +6,7 @@ export async function GET() {
   try {
     const session = await auth()
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    if (session.user.role !== 'TEACHER') return NextResponse.json({ students: [] })
+    if (session.user.role !== 'TEACHER' && session.user.role !== 'ADMIN') return NextResponse.json({ students: [] })
 
     const rows = await prisma.teacherStudent.findMany({
       where: { teacherId: session.user.id },

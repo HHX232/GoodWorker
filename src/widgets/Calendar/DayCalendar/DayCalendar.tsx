@@ -17,6 +17,7 @@ import {
 import {LUNCH_BREAKS} from '@/shared/helpers/calendar/calendar.mock'
 import {CalendarEvent, CalendarTask} from '@/shared/types/Calendar/calendar.types'
 import {CalendarEventCard} from '@/shared/ui/Calendar/CalendarEventCard/CalendarEventCard'
+import {useLocale, useTranslations} from 'next-intl'
 import {useEffect, useRef, useState} from 'react'
 import {CalendarTaskModal} from '../Modals/CalendarTaskModal/CalendarTaskModal'
 import styles from './DayCalendar.module.scss'
@@ -31,14 +32,6 @@ interface DayCalendarProps {
   onTaskSave: (task: CalendarTask) => void
 }
 
-const DAY_NAMES = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота']
-
-const PRIORITY_MAP = {
-  low: {label: 'Низкий', bg: '#EAF3DE', color: '#3B6D11'},
-  medium: {label: 'Средний', bg: '#FAEEDA', color: '#633806'},
-  high: {label: 'Высокий', bg: '#FCEBEB', color: '#A32D2D'}
-}
-
 export function DayCalendar({
   day,
   events,
@@ -48,6 +41,17 @@ export function DayCalendar({
   onTaskToggle,
   onTaskSave
 }: DayCalendarProps) {
+  const t = useTranslations('calendar')
+  const tTask = useTranslations('calendar.taskModal')
+  const locale = useLocale()
+  const intlLocale = locale === 'ru' ? 'ru-RU' : 'en-US'
+
+  const PRIORITY_MAP = {
+    low: {label: tTask('priorityLow'), bg: '#EAF3DE', color: '#3B6D11'},
+    medium: {label: tTask('priorityMedium'), bg: '#FAEEDA', color: '#633806'},
+    high: {label: tTask('priorityHigh'), bg: '#FCEBEB', color: '#A32D2D'}
+  }
+
   const [nowTop, setNowTop] = useState(getCurrentTimeTop())
   const [hoverTop, setHoverTop] = useState<number | null>(null)
   const [activeTask, setActiveTask] = useState<CalendarTask | null>(null)
@@ -95,9 +99,9 @@ export function DayCalendar({
       <div className={styles.dayHeader}>
         <div className={styles.timeGutter} />
         <div className={styles.dayHead}>
-          <span className={styles.dayName}>{DAY_NAMES[day.getDay()]}</span>
+          <span className={styles.dayName}>{day.toLocaleDateString(intlLocale, {weekday: 'long'})}</span>
           <span className={`${styles.dayNum} ${isToday(day) ? styles.today : ''}`}>{day.getDate()}</span>
-          {dayEvents.length > 0 && <span className={styles.eventCount}>{dayEvents.length} событий</span>}
+          {dayEvents.length > 0 && <span className={styles.eventCount}>{t('eventsCount', {count: dayEvents.length})}</span>}
         </div>
       </div>
 
@@ -106,7 +110,7 @@ export function DayCalendar({
         <div className={styles.tasksPanel}>
           <div className={styles.tasksPanelGutter} />
           <div className={styles.tasksList}>
-            <span className={styles.tasksLabel}>Задачи</span>
+            <span className={styles.tasksLabel}>{t('tasksLabel')}</span>
             {dayTasks.map((task) => (
               <button
                 key={task.id}
@@ -171,14 +175,14 @@ export function DayCalendar({
                   strokeLinecap='round'
                 />
               </svg>
-              <span className={styles.lunchLabel}>Обед</span>
+              <span className={styles.lunchLabel}>{t('lunch')}</span>
             </div>
 
             {dayEvents.map((event) => (
               <CalendarEventCard key={event.id} event={event} onClick={onEventClick} />
             ))}
 
-            {isWeekend && dayEvents.length === 0 && <div className={styles.freeDay}>Выходной день</div>}
+            {isWeekend && dayEvents.length === 0 && <div className={styles.freeDay}>{t('weekend')}</div>}
 
             {showNowLine && (
               <div className={styles.nowLine} style={{top: nowTop}}>

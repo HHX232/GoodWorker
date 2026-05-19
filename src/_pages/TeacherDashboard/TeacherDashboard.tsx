@@ -10,6 +10,7 @@ import { DashboardStudentSidebar } from '@/widgets/Dashboard/DashboardStudentSid
 import { useTranslations } from 'next-intl'
 import { FC, useRef, useState } from 'react'
 import { useUpdateProfile } from '@/features/hooks/User/useUpdateProfile'
+import { toast } from 'sonner'
 import styles from './TeacherDashboard.module.scss'
 
 interface ProfileData {
@@ -71,12 +72,16 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
     setSaving(true)
     setSaveError('')
     setSaveSuccess(false)
+    const tid = toast.loading('Сохранение...')
     try {
       await updateProfile({ name: name.trim(), phone: phone.trim() || null, avatarUrl })
       setSaveSuccess(true)
+      toast.success('Профиль сохранён!', { id: tid })
       setTimeout(() => setSaveSuccess(false), 3000)
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : 'Failed to save')
+      const msg = err instanceof Error ? err.message : 'Failed to save'
+      setSaveError(msg)
+      toast.error('Ошибка сохранения. Попробуйте ещё раз.', { id: tid })
     } finally {
       setSaving(false)
     }
@@ -101,7 +106,7 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
     })
     const data = await res.json()
     if (!res.ok) throw new Error(data.error ?? 'Invalid code')
-    alert(t('emailUpdated'))
+    toast.success('Email успешно изменён!')
     window.location.href = '/login'
   }
 
@@ -124,6 +129,7 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
     })
     const data = await res.json()
     if (!res.ok) throw new Error(data.error ?? 'Invalid code')
+    toast.success('Пароль успешно изменён!')
     setNewPassword('')
   }
 

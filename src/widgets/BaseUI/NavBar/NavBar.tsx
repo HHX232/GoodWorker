@@ -4,6 +4,7 @@ import {useSession, signOut} from 'next-auth/react'
 import Link from 'next/link'
 import {usePathname} from 'next/navigation'
 import {useCallback, useEffect, useRef, useState} from 'react'
+import {useTranslations} from 'next-intl'
 import styles from './NavBar.module.scss'
 
 // ─── Inline SVG icons ─────────────────────────────────────
@@ -105,41 +106,6 @@ interface NavItem {
   icon: React.ReactNode
 }
 
-// ─── Item sets per role ───────────────────────────────────
-
-const TEACHER_TOP: NavItem[] = [
-  {href: '/',               label: 'Главная',         icon: <Icon.Home />},
-  {href: '/create-post',    label: 'Создать пост',    icon: <Icon.CreatePost />},
-  {href: '/create-road-map',label: 'Создать курс',    icon: <Icon.CreateRoadmap />},
-  {href: '/create-test',    label: 'Создать тест',    icon: <Icon.CreateTest />},
-  {href: '/workflows-list', label: 'Курсы',           icon: <Icon.Roadmaps />},
-  {href: '/teachers',       label: 'Учителя',         icon: <Icon.Teachers />},
-]
-const TEACHER_BOTTOM: NavItem[] = [
-  {href: '/teacher-profile', label: 'Профиль',    icon: <Icon.Profile />},
-  {href: '/support',         label: 'Поддержка',  icon: <Icon.Support />},
-]
-
-const STUDENT_TOP: NavItem[] = [
-  {href: '/',               label: 'Главная',        icon: <Icon.Home />},
-  {href: '/workflows-list', label: 'Каталог курсов', icon: <Icon.Roadmaps />},
-  {href: '/teachers',       label: 'Учителя',        icon: <Icon.Teachers />},
-  {href: '/messages',       label: 'Сообщения',      icon: <Icon.Messages />},
-]
-const STUDENT_BOTTOM: NavItem[] = [
-  {href: '/student-profile', label: 'Профиль',   icon: <Icon.Profile />},
-  {href: '/support',         label: 'Поддержка', icon: <Icon.Support />},
-]
-
-const GUEST_TOP: NavItem[] = [
-  {href: '/',               label: 'Главная',  icon: <Icon.Home />},
-  {href: '/workflows-list', label: 'Роадмапы', icon: <Icon.Roadmaps />},
-]
-const GUEST_BOTTOM: NavItem[] = [
-  {href: '/login',   label: 'Войти',     icon: <Icon.Login />},
-  {href: '/support', label: 'Поддержка', icon: <Icon.Support />},
-]
-
 // ─── NavLink ─────────────────────────────────────────────
 
 function NavLink({item, active}: {item: NavItem; active: boolean}) {
@@ -160,6 +126,7 @@ function NavLink({item, active}: {item: NavItem; active: boolean}) {
 export function NavBar({extraClass}: {extraClass?: string}) {
   const {data: session, status} = useSession()
   const pathname = usePathname()
+  const t = useTranslations('NavBar')
   const [isExpanded, setIsExpanded] = useState(false)
   const [mounted, setMounted] = useState(false)
   const sheetRef = useRef<HTMLElement>(null)
@@ -175,19 +142,45 @@ export function NavBar({extraClass}: {extraClass?: string}) {
   let bottomItems: NavItem[]
 
   if (status === 'loading') {
-    topItems = GUEST_TOP
+    topItems = [
+      {href: '/', label: t('home'), icon: <Icon.Home />},
+      {href: '/workflows-list', label: t('roadmaps'), icon: <Icon.Roadmaps />},
+    ]
     bottomItems = []
   } else if (role === 'TEACHER' || role === 'ADMIN') {
-    topItems = userId
-      ? [...TEACHER_TOP, {href: `/calendar/${userId}`, label: 'Календарь', icon: <Icon.Calendar />}]
-      : TEACHER_TOP
-    bottomItems = TEACHER_BOTTOM
+    topItems = [
+      {href: '/',                label: t('home'),        icon: <Icon.Home />},
+      {href: '/create-post',     label: t('createPost'),  icon: <Icon.CreatePost />},
+      {href: '/create-road-map', label: t('createCourse'),icon: <Icon.CreateRoadmap />},
+      {href: '/create-test',     label: t('createTest'),  icon: <Icon.CreateTest />},
+      {href: '/workflows-list',  label: t('courses'),     icon: <Icon.Roadmaps />},
+      {href: '/teachers',        label: t('teachers'),    icon: <Icon.Teachers />},
+      ...(userId ? [{href: `/calendar/${userId}`, label: t('calendar'), icon: <Icon.Calendar />}] : []),
+    ]
+    bottomItems = [
+      {href: '/teacher-profile', label: t('profile'), icon: <Icon.Profile />},
+      {href: '/support',         label: t('support'),  icon: <Icon.Support />},
+    ]
   } else if (role === 'STUDENT') {
-    topItems = STUDENT_TOP
-    bottomItems = STUDENT_BOTTOM
+    topItems = [
+      {href: '/',               label: t('home'),        icon: <Icon.Home />},
+      {href: '/workflows-list', label: t('courseCatalog'),icon: <Icon.Roadmaps />},
+      {href: '/teachers',       label: t('teachers'),    icon: <Icon.Teachers />},
+      {href: '/messages',       label: t('messages'),    icon: <Icon.Messages />},
+    ]
+    bottomItems = [
+      {href: '/student-profile', label: t('profile'), icon: <Icon.Profile />},
+      {href: '/support',         label: t('support'),  icon: <Icon.Support />},
+    ]
   } else {
-    topItems = GUEST_TOP
-    bottomItems = GUEST_BOTTOM
+    topItems = [
+      {href: '/',               label: t('home'),     icon: <Icon.Home />},
+      {href: '/workflows-list', label: t('roadmaps'), icon: <Icon.Roadmaps />},
+    ]
+    bottomItems = [
+      {href: '/login',   label: t('login'),   icon: <Icon.Login />},
+      {href: '/support', label: t('support'), icon: <Icon.Support />},
+    ]
   }
 
   const isActive = (href: string) =>
@@ -234,7 +227,7 @@ export function NavBar({extraClass}: {extraClass?: string}) {
         onClick={() => setIsExpanded((p) => !p)}
         role='button'
         tabIndex={0}
-        aria-label={isExpanded ? 'Свернуть меню' : 'Развернуть меню'}
+        aria-label={isExpanded ? t('collapse') : t('expand')}
       >
         <div className={styles.drag_handle} />
       </div>
@@ -260,7 +253,7 @@ export function NavBar({extraClass}: {extraClass?: string}) {
                   <button
                     className={styles.logout_btn}
                     onClick={() => signOut({callbackUrl: '/login'})}
-                    title='Выйти'
+                    title={t('logout')}
                   >
                     <span className={styles.icon}>
                       <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'>
@@ -269,7 +262,7 @@ export function NavBar({extraClass}: {extraClass?: string}) {
                         <line x1='21' y1='12' x2='9' y2='12' />
                       </svg>
                     </span>
-                    <span className={styles.label}>Выйти</span>
+                    <span className={styles.label}>{t('logout')}</span>
                   </button>
                 )}
               </div>

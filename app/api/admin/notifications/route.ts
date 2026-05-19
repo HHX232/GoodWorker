@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
 
 // POST /api/admin/notifications — broadcast SYSTEM notification
-// Body: { target: 'all' | 'students' | 'teachers', title: string, body: string, html?: string }
+// Body: { target: 'all' | 'students' | 'teachers' | 'user', title: string, body: string, html?: string, email?: string }
 export async function POST(req: NextRequest) {
   try {
     const session = await auth()
@@ -13,22 +13,63 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { target, title, body: notifBody, html } = body as {
-      target: 'all' | 'students' | 'teachers'
+    const { target, title, body: notifBody, html, email } = body as {
+      target: 'all' | 'students' | 'teachers' | 'user'
       title: string
       body: string
       html?: string
+      email?: string
     }
 
     if (!title?.trim() || !notifBody?.trim()) {
       return NextResponse.json({ error: 'Title and body required' }, { status: 400 })
     }
-    if (!['all', 'students', 'teachers'].includes(target)) {
+    if (!['all', 'students', 'teachers', 'user'].includes(target)) {
       return NextResponse.json({ error: 'Invalid target' }, { status: 400 })
     }
 
     const payload = html?.trim() ? { html: html.trim() } : undefined
     let created = 0
+
+    // Send to a specific user by email
+    if (target === 'user') {
+      if (!email?.trim()) {
+        return NextResponse.json({ error: 'Email required for target=user' }, { status: 400 })
+      }
+      const normalizedEmail = email.trim().toLowerCase()
+      const teacher = await prisma.teacher.findFirst({ where: { email: normalizedEmail }, select: { id: true } })
+      if (teacher) {
+        await prisma.notification.create({
+          data: {
+            type: NOTIFICATION_TYPES.SYSTEM,
+            title: title.trim(),
+            body: notifBody.trim(),
+            payload: payload ?? undefined,
+            isRead: false,
+            teacherId: teacher.id,
+          },
+        })
+        created += 1
+      } else {
+        const student = await prisma.student.findFirst({ where: { email: normalizedEmail }, select: { id: true } })
+        if (student) {
+          await prisma.notification.create({
+            data: {
+              type: NOTIFICATION_TYPES.SYSTEM,
+              title: title.trim(),
+              body: notifBody.trim(),
+              payload: payload ?? undefined,
+              isRead: false,
+              studentId: student.id,
+            },
+          })
+          created += 1
+        } else {
+          return NextResponse.json({ error: 'User not found' }, { status: 404 })
+        }
+      }
+      return NextResponse.json({ ok: true, created })
+    }
 
     if (target === 'all' || target === 'teachers') {
       const teachers = await prisma.teacher.findMany({ select: { id: true } })

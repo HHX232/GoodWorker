@@ -8,6 +8,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import {FC, useEffect, useRef, useState} from 'react'
+import { toast } from 'sonner'
 import styles from './ProfileEditForm.module.scss'
 import {useUpdateProfile} from '@/features/hooks/User/useUpdateProfile'
 import {TranscriptsModal} from './TranscriptsModal'
@@ -124,6 +125,7 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, stats
     setSaving(true)
     setSaveError('')
     setSaveSuccess(false)
+    const tid = toast.loading('Сохранение...')
     try {
       await updateProfile({
         name: name.trim(),
@@ -137,9 +139,11 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, stats
         }),
       })
       setSaveSuccess(true)
+      toast.success('Профиль сохранён!', { id: tid })
       setTimeout(() => setSaveSuccess(false), 3000)
     } catch (error) {
       setSaveError(error instanceof Error ? error.message : 'Failed to save')
+      toast.error('Ошибка сохранения. Попробуйте ещё раз.', { id: tid })
     } finally {
       setSaving(false)
     }
@@ -164,7 +168,7 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, stats
     })
     const data = await res.json()
     if (!res.ok) throw new Error(data.error ?? 'Invalid code')
-    alert('Email updated. Please sign in again.')
+    toast.success('Email успешно изменён!')
     window.location.href = '/login'
   }
 
@@ -187,6 +191,7 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, stats
     })
     const data = await res.json()
     if (!res.ok) throw new Error(data.error ?? 'Invalid code')
+    toast.success('Пароль успешно изменён!')
     setNewPassword('')
   }
 

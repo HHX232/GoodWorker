@@ -24,6 +24,7 @@ import {
 import { StudentAnswer } from '@/features/Tasks/TaskResult/scoreBlock'
 import { QuickTestBuilder } from './QuickTestBuilder/QuickTestBuilder'
 import { CallWhiteboard } from './CallWhiteboard/CallWhiteboard'
+import TestService from '@/features/services/TestService.service'
 
 // ── Layout icons (JSX — can't go in .ts) ──────────────────────────────────────
 const LAYOUT_ICONS: Record<Layout, React.ReactNode> = {
@@ -842,9 +843,8 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
     setTestPickerTab('list')
     setPickerLoading(true)
     try {
-      const res = await fetch('/api/tests')
-      const data = await res.json()
-      if (Array.isArray(data)) setPickerTests(data)
+      const data = await TestService.getMyTests()
+      setPickerTests(data as Parameters<typeof setPickerTests>[0])
     } catch {}
     setPickerLoading(false)
   }, [])

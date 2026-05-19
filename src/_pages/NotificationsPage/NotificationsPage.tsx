@@ -2,6 +2,7 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
+import {useLocale, useTranslations} from 'next-intl'
 import {NavBar} from '@/widgets/BaseUI'
 import {NotificationItem, TYPE_CONFIG, FALLBACK_CONFIG, relativeTime} from '@/widgets/NotificationsPanel/RowNotification'
 import {NotificationDetailModal} from '@/widgets/NotificationsPanel/NotificationDetailModal'
@@ -14,26 +15,19 @@ const PAGE_SIZE = 30
 const OLD_THRESHOLD_MS = 3 * 24 * 60 * 60 * 1000
 
 type StatusTab = 'all' | 'unread' | 'archive'
-const STATUS_TABS: {key: StatusTab; label: string}[] = [
-  {key: 'all',     label: 'Все'},
-  {key: 'unread',  label: 'Непрочитанные'},
-  {key: 'archive', label: 'Архив'},
-]
+const STATUS_TAB_KEYS: StatusTab[] = ['all', 'unread', 'archive']
 
-const TYPE_LABELS: Record<string, string> = {
-  NEW_COMPLAINT:       'Жалобы',
-  COMPLAINT_REPLIED:   'Ответы',
-  COMPLAINT_CLOSED:    'Закрытые',
-  NEW_STUDENT:         'Ученики',
-  ROADMAP_PURCHASE:    'Покупки',
-  NEW_COMMENT_ON_POST: 'Комментарии',
-  NEW_REVIEW:          'Отзывы',
-  NEW_POST:            'Посты',
-  SYSTEM:              'Системные',
-}
-
-const DAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
-const MONTH_RU   = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек']
+const TYPE_KEYS = [
+  'NEW_COMPLAINT',
+  'COMPLAINT_REPLIED',
+  'COMPLAINT_CLOSED',
+  'NEW_STUDENT',
+  'ROADMAP_PURCHASE',
+  'NEW_COMMENT_ON_POST',
+  'NEW_REVIEW',
+  'NEW_POST',
+  'SYSTEM',
+] as const
 
 // ─── Heatmap helpers ──────────────────────────────────────
 
@@ -92,29 +86,33 @@ function NotificationSettings({
   subs: SubEntry[]
   onToggle: (type: string, next: boolean) => void
 }) {
+  const t = useTranslations('notifications')
   if (subs.length === 0) return null
 
   return (
     <div className={styles.settings_wrap}>
-      <p className={styles.settings_title}>Показывать в панели</p>
+      <p className={styles.settings_title}>{t('showInPanel')}</p>
       <div className={styles.settings_list}>
         {subs.map(({type, enabled}) => {
           const cfg = TYPE_CONFIG[type] ?? FALLBACK_CONFIG
           const isSystem = type === 'SYSTEM'
+          const typeLabel = TYPE_KEYS.includes(type as typeof TYPE_KEYS[number])
+            ? t(`types.${type}` as Parameters<typeof t>[0])
+            : type
           return (
             <div key={type} className={styles.settings_row}>
               <div className={styles.settings_icon} style={{background: cfg.bg, color: cfg.color}}>
                 {cfg.icon}
               </div>
-              <span className={styles.settings_label}>{TYPE_LABELS[type] ?? type}</span>
+              <span className={styles.settings_label}>{typeLabel}</span>
               {isSystem ? (
-                <span className={styles.settings_always_on}>всегда</span>
+                <span className={styles.settings_always_on}>{t('alwaysOn')}</span>
               ) : (
                 <button
                   className={`${styles.settings_toggle} ${enabled ? styles.settings_toggle_on : ''}`}
                   onClick={() => onToggle(type, !enabled)}
                   aria-pressed={enabled}
-                  aria-label={`${TYPE_LABELS[type] ?? type}: ${enabled ? 'включено' : 'выключено'}`}
+                  aria-label={`${typeLabel}: ${enabled ? 'on' : 'off'}`}
                 />
               )}
             </div>
@@ -128,6 +126,8 @@ function NotificationSettings({
 // ─── Heatmap component ────────────────────────────────────
 
 function NotificationHeatmap({onDayClick, enabledTypes}: {onDayClick: (date: string) => void; enabledTypes: Set<string> | null}) {
+  const t = useTranslations('notifications')
+  const locale = useLocale()
   const [days, setDays] = useState<Record<string, number>>({})
   const [tooltip, setTooltip] = useState<{date: string; count: number; x: number; y: number} | null>(null)
   const [monthOffset, setMonthOffset] = useState(0) // 0 = current 4 months
@@ -164,12 +164,12 @@ function NotificationHeatmap({onDayClick, enabledTypes}: {onDayClick: (date: str
   return (
     <div className={styles.heatmap_wrap}>
       <div className={styles.heatmap_header}>
-        <p className={styles.heatmap_title}>Активность</p>
+        <p className={styles.heatmap_title}>{t('activity')}</p>
         <div className={styles.heatmap_nav}>
-          <button className={styles.heatmap_nav_btn} onClick={() => setMonthOffset((o) => o + 1)} aria-label="Назад">
+          <button className={styles.heatmap_nav_btn} onClick={() => setMonthOffset((o) => o + 1)} aria-label={locale === 'en' ? 'Back' : 'Назад'}>
             <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'><path d='M15 18l-6-6 6-6'/></svg>
           </button>
-          <button className={styles.heatmap_nav_btn} onClick={() => setMonthOffset((o) => Math.max(0, o - 1))} disabled={monthOffset === 0} aria-label="Вперёд">
+          <button className={styles.heatmap_nav_btn} onClick={() => setMonthOffset((o) => Math.max(0, o - 1))} disabled={monthOffset === 0} aria-label={locale === 'en' ? 'Forward' : 'Вперёд'}>
             <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'><path d='M9 18l6-6-6-6'/></svg>
           </button>
         </div>
@@ -181,9 +181,14 @@ function NotificationHeatmap({onDayClick, enabledTypes}: {onDayClick: (date: str
         <div className={styles.heatmap_dow_col}>
           <div className={styles.heatmap_name_spacer} />
           <div className={styles.heatmap_dow_labels}>
-            {DAY_LABELS.map((d, i) => (
-              <span key={i} className={styles.heatmap_dow_label}>{i % 2 === 0 ? d : ''}</span>
-            ))}
+            {Array.from({length: 7}, (_, i) => {
+              // Monday-first: day 0 = Monday (weekday index 1 in ISO)
+              const date = new Date(2024, 0, 1 + i) // Jan 1 2024 is Monday
+              const label = date.toLocaleDateString(locale === 'en' ? 'en-US' : 'ru-RU', {weekday: 'short'}).slice(0, 2)
+              return (
+                <span key={i} className={styles.heatmap_dow_label}>{i % 2 === 0 ? label : ''}</span>
+              )
+            })}
           </div>
         </div>
 
@@ -191,7 +196,7 @@ function NotificationHeatmap({onDayClick, enabledTypes}: {onDayClick: (date: str
         <div className={styles.heatmap_months_area}>
           {monthData.map(({year, month, weeks}, mi) => (
             <div key={`${year}-${month}`} className={`${styles.heatmap_month_group} ${mi > 0 ? styles.heatmap_month_sep : ''}`}>
-              <div className={styles.heatmap_month_name}>{MONTH_RU[month]}</div>
+              <div className={styles.heatmap_month_name}>{new Date(year, month, 1).toLocaleDateString(locale === 'en' ? 'en-US' : 'ru-RU', {month: 'short'})}</div>
               <div className={styles.heatmap_weeks}>
                 {weeks.map((week, wi) => (
                   <div key={wi} className={styles.heatmap_col}>
@@ -222,21 +227,21 @@ function NotificationHeatmap({onDayClick, enabledTypes}: {onDayClick: (date: str
         {tooltip && (
           <div className={styles.heatmap_tooltip} style={{left: tooltip.x, top: tooltip.y}}>
             <span className={styles.tooltip_date}>
-              {new Date(tooltip.date + 'T12:00:00').toLocaleDateString('ru', {day: 'numeric', month: 'long'})}
+              {new Date(tooltip.date + 'T12:00:00').toLocaleDateString(locale === 'en' ? 'en-US' : 'ru-RU', {day: 'numeric', month: 'long'})}
             </span>
             <span className={styles.tooltip_count}>
-              {tooltip.count === 0 ? 'нет уведомлений' : `${tooltip.count} уведомл.`}
+              {tooltip.count === 0 ? t('noNotifOnDay') : t('notifsOnDay', {count: tooltip.count})}
             </span>
           </div>
         )}
       </div>
 
       <div className={styles.heatmap_legend}>
-        <span className={styles.legend_label}>меньше</span>
+        <span className={styles.legend_label}>{t('less')}</span>
         {['#eaecef', '#c4b5fd', '#8b5cf6', '#6366f1', '#4338ca'].map((c) => (
           <div key={c} className={styles.legend_cell} style={{background: c}} />
         ))}
-        <span className={styles.legend_label}>больше</span>
+        <span className={styles.legend_label}>{t('more')}</span>
       </div>
     </div>
   )
@@ -246,6 +251,8 @@ function NotificationHeatmap({onDayClick, enabledTypes}: {onDayClick: (date: str
 
 function NotificationPageRow({item, onMarkRead}: {item: NotificationItem; onMarkRead: (id: string) => void}) {
   const router = useRouter()
+  const t = useTranslations('notifications')
+  const locale = useLocale()
   const cfg = TYPE_CONFIG[item.type] ?? FALLBACK_CONFIG
   const payload     = item.payload ?? {}
   const actorId     = payload.actorId     as string | undefined
@@ -276,12 +283,12 @@ function NotificationPageRow({item, onMarkRead}: {item: NotificationItem; onMark
         body: JSON.stringify({reply: replyText.trim()}),
       })
       if (!res.ok) throw new Error()
-      toast.success('Ответ отправлен')
+      toast.success(t('replySuccess'))
       setReplied(true)
       setExpanded(false)
       setReplyText('')
     } catch {
-      toast.error('Не удалось отправить ответ')
+      toast.error(t('replyError'))
     } finally {
       setSending(false)
     }
@@ -298,7 +305,7 @@ function NotificationPageRow({item, onMarkRead}: {item: NotificationItem; onMark
         <div className={styles.row_content}>
           <div className={styles.title_row}>
             <span className={styles.title}>{item.title}</span>
-            <span className={styles.time}>{relativeTime(item.createdAt)}</span>
+            <span className={styles.time}>{relativeTime(item.createdAt, locale)}</span>
           </div>
           {item.type === 'SYSTEM' && payload.html
             ? <div className={styles.body} dangerouslySetInnerHTML={{__html: payload.html as string}} />
@@ -310,8 +317,8 @@ function NotificationPageRow({item, onMarkRead}: {item: NotificationItem; onMark
                 {actorName.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()}
               </span>
               <span className={styles.actor_name}>{actorName}</span>
-              {actorRole === 'STUDENT' && <span className={styles.actor_role}>ученик</span>}
-              {actorRole === 'TEACHER' && <span className={styles.actor_role}>учитель</span>}
+              {actorRole === 'STUDENT' && <span className={styles.actor_role}>{t('roleStudent')}</span>}
+              {actorRole === 'TEACHER' && <span className={styles.actor_role}>{t('roleTeacher')}</span>}
             </Link>
           )}
           <div className={styles.actions_row}>
@@ -328,10 +335,10 @@ function NotificationPageRow({item, onMarkRead}: {item: NotificationItem; onMark
                 <svg width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.2' strokeLinecap='round' strokeLinejoin='round'>
                   <polyline points='9 17 4 12 9 7'/><path d='M20 18v-2a4 4 0 0 0-4-4H4'/>
                 </svg>
-                {expanded ? 'Скрыть' : 'Ответить'}
+                {expanded ? t('collapseReply') : t('reply')}
               </button>
             )}
-            {replied && <span className={styles.replied_badge}>Отвечено</span>}
+            {replied && <span className={styles.replied_badge}>{t('replied')}</span>}
           </div>
         </div>
         {!item.isRead && <div className={styles.unread_dot} style={{background: cfg.color}} />}
@@ -343,11 +350,11 @@ function NotificationPageRow({item, onMarkRead}: {item: NotificationItem; onMark
       </div>
       {expanded && canReply && (
         <div className={styles.reply_section} onClick={(e) => e.stopPropagation()}>
-          <textarea className={styles.reply_textarea} rows={3} placeholder='Ваш ответ на жалобу...' value={replyText} onChange={(e) => setReplyText(e.target.value)} disabled={sending} autoFocus />
+          <textarea className={styles.reply_textarea} rows={3} placeholder={t('replyPlaceholder')} value={replyText} onChange={(e) => setReplyText(e.target.value)} disabled={sending} autoFocus />
           <div className={styles.reply_footer}>
-            <button className={styles.reply_cancel} onClick={() => setExpanded(false)} disabled={sending}>Отмена</button>
+            <button className={styles.reply_cancel} onClick={() => setExpanded(false)} disabled={sending}>{t('cancel')}</button>
             <button className={styles.reply_submit} style={{background: cfg.color}} onClick={handleReply} disabled={sending || !replyText.trim()}>
-              {sending ? 'Отправка…' : 'Отправить ответ'}
+              {sending ? t('sending') : t('sendReply')}
             </button>
           </div>
         </div>
@@ -374,6 +381,7 @@ function SkeletonRow() {
 // ─── Page ─────────────────────────────────────────────────
 
 export function NotificationsPage() {
+  const t = useTranslations('notifications')
   const [items, setItems]             = useState<NotificationItem[]>([])
   const [loading, setLoading]         = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -504,7 +512,7 @@ export function NotificationsPage() {
 
   const availableTypes = useMemo(() => {
     const set = new Set(statusFiltered.map((n) => n.type))
-    return Array.from(set).filter((t) => TYPE_LABELS[t])
+    return Array.from(set).filter((type) => TYPE_KEYS.includes(type as typeof TYPE_KEYS[number]))
   }, [statusFiltered])
 
   const displayItems = useMemo(() => {
@@ -528,11 +536,11 @@ export function NotificationsPage() {
           {/* Header */}
           <div className={styles.header}>
             <div className={styles.header_left}>
-              <h1 className={styles.title}>Уведомления</h1>
+              <h1 className={styles.title}>{t('title')}</h1>
               {badgeCount > 0 && <span className={styles.badge}>{badgeCount > 99 ? '99+' : badgeCount}</span>}
             </div>
             <button className={styles.mark_all_btn} onClick={handleMarkAllRead} disabled={unreadCount === 0}>
-              Прочитать всё
+              {t('markAllRead')}
             </button>
           </div>
 
@@ -541,9 +549,9 @@ export function NotificationsPage() {
             <div className={styles.list_col}>
               {/* Status tabs */}
               <div className={styles.tabs}>
-                {STATUS_TABS.map(({key, label}) => (
+                {STATUS_TAB_KEYS.map((key) => (
                   <button key={key} className={`${styles.tab} ${statusTab === key ? styles.tab_active : ''}`} onClick={() => handleStatusTab(key)}>
-                    {label}
+                    {t(`tabs.${key}` as Parameters<typeof t>[0])}
                     {key === 'unread'  && unreadCount > 0          && <span className={styles.tab_badge}>{unreadCount}</span>}
                     {key === 'archive' && archivedItems.length > 0  && <span className={styles.tab_badge}>{archivedItems.length}</span>}
                   </button>
@@ -554,18 +562,21 @@ export function NotificationsPage() {
               {availableTypes.length > 1 && (
                 <div className={styles.type_filters}>
                   <button className={`${styles.type_chip} ${typeFilter === 'all' ? styles.type_chip_active : ''}`} onClick={() => setTypeFilter('all')}>
-                    Все типы
+                    {t('allTypes')}
                   </button>
-                  {availableTypes.map((t) => {
-                    const cfg = TYPE_CONFIG[t] ?? FALLBACK_CONFIG
-                    const active = typeFilter === t
+                  {availableTypes.map((type) => {
+                    const cfg = TYPE_CONFIG[type] ?? FALLBACK_CONFIG
+                    const active = typeFilter === type
+                    const typeLabel = TYPE_KEYS.includes(type as typeof TYPE_KEYS[number])
+                      ? t(`types.${type}` as Parameters<typeof t>[0])
+                      : type
                     return (
-                      <button key={t} className={`${styles.type_chip} ${active ? styles.type_chip_active : ''}`}
+                      <button key={type} className={`${styles.type_chip} ${active ? styles.type_chip_active : ''}`}
                         style={active ? {background: cfg.color + '18', color: cfg.color, borderColor: cfg.color + '44'} : {}}
-                        onClick={() => setTypeFilter(t)}
+                        onClick={() => setTypeFilter(type)}
                       >
                         <span className={styles.type_chip_dot} style={{background: cfg.color}} />
-                        {TYPE_LABELS[t]}
+                        {typeLabel}
                       </button>
                     )
                   })}
@@ -582,7 +593,7 @@ export function NotificationsPage() {
                       <path d='M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9'/>
                       <path d='M13.73 21a2 2 0 0 1-3.46 0'/>
                     </svg>
-                    <p>{statusTab === 'unread' ? 'Нет непрочитанных' : statusTab === 'archive' ? 'Архив пуст' : 'Уведомлений нет'}</p>
+                    <p>{statusTab === 'unread' ? t('noUnread') : statusTab === 'archive' ? t('archiveEmpty') : t('empty')}</p>
                   </div>
                 ) : (
                   <>

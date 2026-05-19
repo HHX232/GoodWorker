@@ -62,6 +62,7 @@ export interface IRoadmapItem {
   createdAt: string
   updatedAt: string
   nodeAccessType: RoadmapNodeAccessType | null
+  originalLanguage?: string | null
   teacher: { id: string; name: string; avatarUrl: string | null }
   _count: { comments: number; ratings: number }
 }

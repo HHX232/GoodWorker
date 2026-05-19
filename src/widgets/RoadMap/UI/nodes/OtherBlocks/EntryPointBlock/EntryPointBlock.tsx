@@ -6,17 +6,11 @@ import {useViewMode} from '@/shared/ui/RoadMap/context/ViewModeContext'
 import {useReactFlow, useStore} from '@xyflow/react'
 import {ImagePlusIcon, XIcon} from 'lucide-react'
 import Image from 'next/image'
+import {useTranslations} from 'next-intl'
 import {useRef} from 'react'
 import styles from './EntryPointBlock.module.scss'
 
-const CATEGORIES = [
-  {label: 'Программирование', value: 'programming'},
-  {label: 'Дизайн', value: 'design'},
-  {label: 'Математика', value: 'math'},
-  {label: 'Языки', value: 'languages'},
-  {label: 'Бизнес', value: 'business'},
-  {label: 'Наука', value: 'science'}
-]
+const CATEGORY_VALUES = ['programming', 'design', 'math', 'languages', 'business', 'science'] as const
 
 type EntryData = RoadNodeData & {
   roadTitle?: string
@@ -26,6 +20,7 @@ type EntryData = RoadNodeData & {
 }
 
 export default function EntryPointBlock({nodeId}: {nodeId: string}) {
+  const t = useTranslations('roadMap')
   const onlyView = useViewMode() === 'view'
   const {updateNodeData} = useReactFlow()
   const fileRef = useRef<HTMLInputElement>(null)
@@ -83,7 +78,7 @@ export default function EntryPointBlock({nodeId}: {nodeId: string}) {
                     }}
                   >
                     <ImagePlusIcon size={12} />
-                    Заменить
+                    {t('entryChangePreview')}
                   </button>
                 </>
               )}
@@ -92,7 +87,7 @@ export default function EntryPointBlock({nodeId}: {nodeId: string}) {
             !onlyView && (
               <div className={styles.previewEmpty}>
                 <ImagePlusIcon size={24} />
-                <span>Добавить обложку</span>
+                <span>{t('entryAddPreview')}</span>
               </div>
             )
           )}
@@ -108,7 +103,7 @@ export default function EntryPointBlock({nodeId}: {nodeId: string}) {
               className={styles.titleInput}
               value={data?.roadTitle ?? ''}
               onChange={(e) => update({roadTitle: e.target.value})}
-              placeholder='Название road-map...'
+              placeholder={t('entryTitlePlaceholder')}
               maxLength={80}
             />
           )}
@@ -122,14 +117,14 @@ export default function EntryPointBlock({nodeId}: {nodeId: string}) {
             className={styles.descInput}
             value={data?.roadDescription ?? ''}
             onChange={(e) => update({roadDescription: e.target.value})}
-            placeholder='Краткое описание...'
+            placeholder={t('entryDescPlaceholder')}
             rows={3}
             maxLength={300}
           />
         )}
 
         <div className={styles.fieldGroup}>
-          <label className={styles.fieldLabel}>Категория</label>
+          <label className={styles.fieldLabel}>{t('entryCategory')}</label>
 
           {!onlyView && (
             <select
@@ -137,10 +132,10 @@ export default function EntryPointBlock({nodeId}: {nodeId: string}) {
               value={data?.roadCategory ?? ''}
               onChange={(e) => update({roadCategory: e.target.value})}
             >
-              <option value=''>Выберите категорию...</option>
-              {CATEGORIES.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
+              <option value=''>{t('entrySelectCategory')}</option>
+              {CATEGORY_VALUES.map((v) => (
+                <option key={v} value={v}>
+                  {t(`cat${v.charAt(0).toUpperCase()}${v.slice(1)}` as Parameters<typeof t>[0])}
                 </option>
               ))}
             </select>

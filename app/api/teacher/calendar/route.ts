@@ -32,7 +32,8 @@ export async function GET(req: NextRequest) {
 
   const [teacher, conferences] = await Promise.all([
     prisma.teacher.findUnique({ where: { id: teacherId }, select: { calendar: true } }),
-    prisma.conference.findMany({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (prisma.conference.findMany as any)({
       where: {
         teacherId,
         status: 'SCHEDULED',
@@ -43,6 +44,9 @@ export async function GET(req: NextRequest) {
         title: true,
         scheduledAt: true,
         description: true,
+        durationMinutes: true,
+        serviceId: true,
+        service: { select: { title: true, price: true, duration: true } },
         participants: {
           where: { studentId: { not: null } },
           select: { student: { select: { name: true } } },
@@ -60,12 +64,19 @@ export async function GET(req: NextRequest) {
     (storedEvents as Array<{ id?: string }>).map(e => e.id).filter(Boolean)
   )
 
-  const conferenceEvents = conferences
+  type ConferenceRow = {
+    id: string; title: string; scheduledAt: Date | null; description: string | null
+    durationMinutes?: number | null; serviceId?: string | null
+    service?: { title: string; price: number; duration: number } | null
+    participants: { student: { name: string } | null }[]
+  }
+
+  const conferenceEvents = (conferences as ConferenceRow[])
     .filter(c => c.scheduledAt && !storedIds.has(c.id))
     .map(c => {
       const start = c.scheduledAt!
-      const durationMs = (parseInt(c.description ?? '60', 10) || 60) * 60 * 1000
-      const end = new Date(start.getTime() + durationMs)
+      const durMins = c.durationMinutes ?? (parseInt(c.description ?? '60', 10) || 60)
+      const end = new Date(start.getTime() + durMins * 60 * 1000)
       const studentName = c.participants[0]?.student?.name ?? undefined
       return {
         id: c.id,
@@ -76,6 +87,13 @@ export async function GET(req: NextRequest) {
         color: 'purple' as const,
         studentName,
         status: 'scheduled' as const,
+        durationMinutes: durMins,
+        ...(c.serviceId ? {
+          serviceId: c.serviceId,
+          serviceTitle: c.service?.title,
+          servicePrice: c.service?.price,
+          serviceDurationMinutes: c.service?.duration,
+        } : {}),
       }
     })
 

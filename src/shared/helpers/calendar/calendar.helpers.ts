@@ -88,8 +88,18 @@ export function getEventsForDay(events: CalendarEvent[], dateKey: string): Calen
   return events.filter((e) => e.date === dateKey)
 }
 
-export function formatMonthYear(date: Date): string {
-  return date.toLocaleDateString('ru-RU', {month: 'long', year: 'numeric'})
+export function formatMonthYear(date: Date, locale = 'ru-RU'): string {
+  return date.toLocaleDateString(locale, {month: 'long', year: 'numeric'})
+}
+
+export function getLocaleDayShorts(locale: string): string[] {
+  const intlLocale = locale === 'ru' ? 'ru-RU' : 'en-US'
+  const MONDAY_SEED = new Date(2024, 0, 1)
+  return Array.from({length: 7}, (_, i) => {
+    const d = new Date(MONDAY_SEED)
+    d.setDate(1 + i)
+    return new Intl.DateTimeFormat(intlLocale, {weekday: 'short'}).format(d)
+  })
 }
 
 export function roundToHalfHour(minutes: number): number {
@@ -102,9 +112,9 @@ export function minutesToTime(minutes: number): string {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
 }
 
-export function formatDateRu(dateStr: string): string {
+export function formatDateRu(dateStr: string, locale = 'ru-RU'): string {
   const [y, m, d] = dateStr.split('-').map(Number)
-  return `${d} ${MONTHS_GEN[m - 1]} ${y}`
+  return new Date(y, m - 1, d).toLocaleDateString(locale, {day: 'numeric', month: 'long', year: 'numeric'})
 }
 
 export function eventsOverlap(aStart: string, aEnd: string, bStart: string, bEnd: string): boolean {

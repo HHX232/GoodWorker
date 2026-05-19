@@ -52,17 +52,17 @@ function calcPoints(items: MediaItem[]) {
   return items.reduce((acc, i) => acc + i.points, 0)
 }
 
-function ArrowLeft() {
+function ArrowLeft({label}: {label: string}) {
   return (
-    <button className={`${styles.arrowLeft} media-prev`} aria-label='Назад'>
+    <button className={`${styles.arrowLeft} media-prev`} aria-label={label}>
       <ChevronLeftIcon size={18} className={styles.arrowIcon} />
     </button>
   )
 }
 
-function ArrowRight() {
+function ArrowRight({label}: {label: string}) {
   return (
-    <button className={`${styles.arrowRight} media-next`} aria-label='Вперёд'>
+    <button className={`${styles.arrowRight} media-next`} aria-label={label}>
       <ChevronRightIcon size={18} className={styles.arrowIcon} />
     </button>
   )
@@ -202,8 +202,8 @@ export default function MediaBlock({nodeId}: {nodeId: string}) {
 
           {isMultiple ? (
             <div className={styles.sliderWrapper} style={{height: mediaHeight}}>
-              <ArrowLeft />
-              <ArrowRight />
+              <ArrowLeft label={t('mediaPrev')} />
+              <ArrowRight label={t('mediaNext')} />
 
               {/* Счётчик слайдов */}
               <div className={styles.counter}>

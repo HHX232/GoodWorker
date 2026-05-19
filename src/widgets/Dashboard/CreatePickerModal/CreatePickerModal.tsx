@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import styles from './CreatePickerModal.module.scss'
 
 interface Props {
@@ -52,15 +53,18 @@ function IconChecklist() {
   )
 }
 
-const OPTIONS = [
-  { key: 'service', label: 'Услуга', icon: <IconBriefcase />, color: '#534AB7' },
-  { key: 'post',    label: 'Пост',   icon: <IconFile />,      color: '#0369A1' },
-  { key: 'roadmap', label: 'Road Map', icon: <IconMap />,     color: '#059669' },
-  { key: 'test',    label: 'Тест',   icon: <IconChecklist />, color: '#B45309' },
-] as const
+type OptionKey = 'service' | 'post' | 'roadmap' | 'test'
 
 export function CreatePickerModal({ open, onClose, onService }: Props) {
   const router = useRouter()
+  const t = useTranslations('dashboard.createPicker')
+
+  const OPTIONS: { key: OptionKey; label: string; icon: React.ReactNode; color: string }[] = [
+    { key: 'service', label: t('service'), icon: <IconBriefcase />, color: '#534AB7' },
+    { key: 'post',    label: t('post'),    icon: <IconFile />,      color: '#0369A1' },
+    { key: 'roadmap', label: 'Road Map',   icon: <IconMap />,       color: '#059669' },
+    { key: 'test',    label: t('test'),    icon: <IconChecklist />, color: '#B45309' },
+  ]
 
   useEffect(() => {
     if (open) {
@@ -71,7 +75,7 @@ export function CreatePickerModal({ open, onClose, onService }: Props) {
 
   if (!open) return null
 
-  function handleOption(key: (typeof OPTIONS)[number]['key']) {
+  function handleOption(key: OptionKey) {
     switch (key) {
       case 'service':
         onClose()
@@ -95,13 +99,13 @@ export function CreatePickerModal({ open, onClose, onService }: Props) {
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={e => e.stopPropagation()}>
-        <button className={styles.closeBtn} onClick={onClose} aria-label="Закрыть">
+        <button className={styles.closeBtn} onClick={onClose} aria-label={t('close')}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
         </button>
-        <h2 className={styles.heading}>Что создаём?</h2>
+        <h2 className={styles.heading}>{t('heading')}</h2>
         <div className={styles.grid}>
           {OPTIONS.map(opt => (
             <button

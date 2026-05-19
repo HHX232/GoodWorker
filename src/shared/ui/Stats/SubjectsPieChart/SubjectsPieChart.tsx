@@ -4,10 +4,6 @@ import {useTranslations} from 'next-intl'
 import {Cell, Pie, PieChart, ResponsiveContainer, Sector} from 'recharts'
 import styles from './SubjectsPieChart.module.scss'
 
-const FALLBACK_DATA = [
-  {name: 'Нет данных', hours: 1, count: 0, color: '#e0e0e0'},
-]
-
 // Active sector shape — расширяет сектор при наведении
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ActiveShape = (props: any) => {
@@ -35,10 +31,13 @@ interface SubjectItem {
   color: string
 }
 
+function round2(n: number) { return Number(n.toFixed(2)) }
+
 export function SubjectsPieChart({extraClass, data: propData}: {extraClass?: string; data?: SubjectItem[]}) {
   const t = useTranslations('statsPage.subjectsPie')
-  const data = propData && propData.length > 0 ? propData : FALLBACK_DATA
-  const total = data.reduce((s, d) => s + d.hours, 0)
+  const fallbackData = [{name: t('noData'), hours: 1, count: 0, color: '#e0e0e0'}]
+  const data = propData && propData.length > 0 ? propData : fallbackData
+  const total = round2(data.reduce((s, d) => s + d.hours, 0))
 
   const [activeIdx, setActiveIdx] = useState<number | null>(null)
   const [selected, setSelected] = useState<number | null>(null)
@@ -95,7 +94,7 @@ export function SubjectsPieChart({extraClass, data: propData}: {extraClass?: str
         <div className={styles.center_label}>
           {centerItem ? (
             <>
-              <span className={`${styles.center_num} ${styles.center_num_active}`}>{centerItem.hours}</span>
+              <span className={`${styles.center_num} ${styles.center_num_active}`}>{round2(centerItem.hours)}</span>
               <span className={styles.center_sub}>{centerItem.name}</span>
             </>
           ) : (
@@ -127,7 +126,7 @@ export function SubjectsPieChart({extraClass, data: propData}: {extraClass?: str
                 </div>
                 <div className={styles.legend__right}>
                   <span className={styles.legend__pct}>{pct}%</span>
-                  <span className={styles.legend__val}>{d.hours} ч</span>
+                  <span className={styles.legend__val}>{round2(d.hours)} {t('hoursUnit')}</span>
                   {d.count !== undefined && d.count > 0 && (
                     <span className={styles.legend__count}>{d.count} {t('lessonCount')}</span>
                   )}

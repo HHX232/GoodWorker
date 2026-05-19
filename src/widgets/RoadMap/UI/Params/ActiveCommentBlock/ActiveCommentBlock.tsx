@@ -53,22 +53,24 @@ const uid = () => Math.random().toString(36).slice(2, 8)
 
 const defaultT = (key: string): string => {
   const map: Record<string, string> = {
-    fbEditorLabel:          'Редактор обратной связи',
-    fbNoQuestions:          'Вопросы ещё не добавлены',
-    fbAddQuestion:          '+ Добавить вопрос',
-    fbAddNextQuestion:      '+ Вопрос',
-    fbSubmit:               'Отправить ответы',
-    fbSubmitted:            'Ответы отправлены ✓',
-    fbThankYou:             'Спасибо за обратную связь!',
-    fbFreeAnswerPlaceholder:'Введите ваш ответ...',
-    fbSingle:               'Один ответ',
-    fbMulti:                'Несколько ответов',
-    fbFree:                 'Свободный ответ',
-    fbQuestionPlaceholder:  'Введите текст вопроса...',
-    fbOptionPlaceholder:    'Вариант ответа...',
-    fbAddOption:            '+ Вариант',
-    fbEmptyQuestion:        'Вопрос без текста',
-    fbEmptyOption:          'Вариант',
+    fbEditorLabel:          'Feedback editor',
+    fbNoQuestions:          'No questions added yet',
+    fbAddQuestion:          '+ Add question',
+    fbAddNextQuestion:      '+ Question',
+    fbSubmit:               'Submit answers',
+    fbSubmitted:            'Submitted ✓',
+    fbThankYou:             'Thank you for your feedback!',
+    fbFreeAnswerPlaceholder:'Enter your answer...',
+    fbSingle:               'Single choice',
+    fbMulti:                'Multiple choice',
+    fbFree:                 'Free answer',
+    fbQuestionPlaceholder:  'Enter question text...',
+    fbOptionPlaceholder:    'Answer option...',
+    fbAddOption:            '+ Option',
+    fbEmptyQuestion:        'Empty question',
+    fbEmptyOption:          'Option',
+    navPrev:                'Previous',
+    navNext:                'Next',
   }
   return map[key] ?? key
 }
@@ -323,7 +325,7 @@ function QuestionSlider({
             onClick={goPrev}
             disabled={activeIndex === 0}
             type='button'
-            aria-label='Назад'
+            aria-label={t('navPrev')}
           >
             ←
           </button>
@@ -337,7 +339,7 @@ function QuestionSlider({
             onClick={goNext}
             disabled={isLast}
             type='button'
-            aria-label='Вперёд'
+            aria-label={t('navNext')}
           >
             →
           </button>

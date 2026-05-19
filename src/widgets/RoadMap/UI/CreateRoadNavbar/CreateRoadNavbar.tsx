@@ -20,6 +20,7 @@ const allItems = [
 const TOP_COUNT = 4
 
 function CreateRoadNavbar() {
+  const t = useTranslations('roadMap')
   const [isExpanded, setIsExpanded] = useState(false)
 
   const topItems = allItems.slice(0, TOP_COUNT)
@@ -44,7 +45,7 @@ function CreateRoadNavbar() {
         <button
           className={styles.expand_btn}
           onClick={() => setIsExpanded((prev) => !prev)}
-          aria-label={isExpanded ? 'Свернуть' : 'Развернуть'}
+          aria-label={isExpanded ? t('navbarCollapse') : t('navbarExpand')}
         >
           <svg
             width='16'

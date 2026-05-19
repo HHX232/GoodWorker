@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import styles from './StudentDetailModal.module.scss'
 
 interface ErrorItem {
@@ -26,6 +27,13 @@ interface StudentData {
   avatarUrl: string | null
 }
 
+interface ServiceOption {
+  id: string
+  title: string
+  price: number
+  duration: number
+}
+
 interface Props {
   studentId: string
   studentName: string
@@ -33,6 +41,7 @@ interface Props {
   avatarColor: string
   avatarTextColor: string
   subject: string
+  teacherId?: string
   onClose: () => void
 }
 
@@ -63,18 +72,20 @@ function minDatetime() {
 }
 
 export function StudentDetailModal({
-  studentId, studentName, studentInitials, avatarColor, avatarTextColor, subject, onClose,
+  studentId, studentName, studentInitials, avatarColor, avatarTextColor, subject, teacherId, onClose,
 }: Props) {
   const [tab, setTab] = useState<Tab>('meetings')
   const [student, setStudent] = useState<StudentData | null>(null)
   const [errors, setErrors] = useState<ErrorItem[]>([])
   const [meetings, setMeetings] = useState<Meeting[]>([])
   const [loading, setLoading] = useState(true)
+  const [services, setServices] = useState<ServiceOption[]>([])
 
   // schedule form
   const [schedTitle, setSchedTitle] = useState(`Урок с ${studentName}`)
   const [schedAt, setSchedAt] = useState('')
   const [schedDuration, setSchedDuration] = useState(60)
+  const [schedServiceId, setSchedServiceId] = useState('')
   const [schedLoading, setSchedLoading] = useState(false)
   const [schedError, setSchedError] = useState<string | null>(null)
   const [schedConflict, setSchedConflict] = useState<{ title: string; scheduledAt: string } | null>(null)
@@ -100,6 +111,14 @@ export function StudentDetailModal({
       .finally(() => setLoading(false))
   }, [studentId])
 
+  useEffect(() => {
+    if (!teacherId) return
+    fetch(`/api/services?teacherId=${teacherId}&lang=ru`)
+      .then(r => r.json())
+      .then(d => { if (Array.isArray(d.services)) setServices(d.services) })
+      .catch(() => {})
+  }, [teacherId])
+
   const deleteError = async (errorId: string) => {
     setErrors(prev => prev.filter(e => e.id !== errorId))
     await fetch(`/api/teacher/student-detail?errorId=${errorId}`, { method: 'DELETE' })
@@ -116,18 +135,23 @@ export function StudentDetailModal({
     setSchedLoading(true)
     setSchedError(null)
     setSchedConflict(null)
+    const tid = toast.loading('Планирование встречи...')
     try {
       const res = await fetch('/api/teacher/schedule-meeting', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentId, title: schedTitle, scheduledAt: localDatetimeToISO(schedAt), durationMinutes: schedDuration }),
+        body: JSON.stringify({ studentId, title: schedTitle, scheduledAt: localDatetimeToISO(schedAt), durationMinutes: schedDuration, ...(schedServiceId ? { serviceId: schedServiceId } : {}) }),
       })
       const data = await res.json()
       if (res.status === 409 && data.conflict) {
         setSchedConflict(data.conflict)
+        toast.error('Конфликт времени. Выберите другое время.', { id: tid })
       } else if (!res.ok || data.error) {
-        setSchedError(data.error ?? 'Ошибка')
+        const msg = data.error ?? 'Ошибка'
+        setSchedError(msg)
+        toast.error(msg, { id: tid })
       } else {
+        toast.success('Встреча запланирована!', { id: tid })
         setSchedSuccess(true)
         setMeetings(prev => [
           ...prev,
@@ -139,6 +163,7 @@ export function StudentDetailModal({
       }
     } catch {
       setSchedError('Ошибка соединения')
+      toast.error('Ошибка соединения. Попробуйте ещё раз.', { id: tid })
     } finally {
       setSchedLoading(false)
     }
@@ -326,6 +351,25 @@ export function StudentDetailModal({
                     ))}
                   </div>
                 </div>
+
+                {services.length > 0 && (
+                  <div className={styles.formField}>
+                    <label className={styles.formLabel}>Услуга (необязательно)</label>
+                    <select
+                      className={styles.formInput}
+                      value={schedServiceId}
+                      onChange={e => setSchedServiceId(e.target.value)}
+                      disabled={schedLoading}
+                    >
+                      <option value=''>— Без услуги —</option>
+                      {services.map(s => (
+                        <option key={s.id} value={s.id}>
+                          {s.title} — {s.price.toLocaleString()} ₽ / {s.duration} мин
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 {schedConflict && (
                   <div className={styles.conflictBanner}>

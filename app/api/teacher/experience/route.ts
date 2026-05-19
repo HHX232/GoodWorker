@@ -4,7 +4,7 @@ import { auth } from '../../../../auth'
 
 export async function GET() {
   const session = await auth()
-  if (!session?.user?.id || session.user.role !== 'TEACHER') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session?.user?.id || session.user.role !== 'TEACHER' && session.user.role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const experiences = await prisma.teacherExperience.findMany({
     where: { teacherId: session.user.id },
     orderBy: { yearFrom: 'desc' },
@@ -14,7 +14,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const session = await auth()
-  if (!session?.user?.id || session.user.role !== 'TEACHER') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session?.user?.id || session.user.role !== 'TEACHER' && session.user.role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const body = await req.json()
   const { title, organization, yearFrom, yearTo, description } = body
   if (!title || !yearFrom) return NextResponse.json({ error: 'title and yearFrom required' }, { status: 400 })

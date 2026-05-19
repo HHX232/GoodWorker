@@ -17,7 +17,7 @@ interface Category {
 
 const SOCIAL_ICONS: Record<string, { label: string; icon: React.ReactNode }> = {
   vk: {
-    label: 'ВКонтакте',
+    label: 'VKontakte',
     icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15.684 0H8.316C1.592 0 0 1.592 0 8.316v7.368C0 22.408 1.592 24 8.316 24h7.368C22.408 24 24 22.408 24 15.684V8.316C24 1.592 22.408 0 15.684 0zm3.692 17.123h-1.744c-.66 0-.862-.525-2.049-1.714-1.033-1-1.49-.85-1.49.35v1.56c0 .4-.13.55-.72.55-1.293 0-2.734-.786-3.74-2.254C8.22 13.17 7.5 11.02 7.5 10.5c0-.28.1-.44.46-.44h1.744c.34 0 .47.16.6.54.65 1.96 1.73 3.68 2.18 3.68.17 0 .25-.08.25-.52V11.7c-.05-.93-.54-1.01-.54-1.34 0-.18.14-.37.38-.37h2.74c.3 0 .4.16.4.5v3.21c0 .3.13.4.21.4.17 0 .31-.1.62-.41 1.16-1.3 1.99-3.3 1.99-3.3.11-.24.3-.47.65-.47h1.744c.52 0 .63.27.52.54-.42.98-1.45 2.82-1.45 2.82-.15.24-.2.35 0 .62.14.2.6.61 1 1.01.87.87 1.53 1.6 1.72 2.1.19.5-.06.75-.55.75z"/></svg>,
   },
   telegram: {
@@ -33,7 +33,7 @@ const SOCIAL_ICONS: Record<string, { label: string; icon: React.ReactNode }> = {
     icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>,
   },
   website: {
-    label: 'Сайт',
+    label: 'Website',
     icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
   },
 }
@@ -51,11 +51,16 @@ interface Props {
   bio?: string | null
   coverPhotoUrl?: string | null
   socialLinks?: Record<string, string> | null
+  teachingLanguage?: string | null
+  availableServices?: string[]
 }
+
+const ALL_SERVICE_KEYS = ['individual', 'group', 'homework', 'consultation'] as const
 
 export function PublicTeacherPanel({
   name, avatarUrl, isVip, createdAt, studentCount, postCount, callCount, categories, locale = 'en',
-  bio, coverPhotoUrl, socialLinks,
+  bio, coverPhotoUrl, socialLinks, teachingLanguage,
+  availableServices = ['individual', 'group', 'homework', 'consultation'],
 }: Props) {
   const t = useTranslations('dashboard')
 
@@ -143,6 +148,31 @@ export function PublicTeacherPanel({
 
         <div className={styles.divider} />
 
+        {/* Services */}
+        <div className={styles.section}>
+          <div className={styles.sectionLabel}>{t('servicesTitle')}</div>
+          <div className={styles.chips}>
+            {(availableServices as string[])
+              .filter((k) => (ALL_SERVICE_KEYS as readonly string[]).includes(k))
+              .map((k) => (
+                <span key={k} className={styles.chip}>
+                  {t(`services.${k as typeof ALL_SERVICE_KEYS[number]}.title`)}
+                </span>
+              ))}
+          </div>
+          {teachingLanguage && (
+            <div className={styles.langBadge}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              </svg>
+              <span>{t('teachingLanguage')}: {teachingLanguage}</span>
+            </div>
+          )}
+        </div>
+
+        <div className={styles.divider} />
+
         {/* Stats row */}
         <div className={styles.statsRow}>
           {infos.map(info => (
@@ -213,7 +243,7 @@ export function PublicTeacherPanel({
           <>
             <div className={styles.divider} />
             <div className={styles.section}>
-              <div className={styles.sectionLabel}>Соцсети</div>
+              <div className={styles.sectionLabel}>{t('socialLinks')}</div>
               <div className={styles.socialLinks}>
                 {Object.entries(SOCIAL_ICONS).map(([key, cfg]) => {
                   const url = socialLinks[key]

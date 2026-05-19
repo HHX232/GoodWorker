@@ -26,7 +26,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
     if (!roadmap) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
     // Владелец-учитель всегда имеет доступ
-    if (session.user.role === 'TEACHER' && roadmap.teacherId === session.user.id) {
+    if ((session.user.role === 'TEACHER' || session.user.role === 'ADMIN') && roadmap.teacherId === session.user.id) {
       return NextResponse.json({ hasAccess: true, grantedBy: 'owner' })
     }
 
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     const { id: roadmapId } = await params
     const session = await auth()
 
-    if (!session?.user?.id || session.user.role !== 'TEACHER') {
+    if (!session?.user?.id || session.user.role !== 'TEACHER' && session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

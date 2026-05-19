@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
         },
       })
 
-      const isTeacher = session.user.role === 'TEACHER'
+      const isTeacher = (session.user.role === 'TEACHER' || session.user.role === 'ADMIN')
       await createNotification({
         type: 'SYSTEM',
         title: 'Спасибо за обратную связь!',

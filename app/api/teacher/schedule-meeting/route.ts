@@ -11,11 +11,12 @@ export async function POST(req: NextRequest) {
 
     const teacherId = session.user.id
     const body = await req.json().catch(() => ({}))
-    const { studentId, title, scheduledAt, durationMinutes } = body as {
+    const { studentId, title, scheduledAt, durationMinutes, serviceId } = body as {
       studentId?: string
       title?: string
       scheduledAt?: string
       durationMinutes?: number
+      serviceId?: string
     }
     const duration = Math.max(15, Math.min(480, Number(durationMinutes) || 60))
 
@@ -57,14 +58,17 @@ export async function POST(req: NextRequest) {
 
     const roomName = `${title.trim().toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`
 
-    const conference = await prisma.conference.create({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const conference = await (prisma.conference.create as any)({
       data: {
         teacherId,
         title: title.trim(),
         scheduledAt: meetingTime,
         roomName,
         status: 'SCHEDULED',
+        durationMinutes: duration,
         description: String(duration),
+        ...(serviceId ? { serviceId } : {}),
         participants: {
           create: { studentId, role: 'STUDENT' },
         },

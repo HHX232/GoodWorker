@@ -24,6 +24,7 @@ import {CalendarTaskCreateModal} from '@/widgets/Calendar/Modals/CalendarTaskCre
 import {CalendarTaskModal} from '@/widgets/Calendar/Modals/CalendarTaskModal/CalendarTaskModal'
 import {MonthCalendar} from '@/widgets/Calendar/MonthCalendar/MonthCalendar'
 import {WeekCalendar} from '@/widgets/Calendar/WeekCalendar/WeekCalendar'
+import {useLocale} from 'next-intl'
 import {useEffect, useRef, useState} from 'react'
 import styles from './CalendarPage.module.scss'
 
@@ -56,7 +57,8 @@ export function CalendarPage({ teacherId }: { teacherId: string }) {
   const weekDays = useTypedSelector(selectWeekDays)
   const events = useTypedSelector(selectEvents)
 
-  // Load events, tasks and students from DB on mount
+  const [teacherServices, setTeacherServices] = useState<{id: string; title: string; price: number; duration: number}[]>([])
+
   const loaded = useRef(false)
   useEffect(() => {
     if (loaded.current) return
@@ -74,6 +76,17 @@ export function CalendarPage({ teacherId }: { teacherId: string }) {
       .then((r) => r.json())
       .then((d) => {
         if (Array.isArray(d.students)) setStudents(d.students as CalendarStudent[])
+      })
+      .catch(() => {})
+
+    fetch(`/api/services?teacherId=${teacherId}&lang=ru`)
+      .then(r => r.json())
+      .then(d => {
+        if (Array.isArray(d.services)) {
+          setTeacherServices(d.services.map((s: {id: string; title: string; price: number; duration: number}) => ({
+            id: s.id, title: s.title, price: s.price, duration: s.duration,
+          })))
+        }
       })
       .catch(() => {})
   }, [setEvents, setTasks, setStudents, teacherId])
@@ -102,13 +115,13 @@ export function CalendarPage({ teacherId }: { teacherId: string }) {
   const isOpen = useTypedSelector((state) => state.calendar.createTaskIsOpen)
   const view = useTypedSelector((state) => state.calendar.view)
 
+  const locale = useLocale()
+  const intlLocale = locale === 'ru' ? 'ru-RU' : 'en-US'
   const [exporting, setExporting] = useState(false)
 
   const currentDate = weekDays[0] ?? new Date()
   const currentDateRaw = useTypedSelector((state) => state.calendar.currentDate)
   const currentDateObj = new Date(currentDateRaw)
-
-  const MONTHS_GEN = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря']
 
   const handleExportPDF = async () => {
     if (exporting) return
@@ -131,14 +144,14 @@ export function CalendarPage({ teacherId }: { teacherId: string }) {
         ],
       })
       const d = currentDateObj
-      const monthLabel = `${d.getDate()} ${MONTHS_GEN[d.getMonth()]} ${d.getFullYear()}`
+      const monthLabel = d.toLocaleDateString(intlLocale, {day: 'numeric', month: 'long', year: 'numeric'})
       const blob = await pdf(
         <CalendarPDFDoc events={events} tasks={tasks} monthLabel={monthLabel} />
       ).toBlob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `расписание_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}.pdf`
+      a.download = `schedule_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}.pdf`
       a.click()
       URL.revokeObjectURL(url)
     } finally {
@@ -261,6 +274,7 @@ export function CalendarPage({ teacherId }: { teacherId: string }) {
         editingEvent={createModal.editingEvent}
         onClose={closeCreate}
         onSave={handleSaveEvent}
+        teacherServices={teacherServices}
       />
     </div>
   )

@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     const role = session?.user?.role
     const userId = session?.user?.id
 
-    if (!userId || (role !== 'TEACHER' && role !== 'STUDENT')) {
+    if (!userId || (role !== 'TEACHER' && role !== 'ADMIN' && role !== 'STUDENT')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

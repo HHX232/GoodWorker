@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
+import { toast } from 'sonner'
 import styles from './BookServiceModal.module.scss'
 
 interface ServiceInfo {
@@ -19,10 +21,10 @@ interface Props {
   service: ServiceInfo | null
 }
 
-function fmtDuration(mins: number): string {
-  if (mins < 60) return `${mins} мин`
+function fmtDuration(mins: number, minUnit: string, hourUnit: string): string {
+  if (mins < 60) return `${mins} ${minUnit}`
   const h = mins / 60
-  return Number.isInteger(h) ? `${h} ч` : `${h} ч`
+  return `${h} ${hourUnit}`
 }
 
 function IconClock() {
@@ -61,6 +63,7 @@ function IconCheck() {
 }
 
 export function BookServiceModal({ open, onClose, service }: Props) {
+  const t = useTranslations('dashboard.bookService')
   const [promoInput, setPromoInput] = useState('')
   const [promoApplied, setPromoApplied] = useState(false)
   const [discount, setDiscount] = useState(0)
@@ -100,11 +103,11 @@ export function BookServiceModal({ open, onClose, service }: Props) {
         body: JSON.stringify({ code: promoInput.trim().toUpperCase() }),
       })
       const data = await res.json()
-      if (!res.ok) { setPromoError(data.error ?? 'Промокод не найден'); return }
+      if (!res.ok) { setPromoError(data.error ?? t('promoNotFound')); return }
       setDiscount(data.discount)
       setPromoApplied(true)
     } catch {
-      setPromoError('Ошибка сети')
+      setPromoError(t('errorNetwork'))
     } finally {
       setApplyingPromo(false)
     }
@@ -113,6 +116,7 @@ export function BookServiceModal({ open, onClose, service }: Props) {
   async function handleBook() {
     setSubmitting(true)
     setError('')
+    const tid = toast.loading('Оформление записи...')
     try {
       const res = await fetch(`/api/services/${service!.id}/book`, {
         method: 'POST',
@@ -120,10 +124,17 @@ export function BookServiceModal({ open, onClose, service }: Props) {
         body: JSON.stringify({ promoCode: promoApplied ? promoInput.trim().toUpperCase() : undefined }),
       })
       const data = await res.json()
-      if (!res.ok) { setError(data.error ?? 'Ошибка при записи'); return }
+      if (!res.ok) {
+        const msg = data.error ?? t('errorBook')
+        setError(msg)
+        toast.error(msg, { id: tid })
+        return
+      }
+      toast.success('Запись оформлена!', { id: tid })
       setSuccess(true)
     } catch {
-      setError('Ошибка сети')
+      setError(t('errorNetwork'))
+      toast.error('Ошибка соединения. Попробуйте ещё раз.', { id: tid })
     } finally {
       setSubmitting(false)
     }
@@ -134,8 +145,8 @@ export function BookServiceModal({ open, onClose, service }: Props) {
       <div className={styles.modal} onClick={e => e.stopPropagation()}>
 
         <div className={styles.header}>
-          <h2 className={styles.heading}>Запись на услугу</h2>
-          <button className={styles.closeBtn} onClick={onClose} aria-label="Закрыть">
+          <h2 className={styles.heading}>{t('heading')}</h2>
+          <button className={styles.closeBtn} onClick={onClose} aria-label={t('close')}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -145,11 +156,11 @@ export function BookServiceModal({ open, onClose, service }: Props) {
         {success ? (
           <div className={styles.successWrap}>
             <div className={styles.successIcon}><IconCheck /></div>
-            <h3 className={styles.successTitle}>Запись оформлена!</h3>
+            <h3 className={styles.successTitle}>{t('successTitle')}</h3>
             <p className={styles.successDesc}>
-              Учитель получил уведомление и скоро свяжется с вами.
+              {t('successDesc')}
             </p>
-            <button className={styles.doneBtn} onClick={onClose}>Готово</button>
+            <button className={styles.doneBtn} onClick={onClose}>{t('done')}</button>
           </div>
         ) : (
           <>
@@ -159,11 +170,11 @@ export function BookServiceModal({ open, onClose, service }: Props) {
                 <div className={styles.serviceTitle}>{service.title}</div>
                 <div className={styles.serviceMeta}>
                   <span className={styles.metaBadge}>
-                    <IconClock /> {fmtDuration(service.duration)}
+                    <IconClock /> {fmtDuration(service.duration, t('minUnit'), t('hourUnit'))}
                   </span>
                   <span className={styles.metaBadge}>
                     {service.isGroup ? <IconGroup /> : <IconPerson />}
-                    {service.isGroup ? 'Групповая' : 'Личная'}
+                    {service.isGroup ? t('group') : t('personal')}
                   </span>
                   <span className={styles.metaBadge}>{service.timeFrom}–{service.timeTo}</span>
                 </div>
@@ -182,9 +193,9 @@ export function BookServiceModal({ open, onClose, service }: Props) {
 
               {/* Promo code */}
               <div className={styles.field}>
-                <label className={styles.label}>Промокод</label>
+                <label className={styles.label}>{t('promoLabel')}</label>
                 {promoApplied ? (
-                  <div className={styles.promoSuccess}>Промокод «{promoInput.toUpperCase()}» применён — скидка {discount}%</div>
+                  <div className={styles.promoSuccess}>{t('promoApplied', {code: promoInput.toUpperCase(), discount})}</div>
                 ) : (
                   <div className={styles.promoRow}>
                     <input
@@ -201,7 +212,7 @@ export function BookServiceModal({ open, onClose, service }: Props) {
                       onClick={applyPromo}
                       disabled={applyingPromo || !promoInput.trim()}
                     >
-                      {applyingPromo ? '...' : 'Применить'}
+                      {applyingPromo ? '...' : t('promoApply')}
                     </button>
                   </div>
                 )}
@@ -212,9 +223,9 @@ export function BookServiceModal({ open, onClose, service }: Props) {
             </div>
 
             <div className={styles.footer}>
-              <button className={styles.cancelBtn} onClick={onClose} disabled={submitting}>Отмена</button>
+              <button className={styles.cancelBtn} onClick={onClose} disabled={submitting}>{t('cancel')}</button>
               <button className={styles.submitBtn} onClick={handleBook} disabled={submitting}>
-                {submitting ? 'Запись...' : `Записаться за ${Math.round(finalPrice).toLocaleString('ru-RU')} ₽`}
+                {submitting ? t('booking') : t('bookFor', {price: Math.round(finalPrice).toLocaleString()})}
               </button>
             </div>
           </>

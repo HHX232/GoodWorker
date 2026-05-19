@@ -31,6 +31,7 @@ function extractMediaPreviewUrls(content: unknown): string[] {
 export async function GET(req: NextRequest, { params }: Params) {
   try {
     const { id } = await params
+    const session = await auth()
 
     const [roadmap, avgResult] = await Promise.all([
       prisma.roadmap.findUnique({
@@ -48,6 +49,11 @@ export async function GET(req: NextRequest, { params }: Params) {
     ])
 
     if (!roadmap) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+    // @ts-ignore
+    if (roadmap.moderationStatus && roadmap.moderationStatus !== 'PUBLISHED' && session?.user?.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
 
     const lang = req.nextUrl.searchParams.get('lang') ?? 'ru'
     const localized = localizeRoadmap(roadmap, lang)
@@ -67,7 +73,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   try {
     const { id } = await params
     const session = await auth()
-    if (!session?.user?.id || session.user.role !== 'TEACHER') {
+    if (!session?.user?.id || session.user.role !== 'TEACHER' && session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -113,7 +119,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   try {
     const { id } = await params
     const session = await auth()
-    if (!session?.user?.id || session.user.role !== 'TEACHER') {
+    if (!session?.user?.id || session.user.role !== 'TEACHER' && session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

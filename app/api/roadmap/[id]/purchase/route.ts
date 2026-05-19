@@ -30,7 +30,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
     if (roadmap.nodeAccessType !== 'PURCHASE') {
       return NextResponse.json({ error: 'This roadmap does not require purchase' }, { status: 400 })
     }
-    if (session.user.role === 'TEACHER' && roadmap.teacherId === session.user.id) {
+    if ((session.user.role === 'TEACHER' || session.user.role === 'ADMIN') && roadmap.teacherId === session.user.id) {
       return NextResponse.json({ error: 'Owner already has access' }, { status: 400 })
     }
 

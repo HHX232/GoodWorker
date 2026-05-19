@@ -5,7 +5,7 @@ import { auth } from '../../../../auth'
 export async function GET() {
   try {
     const session = await auth()
-    if (!session?.user?.id || session.user.role !== 'TEACHER') {
+    if (!session?.user?.id || session.user.role !== 'TEACHER' && session.user.role !== 'ADMIN') {
       return NextResponse.json({ isVip: false })
     }
 

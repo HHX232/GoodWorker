@@ -1,5 +1,6 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { createNotification } from '@/shared/lib/notifications'
+import { localizeService } from '@/lib/postAI'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../auth'
 import { enrichServiceWithAI } from '@/lib/postAI'
@@ -7,22 +8,35 @@ import { enrichServiceWithAI } from '@/lib/postAI'
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const teacherId = searchParams.get('teacherId')
+  const lang = searchParams.get('lang') ?? 'ru'
 
   if (!teacherId) {
     return NextResponse.json({ error: 'teacherId required' }, { status: 400 })
   }
 
   try {
-    const services = await prisma.service.findMany({
-      where: { teacherId },
-      include: {
-        category: { include: { translations: true } },
-        promoCodes: true,
-        targetStudent: { select: { id: true, name: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    })
-    return NextResponse.json({ services })
+    const [services, teacher] = await Promise.all([
+      prisma.service.findMany({
+        where: { teacherId },
+        include: {
+          category: { include: { translations: true } },
+          promoCodes: true,
+          targetStudent: { select: { id: true, name: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.teacher.findUnique({ where: { id: teacherId }, select: { langCode: true } }),
+    ])
+
+    const originalLangCode = teacher?.langCode ?? 'ru'
+
+    const localized = services.map((s) => ({
+      ...localizeService(s, lang),
+      originalLangCode,
+      isTranslated: !!(s.titleTranslations) && lang !== originalLangCode,
+    }))
+
+    return NextResponse.json({ services: localized })
   } catch {
     return NextResponse.json({ error: 'Failed to fetch services' }, { status: 500 })
   }
@@ -31,7 +45,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await auth()
-    if (!session?.user?.id || session.user.role !== 'TEACHER') {
+    if (!session?.user?.id || session.user.role !== 'TEACHER' && session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

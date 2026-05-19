@@ -88,8 +88,8 @@ export default function NodeHeader({
             <>
               <button
                 className={styles.reportBtn}
-                aria-label='Пожаловаться'
-                title='Пожаловаться'
+                aria-label={t('reportBtn')}
+                title={t('reportBtn')}
                 onClick={(e) => {
                   e.stopPropagation()
                   setComplaintOpen(true)

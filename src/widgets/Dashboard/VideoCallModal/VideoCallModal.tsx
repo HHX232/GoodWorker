@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import styles from './VideoCallModal.module.scss'
 
 interface Category {
@@ -127,6 +128,7 @@ export function VideoCallModal({ defaultName, onClose }: Props) {
     const allEmails = accessType === 'SELECTED'
       ? [...Array.from(checkedStudents), ...typedEmails]
       : []
+    const tid = toast.loading('Создание комнаты...')
     try {
       const res = await fetch('/api/call/rooms', {
         method: 'POST',
@@ -141,12 +143,16 @@ export function VideoCallModal({ defaultName, onClose }: Props) {
       })
       const data = await res.json()
       if (!res.ok || data.error) {
-        setStep2Error(data.error === 'no_access' ? 'Нет доступа к этой комнате' : (data.error ?? 'Ошибка'))
+        const msg = data.error === 'no_access' ? 'Нет доступа к этой комнате' : (data.error ?? 'Ошибка')
+        setStep2Error(msg)
+        toast.error(msg, { id: tid })
       } else {
+        toast.success('Комната создана!', { id: tid })
         router.push(`/call/${data.id}`)
       }
     } catch {
       setStep2Error('Ошибка соединения')
+      toast.error('Ошибка соединения. Попробуйте ещё раз.', { id: tid })
     } finally {
       setCreating(false)
     }

@@ -1,6 +1,7 @@
 import {useRoadmapAccessContext} from '@/shared/ui/RoadMap/context/RoadmapAccessContext'
 import {BlockRoadParam, RoadMapBlockType} from '@/shared/types/RoadMap/RoadMap.types'
 import {Handle, Position} from '@xyflow/react'
+import {useTranslations} from 'next-intl'
 import handleStyles from '../NodeInputs/NodeInputs.module.scss'
 import styles from './PaywallOverlay.module.scss'
 
@@ -212,6 +213,7 @@ interface PaywallOverlayProps {
 }
 
 export function PaywallOverlay({type, nodeId, hasInput, hasOutput}: PaywallOverlayProps) {
+  const t = useTranslations('roadMap')
   const FakeContent = FAKE_MAP[type]
   const {nodeAccessType, openPurchaseModal} = useRoadmapAccessContext()
 
@@ -251,7 +253,7 @@ export function PaywallOverlay({type, nodeId, hasInput, hasOutput}: PaywallOverl
           <rect x='3' y='11' width='18' height='11' rx='2' stroke='currentColor' strokeWidth='2' />
           <path d='M7 11V7a5 5 0 0 1 10 0v4' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
         </svg>
-        {nodeAccessType === 'PURCHASE' ? 'Купить доступ' : 'Закрытый блок'}
+        {nodeAccessType === 'PURCHASE' ? t('paywallBuy') : t('paywallLocked')}
       </button>
     </div>
   )

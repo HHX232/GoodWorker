@@ -1,7 +1,7 @@
 'use client'
 
 import { CURRENCIES, formatConverted } from '@/shared/utils/currencyConverter'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { FC, useState } from 'react'
 import UserHeaderCard from '../../User/UserHeaderCard/UserHeaderCard'
@@ -15,6 +15,7 @@ interface RoadMapPreviewProps {
   mediaPreviewUrls: string[]
   avgRating: number
   nodeAccessType?: string | null
+  originalLanguage?: string | null
   _count: { comments: number; ratings: number }
   teacher: { id: string; name: string; avatarUrl: string | null }
   useLink?: boolean
@@ -46,6 +47,7 @@ export const RoadMapPreview: FC<RoadMapPreviewProps> = ({
   mediaPreviewUrls,
   avgRating,
   nodeAccessType = null,
+  originalLanguage = null,
   _count,
   teacher,
   useLink = true,
@@ -53,7 +55,10 @@ export const RoadMapPreview: FC<RoadMapPreviewProps> = ({
   const isPartiallyFree = price === 0 && nodeAccessType !== null
   const [priceHovered, setPriceHovered] = useState(false)
   const locale = useLocale()
+  const t = useTranslations('roadmapPreview')
+  const tLangs = useTranslations('roadmapPreview.languages')
   const activeCurrency = CURRENCIES.find((c) => c.code === (LOCALE_CURRENCY[locale] ?? 'RUB')) ?? RUB
+  const showLangBadge = originalLanguage && originalLanguage !== locale
 
   const images = [
     previewImageUrl,
@@ -81,6 +86,16 @@ export const RoadMapPreview: FC<RoadMapPreviewProps> = ({
       ) : (
         <div className={styles.title_link}>
           <h5 className={styles.title}>{title}</h5>
+        </div>
+      )}
+
+      {showLangBadge && (
+        <div className={styles.lang_badge}>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          <span>{t('originalLang')}: {tLangs(originalLanguage as Parameters<typeof tLangs>[0]) ?? originalLanguage}</span>
         </div>
       )}
 
@@ -133,22 +148,22 @@ export const RoadMapPreview: FC<RoadMapPreviewProps> = ({
             )}
           </div>
         ) : isPartiallyFree ? (
-          <span className={styles.partial_badge}>частично-бесплатно</span>
+          <span className={styles.partial_badge}>{t('partiallyFree')}</span>
         ) : (
-          <span className={styles.free_badge}>Бесплатно</span>
+          <span className={styles.free_badge}>{t('free')}</span>
         )}
       </div>
 
       {useLink ? (
         <Link href={href} className={styles.open_btn}>
-          <span>Открыть роадмап</span>
+          <span>{t('open')}</span>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M1 8H15M15 8L8 1M15 8L8 15" stroke="#868897" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </Link>
       ) : (
         <div className={styles.open_btn}>
-          <span>Открыть роадмап</span>
+          <span>{t('open')}</span>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M1 8H15M15 8L8 1M15 8L8 15" stroke="#868897" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>

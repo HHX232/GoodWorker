@@ -1,6 +1,9 @@
+'use client'
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {DAYS_SHORT, formatDateKey, getEventsForDay, isToday} from '@/shared/helpers/calendar/calendar.helpers'
+import {getLocaleDayShorts, formatDateKey, getEventsForDay, isToday} from '@/shared/helpers/calendar/calendar.helpers'
 import {CalendarTask} from '@/shared/types/Calendar/calendar.types'
+import {useLocale} from 'next-intl'
+import {useMemo} from 'react'
 import styles from './MonthCalendar.module.scss'
 
 const EVENT_COLORS = [
@@ -39,6 +42,8 @@ export function MonthCalendar({
   onDayClick,
   onTaskToggle
 }: MonthCalendarProps) {
+  const locale = useLocale()
+  const dayShorts = useMemo(() => getLocaleDayShorts(locale), [locale])
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth()
 
@@ -54,7 +59,7 @@ export function MonthCalendar({
 
   return (
     <div className={styles.monthGrid}>
-      {DAYS_SHORT.map((d) => (
+      {dayShorts.map((d) => (
         <div key={d} className={styles.monthDayName}>
           {d}
         </div>
@@ -102,7 +107,7 @@ export function MonthCalendar({
                     ev.stopPropagation()
                     onTaskToggle?.(t.id)
                   }}
-                  aria-label='Выполнить'
+                  aria-label='done'
                 >
                   {t.completed && (
                     <svg width='8' height='8' viewBox='0 0 10 10' fill='none'>

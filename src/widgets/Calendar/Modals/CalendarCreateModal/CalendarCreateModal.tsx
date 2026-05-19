@@ -3,8 +3,16 @@
 import {useState, useEffect} from 'react'
 import {CalendarEvent, CalendarEventColor} from '@/shared/types/Calendar/calendar.types'
 import {EVENT_COLORS, formatDateKey} from '@/shared/helpers/calendar/calendar.helpers'
+import {useTranslations} from 'next-intl'
 import styles from './CalendarCreateModal.module.scss'
 import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
+
+interface ServiceOption {
+  id: string
+  title: string
+  price: number
+  duration: number
+}
 
 interface CalendarCreateModalProps {
   isOpen: boolean
@@ -14,6 +22,7 @@ interface CalendarCreateModalProps {
   initialStartTime?: string | null
   initialEndTime?: string | null
   editingEvent?: CalendarEvent | null
+  teacherServices?: ServiceOption[]
 }
 
 const COLOR_OPTIONS = Object.keys(EVENT_COLORS) as CalendarEventColor[]
@@ -37,11 +46,13 @@ export function CalendarCreateModal({
   initialDate,
   initialStartTime,
   initialEndTime,
-  editingEvent
+  editingEvent,
+  teacherServices,
 }: CalendarCreateModalProps) {
+  const t = useTranslations('calendar.createModal')
   const [form, setForm] = useState(EMPTY_FORM)
+  const [selectedServiceId, setSelectedServiceId] = useState('')
 
-  // Fill form when modal opens
   useEffect(() => {
     if (!isOpen) return
     if (editingEvent) {
@@ -56,6 +67,7 @@ export function CalendarCreateModal({
         status: editingEvent.status ?? 'scheduled',
         color: editingEvent.color
       })
+      setSelectedServiceId(editingEvent.serviceId ?? '')
     } else {
       setForm({
         ...EMPTY_FORM,
@@ -63,6 +75,7 @@ export function CalendarCreateModal({
         startTime: initialStartTime ?? '09:00',
         endTime: initialEndTime ?? '10:00'
       })
+      setSelectedServiceId('')
     }
   }, [isOpen, editingEvent, initialDate, initialStartTime, initialEndTime])
 
@@ -76,6 +89,7 @@ export function CalendarCreateModal({
       document.getElementById('ce-title')?.focus()
       return
     }
+    const svc = teacherServices?.find(s => s.id === selectedServiceId)
     onSave({
       ...(editingEvent ? {id: editingEvent.id} : {}),
       title: form.title.trim(),
@@ -86,7 +100,13 @@ export function CalendarCreateModal({
       status: form.status,
       studentName: form.studentName.trim() || undefined,
       subject: form.subject.trim() || undefined,
-      description: form.description.trim() || undefined
+      description: form.description.trim() || undefined,
+      ...(svc ? {
+        serviceId: svc.id,
+        serviceTitle: svc.title,
+        servicePrice: svc.price,
+        serviceDurationMinutes: svc.duration,
+      } : {}),
     })
   }
 
@@ -96,8 +116,8 @@ export function CalendarCreateModal({
     <ModalWindowDefault isOpen={isOpen} onClose={onClose}>
       <div className={styles.header}>
         <div className={styles.headerLeft}>
-          <div className={styles.eyebrow}>{isEditing ? 'Редактировать' : 'Новое событие'}</div>
-          <div className={styles.title}>{isEditing ? 'Изменить запись' : 'Создать запись'}</div>
+          <div className={styles.eyebrow}>{isEditing ? t('editEvent') : t('newEvent')}</div>
+          <div className={styles.title}>{isEditing ? t('editTitle') : t('createTitle')}</div>
         </div>
         <button className={styles.closeBtn} onClick={onClose}>
           <svg width='12' height='12' viewBox='0 0 24 24' fill='none'>
@@ -107,75 +127,88 @@ export function CalendarCreateModal({
       </div>
 
       <div className={styles.body}>
-        {/* Title */}
         <div className={styles.field}>
-          <label className={styles.label}>Название</label>
+          <label className={styles.label}>{t('titleLabel')}</label>
           <input
             id='ce-title'
             className={styles.input}
             type='text'
-            placeholder='Алгебра, Физика, Созвон…'
+            placeholder={t('titlePlaceholder')}
             value={form.title}
             onChange={set('title')}
             autoFocus
           />
         </div>
 
-        {/* Date + Student */}
         <div className={styles.row}>
           <div className={styles.field}>
-            <label className={styles.label}>Дата</label>
+            <label className={styles.label}>{t('dateLabel')}</label>
             <input className={styles.input} type='date' value={form.date} onChange={set('date')} />
           </div>
           <div className={styles.field}>
-            <label className={styles.label}>Ученик</label>
+            <label className={styles.label}>{t('studentLabel')}</label>
             <input
               className={styles.input}
               type='text'
-              placeholder='Имя ученика'
+              placeholder={t('studentPlaceholder')}
               value={form.studentName}
               onChange={set('studentName')}
             />
           </div>
         </div>
 
-        {/* Start + End */}
         <div className={styles.row}>
           <div className={styles.field}>
-            <label className={styles.label}>Начало</label>
+            <label className={styles.label}>{t('startLabel')}</label>
             <input className={styles.input} type='time' value={form.startTime} onChange={set('startTime')} />
           </div>
           <div className={styles.field}>
-            <label className={styles.label}>Конец</label>
+            <label className={styles.label}>{t('endLabel')}</label>
             <input className={styles.input} type='time' value={form.endTime} onChange={set('endTime')} />
           </div>
         </div>
 
-        {/* Subject + Status */}
         <div className={styles.row}>
           <div className={styles.field}>
-            <label className={styles.label}>Предмет</label>
+            <label className={styles.label}>{t('subjectLabel')}</label>
             <input
               className={styles.input}
               type='text'
-              placeholder='Математика…'
+              placeholder={t('subjectPlaceholder')}
               value={form.subject}
               onChange={set('subject')}
             />
           </div>
           <div className={styles.field}>
-            <label className={styles.label}>Статус</label>
+            <label className={styles.label}>{t('statusLabel')}</label>
             <select className={styles.input} value={form.status} onChange={set('status')}>
-              <option value='scheduled'>Запланировано</option>
-              <option value='completed'>Проведено</option>
-              <option value='cancelled'>Отменено</option>
+              <option value='scheduled'>{t('statusScheduled')}</option>
+              <option value='completed'>{t('statusCompleted')}</option>
+              <option value='cancelled'>{t('statusCancelled')}</option>
             </select>
           </div>
         </div>
 
-        {/* Color */}
+        {teacherServices && teacherServices.length > 0 && (
+          <div className={styles.field}>
+            <label className={styles.label}>{t('serviceLabel')}</label>
+            <select
+              className={styles.input}
+              value={selectedServiceId}
+              onChange={e => setSelectedServiceId(e.target.value)}
+            >
+              <option value=''>{t('noService')}</option>
+              {teacherServices.map(s => (
+                <option key={s.id} value={s.id}>
+                  {s.title} — {s.price.toLocaleString()} ₽ / {s.duration} мин
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <div className={styles.field}>
-          <label className={styles.label}>Цвет</label>
+          <label className={styles.label}>{t('colorLabel')}</label>
           <div className={styles.colorPicker}>
             {COLOR_OPTIONS.map((c) => (
               <button
@@ -190,12 +223,11 @@ export function CalendarCreateModal({
           </div>
         </div>
 
-        {/* Description */}
         <div className={styles.field}>
-          <label className={styles.label}>Описание</label>
+          <label className={styles.label}>{t('descLabel')}</label>
           <textarea
             className={styles.textarea}
-            placeholder='Заметки к занятию…'
+            placeholder={t('descPlaceholder')}
             value={form.description}
             onChange={set('description')}
             rows={3}
@@ -205,10 +237,10 @@ export function CalendarCreateModal({
 
       <div className={styles.footer}>
         <button className={styles.btnSecondary} onClick={onClose}>
-          Отмена
+          {t('cancel')}
         </button>
         <button className={styles.btnPrimary} onClick={handleSave}>
-          {isEditing ? 'Сохранить' : 'Создать'}
+          {isEditing ? t('save') : t('create')}
         </button>
       </div>
     </ModalWindowDefault>

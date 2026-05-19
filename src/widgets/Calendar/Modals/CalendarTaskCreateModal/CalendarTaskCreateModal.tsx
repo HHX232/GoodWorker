@@ -1,6 +1,7 @@
 'use client'
 
 import {CalendarTask} from '@/shared/types/Calendar/calendar.types'
+import {useTranslations} from 'next-intl'
 import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
 import {nanoid} from 'nanoid'
 import {useState} from 'react'
@@ -28,6 +29,7 @@ const EMPTY_FORM = {
 }
 
 export function CalendarTaskCreateModal({isOpen, onClose, onSave, editingTask}: CalendarTaskCreateModalProps) {
+  const t = useTranslations('calendar.taskCreateModal')
   const [form, setForm] = useState(EMPTY_FORM)
   const [items, setItems] = useState<ChecklistItem[]>([])
   const [newItemText, setNewItemText] = useState('')
@@ -88,10 +90,10 @@ export function CalendarTaskCreateModal({isOpen, onClose, onSave, editingTask}: 
   const footer = (
     <div className={styles.footer}>
       <button className={styles.btnSecondary} onClick={onClose}>
-        Отмена
+        {t('cancel')}
       </button>
       <button className={styles.btnPrimary} onClick={handleSave}>
-        {editingTask ? 'Сохранить' : 'Создать задачу'}
+        {editingTask ? t('save') : t('create')}
       </button>
     </div>
   )
@@ -99,58 +101,54 @@ export function CalendarTaskCreateModal({isOpen, onClose, onSave, editingTask}: 
   return (
     <ModalWindowDefault isOpen={isOpen} onClose={onClose} modalFooter={footer}>
       <div className={styles.header}>
-        <div className={styles.eyebrow}>{editingTask ? 'Редактировать' : 'Новая задача'}</div>
-        <div className={styles.title}>{editingTask ? 'Изменить задачу' : 'Создать задачу'}</div>
+        <div className={styles.eyebrow}>{editingTask ? t('editTask') : t('newTask')}</div>
+        <div className={styles.title}>{editingTask ? t('editTitle') : t('createTitle')}</div>
       </div>
 
       <div className={styles.body}>
-        {/* Название */}
         <div className={styles.field}>
-          <label className={styles.label}>Название</label>
+          <label className={styles.label}>{t('titleLabel')}</label>
           <input
             id='ct-title'
             className={styles.input}
             type='text'
-            placeholder='Название задачи...'
+            placeholder={t('titlePlaceholder')}
             value={form.title}
             onChange={set('title')}
             autoFocus
           />
         </div>
 
-        {/* Описание */}
         <div className={styles.field}>
-          <label className={styles.label}>Описание</label>
+          <label className={styles.label}>{t('descLabel')}</label>
           <textarea
             className={styles.textarea}
-            placeholder='Подробности...'
+            placeholder={t('descPlaceholder')}
             value={form.description}
             onChange={set('description')}
             rows={2}
           />
         </div>
 
-        {/* Срок + Категория */}
         <div className={styles.row}>
           <div className={styles.field}>
-            <label className={styles.label}>Срок</label>
+            <label className={styles.label}>{t('dueDateLabel')}</label>
             <input className={styles.input} type='date' value={form.dueDate} onChange={set('dueDate')} />
           </div>
           <div className={styles.field}>
-            <label className={styles.label}>Категория</label>
+            <label className={styles.label}>{t('categoryLabel')}</label>
             <input
               className={styles.input}
               type='text'
-              placeholder='Математика...'
+              placeholder={t('categoryPlaceholder')}
               value={form.category}
               onChange={set('category')}
             />
           </div>
         </div>
 
-        {/* Приоритет */}
         <div className={styles.field}>
-          <label className={styles.label}>Приоритет</label>
+          <label className={styles.label}>{t('priorityLabel')}</label>
           <div className={styles.priorityGroup}>
             {(['low', 'medium', 'high'] as const).map((p) => (
               <button
@@ -161,16 +159,15 @@ export function CalendarTaskCreateModal({isOpen, onClose, onSave, editingTask}: 
                 }`}
                 onClick={() => setForm((prev) => ({...prev, priority: p}))}
               >
-                {p === 'low' ? 'Низкий' : p === 'medium' ? 'Средний' : 'Высокий'}
+                {t(p as 'low' | 'medium' | 'high')}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Чек-лист */}
         <div className={styles.field}>
           <div className={styles.checklistHeader}>
-            <label className={styles.label}>Чек-лист</label>
+            <label className={styles.label}>{t('checklistLabel')}</label>
             {items.length > 0 && (
               <span className={styles.checklistProgress}>
                 {completedCount}/{items.length}
@@ -216,7 +213,7 @@ export function CalendarTaskCreateModal({isOpen, onClose, onSave, editingTask}: 
                     type='button'
                     className={styles.checklistRemove}
                     onClick={() => removeItem(item.id)}
-                    aria-label='Удалить пункт'
+                    aria-label={t('removeItem')}
                   >
                     <svg width='12' height='12' viewBox='0 0 24 24' fill='none'>
                       <path d='M18 6L6 18M6 6l12 12' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' />
@@ -232,7 +229,7 @@ export function CalendarTaskCreateModal({isOpen, onClose, onSave, editingTask}: 
             <div className={styles.checklistAddDot} />
             <input
               className={styles.checklistAddInput}
-              placeholder='Добавить пункт...'
+              placeholder={t('checklistPlaceholder')}
               value={newItemText}
               onChange={(e) => setNewItemText(e.target.value)}
               onKeyDown={handleItemKeyDown}

@@ -137,6 +137,7 @@ export function DashboardStudentSidebar({ teacherId }: Props) {
           avatarColor={selectedStudent.avatarColor}
           avatarTextColor={selectedStudent.avatarTextColor}
           subject={selectedStudent.subject}
+          teacherId={teacherId}
           onClose={() => setSelectedStudent(null)}
         />
       )}

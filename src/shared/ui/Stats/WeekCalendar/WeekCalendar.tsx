@@ -1,9 +1,10 @@
 'use client'
 import Image from 'next/image'
 import {useMemo, useRef, useState} from 'react'
-import {useTranslations} from 'next-intl'
+import {useLocale, useTranslations} from 'next-intl'
 import ModalWindowDefault from '../../Modals/ModalWindowDefault/ModalWindowDefault'
 import styles from './WeekCalendar.module.scss'
+import {getDisplayName} from '@/shared/utils/transliterate'
 
 export interface CalendarLesson {
   id: string
@@ -25,9 +26,21 @@ interface Lesson {
   date: Date
 }
 
-const WEEK_DAYS_SHORT = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
-const MONTH_NAMES_SHORT = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
-const MONTH_NAMES_RU = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']
+// Mon=0…Sun=6 seed dates (week starting Monday 2024-01-01)
+const MONDAY_SEED = new Date(2024, 0, 1) // Mon
+function localeWeekDays(intlLocale: string): string[] {
+  return Array.from({length: 7}, (_, i) => {
+    const d = new Date(MONDAY_SEED)
+    d.setDate(1 + i)
+    return new Intl.DateTimeFormat(intlLocale, {weekday: 'short'}).format(d)
+  })
+}
+function monthShort(date: Date, intlLocale: string): string {
+  return new Intl.DateTimeFormat(intlLocale, {month: 'short'}).format(date)
+}
+function formatLocalDate(date: Date, intlLocale: string): string {
+  return date.toLocaleDateString(intlLocale, {day: 'numeric', month: 'long', year: 'numeric'})
+}
 
 const START_HOUR = 8
 const END_HOUR = 20
@@ -101,12 +114,9 @@ function buildColumnFlexes(weekDays: Date[], weekLessons: Lesson[]): number[] {
   return weekDays.map((day) => (weekLessons.some((l) => isSameDay(l.date, day)) ? COL_FLEX_BUSY : COL_FLEX_EMPTY))
 }
 
-function formatDate(date: Date) {
-  return `${date.getDate()} ${MONTH_NAMES_RU[date.getMonth()]} ${date.getFullYear()}`
-}
-
-function LessonDetail({lesson, t}: {lesson: Lesson; t: ReturnType<typeof useTranslations>}) {
+function LessonDetail({lesson, t, intlLocale, locale}: {lesson: Lesson; t: ReturnType<typeof useTranslations>; intlLocale: string; locale: string}) {
   const endTime = formatEndTime(lesson.time, lesson.duration)
+  const studentName = getDisplayName(lesson.studentName, locale)
   return (
     <div style={{padding: '8px 0 4px', display: 'flex', flexDirection: 'column', gap: 16}}>
       <div style={{display: 'flex', alignItems: 'center', gap: 12}}>
@@ -115,16 +125,16 @@ function LessonDetail({lesson, t}: {lesson: Lesson; t: ReturnType<typeof useTran
             width={48}
             height={48}
             src={lesson.studentAvatar}
-            alt={lesson.studentName}
+            alt={studentName}
             style={{borderRadius: '50%', objectFit: 'cover'}}
           />
         ) : (
           <div style={{width: 48, height: 48, borderRadius: '50%', background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, color: '#bbb'}}>
-            {lesson.studentName.charAt(0)}
+            {studentName.charAt(0)}
           </div>
         )}
         <div>
-          <p style={{margin: 0, fontSize: 16, fontWeight: 700, color: '#1a1a1a'}}>{lesson.studentName}</p>
+          <p style={{margin: 0, fontSize: 16, fontWeight: 700, color: '#1a1a1a'}}>{studentName}</p>
           <p style={{margin: '2px 0 0', fontSize: 13, color: '#888'}}>{lesson.subject}</p>
         </div>
       </div>
@@ -132,7 +142,7 @@ function LessonDetail({lesson, t}: {lesson: Lesson; t: ReturnType<typeof useTran
       <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12}}>
         <div style={{background: '#f8f8f8', borderRadius: 12, padding: '12px 14px'}}>
           <p style={{margin: 0, fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px'}}>{t('date')}</p>
-          <p style={{margin: '4px 0 0', fontSize: 14, fontWeight: 600, color: '#1a1a1a'}}>{formatDate(lesson.date)}</p>
+          <p style={{margin: '4px 0 0', fontSize: 14, fontWeight: 600, color: '#1a1a1a'}}>{formatLocalDate(lesson.date, intlLocale)}</p>
         </div>
         <div style={{background: '#f8f8f8', borderRadius: 12, padding: '12px 14px'}}>
           <p style={{margin: 0, fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px'}}>{t('time')}</p>
@@ -153,6 +163,9 @@ function LessonDetail({lesson, t}: {lesson: Lesson; t: ReturnType<typeof useTran
 
 export function WeekCalendar({extraClass, lessons: propLessons}: {extraClass?: string; lessons?: CalendarLesson[]}) {
   const t = useTranslations('statsPage.weekCalendar')
+  const locale = useLocale()
+  const intlLocale = locale === 'ru' ? 'ru-RU' : 'en-US'
+  const weekDayNames = useMemo(() => localeWeekDays(intlLocale), [intlLocale])
   const today = useMemo(() => new Date(), [])
 
   const allLessons: Lesson[] = useMemo(
@@ -175,8 +188,8 @@ export function WeekCalendar({extraClass, lessons: propLessons}: {extraClass?: s
   const navLabel = useMemo(() => {
     const sDay = weekStart.getDate()
     const eDay = weekEnd.getDate()
-    const sMonth = MONTH_NAMES_SHORT[weekStart.getMonth()]
-    const eMonth = MONTH_NAMES_SHORT[weekEnd.getMonth()]
+    const sMonth = monthShort(weekStart, intlLocale)
+    const eMonth = monthShort(weekEnd, intlLocale)
     const year = weekStart.getFullYear()
     const yearSuffix = year !== today.getFullYear() ? ` ${year}` : ''
 
@@ -184,7 +197,7 @@ export function WeekCalendar({extraClass, lessons: propLessons}: {extraClass?: s
       return `${sDay}–${eDay} ${sMonth}${yearSuffix}`
     }
     return `${sDay} ${sMonth} – ${eDay} ${eMonth}${yearSuffix}`
-  }, [weekStart, weekEnd, today])
+  }, [weekStart, weekEnd, today, intlLocale])
 
   const weekLessons = useMemo(
     () => allLessons.filter((l) => weekDays.some((d) => isSameDay(d, l.date))),
@@ -205,7 +218,7 @@ export function WeekCalendar({extraClass, lessons: propLessons}: {extraClass?: s
       <div className={styles.header}>
         <h3 className={styles.title}>{t('title')}</h3>
         <div className={styles.nav}>
-          <button className={styles.nav_btn} onClick={() => setWeekStart(addDays(weekStart, -7))} aria-label='Назад'>
+          <button className={styles.nav_btn} onClick={() => setWeekStart(addDays(weekStart, -7))} aria-label={t('navPrev')}>
             <svg width='14' height='14' viewBox='0 0 24 24' fill='none'>
               <path d='M15 18l-6-6 6-6' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round' />
             </svg>
@@ -213,7 +226,7 @@ export function WeekCalendar({extraClass, lessons: propLessons}: {extraClass?: s
           <button className={styles.nav_btn_today} onClick={() => setWeekStart(getWeekStart(today))}>
             {navLabel}
           </button>
-          <button className={styles.nav_btn} onClick={() => setWeekStart(addDays(weekStart, 7))} aria-label='Вперёд'>
+          <button className={styles.nav_btn} onClick={() => setWeekStart(addDays(weekStart, 7))} aria-label={t('navNext')}>
             <svg width='14' height='14' viewBox='0 0 24 24' fill='none'>
               <path d='M9 18l6-6-6-6' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round' />
             </svg>
@@ -235,7 +248,7 @@ export function WeekCalendar({extraClass, lessons: propLessons}: {extraClass?: s
                 .join(' ')}
               style={{flex: colFlexes[i]}}
             >
-              <span className={styles.day_header__name}>{WEEK_DAYS_SHORT[i]}</span>
+              <span className={styles.day_header__name}>{weekDayNames[i]}</span>
               <span className={styles.day_header__num}>{day.getDate()}</span>
             </div>
           )
@@ -294,7 +307,7 @@ export function WeekCalendar({extraClass, lessons: propLessons}: {extraClass?: s
                             />
                           )}
                           <div className={styles.lesson_block__info}>
-                            <span className={styles.lesson_block__name}>{lesson.studentName}</span>
+                            <span className={styles.lesson_block__name}>{getDisplayName(lesson.studentName, locale)}</span>
                             {!isShort && <span className={styles.lesson_block__subject}>{lesson.subject}</span>}
                             <span className={styles.lesson_block__time}>
                               {lesson.time}–{formatEndTime(lesson.time, lesson.duration)}
@@ -331,7 +344,7 @@ export function WeekCalendar({extraClass, lessons: propLessons}: {extraClass?: s
         onClose={() => setSelectedLesson(null)}
         additionalTitle={<span style={{fontSize: 14, fontWeight: 700, color: '#1a1a1a'}}>{selectedLesson?.subject ?? t('defaultLesson')}</span>}
       >
-        {selectedLesson && <LessonDetail lesson={selectedLesson} t={t} />}
+        {selectedLesson && <LessonDetail lesson={selectedLesson} t={t} intlLocale={intlLocale} locale={locale} />}
       </ModalWindowDefault>
     </div>
   )

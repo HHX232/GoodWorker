@@ -1,8 +1,10 @@
 import dagre from '@dagrejs/dagre'
 import {useReactFlow} from '@xyflow/react'
+import {useTranslations} from 'next-intl'
 import styles from './AutoLayoutButton.module.scss'
 
 export function AutoLayoutButton() {
+  const t = useTranslations('roadMap')
   const {getNodes, getEdges, setNodes, fitView} = useReactFlow()
 
   const applyLayout = () => {
@@ -57,7 +59,7 @@ export function AutoLayoutButton() {
           strokeLinecap='round'
         />
       </svg>
-      Авто-расстановка
+      {t('autoLayout')}
     </button>
   )
 }

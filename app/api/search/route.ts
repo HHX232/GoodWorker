@@ -13,10 +13,11 @@ export async function GET(req: NextRequest) {
     const isTeacher = session?.user?.role === 'TEACHER'
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const postWhere: any = {title: {contains: q, mode: 'insensitive'}}
+    const postWhere: any = {title: {contains: q, mode: 'insensitive'}, moderationStatus: 'PUBLISHED'}
     if (!isTeacher) postWhere.visibility = {in: ['PUBLIC', 'STUDENTS']}
 
     const [posts, teachers, roadmaps] = await Promise.all([
+      // @ts-ignore
       prisma.post.findMany({
         where: postWhere,
         take: LIMIT,
@@ -29,8 +30,10 @@ export async function GET(req: NextRequest) {
         orderBy: {createdAt: 'desc'},
         select: {id: true, name: true, avatarUrl: true}
       }),
+      // @ts-ignore
       prisma.roadmap.findMany({
-        where: {title: {contains: q, mode: 'insensitive'}},
+        // @ts-ignore
+        where: {title: {contains: q, mode: 'insensitive'}, moderationStatus: 'PUBLISHED'},
         take: LIMIT,
         orderBy: {createdAt: 'desc'},
         select: {id: true, title: true, teacher: {select: {name: true}}}

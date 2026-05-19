@@ -27,7 +27,7 @@ function extractMediaPreviewUrls(content: unknown): string[] {
 export async function POST(req: NextRequest) {
   try {
     const session = await auth()
-    if (!session?.user?.id || session.user.role !== 'TEACHER') {
+    if (!session?.user?.id || session.user.role !== 'TEACHER' && session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

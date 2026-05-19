@@ -1,7 +1,7 @@
 'use client'
 
 import {
-  DAYS_SHORT,
+  getLocaleDayShorts,
   DAY_END_HOUR,
   DAY_START_HOUR,
   HOURS,
@@ -18,7 +18,8 @@ import {
 import {LUNCH_BREAKS} from '@/shared/helpers/calendar/calendar.mock'
 import {CalendarEvent} from '@/shared/types/Calendar/calendar.types'
 import {CalendarEventCard} from '@/shared/ui/Calendar/CalendarEventCard/CalendarEventCard'
-import {useEffect, useRef, useState} from 'react'
+import {useLocale, useTranslations} from 'next-intl'
+import {useEffect, useMemo, useRef, useState} from 'react'
 import styles from './WeekCalendar.module.scss'
 
 interface WeekCalendarProps {
@@ -29,6 +30,9 @@ interface WeekCalendarProps {
 }
 
 export function WeekCalendar({weekDays, events, onEventClick, onCellClick}: WeekCalendarProps) {
+  const t = useTranslations('calendar')
+  const locale = useLocale()
+  const dayShorts = useMemo(() => getLocaleDayShorts(locale), [locale])
   const [nowTop, setNowTop] = useState(getCurrentTimeTop())
   const [hoverSlot, setHoverSlot] = useState<{col: number; top: number} | null>(null)
   const bodyRef = useRef<HTMLDivElement>(null)
@@ -76,7 +80,7 @@ export function WeekCalendar({weekDays, events, onEventClick, onCellClick}: Week
         <div className={styles.timeGutter} />
         {weekDays.map((day, i) => (
           <div key={i} className={styles.dayHead}>
-            <span className={styles.dayName}>{DAYS_SHORT[i]}</span>
+            <span className={styles.dayName}>{dayShorts[i]}</span>
             <span className={`${styles.dayNum} ${isToday(day) ? styles.today : ''}`}>{day.getDate()}</span>
           </div>
         ))}
@@ -130,14 +134,14 @@ export function WeekCalendar({weekDays, events, onEventClick, onCellClick}: Week
                       strokeLinecap='round'
                     />
                   </svg>
-                  <span className={styles.lunchLabel}>Обед</span>
+                  <span className={styles.lunchLabel}>{t('lunch')}</span>
                 </div>
 
                 {dayEvents.map((event) => (
                   <CalendarEventCard key={event.id} event={event} onClick={onEventClick} />
                 ))}
 
-                {isWeekend && dayEvents.length === 0 && <div className={styles.freeDay}>Выходной</div>}
+                {isWeekend && dayEvents.length === 0 && <div className={styles.freeDay}>{t('weekend')}</div>}
 
                 {showNowLine && (
                   <div className={styles.nowLine} style={{top: nowTop}}>

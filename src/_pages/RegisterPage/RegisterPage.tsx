@@ -37,6 +37,7 @@ export default function RegisterPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(['ru'])
   const [agreeConsent, setAgreeConsent] = useState(false)
+  const [promoCode, setPromoCode] = useState('')
 
   async function handleSend() {
     if (!name.trim()) {
@@ -116,7 +117,8 @@ export default function RegisterPage() {
           phone,
           password,
           langCode: 'ru',
-          ...(role === 'Teacher' ? {categoryIds: selectedCategories, languages: selectedLanguages} : {})
+          ...(role === 'Teacher' ? {categoryIds: selectedCategories, languages: selectedLanguages} : {}),
+          ...(promoCode.trim() ? {promoCode: promoCode.trim().toUpperCase()} : {})
         })
       })
       const data = await res.json()
@@ -129,6 +131,10 @@ export default function RegisterPage() {
       // sign in right after registration
       await signIn('credentials', {email, password, redirect: false})
       toast.success(t('successRegister'))
+      if (data.promoResult?.success) {
+        const until = new Date(data.promoResult.vipUntil).toLocaleDateString()
+        toast.success(t('promoSuccess', {date: until}), {duration: 6000})
+      }
       router.push('/')
     } catch {
       toast.error(t('unexpectedError'))
@@ -193,6 +199,13 @@ export default function RegisterPage() {
                 currentValue={password}
                 onSetValue={setPassword}
                 isSecret
+              />
+              <TextInputUI
+                helpTitle='promoCode'
+                theme='newWhite'
+                placeholder={t('promoPlaceholder')}
+                currentValue={promoCode}
+                onSetValue={(v) => setPromoCode(v.toUpperCase())}
               />
             </div>
 

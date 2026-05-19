@@ -3,6 +3,7 @@
 import { IRoadmapItem } from '@/features/services/RoadmapService.service'
 import { RoadMapPreview } from '@/shared/ui/RoadMap/RoadMapPreview/RoadMapPreview'
 import { Skeleton } from '@mui/material'
+import { useTranslations } from 'next-intl'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import styles from './RoadMapCatalog.module.scss'
 
@@ -36,6 +37,7 @@ export const RoadMapCatalog: FC<RoadMapCatalogProps> = ({
   hasMore = false,
   loading = false,
 }) => {
+  const t = useTranslations('roadmapPreview')
   const [items, setItems] = useState<IRoadmapItem[]>(initialItems)
   const [page, setPage] = useState(1)
   const [paging, setPaging] = useState(false)
@@ -102,13 +104,13 @@ export const RoadMapCatalog: FC<RoadMapCatalogProps> = ({
       </div>
 
       {!loading && !paging && items.length === 0 && (
-        <p className={styles.empty}>Роадмапы не найдены</p>
+        <p className={styles.empty}>{t('notFound')}</p>
       )}
 
       {canLoadMore && <div ref={sentinelRef} className={styles.sentinel} aria-hidden="true" />}
 
       {!canLoadMore && items.length > 0 && (
-        <p className={styles.end_message}>Больше роадмапов нет</p>
+        <p className={styles.end_message}>{t('noMore')}</p>
       )}
     </div>
   )

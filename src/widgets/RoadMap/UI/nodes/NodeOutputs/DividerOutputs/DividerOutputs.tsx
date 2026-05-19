@@ -18,7 +18,7 @@ export default function DividerOutputs({nodeId}: {nodeId: string}) {
     const node = getNode(nodeId)
     const current = (node?.data as RoadNodeData)?.outputs ?? []
     updateNodeData(nodeId, {
-      outputs: [...current, {name: `Выход ${current.length + 1}`, type: RoadMapParamType.STRING}]
+      outputs: [...current, {name: t('dividerOutput', {n: current.length + 1}), type: RoadMapParamType.STRING}]
     } as any)
   }
 

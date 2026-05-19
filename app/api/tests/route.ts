@@ -1,5 +1,5 @@
 import {prisma} from '@/shared/prisma/prisma'
-import {NextResponse} from 'next/server'
+import {NextRequest, NextResponse} from 'next/server'
 import {auth} from '../../../auth'
 
 export async function POST(req: Request) {
@@ -35,9 +35,56 @@ export async function POST(req: Request) {
   return NextResponse.json(test)
 }
 
-export async function GET(req: Request) {
-  const session = await auth()
+const testSelect = {
+  id: true,
+  title: true,
+  aiTopic: true,
+  content: true,
+  createdAt: true,
+  updatedAt: true,
+  teacherId: true,
+  teacher: {
+    select: {id: true, name: true, avatarUrl: true}
+  },
+  testCategories: {
+    include: {
+      category: {
+        include: {translations: true}
+      }
+    }
+  }
+} as const
 
+export async function GET(req: NextRequest) {
+  const {searchParams} = req.nextUrl
+  const teacherIdParam = searchParams.get('teacherId')
+  const allParam = searchParams.get('all')
+
+  // Public: fetch published tests by a specific teacher — no auth required
+  if (teacherIdParam) {
+    const tests = await prisma.test.findMany({
+      where: {teacherId: teacherIdParam},
+      select: testSelect,
+      orderBy: {createdAt: 'desc'}
+    })
+    return NextResponse.json(tests)
+  }
+
+  // Admin: fetch all tests
+  if (allParam === 'true') {
+    const session = await auth()
+    if (session?.user?.role !== 'ADMIN') {
+      return NextResponse.json({error: 'Forbidden'}, {status: 403})
+    }
+    const tests = await prisma.test.findMany({
+      select: testSelect,
+      orderBy: {createdAt: 'desc'}
+    })
+    return NextResponse.json(tests)
+  }
+
+  // Default: own tests (teacher auth required)
+  const session = await auth()
   if (!session?.user?.email) {
     return NextResponse.json({error: 'Unauthorized'}, {status: 401})
   }
@@ -52,15 +99,7 @@ export async function GET(req: Request) {
 
   const tests = await prisma.test.findMany({
     where: {teacherId: teacher.id},
-    include: {
-      testCategories: {
-        include: {
-          category: {
-            include: {translations: true}
-          }
-        }
-      }
-    },
+    select: testSelect,
     orderBy: {createdAt: 'desc'}
   })
 

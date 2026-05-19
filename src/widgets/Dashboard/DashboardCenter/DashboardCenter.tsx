@@ -46,6 +46,8 @@ interface ServiceItem {
   isGroup: boolean
   price: number
   category?: { translations: { langCode: string; name: string }[] } | null
+  originalLangCode?: string
+  isTranslated?: boolean
 }
 
 interface Props {
@@ -217,7 +219,7 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
           {isOwner && (
             <div className={styles.createCard} onClick={() => setPickerOpen(true)}>
               <span className={styles.createIcon}><IconPlus /></span>
-              <span className={styles.createLabel}>Создать</span>
+              <span className={styles.createLabel}>{t('createLabel')}</span>
             </div>
           )}
 
@@ -252,6 +254,8 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
               price={s.price}
               category={s.category}
               locale={locale}
+              originalLangCode={s.originalLangCode}
+              isTranslated={s.isTranslated}
               onBook={canBook ? () => setBookingService(s) : undefined}
             />
           ))}
@@ -259,7 +263,7 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
           {/* Empty services hint for owner */}
           {isOwner && showServices && services.length === 0 && (
             <div className={styles.servicesHint}>
-              Нажмите «Создать», чтобы добавить первую услугу
+              {t('servicesFirstHint')}
             </div>
           )}
 
