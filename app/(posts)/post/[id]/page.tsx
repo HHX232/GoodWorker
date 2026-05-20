@@ -3,6 +3,7 @@ import PostPage, { EnrichedComment } from '@/_pages/PublickPages/PostPage/PostPa
 import { prisma } from '@/shared/prisma/prisma'
 import { SeoPostContent } from '@/shared/ui/Posts/SeoPostContent/SeoPostContent'
 import { Prisma } from '@prisma/client'
+import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { auth } from '../../../../auth'
 
@@ -11,6 +12,52 @@ function parseBlocks(content: Prisma.JsonValue): any[] {
   const obj = content as Record<string, Prisma.JsonValue>
   if (!Array.isArray(obj.blocks)) return []
   return obj.blocks as any[]
+}
+
+function extractDescription(blocks: any[]): string {
+  for (const block of blocks) {
+    if (block.type !== 'TEXT') continue
+    const text = extractTextFromNode(block.payload?.content)
+    if (text.trim()) return text.slice(0, 160)
+  }
+  return ''
+}
+
+function extractTextFromNode(node: any): string {
+  if (!node) return ''
+  if (node.type === 'text') return node.text ?? ''
+  if (Array.isArray(node.content)) return node.content.map(extractTextFromNode).join(' ')
+  return ''
+}
+
+export async function generateMetadata({params}: {params: Promise<{id: string}>}): Promise<Metadata> {
+  const {id} = await params
+  const post = await prisma.post.findUnique({
+    where: {id},
+    select: {
+      title: true,
+      content: true,
+      teacher: {select: {name: true}},
+      category: {include: {translations: true}},
+    }
+  })
+  if (!post) return {}
+
+  const blocks = parseBlocks(post.content)
+  const description = extractDescription(blocks)
+  const categoryName = post.category?.translations.find(t => t.langCode === 'ru')?.name ?? ''
+
+  return {
+    title: post.title,
+    description: description || undefined,
+    openGraph: {
+      title: post.title,
+      description: description || undefined,
+      type: 'article',
+      authors: post.teacher?.name ? [post.teacher.name] : undefined,
+      tags: categoryName ? [categoryName] : undefined,
+    },
+  }
 }
 
 async function recordView(postId: string, userId: string, role: string): Promise<boolean> {
