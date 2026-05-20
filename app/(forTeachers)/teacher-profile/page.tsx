@@ -11,16 +11,17 @@ export default async function TeacherProfilePage() {
 
   const id = session.user.id
 
-  const [teacher, studentCount, callCount] = await Promise.all([
-    prisma.teacher.findUnique({
-      where: { id },
-      select: { name: true, email: true, phone: true, avatarUrl: true },
-    }),
-    prisma.teacherStudent.count({ where: { teacherId: id } }),
-    prisma.videoCallRoom.count({ where: { ownerId: id } }),
-  ])
+  const teacher = await prisma.teacher.findUnique({
+    where: { id },
+    select: { name: true, email: true, phone: true, avatarUrl: true },
+  })
 
   if (!teacher) redirect("/login")
+
+  const [studentCount, callCount] = await Promise.all([
+    prisma.teacherStudent.count({ where: { teacherId: id } }).catch(() => 0),
+    prisma.videoCallRoom.count({ where: { ownerId: id } }).catch(() => 0),
+  ])
 
   return (
     <TeacherDashboard

@@ -1,5 +1,4 @@
 import instance from '@/shared/api'
-import {AxiosError} from 'axios'
 
 export interface ITeacherCategory {
   category: {
@@ -39,20 +38,13 @@ export interface ITeachersResponse {
 
 const TeacherService = {
   async getList(query: ITeachersQuery = {}): Promise<ITeachersResponse> {
-    try {
-      const params = new URLSearchParams()
-      if (query.page) params.set('page', String(query.page))
-      if (query.limit) params.set('limit', String(query.limit))
-      if (query.search) params.set('search', query.search)
-      if (query.categoryId) params.set('categoryId', query.categoryId)
-      const response = await instance.get<ITeachersResponse>(`/teachers?${params.toString()}`)
-      return response.data
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        throw new Error(error.response?.data?.error || 'Failed to fetch teachers')
-      }
-      throw error
-    }
+    const params = new URLSearchParams()
+    if (query.page) params.set('page', String(query.page))
+    if (query.limit) params.set('limit', String(query.limit))
+    if (query.search) params.set('search', query.search)
+    if (query.categoryId) params.set('categoryId', query.categoryId)
+    const response = await instance.get<ITeachersResponse>(`/teachers?${params.toString()}`)
+    return response.data
   }
 }
 

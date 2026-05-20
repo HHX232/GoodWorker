@@ -114,36 +114,50 @@ export async function GET(req: NextRequest) {
         ? { ...(minPrice !== undefined && { gte: minPrice }), ...(maxPrice !== undefined && { lte: maxPrice }) }
         : undefined
 
-    const where = {
-      moderationStatus: 'PUBLISHED' as const,
+    const baseWhere = {
       ...(teacherId && { teacherId }),
       ...(search && { title: { contains: search, mode: 'insensitive' as const } }),
       ...(priceFilter && { price: priceFilter }),
       ...(ratingIds !== undefined && { id: { in: ratingIds } }),
     }
 
-    const [roadmaps, total] = await Promise.all([
-      prisma.roadmap.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * limit,
-        take: limit,
-        select: {
-          id: true,
-          title: true,
-          titleTranslations: true,
-          price: true,
-          previewImageUrl: true,
-          content: true,
-          createdAt: true,
-          updatedAt: true,
-          nodeAccessType: true,
-          teacher: { select: { id: true, name: true, avatarUrl: true } },
-          _count: { select: { comments: true, ratings: true } },
-        },
-      }),
-      prisma.roadmap.count({ where }),
-    ])
+    const roadmapSelect = {
+      id: true,
+      title: true,
+      titleTranslations: true,
+      price: true,
+      previewImageUrl: true,
+      content: true,
+      createdAt: true,
+      updatedAt: true,
+      nodeAccessType: true,
+      teacher: { select: { id: true, name: true, avatarUrl: true } },
+      _count: { select: { comments: true, ratings: true } },
+    } as const
+
+    const roadmapQueryConfig = {
+      orderBy: { createdAt: 'desc' } as const,
+      skip: (page - 1) * limit,
+      take: limit,
+      select: roadmapSelect,
+    }
+
+    let roadmaps: Awaited<ReturnType<typeof prisma.roadmap.findMany<{select: typeof roadmapSelect}>>>
+    let total: number
+
+    try {
+      const where = { moderationStatus: 'PUBLISHED' as const, ...baseWhere }
+      ;[roadmaps, total] = await Promise.all([
+        prisma.roadmap.findMany({...roadmapQueryConfig, where}),
+        prisma.roadmap.count({where}),
+      ])
+    } catch {
+      // moderationStatus column may not exist yet — query without it
+      ;[roadmaps, total] = await Promise.all([
+        prisma.roadmap.findMany({...roadmapQueryConfig, where: baseWhere}),
+        prisma.roadmap.count({where: baseWhere}),
+      ])
+    }
 
     // Средний рейтинг для каждого роадмапа
     const ids = roadmaps.map((r) => r.id)

@@ -1,6 +1,8 @@
-import axios from 'axios'
+import axios, {AxiosError} from 'axios'
 import {getContentType} from './api.helper'
 import {getAccessToken} from './auth.helper'
+
+let consecutiveAuthFailures = 0
 
 const getBaseURL = () => {
   const explicit = process.env.NEXT_PUBLIC_API_URL_SECOND
@@ -58,5 +60,24 @@ axiosClassic.interceptors.request.use((config) => {
 
   return config
 })
+
+// Sign out after 2 consecutive 401s on the authenticated instance
+instance.interceptors.response.use(
+  (response) => {
+    consecutiveAuthFailures = 0
+    return response
+  },
+  async (error: AxiosError) => {
+    if (error.response?.status === 401 && typeof window !== 'undefined') {
+      consecutiveAuthFailures++
+      if (consecutiveAuthFailures >= 2) {
+        consecutiveAuthFailures = 0
+        const {signOut} = await import('next-auth/react')
+        signOut({redirect: true, callbackUrl: '/login'})
+      }
+    }
+    return Promise.reject(error)
+  }
+)
 
 export default instance

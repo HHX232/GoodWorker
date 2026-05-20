@@ -18,8 +18,10 @@ export default async function Home({searchParams}: HomePageRouteProps) {
     search: typeof params.search === 'string' ? params.search : undefined
   }
 
+  const emptyResponse = {posts: [], pagination: {page: 1, limit: query.limit ?? 12, total: 0, totalPages: 0}}
+
   const [data, vipData] = await Promise.all([
-    PostService.getList(query),
+    PostService.getList(query).catch(() => emptyResponse),
     PostService.getList({onlyVip: true, limit: 8, visibility: 'any'}).catch(() => null)
   ])
 

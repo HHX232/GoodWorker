@@ -1,5 +1,4 @@
 import instance from '@/shared/api'
-import {AxiosError} from 'axios'
 
 interface BaseProfile {
   id: string
@@ -33,15 +32,8 @@ export type ICurrentUser = IStudentProfile | ITeacherProfile
 
 const MeService = {
   async getMe(): Promise<ICurrentUser> {
-    try {
-      const response = await instance.get<ICurrentUser>('/me')
-      return response.data
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        throw new Error(error.response?.data?.error || 'Failed to fetch profile')
-      }
-      throw error
-    }
+    const response = await instance.get<ICurrentUser>('/me')
+    return response.data
   }
 }
 

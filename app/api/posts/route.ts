@@ -19,7 +19,7 @@ async function getCategorySubtree(categoryId: string): Promise<string[]> {
 function buildVisibilityWhere(userId?: string, userRole?: string) {
   if (!userId) return {visibility: 'PUBLIC' as const}
 
-  if (userRole === 'TEACHER') {
+  if (userRole === 'TEACHER' || userRole === 'ADMIN') {
     return {OR: [{visibility: 'PUBLIC' as const}, {teacherId: userId}]}
   }
 
@@ -58,36 +58,45 @@ export async function GET(req: NextRequest) {
     const skip = (page - 1) * limit
     const now = new Date()
 
-    // Параллельно получаем поддерево категорий и строим where
     const [categoryIds, visibilityWhere] = await Promise.all([
       categoryId ? getCategorySubtree(categoryId) : Promise.resolve(undefined),
       Promise.resolve(buildVisibilityWhere(userId, userRole))
     ])
 
-    const where = {
-      AND: [
-        visibilityWhere,
-        { moderationStatus: 'PUBLISHED' as const },
-        ...(onlyVip ? [{isVip: true, vipExpiresAt: {gt: now}}] : []),
-        ...(categoryIds ? [{categoryId: {in: categoryIds}}] : []),
-        ...(teacherId ? [{teacherId}] : []),
-        ...(search ? [{title: {contains: search, mode: 'insensitive' as const}}] : [])
-      ]
+    const baseFilters = [
+      ...(onlyVip ? [{isVip: true, vipExpiresAt: {gt: now}}] : []),
+      ...(categoryIds ? [{categoryId: {in: categoryIds}}] : []),
+      ...(teacherId ? [{teacherId}] : []),
+      ...(search ? [{title: {contains: search, mode: 'insensitive' as const}}] : [])
+    ]
+
+    const postQueryConfig = {
+      skip,
+      take: limit,
+      orderBy: {createdAt: 'desc'} as const,
+      include: {
+        teacher: {select: {id: true, name: true, avatarUrl: true}},
+        _count: {select: {comments: true}}
+      }
     }
 
-    const [posts, total] = await Promise.all([
-      prisma.post.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: {createdAt: 'desc'},
-        include: {
-          teacher: {select: {id: true, name: true, avatarUrl: true}},
-          _count: {select: {comments: true}}
-        }
-      }),
-      prisma.post.count({where})
-    ])
+    let posts: Awaited<ReturnType<typeof prisma.post.findMany>>
+    let total: number
+
+    try {
+      const where = {AND: [visibilityWhere, {moderationStatus: 'PUBLISHED' as const}, ...baseFilters]}
+      ;[posts, total] = await Promise.all([
+        prisma.post.findMany({...postQueryConfig, where}),
+        prisma.post.count({where})
+      ])
+    } catch {
+      // moderationStatus column may not exist yet — query without it
+      const where = {AND: [visibilityWhere, ...baseFilters]}
+      ;[posts, total] = await Promise.all([
+        prisma.post.findMany({...postQueryConfig, where}),
+        prisma.post.count({where})
+      ])
+    }
 
     const postIds = posts.map((p) => p.id)
     const avgRatings = await prisma.postRating.groupBy({

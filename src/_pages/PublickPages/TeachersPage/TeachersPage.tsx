@@ -8,7 +8,20 @@ import {NotificationsPanel} from '@/widgets/NotificationsPanel/NotificationsPane
 import {useTranslations} from 'next-intl'
 import {useCallback, useEffect, useRef, useState} from 'react'
 import {useSearchParams} from 'next/navigation'
+import {toast} from 'sonner'
 import styles from './TeachersPage.module.scss'
+
+const TOAST_ID = 'catalog-teachers-error'
+
+async function withRetry<T>(fn: () => Promise<T>, retries = 2, delay = 2000): Promise<T> {
+  try {
+    return await fn()
+  } catch (err) {
+    if (retries <= 0) throw err
+    await new Promise((r) => setTimeout(r, delay))
+    return withRetry(fn, retries - 1, delay * 2)
+  }
+}
 
 interface Props {
   initialData: ITeachersResponse
@@ -34,7 +47,7 @@ function TeachersPage({initialData}: Props) {
   const fetchTeachers = useCallback(async (query: ITeachersQuery, append = false) => {
     setIsLoading(true)
     try {
-      const res = await TeacherService.getList(query)
+      const res = await withRetry(() => TeacherService.getList(query))
       if (append) {
         setTeachers((prev) => [...prev, ...res.teachers])
       } else {
@@ -42,8 +55,9 @@ function TeachersPage({initialData}: Props) {
       }
       setPage(res.pagination.page)
       setCanLoadMore(res.pagination.page < res.pagination.totalPages)
+      toast.dismiss(TOAST_ID)
     } catch {
-      // silently ignore
+      toast.error('Не удалось загрузить учителей. Повторная попытка...', {id: TOAST_ID, duration: 6000})
     } finally {
       setIsLoading(false)
     }

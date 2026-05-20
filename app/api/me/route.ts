@@ -12,8 +12,43 @@ export async function GET() {
 
   const {id, role} = session.user as {id: string; role: 'STUDENT' | 'TEACHER' | 'ADMIN'}
 
-  if (role === 'TEACHER' || role === 'ADMIN') {
-    const teacher = await prisma.teacher.findUnique({
+  try {
+    if (role === 'TEACHER' || role === 'ADMIN') {
+      const teacher = await prisma.teacher.findUnique({
+        where: {id},
+        select: {
+          id: true,
+          name: true,
+          nameTransliterated: true,
+          email: true,
+          avatarUrl: true,
+          langCode: true,
+          phone: true,
+          pasportConfirmed: true,
+          createdAt: true,
+          updatedAt: true,
+          categories: {
+            select: {
+              category: {
+                select: {
+                  id: true,
+                  slug: true,
+                  translations: true
+                }
+              }
+            }
+          }
+        }
+      })
+
+      if (!teacher) {
+        return NextResponse.json({error: 'Unauthorized'}, {status: 401})
+      }
+
+      return NextResponse.json({role: 'TEACHER', ...teacher})
+    }
+
+    const student = await prisma.student.findUnique({
       where: {id},
       select: {
         id: true,
@@ -23,48 +58,17 @@ export async function GET() {
         avatarUrl: true,
         langCode: true,
         phone: true,
-        pasportConfirmed: true,
         createdAt: true,
-        updatedAt: true,
-        categories: {
-          select: {
-            category: {
-              select: {
-                id: true,
-                slug: true,
-                translations: true
-              }
-            }
-          }
-        }
+        updatedAt: true
       }
     })
 
-    if (!teacher) {
-      return NextResponse.json({error: 'Teacher not found'}, {status: 404})
+    if (!student) {
+      return NextResponse.json({error: 'Unauthorized'}, {status: 401})
     }
 
-    return NextResponse.json({role: 'TEACHER', ...teacher})
+    return NextResponse.json({role: 'STUDENT', ...student})
+  } catch {
+    return NextResponse.json({error: 'Unauthorized'}, {status: 401})
   }
-
-  const student = await prisma.student.findUnique({
-    where: {id},
-    select: {
-      id: true,
-      name: true,
-      nameTransliterated: true,
-      email: true,
-      avatarUrl: true,
-      langCode: true,
-      phone: true,
-      createdAt: true,
-      updatedAt: true
-    }
-  })
-
-  if (!student) {
-    return NextResponse.json({error: 'Student not found'}, {status: 404})
-  }
-
-  return NextResponse.json({role: 'STUDENT', ...student})
 }

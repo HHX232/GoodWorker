@@ -10,17 +10,21 @@ interface Params {
 export async function GET(_req: NextRequest, {params}: Params) {
   const {id} = await params
 
-  const [teacher, student] = await Promise.all([
-    prisma.teacher.findUnique({where: {id}, select: {lastSeenAt: true}}),
-    prisma.student.findUnique({where: {id}, select: {lastSeenAt: true}})
-  ])
+  try {
+    const [teacher, student] = await Promise.all([
+      prisma.teacher.findUnique({where: {id}, select: {lastSeenAt: true}}),
+      prisma.student.findUnique({where: {id}, select: {lastSeenAt: true}})
+    ])
 
-  const lastSeenAt = (teacher ?? student)?.lastSeenAt
+    const lastSeenAt = (teacher ?? student)?.lastSeenAt
 
-  if (!lastSeenAt) {
+    if (!lastSeenAt) {
+      return NextResponse.json({online: false, lastSeenAt: null})
+    }
+
+    const online = Date.now() - lastSeenAt.getTime() < ONLINE_THRESHOLD_MS
+    return NextResponse.json({online, lastSeenAt: lastSeenAt.toISOString()})
+  } catch {
     return NextResponse.json({online: false, lastSeenAt: null})
   }
-
-  const online = Date.now() - lastSeenAt.getTime() < ONLINE_THRESHOLD_MS
-  return NextResponse.json({online, lastSeenAt: lastSeenAt.toISOString()})
 }

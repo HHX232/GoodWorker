@@ -8,13 +8,17 @@ export async function POST() {
     return NextResponse.json({error: 'Unauthorized'}, {status: 401})
   }
 
-  const {id, role} = session.user as {id: string; role: 'STUDENT' | 'TEACHER'}
+  const {id, role} = session.user as {id: string; role: 'STUDENT' | 'TEACHER' | 'ADMIN'}
   const now = new Date()
 
-  if (role === 'TEACHER') {
-    await prisma.teacher.update({where: {id}, data: {lastSeenAt: now}})
-  } else {
-    await prisma.student.update({where: {id}, data: {lastSeenAt: now}})
+  try {
+    if (role === 'TEACHER' || role === 'ADMIN') {
+      await prisma.teacher.update({where: {id}, data: {lastSeenAt: now}})
+    } else {
+      await prisma.student.update({where: {id}, data: {lastSeenAt: now}})
+    }
+  } catch {
+    // Non-critical — ignore DB errors silently
   }
 
   return NextResponse.json({ok: true})

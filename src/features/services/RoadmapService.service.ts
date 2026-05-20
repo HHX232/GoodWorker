@@ -79,24 +79,17 @@ export interface IRoadmapsResponse {
 
 const RoadmapService = {
   async getList(query: IRoadmapQuery = {}): Promise<IRoadmapsResponse> {
-    try {
-      const params = new URLSearchParams()
-      if (query.page) params.set('page', String(query.page))
-      if (query.limit) params.set('limit', String(query.limit))
-      if (query.teacherId) params.set('teacherId', query.teacherId)
-      if (query.search) params.set('search', query.search)
-      if (query.minPrice !== undefined) params.set('minPrice', String(query.minPrice))
-      if (query.maxPrice !== undefined) params.set('maxPrice', String(query.maxPrice))
-      if (query.minRating !== undefined) params.set('minRating', String(query.minRating))
-      if (query.lang) params.set('lang', query.lang)
-      const res = await instance.get<IRoadmapsResponse>(`/roadmap?${params.toString()}`)
-      return res.data
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        throw new Error(error.response?.data?.error || 'Failed to fetch roadmaps')
-      }
-      throw error
-    }
+    const params = new URLSearchParams()
+    if (query.page) params.set('page', String(query.page))
+    if (query.limit) params.set('limit', String(query.limit))
+    if (query.teacherId) params.set('teacherId', query.teacherId)
+    if (query.search) params.set('search', query.search)
+    if (query.minPrice !== undefined) params.set('minPrice', String(query.minPrice))
+    if (query.maxPrice !== undefined) params.set('maxPrice', String(query.maxPrice))
+    if (query.minRating !== undefined) params.set('minRating', String(query.minRating))
+    if (query.lang) params.set('lang', query.lang)
+    const res = await instance.get<IRoadmapsResponse>(`/roadmap?${params.toString()}`)
+    return res.data
   },
 
   async getById(id: string, lang?: string): Promise<IRoadmapItem & { content: unknown }> {

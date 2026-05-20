@@ -2,8 +2,9 @@
 
 import {store} from '@/entities/store/store'
 import {useHeartbeat} from '@/features/hooks/User/useHeartbeat'
-import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
-import {SessionProvider} from 'next-auth/react'
+import {QueryCache, QueryClient, QueryClientProvider} from '@tanstack/react-query'
+import {AxiosError} from 'axios'
+import {SessionProvider, signOut} from 'next-auth/react'
 import {ReactNode, useState} from 'react'
 import {Provider as ReduxProvider} from 'react-redux'
 
@@ -17,16 +18,35 @@ function HeartbeatRunner() {
   return null
 }
 
-export default function DefaultProvider({children}: {children: ReactNode}) {
-  const [queryClient] = useState(
-    new QueryClient({
-      defaultOptions: {
-        queries: {
-          refetchOnWindowFocus: false
+let signingOut = false
+
+function makeQueryClient() {
+  return new QueryClient({
+    queryCache: new QueryCache({
+      onError: (error) => {
+        const status = (error as AxiosError).response?.status
+        if (status === 401 && typeof window !== 'undefined' && !signingOut) {
+          signingOut = true
+          signOut({redirect: true, callbackUrl: '/login'})
         }
       }
-    })
-  )
+    }),
+    defaultOptions: {
+      queries: {
+        refetchOnWindowFocus: false,
+        retry: (failureCount, error) => {
+          const status = (error as AxiosError).response?.status
+          if (status === 401 || status === 403) return false
+          return failureCount < 2
+        },
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 8000)
+      }
+    }
+  })
+}
+
+export default function DefaultProvider({children}: {children: ReactNode}) {
+  const [queryClient] = useState(makeQueryClient)
 
   return (
     <QueryClientProvider client={queryClient}>

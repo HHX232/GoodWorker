@@ -73,24 +73,17 @@ const PostService = {
     }
   },
   async getList(query: IPostsQuery = {}): Promise<IPostsResponse> {
-    try {
-      const params = new URLSearchParams()
-      if (query.page) params.set('page', String(query.page))
-      if (query.limit) params.set('limit', String(query.limit))
-      if (query.categoryId) params.set('categoryId', query.categoryId)
-      if (query.teacherId) params.set('teacherId', query.teacherId)
-      if (query.visibility && query.visibility !== 'any') params.set('visibility', query.visibility)
-      if (query.search) params.set('search', query.search)
-      if (query.onlyVip) params.set('onlyVip', 'true')
-      if (query.lang) params.set('lang', query.lang)
-      const response = await instance.get<IPostsResponse>(`/posts?${params.toString()}`)
-      return response.data
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        throw new Error(error.response?.data?.error || 'Failed to fetch posts')
-      }
-      throw error
-    }
+    const params = new URLSearchParams()
+    if (query.page) params.set('page', String(query.page))
+    if (query.limit) params.set('limit', String(query.limit))
+    if (query.categoryId) params.set('categoryId', query.categoryId)
+    if (query.teacherId) params.set('teacherId', query.teacherId)
+    if (query.visibility && query.visibility !== 'any') params.set('visibility', query.visibility)
+    if (query.search) params.set('search', query.search)
+    if (query.onlyVip) params.set('onlyVip', 'true')
+    if (query.lang) params.set('lang', query.lang)
+    const response = await instance.get<IPostsResponse>(`/posts?${params.toString()}`)
+    return response.data
   },
 
   async update(postId: string, dto: Partial<ICreatePostDto>): Promise<IPostResponse> {
