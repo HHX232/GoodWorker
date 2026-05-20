@@ -217,7 +217,12 @@ function CommentRow({
       style={{opacity: deleting ? 0.4 : 1, transition: 'opacity 0.2s'}}
     >
       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
-        <UserHeaderCard size='lg' {...comment.user} />
+        <div style={{display: 'flex', flexDirection: 'column', gap: 4}}>
+          <UserHeaderCard size='lg' {...comment.user} />
+          {comment.stars != null && (
+            <StarRating value={comment.stars} readonly size={13} />
+          )}
+        </div>
         {isOwn && !editing && (
           <div style={{display: 'flex', gap: 4, flexShrink: 0}}>
             <button onClick={() => setEditing(true)} style={actionBtnStyle} title='Edit'>

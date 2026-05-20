@@ -44,6 +44,7 @@ interface EnrichedComment {
     name: string
     avatarUrl: string | null
   } | null
+  stars?: number | null
 }
 
 interface PostPageProps {
@@ -72,7 +73,8 @@ function enrichedToCommentItem(c: EnrichedComment): CommentItem {
       BlurDots: c.authorRole === 'TEACHER'
     },
     commentText: c.text,
-    images: c.imageUrls ?? []
+    images: c.imageUrls ?? [],
+    stars: c.stars ?? null,
   }
 }
 

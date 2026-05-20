@@ -7,7 +7,8 @@ export default async function TeacherProfilePage() {
   const session = await auth()
 
   if (!session) redirect("/login")
-  if (session.user.role === "STUDENT") redirect("/student-profile")
+  const role = session.user.role as string
+  if (role === "STUDENT") redirect("/student-profile")
 
   const id = session.user.id
 
@@ -16,7 +17,13 @@ export default async function TeacherProfilePage() {
     select: { name: true, email: true, phone: true, avatarUrl: true },
   })
 
-  if (!teacher) redirect("/login")
+  // ADMIN is backed by a teacher record — use session fallback if somehow missing
+  const teacherData = teacher ?? {
+    name: session.user.name ?? '',
+    email: session.user.email ?? '',
+    phone: null,
+    avatarUrl: null,
+  }
 
   const [studentCount, callCount] = await Promise.all([
     prisma.teacherStudent.count({ where: { teacherId: id } }).catch(() => 0),
@@ -25,7 +32,7 @@ export default async function TeacherProfilePage() {
 
   return (
     <TeacherDashboard
-      initialData={teacher}
+      initialData={teacherData}
       statsId={id}
       studentCount={studentCount}
       callCount={callCount}

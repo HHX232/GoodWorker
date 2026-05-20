@@ -135,6 +135,7 @@ export interface CommentItem {
   user: UserHeaderCardProps
   commentText: string
   images: string[]
+  stars?: number | null
 }
 
 export function commentToUI(c: ICommentResponse): CommentItem {
@@ -150,7 +151,8 @@ export function commentToUI(c: ICommentResponse): CommentItem {
       BlurDots: c.authorRole === 'TEACHER'
     },
     commentText: c.text,
-    images: c.imageUrls ?? []
+    images: c.imageUrls ?? [],
+    stars: c.stars ?? null
   }
 }
 

@@ -131,13 +131,18 @@ async function PostServerPage({params}: {params: Promise<{id: string}>}) {
   const studentIds = rawComments.filter((c) => c.authorRole === 'STUDENT').map((c) => c.authorId)
   const teacherIds = rawComments.filter((c) => c.authorRole === 'TEACHER').map((c) => c.authorId)
   const selectFields = {id: true, name: true, avatarUrl: true}
+  const allAuthorIds = [...studentIds, ...teacherIds]
 
-  const [students, teachers] = await Promise.all([
+  const [students, teachers, ratings] = await Promise.all([
     studentIds.length ? prisma.student.findMany({where: {id: {in: studentIds}}, select: selectFields}) : [],
-    teacherIds.length ? prisma.teacher.findMany({where: {id: {in: teacherIds}}, select: selectFields}) : []
+    teacherIds.length ? prisma.teacher.findMany({where: {id: {in: teacherIds}}, select: selectFields}) : [],
+    allAuthorIds.length
+      ? prisma.postRating.findMany({where: {postId: id, authorId: {in: allAuthorIds}}, select: {authorId: true, stars: true}})
+      : []
   ])
 
   const authorMap = new Map([...students.map((s) => [s.id, s] as const), ...teachers.map((t) => [t.id, t] as const)])
+  const ratingMap = new Map(ratings.map((r) => [r.authorId, r.stars]))
 
   const enrichedComments: EnrichedComment[] = rawComments.map((c) => ({
     id: c.id,
@@ -148,7 +153,8 @@ async function PostServerPage({params}: {params: Promise<{id: string}>}) {
     imageUrls: c.imageUrls,
     editedAt: c.editedAt,
     createdAt: c.createdAt,
-    author: authorMap.get(c.authorId) ?? null
+    author: authorMap.get(c.authorId) ?? null,
+    stars: ratingMap.get(c.authorId) ?? null,
   }))
 
   const blocks = parseBlocks(post.content)

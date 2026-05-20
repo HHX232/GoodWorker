@@ -61,10 +61,20 @@ export async function GET(req: NextRequest, {params}: RouteParams) {
       ...teachers.map((t): [string, AuthorRecord] => [t.id, t])
     ])
 
+    const allAuthorIds = [...studentIds, ...teacherIds]
+    const ratings = allAuthorIds.length
+      ? await prisma.postRating.findMany({
+          where: {postId, authorId: {in: allAuthorIds}},
+          select: {authorId: true, stars: true}
+        })
+      : []
+    const ratingMap = new Map(ratings.map((r) => [r.authorId, r.stars]))
+
     const lang = req.nextUrl.searchParams.get('lang') ?? 'ru'
-    const enriched = comments.map((c) =>
-      localizeComment({...c, author: authorMap.get(c.authorId) ?? null}, lang)
-    )
+    const enriched = comments.map((c) => ({
+      ...localizeComment({...c, author: authorMap.get(c.authorId) ?? null}, lang),
+      stars: ratingMap.get(c.authorId) ?? null,
+    }))
 
     return NextResponse.json({
       comments: enriched,

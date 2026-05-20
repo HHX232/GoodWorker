@@ -17,6 +17,7 @@ export interface ICommentResponse {
   imageUrls: string[]
   editedAt: string | null
   createdAt: string
+  stars?: number | null
 }
 
 export interface ICommentsListResponse {
