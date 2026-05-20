@@ -3,11 +3,150 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
-import { RefObject, useEffect, useRef, useState } from 'react'
+import { RefObject, useCallback, useEffect, useRef, useState } from 'react'
 import styles from './DashboardProfilePanel.module.scss'
 
 import { VideoCallModal } from '@/widgets/Dashboard/VideoCallModal/VideoCallModal'
 import { toast } from 'sonner'
+
+const TG_MODAL_KEY = 'tg_welcome_shown'
+
+// ─── Telegram SVG ─────────────────────────────────────────
+
+function TelegramIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+    </svg>
+  )
+}
+
+// ─── TelegramSection ──────────────────────────────────────
+
+function TelegramSection({ linkTrigger = 0 }: { linkTrigger?: number }) {
+  const t = useTranslations('dashboard')
+  const [connected, setConnected] = useState<boolean | null>(null)
+  const [linking, setLinking] = useState(false)
+  const [unlinking, setUnlinking] = useState(false)
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const prevTrigger = useRef(0)
+
+  const checkStatus = useCallback(async () => {
+    try {
+      const r = await fetch('/api/telegram/link-token')
+      const d = await r.json()
+      setConnected(!!d.connected)
+      return !!d.connected
+    } catch {
+      return false
+    }
+  }, [])
+
+  const startLinkFlow = useCallback(async () => {
+    setLinking(true)
+    try {
+      const res = await fetch('/api/telegram/link-token', { method: 'POST' })
+      const data = await res.json()
+      if (data.deepLink) {
+        window.open(data.deepLink, '_blank')
+        pollRef.current = setInterval(async () => {
+          const ok = await checkStatus()
+          if (ok) { clearInterval(pollRef.current!); toast.success(t('tgLinked')) }
+        }, 3000)
+        setTimeout(() => { if (pollRef.current) clearInterval(pollRef.current) }, 120_000)
+      }
+    } catch {
+      toast.error(t('tgLinkError'))
+    } finally {
+      setLinking(false)
+    }
+  }, [checkStatus, t])
+
+  useEffect(() => {
+    checkStatus()
+    return () => { if (pollRef.current) clearInterval(pollRef.current) }
+  }, [checkStatus])
+
+  useEffect(() => {
+    if (linkTrigger > 0 && linkTrigger !== prevTrigger.current) {
+      prevTrigger.current = linkTrigger
+      startLinkFlow()
+    }
+  }, [linkTrigger, startLinkFlow])
+
+  const handleUnlink = async () => {
+    setUnlinking(true)
+    try {
+      await fetch('/api/telegram/link-token', { method: 'DELETE' })
+      setConnected(false)
+      toast.success(t('tgUnlinked'))
+    } catch {
+      toast.error(t('tgUnlinkError'))
+    } finally {
+      setUnlinking(false)
+    }
+  }
+
+  return (
+    <div className={styles.section}>
+      <div className={styles.sectionLabel}>{t('tgSection')}</div>
+      <div className={styles.tgRow}>
+        <div className={styles.tgLeft}>
+          <span className={styles.tgIconWrap}><TelegramIcon size={15} /></span>
+          <div className={styles.tgInfo}>
+            <span className={styles.tgTitle}>Telegram</span>
+            <span className={styles.tgStatus}>
+              {connected === null ? t('tgChecking') : connected ? t('tgConnected') : t('tgNotConnected')}
+            </span>
+          </div>
+        </div>
+        {connected === false && (
+          <button className={styles.tgLinkBtn} onClick={startLinkFlow} disabled={linking}>
+            {linking ? t('tgLinking') : t('tgLink')}
+          </button>
+        )}
+        {connected === true && (
+          <button className={styles.tgUnlinkBtn} onClick={handleUnlink} disabled={unlinking}>
+            {t('tgUnlink')}
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─── TelegramWelcomeModal ─────────────────────────────────
+
+function TelegramWelcomeModal({ onClose, onLink }: { onClose: () => void; onLink: () => void }) {
+  const t = useTranslations('dashboard')
+
+  const handleLink = () => {
+    onLink()
+    onClose()
+  }
+
+  return (
+    <div className={styles.tgModalOverlay} onClick={onClose}>
+      <div className={styles.tgModal} onClick={e => e.stopPropagation()}>
+        <button className={styles.tgModalClose} onClick={onClose} aria-label="close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+        <div className={styles.tgModalIcon}>
+          <TelegramIcon size={32} />
+        </div>
+        <h3 className={styles.tgModalTitle}>{t('tgWelcomeTitle')}</h3>
+        <p className={styles.tgModalDesc}>{t('tgWelcomeDesc')}</p>
+        <button className={styles.tgModalBtn} onClick={handleLink}>
+          <TelegramIcon size={15} />
+          {t('tgWelcomeAction')}
+        </button>
+        <button className={styles.tgModalSkip} onClick={onClose}>{t('tgWelcomeSkip')}</button>
+      </div>
+    </div>
+  )
+}
 
 // ─── PromoCodeSection ─────────────────────────────────────
 
@@ -296,6 +435,25 @@ export function DashboardProfilePanel({
 }: Props) {
   const t = useTranslations('dashboard')
   const [videoOpen, setVideoOpen] = useState(false)
+  const [tgModalOpen, setTgModalOpen] = useState(false)
+  const [tgLinkTrigger, setTgLinkTrigger] = useState(0)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !localStorage.getItem(TG_MODAL_KEY)) {
+      const timer = setTimeout(() => setTgModalOpen(true), 800)
+      return () => clearTimeout(timer)
+    }
+  }, [])
+
+  const handleTgModalClose = () => {
+    setTgModalOpen(false)
+    if (typeof window !== 'undefined') localStorage.setItem(TG_MODAL_KEY, '1')
+  }
+
+  const handleTgLink = () => {
+    setTgLinkTrigger(n => n + 1)
+    if (typeof window !== 'undefined') localStorage.setItem(TG_MODAL_KEY, '1')
+  }
 
   return (
     <aside className={styles.panel}>
@@ -472,6 +630,10 @@ export function DashboardProfilePanel({
 
         <div className={styles.divider} />
 
+        <TelegramSection linkTrigger={tgLinkTrigger} />
+
+        <div className={styles.divider} />
+
         {/* Video room */}
         <div className={styles.section}>
           <button className={styles.videoToggle} onClick={() => setVideoOpen(true)}>
@@ -485,6 +647,7 @@ export function DashboardProfilePanel({
           </button>
         </div>
         {videoOpen && <VideoCallModal defaultName={name} onClose={() => setVideoOpen(false)} />}
+        {tgModalOpen && <TelegramWelcomeModal onClose={handleTgModalClose} onLink={handleTgLink} />}
 
       </div>
     </aside>

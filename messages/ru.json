@@ -738,7 +738,22 @@
     "promoInvalid": "Неверный промокод",
     "promoExpired": "Промокод истёк",
     "promoExhausted": "Лимит использований промокода исчерпан",
-    "promoNetworkError": "Ошибка сети, попробуйте ещё раз"
+    "promoNetworkError": "Ошибка сети, попробуйте ещё раз",
+    "tgSection": "Telegram-бот",
+    "tgChecking": "Проверка...",
+    "tgConnected": "Подключён",
+    "tgNotConnected": "Не подключён",
+    "tgLink": "Привязать",
+    "tgLinking": "Открываем...",
+    "tgLinked": "Telegram привязан!",
+    "tgUnlink": "Отключить",
+    "tgUnlinked": "Telegram отключён",
+    "tgLinkError": "Не удалось получить ссылку",
+    "tgUnlinkError": "Не удалось отключить",
+    "tgWelcomeTitle": "Не пропускайте важное",
+    "tgWelcomeDesc": "Получайте уведомления о встречах, выплатах и новостях через Telegram-бот",
+    "tgWelcomeAction": "Привязать Telegram",
+    "tgWelcomeSkip": "Позже"
   },
   "studentStats": {
     "title": "Моя статистика",

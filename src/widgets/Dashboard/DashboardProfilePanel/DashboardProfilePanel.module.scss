@@ -341,3 +341,192 @@
 .identityPending { color: #ABABAB; }
 .identityUploaded { color: #f59e0b; }
 .identityConfirmed { color: #22c55e; font-weight: 600; cursor: default; }
+
+// ── Telegram section ───────────────────────────────────────
+
+.tgRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 13px;
+  background: #FAFAFA;
+  border: 1px solid #EBEBEB;
+  border-radius: 10px;
+}
+
+.tgLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.tgIconWrap {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(36, 161, 222, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #24A1DE;
+  flex-shrink: 0;
+}
+
+.tgInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.tgTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111118;
+}
+
+.tgStatus {
+  font-size: 11px;
+  color: #8A8A9A;
+}
+
+.tgLinkBtn {
+  font-size: 12px;
+  font-weight: 600;
+  color: #24A1DE;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+  flex-shrink: 0;
+  white-space: nowrap;
+
+  &:hover { text-decoration: underline; }
+  &:disabled { opacity: 0.55; cursor: default; text-decoration: none; }
+}
+
+.tgUnlinkBtn {
+  font-size: 12px;
+  font-weight: 600;
+  color: #EF4444;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+  flex-shrink: 0;
+  white-space: nowrap;
+
+  &:hover { text-decoration: underline; }
+  &:disabled { opacity: 0.55; cursor: default; text-decoration: none; }
+}
+
+// ── Telegram welcome modal ─────────────────────────────────
+
+.tgModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.40);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.tgModal {
+  position: relative;
+  background: #fff;
+  border-radius: 18px;
+  padding: 32px 28px 24px;
+  max-width: 320px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+}
+
+.tgModalClose {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 28px;
+  height: 28px;
+  background: #F5F5F9;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8A8A9A;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover { background: #EBEBEB; color: #111118; }
+}
+
+.tgModalIcon {
+  width: 56px;
+  height: 56px;
+  background: rgba(36, 161, 222, 0.12);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #24A1DE;
+  margin-bottom: 4px;
+}
+
+.tgModalTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111118;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.tgModalDesc {
+  font-size: 13px;
+  color: #6B6B7A;
+  line-height: 1.5;
+  margin: 0 0 8px;
+}
+
+.tgModalBtn {
+  width: 100%;
+  padding: 12px 0;
+  background: #24A1DE;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.15s;
+
+  &:hover { background: #1a8cc2; }
+}
+
+.tgModalSkip {
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: #ABABAB;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 4px 0;
+  margin-top: -2px;
+
+  &:hover { color: #8A8A9A; text-decoration: underline; }
+}

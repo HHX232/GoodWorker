@@ -738,7 +738,22 @@
     "promoInvalid": "Invalid promo code",
     "promoExpired": "Promo code has expired",
     "promoExhausted": "Promo code limit reached",
-    "promoNetworkError": "Network error, please try again"
+    "promoNetworkError": "Network error, please try again",
+    "tgSection": "Telegram Bot",
+    "tgChecking": "Checking...",
+    "tgConnected": "Connected",
+    "tgNotConnected": "Not connected",
+    "tgLink": "Connect",
+    "tgLinking": "Opening...",
+    "tgLinked": "Telegram linked!",
+    "tgUnlink": "Disconnect",
+    "tgUnlinked": "Telegram disconnected",
+    "tgLinkError": "Failed to get link",
+    "tgUnlinkError": "Failed to disconnect",
+    "tgWelcomeTitle": "Stay on top of everything",
+    "tgWelcomeDesc": "Get notifications about meetings, payments, and news via Telegram bot",
+    "tgWelcomeAction": "Connect Telegram",
+    "tgWelcomeSkip": "Later"
   },
   "studentStats": {
     "title": "My statistics",
