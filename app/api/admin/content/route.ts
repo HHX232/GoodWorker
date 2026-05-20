@@ -7,21 +7,27 @@ export async function GET(req: NextRequest) {
   if (session?.user?.role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { searchParams } = req.nextUrl
-  const type = searchParams.get('type') ?? 'posts' // 'posts' | 'roadmaps'
-  const status = searchParams.get('status') ?? 'all' // 'all' | 'PUBLISHED' | 'PENDING' | 'BLOCKED'
-  const page = Math.max(1, parseInt(searchParams.get('page') ?? '1'))
-  const limit = 20
+  const type      = searchParams.get('type')     ?? 'posts'
+  const status    = searchParams.get('status')   ?? 'all'
+  const aiFilter  = searchParams.get('aiFilter') ?? 'all'
+  const page      = Math.max(1, parseInt(searchParams.get('page') ?? '1'))
+  const limit     = 20
 
   const where: Record<string, unknown> = {}
   if (status !== 'all') where.moderationStatus = status
 
   if (type === 'posts') {
-    // @ts-ignore
+    // AI filter only applies to posts
+    if (aiFilter === 'flagged')   { where.aiModerated = true;  where.aiModerationOk = false }
+    if (aiFilter === 'ok')        { where.aiModerationOk = true }
+    if (aiFilter === 'unchecked') { where.aiModerated = false }
+
     const [items, total] = await Promise.all([
       (prisma.post.findMany as (a: unknown) => Promise<unknown[]>)({
         where,
         select: {
           id: true, title: true, moderationStatus: true, createdAt: true, viewCount: true,
+          aiModerated: true, aiModerationOk: true,
           teacher: { select: { id: true, name: true } },
           _count: { select: { comments: true, ratings: true } },
         },
@@ -29,12 +35,10 @@ export async function GET(req: NextRequest) {
         skip: (page - 1) * limit,
         take: limit,
       }),
-      // @ts-ignore
-      prisma.post.count({ where }),
+      (prisma.post.count as (a: unknown) => Promise<number>)({ where }),
     ])
     return NextResponse.json({ items, total, totalPages: Math.ceil(total / limit) })
   } else {
-    // @ts-ignore
     const [items, total] = await Promise.all([
       (prisma.roadmap.findMany as (a: unknown) => Promise<unknown[]>)({
         where,
@@ -47,8 +51,7 @@ export async function GET(req: NextRequest) {
         skip: (page - 1) * limit,
         take: limit,
       }),
-      // @ts-ignore
-      prisma.roadmap.count({ where }),
+      (prisma.roadmap.count as (a: unknown) => Promise<number>)({ where }),
     ])
     return NextResponse.json({ items, total, totalPages: Math.ceil(total / limit) })
   }
@@ -64,11 +67,9 @@ export async function PATCH(req: NextRequest) {
   }
 
   if (type === 'posts') {
-    // @ts-ignore
-    await prisma.post.update({ where: { id }, data: { moderationStatus } })
+    await (prisma.post.update as (a: unknown) => Promise<unknown>)({ where: { id }, data: { moderationStatus } })
   } else {
-    // @ts-ignore
-    await prisma.roadmap.update({ where: { id }, data: { moderationStatus } })
+    await (prisma.roadmap.update as (a: unknown) => Promise<unknown>)({ where: { id }, data: { moderationStatus } })
   }
 
   return NextResponse.json({ ok: true })
@@ -79,7 +80,7 @@ export async function DELETE(req: NextRequest) {
   if (session?.user?.role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { searchParams } = req.nextUrl
-  const id = searchParams.get('id')
+  const id   = searchParams.get('id')
   const type = searchParams.get('type')
   if (!id || !type) return NextResponse.json({ error: 'id and type required' }, { status: 400 })
 

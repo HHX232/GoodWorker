@@ -137,6 +137,9 @@ export async function enrichPostWithAI(postId: string): Promise<void> {
   )
 
   const prompt = `Translate this educational post to ru, en, hi, zh and pick the best category.
+Also evaluate content safety: flag as unsafe ONLY if the post clearly contains spam, adult/sexual content,
+hate speech, violence promotion, scams, or illegal activities.
+Educational discussion of sensitive topics is acceptable.
 
 Title: ${JSON.stringify(post.title)}
 AdditionalTitle: ${post.additionalTitle ? JSON.stringify(post.additionalTitle) : 'null'}
@@ -147,7 +150,9 @@ Return exactly this JSON structure:
   "titleTranslations": {"ru":"...","en":"...","hi":"...","zh":"..."},
   "additionalTitleTranslations": ${post.additionalTitle ? '{"ru":"...","en":"...","hi":"...","zh":"..."}' : 'null'},
   "textBlockTranslations": [{"index":0,"ru":"...","en":"...","hi":"...","zh":"..."}],
-  "suggestedCategoryId": "<id or null>"
+  "suggestedCategoryId": "<id or null>",
+  "contentOk": true,
+  "contentReason": null
 }`
 
   const model = await getModel(cats)
@@ -160,6 +165,7 @@ Return exactly this JSON structure:
   const jsonStr = raw.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim()
   const parsed = JSON.parse(jsonStr)
 
+  const contentOk: boolean = parsed.contentOk !== false
   const contentTranslations: Record<string, unknown> = {}
   for (const lang of LANGS) {
     contentTranslations[lang] = applyTextTranslations(
@@ -175,9 +181,12 @@ Return exactly this JSON structure:
       titleTranslations: (parsed.titleTranslations ?? undefined) as Prisma.InputJsonValue | undefined,
       additionalTitleTranslations: (parsed.additionalTitleTranslations ?? undefined) as Prisma.InputJsonValue | undefined,
       contentTranslations: contentTranslations as Prisma.InputJsonValue,
+      aiModerated: true,
+      aiModerationOk: contentOk,
       ...(!post.categoryId && parsed.suggestedCategoryId
         ? { categoryId: parsed.suggestedCategoryId }
         : {}),
+      ...(contentOk === false ? { moderationStatus: 'BLOCKED' as const } : {}),
     },
   })
 }

@@ -1209,6 +1209,13 @@ const CONTENT_STATUS_FILTERS: { value: string; label: string }[] = [
   { value: 'BLOCKED',   label: 'Заблокировано' },
 ]
 
+const AI_FILTERS: { value: string; label: string; color: string }[] = [
+  { value: 'all',       label: 'Все ИИ',         color: '#6b7280' },
+  { value: 'flagged',   label: '🚩 Нарушения',   color: '#dc2626' },
+  { value: 'unchecked', label: '⏳ Не проверено', color: '#d97706' },
+  { value: 'ok',        label: '✓ ИИ одобрен',   color: '#16a34a' },
+]
+
 interface ContentItem {
   id: string
   title: string
@@ -1216,6 +1223,8 @@ interface ContentItem {
   createdAt: string
   viewCount?: number
   price?: number
+  aiModerated?: boolean
+  aiModerationOk?: boolean | null
   teacher: { id: string; name: string }
   _count: { comments: number; ratings: number; progress?: number }
 }
@@ -1223,6 +1232,7 @@ interface ContentItem {
 function ContentTab() {
   const [contentType, setContentType] = useState<ContentType>('posts')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [aiFilter, setAiFilter] = useState('all')
   const [items, setItems] = useState<ContentItem[]>([])
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -1232,8 +1242,8 @@ function ContentTab() {
   const [updating, setUpdating] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
 
-  const fetchPage = useCallback(async (p: number, type: ContentType, status: string, replace = false) => {
-    const params = new URLSearchParams({ type, status, page: String(p) })
+  const fetchPage = useCallback(async (p: number, type: ContentType, status: string, ai: string, replace = false) => {
+    const params = new URLSearchParams({ type, status, aiFilter: ai, page: String(p) })
     const res = await fetch(`/api/admin/content?${params}`)
     if (!res.ok) return
     const data = await res.json()
@@ -1246,12 +1256,12 @@ function ContentTab() {
   useEffect(() => {
     setLoading(true)
     setItems([])
-    fetchPage(1, contentType, statusFilter, true).finally(() => setLoading(false))
-  }, [contentType, statusFilter, fetchPage])
+    fetchPage(1, contentType, statusFilter, aiFilter, true).finally(() => setLoading(false))
+  }, [contentType, statusFilter, aiFilter, fetchPage])
 
   const handleLoadMore = async () => {
     setLoadingMore(true)
-    await fetchPage(page + 1, contentType, statusFilter)
+    await fetchPage(page + 1, contentType, statusFilter, aiFilter)
     setLoadingMore(false)
   }
 
@@ -1329,6 +1339,21 @@ function ContentTab() {
         {total > 0 && <span className={styles.total_badge}>{total}</span>}
       </div>
 
+      {contentType === 'posts' && (
+        <div className={styles.filter_tabs} style={{marginTop: 6}}>
+          {AI_FILTERS.map(f => (
+            <button
+              key={f.value}
+              className={`${styles.filter_tab} ${aiFilter === f.value ? styles.filter_tab_active : ''}`}
+              style={aiFilter === f.value ? {borderColor: f.color, color: f.color} : {}}
+              onClick={() => setAiFilter(f.value)}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className={styles.list}>
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => <div key={i} className={styles.skeleton} />)
@@ -1380,6 +1405,26 @@ function ContentTab() {
                   >
                     {cfg.label}
                   </span>
+                  {contentType === 'posts' && item.aiModerated && (
+                    <span
+                      className={styles.status_badge}
+                      style={item.aiModerationOk
+                        ? { color: '#16a34a', background: '#f0fdf4' }
+                        : { color: '#dc2626', background: '#fef2f2' }}
+                      title={item.aiModerationOk ? 'ИИ: контент в порядке' : 'ИИ: обнаружено нарушение'}
+                    >
+                      {item.aiModerationOk ? '🤖 ок' : '🤖 нарушение'}
+                    </span>
+                  )}
+                  {contentType === 'posts' && !item.aiModerated && (
+                    <span
+                      className={styles.status_badge}
+                      style={{ color: '#9ca3af', background: '#f9fafb' }}
+                      title='ИИ ещё не проверил'
+                    >
+                      🤖 ?
+                    </span>
+                  )}
                   {statusActions
                     .filter(a => a.status !== item.moderationStatus)
                     .map(a => (
