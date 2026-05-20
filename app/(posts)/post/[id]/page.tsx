@@ -14,13 +14,15 @@ function parseBlocks(content: Prisma.JsonValue): any[] {
   return obj.blocks as any[]
 }
 
-function extractDescription(blocks: any[]): string {
+function extractPlainText(blocks: any[]): string {
+  const parts: string[] = []
   for (const block of blocks) {
     if (block.type !== 'TEXT') continue
     const text = extractTextFromNode(block.payload?.content)
-    if (text.trim()) return text.slice(0, 160)
+    if (text.trim()) parts.push(text.trim())
+    if (parts.join(' ').length >= 200) break
   }
-  return ''
+  return parts.join(' ').slice(0, 160)
 }
 
 function extractTextFromNode(node: any): string {
@@ -30,34 +32,13 @@ function extractTextFromNode(node: any): string {
   return ''
 }
 
-export async function generateMetadata({params}: {params: Promise<{id: string}>}): Promise<Metadata> {
-  const {id} = await params
-  const post = await prisma.post.findUnique({
-    where: {id},
-    select: {
-      title: true,
-      content: true,
-      teacher: {select: {name: true}},
-      category: {include: {translations: true}},
+function extractFirstImage(blocks: any[]): string | null {
+  for (const block of blocks) {
+    if (block.type === 'MEDIA' && block.payload?.kind === 'image' && block.payload?.url) {
+      return block.payload.url as string
     }
-  })
-  if (!post) return {}
-
-  const blocks = parseBlocks(post.content)
-  const description = extractDescription(blocks)
-  const categoryName = post.category?.translations.find(t => t.langCode === 'ru')?.name ?? ''
-
-  return {
-    title: post.title,
-    description: description || undefined,
-    openGraph: {
-      title: post.title,
-      description: description || undefined,
-      type: 'article',
-      authors: post.teacher?.name ? [post.teacher.name] : undefined,
-      tags: categoryName ? [categoryName] : undefined,
-    },
   }
+  return null
 }
 
 async function recordView(postId: string, userId: string, role: string): Promise<boolean> {
@@ -86,6 +67,36 @@ async function recordView(postId: string, userId: string, role: string): Promise
   }
 
   return false
+}
+
+export async function generateMetadata({params}: {params: Promise<{id: string}>}): Promise<Metadata> {
+  const {id} = await params
+  const post = await prisma.post.findUnique({
+    where: {id},
+    select: {
+      title: true,
+      content: true,
+      teacher: {select: {name: true}},
+      category: {include: {translations: true}},
+    }
+  })
+  if (!post) return {}
+
+  const blocks = parseBlocks(post.content)
+  const description = extractPlainText(blocks)
+  const image = extractFirstImage(blocks)
+
+  return {
+    title: post.title,
+    description: description || undefined,
+    openGraph: {
+      title: post.title,
+      description: description || undefined,
+      type: 'article',
+      authors: post.teacher?.name ? [post.teacher.name] : undefined,
+      ...(image ? {images: [{url: image}]} : {}),
+    },
+  }
 }
 
 async function PostServerPage({params}: {params: Promise<{id: string}>}) {
@@ -141,12 +152,41 @@ async function PostServerPage({params}: {params: Promise<{id: string}>}) {
   }))
 
   const blocks = parseBlocks(post.content)
+  const description = extractPlainText(blocks)
+  const firstImage = extractFirstImage(blocks)
+  const categoryName = post.category?.translations.find(t => t.langCode === 'ru')?.name ?? ''
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title,
+    ...(description ? {description} : {}),
+    datePublished: post.createdAt.toISOString(),
+    dateModified: post.updatedAt?.toISOString() ?? post.createdAt.toISOString(),
+    author: post.teacher ? {
+      '@type': 'Person',
+      name: post.teacher.name,
+      url: `/users/${post.teacher.id}`,
+    } : undefined,
+    ...(firstImage ? {image: firstImage} : {}),
+    ...(categoryName ? {articleSection: categoryName} : {}),
+  }
 
   return (
     <>
-      <SeoPostContent blocks={blocks} />
+      <script
+        type='application/ld+json'
+        dangerouslySetInnerHTML={{__html: JSON.stringify(jsonLd)}}
+      />
+      <SeoPostContent
+        blocks={blocks}
+        title={post.title}
+        authorName={post.teacher?.name}
+        authorId={post.teacher?.id}
+        publishedAt={post.createdAt}
+        categoryName={categoryName}
+      />
       <PostPage post={{...post, enrichedComments}} currentUserId={session?.user?.id} />
-     
     </>
   )
 }
