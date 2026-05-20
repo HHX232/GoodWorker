@@ -14,7 +14,7 @@ export async function GET() {
   if (role === 'STUDENT') {
     const u = await (prisma.student as any).findUnique({ where: { id }, select: { telegramChatId: true } })
     chatId = u?.telegramChatId ?? null
-  } else if (role === 'TEACHER') {
+  } else if (role === 'TEACHER' || role === 'ADMIN') {
     const u = await (prisma.teacher as any).findUnique({ where: { id }, select: { telegramChatId: true } })
     chatId = u?.telegramChatId ?? null
   }
@@ -28,7 +28,7 @@ export async function POST() {
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { id, role } = session.user as { id: string; role: string }
-  if (!['STUDENT', 'TEACHER'].includes(role)) {
+  if (!['STUDENT', 'TEACHER', 'ADMIN'].includes(role)) {
     return NextResponse.json({ error: 'Not supported for this role' }, { status: 400 })
   }
 
@@ -55,7 +55,7 @@ export async function DELETE() {
 
   if (role === 'STUDENT') {
     await (prisma.student as any).update({ where: { id }, data: { telegramChatId: null, telegramLinkToken: null } })
-  } else if (role === 'TEACHER') {
+  } else if (role === 'TEACHER' || role === 'ADMIN') {
     await (prisma.teacher as any).update({ where: { id }, data: { telegramChatId: null, telegramLinkToken: null } })
   }
 
