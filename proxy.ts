@@ -46,11 +46,11 @@ export default auth((req) => {
     return NextResponse.redirect(new URL("/login", req.url))
   }
 
-  if (isTeacherOnly && role !== "TEACHER") {
+  if (isTeacherOnly && role !== "TEACHER" && role !== "ADMIN") {
     return NextResponse.redirect(new URL("/student-profile", req.url))
   }
 
-  if (isStudentOnly && role !== "STUDENT") {
+  if (isStudentOnly && role !== "STUDENT" && role !== "ADMIN") {
     return NextResponse.redirect(new URL("/teacher-profile", req.url))
   }
 
