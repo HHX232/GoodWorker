@@ -233,3 +233,30 @@
   background: linear-gradient(90deg, #534AB7, #8B7FEE);
   transition: width 0.6s ease;
 }
+
+// ── Card actions ───────────────────────────────────────────
+
+.cardActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.reportBtn {
+  font-size: 11px;
+  font-weight: 500;
+  color: #534AB7;
+  background: rgba(83, 74, 183, 0.08);
+  border: 1px solid rgba(83, 74, 183, 0.18);
+  border-radius: 7px;
+  padding: 4px 10px;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+  font-family: inherit;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(83, 74, 183, 0.16);
+    color: #3d34a0;
+  }
+}

@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl'
 import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import styles from './DashboardStudentSidebar.module.scss'
 import { StudentDetailModal } from '@/widgets/Dashboard/StudentDetailModal/StudentDetailModal'
 
@@ -189,6 +190,12 @@ export function DashboardStudentSidebar({ teacherId }: Props) {
 
               <div className={styles.progressWrap}>
                 <div className={styles.progressBar} style={{ width: `${progress}%` }} />
+              </div>
+
+              <div className={styles.cardActions} onClick={e => e.stopPropagation()}>
+                <Link href={`/report/${student.id}`} className={styles.reportBtn}>
+                  Отчёт
+                </Link>
               </div>
             </div>
           )

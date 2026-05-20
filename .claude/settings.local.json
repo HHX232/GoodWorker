@@ -125,7 +125,8 @@
       "Bash(security find-internet-password *)",
       "Bash(curl -s -o /dev/null -w '%{http_code}' -H 'Authorization: token __TRACKED_VAR__' https://api.github.com/user)",
       "Bash(curl -s -X POST -H 'Authorization: token __TRACKED_VAR__' -H 'Content-Type: application/json' https://api.github.com/user/repos -d '{\"name\":\"goodworker-tg-bot\",\"description\":\"Telegram notification bot for GoodWorker — sends lesson reminders to users\",\"private\":false}')",
-      "Bash(curl -s -X POST -H 'Authorization: token __TRACKED_VAR__' -H 'Content-Type: application/json' https://api.github.com/user/repos -d '{\"name\":\"goodworker-tg-bot\",\"description\":\"Telegram notification bot for GoodWorker\",\"private\":false}')"
+      "Bash(curl -s -X POST -H 'Authorization: token __TRACKED_VAR__' -H 'Content-Type: application/json' https://api.github.com/user/repos -d '{\"name\":\"goodworker-tg-bot\",\"description\":\"Telegram notification bot for GoodWorker\",\"private\":false}')",
+      "Bash(node -e \"const c = require\\('/Users/nikitatisevic/Desktop/GoodWorkerRemaster/node_modules/@tiptap/core/dist/index.js'\\); console.log\\(typeof c.generateHTML\\)\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\Мастер\\Desktop\\goodworkerremaster\\app\\api\\roadmap",
@@ -139,7 +140,9 @@
       "/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/api/admin/promo-codes",
       "/tmp",
       "/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/api/teacher/experience",
-      "/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/api/call/analyze-errors"
+      "/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/api/call/analyze-errors",
+      "/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/api/teacher/student-report",
+      "/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/(forTeachers)/report"
     ]
   }
 }

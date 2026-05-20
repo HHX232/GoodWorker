@@ -1,0 +1,210 @@
+.wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px;
+  font-family: inherit;
+  min-height: 100vh;
+  background: #f5f5f7;
+}
+
+.loadingState {
+  text-align: center;
+  padding: 80px 20px;
+  color: #999;
+  font-size: 14px;
+}
+
+.errorState {
+  text-align: center;
+  padding: 80px 20px;
+  color: #c53030;
+  font-size: 14px;
+}
+
+.printBtn {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #111118;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  z-index: 100;
+  transition: background 0.15s;
+
+  &:hover {
+    background: #333;
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  @media print {
+    display: none !important;
+  }
+}
+
+.report {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
+}
+
+// ── Header ────────────────────────────────────────────────────
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #f0f0f0;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+  }
+}
+
+.reportTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111118;
+  margin-bottom: 8px;
+}
+
+.studentName {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111118;
+  margin-bottom: 4px;
+}
+
+.meta {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.metaBlock {
+  text-align: right;
+  flex-shrink: 0;
+
+  @media (max-width: 600px) {
+    text-align: left;
+  }
+}
+
+.period {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #888;
+  background: #f5f5f7;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  padding: 3px 10px;
+}
+
+// ── Stat cards ────────────────────────────────────────────────
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 32px;
+
+  @media (max-width: 700px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 400px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  padding: 16px 14px;
+  text-align: center;
+}
+
+.cardValue {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111118;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.cardLabel {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+}
+
+// ── Charts ────────────────────────────────────────────────────
+
+.charts {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 0;
+}
+
+.chartBlock {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.chartTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111118;
+  margin-bottom: 16px;
+}
+
+// ── Print styles ──────────────────────────────────────────────
+
+@media print {
+  .printBtn {
+    display: none !important;
+  }
+
+  .wrapper {
+    padding: 0 !important;
+    background: white !important;
+    max-width: none !important;
+  }
+
+  .report {
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 24px !important;
+  }
+
+  .chartBlock svg {
+    filter: grayscale(1);
+  }
+
+  .cards {
+    grid-template-columns: repeat(5, 1fr) !important;
+  }
+}
