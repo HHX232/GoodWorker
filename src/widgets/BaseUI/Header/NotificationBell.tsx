@@ -82,7 +82,7 @@ export function NotificationBell() {
         right: '12px',
         width: 'auto',
         top: `${headerBottom + 8}px`,
-        maxHeight: `calc(100vh - ${headerBottom + 20}px)`,
+        maxHeight: '400px',
       })
     } else {
       setDropdownStyle({})
