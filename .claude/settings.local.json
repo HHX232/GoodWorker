@@ -126,7 +126,23 @@
       "Bash(curl -s -o /dev/null -w '%{http_code}' -H 'Authorization: token __TRACKED_VAR__' https://api.github.com/user)",
       "Bash(curl -s -X POST -H 'Authorization: token __TRACKED_VAR__' -H 'Content-Type: application/json' https://api.github.com/user/repos -d '{\"name\":\"goodworker-tg-bot\",\"description\":\"Telegram notification bot for GoodWorker — sends lesson reminders to users\",\"private\":false}')",
       "Bash(curl -s -X POST -H 'Authorization: token __TRACKED_VAR__' -H 'Content-Type: application/json' https://api.github.com/user/repos -d '{\"name\":\"goodworker-tg-bot\",\"description\":\"Telegram notification bot for GoodWorker\",\"private\":false}')",
-      "Bash(node -e \"const c = require\\('/Users/nikitatisevic/Desktop/GoodWorkerRemaster/node_modules/@tiptap/core/dist/index.js'\\); console.log\\(typeof c.generateHTML\\)\")"
+      "Bash(node -e \"const c = require\\('/Users/nikitatisevic/Desktop/GoodWorkerRemaster/node_modules/@tiptap/core/dist/index.js'\\); console.log\\(typeof c.generateHTML\\)\")",
+      "Bash(gh auth *)",
+      "Bash(brew install *)",
+      "Bash(ssh -T git@github.com)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d.get\\('ssh_url'\\) or d.get\\('message','error'\\)\\)\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(list\\(d.keys\\(\\)\\)\\)\")",
+      "Bash(python3 -c \"import json; d=json.load\\(open\\('/Users/nikitatisevic/Desktop/GoodWorkerRemaster/messages/en.json'\\)\\); print\\(json.dumps\\(d.get\\('CreateTestPage', {}\\), indent=2\\)\\)\")",
+      "Bash(python3 -c \"import json; d=json.load\\(open\\('/Users/nikitatisevic/Desktop/GoodWorkerRemaster/messages/ru.json'\\)\\); print\\(json.dumps\\(d.get\\('CreateTestPage', {}\\), indent=2\\)\\)\")",
+      "Bash(docker system *)",
+      "Bash(/usr/local/bin/docker system *)",
+      "Bash(/usr/bin/docker system *)",
+      "Bash(python3 -c \"import json,sys; p=json.load\\(sys.stdin\\); deps={**p.get\\('dependencies',{}\\), **p.get\\('devDependencies',{}\\)}; [print\\(k,v\\) for k,v in sorted\\(deps.items\\(\\)\\)]\")",
+      "Bash(curl -s \"https://openrouter.ai/api/v1/models\")",
+      "Bash(python3 -c \"import json,sys; data=json.load\\(sys.stdin\\); models=[m['id'] for m in data.get\\('data',[]\\) if 'deepseek' in m['id'].lower\\(\\) or 'free' in m['id'].lower\\(\\)]; [print\\(m\\) for m in sorted\\(models\\)[:30]]\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(k\\) for k in d.keys\\(\\)]\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('NavBar',''\\), ensure_ascii=False, indent=2\\)\\)\")",
+      "Bash(python3 -)"
     ],
     "additionalDirectories": [
       "c:\\Users\\Мастер\\Desktop\\goodworkerremaster\\app\\api\\roadmap",
@@ -142,7 +158,10 @@
       "/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/api/teacher/experience",
       "/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/api/call/analyze-errors",
       "/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/api/teacher/student-report",
-      "/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/(forTeachers)/report"
+      "/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/(forTeachers)/report",
+      "/Users/nikitatisevic/Desktop/pdf-microservice/pdf-service/src",
+      "/Users/nikitatisevic/Desktop/pdf-microservice/pdf-service",
+      "/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/api/post/[id]/comments"
     ]
   }
 }

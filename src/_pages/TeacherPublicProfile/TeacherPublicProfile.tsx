@@ -3,6 +3,7 @@
 import { DashboardCenter } from '@/widgets/Dashboard/DashboardCenter/DashboardCenter'
 import { PublicReviewsSidebar } from '@/widgets/Dashboard/PublicReviewsSidebar/PublicReviewsSidebar'
 import { PublicTeacherPanel } from '@/widgets/Dashboard/PublicTeacherPanel/PublicTeacherPanel'
+import { useEffect } from 'react'
 import styles from './TeacherPublicProfile.module.scss'
 
 interface CategoryTranslation {
@@ -37,6 +38,13 @@ export function TeacherPublicProfile({
   studentCount, postCount, callCount, categories, locale,
   bio, coverPhotoUrl, socialLinks,
 }: Props) {
+  useEffect(() => {
+    const header = document.querySelector('header') as HTMLElement | null
+    if (!header) return
+    header.style.marginBottom = '0'
+    return () => { header.style.marginBottom = '' }
+  }, [])
+
   return (
     <div className={styles.dashboard}>
       <PublicReviewsSidebar teacherId={teacherId} />

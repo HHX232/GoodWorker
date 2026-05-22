@@ -293,6 +293,7 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, stats
                   allowedTypes={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
                   showBigFirstItem={false}
                   inputIdPrefix="cover-photo"
+                  size="xs"
                 />
               </div>
 
