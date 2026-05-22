@@ -1,6 +1,7 @@
 'use client'
 import {InfoAudioPayload} from '@/shared/types/Tasks/TaskPayload.type'
 import {Mic2Icon, PauseIcon, PlayIcon, UploadIcon, XIcon} from 'lucide-react'
+import {useTranslations} from 'next-intl'
 import {useCallback, useEffect, useRef, useState} from 'react'
 import styles from './InfoAudioEditor.module.scss'
 
@@ -146,6 +147,7 @@ const AudioPlayer = ({url, filename, waveform, onRemove, viewOnly = false}: Play
 // ── InfoAudioEditor ───────────────────────────────────────────
 
 export const InfoAudioEditor = ({payload, onChange, viewOnly = false}: Props) => {
+  const t = useTranslations('InfoAudioEditor')
   const editable = !!onChange && !viewOnly
   const fileRef = useRef<HTMLInputElement>(null)
   const [extracting, setExtracting] = useState(false)
@@ -190,8 +192,8 @@ export const InfoAudioEditor = ({payload, onChange, viewOnly = false}: Props) =>
       {!hasAudio && !extracting && (
         <button type='button' className={styles.upload_btn} onClick={() => fileRef.current?.click()}>
           <UploadIcon size={18} />
-          <span>Загрузить аудиофайл</span>
-          <span className={styles.upload_hint}>MP3, WAV, OGG, M4A</span>
+          <span>{t('uploadAudio')}</span>
+          <span className={styles.upload_hint}>{t('audioFormats')}</span>
         </button>
       )}
 
@@ -202,7 +204,7 @@ export const InfoAudioEditor = ({payload, onChange, viewOnly = false}: Props) =>
               <div key={i} className={styles.extracting_bar} style={{animationDelay: `${i * 60}ms`}} />
             ))}
           </div>
-          <span>Анализирую аудио...</span>
+          <span>{t('analyzing')}</span>
         </div>
       )}
 
@@ -211,7 +213,7 @@ export const InfoAudioEditor = ({payload, onChange, viewOnly = false}: Props) =>
           <AudioPlayer url={payload.url!} filename={payload.filename!} waveform={payload.waveform!} onRemove={remove} />
           <p className={styles.student_hint}>
             <Mic2Icon size={12} />
-            Ученик увидит этот плеер в режиме прохождения
+            {t('studentHint')}
           </p>
         </>
       )}

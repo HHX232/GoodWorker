@@ -1,7 +1,7 @@
 'use client'
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import Link from 'next/link'
-import {useTranslations} from 'next-intl'
+import {useLocale, useTranslations} from 'next-intl'
 import {NotificationItem, RowNotification} from './RowNotification'
 import {NotificationDetailModal} from './NotificationDetailModal'
 import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
@@ -56,6 +56,7 @@ function buildGroups(items: NotificationItem[]) {
 
 export function NotificationsPanel() {
   const t = useTranslations('notifications')
+  const locale = useLocale()
   const [items, setItems] = useState<NotificationItem[]>([])
   const [loading, setLoading] = useState(true)
   const [unreadCount, setUnreadCount] = useState(0)
@@ -110,7 +111,7 @@ export function NotificationsPanel() {
 
   const fetchPage = useCallback(async (p: number, replace = false) => {
     try {
-      const res = await fetch(`/api/notifications?page=${p}&limit=${PAGE_SIZE}`)
+      const res = await fetch(`/api/notifications?page=${p}&limit=${PAGE_SIZE}&lang=${locale}`)
       if (!res.ok) return
       const data = await res.json()
       setItems((prev) => replace ? data.items : [...prev, ...data.items])
@@ -120,7 +121,7 @@ export function NotificationsPanel() {
     } catch {
       // ignore
     }
-  }, [])
+  }, [locale])
 
   useEffect(() => {
     setLoading(true)

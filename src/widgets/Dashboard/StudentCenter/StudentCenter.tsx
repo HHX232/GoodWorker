@@ -23,9 +23,11 @@ interface PersonalService {
 function PersonalServiceCard({
   service,
   onAccepted,
+  t,
 }: {
   service: PersonalService
   onAccepted: (id: string) => void
+  t: ReturnType<typeof useTranslations>
 }) {
   const [accepting, setAccepting] = useState(false)
   const handleAccept = async () => {
@@ -39,10 +41,10 @@ function PersonalServiceCard({
       <div className={styles.personalCardInfo}>
         <div className={styles.personalCardTitle}>{service.title}</div>
         <div className={styles.personalCardTeacher}>{service.teacher.name}</div>
-        <div className={styles.personalCardPrice}>{service.price} ₽ · {service.duration} мин</div>
+        <div className={styles.personalCardPrice}>{service.price} ₽ · {service.duration} {t('minutes')}</div>
       </div>
       <button className={styles.acceptBtn} onClick={handleAccept} disabled={accepting}>
-        {accepting ? '…' : 'Принять'}
+        {accepting ? '…' : t('acceptBtn')}
       </button>
     </div>
   )
@@ -90,19 +92,18 @@ interface Props {
   loading: boolean
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  PENDING: 'Ожидает',
-  CONFIRMED: 'Подтверждено',
-  CANCELLED: 'Отменено',
-}
-
 const STATUS_COLORS: Record<string, string> = {
   PENDING: '#F59E0B',
   CONFIRMED: '#10B981',
   CANCELLED: '#EF4444',
 }
 
-function BookingStatusBadge({ status }: { status: string }) {
+function BookingStatusBadge({ status, t }: { status: string; t: ReturnType<typeof useTranslations> }) {
+  const labelMap: Record<string, string> = {
+    PENDING: t('statusPending'),
+    CONFIRMED: t('statusConfirmed'),
+    CANCELLED: t('statusCancelled'),
+  }
   return (
     <span style={{
       display: 'inline-flex',
@@ -114,7 +115,7 @@ function BookingStatusBadge({ status }: { status: string }) {
       background: `${STATUS_COLORS[status] ?? '#ABABAB'}20`,
       color: STATUS_COLORS[status] ?? '#ABABAB',
     }}>
-      {STATUS_LABELS[status] ?? status}
+      {labelMap[status] ?? status}
     </span>
   )
 }
@@ -216,9 +217,9 @@ export function StudentCenter({
         <>
           {localPersonalServices.length > 0 && (
             <div className={styles.personalSection}>
-              <div className={styles.personalLabel}>Личные предложения от преподавателей</div>
+              <div className={styles.personalLabel}>{t('personalOffers')}</div>
               {localPersonalServices.map(ps => (
-                <PersonalServiceCard key={ps.id} service={ps} onAccepted={handlePersonalAccepted} />
+                <PersonalServiceCard key={ps.id} service={ps} onAccepted={handlePersonalAccepted} t={t} />
               ))}
             </div>
           )}
@@ -264,7 +265,7 @@ export function StudentCenter({
                   locale={locale}
                 />
                 <div className={styles.bookingMeta}>
-                  <BookingStatusBadge status={sb.status} />
+                  <BookingStatusBadge status={sb.status} t={t} />
                   <span className={styles.bookingTeacher}>{sb.service.teacher.name}</span>
                   <span className={styles.bookingPrice}>{sb.finalPrice} ₽</span>
                 </div>

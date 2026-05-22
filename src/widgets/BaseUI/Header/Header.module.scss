@@ -24,6 +24,11 @@
    width: 100%;
    justify-content: space-between;
    align-items: center;
+
+   @media (max-width: 700px) {
+      flex-wrap: wrap;
+      row-gap: 10px;
+   }
 }
 
 .btn {

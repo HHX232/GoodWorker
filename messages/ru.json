@@ -42,7 +42,68 @@
     "namePlaceholder": "Введите название теста",
     "themePlaceholder": "Введите тему теста",
     "descriptionPlaceholder": "Введите описание теста, например «Тема деепричастие часто попадается в экзаменах»",
-    "loading": "Загрузка..."
+    "loading": "Загрузка...",
+    "pdfImportBtn": "Импорт из PDF",
+    "categoryPlaceholder": "Выберите категорию теста"
+  },
+  "CreatePostPage": {
+    "editPost": "Редактировать пост",
+    "newPost": "Новый пост",
+    "titlePlaceholder": "Заголовок поста…",
+    "visibilityPublic": "Публичный",
+    "visibilityPrivate": "Приватный",
+    "categoryPlaceholder": "Выберите категорию поста",
+    "publishing": "Публикация…",
+    "saveChanges": "Сохранить изменения",
+    "publishPost": "Опубликовать пост"
+  },
+  "PostPalette": {
+    "title": "Блоки",
+    "dragHint": "Перетащите блок влево",
+    "textLabel": "Текст",
+    "textDesc": "Форматированный текст",
+    "mediaLabel": "Медиа",
+    "mediaDesc": "Фото или видео",
+    "audioLabel": "Аудио",
+    "audioDesc": "Аудиозапись",
+    "testLabel": "Тест",
+    "testDesc": "Привязать тест"
+  },
+  "PostCanvas": {
+    "moveBlock": "Переместить блок",
+    "dropRelease": "Отпустите чтобы добавить",
+    "dropHere": "+ Перетащите блок сюда",
+    "dropFromPalette": "Перетащите блок из панели справа"
+  },
+  "PostBlockEditor": {
+    "textLabel": "Текст",
+    "mediaLabel": "Медиа",
+    "audioLabel": "Аудио",
+    "testLabel": "Тест",
+    "blockDeleted": "Блок \"{label}\" удалён",
+    "deleteBlock": "Удалить блок"
+  },
+  "InfoTextEditor": {
+    "placeholder": "Введите текст материала...",
+    "heading2": "Заголовок 2",
+    "heading3": "Заголовок 3",
+    "bold": "Жирный",
+    "italic": "Курсив",
+    "list": "Список",
+    "orderedList": "Нумерованный список"
+  },
+  "InfoMediaEditor": {
+    "uploadFile": "Загрузить файл",
+    "orPasteLink": "или вставить ссылку",
+    "urlPlaceholder": "https://youtube.com/watch?v=... или URL картинки",
+    "emptyHint": "Загрузите изображение или вставьте ссылку на видео",
+    "captionPlaceholder": "Подпись (необязательно)..."
+  },
+  "InfoAudioEditor": {
+    "uploadAudio": "Загрузить аудиофайл",
+    "audioFormats": "MP3, WAV, OGG, M4A",
+    "analyzing": "Анализирую аудио...",
+    "studentHint": "Ученик увидит этот плеер в режиме прохождения"
   },
   "BlockEditor": {
     "fillText": "Заполнение текста",
@@ -556,7 +617,7 @@
     "saving": "Сохранение...",
     "saveChanges": "Сохранить изменения",
     "changesSaved": "Изменения сохранены!",
-    "removePhoto": "Удалить фото",
+    "removePhoto": "Удаление аватара",
     "security": "Безопасность",
     "email": "Email",
     "password": "Пароль",
@@ -568,6 +629,7 @@
     "statistics": "Статистика",
     "calendar": "Календарь",
     "videoRoom": "Видеокомната",
+    "createVideoCallBtn": "Создать",
     "yourName": "Ваше имя",
     "teacher": "Учитель",
     "soonBadge": "Скоро",
@@ -628,6 +690,12 @@
     "passwordMinLength": "Пароль должен содержать минимум 6 символов",
     "invalidEmail": "Введите корректный email",
     "callNotes": "Конспекты звонков",
+    "personalOffers": "Личные предложения от преподавателей",
+    "acceptBtn": "Принять",
+    "minutes": "мин",
+    "statusPending": "Ожидает",
+    "statusConfirmed": "Подтверждено",
+    "statusCancelled": "Отменено",
     "emptyContent": "Пока ничего нет",
     "allSubjects": "Все",
     "complaintsLink": "Жалобы",
@@ -992,5 +1060,36 @@
       "ja": "Японский",
       "pt": "Португальский"
     }
+  },
+  "pdfImport": {
+    "importBtn": "Импорт из PDF",
+    "title": "Импорт теста из PDF",
+    "dropLabel": "Перетащите PDF сюда или",
+    "dropLabelLink": "выберите файл",
+    "dropSub": "Только PDF-файлы",
+    "vipNotice": "Без VIP: до <b>5 страниц</b>. С VIP: до <b>50 страниц</b> за один импорт. ИИ сгенерирует вопросы — вы выберете нужные.",
+    "processBtn": "Обработать PDF",
+    "cancel": "Отмена",
+    "uploadAnother": "Загрузить другой",
+    "processing": "Обрабатываю PDF...",
+    "step1": "Извлекаю текст из PDF...",
+    "step2": "Анализирую содержимое...",
+    "step3": "Генерирую блоки теста...",
+    "successNotice": "Обработано <b>{pages} стр.</b> · Найдено <b>{count} блоков</b>",
+    "selected": "Выбрано: {sel} / {total}",
+    "selectAll": "Выбрать все",
+    "deselectAll": "Снять все",
+    "importSelected": "Добавить в тест ({count})",
+    "retry": "Попробовать снова",
+    "errPageLimit": "Превышен лимит страниц",
+    "errGeneral": "Не удалось обработать PDF",
+    "upgradeVip": "Получить VIP (до 50 стр.)",
+    "errQuota": "ИИ временно недоступен (исчерпана квота). Попробуйте через {secs} сек.",
+    "typeChoose": "Выбор ответа",
+    "typeFree": "Свободный ответ",
+    "typeMatch": "Соединить пары",
+    "typeInfo": "Текст",
+    "refAnswer": "Эталон: {text}",
+    "morePairs": "+{n} ещё..."
   }
 }

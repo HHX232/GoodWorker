@@ -13,6 +13,7 @@ import {
   PostTextPayload
 } from '@/shared/types/Post/Post.type'
 import {Trash2Icon} from 'lucide-react'
+import {useTranslations} from 'next-intl'
 import {toast} from 'sonner'
 import styles from './PostBlockEditor.module.scss'
 import {PostTestLinkBlockEditor} from './PostTestLinkBlockEditor'
@@ -21,20 +22,22 @@ interface Props {
   block: PostBlock
 }
 
-const BLOCK_LABELS: Record<PostBlockType, string> = {
-  [PostBlockType.TEXT]: 'Текст',
-  [PostBlockType.MEDIA]: 'Медиа',
-  [PostBlockType.AUDIO]: 'Аудио',
-  [PostBlockType.TEST_LINK]: 'Тест'
-}
-
 export function PostBlockEditor({block}: Props) {
+  const t = useTranslations('PostBlockEditor')
   const {removePostBlock, updatePostBlockPayload} = useActions()
+
+  const BLOCK_LABELS: Record<PostBlockType, string> = {
+    [PostBlockType.TEXT]: t('textLabel'),
+    [PostBlockType.MEDIA]: t('mediaLabel'),
+    [PostBlockType.AUDIO]: t('audioLabel'),
+    [PostBlockType.TEST_LINK]: t('testLabel')
+  }
+
   const label = BLOCK_LABELS[block.type]
 
   const handleDelete = () => {
     removePostBlock(block.id)
-    toast.error(`Блок "${label}" удалён`)
+    toast.error(t('blockDeleted', {label}))
   }
 
   const inner = () => {
@@ -71,7 +74,7 @@ export function PostBlockEditor({block}: Props) {
     <div className={styles.block_wrap} id={`post-block-${block.id}`}>
       <div className={styles.block_header}>
         <span className={styles.block_label}>{label}</span>
-        <button type='button' className={styles.delete_btn} onClick={handleDelete} aria-label='Удалить блок'>
+        <button type='button' className={styles.delete_btn} onClick={handleDelete} aria-label={t('deleteBlock')}>
           <Trash2Icon size={14} />
         </button>
       </div>

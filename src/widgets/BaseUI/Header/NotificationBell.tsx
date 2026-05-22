@@ -3,12 +3,12 @@
 import {useSession} from 'next-auth/react'
 import Link from 'next/link'
 import {usePathname} from 'next/navigation'
-import {useCallback, useEffect, useRef, useState} from 'react'
+import React, {useCallback, useEffect, useRef, useState} from 'react'
 import {useLocale, useTranslations} from 'next-intl'
 import styles from './NotificationBell.module.scss'
 
 const CREATION_PAGES = ['/create-post', '/create-road-map', '/create-test', '/edit-post']
-const PAGES_WITH_SIDEBAR_NOTIFS = ['/', '/teachers']
+const PAGES_WITH_SIDEBAR_NOTIFS = ['/teachers']
 
 interface NotifItem {
   id: string
@@ -37,15 +37,18 @@ export function NotificationBell() {
   const [items, setItems] = useState<NotifItem[]>([])
   const [unread, setUnread] = useState(0)
   const [loading, setLoading] = useState(false)
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({})
   const wrapRef = useRef<HTMLDivElement>(null)
 
   const isCreation = CREATION_PAGES.some((p) => pathname.startsWith(p))
   const hasSidebarPanel = PAGES_WITH_SIDEBAR_NOTIFS.includes(pathname)
 
+  const locale = useLocale()
+
   const fetchNotifs = useCallback(async () => {
     if (!session?.user) return
     try {
-      const res = await fetch('/api/notifications?limit=10')
+      const res = await fetch(`/api/notifications?limit=10&lang=${locale}`)
       if (!res.ok) return
       const data = await res.json()
       setItems(data.items ?? [])
@@ -53,7 +56,7 @@ export function NotificationBell() {
     } catch {
       // ignore
     }
-  }, [session?.user])
+  }, [session?.user, locale])
 
   useEffect(() => {
     if (!session?.user) return
@@ -66,6 +69,25 @@ export function NotificationBell() {
   useEffect(() => {
     if (open) fetchNotifs()
   }, [open, fetchNotifs])
+
+  useEffect(() => {
+    if (!open) { setDropdownStyle({}); return }
+    const header = document.querySelector('header')
+    const headerBottom = header ? header.getBoundingClientRect().bottom : 80
+    const vw = window.innerWidth
+    if (vw <= 576) {
+      setDropdownStyle({
+        position: 'fixed',
+        left: '12px',
+        right: '12px',
+        width: 'auto',
+        top: `${headerBottom + 8}px`,
+        maxHeight: `calc(100vh - ${headerBottom + 20}px)`,
+      })
+    } else {
+      setDropdownStyle({})
+    }
+  }, [open])
 
   useEffect(() => {
     const handle = (e: MouseEvent) => {
@@ -109,7 +131,7 @@ export function NotificationBell() {
       </button>
 
       {open && (
-        <div className={styles.dropdown}>
+        <div className={styles.dropdown} style={dropdownStyle}>
           <div className={styles.dropdown_header}>
             <span className={styles.dropdown_title}>{t('title')}</span>
             {unread > 0 && (

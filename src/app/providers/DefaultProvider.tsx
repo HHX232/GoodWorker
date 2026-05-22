@@ -5,7 +5,7 @@ import {useHeartbeat} from '@/features/hooks/User/useHeartbeat'
 import {QueryCache, QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import {AxiosError} from 'axios'
 import {SessionProvider, signOut} from 'next-auth/react'
-import {ReactNode, useState} from 'react'
+import {ReactNode, useEffect, useState} from 'react'
 import {Provider as ReduxProvider} from 'react-redux'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -15,6 +15,23 @@ const ReduxProviderWrapper = ({children, ...props}: any) => {
 
 function HeartbeatRunner() {
   useHeartbeat()
+  return null
+}
+
+// Сбрасывает overflow:hidden когда браузер восстанавливает страницу из bfcache.
+// На мобилке страница «замораживается» с открытой модалкой и при возврате
+// остаётся заблокированный скролл.
+function BfcacheScrollFix() {
+  useEffect(() => {
+    const handlePageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) {
+        document.body.style.removeProperty('overflow')
+        document.documentElement.style.removeProperty('overflow')
+      }
+    }
+    window.addEventListener('pageshow', handlePageShow)
+    return () => window.removeEventListener('pageshow', handlePageShow)
+  }, [])
   return null
 }
 
@@ -53,6 +70,7 @@ export default function DefaultProvider({children}: {children: ReactNode}) {
       <SessionProvider>
         <ReduxProviderWrapper store={store}>
           <HeartbeatRunner />
+          <BfcacheScrollFix />
           {children}
         </ReduxProviderWrapper>
       </SessionProvider>

@@ -24,14 +24,27 @@
     "support": "支持",
     "settings": "设置",
     "collapse": "收起菜单",
-    "expand": "展开菜单"
+    "expand": "展开菜单",
+    "createPost": "创建帖子",
+    "createCourse": "创建课程",
+    "createTest": "创建测试",
+    "courses": "课程",
+    "teachers": "教师",
+    "profile": "个人资料",
+    "login": "登录",
+    "logout": "退出",
+    "calendar": "日历",
+    "courseCatalog": "课程目录",
+    "roadmaps": "路线图"
   },
   "CreateTestPage": {
     "title": "创建测试",
     "namePlaceholder": "输入测试名称",
     "themePlaceholder": "输入测试主题",
-    "descriptionPlaceholder": "输入测试说明，例如“分词在考试中经常出现”",
-    "loading": "加载中..."
+    "descriptionPlaceholder": "输入测试说明，例如\"分词在考试中经常出现\"",
+    "loading": "加载中...",
+    "pdfImportBtn": "从PDF导入",
+    "categoryPlaceholder": "选择测试分类"
   },
   "BlockEditor": {
     "fillText": "填空",
@@ -39,7 +52,72 @@
     "chooseOption": "选择正确选项",
     "matchPairs": "配对",
     "freeAnswer": "输入答案",
+    "highlightText": "标记单词",
+    "wordScramble": "拼词",
+    "dialogue": "对话",
+    "infoText": "文本块",
+    "infoMedia": "媒体块",
+    "infoAudio": "音频块",
     "deleteBlock": "删除区块"
+  },
+  "CreatePostPage": {
+    "editPost": "编辑帖子",
+    "newPost": "新帖子",
+    "titlePlaceholder": "帖子标题…",
+    "visibilityPublic": "公开",
+    "visibilityPrivate": "私密",
+    "categoryPlaceholder": "选择帖子分类",
+    "publishing": "发布中…",
+    "saveChanges": "保存更改",
+    "publishPost": "发布帖子"
+  },
+  "PostPalette": {
+    "title": "块",
+    "dragHint": "将块拖到左侧",
+    "textLabel": "文本",
+    "textDesc": "格式化文本",
+    "mediaLabel": "媒体",
+    "mediaDesc": "照片或视频",
+    "audioLabel": "音频",
+    "audioDesc": "音频录音",
+    "testLabel": "测试",
+    "testDesc": "链接测试"
+  },
+  "PostCanvas": {
+    "moveBlock": "移动块",
+    "dropRelease": "松开以添加",
+    "dropHere": "+ 将块拖放至此",
+    "dropFromPalette": "从右侧面板拖入块"
+  },
+  "PostBlockEditor": {
+    "textLabel": "文本",
+    "mediaLabel": "媒体",
+    "audioLabel": "音频",
+    "testLabel": "测试",
+    "blockDeleted": "块\"{label}\"已删除",
+    "deleteBlock": "删除块"
+  },
+  "InfoTextEditor": {
+    "placeholder": "输入材料文本...",
+    "heading2": "标题 2",
+    "heading3": "标题 3",
+    "bold": "粗体",
+    "italic": "斜体",
+    "list": "列表",
+    "orderedList": "编号列表"
+  },
+  "InfoMediaEditor": {
+    "uploadFile": "上传文件",
+    "orPasteLink": "或粘贴链接",
+    "urlPlaceholder": "https://youtube.com/watch?v=... 或图片URL",
+    "emptyHint": "上传图片或粘贴视频链接",
+    "captionPlaceholder": "说明（可选）..."
+  },
+  "InfoAudioEditor": {
+    "uploadAudio": "上传音频文件",
+    "audioFormats": "MP3, WAV, OGG, M4A",
+    "analyzing": "正在分析音频...",
+    "studentHint": "学生在学习时会看到此播放器"
   },
   "CollectionsMenu": {
     "collections": "系列",
@@ -493,7 +571,7 @@
     "saving": "保存中...",
     "saveChanges": "保存更改",
     "changesSaved": "更改已保存！",
-    "removePhoto": "删除照片",
+    "removePhoto": "删除头像",
     "security": "安全",
     "email": "邮箱",
     "password": "密码",
@@ -504,6 +582,7 @@
     "statistics": "统计",
     "calendar": "日历",
     "videoRoom": "视频室",
+    "createVideoCallBtn": "创建",
     "yourName": "您的姓名",
     "teacher": "教师",
     "soonBadge": "即将推出",
@@ -563,6 +642,12 @@
     "passwordMinLength": "密码至少需要6个字符",
     "invalidEmail": "请输入有效的邮箱",
     "callNotes": "通话记录",
+    "personalOffers": "教师的个人推荐",
+    "acceptBtn": "接受",
+    "minutes": "分钟",
+    "statusPending": "待处理",
+    "statusConfirmed": "已确认",
+    "statusCancelled": "已取消",
     "emptyContent": "暂无内容",
     "allSubjects": "全部"
   },
@@ -593,5 +678,36 @@
     "unitCalls": "节",
     "unitErrors": "个",
     "tooltipTests": "{score}% · {count}个测试"
+  },
+  "pdfImport": {
+    "importBtn": "从PDF导入",
+    "title": "从PDF导入测试",
+    "dropLabel": "将PDF拖放至此或",
+    "dropLabelLink": "选择文件",
+    "dropSub": "仅支持PDF文件",
+    "vipNotice": "免费版：最多<b>5页</b>。VIP：每次最多<b>50页</b>。",
+    "processBtn": "处理PDF",
+    "cancel": "取消",
+    "uploadAnother": "上传其他文件",
+    "processing": "正在处理PDF...",
+    "step1": "正在提取PDF文本...",
+    "step2": "正在分析内容...",
+    "step3": "正在生成测试块...",
+    "successNotice": "已处理<b>{pages}页</b> · 找到<b>{count}个块</b>",
+    "selected": "已选：{sel} / {total}",
+    "selectAll": "全选",
+    "deselectAll": "取消全选",
+    "importSelected": "添加到测试（{count}）",
+    "retry": "重试",
+    "errPageLimit": "超出页数限制",
+    "errGeneral": "无法处理PDF",
+    "upgradeVip": "获取VIP（最多50页）",
+    "errQuota": "AI暂时不可用（配额已用尽）。请{secs}秒后重试。",
+    "typeChoose": "多项选择",
+    "typeFree": "自由作答",
+    "typeMatch": "配对",
+    "typeInfo": "文本",
+    "refAnswer": "参考答案：{text}",
+    "morePairs": "+{n}更多..."
   }
 }

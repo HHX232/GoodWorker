@@ -20,6 +20,7 @@ interface CreateImagesInputProps {
   allowedTypes?: string[]
   isOnlyShow?: boolean
   showBigFirstItem?: boolean
+  size?: 'xs'
 }
 
 export const ImagePreview = memo<{
@@ -406,6 +407,7 @@ export const CreateImagesInput: FC<CreateImagesInputProps> = ({
   ],
   isOnlyShow = false,
   showBigFirstItem = true,
+  size,
 }) => {
   const t = useTranslations('CreateImagesInput')
 const uid = useId()
@@ -765,7 +767,7 @@ const uid = useId()
   return (
     <div className={styles.wrapper}>
       <div
-        className={`${styles.create__images__input} ${extraClass} ${errorValue ? styles.error : ''} ${isOnlyShow ? styles.readonly : ''}`}
+        className={`${styles.create__images__input} ${size === 'xs' ? styles.xs : ''} ${extraClass} ${errorValue ? styles.error : ''} ${isOnlyShow ? styles.readonly : ''}`}
       >
         {uploadItems}
       </div>

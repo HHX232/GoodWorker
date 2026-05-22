@@ -4,6 +4,7 @@ import { ServiceCard } from '@/shared/ui/Service/ServiceCard/ServiceCard'
 import { CreatePickerModal } from '@/widgets/Dashboard/CreatePickerModal/CreatePickerModal'
 import { CreateServiceModal } from '@/widgets/Dashboard/CreateServiceModal/CreateServiceModal'
 import { BookServiceModal } from '@/widgets/Dashboard/BookServiceModal/BookServiceModal'
+import { VideoCallModal } from '@/widgets/Dashboard/VideoCallModal/VideoCallModal'
 import Card from '@/shared/ui/Posts/Card/Card'
 import { RoadMapPreview } from '@/shared/ui/RoadMap/RoadMapPreview/RoadMapPreview'
 import { useSession } from 'next-auth/react'
@@ -55,6 +56,7 @@ interface Props {
   studentCount: number
   callCount: number
   isOwner?: boolean
+  ownerName?: string
 }
 
 function IconInbox() {
@@ -96,7 +98,7 @@ function mapPost(p: PostItem) {
   }
 }
 
-export function DashboardCenter({ statsId, studentCount, callCount, isOwner = false }: Props) {
+export function DashboardCenter({ statsId, studentCount, callCount, isOwner = false, ownerName = '' }: Props) {
   const t = useTranslations('dashboard')
   const locale = useLocale()
   const { data: session } = useSession()
@@ -108,6 +110,7 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
   const [pickerOpen, setPickerOpen] = useState(false)
   const [serviceModalOpen, setServiceModalOpen] = useState(false)
   const [bookingService, setBookingService] = useState<ServiceItem | null>(null)
+  const [videoOpen, setVideoOpen] = useState(false)
 
   const canBook = !isOwner && session?.user?.role === 'STUDENT'
 
@@ -185,15 +188,35 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
   return (
     <div className={styles.center}>
 
-      {/* Stats */}
-      <div className={styles.statsRow}>
-        {stats.map(s => (
-          <div key={s.label} className={styles.statCard}>
-            <div className={styles.statIcon} style={{ background: s.bg }}>{s.icon}</div>
-            <div className={styles.statValue}>{s.value}</div>
-            <div className={styles.statLabel}>{s.label}</div>
+      {/* Stats + video call top row */}
+      <div className={styles.topRow}>
+        <div className={styles.statsMerged}>
+          {stats.map((s, i) => (
+            <div key={s.label} className={styles.statsItem}>
+              {i > 0 && <div className={styles.statsSep} />}
+              <div className={styles.statsItemIcon} style={{ background: s.bg }}>{s.icon}</div>
+              <div>
+                <div className={styles.statsItemValue}>{s.value}</div>
+                <div className={styles.statsItemLabel}>{s.label}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {isOwner && (
+          <div className={styles.videoCallBlock}>
+            <div className={styles.videoCallTitle}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14" />
+                <rect x="1" y="6" width="14" height="12" rx="2" />
+              </svg>
+              {t('videoRoom')}
+            </div>
+            <button className={styles.videoCallBtn} onClick={() => setVideoOpen(true)}>
+              {t('createVideoCallBtn')}
+            </button>
           </div>
-        ))}
+        )}
       </div>
 
       {/* Tabs */}
@@ -288,6 +311,8 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
         onClose={() => setBookingService(null)}
         service={bookingService}
       />
+
+      {videoOpen && <VideoCallModal defaultName={ownerName} onClose={() => setVideoOpen(false)} />}
     </div>
   )
 }

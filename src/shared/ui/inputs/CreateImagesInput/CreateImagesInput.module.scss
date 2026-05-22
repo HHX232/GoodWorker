@@ -282,6 +282,18 @@
     }
   }
 }
+.xs {
+  grid-template-columns: repeat(auto-fill, minmax(56px, 64px));
+  gap: 10px;
+
+  .create__images__input__label {
+    min-width: 56px;
+    max-width: 64px;
+    min-height: 56px;
+    max-height: 64px;
+  }
+}
+
 .create__images__input__label__big {
   grid-column: span 2;
   grid-row: span 2;

@@ -714,17 +714,19 @@ enum RoomAccessType {
 // ─── Notifications ────────────────────────────────────────
 
 model Notification {
-  id          String   @id @default(uuid())
-  type        String
-  title       String
-  body        String
-  payload     Json?
-  isRead      Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  teacherId   String?
-  studentId   String?
-  teacher     Teacher? @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  student     Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id                 String   @id @default(uuid())
+  type               String
+  title              String
+  body               String
+  titleTranslations  Json?
+  bodyTranslations   Json?
+  payload            Json?
+  isRead             Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  teacherId          String?
+  studentId          String?
+  teacher            Teacher? @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  student            Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([teacherId, isRead])
   @@index([studentId, isRead])

@@ -4,9 +4,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { RefObject, useCallback, useEffect, useRef, useState } from 'react'
+import { CreateImagesInput } from '@/shared/ui/inputs/CreateImagesInput/CreateImagesInput'
 import styles from './DashboardProfilePanel.module.scss'
 
-import { VideoCallModal } from '@/widgets/Dashboard/VideoCallModal/VideoCallModal'
 import { toast } from 'sonner'
 
 const TG_MODAL_KEY = 'tg_welcome_shown'
@@ -243,8 +243,6 @@ function ExperienceSection() {
   const [showForm, setShowForm] = useState(false)
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({ title: '', organization: '', yearFrom: '', yearTo: '', description: '' })
-  const docInputRef = useRef<HTMLInputElement | null>(null)
-  const [uploadingId, setUploadingId] = useState<string | null>(null)
 
   useEffect(() => {
     fetch('/api/teacher/experience')
@@ -272,30 +270,29 @@ function ExperienceSection() {
     setItems(p => p.filter(e => e.id !== id))
   }
 
-  const handleDocUpload = (id: string) => {
-    setUploadingId(id)
-    docInputRef.current?.click()
-  }
-
-  const handleDocFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? [])
-    if (!files.length || !uploadingId) return
-    const item = items.find(i => i.id === uploadingId)
-    if (!item) return
-    const newUrls = await Promise.all(files.map(f => new Promise<string>((res) => {
+  const handleExpFiles = async (id: string, files: File[], existingUrls: string[]) => {
+    if (!files.length) return
+    const newUrls = await Promise.all(files.map(f => new Promise<string>((resolve) => {
       const reader = new FileReader()
-      reader.onload = () => res(reader.result as string)
+      reader.onload = () => resolve(reader.result as string)
       reader.readAsDataURL(f)
     })))
-    const merged = [...(item.documentUrls ?? []), ...newUrls]
-    const resp = await fetch(`/api/teacher/experience/${uploadingId}`, {
+    const merged = [...existingUrls, ...newUrls]
+    const resp = await fetch(`/api/teacher/experience/${id}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ documentUrls: merged }),
     })
     const d = await resp.json()
-    if (d.experience) setItems(p => p.map(i => i.id === uploadingId ? d.experience : i))
-    setUploadingId(null)
-    e.target.value = ''
+    if (d.experience) setItems(p => p.map(i => i.id === id ? d.experience : i))
+  }
+
+  const handleExpImagesChange = async (id: string, remainingUrls: string[]) => {
+    const resp = await fetch(`/api/teacher/experience/${id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ documentUrls: remainingUrls }),
+    })
+    const d = await resp.json()
+    if (d.experience) setItems(p => p.map(i => i.id === id ? d.experience : i))
   }
 
   if (loading) return null
@@ -333,18 +330,27 @@ function ExperienceSection() {
                   {item.verifiedAt && (
                     <span className={styles.expVerifiedBadge} title={`${new Date(item.verifiedAt).toLocaleDateString()}`}>✓</span>
                   )}
-                  <button className={styles.expDocBtn} onClick={() => handleDocUpload(item.id)} title={t('expAttachDocs')}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" /></svg>
-                    {item.documentUrls?.length > 0 ? item.documentUrls.length : ''}
-                  </button>
                   <button className={styles.expDeleteBtn} onClick={() => handleDelete(item.id)}>×</button>
                 </div>
               </div>
               {item.description && <p className={styles.expDesc}>{item.description}</p>}
+              <div className={styles.expDocs}>
+                <CreateImagesInput
+                  key={`${item.id}-${(item.documentUrls ?? []).length}`}
+                  activeImages={item.documentUrls ?? []}
+                  isOnlyShow={false}
+                  onFilesChange={(files) => handleExpFiles(item.id, files, item.documentUrls ?? [])}
+                  onActiveImagesChange={(urls) => handleExpImagesChange(item.id, urls)}
+                  maxFiles={5}
+                  size="xs"
+                  showBigFirstItem={false}
+                  allowMultipleFiles={true}
+                  allowedTypes={['image/jpeg', 'image/jpg', 'image/png', 'image/webp']}
+                />
+              </div>
             </div>
           ))}
         </div>
-        <input ref={docInputRef} type="file" accept="image/jpeg,image/jpg,image/png,image/webp" multiple style={{ display: 'none' }} onChange={handleDocFiles} />
       </div>
     </>
   )
@@ -440,7 +446,6 @@ export function DashboardProfilePanel({
   onTranscripts, onBookmarks,
 }: Props) {
   const t = useTranslations('dashboard')
-  const [videoOpen, setVideoOpen] = useState(false)
   const [tgModalOpen, setTgModalOpen] = useState(false)
   const [tgLinkTrigger, setTgLinkTrigger] = useState(0)
 
@@ -525,11 +530,7 @@ export function DashboardProfilePanel({
           {avatarUrl && (
             <button
               type="button"
-              style={{
-                fontSize: '12px', color: '#EF4444', background: 'none',
-                border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-                padding: '0', textAlign: 'left',
-              }}
+              className={styles.removeAvatarBtn}
               onClick={onAvatarRemove}
             >
               {t('removePhoto')}
@@ -638,21 +639,6 @@ export function DashboardProfilePanel({
 
         <TelegramSection linkTrigger={tgLinkTrigger} />
 
-        <div className={styles.divider} />
-
-        {/* Video room */}
-        <div className={styles.section}>
-          <button className={styles.videoToggle} onClick={() => setVideoOpen(true)}>
-            <span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ verticalAlign: 'middle', marginRight: 8 }}>
-                <path d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14" />
-                <rect x="1" y="6" width="14" height="12" rx="2" />
-              </svg>
-              {t('videoRoom')}
-            </span>
-          </button>
-        </div>
-        {videoOpen && <VideoCallModal defaultName={name} onClose={() => setVideoOpen(false)} />}
         {tgModalOpen && <TelegramWelcomeModal onClose={handleTgModalClose} onLink={handleTgLink} />}
 
       </div>

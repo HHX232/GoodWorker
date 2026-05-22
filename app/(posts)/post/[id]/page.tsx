@@ -41,6 +41,22 @@ function extractFirstImage(blocks: any[]): string | null {
   return null
 }
 
+async function withDbRetry<T>(fn: () => Promise<T>): Promise<T> {
+  for (let i = 0; i < 3; i++) {
+    try { return await fn() }
+    catch (e) {
+      const msg = String((e as Error).message ?? '')
+      const isTransient = msg.includes("Can't reach database") || msg.includes('connection') || msg.includes('timeout')
+      if (i < 2 && isTransient) {
+        await new Promise(r => setTimeout(r, 400 * (i + 1)))
+        continue
+      }
+      throw e
+    }
+  }
+  throw new Error('unreachable')
+}
+
 async function recordView(postId: string, userId: string, role: string): Promise<boolean> {
   if (role === 'STUDENT') {
     const alreadyViewed = await prisma.postView.findUnique({
@@ -103,14 +119,14 @@ async function PostServerPage({params}: {params: Promise<{id: string}>}) {
   const {id} = await params
 
   const [post, session] = await Promise.all([
-    prisma.post.findUnique({
+    withDbRetry(() => prisma.post.findUnique({
       where: {id},
       include: {
         teacher: {select: {id: true, name: true, avatarUrl: true}},
         category: {include: {translations: true}},
         _count: {select: {views: true, comments: true}}
       }
-    }),
+    })),
     auth()
   ])
 

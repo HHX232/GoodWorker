@@ -117,6 +117,13 @@ export const StudentDashboard: FC<Props> = ({ initialData }) => {
   const [profileLoading, setProfileLoading] = useState(true)
 
   useEffect(() => {
+    const header = document.querySelector('header') as HTMLElement | null
+    if (!header) return
+    header.style.marginBottom = '0'
+    return () => { header.style.marginBottom = '' }
+  }, [])
+
+  useEffect(() => {
     fetch('/api/student/profile')
       .then(r => r.json())
       .then(d => { if (!d.error) setProfileData(d) })

@@ -708,11 +708,13 @@
 // ── Verifications tab ─────────────────────────────────────
 
 .verif_list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
-.verif_card { border: 1px solid #EBEBEB; border-radius: 12px; padding: 10px 12px; }
+.verif_card { border: 1px solid #EBEBEB; border-radius: 12px; padding: 10px 12px; transition: border-color 0.15s; }
+.verif_card_confirmed { border-color: #22c55e44; background: #f0fdf4; }
 .verif_card_top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .verif_info { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
 .verif_name { font-size: 13px; font-weight: 600; color: #1C1C22; }
 .verif_sub { font-size: 11px; color: #868897; }
+.passport_confirmed_badge { font-size: 11px; color: #22c55e; font-weight: 600; margin-top: 2px; }
 .verif_actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
 .verif_check { font-size: 13px; color: #22c55e; font-weight: 700; cursor: default; }
 .verif_docs_count { font-size: 11px; color: #868897; }
@@ -721,6 +723,35 @@
 .verif_doc_thumb { width: 32px; height: 32px; object-fit: cover; border-radius: 4px; border: 1px solid #EBEBEB; }
 .verif_btn { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 6px; border: 1.5px solid #D1D5DB; background: #fff; color: #6B6B7A; cursor: pointer; font-family: inherit; &:disabled { opacity: 0.4; cursor: not-allowed; } }
 .verif_btn_active { border-color: #22c55e44; background: #f0fdf4; color: #22c55e; }
+
+// ── Passport viewer ────────────────────────────────────────
+.passport_thumb_btn {
+  position: relative; display: block; padding: 0; border: none; background: none; cursor: pointer;
+  border-radius: 6px; overflow: hidden; flex-shrink: 0;
+  &:hover .passport_thumb_overlay { opacity: 1; }
+}
+.passport_thumb { width: 64px; height: 64px; object-fit: cover; border-radius: 6px; border: 1px solid #EBEBEB; display: block; }
+.passport_thumb_overlay {
+  position: absolute; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center;
+  justify-content: center; border-radius: 6px; opacity: 0; transition: opacity 0.15s;
+}
+.passport_modal_overlay {
+  position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.75);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.passport_modal {
+  position: relative; background: #fff; border-radius: 16px; padding: 16px;
+  max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; gap: 10px;
+  align-items: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.passport_modal_close {
+  position: absolute; top: 10px; right: 10px; width: 32px; height: 32px;
+  border: none; background: #F5F5F9; border-radius: 50%; cursor: pointer; display: flex;
+  align-items: center; justify-content: center; color: #6B6B7A;
+  &:hover { background: #EBEBEB; }
+}
+.passport_modal_img { max-width: 100%; max-height: 75vh; border-radius: 8px; object-fit: contain; }
+.passport_modal_link { font-size: 12px; color: #534AB7; text-decoration: none; &:hover { text-decoration: underline; } }
 
 // ── Content moderation tab ────────────────────────────────
 .content_sub_tabs {

@@ -1,6 +1,7 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../auth'
+import { localizeNotification } from '@/lib/postAI'
 
 // GET /api/notifications?page=1&limit=20&unread=true
 export async function GET(req: NextRequest) {
@@ -14,6 +15,7 @@ export async function GET(req: NextRequest) {
     const skip = (page - 1) * limit
     const onlyUnread = searchParams.get('unread') === 'true'
     const dateParam  = searchParams.get('date') // YYYY-MM-DD — filter to this calendar day
+    const lang = searchParams.get('lang') ?? 'ru'
 
     const role = session.user.role
     const userId = session.user.id
@@ -48,6 +50,8 @@ export async function GET(req: NextRequest) {
           type: true,
           title: true,
           body: true,
+          titleTranslations: true,
+          bodyTranslations: true,
           payload: true,
           isRead: true,
           createdAt: true,
@@ -57,8 +61,13 @@ export async function GET(req: NextRequest) {
       prisma.notification.count({ where: { ...recipientFilter, isRead: false } }),
     ])
 
+    const localizedItems = items.map((n) => {
+      const { titleTranslations, bodyTranslations, ...rest } = localizeNotification(n, lang)
+      return rest
+    })
+
     return NextResponse.json({
-      items,
+      items: localizedItems,
       total,
       page,
       limit,

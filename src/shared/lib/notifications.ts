@@ -1,4 +1,5 @@
 import { prisma } from '@/shared/prisma/prisma'
+import { enrichNotificationWithAI } from '@/lib/postAI'
 
 // ─── Notification event types ─────────────────────────────
 export const NOTIFICATION_TYPES = {
@@ -56,7 +57,7 @@ export async function createNotification(input: CreateNotificationInput) {
   const recipientId = input.teacherId ?? input.studentId
   if (!recipientId) return
 
-  await prisma.notification.create({
+  const created = await prisma.notification.create({
     data: {
       type: input.type,
       title: input.title,
@@ -67,4 +68,6 @@ export async function createNotification(input: CreateNotificationInput) {
       studentId: input.studentId ?? null,
     },
   })
+
+  enrichNotificationWithAI(created.id).catch(() => {})
 }

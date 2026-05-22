@@ -84,10 +84,6 @@
   flex-direction: column;
   overflow: hidden;
 
-  @media (max-width: 420px) {
-    width: calc(100vw - 24px);
-    right: -12px;
-  }
 }
 
 .dropdown_header {

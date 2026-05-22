@@ -24,14 +24,27 @@
     "support": "सहायता",
     "settings": "सेटिंग्स",
     "collapse": "मेनू छुपाएं",
-    "expand": "मेनू दिखाएं"
+    "expand": "मेनू दिखाएं",
+    "createPost": "पोस्ट बनाएं",
+    "createCourse": "कोर्स बनाएं",
+    "createTest": "टेस्ट बनाएं",
+    "courses": "कोर्स",
+    "teachers": "शिक्षक",
+    "profile": "प्रोफ़ाइल",
+    "login": "लॉगिन",
+    "logout": "लॉगआउट",
+    "calendar": "कैलेंडर",
+    "courseCatalog": "कोर्स कैटलॉग",
+    "roadmaps": "रोडमैप"
   },
   "CreateTestPage": {
     "title": "टेस्ट बनाएं",
     "namePlaceholder": "टेस्ट का नाम दर्ज करें",
     "themePlaceholder": "टेस्ट का विषय दर्ज करें",
     "descriptionPlaceholder": "टेस्ट का विवरण दर्ज करें, उदा. क्रियाविशेषण विषय अक्सर परीक्षाओं में आता है",
-    "loading": "लोड हो रहा है..."
+    "loading": "लोड हो रहा है...",
+    "pdfImportBtn": "PDF से आयात करें",
+    "categoryPlaceholder": "टेस्ट की श्रेणी चुनें"
   },
   "BlockEditor": {
     "fillText": "पाठ भरें",
@@ -39,7 +52,72 @@
     "chooseOption": "सही विकल्प चुनें",
     "matchPairs": "जोड़े मिलाएं",
     "freeAnswer": "उत्तर दर्ज करें",
+    "highlightText": "शब्द हाइलाइट करें",
+    "wordScramble": "शब्द बनाएं",
+    "dialogue": "संवाद",
+    "infoText": "टेक्स्ट ब्लॉक",
+    "infoMedia": "मीडिया ब्लॉक",
+    "infoAudio": "ऑडियो ब्लॉक",
     "deleteBlock": "ब्लॉक हटाएं"
+  },
+  "CreatePostPage": {
+    "editPost": "पोस्ट संपादित करें",
+    "newPost": "नई पोस्ट",
+    "titlePlaceholder": "पोस्ट शीर्षक…",
+    "visibilityPublic": "सार्वजनिक",
+    "visibilityPrivate": "निजी",
+    "categoryPlaceholder": "पोस्ट की श्रेणी चुनें",
+    "publishing": "प्रकाशित हो रहा है…",
+    "saveChanges": "बदलाव सहेजें",
+    "publishPost": "पोस्ट प्रकाशित करें"
+  },
+  "PostPalette": {
+    "title": "ब्लॉक",
+    "dragHint": "ब्लॉक को बाईं ओर खींचें",
+    "textLabel": "टेक्स्ट",
+    "textDesc": "फ़ॉर्मेटेड टेक्स्ट",
+    "mediaLabel": "मीडिया",
+    "mediaDesc": "फ़ोटो या वीडियो",
+    "audioLabel": "ऑडियो",
+    "audioDesc": "ऑडियो रिकॉर्डिंग",
+    "testLabel": "टेस्ट",
+    "testDesc": "टेस्ट लिंक करें"
+  },
+  "PostCanvas": {
+    "moveBlock": "ब्लॉक को स्थानांतरित करें",
+    "dropRelease": "जोड़ने के लिए छोड़ें",
+    "dropHere": "+ ब्लॉक यहाँ खींचें",
+    "dropFromPalette": "दाईं पैनल से ब्लॉक खींचें"
+  },
+  "PostBlockEditor": {
+    "textLabel": "टेक्स्ट",
+    "mediaLabel": "मीडिया",
+    "audioLabel": "ऑडियो",
+    "testLabel": "टेस्ट",
+    "blockDeleted": "ब्लॉक \"{label}\" हटा दिया गया",
+    "deleteBlock": "ब्लॉक हटाएं"
+  },
+  "InfoTextEditor": {
+    "placeholder": "सामग्री टेक्स्ट दर्ज करें...",
+    "heading2": "शीर्षक 2",
+    "heading3": "शीर्षक 3",
+    "bold": "बोल्ड",
+    "italic": "इटैलिक",
+    "list": "सूची",
+    "orderedList": "क्रमांकित सूची"
+  },
+  "InfoMediaEditor": {
+    "uploadFile": "फ़ाइल अपलोड करें",
+    "orPasteLink": "या लिंक चिपकाएं",
+    "urlPlaceholder": "https://youtube.com/watch?v=... या छवि URL",
+    "emptyHint": "छवि अपलोड करें या वीडियो लिंक चिपकाएं",
+    "captionPlaceholder": "कैप्शन (वैकल्पिक)..."
+  },
+  "InfoAudioEditor": {
+    "uploadAudio": "ऑडियो फ़ाइल अपलोड करें",
+    "audioFormats": "MP3, WAV, OGG, M4A",
+    "analyzing": "ऑडियो का विश्लेषण हो रहा है...",
+    "studentHint": "छात्र पाठ के दौरान यह प्लेयर देखेगा"
   },
   "CardsCatalog": {
     "noMore": "और कोई पोस्ट नहीं",
@@ -493,7 +571,7 @@
     "saving": "सहेज रहे हैं...",
     "saveChanges": "बदलाव सहेजें",
     "changesSaved": "बदलाव सहेजे गए!",
-    "removePhoto": "फोटो हटाएं",
+    "removePhoto": "अवतार हटाएं",
     "security": "सुरक्षा",
     "email": "ईमेल",
     "password": "पासवर्ड",
@@ -504,6 +582,7 @@
     "statistics": "आँकड़े",
     "calendar": "कैलेंडर",
     "videoRoom": "वीडियो रूम",
+    "createVideoCallBtn": "बनाएं",
     "yourName": "आपका नाम",
     "teacher": "शिक्षक",
     "soonBadge": "जल्द आएगा",
@@ -563,6 +642,12 @@
     "passwordMinLength": "पासवर्ड कम से कम 6 वर्णों का होना चाहिए",
     "invalidEmail": "वैध ईमेल दर्ज करें",
     "callNotes": "कॉल नोट्स",
+    "personalOffers": "शिक्षकों के व्यक्तिगत प्रस्ताव",
+    "acceptBtn": "स्वीकार करें",
+    "minutes": "मिनट",
+    "statusPending": "प्रतीक्षारत",
+    "statusConfirmed": "पुष्टि की गई",
+    "statusCancelled": "रद्द किया गया",
     "emptyContent": "अभी कुछ नहीं है",
     "allSubjects": "सभी"
   },
@@ -593,5 +678,36 @@
     "unitCalls": "पाठ",
     "unitErrors": "त्रुटियाँ",
     "tooltipTests": "{score}% · {count} परीक्षण"
+  },
+  "pdfImport": {
+    "importBtn": "PDF से आयात करें",
+    "title": "PDF से परीक्षा आयात करें",
+    "dropLabel": "PDF यहाँ खींचें या",
+    "dropLabelLink": "फ़ाइल चुनें",
+    "dropSub": "केवल PDF फ़ाइलें",
+    "vipNotice": "नि:शुल्क: <b>5 पृष्ठ</b> तक। VIP: प्रति आयात <b>50 पृष्ठ</b> तक।",
+    "processBtn": "PDF प्रोसेस करें",
+    "cancel": "रद्द करें",
+    "uploadAnother": "दूसरी फ़ाइल अपलोड करें",
+    "processing": "PDF प्रोसेस हो रहा है...",
+    "step1": "PDF से टेक्स्ट निकाला जा रहा है...",
+    "step2": "सामग्री का विश्लेषण...",
+    "step3": "परीक्षा ब्लॉक बनाए जा रहे हैं...",
+    "successNotice": "<b>{pages} पृष्ठ</b> संसाधित · <b>{count} ब्लॉक</b> मिले",
+    "selected": "चुने गए: {sel} / {total}",
+    "selectAll": "सभी चुनें",
+    "deselectAll": "सभी हटाएं",
+    "importSelected": "परीक्षा में जोड़ें ({count})",
+    "retry": "पुनः प्रयास करें",
+    "errPageLimit": "पृष्ठ सीमा पार हो गई",
+    "errGeneral": "PDF प्रोसेस नहीं हो सका",
+    "upgradeVip": "VIP प्राप्त करें (50 पृष्ठ तक)",
+    "errQuota": "AI अस्थायी रूप से अनुपलब्ध। {secs} सेकंड बाद पुनः प्रयास करें।",
+    "typeChoose": "बहुविकल्प",
+    "typeFree": "मुक्त उत्तर",
+    "typeMatch": "जोड़े मिलाएं",
+    "typeInfo": "टेक्स्ट",
+    "refAnswer": "संदर्भ: {text}",
+    "morePairs": "+{n} और..."
   }
 }

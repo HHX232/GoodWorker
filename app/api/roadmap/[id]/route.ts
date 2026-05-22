@@ -101,7 +101,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       },
     })
 
-    if (process.env.GEMINI_API_KEY && (content !== undefined || title?.trim())) {
+    if (process.env.OPENROUTER_API_KEY && (content !== undefined || title?.trim())) {
       enrichRoadmapWithAI(id).catch((e) => console.error('[roadmapAI]', e))
     }
 

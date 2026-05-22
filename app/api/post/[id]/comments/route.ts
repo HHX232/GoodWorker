@@ -148,7 +148,7 @@ export async function POST(req: NextRequest, {params}: RouteParams) {
       })
     }
 
-    if (process.env.GEMINI_API_KEY) {
+    if (process.env.OPENROUTER_API_KEY) {
       enrichCommentWithAI(comment.id).catch(e => console.error('[commentAI]', e))
     }
 

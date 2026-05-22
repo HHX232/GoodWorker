@@ -165,6 +165,23 @@
   &:disabled { opacity: 0.55; cursor: default; }
 }
 
+.removeAvatarBtn {
+  width: 100%;
+  padding: 8px;
+  border: 1.5px solid #EF4444;
+  background: none;
+  color: #EF4444;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: center;
+  transition: background 0.15s;
+
+  &:hover { background: #FEF2F2; }
+}
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
@@ -329,9 +346,9 @@
 .expOrg { font-size: 11px; color: #6B6B7A; }
 .expYearsLabel { font-size: 11px; color: #ABABAB; }
 .expDesc { font-size: 11px; color: #6B6B7A; margin: 4px 0 0; line-height: 1.4; }
+.expDocs { margin-top: 8px; }
 .expItemActions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 .expVerifiedBadge { font-size: 11px; color: #22c55e; font-weight: 700; cursor: default; }
-.expDocBtn { display: flex; align-items: center; gap: 2px; font-size: 11px; color: #6366f1; background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: 4px; font-family: inherit; }
 .expDeleteBtn { font-size: 14px; color: #ABABAB; background: none; border: none; cursor: pointer; padding: 0 2px; line-height: 1; &:hover { color: #EF4444; } }
 
 // ── Identity section ───────────────────────────────────────

@@ -382,6 +382,7 @@ function SkeletonRow() {
 
 export function NotificationsPage() {
   const t = useTranslations('notifications')
+  const locale = useLocale()
   const [items, setItems]             = useState<NotificationItem[]>([])
   const [loading, setLoading]         = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -423,7 +424,7 @@ export function NotificationsPage() {
 
   const fetchPage = useCallback(async (p: number, replace = false) => {
     try {
-      const res = await fetch(`/api/notifications?page=${p}&limit=${PAGE_SIZE}`)
+      const res = await fetch(`/api/notifications?page=${p}&limit=${PAGE_SIZE}&lang=${locale}`)
       if (!res.ok) return
       const data = await res.json()
       setItems((prev) => replace ? data.items : [...prev, ...data.items])
@@ -431,7 +432,7 @@ export function NotificationsPage() {
       setHasMore(p < data.totalPages)
       setPage(p)
     } catch {/* ignore */}
-  }, [])
+  }, [locale])
 
   useEffect(() => {
     setLoading(true)
@@ -481,7 +482,7 @@ export function NotificationsPage() {
     setDayDate(date)
     setDayLoading(true)
     try {
-      const res = await fetch(`/api/notifications?date=${date}&limit=50`)
+      const res = await fetch(`/api/notifications?date=${date}&limit=50&lang=${locale}`)
       if (res.ok) {
         const data = await res.json()
         setDayItems(data.items ?? [])

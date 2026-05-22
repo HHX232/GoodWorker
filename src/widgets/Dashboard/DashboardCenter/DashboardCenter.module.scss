@@ -11,45 +11,111 @@
   &::-webkit-scrollbar-thumb { background: #D8D8E0; border-radius: 2px; }
 }
 
-// ── Stats row ──────────────────────────────────────────────
+// ── Top row (stats + video call) ───────────────────────────
 
-.statsRow {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+.topRow {
+  display: flex;
   gap: 12px;
   margin-bottom: 20px;
+  align-items: stretch;
 }
 
-.statCard {
+// ── Merged stats card ──────────────────────────────────────
+
+.statsMerged {
+  flex: 1;
   background: #ffffff;
   border: 1px solid #DADCEB;
   border-radius: 12px;
-  padding: 16px;
-  cursor: default;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  min-width: 0;
 }
 
-.statIcon {
+.statsItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.statsSep {
+  width: 1px;
+  height: 32px;
+  background: #DADCEB;
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+.statsItemIcon {
   width: 32px;
   height: 32px;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 10px;
+  flex-shrink: 0;
 }
 
-.statValue {
-  font-size: 24px;
+.statsItemValue {
+  font-size: 20px;
   font-weight: 700;
   color: #141416;
   letter-spacing: -0.03em;
   line-height: 1;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
 }
 
-.statLabel {
-  font-size: 12px;
+.statsItemLabel {
+  font-size: 11px;
   color: #868897;
+  white-space: nowrap;
+}
+
+// ── Video call block ───────────────────────────────────────
+
+.videoCallBlock {
+  background: #ffffff;
+  border: 1px solid #DADCEB;
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 160px;
+  flex-shrink: 0;
+}
+
+.videoCallTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #141416;
+}
+
+.videoCallBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #534AB7;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+
+  &:hover { background: #4339a8; }
 }
 
 // ── Tabs ───────────────────────────────────────────────────

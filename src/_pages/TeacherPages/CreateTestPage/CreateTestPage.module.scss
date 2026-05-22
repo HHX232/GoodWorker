@@ -1,3 +1,39 @@
+.page_header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  h1 {
+    font-size: 42px;
+    font-weight: 500;
+    margin: 0;
+  }
+}
+
+.pdf_import_btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 16px;
+  border-radius: 10px;
+  border: 1.5px solid #e0e0e0;
+  background: #f5f5f5;
+  color: #111118;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+
+  &:hover {
+    background: #ebebeb;
+    border-color: #c5c5c5;
+  }
+}
+
 .main_content {
    display: flex;
    flex-direction: column;

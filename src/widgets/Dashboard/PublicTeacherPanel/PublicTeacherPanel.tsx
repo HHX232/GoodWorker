@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
+import { CreateImagesInput } from '@/shared/ui/inputs/CreateImagesInput/CreateImagesInput'
 import styles from './PublicTeacherPanel.module.scss'
 
 interface CategoryTranslation {
@@ -205,15 +206,14 @@ export function PublicTeacherPanel({
           <div className={styles.sectionLabel}>{t('aboutLabel')}</div>
 
           {coverPhotoUrl && (
-            <div className={styles.coverPhoto}>
-              <Image
-                src={coverPhotoUrl}
-                alt={name}
-                width={300}
-                height={169}
-                className={styles.coverImg}
-              />
-            </div>
+            <CreateImagesInput
+              activeImages={[coverPhotoUrl]}
+              isOnlyShow={true}
+              onFilesChange={() => {}}
+              maxFiles={1}
+              showBigFirstItem={false}
+              size="xs"
+            />
           )}
 
           {bio ? (

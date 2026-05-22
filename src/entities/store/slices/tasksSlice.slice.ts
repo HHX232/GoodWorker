@@ -77,6 +77,12 @@ const tasksSlice = createSlice({
       state.description = action.payload
     },
 
+    addBlocks(state, action: PayloadAction<TestBlock[]>) {
+      for (const block of action.payload) {
+        state.blocks.push(block)
+      }
+    },
+
     resetConstructor() {
       return initialState
     }

@@ -14,24 +14,36 @@
     }
   }
 
-  // ── Small tablet / mobile: stack vertically ───────────────
+  // ── Mobile: right panel on top, left sidebar in middle, catalog at bottom ─
   @media (max-width: 768px) {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     height: auto;
     min-height: calc(100vh - 83px);
     overflow: visible;
 
-    > :first-child { display: none; }
+    // Left sidebar — show it, centered, second in order
+    > :first-child {
+      display: block;
+      order: 2;
+      height: auto;
+      border-right: none;
+      border-top: 1px solid rgba(0, 0, 0, 0.07);
+    }
 
+    // Center / catalog — bottom
     > :nth-child(2) {
+      order: 3;
       height: auto;
       overflow-y: visible;
     }
 
+    // Right panel (profile) — top
     > :last-child {
+      order: 1;
       height: auto;
       border-left: none;
-      border-top: 1px solid rgba(0, 0, 0, 0.07);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.07);
     }
   }
 }

@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    if (process.env.GEMINI_API_KEY) {
+    if (process.env.OPENROUTER_API_KEY) {
       enrichServiceWithAI(service.id).catch((e) => console.error('[serviceAI]', e))
     }
 

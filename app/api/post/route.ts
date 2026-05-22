@@ -64,9 +64,10 @@ export async function POST(req: NextRequest) {
       include: {allowedStudents: true}
     })
 
-    // Fire-and-forget: translate + auto-categorize in background via Gemini
-    if (process.env.GEMINI_API_KEY) {
-      enrichPostWithAI(post.id).catch(e => console.error('[postAI]', e))
+    if (process.env.OPENROUTER_API_KEY) {
+      enrichPostWithAI(post.id)
+        .then(() => console.log(`[postAI] translated post ${post.id}`))
+        .catch(e => console.error(`[postAI] failed for post ${post.id}:`, e?.message ?? e))
     }
 
     return NextResponse.json(post, {status: 201})

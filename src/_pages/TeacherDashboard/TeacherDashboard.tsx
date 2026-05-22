@@ -8,7 +8,7 @@ import { DashboardCenter } from '@/widgets/Dashboard/DashboardCenter/DashboardCe
 import { DashboardProfilePanel } from '@/widgets/Dashboard/DashboardProfilePanel/DashboardProfilePanel'
 import { DashboardStudentSidebar } from '@/widgets/Dashboard/DashboardStudentSidebar/DashboardStudentSidebar'
 import { useTranslations } from 'next-intl'
-import { FC, useRef, useState } from 'react'
+import { FC, useEffect, useRef, useState } from 'react'
 import { useUpdateProfile } from '@/features/hooks/User/useUpdateProfile'
 import { toast } from 'sonner'
 import styles from './TeacherDashboard.module.scss'
@@ -49,6 +49,13 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
 
   const [transcriptsOpen, setTranscriptsOpen] = useState(false)
   const [bookmarksOpen, setBookmarksOpen] = useState(false)
+
+  useEffect(() => {
+    const header = document.querySelector('header') as HTMLElement | null
+    if (!header) return
+    header.style.marginBottom = '0'
+    return () => { header.style.marginBottom = '' }
+  }, [])
 
   const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -142,6 +149,7 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
         studentCount={studentCount}
         callCount={callCount}
         isOwner={true}
+        ownerName={name}
       />
 
       <DashboardProfilePanel

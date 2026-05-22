@@ -10,29 +10,47 @@ import {CategorySelect} from '@/shared/ui/inputs/CategorySelect/CategorySelect'
 import {InvalidTestBlocksContext} from '@/shared/ui/Tasks/providers/InvalidBlocksContext/InvalidBlocksContext'
 import {NavBar} from '@/widgets/BaseUI'
 import {TaskCanvas} from '@/widgets/Tasks/TaskCanvas/TaskCanvas'
-import {useLocale, useTranslations} from 'next-intl'
+import {PdfImportModal} from '@/widgets/Tests/PdfImportModal/PdfImportModal'
+import {TestBlock} from '@/entities/store/slices/tasksSlice.slice'
+import {useTranslations} from 'next-intl'
 import {useSearchParams} from 'next/navigation'
-import {Suspense, useRef} from 'react'
+import {Suspense, useRef, useState} from 'react'
 import styles from './CreateTestPage.module.scss'
 
 function CreateTestPage() {
   const t = useTranslations('CreateTestPage')
-  const {setTitle, setDescription, setTheme} = useActions()
-  const {description, theme, title} = useTypedSelector((state) => state.tasks)
+  const {setTitle, setDescription, addBlocks} = useActions()
+  const {description, title} = useTypedSelector((state) => state.tasks)
   const searchParams = useSearchParams()
   const existingId = searchParams.get('id') ?? undefined
-  const {save, status, invalidBlockIds, errorsMap, clearInvalidBlock} = useSaveTest(existingId)
-  const locale = useLocale()
+  const {invalidBlockIds, errorsMap, clearInvalidBlock} = useSaveTest(existingId)
   const mainContentRef = useRef<HTMLDivElement>(null)
   const {setCategoryIds} = useActions()
   const {categoryIds} = useTypedSelector((s) => s.tasks)
+  const [pdfModalOpen, setPdfModalOpen] = useState(false)
+
   return (
     <InvalidTestBlocksContext.Provider value={{ids: invalidBlockIds, errors: errorsMap, clear: clearInvalidBlock}}>
       <div className={`container default_content ${styles.content}`}>
         <NavBar />
 
         <div className={styles.main_content} ref={mainContentRef}>
-          <h1>{t('title')}</h1>
+          <div className={styles.page_header}>
+            <h1>{t('title')}</h1>
+            <button
+              type='button'
+              className={styles.pdf_import_btn}
+              onClick={() => setPdfModalOpen(true)}
+            >
+              <svg width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+                <path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/>
+                <polyline points='14 2 14 8 20 8'/>
+                <line x1='12' y1='18' x2='12' y2='12'/>
+                <polyline points='9 15 12 12 15 15'/>
+              </svg>
+              {t('pdfImportBtn')}
+            </button>
+          </div>
 
           <form className={styles.form}>
             <div className={styles.category_form}>
@@ -54,7 +72,7 @@ function CreateTestPage() {
                 onSetValue={setDescription}
               />
               <CategorySelect
-                placeholder='Выберите категорию теста'
+                placeholder={t('categoryPlaceholder')}
                 canSelectMany={false}
                 value={categoryIds}
                 onChange={setCategoryIds}
@@ -72,6 +90,13 @@ function CreateTestPage() {
           <TaskMenu mainContentRef={mainContentRef} />
         </Suspense>
       </div>
+
+      {pdfModalOpen && (
+        <PdfImportModal
+          onClose={() => setPdfModalOpen(false)}
+          onImport={(blocks) => addBlocks(blocks as TestBlock[])}
+        />
+      )}
     </InvalidTestBlocksContext.Provider>
   )
 }

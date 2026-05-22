@@ -42,7 +42,68 @@
     "namePlaceholder": "Enter test name",
     "themePlaceholder": "Enter test topic",
     "descriptionPlaceholder": "Enter test description, e.g. \"Participles often appear in exams\"",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "pdfImportBtn": "Import from PDF",
+    "categoryPlaceholder": "Select test category"
+  },
+  "CreatePostPage": {
+    "editPost": "Edit post",
+    "newPost": "New post",
+    "titlePlaceholder": "Post title…",
+    "visibilityPublic": "Public",
+    "visibilityPrivate": "Private",
+    "categoryPlaceholder": "Select post category",
+    "publishing": "Publishing…",
+    "saveChanges": "Save changes",
+    "publishPost": "Publish post"
+  },
+  "PostPalette": {
+    "title": "Blocks",
+    "dragHint": "Drag a block to the left",
+    "textLabel": "Text",
+    "textDesc": "Formatted text",
+    "mediaLabel": "Media",
+    "mediaDesc": "Photo or video",
+    "audioLabel": "Audio",
+    "audioDesc": "Audio recording",
+    "testLabel": "Test",
+    "testDesc": "Link a test"
+  },
+  "PostCanvas": {
+    "moveBlock": "Move block",
+    "dropRelease": "Release to add",
+    "dropHere": "+ Drop block here",
+    "dropFromPalette": "Drag a block from the right panel"
+  },
+  "PostBlockEditor": {
+    "textLabel": "Text",
+    "mediaLabel": "Media",
+    "audioLabel": "Audio",
+    "testLabel": "Test",
+    "blockDeleted": "Block \"{label}\" deleted",
+    "deleteBlock": "Delete block"
+  },
+  "InfoTextEditor": {
+    "placeholder": "Enter material text...",
+    "heading2": "Heading 2",
+    "heading3": "Heading 3",
+    "bold": "Bold",
+    "italic": "Italic",
+    "list": "List",
+    "orderedList": "Numbered list"
+  },
+  "InfoMediaEditor": {
+    "uploadFile": "Upload file",
+    "orPasteLink": "or paste a link",
+    "urlPlaceholder": "https://youtube.com/watch?v=... or image URL",
+    "emptyHint": "Upload an image or paste a video link",
+    "captionPlaceholder": "Caption (optional)..."
+  },
+  "InfoAudioEditor": {
+    "uploadAudio": "Upload audio file",
+    "audioFormats": "MP3, WAV, OGG, M4A",
+    "analyzing": "Analyzing audio...",
+    "studentHint": "The student will see this player during the lesson"
   },
   "BlockEditor": {
     "fillText": "Fill in the text",
@@ -556,7 +617,7 @@
     "saving": "Saving...",
     "saveChanges": "Save changes",
     "changesSaved": "Changes saved!",
-    "removePhoto": "Remove photo",
+    "removePhoto": "Delete avatar",
     "security": "Security",
     "email": "Email",
     "password": "Password",
@@ -568,6 +629,7 @@
     "statistics": "Statistics",
     "calendar": "Calendar",
     "videoRoom": "Video Room",
+    "createVideoCallBtn": "Create",
     "yourName": "Your name",
     "teacher": "Teacher",
     "soonBadge": "Soon",
@@ -628,6 +690,12 @@
     "passwordMinLength": "Password must be at least 6 characters",
     "invalidEmail": "Enter a valid email",
     "callNotes": "Call transcripts",
+    "personalOffers": "Personal offers from teachers",
+    "acceptBtn": "Accept",
+    "minutes": "min",
+    "statusPending": "Pending",
+    "statusConfirmed": "Confirmed",
+    "statusCancelled": "Cancelled",
     "emptyContent": "Nothing here yet",
     "allSubjects": "All",
     "complaintsLink": "Complaints",
@@ -992,5 +1060,36 @@
       "ja": "Japanese",
       "pt": "Portuguese"
     }
+  },
+  "pdfImport": {
+    "importBtn": "Import from PDF",
+    "title": "Import test from PDF",
+    "dropLabel": "Drag and drop PDF here or",
+    "dropLabelLink": "browse file",
+    "dropSub": "PDF files only",
+    "vipNotice": "Free: up to <b>5 pages</b>. VIP: up to <b>50 pages</b> per import. AI will generate questions — you pick the ones you need.",
+    "processBtn": "Process PDF",
+    "cancel": "Cancel",
+    "uploadAnother": "Upload another",
+    "processing": "Processing PDF...",
+    "step1": "Extracting text from PDF...",
+    "step2": "Analysing content...",
+    "step3": "Generating test blocks...",
+    "successNotice": "Processed <b>{pages} pages</b> · Found <b>{count} blocks</b>",
+    "selected": "Selected: {sel} / {total}",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "importSelected": "Add to test ({count})",
+    "retry": "Try again",
+    "errPageLimit": "Page limit exceeded",
+    "errGeneral": "Could not process PDF",
+    "upgradeVip": "Get VIP (up to 50 pages)",
+    "errQuota": "AI temporarily unavailable (quota exceeded). Try again in {secs}s.",
+    "typeChoose": "Multiple choice",
+    "typeFree": "Free answer",
+    "typeMatch": "Match pairs",
+    "typeInfo": "Text",
+    "refAnswer": "Reference: {text}",
+    "morePairs": "+{n} more..."
   }
 }

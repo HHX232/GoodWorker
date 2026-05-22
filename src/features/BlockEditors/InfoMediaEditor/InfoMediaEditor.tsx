@@ -1,6 +1,7 @@
 'use client'
 import { InfoMediaKind, InfoMediaPayload } from '@/shared/types/Tasks/TaskPayload.type'
 import { ImageIcon, UploadIcon, VideoIcon, XIcon } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import { useRef } from 'react'
 import styles from './InfoMediaEditor.module.scss'
@@ -19,6 +20,7 @@ const toEmbedUrl = (url: string) => {
 }
 
 export const InfoMediaEditor = ({payload, onChange, viewOnly = false}: Props) => {
+  const t = useTranslations('InfoMediaEditor')
   const editable = !!onChange && !viewOnly
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -97,12 +99,12 @@ export const InfoMediaEditor = ({payload, onChange, viewOnly = false}: Props) =>
           <div className={styles.kind_row}>
             <button type='button' className={styles.kind_btn} onClick={() => fileRef.current?.click()}>
               <UploadIcon size={16} />
-              Загрузить файл
+              {t('uploadFile')}
             </button>
-            <span className={styles.or}>или вставить ссылку</span>
+            <span className={styles.or}>{t('orPasteLink')}</span>
             <input
               className={styles.url_input}
-              placeholder='https://youtube.com/watch?v=... или URL картинки'
+              placeholder={t('urlPlaceholder')}
               defaultValue={payload.url ?? ''}
               onBlur={handleUrlInput}
             />
@@ -117,7 +119,7 @@ export const InfoMediaEditor = ({payload, onChange, viewOnly = false}: Props) =>
           <div className={styles.empty_hint}>
             <ImageIcon size={32} className={styles.empty_icon_img} />
             <VideoIcon size={32} className={styles.empty_icon_vid} />
-            <p>Загрузите изображение или вставьте ссылку на видео</p>
+            <p>{t('emptyHint')}</p>
           </div>
         </>
       )}
@@ -149,7 +151,7 @@ export const InfoMediaEditor = ({payload, onChange, viewOnly = false}: Props) =>
           )}
           <input
             className={styles.caption_input}
-            placeholder='Подпись (необязательно)...'
+            placeholder={t('captionPlaceholder')}
             value={payload.caption ?? ''}
             onChange={(e) => update({caption: e.target.value || null})}
           />

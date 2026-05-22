@@ -19,12 +19,14 @@ import {
   useSensor,
   useSensors
 } from '@dnd-kit/core'
+import {useTranslations} from 'next-intl'
 import {useSearchParams} from 'next/navigation'
 import {useEffect, useRef, useState} from 'react'
 import {toast} from 'sonner'
 import styles from './CreatePostPage.module.scss'
 
 function CreatePostPage({id}: {id?: string}) {
+  const t = useTranslations('CreatePostPage')
   const searchParams = useSearchParams()
   const existingId = searchParams.get('id') ?? undefined
   const activeId = id || existingId
@@ -40,7 +42,7 @@ function CreatePostPage({id}: {id?: string}) {
   const [draggingType, setDraggingType] = useState<PostBlockType | null>(null)
 
   useEffect(() => {
-    isLoading ? toast.loading('Публикация...') : toast.dismiss()
+    isLoading ? toast.loading(t('publishing')) : toast.dismiss()
   }, [isLoading])
   const sensors = useSensors(useSensor(PointerSensor, {activationConstraint: {distance: 6}}))
 
@@ -69,13 +71,13 @@ function CreatePostPage({id}: {id?: string}) {
         {/* <NavBar /> */}
 
         <div className={styles.main_content} ref={mainContentRef}>
-          <h1>{activeId ? 'Редактировать пост' : 'Новый пост'}</h1>
+          <h1>{activeId ? t('editPost') : t('newPost')}</h1>
 
           <div className={styles.form}>
             <div className={styles.meta_form}>
               <TextInputUI
                 theme='newWhite'
-                placeholder='Заголовок поста…'
+                placeholder={t('titlePlaceholder')}
                 currentValue={title}
                 onSetValue={setPostTitle}
               />
@@ -88,13 +90,13 @@ function CreatePostPage({id}: {id?: string}) {
                     className={`${styles.vis_btn} ${visibility === v ? styles.vis_active : ''}`}
                     onClick={() => setPostVisibility(v)}
                   >
-                    {v === 'PUBLIC' ? 'Публичный' : 'Приватный'}
+                    {v === 'PUBLIC' ? t('visibilityPublic') : t('visibilityPrivate')}
                   </button>
                 ))}
               </div>
 
               <CategorySelect
-                placeholder='Выберите категорию поста'
+                placeholder={t('categoryPlaceholder')}
                 canSelectMany={false}
                 value={categoryIds}
                 // maxLevel={1}
@@ -108,7 +110,7 @@ function CreatePostPage({id}: {id?: string}) {
           {error && <p className={styles.error_text}>{error}</p>}
 
           <button type='button' className={styles.publish_btn} disabled={isLoading} onClick={save}>
-            {isLoading ? 'Публикация…' : activeId ? 'Сохранить изменения' : 'Опубликовать пост'}
+            {isLoading ? t('publishing') : activeId ? t('saveChanges') : t('publishPost')}
           </button>
         </div>
 

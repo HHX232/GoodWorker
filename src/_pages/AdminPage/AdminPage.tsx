@@ -1076,6 +1076,7 @@ function VerificationsTab() {
   const [experiences, setExperiences] = useState<ExperienceVerifItem[]>([])
   const [identities, setIdentities] = useState<IdentityVerifItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [passportViewUrl, setPassportViewUrl] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     const res = await fetch('/api/admin/verifications')
@@ -1156,25 +1157,34 @@ function VerificationsTab() {
       )}
 
       <div className={styles.divider} style={{ margin: '12px 0' }} />
-      <h3 className={styles.promo_section_title}>Подтверждение личности</h3>
+      <h3 className={styles.promo_section_title}>Подтверждение паспорта</h3>
       {loading ? null : identities.length === 0 ? (
         <div className={styles.empty}><p>Нет загруженных паспортов</p></div>
       ) : (
         <div className={styles.verif_list}>
           {identities.map(item => (
-            <div key={item.id} className={styles.verif_card}>
+            <div key={item.id} className={`${styles.verif_card} ${item.pasportConfirmed ? styles.verif_card_confirmed : ''}`}>
               <div className={styles.verif_card_top}>
                 <div className={styles.verif_info}>
                   <span className={styles.verif_name}>{item.name}</span>
                   <span className={styles.verif_sub}>{item.email}</span>
+                  {item.pasportConfirmed && (
+                    <span className={styles.passport_confirmed_badge}>✓ Личность подтверждена</span>
+                  )}
                 </div>
                 <div className={styles.verif_actions}>
-                  {item.pasportConfirmed && (
-                    <span className={styles.verif_check} title="Личность подтверждена">✓</span>
-                  )}
-                  <a href={item.passportDocumentUrl} target="_blank" rel="noreferrer" className={styles.verif_doc_link}>
-                    <img src={item.passportDocumentUrl} alt="passport" className={styles.verif_doc_thumb} />
-                  </a>
+                  <button
+                    className={styles.passport_thumb_btn}
+                    onClick={() => setPassportViewUrl(item.passportDocumentUrl)}
+                    title="Просмотреть паспорт"
+                  >
+                    <img src={item.passportDocumentUrl} alt="passport" className={styles.passport_thumb} />
+                    <span className={styles.passport_thumb_overlay}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
+                        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                      </svg>
+                    </span>
+                  </button>
                   <button
                     className={`${styles.verif_btn} ${item.pasportConfirmed ? styles.verif_btn_active : ''}`}
                     onClick={() => verifyIdentity(item.id, !item.pasportConfirmed)}
@@ -1185,6 +1195,22 @@ function VerificationsTab() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {passportViewUrl && (
+        <div className={styles.passport_modal_overlay} onClick={() => setPassportViewUrl(null)}>
+          <div className={styles.passport_modal} onClick={e => e.stopPropagation()}>
+            <button className={styles.passport_modal_close} onClick={() => setPassportViewUrl(null)}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+            <img src={passportViewUrl} alt="passport" className={styles.passport_modal_img} />
+            <a href={passportViewUrl} target="_blank" rel="noreferrer" className={styles.passport_modal_link}>
+              Открыть в новой вкладке ↗
+            </a>
+          </div>
         </div>
       )}
     </div>

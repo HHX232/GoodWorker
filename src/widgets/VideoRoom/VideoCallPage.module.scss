@@ -590,16 +590,16 @@ $text-muted: #94a3b8;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
   padding: 8px 20px;
   border-top: 1px solid $border;
   background: $bg-card;
   flex-shrink: 0;
 
   @media (max-width: 680px) {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 6px 10px 10px;
-    gap: 6px;
+    padding: 8px 10px;
+    justify-content: center;
   }
 }
 
@@ -626,48 +626,33 @@ $text-muted: #94a3b8;
 .ctrlLeft {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 7px;
-  min-width: 140px;
-
-  @media (max-width: 680px) {
-    min-width: unset;
-    overflow-x: auto;
-    scrollbar-width: none;
-    &::-webkit-scrollbar { display: none; }
-    flex-wrap: nowrap;
-    padding-bottom: 2px;
-  }
 }
 
 .ctrlCenter {
   display: flex;
   align-items: center;
-  gap: 12px;
-
-  @media (max-width: 680px) {
-    gap: 8px;
-    flex: 1;
-    justify-content: center;
-  }
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
 }
 
 .ctrlRight {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  min-width: 140px;
-
-  @media (max-width: 680px) { min-width: unset; }
 }
 
-// Bottom row wraps center + right together on mobile
+// display:contents passes children directly into the parent flex — kept for desktop,
+// on mobile just becomes a normal flex row that also wraps.
 .ctrlBottomRow {
   display: contents;
 
   @media (max-width: 680px) {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 8px;
   }
 }

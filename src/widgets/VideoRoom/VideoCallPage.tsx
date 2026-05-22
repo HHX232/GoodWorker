@@ -1049,15 +1049,6 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
             {callTest.title}
           </button>
         )}
-        {!isOwner && !callTest && (
-          <button
-            className={styles.pill}
-            onClick={() => broadcast({ type: 'call_test_request' })}
-            title="Запросить тест у учителя"
-          >
-            <IconClipboard /> Тест?
-          </button>
-        )}
       </div>
 
       <div className={styles.ctrlBottomRow}>

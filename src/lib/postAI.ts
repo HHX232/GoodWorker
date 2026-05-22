@@ -1,92 +1,10 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
-import { GoogleAICacheManager } from '@google/generative-ai/server'
 import { prisma } from '@/shared/prisma/prisma'
 import type { CategoryRef } from '@/shared/lib/gemini'
 import type { Prisma } from '@prisma/client'
+import { callAI, parseJSON } from '@/lib/openrouter'
 
 const LANGS = ['ru', 'en', 'hi', 'zh'] as const
 type Lang = typeof LANGS[number]
-
-// ─── Category cache (same pattern as gemini.ts) ───────────────────────────────
-
-interface CacheEntry {
-  name: string
-  hash: string
-  expireAt: number
-}
-
-let _cache: CacheEntry | null = null
-const CACHE_TTL_SECONDS = 3600
-const CACHE_REFRESH_BEFORE_MS = 5 * 60 * 1000
-
-function hashCategories(cats: CategoryRef[]): string {
-  return cats.map(c => `${c.id}:${c.name}`).sort().join('|')
-}
-
-const SYSTEM_INSTRUCTION = `
-You are a multilingual translation and categorization assistant for an educational platform.
-Given a post title, optional subtitle, and text blocks — translate them to all four languages: ru, en, hi, zh.
-Also pick the single best matching category from the provided list.
-Return ONLY valid JSON, no markdown.
-`.trim()
-
-async function getModel(cats: CategoryRef[]) {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) throw new Error('GEMINI_API_KEY is not set')
-
-  const genAI = new GoogleGenerativeAI(apiKey)
-  const cacheManager = new GoogleAICacheManager(apiKey)
-  const hash = hashCategories(cats)
-  const now = Date.now()
-
-  if (_cache && _cache.hash === hash && _cache.expireAt > now) {
-    try {
-      const cached = await cacheManager.get(_cache.name)
-      return genAI.getGenerativeModelFromCachedContent(cached)
-    } catch {
-      _cache = null
-    }
-  }
-
-  if (_cache) {
-    try { await cacheManager.delete(_cache.name) } catch {}
-    _cache = null
-  }
-
-  const categoriesBlock = cats.map(c => `  - id="${c.id}" name="${c.name}"`).join('\n')
-
-  try {
-    const created = await cacheManager.create({
-      model: 'models/gemini-2.0-flash',
-      systemInstruction: SYSTEM_INSTRUCTION,
-      contents: [
-        {
-          role: 'user',
-          parts: [{ text: `Available categories:\n${categoriesBlock}\n\nRemember these.` }],
-        },
-        {
-          role: 'model',
-          parts: [{ text: 'Categories remembered. Ready to translate and categorize posts.' }],
-        },
-      ],
-      ttlSeconds: CACHE_TTL_SECONDS,
-    })
-
-    _cache = {
-      name: created.name!,
-      hash,
-      expireAt: now + CACHE_TTL_SECONDS * 1000 - CACHE_REFRESH_BEFORE_MS,
-    }
-
-    return genAI.getGenerativeModelFromCachedContent(created)
-  } catch {
-    return genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash',
-      systemInstruction: SYSTEM_INSTRUCTION,
-      generationConfig: { responseMimeType: 'application/json', temperature: 0.1 },
-    })
-  }
-}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -115,9 +33,16 @@ function applyTextTranslations(
   return { ...c, blocks }
 }
 
-// ─── Main enrichment function ─────────────────────────────────────────────────
+// ─── Post enrichment ──────────────────────────────────────────────────────────
+
+const POST_SYSTEM = `You are a multilingual translation and categorization assistant for an educational platform.
+Translate posts to all four languages: ru, en, hi, zh. Pick the single best matching category from the provided list.
+Return ONLY valid JSON, no markdown.`
 
 export async function enrichPostWithAI(postId: string): Promise<void> {
+  const apiKey = process.env.OPENROUTER_API_KEY
+  if (!apiKey) return
+
   const post = await prisma.post.findUnique({ where: { id: postId } })
   if (!post) return
 
@@ -131,12 +56,15 @@ export async function enrichPostWithAI(postId: string): Promise<void> {
     name: c.translations[0]?.name ?? c.slug,
   }))
 
+  const categoriesBlock = cats.map(c => `  - id="${c.id}" name="${c.name}"`).join('\n')
   const textBlocks = extractTextBlocks(post.content)
   const blocksJson = JSON.stringify(
     textBlocks.slice(0, 20).map(b => ({ index: b.index, text: b.text }))
   )
 
-  const prompt = `Translate this educational post to ru, en, hi, zh and pick the best category.
+  const prompt = `Available categories:\n${categoriesBlock}
+
+Translate this educational post to ru, en, hi, zh and pick the best category.
 Also evaluate content safety: flag as unsafe ONLY if the post clearly contains spam, adult/sexual content,
 hate speech, violence promotion, scams, or illegal activities.
 Educational discussion of sensitive topics is acceptable.
@@ -155,15 +83,15 @@ Return exactly this JSON structure:
   "contentReason": null
 }`
 
-  const model = await getModel(cats)
-  const result = await model.generateContent({
-    contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    generationConfig: { responseMimeType: 'application/json', temperature: 0.1 },
-  })
-
-  const raw = result.response.text().trim()
-  const jsonStr = raw.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim()
-  const parsed = JSON.parse(jsonStr)
+  const raw = await callAI(POST_SYSTEM, prompt, { temperature: 0.1 })
+  const parsed = parseJSON<{
+    titleTranslations?: Record<Lang, string>
+    additionalTitleTranslations?: Record<Lang, string> | null
+    textBlockTranslations?: { index: number; [k: string]: string | number }[]
+    suggestedCategoryId?: string | null
+    contentOk?: boolean
+    contentReason?: string | null
+  }>(raw)
 
   const contentOk: boolean = parsed.contentOk !== false
   const contentTranslations: Record<string, unknown> = {}
@@ -194,27 +122,17 @@ Return exactly this JSON structure:
 // ─── Comment translation ──────────────────────────────────────────────────────
 
 export async function enrichCommentWithAI(commentId: string): Promise<void> {
+  if (!process.env.OPENROUTER_API_KEY) return
+
   const comment = await prisma.postComment.findUnique({ where: { id: commentId } })
   if (!comment || !comment.text.trim()) return
 
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) return
-
-  const genAI = new GoogleGenerativeAI(apiKey)
-  const model = genAI.getGenerativeModel({
-    model: 'gemini-2.0-flash',
-    generationConfig: { responseMimeType: 'application/json', temperature: 0.1 },
-  })
-
-  const result = await model.generateContent({
-    contents: [{
-      role: 'user',
-      parts: [{ text: `Translate this comment to ru, en, hi, zh. Return ONLY JSON: {"ru":"...","en":"...","hi":"...","zh":"..."}\n\nComment: ${JSON.stringify(comment.text)}` }],
-    }],
-  })
-
-  const raw = result.response.text().trim().replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '')
-  const parsed = JSON.parse(raw)
+  const raw = await callAI(
+    'You are a multilingual translation assistant. Return ONLY valid JSON, no markdown.',
+    `Translate this comment to ru, en, hi, zh. Return ONLY JSON: {"ru":"...","en":"...","hi":"...","zh":"..."}\n\nComment: ${JSON.stringify(comment.text)}`,
+    { temperature: 0.1 },
+  )
+  const parsed = parseJSON<Record<Lang, string>>(raw)
 
   await prisma.postComment.update({
     where: { id: commentId },
@@ -234,17 +152,10 @@ export function localizeComment<T extends {
 // ─── Service AI ───────────────────────────────────────────────────────────────
 
 export async function enrichServiceWithAI(serviceId: string): Promise<void> {
+  if (!process.env.OPENROUTER_API_KEY) return
+
   const service = await prisma.service.findUnique({ where: { id: serviceId } })
   if (!service || !service.title.trim()) return
-
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) return
-
-  const genAI = new GoogleGenerativeAI(apiKey)
-  const model = genAI.getGenerativeModel({
-    model: 'gemini-2.0-flash',
-    generationConfig: { responseMimeType: 'application/json', temperature: 0.1 },
-  })
 
   const prompt = `Translate this teacher service listing to ru, en, hi, zh for an educational platform.
 Return ONLY valid JSON, no markdown.
@@ -258,12 +169,15 @@ Return:
   "descriptionTranslations": ${service.description ? '{"ru":"...","en":"...","hi":"...","zh":"..."}' : 'null'}
 }`
 
-  const result = await model.generateContent({
-    contents: [{ role: 'user', parts: [{ text: prompt }] }],
-  })
-
-  const raw = result.response.text().trim().replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '')
-  const parsed = JSON.parse(raw)
+  const raw = await callAI(
+    'You are a multilingual translation assistant for an educational platform. Return ONLY valid JSON, no markdown.',
+    prompt,
+    { temperature: 0.1 },
+  )
+  const parsed = parseJSON<{
+    titleTranslations?: Record<Lang, string>
+    descriptionTranslations?: Record<Lang, string> | null
+  }>(raw)
 
   await prisma.service.update({
     where: { id: serviceId },
@@ -335,7 +249,6 @@ function applyTiptapTranslation(content: unknown, prefix: string, map: Translati
     if (n.type !== 'paragraph') return node
     const translated = map.get(`${prefix}.p${idx}`)?.[lang]
     if (!translated) return node
-    // Reconstruct paragraph: split translated string on [BLANK_id] markers
     const origBlanks = (n.content ?? []).filter(isBlankNode)
     const parts = translated.split(/\[BLANK_[^\]]*\]/g)
     const blankMatches = [...translated.matchAll(/\[BLANK_([^\]]*)\]/g)]
@@ -385,7 +298,6 @@ function extractFromBlock(block: RoadmapTestBlock, prefix: string, items: Transl
       if (typeof p.instruction === 'string' && p.instruction) items.push({ key: `${prefix}.hi`, text: p.instruction })
       const tokens = (p.tokens ?? []) as { id: number; text: string; isCorrect: boolean }[]
       if (tokens.length > 0) {
-        // Serialize as "word1[C] word2 word3[C]" — [C] marks correct tokens
         const serialized = tokens.map((t) => `${t.text}${t.isCorrect ? '[C]' : ''}`).join(' ')
         items.push({ key: `${prefix}.htoks`, text: serialized })
       }
@@ -463,7 +375,6 @@ function applyToBlock(block: RoadmapTestBlock, prefix: string, map: TranslationM
       const tokStr = get(`${prefix}.htoks`)
       let newTokens = p.tokens
       if (tokStr) {
-        // Parse "word1[C] word2 word3[C]" back to token objects
         newTokens = tokStr.trim().split(/\s+/)
           .map((part, i) => ({
             id: i,
@@ -511,8 +422,6 @@ function applyToBlock(block: RoadmapTestBlock, prefix: string, map: TranslationM
       return block
   }
 }
-
-// ── Content-level extraction / application ────────────────────────────────────
 
 function extractRoadmapItems(content: unknown, title: string): TranslatableItem[] {
   const items: TranslatableItem[] = [{ key: 'roadTitle', text: title }]
@@ -590,32 +499,23 @@ function applyRoadmapTranslations(content: unknown, map: TranslationMap, lang: L
   return { ...c, nodes }
 }
 
-// ── Main roadmap enrichment ───────────────────────────────────────────────────
-
 export async function enrichRoadmapWithAI(roadmapId: string): Promise<void> {
+  if (!process.env.OPENROUTER_API_KEY) return
+
   const roadmap = await prisma.roadmap.findUnique({ where: { id: roadmapId } })
   if (!roadmap) return
 
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) return
-
   const allItems = extractRoadmapItems(roadmap.content, roadmap.title)
-  if (allItems.length <= 1) return // title only — nothing to do
+  if (allItems.length <= 1) return
 
-  const items = allItems.slice(0, 200) // guard against huge roadmaps
-
-  const genAI = new GoogleGenerativeAI(apiKey)
-  const model = genAI.getGenerativeModel({
-    model: 'gemini-2.0-flash',
-    generationConfig: { responseMimeType: 'application/json', temperature: 0.1 },
-  })
+  const items = allItems.slice(0, 200)
 
   const prompt = `You are a multilingual educational content translator for an e-learning platform.
 Translate every item below to all four languages: ru, en, hi, zh.
 
 Rules:
 - Items with [BLANK_id] placeholders are fill-in-the-blank exercises. Keep the [BLANK_id] tokens in the translated text, placed where grammatically correct for that language.
-- Items with [C] suffix on words (like "кошка[C] бежит[C] быстро") are highlight-text tasks. In the translation, mark the semantically equivalent words with [C] (the words that should be highlighted).
+- Items with [C] suffix on words (like "кошка[C] бежит[C] быстро") are highlight-text tasks. In the translation, mark the semantically equivalent words with [C].
 - Translate naturally and correctly for an educational context.
 - Return ONLY valid JSON with no markdown.
 
@@ -625,12 +525,12 @@ ${JSON.stringify(items)}
 Response format:
 {"items":[{"key":"<same key>","ru":"...","en":"...","hi":"...","zh":"..."}]}`
 
-  const result = await model.generateContent({
-    contents: [{ role: 'user', parts: [{ text: prompt }] }],
-  })
-
-  const raw = result.response.text().trim().replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '')
-  const parsed = JSON.parse(raw) as { items: ({ key: string } & Record<Lang, string>)[] }
+  const raw = await callAI(
+    'You are a multilingual educational content translator. Return ONLY valid JSON, no markdown.',
+    prompt,
+    { temperature: 0.1 },
+  )
+  const parsed = parseJSON<{ items: ({ key: string } & Record<Lang, string>)[] }>(raw)
 
   const translationMap: TranslationMap = new Map()
   for (const item of (parsed.items ?? [])) {
@@ -665,6 +565,61 @@ export function localizeRoadmap<T extends {
     ...roadmap,
     title: tt?.[l] ?? roadmap.title,
     content: ct?.[l] ?? roadmap.content,
+  }
+}
+
+// ─── Notification AI translation ─────────────────────────────────────────────
+
+export async function enrichNotificationWithAI(notificationId: string): Promise<void> {
+  if (!process.env.OPENROUTER_API_KEY) return
+
+  const notif = await prisma.notification.findUnique({ where: { id: notificationId } })
+  if (!notif || (!notif.title.trim() && !notif.body.trim())) return
+
+  const prompt = `Translate this system notification for an educational platform to ru, en, hi, zh.
+Return ONLY valid JSON, no markdown.
+
+Title: ${JSON.stringify(notif.title)}
+Body: ${JSON.stringify(notif.body)}
+
+Return:
+{
+  "titleTranslations": {"ru":"...","en":"...","hi":"...","zh":"..."},
+  "bodyTranslations": {"ru":"...","en":"...","hi":"...","zh":"..."}
+}`
+
+  const raw = await callAI(
+    'You are a multilingual translation assistant. Return ONLY valid JSON, no markdown.',
+    prompt,
+    { temperature: 0.1 },
+  )
+  const parsed = parseJSON<{
+    titleTranslations?: Record<Lang, string>
+    bodyTranslations?: Record<Lang, string>
+  }>(raw)
+
+  await (prisma.notification as any).update({
+    where: { id: notificationId },
+    data: {
+      titleTranslations: parsed.titleTranslations ?? undefined,
+      bodyTranslations: parsed.bodyTranslations ?? undefined,
+    },
+  })
+}
+
+export function localizeNotification<T extends {
+  title: string
+  body: string
+  titleTranslations?: unknown
+  bodyTranslations?: unknown
+}>(notif: T, lang: string): T {
+  const l = (LANGS as readonly string[]).includes(lang) ? lang : 'ru'
+  const tt = notif.titleTranslations as Record<string, string> | null | undefined
+  const bt = notif.bodyTranslations as Record<string, string> | null | undefined
+  return {
+    ...notif,
+    title: tt?.[l] ?? notif.title,
+    body: bt?.[l] ?? notif.body,
   }
 }
 
