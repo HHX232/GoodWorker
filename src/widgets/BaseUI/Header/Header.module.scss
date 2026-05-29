@@ -89,3 +89,14 @@
 .extra_switcher {
   margin-left: auto;
 }
+
+// ─── Pomodoro dark theme ──────────────────────────────────────────────────────
+:global(html.pomodoro-dark) .wrapper {
+  background-color: #12141c;
+  transition: background-color 0.25s;
+}
+
+// ─── Road-map fullscreen (no gap below header) ────────────────────────────────
+:global(html.roadmap-page) .wrapper {
+  margin-bottom: 0;
+}

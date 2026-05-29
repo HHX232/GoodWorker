@@ -30,6 +30,87 @@ interface Props {
   studentId: string
 }
 
+type Lang = 'ru' | 'en' | 'zh' | 'hi'
+
+const T = {
+  ru: {
+    loading: 'Загрузка отчёта...',
+    title: 'Отчёт об успеваемости',
+    teacher: 'Преподаватель',
+    date: 'Дата',
+    period: 'Период: последние 12 недель',
+    errors: 'Ошибок совершено',
+    corrected: 'Ошибок исправлено',
+    corrRate: 'Процент исправления',
+    avgScore: 'Средний балл тестов',
+    calls: 'Занятий проведено',
+    errWeekly: 'Ошибки по неделям',
+    scoreWeekly: 'Средний балл тестов по неделям',
+    topErrors: 'Топ категорий ошибок',
+    download: 'Скачать PDF',
+    errLine: 'Ошибок',
+    scoreLine: 'Средний балл',
+    dateLocale: 'ru-RU',
+  },
+  en: {
+    loading: 'Loading report...',
+    title: 'Progress Report',
+    teacher: 'Teacher',
+    date: 'Date',
+    period: 'Period: last 12 weeks',
+    errors: 'Errors made',
+    corrected: 'Errors corrected',
+    corrRate: 'Correction rate',
+    avgScore: 'Average test score',
+    calls: 'Lessons conducted',
+    errWeekly: 'Errors by week',
+    scoreWeekly: 'Average test score by week',
+    topErrors: 'Top error categories',
+    download: 'Download PDF',
+    errLine: 'Errors',
+    scoreLine: 'Avg score',
+    dateLocale: 'en-US',
+  },
+  zh: {
+    loading: '报告加载中...',
+    title: '学习进度报告',
+    teacher: '教师',
+    date: '日期',
+    period: '期间：最近12周',
+    errors: '错误次数',
+    corrected: '已纠正错误',
+    corrRate: '纠正率',
+    avgScore: '测试平均分',
+    calls: '已完成课程',
+    errWeekly: '每周错误',
+    scoreWeekly: '每周测试平均分',
+    topErrors: '主要错误类别',
+    download: '下载PDF',
+    errLine: '错误',
+    scoreLine: '平均分',
+    dateLocale: 'zh-CN',
+  },
+  hi: {
+    loading: 'रिपोर्ट लोड हो रही है...',
+    title: 'प्रगति रिपोर्ट',
+    teacher: 'शिक्षक',
+    date: 'दिनांक',
+    period: 'अवधि: पिछले 12 सप्ताह',
+    errors: 'गलतियाँ की गईं',
+    corrected: 'गलतियाँ सुधारी गईं',
+    corrRate: 'सुधार दर',
+    avgScore: 'टेस्ट औसत अंक',
+    calls: 'कक्षाएं आयोजित',
+    errWeekly: 'साप्ताहिक गलतियाँ',
+    scoreWeekly: 'साप्ताहिक औसत टेस्ट अंक',
+    topErrors: 'शीर्ष गलती श्रेणियाँ',
+    download: 'PDF डाउनलोड करें',
+    errLine: 'गलतियाँ',
+    scoreLine: 'औसत अंक',
+    dateLocale: 'hi-IN',
+  },
+} as const
+
 function DownloadIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -44,6 +125,9 @@ export function StudentReportPage({ studentId }: Props) {
   const [data, setData] = useState<ReportData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [lang, setLang] = useState<Lang>('ru')
+
+  const t = T[lang]
 
   useEffect(() => {
     fetch(`/api/teacher/student-report/${studentId}`)
@@ -64,16 +148,24 @@ export function StudentReportPage({ studentId }: Props) {
       ? Math.round((data.totalCorrected / data.totalErrors) * 100)
       : 0
 
-  const reportDate = new Date().toLocaleDateString('ru-RU', {
+  const reportDate = new Date().toLocaleDateString(t.dateLocale, {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   })
 
+  const handlePrint = () => {
+    const studentName = data?.student?.name?.replace(/\s+/g, '_') ?? 'report'
+    const prev = document.title
+    document.title = `${lang.toUpperCase()}-${studentName}`
+    window.print()
+    setTimeout(() => { document.title = prev }, 1000)
+  }
+
   if (loading) {
     return (
       <div className={styles.wrapper}>
-        <div className={styles.loadingState}>Загрузка отчёта...</div>
+        <div className={styles.loadingState}>{t.loading}</div>
       </div>
     )
   }
@@ -90,23 +182,37 @@ export function StudentReportPage({ studentId }: Props) {
 
   return (
     <div className={styles.wrapper}>
-      <button className={styles.printBtn} onClick={() => window.print()}>
-        <DownloadIcon />
-        Скачать PDF
-      </button>
+      <div className={styles.toolbar}>
+        <div className={styles.langTabs}>
+          {(['ru', 'en', 'zh', 'hi'] as const).map(l => (
+            <button
+              key={l}
+              className={`${styles.langTab} ${lang === l ? styles.langTabActive : ''}`}
+              onClick={() => setLang(l)}
+              type="button"
+            >
+              {l.toUpperCase()}
+            </button>
+          ))}
+        </div>
+        <button className={styles.printBtn} onClick={handlePrint} type="button">
+          <DownloadIcon />
+          {t.download}
+        </button>
+      </div>
 
       <div className={styles.report}>
         {/* Header */}
         <div className={styles.header}>
           <div>
-            <div className={styles.reportTitle}>Отчёт об успеваемости</div>
+            <div className={styles.reportTitle}>{t.title}</div>
             <div className={styles.studentName}>{data.student?.name ?? '—'}</div>
             <div className={styles.meta}>{data.student?.email}</div>
           </div>
           <div className={styles.metaBlock}>
-            <div className={styles.meta}>Преподаватель: <strong>{data.teacher?.name ?? '—'}</strong></div>
-            <div className={styles.meta}>Дата: {reportDate}</div>
-            <div className={styles.period}>Период: последние 12 недель</div>
+            <div className={styles.meta}>{t.teacher}: <strong>{data.teacher?.name ?? '—'}</strong></div>
+            <div className={styles.meta}>{t.date}: {reportDate}</div>
+            <div className={styles.period}>{t.period}</div>
           </div>
         </div>
 
@@ -114,23 +220,23 @@ export function StudentReportPage({ studentId }: Props) {
         <div className={styles.cards}>
           <div className={styles.card}>
             <div className={styles.cardValue}>{data.totalErrors}</div>
-            <div className={styles.cardLabel}>Ошибок совершено</div>
+            <div className={styles.cardLabel}>{t.errors}</div>
           </div>
           <div className={styles.card}>
             <div className={styles.cardValue}>{data.totalCorrected}</div>
-            <div className={styles.cardLabel}>Ошибок исправлено</div>
+            <div className={styles.cardLabel}>{t.corrected}</div>
           </div>
           <div className={styles.card}>
             <div className={styles.cardValue}>{correctionRate}%</div>
-            <div className={styles.cardLabel}>Процент исправления</div>
+            <div className={styles.cardLabel}>{t.corrRate}</div>
           </div>
           <div className={styles.card}>
             <div className={styles.cardValue}>{data.avgScore != null ? `${data.avgScore}%` : '—'}</div>
-            <div className={styles.cardLabel}>Средний балл тестов</div>
+            <div className={styles.cardLabel}>{t.avgScore}</div>
           </div>
           <div className={styles.card}>
             <div className={styles.cardValue}>{data.totalCalls}</div>
-            <div className={styles.cardLabel}>Занятий проведено</div>
+            <div className={styles.cardLabel}>{t.calls}</div>
           </div>
         </div>
 
@@ -138,7 +244,7 @@ export function StudentReportPage({ studentId }: Props) {
         <div className={styles.charts}>
           {/* Errors over time */}
           <div className={styles.chartBlock}>
-            <div className={styles.chartTitle}>Ошибки по неделям</div>
+            <div className={styles.chartTitle}>{t.errWeekly}</div>
             <ResponsiveContainer width="100%" height={220}>
               <LineChart data={data.errorsOverTime} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
@@ -155,7 +261,7 @@ export function StudentReportPage({ studentId }: Props) {
                   strokeWidth={2}
                   dot={{ fill: '#111118', r: 3 }}
                   activeDot={{ r: 5 }}
-                  name="Ошибок"
+                  name={t.errLine}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -163,7 +269,7 @@ export function StudentReportPage({ studentId }: Props) {
 
           {/* Avg test scores over time */}
           <div className={styles.chartBlock}>
-            <div className={styles.chartTitle}>Средний балл тестов по неделям</div>
+            <div className={styles.chartTitle}>{t.scoreWeekly}</div>
             <ResponsiveContainer width="100%" height={220}>
               <LineChart data={data.attemptsOverTime} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
@@ -182,7 +288,7 @@ export function StudentReportPage({ studentId }: Props) {
                   dot={{ fill: '#555', r: 3 }}
                   activeDot={{ r: 5 }}
                   connectNulls={false}
-                  name="Средний балл"
+                  name={t.scoreLine}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -191,7 +297,7 @@ export function StudentReportPage({ studentId }: Props) {
           {/* Top error categories */}
           {data.errorsByCategory.length > 0 && (
             <div className={styles.chartBlock}>
-              <div className={styles.chartTitle}>Топ категорий ошибок</div>
+              <div className={styles.chartTitle}>{t.topErrors}</div>
               <ResponsiveContainer width="100%" height={Math.max(200, data.errorsByCategory.length * 36)}>
                 <BarChart
                   layout="vertical"
@@ -210,7 +316,7 @@ export function StudentReportPage({ studentId }: Props) {
                     contentStyle={{ borderRadius: 8, border: '1px solid #E0E0E0', fontSize: 12 }}
                     labelStyle={{ color: '#111118', fontWeight: 600 }}
                   />
-                  <Bar dataKey="count" fill="#333" radius={[0, 4, 4, 0]} name="Ошибок" />
+                  <Bar dataKey="count" fill="#333" radius={[0, 4, 4, 0]} name={t.errLine} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

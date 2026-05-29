@@ -36,6 +36,43 @@
    }
 }
 
+// ── Skeleton loading overlay ──────────────────────────────
+
+.skeletonOverlay {
+   position: absolute;
+   inset: 0;
+   z-index: 10;
+   pointer-events: none;
+   background: rgba(249, 249, 251, 0.72);
+   backdrop-filter: blur(2px);
+}
+
+.skeletonNode {
+   position: absolute;
+   border-radius: 14px;
+   background: linear-gradient(90deg, #ebebf0 25%, #dddde8 50%, #ebebf0 75%);
+   background-size: 400% 100%;
+   animation: skeletonShimmer 1.5s ease-in-out infinite;
+}
+
+.skeletonLabel {
+   position: absolute;
+   bottom: 36px;
+   left: 50%;
+   transform: translateX(-50%);
+   font-size: 13px;
+   font-weight: 500;
+   color: #868897;
+   white-space: nowrap;
+}
+
+@keyframes skeletonShimmer {
+   0%   { background-position: 100% 0; }
+   100% { background-position: -100% 0; }
+}
+
+// ── Paywall banner ────────────────────────────────────────
+
 .paywallBanner {
    position: absolute;
    top: 12px;

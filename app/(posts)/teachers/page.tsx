@@ -11,6 +11,7 @@ async function getInitialTeachers() {
       select: {
         id: true,
         name: true,
+        nameTransliterated: true,
         avatarUrl: true,
         isVip: true,
         lastSeenAt: true,

@@ -221,3 +221,58 @@
     background: #f5f5f7;
   }
 }
+
+// ─── Pomodoro dark theme ──────────────────────────────────────────────────────
+:global(html.pomodoro-dark) {
+  .btn {
+    background: #1a1d26;
+    color: #9ca3af;
+    &:hover { background: #22263a; }
+  }
+
+  .btn_active {
+    background: #e8eaf0;
+    color: #0f1117;
+    &:hover { background: #d0d2dc; }
+  }
+
+  .badge {
+    border-color: #12141c;
+  }
+
+  .dropdown {
+    background: #1a1d26;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.55);
+  }
+
+  .dropdown_header {
+    border-bottom-color: #2a2d3a;
+  }
+
+  .dropdown_title {
+    color: #e8eaf0;
+  }
+
+  .notif_row {
+    &:hover { background: #22263a; }
+  }
+
+  .notif_row_unread {
+    background: #1e2234;
+    &:hover { background: #232844; }
+  }
+
+  .notif_title { color: #e8eaf0; }
+
+  .notif_body,
+  .notif_time  { color: #6b7280; }
+
+  .empty,
+  .loading     { color: #6b7280; }
+
+  .footer_link {
+    border-top-color: #2a2d3a;
+    color: #818cf8;
+    &:hover { background: #1f2230; }
+  }
+}

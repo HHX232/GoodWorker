@@ -62,6 +62,7 @@ export default async function RoomPage({ params }: Props) {
       userName={identity}
       roomName={roomName}
       roomId={roomId}
+      userRole={session.user.role}
       ownerIdentity={ownerIdentity}
       localAvatarUrl={localAvatarUrl}
       topic={roomTopic}

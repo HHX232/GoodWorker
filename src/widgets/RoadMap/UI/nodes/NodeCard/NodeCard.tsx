@@ -5,7 +5,7 @@ import {RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
 import {useViewMode} from '@/shared/ui/RoadMap/context/ViewModeContext'
 import {useReactFlow, useStore} from '@xyflow/react'
 import {EyeOffIcon} from 'lucide-react'
-import React, {useRef} from 'react'
+import React, {useEffect, useRef} from 'react'
 import styles from './NodeCard.module.scss'
 
 interface NodeCardProps {
@@ -28,6 +28,20 @@ export default function NodeCard({nodeId, children, isSelected, useMini = false}
   const isHidden = useStore(
     (s) => ((s.nodeLookup.get(nodeId)?.data as RoadNodeData)?.isPaywallHidden ?? false) as boolean
   )
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const addNodrag = () => {
+      el.querySelectorAll<HTMLElement>('input, textarea, select, [contenteditable="true"]').forEach((node) => {
+        node.classList.add('nodrag')
+      })
+    }
+    addNodrag()
+    const observer = new MutationObserver(addNodrag)
+    observer.observe(el, {subtree: true, childList: true})
+    return () => observer.disconnect()
+  }, [])
 
   return (
     <div

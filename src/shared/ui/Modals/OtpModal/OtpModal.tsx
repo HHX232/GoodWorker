@@ -67,8 +67,11 @@ const OtpModal: FC<OtpModalProps> = ({
   }
 
   return (
-    <div className={styles.overlay} onClick={handleClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+    <div
+      className={styles.overlay}
+      onMouseDown={(e) => { if (e.target === e.currentTarget) handleClose() }}
+    >
+      <div className={styles.modal} onMouseDown={(e) => e.stopPropagation()}>
         <div className={styles.header}>
           <h2 className={styles.title}>{title}</h2>
           <button className={styles.closeBtn} onClick={handleClose} type="button">

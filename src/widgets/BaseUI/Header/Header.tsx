@@ -3,6 +3,7 @@ import { LangSwitcher } from '../LangSwitcher/LangSwitcher'
 import { ProfilePreview } from '@/widgets/ProfilePreview/ProfilePreview'
 import { HeaderSearch } from './HeaderSearch'
 import { NotificationBell } from './NotificationBell'
+import { PomodoroButton } from '@/widgets/Pomodoro/PomodoroButton'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
@@ -31,6 +32,7 @@ function Header() {
         <HeaderSearch />
 
         <div className={styles.right_group}>
+          <PomodoroButton />
           <LangSwitcher />
           <NotificationBell />
           <ProfilePreview />

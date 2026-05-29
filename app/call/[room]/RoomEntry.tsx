@@ -11,9 +11,10 @@ interface Props {
   ownerIdentity: string
   localAvatarUrl?: string
   topic?: string
+  userRole?: string
 }
 
-export default function RoomEntry({ userName, roomName, roomId, ownerIdentity, localAvatarUrl, topic }: Props) {
+export default function RoomEntry({ userName, roomName, roomId, ownerIdentity, localAvatarUrl, topic, userRole }: Props) {
   return (
     <VideoCallPage
       userName={userName}
@@ -22,6 +23,7 @@ export default function RoomEntry({ userName, roomName, roomId, ownerIdentity, l
       ownerIdentity={ownerIdentity}
       localAvatarUrl={localAvatarUrl}
       topic={topic}
+      userRole={userRole}
     />
   )
 }

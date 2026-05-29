@@ -57,6 +57,7 @@ export interface IUserBase {
 export interface UserHeaderCardProps extends IUserBase {
   userID?: string
   cardID: string
+  complaintPostId?: string
   blurBg?: boolean
   BlurDots?: boolean
   accentColor?: string
@@ -71,6 +72,7 @@ export interface DotsMenuProps {
   handleShareClick?: (e: React.MouseEvent<HTMLLIElement>) => void
   cardId?: string
   cardTitle?: string
+  complaintPostId?: string
   maxWidth?: string
 }
 

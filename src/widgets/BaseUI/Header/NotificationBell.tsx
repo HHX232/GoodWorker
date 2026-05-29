@@ -99,9 +99,13 @@ export function NotificationBell() {
 
   const markAllRead = async () => {
     try {
-      await fetch('/api/notifications/subscriptions', {method: 'PATCH'})
-      setItems((prev) => prev.map((n) => ({...n, isRead: true})))
-      setUnread(0)
+      await fetch('/api/notifications', {
+        method: 'PATCH',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({all: true}),
+      })
+      // Re-fetch from server to confirm the DB state
+      await fetchNotifs()
     } catch {
       // ignore
     }

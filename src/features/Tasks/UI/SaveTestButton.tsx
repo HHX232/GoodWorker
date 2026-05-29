@@ -1,19 +1,20 @@
 'use client'
-import {useSaveTest} from '@/features/hooks/Test/useSaveTest'
+import {useTranslations} from 'next-intl'
 import styles from './SaveTestButton.module.scss'
 
 interface Props {
-  existingId?: string
+  save: () => void
+  status: 'idle' | 'saving' | 'saved' | 'error'
 }
 
-export function SaveTestButton({existingId}: Props) {
-  const {save, status} = useSaveTest(existingId)
+export function SaveTestButton({save, status}: Props) {
+  const t = useTranslations('CreateTestPage')
 
   const label = {
-    idle: 'Сохранить тест',
-    saving: 'Сохраняем...',
-    saved: '✓ Сохранено',
-    error: 'Ошибка — повторить'
+    idle: t('saveTest'),
+    saving: t('saving'),
+    saved: t('savedOk'),
+    error: t('retryAfterError'),
   }[status]
 
   return (

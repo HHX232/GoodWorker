@@ -19,6 +19,8 @@ interface Props {
   onClose: () => void
   teacherId: string
   onCreated: (service: unknown) => void
+  initialStudentId?: string
+  initialIsPersonal?: boolean
 }
 
 const DURATION_VALUES = [30, 45, 60, 90, 120, 180]
@@ -86,7 +88,7 @@ function TimeSelect({ value, onChange }: { value: string; onChange: (v: string) 
   )
 }
 
-export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Props) {
+export function CreateServiceModal({ open, onClose, teacherId, onCreated, initialStudentId, initialIsPersonal }: Props) {
   const locale = useLocale()
   const t = useTranslations('dashboard.createService')
 
@@ -141,7 +143,7 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Prop
       .catch(() => {})
   }, [open])
 
-  // Reset on close
+  // Reset on close, pre-fill on open when initialIsPersonal is set
   useEffect(() => {
     if (!open) {
       setTitle(''); setDescription(''); setPhotoUrl(null)
@@ -151,7 +153,16 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated }: Prop
       setPromoOpen(false); setPromoCode(''); setPromoDiscount(''); setPromoLimit(''); setPromoConditions('')
       setError('')
       setIsPersonal(false); setPersonalStudentId(''); setStudents([])
+    } else if (initialIsPersonal) {
+      setIsPersonal(true)
+      if (initialStudentId) setPersonalStudentId(initialStudentId)
+      setStudentsLoading(true)
+      fetch('/api/call/my-students')
+        .then(r => r.json())
+        .then(d => setStudents(d.students ?? []))
+        .finally(() => setStudentsLoading(false))
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   if (!open) return null

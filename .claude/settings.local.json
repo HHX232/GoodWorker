@@ -142,7 +142,35 @@
       "Bash(python3 -c \"import json,sys; data=json.load\\(sys.stdin\\); models=[m['id'] for m in data.get\\('data',[]\\) if 'deepseek' in m['id'].lower\\(\\) or 'free' in m['id'].lower\\(\\)]; [print\\(m\\) for m in sorted\\(models\\)[:30]]\")",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(k\\) for k in d.keys\\(\\)]\")",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('NavBar',''\\), ensure_ascii=False, indent=2\\)\\)\")",
-      "Bash(python3 -)"
+      "Bash(python3 -)",
+      "Bash(grep -E \"\\\\.\\(css|scss\\)$\")",
+      "Bash(npm list *)",
+      "Bash(mkdir -p /Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/game/chess)",
+      "Bash(mkdir -p /Users/nikitatisevic/Desktop/GoodWorkerRemaster/src/_pages/ChessGamePage)",
+      "Bash(node -e \"const lucide = require\\('/Users/nikitatisevic/Desktop/GoodWorkerRemaster/node_modules/lucide-react'\\); const keys = Object.keys\\(lucide\\).filter\\(k => /chess|pawn|knight|bishop|rook|king|queen/i.test\\(k\\)\\); console.log\\(keys\\);\")",
+      "Bash(node -e ' *)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('NavBar',{}\\), indent=2\\)\\)\")",
+      "Bash(xargs -I {} bash -c 'echo \"=== {} ===\" && head -30 {}')",
+      "Bash(xargs -I{} sh -c 'echo \"=== {} ===\"; head -80 {}')",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k:v for k,v in d.items\\(\\) if 'road' in k.lower\\(\\) or 'Road' in k}, indent=2\\)\\)\")",
+      "Bash(grep -E \"\\\\.\\(tsx|ts|jsx|js\\)$\")",
+      "Bash(git -C /Users/nikitatisevic/Desktop/pdf-microservice/pdf-service status)",
+      "Bash(git -C /Users/nikitatisevic/Desktop/pdf-microservice/pdf-service add .env.example package.json package-lock.json src/index.js src/controllers/email.controller.js src/routes/email.routes.js src/services/email.service.js)",
+      "Bash(git -C /Users/nikitatisevic/Desktop/pdf-microservice/pdf-service commit -m ' *)",
+      "Bash(git -C /Users/nikitatisevic/Desktop/pdf-microservice/pdf-service add /Users/nikitatisevic/Desktop/pdf-microservice/nextjs-client/emailServiceClient.ts)",
+      "Bash(git -C /Users/nikitatisevic/Desktop/pdf-microservice/pdf-service push origin main)",
+      "Bash(git -C /Users/nikitatisevic/Desktop/pdf-microservice/pdf-service add railway.json)",
+      "Bash(railway --version)",
+      "Bash(railway status *)",
+      "Bash(railway login *)",
+      "Bash(railway whoami *)",
+      "Bash(npm uninstall *)",
+      "Bash(git -C /Users/nikitatisevic/Desktop/pdf-microservice/pdf-service add package.json package-lock.json)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); keys=list\\(d.keys\\(\\)\\); print\\(keys[:40]\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k: d[k] for k in list\\(d.keys\\(\\)\\)[40:]}, ensure_ascii=False, indent=2\\)\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('roadmapPreview', {}\\), ensure_ascii=False, indent=2\\)\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k: d[k] for k in ['roadMap','roadmapPreview','PostBlockEditor']}, ensure_ascii=False, indent=2\\)\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({'PostBlockEditor': d.get\\('PostBlockEditor',{}\\), 'roadMap_extra': {k:v for k,v in d.get\\('roadMap',{}\\).items\\(\\) if 'load' in k.lower\\(\\) or 'payw' in k.lower\\(\\) or 'edit' in k.lower\\(\\)}}, ensure_ascii=False, indent=2\\)\\)\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\Мастер\\Desktop\\goodworkerremaster\\app\\api\\roadmap",
@@ -161,7 +189,8 @@
       "/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/(forTeachers)/report",
       "/Users/nikitatisevic/Desktop/pdf-microservice/pdf-service/src",
       "/Users/nikitatisevic/Desktop/pdf-microservice/pdf-service",
-      "/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/api/post/[id]/comments"
+      "/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/api/post/[id]/comments",
+      "/Users/nikitatisevic/Desktop/pdf-microservice/nextjs-client"
     ]
   }
 }

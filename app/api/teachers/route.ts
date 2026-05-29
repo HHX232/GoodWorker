@@ -31,6 +31,7 @@ export async function GET(req: NextRequest) {
         select: {
           id: true,
           name: true,
+          nameTransliterated: true,
           avatarUrl: true,
           isVip: true,
           lastSeenAt: true,

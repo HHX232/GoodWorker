@@ -4,7 +4,8 @@ export enum PostBlockType {
   TEXT = 'TEXT',
   MEDIA = 'MEDIA',
   AUDIO = 'AUDIO',
-  TEST_LINK = 'TEST_LINK'
+  TEST_LINK = 'TEST_LINK',
+  MINI_TEST = 'MINI_TEST'
 }
 
 export interface PostTextPayload {
@@ -30,7 +31,12 @@ export interface PostTestLinkPayload {
   title: string | null
 }
 
-export type PostBlockPayload = PostTextPayload | PostMediaPayload | PostAudioPayload | PostTestLinkPayload
+export interface PostMiniTestPayload {
+  testId: string | null
+  title: string | null
+}
+
+export type PostBlockPayload = PostTextPayload | PostMediaPayload | PostAudioPayload | PostTestLinkPayload | PostMiniTestPayload
 
 export interface PostBlockMeta {
   type: PostBlockType

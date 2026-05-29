@@ -9,6 +9,7 @@ import {
   PostAudioPayload,
   PostBlockType,
   PostMediaPayload,
+  PostMiniTestPayload,
   PostTestLinkPayload,
   PostTextPayload
 } from '@/shared/types/Post/Post.type'
@@ -16,6 +17,7 @@ import {Trash2Icon} from 'lucide-react'
 import {useTranslations} from 'next-intl'
 import {toast} from 'sonner'
 import styles from './PostBlockEditor.module.scss'
+import {PostMiniTestBlockEditor} from './PostMiniTestBlockEditor'
 import {PostTestLinkBlockEditor} from './PostTestLinkBlockEditor'
 
 interface Props {
@@ -30,7 +32,8 @@ export function PostBlockEditor({block}: Props) {
     [PostBlockType.TEXT]: t('textLabel'),
     [PostBlockType.MEDIA]: t('mediaLabel'),
     [PostBlockType.AUDIO]: t('audioLabel'),
-    [PostBlockType.TEST_LINK]: t('testLabel')
+    [PostBlockType.TEST_LINK]: t('testLabel'),
+    [PostBlockType.MINI_TEST]: t('miniTestLabel')
   }
 
   const label = BLOCK_LABELS[block.type]
@@ -65,6 +68,8 @@ export function PostBlockEditor({block}: Props) {
         )
       case PostBlockType.TEST_LINK:
         return <PostTestLinkBlockEditor blockId={block.id} payload={block.payload as PostTestLinkPayload} />
+      case PostBlockType.MINI_TEST:
+        return <PostMiniTestBlockEditor blockId={block.id} payload={block.payload as PostMiniTestPayload} />
       default:
         return null
     }

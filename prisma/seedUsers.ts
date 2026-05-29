@@ -11,10 +11,8 @@ const ADMIN_EMAILS = [TEACHER_EMAIL]
 async function main() {
   const hash = await bcrypt.hash(PASSWORD, 10)
 
-  // ── Category for teacher (take any existing leaf) ────────
   const category = await prisma.category.findFirst({where: {levelNumber: 2}})
 
-  // ── Teacher ──────────────────────────────────────────────
   const teacher = await prisma.teacher.upsert({
     where: {email: TEACHER_EMAIL},
     update: {},
@@ -31,7 +29,6 @@ async function main() {
   })
   console.log('✅ Teacher:', teacher.id, teacher.email)
 
-  // ── Student ──────────────────────────────────────────────
   const student = await prisma.student.upsert({
     where: {email: STUDENT_EMAIL},
     update: {},
@@ -45,14 +42,12 @@ async function main() {
   })
   console.log('✅ Student:', student.id, student.email)
 
-  // Link student → teacher
   await prisma.teacherStudent.upsert({
     where: {teacherId_studentId: {teacherId: teacher.id, studentId: student.id}},
     update: {},
     create: {teacherId: teacher.id, studentId: student.id},
   })
 
-  // ── Notifications for teacher ────────────────────────────
   const now = new Date()
   const ago = (h: number) => new Date(now.getTime() - h * 3_600_000)
 

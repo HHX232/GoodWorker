@@ -9,6 +9,7 @@ import Card from '@/shared/ui/Posts/Card/Card'
 import { RoadMapPreview } from '@/shared/ui/RoadMap/RoadMapPreview/RoadMapPreview'
 import { useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import styles from './DashboardCenter.module.scss'
 
@@ -255,12 +256,26 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
 
           {/* Roadmaps */}
           {visibleRoadmaps.map(rm => (
-            <RoadMapPreview key={rm.id} {...rm} useLink />
+            <div key={rm.id} className={styles.cardWrapper}>
+              <RoadMapPreview {...rm} useLink />
+              {isOwner && (
+                <Link href={`/create-road-map?edit=${rm.id}`} className={styles.editBtn}>
+                  {t('edit')}
+                </Link>
+              )}
+            </div>
           ))}
 
           {/* Posts */}
           {visiblePosts.map(p => (
-            <Card key={p.id} {...mapPost(p)} />
+            <div key={p.id} className={styles.cardWrapper}>
+              <Card {...mapPost(p)} />
+              {isOwner && (
+                <Link href={`/edit-post/${p.id}`} className={styles.editBtn}>
+                  {t('edit')}
+                </Link>
+              )}
+            </div>
           ))}
 
           {/* Services */}

@@ -70,6 +70,33 @@
   margin-top: 1px;
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.offerBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #534AB7;
+  background: transparent;
+  color: #534AB7;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: #534AB7;
+    color: #fff;
+  }
+}
+
 .closeBtn {
   background: none;
   border: none;

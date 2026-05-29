@@ -96,6 +96,15 @@ html {
   background-color: #EEEFF8;
 }
 
+// ─── Pomodoro dark theme ──────────────────────────────────────────────────────
+html.pomodoro-dark {
+  background-color: #0f1117;
+
+  body {
+    background-color: #0f1117;
+  }
+}
+
 .swiper-button-next,
 .swiper-button-prev {
   display: none !important;

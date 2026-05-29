@@ -1,0 +1,182 @@
+// Light defaults
+.page {
+  min-height: 100vh;
+  background: #f8f9fa;
+  padding: 40px 16px 60px;
+  color: #1a1a2e;
+  transition: background 0.25s, color 0.25s;
+}
+
+:global(html.pomodoro-dark) .page {
+  background: #0f1117;
+  color: #e8eaf0;
+}
+
+.container {
+  max-width: 520px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+// ─── Header ───────────────────────────────────────────────────────────────────
+
+.header {
+  text-align: center;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #1a1a2e;
+  letter-spacing: -0.4px;
+  transition: color 0.25s;
+
+  :global(html.pomodoro-dark) & {
+    color: #e8eaf0;
+  }
+}
+
+.themeToggle {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1.5px solid #e0e0e0;
+  background: #fff;
+  color: #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.2s, background 0.25s, color 0.25s;
+
+  &:hover {
+    border-color: #aaa;
+    color: #111;
+  }
+
+  :global(html.pomodoro-dark) & {
+    background: #1a1d26;
+    border-color: #2a2d3a;
+    color: #e8eaf0;
+
+    &:hover {
+      border-color: #4b5563;
+    }
+  }
+}
+
+.subtitle {
+  font-size: 0.9375rem;
+  color: #868d97;
+  line-height: 1.5;
+  transition: color 0.25s;
+
+  :global(html.pomodoro-dark) & {
+    color: #6b7280;
+  }
+}
+
+// ─── Timer card ───────────────────────────────────────────────────────────────
+
+.card {
+  background: #fff;
+  border: 1px solid #edeef3;
+  border-radius: 20px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+  overflow: hidden;
+  transition: background 0.25s, border-color 0.25s, box-shadow 0.25s;
+
+  :global(html.pomodoro-dark) & {
+    background: #1a1d26;
+    border-color: #2a2d3a;
+    box-shadow: 0 2px 24px rgba(0,0,0,0.4);
+  }
+}
+
+// ─── Tips ─────────────────────────────────────────────────────────────────────
+
+.tips {
+  background: #fff;
+  border: 1px solid #edeef3;
+  border-radius: 16px;
+  padding: 20px;
+  transition: background 0.25s, border-color 0.25s;
+
+  :global(html.pomodoro-dark) & {
+    background: #1a1d26;
+    border-color: #2a2d3a;
+  }
+}
+
+.tipsTitle {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #c0c2cc;
+  margin-bottom: 14px;
+  transition: color 0.25s;
+
+  :global(html.pomodoro-dark) & {
+    color: #4b5563;
+  }
+}
+
+.tipGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.tipIcon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #868d97;
+  display: flex;
+  align-items: center;
+  transition: color 0.25s;
+
+  :global(html.pomodoro-dark) & {
+    color: #6b7280;
+  }
+}
+
+.tipTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 2px;
+  transition: color 0.25s;
+
+  :global(html.pomodoro-dark) & {
+    color: #e8eaf0;
+  }
+}
+
+.tipDesc {
+  font-size: 0.8125rem;
+  color: #868d97;
+  line-height: 1.4;
+  transition: color 0.25s;
+
+  :global(html.pomodoro-dark) & {
+    color: #6b7280;
+  }
+}

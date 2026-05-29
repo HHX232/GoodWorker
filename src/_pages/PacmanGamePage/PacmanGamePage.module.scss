@@ -1,0 +1,223 @@
+.page {
+  min-height: 100vh;
+  background: #0a0a0a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 8px 24px;
+  color: #fff;
+  box-sizing: border-box;
+}
+
+// ─── Top bar ──────────────────────────────────────────────────────────────────
+
+.topBar {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding: 0 4px;
+}
+
+.back {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #888;
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: color 0.15s;
+  white-space: nowrap;
+  &:hover { color: #FFE000; }
+}
+
+.title {
+  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #FFE000;
+  text-shadow: 0 0 12px rgba(255, 224, 0, 0.5);
+}
+
+.restartBtn {
+  background: none;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: #888;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  &:hover { color: #FFE000; border-color: #FFE000; }
+}
+
+// ─── HUD ─────────────────────────────────────────────────────────────────────
+
+.hud {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding: 0 4px;
+}
+
+.hudItem {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.hudLabel {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #555;
+}
+
+.hudValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #FFE000;
+  line-height: 1;
+}
+
+.lives {
+  display: flex;
+  gap: 5px;
+}
+
+.life {
+  font-size: 1rem;
+  color: #FFE000;
+  text-shadow: 0 0 8px rgba(255, 224, 0, 0.6);
+}
+
+// ─── Canvas ──────────────────────────────────────────────────────────────────
+
+.canvasWrap {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  border: 2px solid #1a1aff;
+  border-radius: 4px;
+  box-shadow: 0 0 20px rgba(26, 26, 255, 0.35), 0 0 50px rgba(26, 26, 255, 0.1);
+  /* keeps aspect ratio when canvas scales */
+  line-height: 0;
+}
+
+.canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 2px;
+}
+
+// ─── Overlay ─────────────────────────────────────────────────────────────────
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.84);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+}
+
+.overlayBox {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+}
+
+.overlayTitle {
+  font-size: clamp(1.25rem, 5vw, 2rem);
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: #FFE000;
+  text-shadow: 0 0 20px rgba(255, 224, 0, 0.6);
+}
+
+.overlayScore {
+  font-size: 1rem;
+  color: #ccc;
+}
+
+.overlayHint {
+  font-size: clamp(0.75rem, 2.5vw, 0.875rem);
+  color: #888;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.overlayBtn {
+  background: #FFE000;
+  color: #000;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 28px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: transform 0.12s, box-shadow 0.12s;
+  &:hover {
+    transform: scale(1.04);
+    box-shadow: 0 4px 16px rgba(255, 224, 0, 0.4);
+  }
+  &:active { transform: scale(0.97); }
+}
+
+// ─── D-pad ───────────────────────────────────────────────────────────────────
+
+.dpad {
+  display: grid;
+  grid-template-columns: repeat(3, 52px);
+  grid-template-rows: repeat(3, 52px);
+  gap: 6px;
+  margin-top: 16px;
+
+  @media (min-width: 640px) {
+    display: none;
+  }
+}
+
+.dpadBtn {
+  background: #111122;
+  border: 1px solid #2a2a50;
+  border-radius: 12px;
+  color: #FFE000;
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.08s;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  &:active { background: #1e1e44; transform: scale(0.94); }
+}
+
+// ─── Desktop hint ─────────────────────────────────────────────────────────────
+
+.hint {
+  margin-top: 12px;
+  font-size: 0.75rem;
+  color: #444;
+  letter-spacing: 0.04em;
+
+  @media (max-width: 639px) {
+    display: none;
+  }
+}

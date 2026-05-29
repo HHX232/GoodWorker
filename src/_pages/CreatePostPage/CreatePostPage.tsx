@@ -36,7 +36,7 @@ function CreatePostPage({id}: {id?: string}) {
   const {title, visibility, categoryIds} = useTypedSelector((s) => s.postSlice)
   const blocks = useTypedSelector((s) => s.postSlice.blocks)
 
-  const {save, status, error} = useSavePost(activeId)
+  const {save, status} = useSavePost(activeId)
   const isLoading = status === 'loading'
 
   const [draggingType, setDraggingType] = useState<PostBlockType | null>(null)
@@ -106,8 +106,6 @@ function CreatePostPage({id}: {id?: string}) {
 
             <PostCanvas isDraggingFromPalette={!!draggingType} />
           </div>
-
-          {error && <p className={styles.error_text}>{error}</p>}
 
           <button type='button' className={styles.publish_btn} disabled={isLoading} onClick={save}>
             {isLoading ? t('publishing') : activeId ? t('saveChanges') : t('publishPost')}

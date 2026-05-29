@@ -52,6 +52,8 @@ model Student {
   notifications          Notification[]
   serviceBookings        ServiceBooking[]
   personalServices       Service[]        @relation("PersonalServices")
+  supportRequests        SupportRequest[]
+  feedbackPromoGiven     Boolean          @default(false)
 }
 
 model Teacher {
@@ -93,6 +95,8 @@ model Teacher {
   services           Service[]
   passportDocumentUrl String?
   experiences         TeacherExperience[]
+  supportRequests     SupportRequest[]
+  feedbackPromoGiven  Boolean             @default(false)
 }
 
 model TeacherExperience {
@@ -260,7 +264,21 @@ model Post {
   additionalTitleTranslations Json?
   contentTranslations         Json?
 
-  allowedStudents PostAllowedStudent[]
+  allowedStudents  PostAllowedStudent[]
+  miniTestAttempts PostTestAttempt[]
+}
+
+model PostTestAttempt {
+  id         String   @id @default(uuid())
+  postId     String
+  testId     String
+  studentId  String?
+  teacherId  String?
+  score      Float?
+  maxScore   Float?
+  percent    Float?
+  createdAt  DateTime @default(now())
+  post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
 
 model Bookmark {
@@ -782,4 +800,21 @@ model AdminEmail {
   id        String   @id @default(uuid())
   email     String   @unique
   createdAt DateTime @default(now())
+}
+
+model SupportRequest {
+  id         String   @id @default(uuid())
+  authorId   String
+  authorRole Role
+  title      String
+  text       String
+  photoUrls  String[] @default([])
+  status     String   @default("pending")
+  reply      String?
+  createdAt  DateTime @default(now())
+
+  student Student? @relation(fields: [authorId], references: [id], onDelete: Cascade, map: "support_student_fk")
+  teacher Teacher? @relation(fields: [authorId], references: [id], onDelete: Cascade, map: "support_teacher_fk")
+
+  @@index([authorId])
 }

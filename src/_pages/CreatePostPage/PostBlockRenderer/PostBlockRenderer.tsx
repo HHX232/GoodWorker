@@ -4,7 +4,8 @@
 import { InfoAudioEditor } from '@/features/BlockEditors/InfoAudioEditor/InfoAudioEditor'
 import { InfoMediaEditor } from '@/features/BlockEditors/InfoMediaEditor/InfoMediaEditor'
 import { InfoTextEditor } from '@/features/BlockEditors/InfoTextEditor/InfoTextEditor'
-import { PostBlock, PostBlockType } from '@/shared/types/Post/Post.type'
+import { PostBlock, PostBlockType, PostMiniTestPayload } from '@/shared/types/Post/Post.type'
+import { PostMiniTestViewer } from '@/widgets/PostBlocks/PostMiniTestViewer'
 
 interface Props {
   blocks: PostBlock[]
@@ -41,6 +42,14 @@ export const PostBlockRenderer = ({blocks, postId, titleNode}: Props) => {
             return <InfoAudioEditor key={block.id} payload={block.payload as any} viewOnly />
           case PostBlockType.TEST_LINK:
             return null
+          case PostBlockType.MINI_TEST:
+            return (
+              <PostMiniTestViewer
+                key={block.id}
+                payload={block.payload as PostMiniTestPayload}
+                postId={postId}
+              />
+            )
           default:
             return null
         }

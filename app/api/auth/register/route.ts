@@ -3,6 +3,7 @@ import { getIp, limits } from '@/shared/api/rate-limit'
 import { tooManyRequests } from '@/shared/api/rate-limit-response'
 import { prisma } from '@/shared/prisma/prisma'
 import { applyPromoCode } from '@/lib/applyPromoCode'
+import { hasCyrillic, transliterateCyrillicToLatin } from '@/shared/lib/transliterate'
 import bcrypt from 'bcryptjs'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -76,7 +77,7 @@ const sendUserSchema = z
     await saveOtp(email, code)
     await sendOtp(email, code)
 
-    return NextResponse.json({ ok: true, __devOtp: code })
+    return NextResponse.json({ ok: true })
 
   }
    if(body.step === 'send' && body.userType === 'User'){
@@ -105,7 +106,7 @@ const sendUserSchema = z
     await saveOtp(email, code)
     await sendOtp(email, code)
 
-    return NextResponse.json({ ok: true, __devOtp: code })
+    return NextResponse.json({ ok: true })
 
   }
 
@@ -126,6 +127,7 @@ const sendUserSchema = z
   }
 
   const hashedPassword = await bcrypt.hash(password, 10)
+  const nameTransliterated = hasCyrillic(name) ? transliterateCyrillicToLatin(name) : null
 
   try {
     let user
@@ -138,6 +140,7 @@ const sendUserSchema = z
           phone,
           password: hashedPassword,
           langCode: body.langCode ?? 'ru',
+          nameTransliterated,
         },
         select: { id: true, name: true, email: true, phone: true },
       })
@@ -149,6 +152,7 @@ const sendUserSchema = z
           phone,
           password: hashedPassword,
           langCode: body.langCode ?? 'ru',
+          nameTransliterated,
           languages: Array.isArray(body.languages) && body.languages.length > 0
             ? body.languages
             : ['ru'],

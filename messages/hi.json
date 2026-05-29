@@ -35,7 +35,9 @@
     "logout": "लॉगआउट",
     "calendar": "कैलेंडर",
     "courseCatalog": "कोर्स कैटलॉग",
-    "roadmaps": "रोडमैप"
+    "roadmaps": "रोडमैप",
+    "games": "गेम्स",
+    "pomodoro": "पोमोडोरो"
   },
   "CreateTestPage": {
     "title": "टेस्ट बनाएं",
@@ -44,7 +46,17 @@
     "descriptionPlaceholder": "टेस्ट का विवरण दर्ज करें, उदा. क्रियाविशेषण विषय अक्सर परीक्षाओं में आता है",
     "loading": "लोड हो रहा है...",
     "pdfImportBtn": "PDF से आयात करें",
-    "categoryPlaceholder": "टेस्ट की श्रेणी चुनें"
+    "categoryPlaceholder": "टेस्ट की श्रेणी चुनें",
+    "saving": "सहेजा जा रहा है...",
+    "saveTest": "टेस्ट सहेजें",
+    "savedOk": "✓ सहेजा गया",
+    "retryAfterError": "त्रुटि — पुनः प्रयास करें",
+    "successCreated": "टेस्ट बनाया गया!",
+    "successUpdated": "टेस्ट अपडेट हुआ!",
+    "errorTitleRequired": "टेस्ट का नाम दर्ज करें",
+    "errorBlocksRequired": "कम से कम एक प्रश्न जोड़ें",
+    "errorBlocksInvalid": "सभी प्रश्नों के आवश्यक फ़ील्ड भरें",
+    "errorSaveFailed": "टेस्ट सहेजने में विफल"
   },
   "BlockEditor": {
     "fillText": "पाठ भरें",
@@ -69,7 +81,12 @@
     "categoryPlaceholder": "पोस्ट की श्रेणी चुनें",
     "publishing": "प्रकाशित हो रहा है…",
     "saveChanges": "बदलाव सहेजें",
-    "publishPost": "पोस्ट प्रकाशित करें"
+    "publishPost": "पोस्ट प्रकाशित करें",
+    "successPublished": "पोस्ट प्रकाशित हुई!",
+    "successUpdated": "पोस्ट अपडेट हुई!",
+    "errorTitleRequired": "पोस्ट का शीर्षक दर्ज करें",
+    "errorBlocksRequired": "कम से कम एक ब्लॉक जोड़ें",
+    "errorSaveFailed": "पोस्ट प्रकाशित करने में विफल"
   },
   "PostPalette": {
     "title": "ब्लॉक",
@@ -95,7 +112,14 @@
     "audioLabel": "ऑडियो",
     "testLabel": "टेस्ट",
     "blockDeleted": "ब्लॉक \"{label}\" हटा दिया गया",
-    "deleteBlock": "ब्लॉक हटाएं"
+    "deleteBlock": "ब्लॉक हटाएं",
+    "miniTestLabel": "मिनी-टेस्ट",
+    "testLinkSelectTest": "टेस्ट चुनें",
+    "testLinkChange": "टेस्ट बदलें",
+    "testLinkSearch": "टेस्ट खोजें...",
+    "testLinkLoading": "लोड हो रहा है...",
+    "testLinkNoTests": "कोई टेस्ट नहीं",
+    "testLinkSelected": "चुना: {title}"
   },
   "InfoTextEditor": {
     "placeholder": "सामग्री टेक्स्ट दर्ज करें...",
@@ -396,7 +420,14 @@
     "complaintSubmit": "सबमिट करें",
     "complaintSuccess": "शिकायत दर्ज की गई",
     "complaintError": "शिकायत दर्ज करने में विफल",
-    "complaintAlreadyReported": "आपने पहले ही इस रोडमैप की रिपोर्ट की है"
+    "complaintAlreadyReported": "आपने पहले ही इस रोडमैप की रिपोर्ट की है",
+    "searchPosts": "पोस्ट खोजें...",
+    "searchTests": "टेस्ट खोजें...",
+    "selectTest": "टेस्ट चुनें",
+    "noTestsFound": "कोई टेस्ट नहीं",
+    "loadingTests": "लोड हो रहा है...",
+    "noPostsFound": "कोई पोस्ट नहीं",
+    "loadingPosts": "पोस्ट लोड हो रहे हैं..."
   },
   "fileBlock": {
     "filesNotAttached": "कोई फ़ाइल संलग्न नहीं",
@@ -488,7 +519,8 @@
   "TeacherCard": {
     "posts": "पोस्ट",
     "students": "छात्र",
-    "viewProfile": "प्रोफ़ाइल देखें"
+    "viewProfile": "प्रोफ़ाइल देखें",
+    "share": "शेयर करें"
   },
   "PostPage": {
     "report": "रिपोर्ट करें"
@@ -583,6 +615,7 @@
     "calendar": "कैलेंडर",
     "videoRoom": "वीडियो रूम",
     "createVideoCallBtn": "बनाएं",
+    "edit": "संपादित करें",
     "yourName": "आपका नाम",
     "teacher": "शिक्षक",
     "soonBadge": "जल्द आएगा",
@@ -709,5 +742,100 @@
     "typeInfo": "टेक्स्ट",
     "refAnswer": "संदर्भ: {text}",
     "morePairs": "+{n} और..."
+  },
+  "notifications": {
+    "title": "सूचनाएं",
+    "markAllRead": "सब पढ़ा हुआ चिह्नित करें",
+    "loading": "लोड हो रहा है...",
+    "empty": "कोई सूचना नहीं",
+    "emptyPanel": "अभी कोई सूचना नहीं",
+    "viewAll": "सभी सूचनाएं देखें",
+    "history": "इतिहास ({count})",
+    "historyTitle": "सूचना इतिहास",
+    "justNow": "अभी",
+    "minutesAgo": "{n} मिनट पहले",
+    "hoursAgo": "{n} घंटे पहले",
+    "daysAgo": "{n} दिन पहले",
+    "activity": "गतिविधि",
+    "less": "कम",
+    "more": "अधिक",
+    "noNotifOnDay": "कोई सूचना नहीं",
+    "notifsOnDay": "{count} सूचना",
+    "showInPanel": "पैनल में दिखाएं",
+    "alwaysOn": "हमेशा",
+    "noUnread": "कोई अपठित सूचना नहीं",
+    "archiveEmpty": "संग्रह खाली है",
+    "allTypes": "सभी प्रकार",
+    "replySuccess": "उत्तर भेजा गया",
+    "replyError": "उत्तर भेजने में विफल",
+    "replyPlaceholder": "शिकायत का आपका उत्तर...",
+    "cancel": "रद्द करें",
+    "sending": "भेज रहे हैं…",
+    "sendReply": "उत्तर भेजें",
+    "collapseReply": "छुपाएं",
+    "reply": "उत्तर दें",
+    "replied": "उत्तर दिया",
+    "newBadge": "{count} नई",
+    "roleStudent": "छात्र",
+    "roleTeacher": "शिक्षक",
+    "tabs": {
+      "all": "सभी",
+      "unread": "अपठित",
+      "archive": "संग्रह"
+    },
+    "types": {
+      "NEW_COMPLAINT": "शिकायतें",
+      "COMPLAINT_REPLIED": "उत्तर",
+      "COMPLAINT_CLOSED": "बंद",
+      "NEW_STUDENT": "छात्र",
+      "ROADMAP_PURCHASE": "खरीदारी",
+      "NEW_COMMENT_ON_POST": "टिप्पणियां",
+      "NEW_REVIEW": "समीक्षाएं",
+      "NEW_POST": "पोस्ट",
+      "VIDEO_CALL_INVITE": "वीडियो कॉल आमंत्रण",
+      "SYSTEM": "सिस्टम"
+    },
+    "actions": {
+      "NEW_COMPLAINT": "शिकायतें खोलें",
+      "COMPLAINT_REPLIED": "उत्तर देखें",
+      "NEW_STUDENT": "पाठ्यक्रम",
+      "ROADMAP_PURCHASE": "आंकड़े",
+      "NEW_COMMENT_ON_POST": "पोस्ट पर जाएं",
+      "NEW_REVIEW": "पाठ्यक्रम",
+      "NEW_POST": "पोस्ट पढ़ें"
+    }
+  },
+  "roadmapPreview": {
+    "free": "निःशुल्क",
+    "partiallyFree": "आंशिक रूप से निःशुल्क",
+    "open": "रोडमैप खोलें",
+    "share": "शेयर करें",
+    "notFound": "कोई रोडमैप नहीं मिला",
+    "noMore": "और कोई रोडमैप नहीं",
+    "originalLang": "मूल भाषा",
+    "languages": {
+      "ru": "रूसी",
+      "en": "अंग्रेज़ी",
+      "de": "जर्मन",
+      "fr": "फ्रेंच",
+      "es": "स्पेनिश",
+      "hi": "हिन्दी",
+      "zh": "चीनी",
+      "ar": "अरबी",
+      "tr": "तुर्की",
+      "ko": "कोरियाई",
+      "ja": "जापानी",
+      "pt": "पुर्तगाली"
+    },
+    "edit": "संपादित करें"
+  },
+  "roadmapViewer": {
+    "buy": "रोडमैप खरीदें",
+    "buyAccess": "पहुँच प्राप्त करें",
+    "stats": "सांख्यिकी"
+  },
+  "card": {
+    "readFullPost": "पूरी पोस्ट पढ़ें",
+    "editPost": "संपादित करें"
   }
 }

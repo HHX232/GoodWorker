@@ -23,9 +23,13 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    document.body.style.overflow = 'auto'
+    const html = document.documentElement
+    const body = document.body
+    html.style.setProperty('overflow-y', 'auto', 'important')
+    body.style.setProperty('overflow-y', 'auto', 'important')
     return () => {
-      document.body.style.overflow = ''
+      html.style.removeProperty('overflow-y')
+      body.style.removeProperty('overflow-y')
     }
   }, [])
 
@@ -89,11 +93,7 @@ export default function RegisterPage() {
         return
       }
 
-      if (data.__devOtp) {
-        toast.success(`На вашу почту придёт код — ${data.__devOtp}`, {duration: 30000})
-      } else {
-        toast.success(t('codeSent'))
-      }
+      toast.success(t('codeSent'))
       setStep('verify')
     } catch {
       toast.error(t('unexpectedError'))

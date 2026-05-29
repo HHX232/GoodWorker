@@ -1,5 +1,5 @@
 import {PostBlockMeta, PostBlockType} from '@/shared/types/Post/Post.type'
-import {ImageIcon, LinkIcon, MicIcon, TypeIcon} from 'lucide-react'
+import {ClipboardCheckIcon, ImageIcon, LinkIcon, MicIcon, TypeIcon} from 'lucide-react'
 
 type PostBlockRegistry = {[K in PostBlockType]: PostBlockMeta & {type: K}}
 
@@ -30,6 +30,13 @@ export const PostBlockRegistry: PostBlockRegistry = {
     label: 'Тест',
     description: 'Ссылка на тест',
     icon: <LinkIcon className='stroke-violet-400' />,
+    defaultPayload: {testId: null, title: null}
+  },
+  [PostBlockType.MINI_TEST]: {
+    type: PostBlockType.MINI_TEST,
+    label: 'Мини-тест',
+    description: 'Встроенный тест с результатом',
+    icon: <ClipboardCheckIcon className='stroke-rose-400' />,
     defaultPayload: {testId: null, title: null}
   }
 }

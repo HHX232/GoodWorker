@@ -19,8 +19,15 @@ const TeacherCard: FC<Props> = ({teacher}) => {
   const t = useTranslations('TeacherCard')
   const locale = useLocale()
   const [imgError, setImgError] = useState(false)
+  const [copied, setCopied] = useState(false)
   const {online, lastSeenAt} = useOnlineStatus(teacher.id)
   const activity = formatActivity(online, lastSeenAt)
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.origin + `/users/${teacher.id}`)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
 
   const showFallback = !teacher.avatarUrl || imgError
   const {bg, text} = getAvatarColor(teacher.name)
@@ -63,6 +70,9 @@ const TeacherCard: FC<Props> = ({teacher}) => {
             </Link>
             {teacher.isVip && <span className={styles.vip_badge}>★ VIP</span>}
           </div>
+          {teacher.nameTransliterated && locale !== 'ru' && (
+            <p className={styles.name_transliterated}>{teacher.nameTransliterated}</p>
+          )}
           <p className={`${styles.activity} ${activity === 'Online' ? styles.activity_online : ''}`}>{activity}</p>
         </div>
       </div>
@@ -98,12 +108,33 @@ const TeacherCard: FC<Props> = ({teacher}) => {
         </div>
       </div>
 
-      <Link href={`/users/${teacher.id}`} className={styles.link_btn}>
-        {t('viewProfile')}
-        <svg width='14' height='14' viewBox='0 0 16 16' fill='none'>
-          <path d='M1 8H15M15 8L8 1M15 8L8 15' stroke='#868897' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round' />
-        </svg>
-      </Link>
+      <div className={styles.actions}>
+        <Link href={`/users/${teacher.id}`} className={styles.link_btn}>
+          {t('viewProfile')}
+          <svg width='14' height='14' viewBox='0 0 16 16' fill='none'>
+            <path d='M1 8H15M15 8L8 1M15 8L8 15' stroke='#868897' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round' />
+          </svg>
+        </Link>
+
+        <button
+          type='button'
+          className={`${styles.share_btn} ${copied ? styles.share_btn_copied : ''}`}
+          onClick={handleShare}
+          title={copied ? '✓' : t('share')}
+        >
+          {copied ? (
+            <svg width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.2' strokeLinecap='round' strokeLinejoin='round'>
+              <polyline points='20 6 9 17 4 12' />
+            </svg>
+          ) : (
+            <svg width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+              <path d='M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8' />
+              <polyline points='16 6 12 2 8 6' />
+              <line x1='12' y1='2' x2='12' y2='15' />
+            </svg>
+          )}
+        </button>
+      </div>
     </div>
   )
 }

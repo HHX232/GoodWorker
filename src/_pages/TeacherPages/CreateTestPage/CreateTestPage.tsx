@@ -23,7 +23,7 @@ function CreateTestPage() {
   const {description, title} = useTypedSelector((state) => state.tasks)
   const searchParams = useSearchParams()
   const existingId = searchParams.get('id') ?? undefined
-  const {invalidBlockIds, errorsMap, clearInvalidBlock} = useSaveTest(existingId)
+  const {save, status, invalidBlockIds, errorsMap, clearInvalidBlock} = useSaveTest(existingId)
   const mainContentRef = useRef<HTMLDivElement>(null)
   const {setCategoryIds} = useActions()
   const {categoryIds} = useTypedSelector((s) => s.tasks)
@@ -83,7 +83,7 @@ function CreateTestPage() {
               <TaskCanvas />
             </Suspense>
           </form>
-          <SaveTestButton existingId={searchParams.get('id') ?? undefined} />
+          <SaveTestButton save={save} status={status} />
         </div>
 
         <Suspense>

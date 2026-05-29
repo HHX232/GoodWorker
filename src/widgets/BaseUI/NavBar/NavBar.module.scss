@@ -3,7 +3,7 @@
 .navbar {
   display: flex;
   flex-direction: column;
-  padding: 24px;
+  padding: 24px 12px 24px 24px;
   gap: 12px;
   background-color: #ffffff;
   border-radius: 12px;
@@ -274,5 +274,44 @@
 
   &:hover {
     background-color: #fef2f2;
+  }
+}
+
+// ─── Pomodoro dark theme ──────────────────────────────────────────────────────
+:global(html.pomodoro-dark) {
+  .navbar {
+    background-color: #12141c;
+    box-shadow: 0 -4px 32px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3);
+    transition: background-color 0.25s, box-shadow 0.25s;
+  }
+
+  .item {
+    color: #9ca3af;
+
+    &:hover:not(.active) {
+      background-color: rgba(255,255,255,0.06);
+    }
+
+    &.active {
+      background-color: #e8eaf0;
+
+      .label { color: #0f1117; }
+      .icon  { color: #0f1117; }
+    }
+  }
+
+  .icon  { color: #6b7280; }
+  .label { color: #6b7280; }
+
+  .divider {
+    background-color: #1f2230;
+  }
+
+  .drag_handle {
+    background-color: #2a2d3a;
+  }
+
+  .logout_btn {
+    &:hover { background-color: rgba(239,68,68,0.12); }
   }
 }

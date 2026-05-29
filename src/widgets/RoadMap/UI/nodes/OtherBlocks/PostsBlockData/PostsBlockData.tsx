@@ -1,21 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
-import {ICard} from '@/shared/types'
+import MeService from '@/features/services/me.service'
+import PostService, {IPostResponse} from '@/features/services/PostService.service'
 import {RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
 import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
 import Card from '@/shared/ui/Posts/Card/Card'
 import {useViewMode} from '@/shared/ui/RoadMap/context/ViewModeContext'
-import {MOCK_CARDS} from '@/widgets/Cards/CardsCatalog/CardsCatalog'
 import {useReactFlow, useStore} from '@xyflow/react'
-import {CheckIcon, ChevronLeftIcon, ChevronRightIcon, PlusIcon, Trash2Icon} from 'lucide-react'
-import {useState} from 'react'
+import {useQuery} from '@tanstack/react-query'
+import {CheckIcon, ChevronLeftIcon, ChevronRightIcon, PlusIcon, SearchIcon, Trash2Icon} from 'lucide-react'
+import {useTranslations} from 'next-intl'
+import {useMemo, useState} from 'react'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import {Navigation} from 'swiper/modules'
 import {Swiper, SwiperSlide} from 'swiper/react'
 import styles from './PostsBlockData.module.scss'
-import {useTranslations} from 'next-intl'
 
 type PostsBlockData = RoadNodeData & {
   selectedPostIds?: string[]
@@ -28,23 +29,64 @@ export default function PostsBlock({nodeId}: {nodeId: string}) {
   const {updateNodeData} = useReactFlow()
   const [modalOpen, setModalOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
+  const [search, setSearch] = useState('')
 
   const selectedIds = useStore(
     (s) => ((s.nodeLookup.get(nodeId)?.data as PostsBlockData)?.selectedPostIds ?? []) as string[]
   )
 
-  const selectedPosts = selectedIds.map((id) => MOCK_CARDS.find((c) => c.cardId === id)).filter(Boolean) as ICard[]
+  const {data: me} = useQuery({
+    queryKey: ['me'],
+    queryFn: () => MeService.getMe(),
+    staleTime: 1000 * 60 * 5
+  })
 
-  const toggle = (cardId: string) => {
-    const next = selectedIds.includes(cardId) ? selectedIds.filter((id) => id !== cardId) : [...selectedIds, cardId]
+  const {data: postsData, isLoading: postsLoading} = useQuery({
+    queryKey: ['my-posts-modal', me?.id],
+    queryFn: () => PostService.getList({teacherId: me!.id, limit: 100}),
+    enabled: !!me?.id && modalOpen,
+    staleTime: 1000 * 30
+  })
+
+  const allPosts = postsData?.posts ?? []
+
+  const filteredPosts = useMemo(() => {
+    if (!search.trim()) return allPosts
+    const q = search.toLowerCase()
+    return allPosts.filter(
+      (p) => p.title.toLowerCase().includes(q) || (p.additionalTitle ?? '').toLowerCase().includes(q)
+    )
+  }, [allPosts, search])
+
+  const selectedPosts = useMemo(
+    () => selectedIds.map((id) => allPosts.find((p) => p.id === id)).filter(Boolean) as IPostResponse[],
+    [selectedIds, allPosts]
+  )
+
+  const toggle = (postId: string) => {
+    const next = selectedIds.includes(postId)
+      ? selectedIds.filter((id) => id !== postId)
+      : [...selectedIds, postId]
     updateNodeData(nodeId, {selectedPostIds: next} as any)
   }
 
-  const removePost = (cardId: string) => {
-    const next = selectedIds.filter((id) => id !== cardId)
+  const removePost = (postId: string) => {
+    const next = selectedIds.filter((id) => id !== postId)
     updateNodeData(nodeId, {selectedPostIds: next} as any)
     setActiveIndex(Math.min(activeIndex, next.length - 1))
   }
+
+  const toCard = (p: IPostResponse) => ({
+    cardId: p.id,
+    title: p.title,
+    subTitle: p.additionalTitle ?? '',
+    user: {id: p.teacher.id, name: p.teacher.name, image: p.teacher.avatarUrl ?? undefined, role: 'Teacher'},
+    imagesArray: p.mediaUrls ?? [],
+    comments: String(p._count?.comments ?? 0),
+    vues: '0',
+    stars: String(Math.round(p.avgRating ?? 0)),
+    userId: p.teacher.id
+  })
 
   const hasMultiple = selectedPosts.length > 1
 
@@ -57,7 +99,7 @@ export default function PostsBlock({nodeId}: {nodeId: string}) {
         </button>
       )}
       {selectedPosts.length === 0 && viewOnly && <p>{t('noPostsSelected')}</p>}
-      {/* ── Слайдер / одиночный пост ── */}
+
       {selectedPosts.length > 0 && (
         <div className={styles.sliderSection}>
           {hasMultiple ? (
@@ -75,21 +117,16 @@ export default function PostsBlock({nodeId}: {nodeId: string}) {
                 className={styles.swiper}
               >
                 {selectedPosts.map((post) => (
-                  <SwiperSlide key={post.cardId} className={styles.slide}>
-                    <SlideCard canRemove={!viewOnly} post={post} onRemove={() => removePost(post.cardId)} />
+                  <SwiperSlide key={post.id} className={styles.slide}>
+                    <SlideCard canRemove={!viewOnly} card={toCard(post)} onRemove={() => removePost(post.id)} />
                   </SwiperSlide>
                 ))}
               </Swiper>
             </div>
           ) : (
-            <SlideCard
-              canRemove={!viewOnly}
-              post={selectedPosts[0]}
-              onRemove={() => removePost(selectedPosts[0].cardId)}
-            />
+            <SlideCard canRemove={!viewOnly} card={toCard(selectedPosts[0])} onRemove={() => removePost(selectedPosts[0].id)} />
           )}
 
-          {/* Добавить ещё */}
           {!viewOnly && (
             <button className={styles.addMoreBtn} onClick={() => setModalOpen(true)}>
               <PlusIcon size={12} />
@@ -98,7 +135,7 @@ export default function PostsBlock({nodeId}: {nodeId: string}) {
           )}
         </div>
       )}
-      {/* ── Модальное окно ── */}
+
       <ModalWindowDefault
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
@@ -111,31 +148,42 @@ export default function PostsBlock({nodeId}: {nodeId: string}) {
           </p>
         }
       >
+        <div className={styles.searchWrap}>
+          <SearchIcon size={14} className={styles.searchIcon} />
+          <input
+            className={styles.searchInput}
+            placeholder={t('searchPosts')}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
+        {postsLoading && <p className={styles.hint}>{t('loadingPosts')}</p>}
+        {!postsLoading && filteredPosts.length === 0 && <p className={styles.hint}>{t('noPostsFound')}</p>}
+
         <div className={styles.modalGrid}>
-          {MOCK_CARDS.map((card) => {
-            const isSelected = selectedIds.includes(card.cardId)
+          {filteredPosts.map((post) => {
+            const isSelected = selectedIds.includes(post.id)
             return (
               <div
-                key={card.cardId}
+                key={post.id}
                 className={`${styles.modalCard} ${isSelected ? styles.modalCardSelected : ''}`}
-                onClick={() => toggle(card.cardId)}
+                onClick={() => toggle(post.id)}
               >
-                {/* Чекбокс */}
                 <div className={`${styles.checkbox} ${isSelected ? styles.checkboxChecked : ''}`}>
                   {isSelected && <CheckIcon size={10} />}
                 </div>
-
                 <Card
                   useLink={false}
-                  cardId={card.cardId}
-                  title={card.title}
-                  subTitle={card.subTitle}
-                  user={card.user}
-                  imagesArray={card.imagesArray}
-                  comments={card.comments}
-                  vues={card.vues}
-                  stars={card.stars}
-                  userId={card.userId}
+                  cardId={post.id}
+                  title={post.title}
+                  subTitle={post.additionalTitle ?? ''}
+                  user={{id: post.teacher.id, name: post.teacher.name, image: post.teacher.avatarUrl ?? undefined, role: 'Teacher'}}
+                  imagesArray={post.mediaUrls ?? []}
+                  comments={String(post._count?.comments ?? 0)}
+                  vues='0'
+                  stars={String(Math.round(post.avgRating ?? 0))}
+                  userId={post.teacher.id}
                 />
               </div>
             )
@@ -146,9 +194,7 @@ export default function PostsBlock({nodeId}: {nodeId: string}) {
   )
 }
 
-// ── Слайд с постом ────────────────────────────────────────────────────────────
-
-function SlideCard({post, onRemove, canRemove}: {post: ICard; onRemove: () => void; canRemove: boolean}) {
+function SlideCard({card, onRemove, canRemove}: {card: ReturnType<typeof Object.assign>; onRemove: () => void; canRemove: boolean}) {
   const t = useTranslations('roadMap')
   return (
     <div className={styles.slideCard}>
@@ -158,15 +204,15 @@ function SlideCard({post, onRemove, canRemove}: {post: ICard; onRemove: () => vo
         </button>
       )}
       <Card
-        cardId={post.cardId}
-        title={post.title}
-        subTitle={post.subTitle}
-        user={post.user}
-        imagesArray={post.imagesArray}
-        comments={post.comments}
-        vues={post.vues}
-        stars={post.stars}
-        userId={post.userId}
+        cardId={card.cardId}
+        title={card.title}
+        subTitle={card.subTitle}
+        user={card.user}
+        imagesArray={card.imagesArray}
+        comments={card.comments}
+        vues={card.vues}
+        stars={card.stars}
+        userId={card.userId}
       />
     </div>
   )

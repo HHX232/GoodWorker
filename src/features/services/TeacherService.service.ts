@@ -11,6 +11,7 @@ export interface ITeacherCategory {
 export interface ITeacherListItem {
   id: string
   name: string
+  nameTransliterated: string | null
   avatarUrl: string | null
   isVip: boolean
   lastSeenAt: string | null

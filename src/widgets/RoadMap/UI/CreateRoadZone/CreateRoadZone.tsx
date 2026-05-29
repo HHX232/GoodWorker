@@ -26,19 +26,20 @@ import {
 import '@xyflow/react/dist/style.css'
 import {EyeOffIcon, LockIcon} from 'lucide-react'
 import {useTranslations} from 'next-intl'
-import {useCallback, useEffect, useRef} from 'react'
+import {useCallback, useEffect, useRef, useState} from 'react'
 import {AutoLayoutButton} from '../../AutoLayoutButton/AutoLayoutButton'
 import DeletableEdge from '../nodes/DeletableEdge/DeletableEdge'
 import NodeComponent from '../nodes/NodeComponent/NodeComponent'
 import styles from './CreateRoadZone.module.scss'
 import {SaveRoadMapButton} from '@/shared/ui/RoadMap/Buttons/SaveRoadMapButton/SaveRoadMapButton'
+import RoadmapService from '@/features/services/RoadmapService.service'
 
 const nodeTypes = {FlowScrapeNode: NodeComponent}
 const edgeTypes = {default: DeletableEdge}
 const snapGrid: [number, number] = [50, 50]
 const fitViewOptions = {padding: 1.5}
 
-function CreateRoadZoneInner() {
+function CreateRoadZoneInner({ editId }: { editId?: string }) {
   const {isOver, setNodeRef: setDropRef} = useDroppable({id: 'droppable-canvas'})
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<RoadNodeData>>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
@@ -62,9 +63,28 @@ function CreateRoadZoneInner() {
   }, [])
 
   const isEntryCreated = useRef(false)
+  const [isLoadingEdit, setIsLoadingEdit] = useState(!!editId)
 
+  // Edit mode: load existing roadmap nodes/edges
   useEffect(() => {
-    if (isEntryCreated.current) return
+    if (!editId || isEntryCreated.current) return
+    isEntryCreated.current = true
+    setIsLoadingEdit(true)
+    RoadmapService.getById(editId)
+      .then((rm) => {
+        const content = rm.content as { nodes?: Node<RoadNodeData>[]; edges?: Edge[] } | null
+        if (content?.nodes) {
+          setNodes(content.nodes)
+          setEdges(content.edges ?? [])
+        }
+      })
+      .catch(console.error)
+      .finally(() => setIsLoadingEdit(false))
+  }, [editId, setNodes, setEdges])
+
+  // New roadmap: create blank entry point
+  useEffect(() => {
+    if (editId || isEntryCreated.current) return
 
     setNodes((nds) => {
       if (nds.some((el) => el.data.type === RoadMapBlockType.ENTRY_POINT)) {
@@ -82,7 +102,7 @@ function CreateRoadZoneInner() {
       isEntryCreated.current = true
       return [...nds, newNode]
     })
-  }, [screenToFlowPosition, setNodes])
+  }, [editId, screenToFlowPosition, setNodes])
 
   const onDrop = useCallback(
     (event: React.DragEvent<HTMLDivElement>) => {
@@ -181,6 +201,16 @@ function CreateRoadZoneInner() {
           overflow: 'hidden'
         }}
       >
+        {isLoadingEdit && (
+          <div className={styles.skeletonOverlay}>
+            <div className={styles.skeletonNode} style={{top: '12%', left: '50%', transform: 'translateX(-50%)', width: 340, height: 100}} />
+            <div className={styles.skeletonNode} style={{top: '38%', left: '28%', width: 300, height: 88}} />
+            <div className={styles.skeletonNode} style={{top: '38%', left: '58%', width: 300, height: 88}} />
+            <div className={styles.skeletonNode} style={{top: '63%', left: '50%', transform: 'translateX(-50%)', width: 280, height: 80}} />
+            <div className={styles.skeletonLabel}>{t('loading')}</div>
+          </div>
+        )}
+
         {isPaywallMode && (
           <div className={styles.paywallBanner}>
             <EyeOffIcon size={14} />
@@ -222,7 +252,7 @@ function CreateRoadZoneInner() {
                 {isPaywallMode ? t('paywallExit') : 'Paywall'}
               </button>
 
-              <SaveRoadMapButton />
+              <SaveRoadMapButton editId={editId} />
             </div>
           </Panel>
         </ReactFlow>

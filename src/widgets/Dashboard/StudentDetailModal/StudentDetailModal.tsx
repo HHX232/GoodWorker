@@ -1,5 +1,6 @@
 'use client'
 
+import { CreateServiceModal } from '@/widgets/Dashboard/CreateServiceModal/CreateServiceModal'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import styles from './StudentDetailModal.module.scss'
@@ -75,6 +76,7 @@ export function StudentDetailModal({
   studentId, studentName, studentInitials, avatarColor, avatarTextColor, subject, teacherId, onClose,
 }: Props) {
   const [tab, setTab] = useState<Tab>('meetings')
+  const [offerOpen, setOfferOpen] = useState(false)
   const [student, setStudent] = useState<StudentData | null>(null)
   const [errors, setErrors] = useState<ErrorItem[]>([])
   const [meetings, setMeetings] = useState<Meeting[]>([])
@@ -170,6 +172,17 @@ export function StudentDetailModal({
   }
 
   return (
+    <>
+    {teacherId && (
+      <CreateServiceModal
+        open={offerOpen}
+        onClose={() => setOfferOpen(false)}
+        teacherId={teacherId}
+        onCreated={() => {}}
+        initialStudentId={studentId}
+        initialIsPersonal
+      />
+    )}
     <div className={styles.overlay} onMouseDown={e => { if (e.target === e.currentTarget) onClose() }}>
       <div className={styles.modal} ref={modalRef}>
         {/* Header */}
@@ -184,11 +197,23 @@ export function StudentDetailModal({
               {student?.email && <div className={styles.studentEmail}>{student.email}</div>}
             </div>
           </div>
-          <button className={styles.closeBtn} onClick={onClose}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
+          <div className={styles.headerActions}>
+            {teacherId && (
+              <button className={styles.offerBtn} onClick={() => setOfferOpen(true)}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <path d="M20 12V22H4V12" /><path d="M22 7H2v5h20V7z" /><path d="M12 22V7" />
+                  <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
+                  <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+                </svg>
+                Предложение
+              </button>
+            )}
+            <button className={styles.closeBtn} onClick={onClose}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Tabs */}
@@ -401,5 +426,6 @@ export function StudentDetailModal({
         </div>
       </div>
     </div>
+    </>
   )
 }

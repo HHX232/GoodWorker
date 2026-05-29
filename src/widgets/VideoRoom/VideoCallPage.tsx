@@ -114,10 +114,11 @@ interface Props {
   ownerIdentity?: string
   localAvatarUrl?: string
   topic?: string
+  userRole?: string
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
-export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIdentity, localAvatarUrl, topic }: Props) {
+export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIdentity, localAvatarUrl, topic, userRole }: Props) {
   const router = useRouter()
   const [roomName] = useState(autoJoinRoom ?? '')
   const [layout, setLayout] = useState<Layout>('pip')
@@ -159,6 +160,14 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   // Controls auto-hide state
   const [controlsActive, setControlsActive] = useState(true)
   const controlsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Room limit / invite state
+  const [limitBlocked, setLimitBlocked] = useState(false)
+  const [showInviteModal, setShowInviteModal] = useState(false)
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteStudents, setInviteStudents] = useState<{ id: string; name: string; email: string; avatarUrl?: string | null }[]>([])
+  const [inviteSending, setInviteSending] = useState(false)
+  const [inviteFeedback, setInviteFeedback] = useState<{ ok: boolean; msg: string } | null>(null)
 
   // Stable ref for the data-message router — updated on every render so the
   // LiveKit event listener (registered once) always calls the latest handler.
@@ -305,6 +314,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
         handleRemoteMessage(type, '', payload.transcript ?? '')
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [handleRemoteMessage])
 
   const isMainSpeaker = mainSpeaker === userName
@@ -496,12 +506,56 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [testIsMainForEffect])
 
-  // ── Auto-join ──────────────────────────────────────────────────────────────
+  // ── Auto-join (with room limit check) ─────────────────────────────────────
   useEffect(() => {
-    if (autoJoinRoom) joinRoom()
+    if (autoJoinRoom) {
+      if (roomId) {
+        fetch(`/api/call/rooms/limit?roomId=${roomId}`)
+          .then(r => r.json())
+          .then(data => { if (!data.allowed) setLimitBlocked(true); else joinRoom() })
+          .catch(() => joinRoom())
+      } else {
+        joinRoom()
+      }
+    }
     return () => { disconnect() }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // ── Fetch students when invite modal opens (teacher only) ──────────────────
+  useEffect(() => {
+    if (!showInviteModal || userRole !== 'TEACHER') return
+    fetch('/api/call/my-students')
+      .then(r => r.json())
+      .then(data => setInviteStudents(data.students ?? []))
+      .catch(() => {})
+  }, [showInviteModal, userRole])
+
+  // ── Invite send handler ────────────────────────────────────────────────────
+  const handleSendInvite = async () => {
+    if (!inviteEmail.trim() || !roomId) return
+    setInviteSending(true)
+    setInviteFeedback(null)
+    try {
+      const res = await fetch('/api/call/rooms/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId, targetEmail: inviteEmail.trim() }),
+      })
+      if (res.ok) {
+        setInviteFeedback({ ok: true, msg: 'Приглашение отправлено' })
+        setInviteEmail('')
+      } else {
+        const data = await res.json()
+        const msg = data.error === 'USER_NOT_FOUND' ? 'Пользователь не найден' : 'Ошибка отправки'
+        setInviteFeedback({ ok: false, msg })
+      }
+    } catch {
+      setInviteFeedback({ ok: false, msg: 'Ошибка соединения' })
+    } finally {
+      setInviteSending(false)
+    }
+  }
 
   // ── Tile renderer ──────────────────────────────────────────────────────────
   const renderTile = (p: Participant, large = false, isPip = false) => {
@@ -1035,6 +1089,15 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
             <button className={styles.pill} onClick={launchWhiteboard}>
               <IconPalette /> Доска
             </button>
+            <button className={styles.pill} onClick={() => { setShowInviteModal(true); setInviteFeedback(null) }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <line x1="19" y1="8" x2="19" y2="14"/>
+                <line x1="22" y1="11" x2="16" y2="11"/>
+              </svg>
+              Пригласить
+            </button>
           </>
         )}
         {callTest && (
@@ -1069,7 +1132,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
                   <path d="M12 17v-6M9 14l3-3 3 3"/>
                 </svg>
               </div>
-              <span className={styles.roundLabel}>Камера ↕</span>
+              <span className={styles.roundLabel}>Сменить камеру</span>
             </button>
           )}
           <button className={styles.roundBtn} onClick={handleReloadCamera} title="Перезагрузить камеру">
@@ -1079,7 +1142,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
                 <path d="M3.51 15a9 9 0 1 0 .49-4.95"/>
               </svg>
             </div>
-            <span className={styles.roundLabel}>Камера ↺</span>
+            <span className={styles.roundLabel}>Перезапустить</span>
           </button>
           <button
             className={`${styles.roundBtn} ${screenShareEnabled ? styles.roundOn : ''}`}
@@ -1136,13 +1199,27 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
       {!room.connected ? (
         <div className={styles.lobby}>
           <div className={styles.lobbyCard}>
-            <div className={styles.lobbyIcon}><IconVideo /></div>
-            <h1 className={styles.lobbyTitle}>Видео-звонок</h1>
-            <p className={styles.lobbySubtitle}>{autoJoinRoom ? `Подключаемся к «${autoJoinRoom}»...` : 'Введите название комнаты'}</p>
-            <div className={styles.lobbyUser}><span className={styles.lobbyDot} />{userName}</div>
-            {room.status && <p className={styles.lobbyStatus}>{room.status}</p>}
-            {room.status?.startsWith('Ошибка') && (
-              <button className={styles.lobbyRetryBtn} onClick={joinRoom}>Повторить</button>
+            {limitBlocked ? (
+              <>
+                <div className={styles.limitBlockedIcon}>🔒</div>
+                <h1 className={styles.limitBlockedTitle}>Комната заполнена</h1>
+                <p className={styles.limitBlockedDesc}>
+                  В бесплатных комнатах не более 3 участников одновременно.
+                  <br />Владелец комнаты может подключить VIP для увеличения лимита.
+                </p>
+                <button className={styles.lobbyBackBtn} onClick={() => router.back()}>← Назад</button>
+              </>
+            ) : (
+              <>
+                <div className={styles.lobbyIcon}><IconVideo /></div>
+                <h1 className={styles.lobbyTitle}>Видео-звонок</h1>
+                <p className={styles.lobbySubtitle}>{autoJoinRoom ? `Подключаемся к «${autoJoinRoom}»...` : 'Введите название комнаты'}</p>
+                <div className={styles.lobbyUser}><span className={styles.lobbyDot} />{userName}</div>
+                {room.status && <p className={styles.lobbyStatus}>{room.status}</p>}
+                {room.status?.startsWith('Ошибка') && (
+                  <button className={styles.lobbyRetryBtn} onClick={joinRoom}>Повторить</button>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -1233,6 +1310,58 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
       )}
 
       {showErrorConfirm && renderErrorConfirmModal()}
+
+      {showInviteModal && (
+        <div className={styles.inviteOverlay} onClick={(e) => { if (e.target === e.currentTarget) { setShowInviteModal(false); setInviteFeedback(null) } }}>
+          <div className={styles.inviteCard}>
+            <div className={styles.inviteHeader}>
+              <span className={styles.inviteTitle}>Пригласить в комнату</span>
+              <button className={styles.inviteCloseBtn} onClick={() => { setShowInviteModal(false); setInviteFeedback(null) }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+
+            <input
+              className={styles.inviteEmailInput}
+              type="email"
+              placeholder="Email пользователя"
+              value={inviteEmail}
+              onChange={e => { setInviteEmail(e.target.value); setInviteFeedback(null) }}
+              onKeyDown={e => { if (e.key === 'Enter') handleSendInvite() }}
+            />
+
+            {inviteStudents.length > 0 && (
+              <div>
+                <p className={styles.inviteStudentsSectionTitle}>Мои ученики</p>
+                <div className={styles.inviteStudentsList}>
+                  {inviteStudents.map(s => (
+                    <div key={s.id} className={styles.inviteStudentRow} onClick={() => setInviteEmail(s.email)}>
+                      {s.avatarUrl
+                        ? <Image src={s.avatarUrl} alt={s.name} width={32} height={32} className={styles.inviteStudentAvatar} />
+                        : <div className={styles.inviteStudentAvatarFallback}>{s.name[0]?.toUpperCase()}</div>
+                      }
+                      <span className={styles.inviteStudentName}>{s.name}</span>
+                      <span className={styles.inviteStudentEmail}>{s.email}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {inviteFeedback && (
+              <p className={`${styles.inviteFeedback} ${inviteFeedback.ok ? styles.inviteFeedbackOk : styles.inviteFeedbackErr}`}>
+                {inviteFeedback.msg}
+              </p>
+            )}
+
+            <button className={styles.inviteSendBtn} onClick={handleSendInvite} disabled={inviteSending || !inviteEmail.trim()}>
+              {inviteSending ? 'Отправляем...' : 'Отправить приглашение'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

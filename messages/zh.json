@@ -35,7 +35,9 @@
     "logout": "退出",
     "calendar": "日历",
     "courseCatalog": "课程目录",
-    "roadmaps": "路线图"
+    "roadmaps": "路线图",
+    "games": "游戏",
+    "pomodoro": "番茄钟"
   },
   "CreateTestPage": {
     "title": "创建测试",
@@ -44,7 +46,17 @@
     "descriptionPlaceholder": "输入测试说明，例如\"分词在考试中经常出现\"",
     "loading": "加载中...",
     "pdfImportBtn": "从PDF导入",
-    "categoryPlaceholder": "选择测试分类"
+    "categoryPlaceholder": "选择测试分类",
+    "saving": "保存中...",
+    "saveTest": "保存测试",
+    "savedOk": "✓ 已保存",
+    "retryAfterError": "错误 — 重试",
+    "successCreated": "测试已创建！",
+    "successUpdated": "测试已更新！",
+    "errorTitleRequired": "请输入测试名称",
+    "errorBlocksRequired": "请至少添加一个题目",
+    "errorBlocksInvalid": "请填写所有题目的必填字段",
+    "errorSaveFailed": "保存测试失败"
   },
   "BlockEditor": {
     "fillText": "填空",
@@ -69,7 +81,12 @@
     "categoryPlaceholder": "选择帖子分类",
     "publishing": "发布中…",
     "saveChanges": "保存更改",
-    "publishPost": "发布帖子"
+    "publishPost": "发布帖子",
+    "successPublished": "帖子已发布！",
+    "successUpdated": "帖子已更新！",
+    "errorTitleRequired": "请输入帖子标题",
+    "errorBlocksRequired": "请至少添加一个块",
+    "errorSaveFailed": "发布帖子失败"
   },
   "PostPalette": {
     "title": "块",
@@ -95,7 +112,14 @@
     "audioLabel": "音频",
     "testLabel": "测试",
     "blockDeleted": "块\"{label}\"已删除",
-    "deleteBlock": "删除块"
+    "deleteBlock": "删除块",
+    "miniTestLabel": "迷你测验",
+    "testLinkSelectTest": "选择测验",
+    "testLinkChange": "更换测验",
+    "testLinkSearch": "搜索测验...",
+    "testLinkLoading": "加载中...",
+    "testLinkNoTests": "没有测验",
+    "testLinkSelected": "已选: {title}"
   },
   "InfoTextEditor": {
     "placeholder": "输入材料文本...",
@@ -396,7 +420,14 @@
     "complaintSubmit": "提交",
     "complaintSuccess": "投诉已提交",
     "complaintError": "投诉提交失败",
-    "complaintAlreadyReported": "您已经举报过此课程"
+    "complaintAlreadyReported": "您已经举报过此课程",
+    "searchPosts": "搜索帖子...",
+    "searchTests": "搜索测验...",
+    "selectTest": "选择测验",
+    "noTestsFound": "未找到测验",
+    "loadingTests": "正在加载测验...",
+    "noPostsFound": "未找到帖子",
+    "loadingPosts": "正在加载帖子..."
   },
   "fileBlock": {
     "filesNotAttached": "未附加文件",
@@ -488,7 +519,8 @@
   "TeacherCard": {
     "posts": "帖子",
     "students": "学生",
-    "viewProfile": "查看资料"
+    "viewProfile": "查看资料",
+    "share": "分享"
   },
   "PostPage": {
     "report": "举报"
@@ -583,6 +615,7 @@
     "calendar": "日历",
     "videoRoom": "视频室",
     "createVideoCallBtn": "创建",
+    "edit": "编辑",
     "yourName": "您的姓名",
     "teacher": "教师",
     "soonBadge": "即将推出",
@@ -709,5 +742,100 @@
     "typeInfo": "文本",
     "refAnswer": "参考答案：{text}",
     "morePairs": "+{n}更多..."
+  },
+  "notifications": {
+    "title": "通知",
+    "markAllRead": "全部标为已读",
+    "loading": "加载中...",
+    "empty": "暂无通知",
+    "emptyPanel": "暂时没有通知",
+    "viewAll": "查看所有通知",
+    "history": "历史（{count}）",
+    "historyTitle": "通知历史",
+    "justNow": "刚刚",
+    "minutesAgo": "{n}分钟前",
+    "hoursAgo": "{n}小时前",
+    "daysAgo": "{n}天前",
+    "activity": "活动",
+    "less": "更少",
+    "more": "更多",
+    "noNotifOnDay": "无通知",
+    "notifsOnDay": "{count}条通知",
+    "showInPanel": "在面板中显示",
+    "alwaysOn": "始终",
+    "noUnread": "无未读通知",
+    "archiveEmpty": "归档为空",
+    "allTypes": "所有类型",
+    "replySuccess": "回复已发送",
+    "replyError": "发送回复失败",
+    "replyPlaceholder": "您对投诉的回复...",
+    "cancel": "取消",
+    "sending": "发送中…",
+    "sendReply": "发送回复",
+    "collapseReply": "折叠",
+    "reply": "回复",
+    "replied": "已回复",
+    "newBadge": "{count}条新通知",
+    "roleStudent": "学生",
+    "roleTeacher": "教师",
+    "tabs": {
+      "all": "全部",
+      "unread": "未读",
+      "archive": "归档"
+    },
+    "types": {
+      "NEW_COMPLAINT": "投诉",
+      "COMPLAINT_REPLIED": "回复",
+      "COMPLAINT_CLOSED": "已关闭",
+      "NEW_STUDENT": "学生",
+      "ROADMAP_PURCHASE": "购买",
+      "NEW_COMMENT_ON_POST": "评论",
+      "NEW_REVIEW": "评价",
+      "NEW_POST": "帖子",
+      "VIDEO_CALL_INVITE": "视频通话邀请",
+      "SYSTEM": "系统"
+    },
+    "actions": {
+      "NEW_COMPLAINT": "查看投诉",
+      "COMPLAINT_REPLIED": "查看回复",
+      "NEW_STUDENT": "课程",
+      "ROADMAP_PURCHASE": "统计",
+      "NEW_COMMENT_ON_POST": "前往帖子",
+      "NEW_REVIEW": "课程",
+      "NEW_POST": "阅读帖子"
+    }
+  },
+  "roadmapPreview": {
+    "free": "免费",
+    "partiallyFree": "部分免费",
+    "open": "打开路线图",
+    "share": "分享",
+    "notFound": "未找到路线图",
+    "noMore": "没有更多路线图",
+    "originalLang": "原始语言",
+    "languages": {
+      "ru": "俄语",
+      "en": "英语",
+      "de": "德语",
+      "fr": "法语",
+      "es": "西班牙语",
+      "hi": "印地语",
+      "zh": "中文",
+      "ar": "阿拉伯语",
+      "tr": "土耳其语",
+      "ko": "韩语",
+      "ja": "日语",
+      "pt": "葡萄牙语"
+    },
+    "edit": "编辑"
+  },
+  "roadmapViewer": {
+    "buy": "获取路线图",
+    "buyAccess": "获取访问权限",
+    "stats": "统计"
+  },
+  "card": {
+    "readFullPost": "阅读全文",
+    "editPost": "编辑"
   }
 }

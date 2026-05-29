@@ -96,6 +96,21 @@ const Icon = {
       <line x1='3' y1='10' x2='21' y2='10' />
     </svg>
   ),
+  Games: () => (
+    <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'>
+      <rect x='2' y='6' width='20' height='12' rx='3' ry='3' />
+      <line x1='6' y1='12' x2='10' y2='12' />
+      <line x1='8' y1='10' x2='8' y2='14' />
+      <circle cx='16' cy='11' r='1' fill='currentColor' stroke='none' />
+      <circle cx='18' cy='13' r='1' fill='currentColor' stroke='none' />
+    </svg>
+  ),
+  Pomodoro: () => (
+    <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'>
+      <circle cx='12' cy='12' r='10' />
+      <polyline points='12 6 12 12 16 14' />
+    </svg>
+  ),
 }
 
 // ─── Nav item definition ──────────────────────────────────
@@ -145,6 +160,7 @@ export function NavBar({extraClass}: {extraClass?: string}) {
     topItems = [
       {href: '/', label: t('home'), icon: <Icon.Home />},
       {href: '/workflows-list', label: t('roadmaps'), icon: <Icon.Roadmaps />},
+      {href: '/game', label: t('games'), icon: <Icon.Games />},
     ]
     bottomItems = []
   } else if (role === 'TEACHER' || role === 'ADMIN') {
@@ -156,6 +172,7 @@ export function NavBar({extraClass}: {extraClass?: string}) {
       {href: '/workflows-list',  label: t('courses'),     icon: <Icon.Roadmaps />},
       {href: '/teachers',        label: t('teachers'),    icon: <Icon.Teachers />},
       ...(userId ? [{href: `/calendar/${userId}`, label: t('calendar'), icon: <Icon.Calendar />}] : []),
+      {href: '/game', label: t('games'), icon: <Icon.Games />},
     ]
     bottomItems = [
       {href: '/teacher-profile', label: t('profile'), icon: <Icon.Profile />},
@@ -167,6 +184,8 @@ export function NavBar({extraClass}: {extraClass?: string}) {
       {href: '/workflows-list', label: t('courseCatalog'),icon: <Icon.Roadmaps />},
       {href: '/teachers',       label: t('teachers'),    icon: <Icon.Teachers />},
       {href: '/messages',       label: t('messages'),    icon: <Icon.Messages />},
+      {href: '/game',           label: t('games'),       icon: <Icon.Games />},
+      {href: '/pomodoro',       label: t('pomodoro'),    icon: <Icon.Pomodoro />},
     ]
     bottomItems = [
       {href: '/student-profile', label: t('profile'), icon: <Icon.Profile />},
@@ -176,6 +195,7 @@ export function NavBar({extraClass}: {extraClass?: string}) {
     topItems = [
       {href: '/',               label: t('home'),     icon: <Icon.Home />},
       {href: '/workflows-list', label: t('roadmaps'), icon: <Icon.Roadmaps />},
+      {href: '/game',           label: t('games'),    icon: <Icon.Games />},
     ]
     bottomItems = [
       {href: '/login',   label: t('login'),   icon: <Icon.Login />},

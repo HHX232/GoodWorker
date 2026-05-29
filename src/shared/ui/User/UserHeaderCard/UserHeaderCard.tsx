@@ -57,7 +57,7 @@ const AvatarFallback: FC<{name: string; size?: 'lg' | 'sm'}> = ({name, size = 'l
     </div>
   )
 }
-export const DotsMenu: FC<DotsMenuProps> = ({activeMenu, toggleMenu, handleShareClick, cardId, cardTitle, maxWidth = '24'}) => {
+export const DotsMenu: FC<DotsMenuProps> = ({activeMenu, toggleMenu, handleShareClick, cardId, cardTitle, complaintPostId, maxWidth = '24'}) => {
   const [copied, setCopied] = useState(false)
   const [complaintOpen, setComplaintOpen] = useState(false)
 
@@ -117,11 +117,11 @@ export const DotsMenu: FC<DotsMenuProps> = ({activeMenu, toggleMenu, handleShare
           </ul>
         )}
       </div>
-      {cardId && (
+      {(complaintPostId || cardId) && (
         <PostComplaintModal
           isOpen={complaintOpen}
           onClose={() => setComplaintOpen(false)}
-          postId={cardId}
+          postId={(complaintPostId || cardId)!}
           postTitle={cardTitle}
         />
       )}
@@ -133,6 +133,7 @@ const UserHeaderCard: FC<UserHeaderCardProps> = ({
   image,
   userID,
   cardID,
+  complaintPostId,
   colorTitle = '141416',
   accentColor = '868897',
   blurBg = false,
@@ -238,7 +239,7 @@ const UserHeaderCard: FC<UserHeaderCardProps> = ({
           </div>
         )}
 
-        {!BlurDots && <DotsMenu activeMenu={activeMenu} toggleMenu={toggleMenu} cardId={cardID} />}
+        {!BlurDots && <DotsMenu activeMenu={activeMenu} toggleMenu={toggleMenu} cardId={cardID} complaintPostId={complaintPostId} />}
       </div>
     </div>
   )

@@ -47,6 +47,7 @@
     "auth": "^1.6.5",
     "axios": "^1.13.6",
     "bcryptjs": "^3.0.3",
+    "chess.js": "^1.4.0",
     "cobe": "^2.0.1",
     "framer-motion": "^12.38.0",
     "html-to-image": "^1.11.13",

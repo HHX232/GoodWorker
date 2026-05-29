@@ -60,7 +60,7 @@ const BLOCK_RENDERERS: Partial<Record<RoadMapBlockType, BlockRenderer>> = {
 
   [RoadMapBlockType.INFO_TEXT]: ({nodeData, isView}) =>
     isView ? (
-      <p style={{padding: '.2rem .7rem'}}>{(nodeData.inputs as any)?.[RoadMapBlockType.INFO_TEXT] ?? ''}</p>
+      <p style={{padding: '.2rem .7rem', maxWidth: '350px'}}>{(nodeData.inputs as any)?.[RoadMapBlockType.INFO_TEXT] ?? ''}</p>
     ) : null,
 
   [RoadMapBlockType.ACTIVE_TEST]: ({nodeId, isView, t}) => <ActiveTestBlock t={t} nodeId={nodeId} onlyPass={isView} />,

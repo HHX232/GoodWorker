@@ -92,7 +92,7 @@ export async function PATCH(req: NextRequest) {
     const userId = session.user.id
 
     const recipientFilter =
-      role === 'TEACHER'
+      (role === 'TEACHER' || role === 'ADMIN')
         ? { teacherId: userId }
         : { studentId: userId }
 

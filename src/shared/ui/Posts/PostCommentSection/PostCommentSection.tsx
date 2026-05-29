@@ -143,6 +143,7 @@ export function commentToUI(c: ICommentResponse): CommentItem {
     id: c.id,
     user: {
       cardID: c.id,
+      complaintPostId: c.postId,
       userID: c.authorId,
       name: c.author?.name ?? 'Unknown',
       role: c.authorRole === 'TEACHER' ? 'Admin' : 'Member',

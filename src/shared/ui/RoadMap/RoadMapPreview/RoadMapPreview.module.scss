@@ -9,6 +9,35 @@
   cursor: pointer;
 }
 
+.grayscale {
+  filter: grayscale(1);
+  opacity: 0.85;
+}
+
+.edit_btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 12px;
+  border: 1px solid #f5f5f5;
+  color: #868897;
+  font-size: 13px;
+  font-family: 'Roboto', sans-serif;
+  text-decoration: none;
+  transition: all 0.2s;
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background-color: #141416;
+    border-color: #141416;
+    color: #fff;
+  }
+}
+
 .title_link {
   text-decoration: none;
 }
@@ -185,6 +214,13 @@
   padding: 4px 10px;
 }
 
+.bottom_row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .open_btn {
   display: flex;
   align-items: center;
@@ -212,6 +248,39 @@
     svg path {
       stroke: #ffffff;
     }
+  }
+}
+
+.share_btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid #ebebeb;
+  background: transparent;
+  color: #868897;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.18s;
+
+  &:hover {
+    background: #141416;
+    border-color: #141416;
+    color: #fff;
+  }
+}
+
+.share_btn_copied {
+  background: #dcfce7;
+  border-color: #86efac;
+  color: #15803d;
+
+  &:hover {
+    background: #dcfce7;
+    border-color: #86efac;
+    color: #15803d;
   }
 }
 

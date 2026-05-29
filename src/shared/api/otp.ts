@@ -11,10 +11,7 @@ function generateRandomInt(min: number, max: number): number {
 
 export function generateOtp(): string {
   if (isE2E) return '000000'
-  const otp =   generateRandomInt(100000, 999999).toString()
-
-  console.log('OTP',otp)
-  return otp
+  return generateRandomInt(100000, 999999).toString()
 }
 
 export async function saveOtp(target: string, code: string) {
@@ -46,4 +43,26 @@ export async function verifyOtp(target: string, code: string): Promise<boolean> 
 
 export async function sendOtp(target: string, code: string) {
   console.log(`[OTP] ${target} → ${code}`)
+
+  const serviceUrl = process.env.PDF_SERVICE_URL
+  const serviceKey = process.env.PDF_SERVICE_KEY
+
+  if (!serviceUrl || !serviceKey) {
+    console.warn('[OTP] PDF_SERVICE_URL / PDF_SERVICE_KEY not set — email not sent')
+    return
+  }
+
+  try {
+    const res = await fetch(`${serviceUrl.replace(/\/$/, '')}/api/email/send-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': serviceKey },
+      body: JSON.stringify({ to: target, code, appName: 'GoodWorker' }),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      console.error('[OTP] Email service error:', err)
+    }
+  } catch (e) {
+    console.error('[OTP] Failed to reach email service:', e)
+  }
 }

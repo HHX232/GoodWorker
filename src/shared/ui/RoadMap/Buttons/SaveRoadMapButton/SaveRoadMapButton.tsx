@@ -19,7 +19,11 @@ interface ValidatedDraft {
   hasPaywalledNodes: boolean
 }
 
-export function SaveRoadMapButton() {
+interface Props {
+  editId?: string
+}
+
+export function SaveRoadMapButton({ editId }: Props) {
   const t = useTranslations('roadMap')
   const {getNodes, getEdges, updateNodeData, fitView} = useReactFlow()
   const router = useRouter()
@@ -63,13 +67,24 @@ export function SaveRoadMapButton() {
     setSaving(true)
     const toastId = toast.loading(t('saving'))
     try {
-      const roadmap = await RoadmapService.create({
-        title: draft.title,
-        content: {nodes: draft.nodes, edges: draft.edges},
-        price,
-        previewImageUrl: draft.previewImageUrl,
-        nodeAccessType,
-      })
+      let roadmap
+      if (editId) {
+        roadmap = await RoadmapService.update(editId, {
+          title: draft.title,
+          content: {nodes: draft.nodes, edges: draft.edges},
+          price,
+          previewImageUrl: draft.previewImageUrl,
+          nodeAccessType,
+        })
+      } else {
+        roadmap = await RoadmapService.create({
+          title: draft.title,
+          content: {nodes: draft.nodes, edges: draft.edges},
+          price,
+          previewImageUrl: draft.previewImageUrl,
+          nodeAccessType,
+        })
+      }
       toast.success(t('saveSuccess'), {id: toastId})
       router.push(`/road-map/${roadmap.id}`)
     } catch (err: any) {

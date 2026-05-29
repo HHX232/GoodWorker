@@ -96,6 +96,12 @@
   flex-shrink: 0;
 }
 
+.name_transliterated {
+  font-size: 12px;
+  color: #868897;
+  margin: 0;
+}
+
 .activity {
   font-size: 12px;
   color: #868897;
@@ -163,6 +169,13 @@
   letter-spacing: 0.04em;
 }
 
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .link_btn {
   display: inline-flex;
   align-items: center;
@@ -189,5 +202,38 @@
   svg {
     flex-shrink: 0;
     transition: stroke 0.18s;
+  }
+}
+
+.share_btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1.5px solid #e8e8e8;
+  background: transparent;
+  color: #868897;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.18s;
+
+  &:hover {
+    background: #141416;
+    border-color: #141416;
+    color: #fff;
+  }
+}
+
+.share_btn_copied {
+  background: #dcfce7;
+  border-color: #86efac;
+  color: #15803d;
+
+  &:hover {
+    background: #dcfce7;
+    border-color: #86efac;
+    color: #15803d;
   }
 }

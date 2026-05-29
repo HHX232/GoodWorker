@@ -19,6 +19,8 @@ interface RoadMapPreviewProps {
   _count: { comments: number; ratings: number }
   teacher: { id: string; name: string; avatarUrl: string | null }
   useLink?: boolean
+  isOwner?: boolean
+  grayscale?: boolean
 }
 
 const TOOLTIP_CODES = ['USD', 'EUR', 'BYN', 'CNY', 'INR', 'GBP', 'JPY', 'KZT', 'UAH', 'TRY', 'AED', 'KRW']
@@ -51,9 +53,12 @@ export const RoadMapPreview: FC<RoadMapPreviewProps> = ({
   _count,
   teacher,
   useLink = true,
+  isOwner = false,
+  grayscale = false,
 }) => {
   const isPartiallyFree = price === 0 && nodeAccessType !== null
   const [priceHovered, setPriceHovered] = useState(false)
+  const [copied, setCopied] = useState(false)
   const locale = useLocale()
   const t = useTranslations('roadmapPreview')
   const tLangs = useTranslations('roadmapPreview.languages')
@@ -67,8 +72,14 @@ export const RoadMapPreview: FC<RoadMapPreviewProps> = ({
 
   const href = `/road-map/${id}`
 
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.origin + href)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+
   return (
-    <div className={styles.card}>
+    <div className={`${styles.card} ${grayscale ? styles.grayscale : ''}`}>
       <UserHeaderCard
         userID={teacher.id}
         cardID={id}
@@ -154,21 +165,52 @@ export const RoadMapPreview: FC<RoadMapPreviewProps> = ({
         )}
       </div>
 
-      {useLink ? (
-        <Link href={href} className={styles.open_btn}>
-          <span>{t('open')}</span>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M1 8H15M15 8L8 1M15 8L8 15" stroke="#868897" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </Link>
-      ) : (
-        <div className={styles.open_btn}>
-          <span>{t('open')}</span>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M1 8H15M15 8L8 1M15 8L8 15" stroke="#868897" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
-      )}
+      <div className={styles.bottom_row}>
+        {useLink ? (
+          <Link href={href} className={styles.open_btn}>
+            <span>{t('open')}</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M1 8H15M15 8L8 1M15 8L8 15" stroke="#868897" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </Link>
+        ) : (
+          <div className={styles.open_btn}>
+            <span>{t('open')}</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M1 8H15M15 8L8 1M15 8L8 15" stroke="#868897" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+        )}
+
+        {isOwner && (
+          <Link href={`/create-road-map?edit=${id}`} className={styles.edit_btn} onClick={(e) => e.stopPropagation()}>
+            <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+              <path d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7' />
+              <path d='M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z' />
+            </svg>
+            <span>{t('edit')}</span>
+          </Link>
+        )}
+
+        <button
+          type="button"
+          className={`${styles.share_btn} ${copied ? styles.share_btn_copied : ''}`}
+          onClick={handleShare}
+          title={copied ? '✓' : t('share')}
+        >
+          {copied ? (
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          ) : (
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+              <polyline points="16 6 12 2 8 6" />
+              <line x1="12" y1="2" x2="12" y2="15" />
+            </svg>
+          )}
+        </button>
+      </div>
     </div>
   )
 }

@@ -35,7 +35,9 @@
     "logout": "Выйти",
     "calendar": "Календарь",
     "courseCatalog": "Каталог курсов",
-    "roadmaps": "Роадмапы"
+    "roadmaps": "Роадмапы",
+    "games": "Игры",
+    "pomodoro": "Помодоро"
   },
   "CreateTestPage": {
     "title": "Создать тест",
@@ -44,7 +46,17 @@
     "descriptionPlaceholder": "Введите описание теста, например «Тема деепричастие часто попадается в экзаменах»",
     "loading": "Загрузка...",
     "pdfImportBtn": "Импорт из PDF",
-    "categoryPlaceholder": "Выберите категорию теста"
+    "categoryPlaceholder": "Выберите категорию теста",
+    "saving": "Сохраняем...",
+    "saveTest": "Сохранить тест",
+    "savedOk": "✓ Сохранено",
+    "retryAfterError": "Ошибка — повторить",
+    "successCreated": "Тест создан!",
+    "successUpdated": "Тест обновлён!",
+    "errorTitleRequired": "Введите название теста",
+    "errorBlocksRequired": "Добавьте хотя бы один вопрос",
+    "errorBlocksInvalid": "Заполните все обязательные поля в вопросах",
+    "errorSaveFailed": "Не удалось сохранить тест"
   },
   "CreatePostPage": {
     "editPost": "Редактировать пост",
@@ -55,7 +67,12 @@
     "categoryPlaceholder": "Выберите категорию поста",
     "publishing": "Публикация…",
     "saveChanges": "Сохранить изменения",
-    "publishPost": "Опубликовать пост"
+    "publishPost": "Опубликовать пост",
+    "successPublished": "Пост опубликован!",
+    "successUpdated": "Пост обновлён!",
+    "errorTitleRequired": "Введите заголовок поста",
+    "errorBlocksRequired": "Добавьте хотя бы один блок",
+    "errorSaveFailed": "Не удалось опубликовать пост"
   },
   "PostPalette": {
     "title": "Блоки",
@@ -81,7 +98,14 @@
     "audioLabel": "Аудио",
     "testLabel": "Тест",
     "blockDeleted": "Блок \"{label}\" удалён",
-    "deleteBlock": "Удалить блок"
+    "deleteBlock": "Удалить блок",
+    "miniTestLabel": "Мини-тест",
+    "testLinkSelectTest": "Выбрать тест",
+    "testLinkChange": "Изменить тест",
+    "testLinkSearch": "Поиск теста...",
+    "testLinkLoading": "Загрузка...",
+    "testLinkNoTests": "У вас нет тестов",
+    "testLinkSelected": "Выбран: {title}"
   },
   "InfoTextEditor": {
     "placeholder": "Введите текст материала...",
@@ -422,7 +446,14 @@
     "paywallBuy": "Купить доступ",
     "paywallLocked": "Закрытый блок",
     "navPrev": "Назад",
-    "navNext": "Вперёд"
+    "navNext": "Вперёд",
+    "searchPosts": "Поиск постов...",
+    "searchTests": "Поиск тестов...",
+    "selectTest": "Выбрать тест",
+    "noTestsFound": "Тесты не найдены",
+    "loadingTests": "Загрузка тестов...",
+    "noPostsFound": "Посты не найдены",
+    "loadingPosts": "Загрузка постов..."
   },
   "fileBlock": {
     "filesNotAttached": "Файлы не прикреплены",
@@ -521,7 +552,8 @@
   "TeacherCard": {
     "posts": "Постов",
     "students": "Студентов",
-    "viewProfile": "Смотреть профиль"
+    "viewProfile": "Смотреть профиль",
+    "share": "Поделиться"
   },
   "PostPage": {
     "report": "Пожаловаться"
@@ -705,6 +737,7 @@
     "teachingLanguage": "Язык преподавания",
     "servicesTitle": "Услуги",
     "createLabel": "Создать",
+    "edit": "Редактировать",
     "servicesFirstHint": "Нажмите «Создать», чтобы добавить первую услугу",
     "expSection": "Опыт работы",
     "expCancel": "Отмена",
@@ -900,6 +933,7 @@
       "NEW_COMMENT_ON_POST": "Комментарии",
       "NEW_REVIEW": "Отзывы",
       "NEW_POST": "Посты",
+      "VIDEO_CALL_INVITE": "Приглашения в звонок",
       "SYSTEM": "Системные"
     },
     "actions": {
@@ -1043,6 +1077,7 @@
     "free": "Бесплатно",
     "partiallyFree": "Частично бесплатно",
     "open": "Открыть роадмап",
+    "share": "Поделиться",
     "notFound": "Роадмапы не найдены",
     "noMore": "Больше роадмапов нет",
     "originalLang": "Язык оригинала",
@@ -1059,7 +1094,8 @@
       "ko": "Корейский",
       "ja": "Японский",
       "pt": "Португальский"
-    }
+    },
+    "edit": "Редактировать"
   },
   "pdfImport": {
     "importBtn": "Импорт из PDF",
@@ -1091,5 +1127,9 @@
     "typeInfo": "Текст",
     "refAnswer": "Эталон: {text}",
     "morePairs": "+{n} ещё..."
+  },
+  "card": {
+    "readFullPost": "Читать пост",
+    "editPost": "Редактировать"
   }
 }

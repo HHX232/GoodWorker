@@ -729,8 +729,6 @@ $text-muted: #94a3b8;
   color: $text-muted;
   white-space: nowrap;
   letter-spacing: 0.2px;
-
-  @media (max-width: 480px) { display: none; }
 }
 
 .roundOn {
@@ -1997,3 +1995,202 @@ $text-muted: #94a3b8;
   &:hover { background: #1e293b; }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
+
+// ── Limit blocked lobby ───────────────────────────────────────────────────────
+
+.limitBlockedIcon {
+  font-size: 40px;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.limitBlockedTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: $text;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.limitBlockedDesc {
+  font-size: 14px;
+  color: $text-dim;
+  text-align: center;
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.lobbyBackBtn {
+  margin: 0 auto;
+  display: block;
+  padding: 10px 28px;
+  background: $text;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  &:hover { opacity: 0.8; }
+}
+
+// ── Invite modal ──────────────────────────────────────────────────────────────
+
+.inviteOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.inviteCard {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.2);
+  padding: 28px 24px 24px;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.inviteHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.inviteTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: $text;
+}
+
+.inviteCloseBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $text-dim;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  border-radius: 6px;
+  transition: background 0.12s;
+  &:hover { background: #f1f5f9; }
+}
+
+.inviteEmailInput {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 14px;
+  color: $text;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+  &:focus { border-color: $accent; }
+  &::placeholder { color: $text-muted; }
+}
+
+.inviteStudentsSectionTitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.inviteStudentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.inviteStudentRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s;
+  &:hover { background: #f8fafc; }
+}
+
+.inviteStudentAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #e2e8f0;
+}
+
+.inviteStudentAvatarFallback {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: $accent;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.inviteStudentName {
+  font-size: 14px;
+  font-weight: 500;
+  color: $text;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inviteStudentEmail {
+  font-size: 12px;
+  color: $text-muted;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 130px;
+}
+
+.inviteSendBtn {
+  width: 100%;
+  padding: 11px;
+  background: $accent;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  &:hover { opacity: 0.88; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.inviteFeedback {
+  font-size: 13px;
+  text-align: center;
+  padding: 4px 0;
+}
+
+.inviteFeedbackOk { color: $success; }
+.inviteFeedbackErr { color: $danger; }

@@ -88,6 +88,33 @@
    overflow: hidden;
 }
 
+.grayscale {
+   filter: grayscale(1);
+   opacity: 0.85;
+}
+
+.editBtn {
+   display: inline-flex;
+   align-items: center;
+   gap: 5px;
+   margin-top: 8px;
+   padding: 4px 10px;
+   border-radius: 8px;
+   border: 1px solid #e4e4e7;
+   background: transparent;
+   color: #868897;
+   font-size: 11px;
+   text-decoration: none;
+   transition: all 0.18s;
+   cursor: pointer;
+
+   &:hover {
+      background: #141416;
+      border-color: #141416;
+      color: #fff;
+   }
+}
+
 .themes {
    display: flex;
    flex-wrap: wrap;

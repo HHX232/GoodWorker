@@ -35,7 +35,9 @@
     "logout": "Log out",
     "calendar": "Calendar",
     "courseCatalog": "Course catalog",
-    "roadmaps": "Roadmaps"
+    "roadmaps": "Roadmaps",
+    "games": "Games",
+    "pomodoro": "Pomodoro"
   },
   "CreateTestPage": {
     "title": "Create Test",
@@ -44,7 +46,17 @@
     "descriptionPlaceholder": "Enter test description, e.g. \"Participles often appear in exams\"",
     "loading": "Loading...",
     "pdfImportBtn": "Import from PDF",
-    "categoryPlaceholder": "Select test category"
+    "categoryPlaceholder": "Select test category",
+    "saving": "Saving...",
+    "saveTest": "Save test",
+    "savedOk": "✓ Saved",
+    "retryAfterError": "Error — retry",
+    "successCreated": "Test created!",
+    "successUpdated": "Test updated!",
+    "errorTitleRequired": "Enter a test title",
+    "errorBlocksRequired": "Add at least one question",
+    "errorBlocksInvalid": "Fill in all required fields in the questions",
+    "errorSaveFailed": "Failed to save test"
   },
   "CreatePostPage": {
     "editPost": "Edit post",
@@ -55,7 +67,12 @@
     "categoryPlaceholder": "Select post category",
     "publishing": "Publishing…",
     "saveChanges": "Save changes",
-    "publishPost": "Publish post"
+    "publishPost": "Publish post",
+    "successPublished": "Post published!",
+    "successUpdated": "Post updated!",
+    "errorTitleRequired": "Enter a post title",
+    "errorBlocksRequired": "Add at least one block",
+    "errorSaveFailed": "Failed to publish post"
   },
   "PostPalette": {
     "title": "Blocks",
@@ -81,7 +98,14 @@
     "audioLabel": "Audio",
     "testLabel": "Test",
     "blockDeleted": "Block \"{label}\" deleted",
-    "deleteBlock": "Delete block"
+    "deleteBlock": "Delete block",
+    "miniTestLabel": "Mini-Test",
+    "testLinkSelectTest": "Select Test",
+    "testLinkChange": "Change Test",
+    "testLinkSearch": "Search tests...",
+    "testLinkLoading": "Loading...",
+    "testLinkNoTests": "You have no tests yet",
+    "testLinkSelected": "Selected: {title}"
   },
   "InfoTextEditor": {
     "placeholder": "Enter material text...",
@@ -422,7 +446,14 @@
     "paywallBuy": "Purchase access",
     "paywallLocked": "Locked block",
     "navPrev": "Previous",
-    "navNext": "Next"
+    "navNext": "Next",
+    "searchPosts": "Search posts...",
+    "searchTests": "Search tests...",
+    "selectTest": "Select Test",
+    "noTestsFound": "No tests found",
+    "loadingTests": "Loading tests...",
+    "noPostsFound": "No posts found",
+    "loadingPosts": "Loading posts..."
   },
   "fileBlock": {
     "filesNotAttached": "No files attached",
@@ -521,7 +552,8 @@
   "TeacherCard": {
     "posts": "Posts",
     "students": "Students",
-    "viewProfile": "View profile"
+    "viewProfile": "View profile",
+    "share": "Share"
   },
   "PostPage": {
     "report": "Report"
@@ -705,6 +737,7 @@
     "teachingLanguage": "Teaching language",
     "servicesTitle": "Services",
     "createLabel": "Create",
+    "edit": "Edit",
     "servicesFirstHint": "Click \"Create\" to add your first service",
     "expSection": "Work experience",
     "expCancel": "Cancel",
@@ -900,6 +933,7 @@
       "NEW_COMMENT_ON_POST": "Comments",
       "NEW_REVIEW": "Reviews",
       "NEW_POST": "Posts",
+      "VIDEO_CALL_INVITE": "Video call invites",
       "SYSTEM": "System"
     },
     "actions": {
@@ -1043,6 +1077,7 @@
     "free": "Free",
     "partiallyFree": "Partially free",
     "open": "Open roadmap",
+    "share": "Share",
     "notFound": "No roadmaps found",
     "noMore": "No more roadmaps",
     "originalLang": "Original language",
@@ -1059,7 +1094,8 @@
       "ko": "Korean",
       "ja": "Japanese",
       "pt": "Portuguese"
-    }
+    },
+    "edit": "Edit"
   },
   "pdfImport": {
     "importBtn": "Import from PDF",
@@ -1091,5 +1127,9 @@
     "typeInfo": "Text",
     "refAnswer": "Reference: {text}",
     "morePairs": "+{n} more..."
+  },
+  "card": {
+    "readFullPost": "Read full post",
+    "editPost": "Edit"
   }
 }

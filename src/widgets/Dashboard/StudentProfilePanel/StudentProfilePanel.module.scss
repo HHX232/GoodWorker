@@ -392,3 +392,86 @@
   font-size: 11px;
   color: #8A8A9A;
 }
+
+// ── Telegram section ───────────────────────────────────────
+
+.tgRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 13px;
+  background: #FAFAFA;
+  border: 1px solid #EBEBEB;
+  border-radius: 10px;
+}
+
+.tgLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.tgIconWrap {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(36, 161, 222, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #24A1DE;
+  flex-shrink: 0;
+}
+
+.tgInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.tgTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111118;
+}
+
+.tgStatus {
+  font-size: 11px;
+  color: #8A8A9A;
+}
+
+.tgLinkBtn {
+  font-size: 12px;
+  font-weight: 600;
+  color: #24A1DE;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+  flex-shrink: 0;
+  white-space: nowrap;
+
+  &:hover { text-decoration: underline; }
+  &:disabled { opacity: 0.55; cursor: default; text-decoration: none; }
+}
+
+.tgUnlinkBtn {
+  font-size: 12px;
+  font-weight: 600;
+  color: #EF4444;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+  flex-shrink: 0;
+  white-space: nowrap;
+
+  &:hover { text-decoration: underline; }
+  &:disabled { opacity: 0.55; cursor: default; text-decoration: none; }
+}
+

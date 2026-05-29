@@ -140,7 +140,7 @@ const RoadmapService = {
 
   async update(
     id: string,
-    dto: { title?: string; content?: unknown; price?: number; previewImageUrl?: string | null }
+    dto: { title?: string; content?: unknown; price?: number; previewImageUrl?: string | null; nodeAccessType?: RoadmapNodeAccessType | null }
   ): Promise<IRoadmapItem> {
     try {
       const res = await instance.patch<IRoadmapItem>(`/roadmap/${id}`, dto)
