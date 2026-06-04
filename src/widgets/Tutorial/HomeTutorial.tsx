@@ -2,17 +2,24 @@
 
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useTutorial } from './TutorialContext'
-import styles from './HomeTutorial.module.scss'
 
-const STORAGE_KEY = 'goodworker-tutorial-home'
+const COOKIE_KEY = 'gw_tutorial_home'
+
+function getCookie(name: string): string | undefined {
+  return document.cookie.split('; ').find(r => r.startsWith(name + '='))?.split('=')[1]
+}
+
+function setCookie(name: string, value: string, days = 365) {
+  const expires = new Date(Date.now() + days * 864e5).toUTCString()
+  document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Lax`
+}
 
 export function HomeTutorial() {
   const t = useTranslations('tutorial')
   const { data: session, status } = useSession()
-  const { startTutorial, isActive } = useTutorial()
-  const [shown, setShown] = useState(false)
+  const { startTutorial } = useTutorial()
 
   const role = (session?.user as { role?: string })?.role
 
@@ -76,7 +83,6 @@ export function HomeTutorial() {
       ]
     }
 
-    // Guest (not authenticated)
     return [
       {
         stepNumber: 1,
@@ -95,16 +101,12 @@ export function HomeTutorial() {
     ]
   }
 
-  // Auto-start once on first visit
   useEffect(() => {
     if (status === 'loading') return
-    if (typeof window === 'undefined') return
-    if (localStorage.getItem(STORAGE_KEY)) { setShown(true); return }
+    if (getCookie(COOKIE_KEY)) return
 
-    // Delay so DOM elements are rendered
     const timer = setTimeout(() => {
-      localStorage.setItem(STORAGE_KEY, '1')
-      setShown(true)
+      setCookie(COOKIE_KEY, '1')
       startTutorial(buildSteps())
     }, 600)
 
@@ -112,15 +114,5 @@ export function HomeTutorial() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, role])
 
-  const handleRestart = () => {
-    startTutorial(buildSteps())
-  }
-
-  if (!shown || isActive) return null
-
-  return (
-    <button className={styles.restartBtn} onClick={handleRestart} title={t('startBtn')}>
-      ?
-    </button>
-  )
+  return null
 }
