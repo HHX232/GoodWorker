@@ -1515,5 +1515,31 @@
     "userLastVisitNever": "从未",
     "userLastVisitToday": "今天",
     "userLastVisitDays": "{n} 天前"
+  },
+  "tutorial": {
+    "prev": "上一步",
+    "next": "下一步",
+    "finish": "完成",
+    "skip": "跳过",
+    "startBtn": "? 教程",
+    "step": "{current} / {total}",
+    "teacher_create_title": "创建内容",
+    "teacher_create_desc": "在这里您可以创建新的帖子、路线图和测试——这是您在平台上的主要教学工具。",
+    "teacher_notif_title": "通知",
+    "teacher_notif_desc": "在这里您将看到新学生、评论、投诉和其他重要的平台事件。",
+    "student_nav_title": "导航",
+    "student_nav_desc": "这是您的主导航菜单，您可以从这里访问平台的所有部分。",
+    "student_catalog_title": "课程与教师",
+    "student_catalog_desc": "浏览课程目录，找到适合您的教师。数千条路线图和课程等您来！",
+    "student_tools_title": "番茄钟与游戏",
+    "student_tools_desc": "通过教育游戏休息一下，或使用番茄钟计时器进行高效学习。",
+    "student_notif_title": "通知",
+    "student_notif_desc": "保持更新——这里会显示新课程、消息和平台新闻。",
+    "student_posts_title": "帖子动态",
+    "student_posts_desc": "您的教师在这里发布有用的文章、提示和学习材料。",
+    "guest_posts_title": "帖子动态",
+    "guest_posts_desc": "在这里您可以阅读平台教师发布的教育帖子。",
+    "guest_login_title": "加入GoodWorker",
+    "guest_login_desc": "注册或登录，即可访问课程、课时、与教师的视频通话以及更多内容！"
   }
 }

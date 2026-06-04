@@ -121,6 +121,11 @@ interface NavItem {
   icon: React.ReactNode
 }
 
+interface NavGroup {
+  id?: string
+  items: NavItem[]
+}
+
 // ─── NavLink ─────────────────────────────────────────────
 
 function NavLink({item, active}: {item: NavItem; active: boolean}) {
@@ -133,6 +138,16 @@ function NavLink({item, active}: {item: NavItem; active: boolean}) {
       <span className={styles.icon}>{item.icon}</span>
       <span className={styles.label}>{item.label}</span>
     </Link>
+  )
+}
+
+function NavGroupSection({group, isActive}: {group: NavGroup; isActive: (href: string) => boolean}) {
+  return (
+    <div id={group.id}>
+      {group.items.map(item => (
+        <NavLink key={item.href} item={item} active={isActive(item.href)} />
+      ))}
+    </div>
   )
 }
 
@@ -153,54 +168,64 @@ export function NavBar({extraClass}: {extraClass?: string}) {
   const role = session?.user?.role
   const userId = session?.user?.id
 
-  let topItems: NavItem[]
-  let bottomItems: NavItem[]
+  let topGroups: NavGroup[]
+  let bottomGroups: NavGroup[]
 
   if (status === 'loading') {
-    topItems = [
+    topGroups = [{items: [
       {href: '/', label: t('home'), icon: <Icon.Home />},
       {href: '/workflows-list', label: t('roadmaps'), icon: <Icon.Roadmaps />},
       {href: '/game', label: t('games'), icon: <Icon.Games />},
-    ]
-    bottomItems = []
+    ]}]
+    bottomGroups = []
   } else if (role === 'TEACHER' || role === 'ADMIN') {
-    topItems = [
-      {href: '/',                label: t('home'),        icon: <Icon.Home />},
-      {href: '/create-post',     label: t('createPost'),  icon: <Icon.CreatePost />},
-      {href: '/create-road-map', label: t('createCourse'),icon: <Icon.CreateRoadmap />},
-      {href: '/create-test',     label: t('createTest'),  icon: <Icon.CreateTest />},
-      {href: '/workflows-list',  label: t('courses'),     icon: <Icon.Roadmaps />},
-      {href: '/teachers',        label: t('teachers'),    icon: <Icon.Teachers />},
-      ...(userId ? [{href: `/calendar/${userId}`, label: t('calendar'), icon: <Icon.Calendar />}] : []),
-      {href: '/game', label: t('games'), icon: <Icon.Games />},
+    topGroups = [
+      {items: [{href: '/', label: t('home'), icon: <Icon.Home />}]},
+      {id: 'navbar-create-group', items: [
+        {href: '/create-post',     label: t('createPost'),   icon: <Icon.CreatePost />},
+        {href: '/create-road-map', label: t('createCourse'), icon: <Icon.CreateRoadmap />},
+        {href: '/create-test',     label: t('createTest'),   icon: <Icon.CreateTest />},
+      ]},
+      {id: 'navbar-catalog', items: [
+        {href: '/workflows-list', label: t('courses'),  icon: <Icon.Roadmaps />},
+        {href: '/teachers',       label: t('teachers'), icon: <Icon.Teachers />},
+      ]},
+      {items: [
+        ...(userId ? [{href: `/calendar/${userId}`, label: t('calendar'), icon: <Icon.Calendar />}] : []),
+        {href: '/game', label: t('games'), icon: <Icon.Games />},
+      ]},
     ]
-    bottomItems = [
+    bottomGroups = [{items: [
       {href: '/teacher-profile', label: t('profile'), icon: <Icon.Profile />},
-      {href: '/feedback',         label: t('support'),  icon: <Icon.Support />},
-    ]
+      {href: '/feedback',        label: t('support'), icon: <Icon.Support />},
+    ]}]
   } else if (role === 'STUDENT') {
-    topItems = [
-      {href: '/',               label: t('home'),        icon: <Icon.Home />},
-      {href: '/workflows-list', label: t('courseCatalog'),icon: <Icon.Roadmaps />},
-      {href: '/teachers',       label: t('teachers'),    icon: <Icon.Teachers />},
-      {href: '/messages',       label: t('messages'),    icon: <Icon.Messages />},
-      {href: '/game',           label: t('games'),       icon: <Icon.Games />},
-      {href: '/pomodoro',       label: t('pomodoro'),    icon: <Icon.Pomodoro />},
+    topGroups = [
+      {items: [{href: '/', label: t('home'), icon: <Icon.Home />}]},
+      {id: 'navbar-catalog', items: [
+        {href: '/workflows-list', label: t('courseCatalog'), icon: <Icon.Roadmaps />},
+        {href: '/teachers',       label: t('teachers'),      icon: <Icon.Teachers />},
+        {href: '/messages',       label: t('messages'),      icon: <Icon.Messages />},
+      ]},
+      {id: 'navbar-tools', items: [
+        {href: '/game',     label: t('games'),    icon: <Icon.Games />},
+        {href: '/pomodoro', label: t('pomodoro'), icon: <Icon.Pomodoro />},
+      ]},
     ]
-    bottomItems = [
+    bottomGroups = [{items: [
       {href: '/student-profile', label: t('profile'), icon: <Icon.Profile />},
-      {href: '/feedback',         label: t('support'),  icon: <Icon.Support />},
-    ]
+      {href: '/feedback',        label: t('support'), icon: <Icon.Support />},
+    ]}]
   } else {
-    topItems = [
+    topGroups = [{items: [
       {href: '/',               label: t('home'),     icon: <Icon.Home />},
       {href: '/workflows-list', label: t('roadmaps'), icon: <Icon.Roadmaps />},
       {href: '/game',           label: t('games'),    icon: <Icon.Games />},
-    ]
-    bottomItems = [
-      {href: '/login',   label: t('login'),   icon: <Icon.Login />},
+    ]}]
+    bottomGroups = [{id: 'navbar-login', items: [
+      {href: '/login',    label: t('login'),   icon: <Icon.Login />},
       {href: '/feedback', label: t('support'), icon: <Icon.Support />},
-    ]
+    ]}]
   }
 
   const isActive = (href: string) =>
@@ -253,21 +278,21 @@ export function NavBar({extraClass}: {extraClass?: string}) {
       </div>
 
       <div className={styles.nav_content}>
-        {/* Top group */}
-        <div className={styles.group}>
-          {topItems.map((item) => (
-            <NavLink key={item.href} item={item} active={isActive(item.href)} />
+        {/* Top groups */}
+        <div className={styles.group} id="navbar-nav">
+          {topGroups.map((group, i) => (
+            <NavGroupSection key={group.id ?? `g${i}`} group={group} isActive={isActive} />
           ))}
         </div>
 
         {/* Bottom group (expandable on mobile) */}
-        {bottomItems.length > 0 && (
+        {bottomGroups.length > 0 && bottomGroups.some(g => g.items.length > 0) && (
           <div className={styles.expandable}>
             <div className={styles.expandable_inner}>
               <div className={styles.divider} />
               <div className={`${styles.group} ${styles.bottom_group}`}>
-                {bottomItems.map((item) => (
-                  <NavLink key={item.href} item={item} active={isActive(item.href)} />
+                {bottomGroups.map((group, i) => (
+                  <NavGroupSection key={group.id ?? `bg${i}`} group={group} isActive={isActive} />
                 ))}
                 {role && (
                   <button

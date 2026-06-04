@@ -188,7 +188,7 @@ export function NotificationsPanel() {
 
   return (
     <>
-      <div className={styles.panel}>
+      <div className={styles.panel} id="notifications-panel">
         {/* Header */}
         <div className={styles.header}>
           <div className={styles.header_left}>

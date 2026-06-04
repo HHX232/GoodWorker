@@ -3,6 +3,7 @@ import PostService, {IPostResponse, IPostsQuery, IPostsResponse} from '@/feature
 import {NavBar} from '@/widgets/BaseUI'
 import {CardsCatalog, HighlightedSlider, type ISliderPost} from '@/widgets/Cards'
 import {NotificationsPanel} from '@/widgets/NotificationsPanel/NotificationsPanel'
+import {HomeTutorial} from '@/widgets/Tutorial/HomeTutorial'
 import {useTranslations} from 'next-intl'
 import styles from './HomePage.module.scss'
 
@@ -56,7 +57,7 @@ function HomePage({initialData, initialQuery, vipPosts}: HomePageProps) {
     <div className={`container default_content ${styles.content}`}>
       <NavBar />
 
-      <div className={styles.main_content}>
+      <div className={styles.main_content} id="posts-catalog">
         <HighlightedSlider posts={sliderPosts} />
         <div className={styles.title_box}>
           <h1>{t('title')}</h1>
@@ -74,6 +75,7 @@ function HomePage({initialData, initialQuery, vipPosts}: HomePageProps) {
       </div>
 
       <div className='mobile_padding'></div>
+      <HomeTutorial />
     </div>
   )
 }

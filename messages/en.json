@@ -1676,5 +1676,31 @@
     "userLastVisitNever": "Never",
     "userLastVisitToday": "Today",
     "userLastVisitDays": "{n} days ago"
+  },
+  "tutorial": {
+    "prev": "Back",
+    "next": "Next",
+    "finish": "Finish",
+    "skip": "Skip",
+    "startBtn": "? Tutorial",
+    "step": "{current} / {total}",
+    "teacher_create_title": "Create content",
+    "teacher_create_desc": "Here you can create new Posts, Road Maps and Tests — your main teaching tools on the platform.",
+    "teacher_notif_title": "Notifications",
+    "teacher_notif_desc": "Here you will see new students, reviews, complaints, and other important platform events.",
+    "student_nav_title": "Navigation",
+    "student_nav_desc": "This is your main navigation menu. From here you can access all sections of the platform.",
+    "student_catalog_title": "Courses & Teachers",
+    "student_catalog_desc": "Browse the course catalog and find the right teacher for you. Thousands of road maps and lessons are waiting!",
+    "student_tools_title": "Pomodoro & Games",
+    "student_tools_desc": "Take a break with educational games or use the Pomodoro timer to study productively.",
+    "student_notif_title": "Notifications",
+    "student_notif_desc": "Stay up to date — here you will see new lessons, messages and platform news.",
+    "student_posts_title": "Posts feed",
+    "student_posts_desc": "Your teachers publish useful articles, tips and learning materials here.",
+    "guest_posts_title": "Posts feed",
+    "guest_posts_desc": "Here you can read educational posts from teachers on the platform.",
+    "guest_login_title": "Join GoodWorker",
+    "guest_login_desc": "Register or log in to access courses, lessons, video calls with teachers and much more!"
   }
 }

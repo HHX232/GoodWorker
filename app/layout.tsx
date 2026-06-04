@@ -1,4 +1,6 @@
 import DefaultProvider from '@/app/providers/DefaultProvider'
+import { TutorialProvider } from '@/widgets/Tutorial/TutorialContext'
+import TutorialOverlay from '@/widgets/Tutorial/TutorialOverlay'
 import '@/shared/scss/_variables.scss'
 import '@/shared/scss/config/functions.scss'
 import '@/shared/scss/config/keyframes.scss'
@@ -41,7 +43,10 @@ export default async function RootLayout({
           <DefaultProvider>
             <Header />
             <Toaster style={{zIndex:1410000010}} position='top-right' richColors />
-            <TextSelectionProvider>{children}</TextSelectionProvider>
+            <TutorialProvider>
+              <TutorialOverlay />
+              <TextSelectionProvider>{children}</TextSelectionProvider>
+            </TutorialProvider>
             <div id='modal_portal' />
           </DefaultProvider>
         </NextIntlClientProvider>
