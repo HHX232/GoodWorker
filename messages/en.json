@@ -72,7 +72,9 @@
     "errorBlocksRequired": "Add at least one question",
     "errorBlocksInvalid": "Fill in all required fields in the questions",
     "errorSaveFailed": "Failed to save test",
-    "titleEdit": "Edit Test"
+    "titleEdit": "Edit Test",
+    "nameLabel": "Name",
+    "descriptionLabel": "Description"
   },
   "CreatePostPage": {
     "editPost": "Edit post",

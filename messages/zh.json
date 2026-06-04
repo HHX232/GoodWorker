@@ -72,7 +72,9 @@
     "errorBlocksRequired": "请至少添加一个题目",
     "errorBlocksInvalid": "请填写所有题目的必填字段",
     "errorSaveFailed": "保存测试失败",
-    "titleEdit": "编辑测试"
+    "titleEdit": "编辑测试",
+    "nameLabel": "名称",
+    "descriptionLabel": "描述"
   },
   "BlockEditor": {
     "fillText": "填空",

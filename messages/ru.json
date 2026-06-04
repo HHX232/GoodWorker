@@ -72,7 +72,9 @@
     "errorBlocksRequired": "Добавьте хотя бы один вопрос",
     "errorBlocksInvalid": "Заполните все обязательные поля в вопросах",
     "errorSaveFailed": "Не удалось сохранить тест",
-    "titleEdit": "Редактировать тест"
+    "titleEdit": "Редактировать тест",
+    "nameLabel": "Название",
+    "descriptionLabel": "Описание"
   },
   "CreatePostPage": {
     "editPost": "Редактировать пост",

@@ -72,7 +72,9 @@
     "errorBlocksRequired": "कम से कम एक प्रश्न जोड़ें",
     "errorBlocksInvalid": "सभी प्रश्नों के आवश्यक फ़ील्ड भरें",
     "errorSaveFailed": "टेस्ट सहेजने में विफल",
-    "titleEdit": "परीक्षण संपादित करें"
+    "titleEdit": "परीक्षण संपादित करें",
+    "nameLabel": "नाम",
+    "descriptionLabel": "विवरण"
   },
   "BlockEditor": {
     "fillText": "पाठ भरें",

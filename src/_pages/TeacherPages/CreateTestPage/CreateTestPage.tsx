@@ -88,7 +88,7 @@ function CreateTestPage() {
             <div className={styles.category_form} id="test-form-fields">
               <div className={styles.inputs_box}>
                 <TextInputUI
-                  helpTitle='name'
+                  helpTitle={t('nameLabel')}
                   theme='newWhite'
                   placeholder={t('namePlaceholder')}
                   currentValue={title}
@@ -96,7 +96,7 @@ function CreateTestPage() {
                 />
               </div>
               <TextAreaUI
-                helpTitle='description'
+                helpTitle={t('descriptionLabel')}
                 maxRows={15}
                 minRows={0}
                 placeholder={t('descriptionPlaceholder')}
