@@ -94,7 +94,7 @@ function TelegramSection({ linkTrigger = 0 }: { linkTrigger?: number }) {
   }
 
   return (
-    <div className={styles.section}>
+    <div className={styles.section} id="dashboard-telegram">
       <div className={styles.sectionLabel}>{t('tgSection')}</div>
       <div className={styles.tgRow}>
         <div className={styles.tgLeft}>
@@ -195,7 +195,7 @@ function PromoCodeSection() {
   return (
     <>
       <div className={styles.divider} />
-      <div className={styles.section}>
+      <div className={styles.section} id="dashboard-promo">
         <div className={styles.sectionLabel}>{t('promoSection')}</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <input
@@ -565,7 +565,7 @@ export function DashboardProfilePanel({
         <div className={styles.divider} />
 
         {/* Quick links */}
-        <div className={styles.section}>
+        <div className={styles.section} id="dashboard-history-tools">
           <div className={styles.sectionLabel}>{t('historyTools')}</div>
           <div className={styles.actions}>
             <button className={styles.actionBtn} onClick={onTranscripts}>

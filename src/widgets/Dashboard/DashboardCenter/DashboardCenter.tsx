@@ -267,7 +267,7 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
         </div>
 
         {isOwner && (
-          <div className={styles.videoCallBlock}>
+          <div className={styles.videoCallBlock} id="dashboard-video-room">
             <div className={styles.videoCallTitle}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14" />
@@ -283,7 +283,7 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
       </div>
 
       {/* Tabs */}
-      <div className={styles.tabs}>
+      <div className={styles.tabs} id="dashboard-content-tabs">
         {TABS.map(tt => (
           <button
             key={tt.key}
@@ -299,7 +299,7 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
       {loading ? (
         <div className={styles.loading}>{t('loading')}</div>
       ) : (
-        <div className={styles.grid}>
+        <div className={styles.grid} id="dashboard-content-grid">
 
           {/* Create card — always first when owner */}
           {isOwner && (

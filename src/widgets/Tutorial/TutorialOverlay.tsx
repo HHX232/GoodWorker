@@ -105,6 +105,7 @@ export default function TutorialOverlay() {
       const element = document.getElementById(currentStepData.elementId);
       if (!element) return;
 
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
       const rect = element.getBoundingClientRect();
       setHighlightRect(rect);
 

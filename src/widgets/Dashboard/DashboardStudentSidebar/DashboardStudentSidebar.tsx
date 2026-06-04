@@ -96,7 +96,7 @@ export function DashboardStudentSidebar({ teacherId }: Props) {
   }, [students, search, activeSubject])
 
   return (
-    <aside className={styles.sidebar}>
+    <aside className={styles.sidebar} id="dashboard-students">
       <div className={styles.head}>
         <div className={styles.titleRow}>
           <span className={styles.title}>{t('students')}</span>

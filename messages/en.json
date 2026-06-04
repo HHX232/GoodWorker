@@ -1701,6 +1701,20 @@
     "guest_posts_title": "Posts feed",
     "guest_posts_desc": "Here you can read educational posts from teachers on the platform.",
     "guest_login_title": "Join GoodWorker",
-    "guest_login_desc": "Register or log in to access courses, lessons, video calls with teachers and much more!"
+    "guest_login_desc": "Register or log in to access courses, lessons, video calls with teachers and much more!",
+    "tDash_videoRoom_title": "Video Room",
+    "tDash_videoRoom_desc": "Create a video call room for one-on-one or group lessons. Share the link with students — they can join directly from their browser.",
+    "tDash_history_title": "History & Tools",
+    "tDash_history_desc": "Access your call transcripts, saved bookmarks, detailed statistics, and your calendar with scheduled lessons.",
+    "tDash_promo_title": "Promo Codes",
+    "tDash_promo_desc": "Enter a promo code here to unlock VIP access or a discount. VIP teachers can create paid courses and access advanced analytics.",
+    "tDash_telegram_title": "Telegram Integration",
+    "tDash_telegram_desc": "Connect Telegram to receive instant notifications about new students, scheduled lessons, and important platform events right in your messenger.",
+    "tDash_students_title": "Your Students",
+    "tDash_students_desc": "Here you can see all your students, search by name or subject, and click on any student to see their progress, errors, and schedule a lesson.",
+    "tDash_contentTabs_title": "Content Tabs",
+    "tDash_contentTabs_desc": "Switch between your content: All, Road Maps, Posts, Services, and Tests. Here you can manage everything you've published.",
+    "tDash_contentGrid_title": "Your Content",
+    "tDash_contentGrid_desc": "All your published materials are here — Road Maps (structured courses), Posts (articles), Services (paid lessons), and Tests. Each card has quick edit and delete actions."
   }
 }

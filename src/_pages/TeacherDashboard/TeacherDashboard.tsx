@@ -1,6 +1,7 @@
 'use client'
 
 import OtpModal from '@/shared/ui/Modals/OtpModal/OtpModal'
+import { TeacherDashboardTutorial } from '@/widgets/Tutorial/TeacherDashboardTutorial'
 import ImageCropEditor from '@/widgets/BaseUI/ImageCropEditor/ImageCropEditor'
 import { BookmarksModal } from '@/widgets/Forms/ProfileEditForm/BookmarksModal'
 import { TranscriptsModal } from '@/widgets/Forms/ProfileEditForm/TranscriptsModal'
@@ -142,6 +143,7 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
 
   return (
     <div className={styles.dashboard}>
+      <TeacherDashboardTutorial />
       <DashboardStudentSidebar teacherId={statsId} />
 
       <DashboardCenter

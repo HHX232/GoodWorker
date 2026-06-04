@@ -1540,6 +1540,20 @@
     "guest_posts_title": "帖子动态",
     "guest_posts_desc": "在这里您可以阅读平台教师发布的教育帖子。",
     "guest_login_title": "加入GoodWorker",
-    "guest_login_desc": "注册或登录，即可访问课程、课时、与教师的视频通话以及更多内容！"
+    "guest_login_desc": "注册或登录，即可访问课程、课时、与教师的视频通话以及更多内容！",
+    "tDash_videoRoom_title": "视频房间",
+    "tDash_videoRoom_desc": "为一对一或小组课程创建视频通话房间。将链接分享给学生，他们可以直接从浏览器加入。",
+    "tDash_history_title": "历史与工具",
+    "tDash_history_desc": "这里有通话记录、收藏书签、详细统计数据和包含计划课程的日历。",
+    "tDash_promo_title": "优惠码",
+    "tDash_promo_desc": "输入优惠码解锁VIP权限或折扣。VIP教师可创建付费课程并使用高级分析功能。",
+    "tDash_telegram_title": "Telegram 集成",
+    "tDash_telegram_desc": "连接Telegram，直接在消息应用中收到新学生、计划课程和重要平台事件的即时通知。",
+    "tDash_students_title": "您的学生",
+    "tDash_students_desc": "这里显示您所有的学生。按姓名或科目搜索，点击学生查看他们的进度和错误，并安排课程。",
+    "tDash_contentTabs_title": "内容标签",
+    "tDash_contentTabs_desc": "在您的内容间切换：全部、路线图、帖子、服务和测试。",
+    "tDash_contentGrid_title": "您的内容",
+    "tDash_contentGrid_desc": "所有已发布的材料都在这里——路线图、帖子、服务和测试。每张卡片都有快速编辑和删除按钮。"
   }
 }
