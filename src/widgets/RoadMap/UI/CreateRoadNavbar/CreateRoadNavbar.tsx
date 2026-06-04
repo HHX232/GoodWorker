@@ -17,6 +17,18 @@ const allItems = [
   RoadMapBlockType.ACTIVE_COMMENT
 ]
 
+const BLOCK_BTN_IDS: Partial<Record<RoadMapBlockType, string>> = {
+  [RoadMapBlockType.INFO_TEXT]:           'roadmap-btn-info-text',
+  [RoadMapBlockType.INFO_MEDIA]:          'roadmap-btn-media',
+  [RoadMapBlockType.INFO_AUDIO]:          'roadmap-btn-audio',
+  [RoadMapBlockType.ACTIVE_TEST]:         'roadmap-btn-active-test',
+  [RoadMapBlockType.TEST_LINK]:           'roadmap-btn-test-link',
+  [RoadMapBlockType.POST_LINK]:           'roadmap-btn-posts',
+  [RoadMapBlockType.DOWNLOAD_FILE_LINK]:  'roadmap-btn-files',
+  [RoadMapBlockType.ACTIVE_COMMENT]:      'roadmap-btn-comment',
+  [RoadMapBlockType.DIVIDER]:             'roadmap-btn-divider',
+}
+
 const TOP_COUNT = 4
 
 function CreateRoadNavbar() {
@@ -27,18 +39,18 @@ function CreateRoadNavbar() {
   const bottomItems = allItems.slice(TOP_COUNT)
 
   return (
-    <div className={`${styles.main} ${isExpanded ? styles.expanded : ''}`}>
+    <div className={`${styles.main} ${isExpanded ? styles.expanded : ''}`} id="roadmap-navbar">
       {/* десктоп — все кнопки подряд */}
       <div className={styles.desktop_group}>
         {allItems.map((type) => (
-          <TaskMenuBtn key={type} taskType={type} />
+          <TaskMenuBtn key={type} taskType={type} id={BLOCK_BTN_IDS[type]} />
         ))}
       </div>
 
       {/* мобайл — верхний ряд (всегда виден) */}
       <div className={styles.mobile_top}>
         {topItems.map((type) => (
-          <TaskMenuBtn key={type} taskType={type} />
+          <TaskMenuBtn key={type} taskType={type} id={BLOCK_BTN_IDS[type]} />
         ))}
 
         {/* кнопка-стрелочка */}
@@ -71,7 +83,7 @@ function CreateRoadNavbar() {
           <div className={styles.divider} />
           <div className={styles.mobile_bottom}>
             {bottomItems.map((type) => (
-              <TaskMenuBtn key={type} taskType={type} />
+              <TaskMenuBtn key={type} taskType={type} id={BLOCK_BTN_IDS[type]} />
             ))}
           </div>
         </div>

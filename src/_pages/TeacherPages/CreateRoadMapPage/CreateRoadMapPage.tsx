@@ -1,6 +1,7 @@
 'use client'
 
 import {CreateRoadNavbar, CreateRoadZone} from '@/widgets/RoadMap/UI'
+import {CreateRoadMapTutorial} from '@/widgets/Tutorial/CreateRoadMapTutorial'
 import {useSearchParams} from 'next/navigation'
 import {useEffect} from 'react'
 import styles from './CreateRoadMapPage.module.scss'
@@ -19,6 +20,7 @@ function CreateRoadMapPage() {
 
   return (
     <div className={styles.main}>
+      <CreateRoadMapTutorial />
       <CreateRoadNavbar />
       <CreateRoadZone editId={editId} />
     </div>

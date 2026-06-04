@@ -114,6 +114,7 @@ function CreateRoadZoneInner({ editId }: { editId?: string }) {
       const position = screenToFlowPosition({x: event.clientX, y: event.clientY})
       const newNode = createRoadNode(type, position)
       setNodes((nds) => [...nds, newNode])
+      window.dispatchEvent(new CustomEvent('roadmap-block-dropped'))
     },
     [setNodes, screenToFlowPosition]
   )
@@ -191,6 +192,7 @@ function CreateRoadZoneInner({ editId }: { editId?: string }) {
   return (
     <ViewModeContext.Provider value='edit'>
       <div
+        id="roadmap-canvas"
         ref={setDropRef}
         style={{
           width: '100%',
@@ -239,7 +241,7 @@ function CreateRoadZoneInner({ editId }: { editId?: string }) {
           <Controls position='top-left' />
           <Background variant={BackgroundVariant.Dots} gap={15} />
           <Panel position='top-right'>
-            <div className={styles.panelRow}>
+            <div className={styles.panelRow} id="roadmap-panel">
               <AutoLayoutButton />
               <button
                 className={`${styles.paywallBtn} ${isPaywallMode ? styles.paywallBtnActive : ''}`}
