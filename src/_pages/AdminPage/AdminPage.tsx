@@ -1,6 +1,7 @@
 'use client'
 
 import { NavBar } from '@/widgets/BaseUI'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -42,40 +43,41 @@ interface ComplaintItem {
   roadmap: { id: string; title: string } | null
 }
 
-const STATUS_CFG: Record<string, { label: string; color: string; bg: string }> = {
-  pending:  { label: 'Ожидает',  color: '#f59e0b', bg: '#fffbeb' },
-  answered: { label: 'Отвечено', color: '#6366f1', bg: '#eef2ff' },
-  resolved: { label: 'Решено',   color: '#22c55e', bg: '#f0fdf4' },
-  closed:   { label: 'Закрыто',  color: '#868897', bg: '#f7f7f7' },
+const STATUS_CFG_COLORS: Record<string, { color: string; bg: string; tKey: string }> = {
+  pending:  { color: '#f59e0b', bg: '#fffbeb', tKey: 'statusPending' },
+  answered: { color: '#6366f1', bg: '#eef2ff', tKey: 'statusAnswered' },
+  resolved: { color: '#22c55e', bg: '#f0fdf4', tKey: 'statusResolved' },
+  closed:   { color: '#868897', bg: '#f7f7f7', tKey: 'statusClosed' },
 }
 
 const COMPLAINT_TABS = ['all', 'pending', 'answered', 'resolved', 'closed'] as const
 type ComplaintTab = typeof COMPLAINT_TABS[number]
-const COMPLAINT_TAB_LABELS: Record<ComplaintTab, string> = {
-  all: 'Все', pending: 'Ожидает', answered: 'Отвечено', resolved: 'Решено', closed: 'Закрыто',
+const COMPLAINT_TAB_TKEYS: Record<ComplaintTab, string> = {
+  all: 'tabAll', pending: 'statusPending', answered: 'statusAnswered', resolved: 'statusResolved', closed: 'statusClosed',
 }
 
 function fmt(iso: string) {
   return new Date(iso).toLocaleDateString('ru', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
-function targetLabel(c: ComplaintItem) {
-  if (c.targetType === 'PLATFORM') return { label: 'Платформа', href: null, kind: 'Обратная связь' }
-  if (c.post) return { label: c.post.title || 'Пост', href: `/post/${c.post.id}`, kind: 'Пост' }
-  if (c.roadmap) return { label: c.roadmap.title || 'Роадмап', href: `/road-map/${c.roadmap.id}`, kind: 'Роадмап' }
+function targetLabel(c: ComplaintItem, tPlatform: string, tFeedback: string, tPost: string, tRoadmap: string) {
+  if (c.targetType === 'PLATFORM') return { label: tPlatform, href: null, kind: tFeedback }
+  if (c.post) return { label: c.post.title || tPost, href: `/post/${c.post.id}`, kind: tPost }
+  if (c.roadmap) return { label: c.roadmap.title || tRoadmap, href: `/road-map/${c.roadmap.id}`, kind: tRoadmap }
   return { label: c.targetType, href: null, kind: c.targetType }
 }
 
 // ─── Complaint card ───────────────────────────────────────
 
 function ComplaintCard({ item, onReplied }: { item: ComplaintItem; onReplied: (id: string, reply: string) => void }) {
+  const t = useTranslations('admin')
   const [expanded, setExpanded] = useState(false)
   const [replyText, setReplyText] = useState('')
   const [sending, setSending] = useState(false)
   const [markingValuable, setMarkingValuable] = useState(false)
   const [statusValue, setStatusValue] = useState(item.status)
-  const target = targetLabel(item)
-  const activeCfg = STATUS_CFG[statusValue] ?? STATUS_CFG.pending
+  const target = targetLabel(item, t('targetPlatform'), t('targetFeedback'), t('targetPost'), t('targetRoadmap'))
+  const activeCfg = { ...(STATUS_CFG_COLORS[statusValue] ?? STATUS_CFG_COLORS.pending), label: t((STATUS_CFG_COLORS[statusValue]?.tKey ?? 'statusPending') as Parameters<typeof t>[0]) }
 
   const handleReply = async () => {
     if (!replyText.trim()) return
@@ -87,11 +89,11 @@ function ComplaintCard({ item, onReplied }: { item: ComplaintItem; onReplied: (i
         body: JSON.stringify({ reply: replyText.trim() }),
       })
       if (!res.ok) throw new Error()
-      toast.success('Ответ отправлен')
+      toast.success(t('replySent'))
       onReplied(item.id, replyText.trim())
       setReplyText('')
     } catch {
-      toast.error('Не удалось отправить ответ')
+      toast.error(t('replyError'))
     } finally {
       setSending(false)
     }
@@ -106,9 +108,9 @@ function ComplaintCard({ item, onReplied }: { item: ComplaintItem; onReplied: (i
       })
       if (!res.ok) throw new Error()
       setStatusValue(newStatus)
-      toast.success('Статус обновлён')
+      toast.success(t('statusUpdated'))
     } catch {
-      toast.error('Не удалось обновить статус')
+      toast.error(t('statusError'))
     }
   }
 
@@ -121,9 +123,9 @@ function ComplaintCard({ item, onReplied }: { item: ComplaintItem; onReplied: (i
         body: JSON.stringify({ complaintId: item.id }),
       })
       if (!res.ok) throw new Error()
-      toast.success('Уведомление о ценном отзыве отправлено')
+      toast.success(t('valuableSent'))
     } catch {
-      toast.error('Не удалось отправить уведомление')
+      toast.error(t('valuableError'))
     } finally {
       setMarkingValuable(false)
     }
@@ -145,7 +147,7 @@ function ComplaintCard({ item, onReplied }: { item: ComplaintItem; onReplied: (i
         </div>
         <div className={styles.card_right}>
           <span className={styles.status_badge} style={{ color: activeCfg.color, background: activeCfg.bg }}>{activeCfg.label}</span>
-          {item.reply && <span className={styles.has_reply_dot} title="Есть ответ" />}
+          {item.reply && <span className={styles.has_reply_dot} title={t('hasReplyTooltip')} />}
           <svg className={`${styles.chevron} ${expanded ? styles.chevron_open : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#bbb" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="6 9 12 15 18 9" />
           </svg>
@@ -159,17 +161,17 @@ function ComplaintCard({ item, onReplied }: { item: ComplaintItem; onReplied: (i
           <div className={styles.divider} />
 
           <div className={styles.section}>
-            <p className={styles.section_label}>Жалоба</p>
+            <p className={styles.section_label}>{t('sectionComplaint')}</p>
             <p className={styles.full_text}>{item.text}</p>
             <p className={styles.reporter_meta}>
-              От: <span>{item.reporterRole === 'STUDENT' ? 'ученик' : item.reporterRole === 'TEACHER' ? 'учитель' : 'пользователь'}</span>
+              {t('fromLabel')}<span>{item.reporterRole === 'STUDENT' ? t('reporterStudent') : item.reporterRole === 'TEACHER' ? t('reporterTeacher') : t('reporterUser')}</span>
               {' · '}ID {item.reporterId.slice(0, 8)}…
             </p>
           </div>
 
           {item.reply && (
             <div className={styles.section}>
-              <p className={styles.section_label}>Ответ</p>
+              <p className={styles.section_label}>{t('sectionReply')}</p>
               <div className={styles.reply_bubble}>
                 <p>{item.reply}</p>
                 {item.repliedAt && <span className={styles.reply_date}>{fmt(item.repliedAt)}</span>}
@@ -179,27 +181,27 @@ function ComplaintCard({ item, onReplied }: { item: ComplaintItem; onReplied: (i
 
           {!item.reply && (
             <div className={styles.section}>
-              <p className={styles.section_label}>Написать ответ</p>
+              <p className={styles.section_label}>{t('sectionWriteReply')}</p>
               <div className={styles.reply_input_row}>
-                <textarea className={styles.reply_textarea} rows={3} placeholder="Ваш ответ…" value={replyText} onChange={e => setReplyText(e.target.value)} disabled={sending} />
+                <textarea className={styles.reply_textarea} rows={3} {...{placeholder: t('replyPlaceholder')}} value={replyText} onChange={e => setReplyText(e.target.value)} disabled={sending} />
                 <button className={styles.reply_btn} onClick={handleReply} disabled={sending || !replyText.trim()}>
-                  {sending ? 'Отправка…' : 'Отправить'}
+                  {sending ? t('sendingBtn') : t('sendBtn')}
                 </button>
               </div>
             </div>
           )}
 
           <div className={styles.section}>
-            <p className={styles.section_label}>Статус</p>
+            <p className={styles.section_label}>{t('sectionStatus')}</p>
             <div className={styles.status_row}>
-              {Object.entries(STATUS_CFG).map(([key, s]) => (
+              {Object.entries(STATUS_CFG_COLORS).map(([key, s]) => (
                 <button
                   key={key}
                   className={`${styles.status_chip} ${statusValue === key ? styles.status_chip_active : ''}`}
                   style={statusValue === key ? { color: s.color, background: s.bg, borderColor: s.color + '44' } : {}}
                   onClick={() => handleStatusChange(key)}
                 >
-                  {s.label}
+                  {t(s.tKey as Parameters<typeof t>[0])}
                 </button>
               ))}
             </div>
@@ -207,13 +209,13 @@ function ComplaintCard({ item, onReplied }: { item: ComplaintItem; onReplied: (i
 
           {item.targetType === 'PLATFORM' && (
             <div className={styles.section}>
-              <p className={styles.section_label}>Действия</p>
+              <p className={styles.section_label}>{t('sectionActions')}</p>
               <button
                 className={styles.valuable_btn}
                 onClick={handleMarkValuable}
                 disabled={markingValuable}
               >
-                {markingValuable ? 'Отправка…' : '⭐ Ценный отзыв — уведомить пользователя'}
+                {markingValuable ? t('valuableSending') : t('valuableBtn')}
               </button>
             </div>
           )}
@@ -228,6 +230,7 @@ function ComplaintCard({ item, onReplied }: { item: ComplaintItem; onReplied: (i
 const PAGE_SIZE = 15
 
 function ComplaintsTab() {
+  const t = useTranslations('admin')
   const [tab, setTab] = useState<ComplaintTab>('all')
   const [items, setItems] = useState<ComplaintItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -276,9 +279,9 @@ function ComplaintsTab() {
     <div className={styles.tab_content}>
       <div className={styles.tab_header}>
         <div className={styles.filter_tabs}>
-          {COMPLAINT_TABS.map(t => (
-            <button key={t} className={`${styles.filter_tab} ${tab === t ? styles.filter_tab_active : ''}`} onClick={() => setTab(t)}>
-              {COMPLAINT_TAB_LABELS[t]}
+          {COMPLAINT_TABS.map(tabKey => (
+            <button key={tabKey} className={`${styles.filter_tab} ${tab === tabKey ? styles.filter_tab_active : ''}`} onClick={() => setTab(tabKey)}>
+              {t(COMPLAINT_TAB_TKEYS[tabKey] as Parameters<typeof t>[0])}
             </button>
           ))}
         </div>
@@ -294,7 +297,7 @@ function ComplaintsTab() {
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
               <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
-            <p>Жалоб нет</p>
+            <p>{t('noComplaints')}</p>
           </div>
         ) : (
           items.map(item => <ComplaintCard key={item.id} item={item} onReplied={handleReplied} />)
@@ -308,10 +311,10 @@ function ComplaintsTab() {
 
 // ─── Notifications tab ────────────────────────────────────
 
-const TARGET_OPTIONS = [
-  { value: 'all', label: 'Все пользователи' },
-  { value: 'students', label: 'Только ученики' },
-  { value: 'teachers', label: 'Только учителя' },
+const TARGET_OPTION_KEYS = [
+  { value: 'all', tKey: 'audienceAll' },
+  { value: 'students', tKey: 'audienceStudents' },
+  { value: 'teachers', tKey: 'audienceTeachers' },
 ]
 
 interface NotifHistoryItem {
@@ -325,6 +328,7 @@ interface NotifHistoryItem {
 }
 
 function NotificationsTab() {
+  const t = useTranslations('admin')
   const [target, setTarget] = useState<'all' | 'students' | 'teachers'>('all')
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
@@ -354,7 +358,7 @@ function NotificationsTab() {
     if (!tgMessage.trim()) return
     setTgSending(true)
     setTgResult(null)
-    const toastId = toast.loading('Отправка Telegram-рассылки…')
+    const toastId = toast.loading(t('tgBroadcastToast'))
     try {
       const res = await fetch('/api/admin/telegram', {
         method: 'POST',
@@ -362,12 +366,12 @@ function NotificationsTab() {
         body: JSON.stringify({ action: 'broadcast', message: tgMessage.trim() }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Ошибка')
+      if (!res.ok) throw new Error(data.error ?? t('tgBroadcastError'))
       setTgResult(data)
-      toast.success(`Отправлено: ${data.sent} из ${data.total}`, { id: toastId })
+      toast.success(t('tgBroadcastSuccess', {sent: data.sent, total: data.total}), { id: toastId })
       setTgMessage('')
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Не удалось отправить', { id: toastId })
+      toast.error(e instanceof Error ? e.message : t('tgBroadcastError'), { id: toastId })
     } finally {
       setTgSending(false)
     }
@@ -376,7 +380,7 @@ function NotificationsTab() {
   const handleTgTrigger = async () => {
     setTgTriggering(true)
     setTgTriggerResult(null)
-    const toastId = toast.loading('Запускаю напоминания…')
+    const toastId = toast.loading(t('tgTriggerToast'))
     try {
       const res = await fetch('/api/admin/telegram', {
         method: 'POST',
@@ -384,11 +388,11 @@ function NotificationsTab() {
         body: JSON.stringify({ action: 'trigger', hoursFrom: 0, hoursTo: 48 }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Ошибка')
+      if (!res.ok) throw new Error(data.error ?? t('tgTriggerError'))
       setTgTriggerResult(data)
-      toast.success(`Уроков: ${data.conferences}, сообщений: ${data.sent}`, { id: toastId })
+      toast.success(t('tgTriggerSuccess', {conferences: data.conferences, sent: data.sent}), { id: toastId })
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Не удалось запустить', { id: toastId })
+      toast.error(e instanceof Error ? e.message : t('tgTriggerError'), { id: toastId })
     } finally {
       setTgTriggering(false)
     }
@@ -414,7 +418,7 @@ function NotificationsTab() {
 
   const handleSend = async () => {
     if (!title.trim() || !body.trim()) {
-      toast.error('Укажите заголовок и текст')
+      toast.error(t('notifBulkValidation'))
       return
     }
     setSending(true)
@@ -428,13 +432,13 @@ function NotificationsTab() {
       if (!res.ok) throw new Error()
       const data = await res.json()
       setLastResult(data)
-      toast.success(`Отправлено ${data.created} уведомлений`)
+      toast.success(t('notifBulkSent', {count: data.created}))
       setTitle('')
       setBody('')
       setHtml('')
       loadHistory()
     } catch {
-      toast.error('Не удалось отправить уведомления')
+      toast.error(t('notifBulkError'))
     } finally {
       setSending(false)
     }
@@ -442,7 +446,7 @@ function NotificationsTab() {
 
   const handleSendUser = async () => {
     if (!userEmail.trim() || !userTitle.trim() || !userBody.trim()) {
-      toast.error('Укажите email, заголовок и текст')
+      toast.error(t('notifValidation'))
       return
     }
     setSendingUser(true)
@@ -456,13 +460,13 @@ function NotificationsTab() {
         const d = await res.json()
         throw new Error(d.error ?? 'Ошибка')
       }
-      toast.success('Уведомление отправлено')
+      toast.success(t('notifUserSent'))
       setUserEmail('')
       setUserTitle('')
       setUserBody('')
       loadHistory()
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Не удалось отправить')
+      toast.error(e instanceof Error ? e.message : t('notifUserError'))
     } finally {
       setSendingUser(false)
     }
@@ -472,9 +476,9 @@ function NotificationsTab() {
     <div className={styles.tab_content}>
       {/* Send to specific user */}
       <div className={styles.notif_form}>
-        <p className={styles.notif_section_heading}>Отправить конкретному пользователю</p>
+        <p className={styles.notif_section_heading}>{t('notifSendToUser')}</p>
         <div className={styles.notif_field}>
-          <label className={styles.notif_label}>Email пользователя</label>
+          <label className={styles.notif_label}>{t('notifEmailLabel')}</label>
           <input
             className={styles.notif_input}
             type="email"
@@ -489,7 +493,7 @@ function NotificationsTab() {
           <input
             className={styles.notif_input}
             type="text"
-            placeholder="Заголовок уведомления"
+            placeholder={t('notifTitlePlaceholder')}
             value={userTitle}
             onChange={e => setUserTitle(e.target.value)}
             disabled={sendingUser}
@@ -500,7 +504,7 @@ function NotificationsTab() {
           <textarea
             className={styles.notif_textarea}
             rows={2}
-            placeholder="Текст уведомления..."
+            placeholder={t('notifBodyPlaceholder')}
             value={userBody}
             onChange={e => setUserBody(e.target.value)}
             disabled={sendingUser}
@@ -512,7 +516,7 @@ function NotificationsTab() {
             onClick={handleSendUser}
             disabled={sendingUser || !userEmail.trim() || !userTitle.trim() || !userBody.trim()}
           >
-            {sendingUser ? 'Отправка…' : 'Отправить'}
+            {sendingUser ? t('notifSending') : t('notifSendUserBtn')}
           </button>
         </div>
       </div>
@@ -520,20 +524,19 @@ function NotificationsTab() {
       {/* Bulk send */}
       <div className={styles.notif_form}>
         <p className={styles.notif_desc}>
-          Создайте системное уведомление и разошлите его выбранной аудитории.
-          Пользователи увидят его в разделе «Уведомления».
+          {t('notifBulkDesc')}
         </p>
 
         <div className={styles.notif_field}>
-          <label className={styles.notif_label}>Аудитория</label>
+          <label className={styles.notif_label}>{t('notifAudienceLabel')}</label>
           <div className={styles.target_row}>
-            {TARGET_OPTIONS.map(opt => (
+            {TARGET_OPTION_KEYS.map(opt => (
               <button
                 key={opt.value}
                 className={`${styles.target_chip} ${target === opt.value ? styles.target_chip_active : ''}`}
                 onClick={() => setTarget(opt.value as typeof target)}
               >
-                {opt.label}
+                {t(opt.tKey as Parameters<typeof t>[0])}
               </button>
             ))}
           </div>
@@ -544,7 +547,7 @@ function NotificationsTab() {
           <input
             className={styles.notif_input}
             type="text"
-            placeholder="Например: Важное обновление"
+            placeholder={t('notifBulkTitlePlaceholder')}
             value={title}
             onChange={e => setTitle(e.target.value)}
             disabled={sending}
@@ -552,11 +555,11 @@ function NotificationsTab() {
         </div>
 
         <div className={styles.notif_field}>
-          <label className={styles.notif_label}>Текст уведомления</label>
+          <label className={styles.notif_label}>{t('notifBodyLabel')}</label>
           <textarea
             className={styles.notif_textarea}
             rows={3}
-            placeholder="Краткое описание..."
+            placeholder={t('notifBulkBodyPlaceholder')}
             value={body}
             onChange={e => setBody(e.target.value)}
             disabled={sending}
@@ -565,12 +568,12 @@ function NotificationsTab() {
 
         <div className={styles.notif_field}>
           <label className={styles.notif_label}>
-            HTML-содержимое <span className={styles.notif_optional}>(необязательно — для расширенного отображения)</span>
+            {t('notifHtmlLabel')} <span className={styles.notif_optional}>{t('notifHtmlOptional')}</span>
           </label>
           <textarea
             className={styles.notif_textarea}
             rows={4}
-            placeholder="<p>Расширенный текст уведомления...</p>"
+            placeholder={t('notifHtmlPlaceholder')}
             value={html}
             onChange={e => setHtml(e.target.value)}
             disabled={sending}
@@ -579,11 +582,11 @@ function NotificationsTab() {
 
         <div className={styles.notif_actions}>
           <button className={styles.send_btn} onClick={handleSend} disabled={sending || !title.trim() || !body.trim()}>
-            {sending ? 'Отправка…' : 'Отправить уведомление'}
+            {sending ? t('notifSending') : t('notifSendBtn')}
           </button>
           {lastResult && (
             <span className={styles.send_success}>
-              ✓ Отправлено {lastResult.created} получателям
+              {t('notifSentResult', {count: lastResult.created})}
             </span>
           )}
         </div>
@@ -594,26 +597,26 @@ function NotificationsTab() {
         <div className={styles.tg_header}>
           <span className={styles.tg_icon}>✈️</span>
           <div>
-            <p className={styles.notif_section_heading} style={{ marginBottom: 2 }}>Telegram-уведомления</p>
+            <p className={styles.notif_section_heading} style={{ marginBottom: 2 }}>{t('tgHeading')}</p>
             {tgStats !== null ? (
               <p className={styles.tg_stats}>
                 {tgStats.total === 0
-                  ? 'Нет пользователей с привязанным Telegram'
-                  : `${tgStats.total} польз. привязали Telegram (учеников: ${tgStats.students}, репетиторов: ${tgStats.teachers})`}
+                  ? t('tgNoUsers')
+                  : t('tgStats', {total: tgStats.total, students: tgStats.students, teachers: tgStats.teachers})}
               </p>
             ) : (
-              <p className={styles.tg_stats}>Загрузка…</p>
+              <p className={styles.tg_stats}>{t('tgLoading')}</p>
             )}
           </div>
         </div>
 
         {/* Broadcast */}
         <div className={styles.tg_section}>
-          <label className={styles.notif_label}>Рассылка произвольного сообщения</label>
+          <label className={styles.notif_label}>{t('tgBroadcastLabel')}</label>
           <textarea
             className={styles.notif_textarea}
             rows={3}
-            placeholder="Текст сообщения в Telegram (поддерживается Markdown)…"
+            placeholder={t('tgBroadcastPlaceholder')}
             value={tgMessage}
             onChange={e => setTgMessage(e.target.value)}
             disabled={tgSending}
@@ -624,11 +627,11 @@ function NotificationsTab() {
               onClick={handleTgBroadcast}
               disabled={tgSending || !tgMessage.trim() || !tgStats?.total}
             >
-              {tgSending ? 'Отправка…' : `Отправить всем (${tgStats?.total ?? 0})`}
+              {tgSending ? t('tgBroadcastSending') : t('tgBroadcastBtn', {count: tgStats?.total ?? 0})}
             </button>
             {tgResult && (
               <span className={styles.tg_result}>
-                ✓ {tgResult.sent} доставлено{tgResult.failed > 0 ? `, ${tgResult.failed} не удалось` : ''}
+                {t('tgBroadcastResult', {sent: tgResult.sent, failed: tgResult.failed > 0 ? t('tgBroadcastFailed', {count: tgResult.failed}) : ''})}
               </span>
             )}
           </div>
@@ -636,19 +639,19 @@ function NotificationsTab() {
 
         {/* Trigger reminders */}
         <div className={styles.tg_section}>
-          <label className={styles.notif_label}>Запустить напоминания о предстоящих уроках прямо сейчас</label>
-          <p className={styles.tg_hint}>Отправит напоминания о всех уроках, запланированных в ближайшие 48 часов. Логика та же, что у ежедневного бота.</p>
+          <label className={styles.notif_label}>{t('tgTriggerLabel')}</label>
+          <p className={styles.tg_hint}>{t('tgTriggerHint')}</p>
           <div className={styles.tg_actions}>
             <button
               className={styles.tg_btn_trigger}
               onClick={handleTgTrigger}
               disabled={tgTriggering}
             >
-              {tgTriggering ? '⏳ Отправляю…' : '▶ Запустить напоминания'}
+              {tgTriggering ? t('tgTriggering') : t('tgTriggerBtn')}
             </button>
             {tgTriggerResult && (
               <span className={styles.tg_result}>
-                ✓ Уроков найдено: {tgTriggerResult.conferences}, сообщений отправлено: {tgTriggerResult.sent}
+                {t('tgTriggerResult', {conferences: tgTriggerResult.conferences, sent: tgTriggerResult.sent})}
               </span>
             )}
           </div>
@@ -657,11 +660,11 @@ function NotificationsTab() {
 
       {/* History */}
       <div className={styles.notif_history}>
-        <p className={styles.notif_section_heading}>Последние отправленные уведомления</p>
+        <p className={styles.notif_section_heading}>{t('notifHistoryHeading')}</p>
         {historyLoading ? (
           Array.from({ length: 3 }).map((_, i) => <div key={i} className={styles.skeleton} style={{ height: 56 }} />)
         ) : history.length === 0 ? (
-          <div className={styles.empty}><p>Нет уведомлений</p></div>
+          <div className={styles.empty}><p>{t('noNotifications')}</p></div>
         ) : (
           <div className={styles.notif_history_list}>
             {history.map(n => {
@@ -720,6 +723,7 @@ interface VipUsageItem {
 }
 
 function PromoCodesTab() {
+  const t = useTranslations('admin')
   const [codes, setCodes] = useState<PromoCodeItem[]>([])
   const [serviceCodes, setServiceCodes] = useState<ServicePromoCodeItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -755,7 +759,7 @@ function PromoCodesTab() {
   }, [load])
 
   const handleCreate = async () => {
-    if (!form.description.trim()) { toast.error('Укажите описание'); return }
+    if (!form.description.trim()) { toast.error(t('promoDescRequired')); return }
     setCreating(true)
     try {
       const res = await fetch('/api/admin/promo-codes', {
@@ -773,12 +777,12 @@ function PromoCodesTab() {
         }),
       })
       if (!res.ok) { const d = await res.json(); throw new Error(d.error) }
-      toast.success('Промокод создан')
+      toast.success(t('promoCreated'))
       setShowForm(false)
       setForm({ rewardType: 'FREE_VIP', code: '', autoCode: true, description: '', discountPercent: '', vipDays: '30', maxUses: '', expiresAt: '' })
       await load()
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Ошибка при создании')
+      toast.error(e instanceof Error ? e.message : t('promoCreateError'))
     } finally {
       setCreating(false)
     }
@@ -793,21 +797,21 @@ function PromoCodesTab() {
       })
       if (!res.ok) throw new Error()
       setCodes(prev => prev.map(c => c.id === item.id ? { ...c, isActive: !item.isActive } : c))
-      toast.success(item.isActive ? 'Промокод деактивирован' : 'Промокод активирован')
+      toast.success(item.isActive ? t('promoDeactivated') : t('promoActivated'))
     } catch {
-      toast.error('Не удалось обновить статус')
+      toast.error(t('promoToggleError'))
     }
   }
 
   const handleDelete = async (item: PromoCodeItem) => {
-    if (!confirm(`Удалить промокод "${item.code}"? Это действие нельзя отменить.`)) return
+    if (!confirm(t('promoDeleteConfirm', {code: item.code}))) return
     try {
       const res = await fetch(`/api/admin/promo-codes/${item.id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error()
       setCodes(prev => prev.filter(c => c.id !== item.id))
-      toast.success('Промокод удалён')
+      toast.success(t('promoDeleted'))
     } catch {
-      toast.error('Не удалось удалить промокод')
+      toast.error(t('promoDeleteError'))
     }
   }
 
@@ -832,7 +836,7 @@ function PromoCodesTab() {
       const data = await res.json()
       setUsagesData(prev => ({ ...prev, [item.id]: data.transactions }))
     } catch {
-      toast.error('Не удалось загрузить использования')
+      toast.error(t('promoUsagesLoadError'))
     } finally {
       setUsagesLoading(null)
     }
@@ -841,32 +845,32 @@ function PromoCodesTab() {
   return (
     <div className={styles.tab_content}>
       <div className={styles.promo_header}>
-        <h3 className={styles.promo_section_title}>Платформенные промокоды</h3>
+        <h3 className={styles.promo_section_title}>{t('promoHeading')}</h3>
         <button className={styles.create_promo_btn} onClick={() => setShowForm(p => !p)}>
-          {showForm ? 'Отмена' : '+ Создать промокод'}
+          {showForm ? t('promoCancel') : t('promoCreate')}
         </button>
       </div>
 
       {showForm && (
         <div className={styles.promo_form}>
           <div className={styles.promo_form_row}>
-            <label className={styles.notif_label}>Тип</label>
+            <label className={styles.notif_label}>{t('promoTypeLabel')}</label>
             <div className={styles.status_row}>
-              {(['FREE_VIP', 'DISCOUNT'] as const).map(t => (
+              {(['FREE_VIP', 'DISCOUNT'] as const).map(t2 => (
                 <button
-                  key={t}
-                  className={`${styles.status_chip} ${form.rewardType === t ? styles.status_chip_active : ''}`}
-                  style={form.rewardType === t ? { background: '#eef2ff', color: '#6366f1', borderColor: '#6366f144' } : {}}
-                  onClick={() => setForm(p => ({ ...p, rewardType: t }))}
+                  key={t2}
+                  className={`${styles.status_chip} ${form.rewardType === t2 ? styles.status_chip_active : ''}`}
+                  style={form.rewardType === t2 ? { background: '#eef2ff', color: '#6366f1', borderColor: '#6366f144' } : {}}
+                  onClick={() => setForm(p => ({ ...p, rewardType: t2 }))}
                 >
-                  {t === 'FREE_VIP' ? 'VIP (бесплатно)' : 'Скидка'}
+                  {t2 === 'FREE_VIP' ? t('promoTypeVip') : t('promoTypeDiscount')}
                 </button>
               ))}
             </div>
           </div>
 
           <div className={styles.promo_form_row}>
-            <label className={styles.notif_label}>Код</label>
+            <label className={styles.notif_label}>{t('promoCodeLabel')}</label>
             <div className={styles.promo_code_row}>
               <label className={styles.promo_checkbox_label}>
                 <input
@@ -874,7 +878,7 @@ function PromoCodesTab() {
                   checked={form.autoCode}
                   onChange={e => setForm(p => ({ ...p, autoCode: e.target.checked }))}
                 />
-                Автогенерация
+                {t('promoAutoCode')}
               </label>
               {!form.autoCode && (
                 <input
@@ -889,31 +893,31 @@ function PromoCodesTab() {
           </div>
 
           <div className={styles.promo_form_row}>
-            <label className={styles.notif_label}>Описание</label>
-            <input className={styles.notif_input} placeholder="Описание промокода" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
+            <label className={styles.notif_label}>{t('promoDescLabel')}</label>
+            <input className={styles.notif_input} placeholder={t('promoDescPlaceholder')} value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
           </div>
 
           {form.rewardType === 'FREE_VIP' && (
             <div className={styles.promo_form_row}>
-              <label className={styles.notif_label}>Дней VIP</label>
+              <label className={styles.notif_label}>{t('promoVipDaysLabel')}</label>
               <input className={styles.notif_input} type="number" min="1" placeholder="30" value={form.vipDays} onChange={e => setForm(p => ({ ...p, vipDays: e.target.value }))} />
             </div>
           )}
 
           {form.rewardType === 'DISCOUNT' && (
             <div className={styles.promo_form_row}>
-              <label className={styles.notif_label}>Скидка (%)</label>
+              <label className={styles.notif_label}>{t('promoDiscountLabel')}</label>
               <input className={styles.notif_input} type="number" min="1" max="100" placeholder="10" value={form.discountPercent} onChange={e => setForm(p => ({ ...p, discountPercent: e.target.value }))} />
             </div>
           )}
 
           <div className={styles.promo_form_row}>
-            <label className={styles.notif_label}>Макс. использований <span className={styles.notif_optional}>(пусто = без лимита)</span></label>
+            <label className={styles.notif_label}>{t('promoMaxUsesLabel')} <span className={styles.notif_optional}>{t('promoMaxUsesOptional')}</span></label>
             <input className={styles.notif_input} type="number" min="1" placeholder="100" value={form.maxUses} onChange={e => setForm(p => ({ ...p, maxUses: e.target.value }))} />
           </div>
 
           <div className={styles.promo_form_row}>
-            <label className={styles.notif_label}>Действует до <span className={styles.notif_optional}>(необязательно)</span></label>
+            <label className={styles.notif_label}>{t('promoExpiresLabel')} <span className={styles.notif_optional}>{t('promoExpiresOptional')}</span></label>
             <input className={styles.notif_input} type="date" value={form.expiresAt} onChange={e => setForm(p => ({ ...p, expiresAt: e.target.value }))} />
           </div>
 
@@ -928,7 +932,7 @@ function PromoCodesTab() {
       {loading ? (
         Array.from({ length: 3 }).map((_, i) => <div key={i} className={styles.skeleton} />)
       ) : codes.length === 0 ? (
-        <div className={styles.empty}><p>Промокодов нет</p></div>
+        <div className={styles.empty}><p>{t('promoNone')}</p></div>
       ) : (
         <div className={styles.promo_list}>
           {codes.map(item => (
@@ -938,16 +942,16 @@ function PromoCodesTab() {
                 <span className={`${styles.promo_type_badge} ${item.rewardType === 'FREE_VIP' ? styles.promo_vip : styles.promo_discount}`}>
                   {item.rewardType === 'FREE_VIP' ? `VIP ${item.vipDays}д` : `−${item.discountPercent}%`}
                 </span>
-                <span className={styles.promo_uses}>{item.usedCount}{item.maxUses ? `/${item.maxUses}` : ''} использ.</span>
+                <span className={styles.promo_uses}>{t('promoUsed', {used: item.usedCount, max: item.maxUses ? `/${item.maxUses}` : ''})}</span>
                 <div style={{ flex: 1 }} />
                 {/* Copy button */}
                 <button
                   className={styles.promo_icon_btn}
                   onClick={() => handleCopy(item)}
-                  title="Скопировать код"
+                  title={t('promoCopyTitle')}
                 >
                   {copiedId === item.id ? (
-                    <span className={styles.promo_copied_text}>Скопировано!</span>
+                    <span className={styles.promo_copied_text}>{t('promoCopied')}</span>
                   ) : (
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
@@ -959,13 +963,13 @@ function PromoCodesTab() {
                   className={`${styles.promo_toggle_btn} ${item.isActive ? styles.promo_toggle_active : ''}`}
                   onClick={() => toggleActive(item)}
                 >
-                  {item.isActive ? 'Активен' : 'Неактивен'}
+                  {item.isActive ? t('promoActive') : t('promoInactive')}
                 </button>
                 {/* Delete button */}
                 <button
                   className={styles.promo_delete_btn}
                   onClick={() => handleDelete(item)}
-                  title="Удалить промокод"
+                  title={t('promoDeleteTitle')}
                 >
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="3 6 5 6 21 6" />
@@ -985,7 +989,7 @@ function PromoCodesTab() {
                   className={styles.promo_usages_btn}
                   onClick={() => handleToggleUsages(item)}
                 >
-                  {usagesOpen === item.id ? 'Скрыть использования' : 'Использования'}
+                  {usagesOpen === item.id ? t('promoHideUsages') : t('promoShowUsages')}
                 </button>
               </div>
               {usagesOpen === item.id && (
@@ -993,15 +997,15 @@ function PromoCodesTab() {
                   {usagesLoading === item.id ? (
                     <div className={styles.spinner_wrap}><div className={styles.spinner} /></div>
                   ) : !usagesData[item.id] || usagesData[item.id].length === 0 ? (
-                    <p className={styles.promo_usages_empty}>Нет использований</p>
+                    <p className={styles.promo_usages_empty}>{t('promoNoUsages')}</p>
                   ) : (
                     <table className={styles.promo_usages_table}>
                       <thead>
                         <tr>
-                          <th>Имя</th>
-                          <th>Email</th>
-                          <th>Роль</th>
-                          <th>Дата</th>
+                          <th>{t('promoUsagesColName')}</th>
+                          <th>{t('promoUsagesColEmail')}</th>
+                          <th>{t('promoUsagesColRole')}</th>
+                          <th>{t('promoUsagesColDate')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1011,7 +1015,7 @@ function PromoCodesTab() {
                             <tr key={tx.id}>
                               <td>{user?.name ?? '—'}</td>
                               <td>{user?.email ?? '—'}</td>
-                              <td>{tx.userRole === 'TEACHER' ? 'Учитель' : 'Ученик'}</td>
+                              <td>{tx.userRole === 'TEACHER' ? t('userRoleTeacher') : t('userRoleStudent')}</td>
                               <td>{fmt(tx.createdAt)}</td>
                             </tr>
                           )
@@ -1029,7 +1033,7 @@ function PromoCodesTab() {
       {serviceCodes.length > 0 && (
         <>
           <div className={styles.divider} style={{ margin: '8px 0' }} />
-          <h3 className={styles.promo_section_title}>Сервисные промокоды учителей</h3>
+          <h3 className={styles.promo_section_title}>{t('promoServiceHeading')}</h3>
           <div className={styles.promo_list}>
             {serviceCodes.map(item => (
               <div key={item.id} className={styles.promo_card}>
@@ -1040,7 +1044,7 @@ function PromoCodesTab() {
                   <div style={{ flex: 1 }} />
                 </div>
                 <p className={styles.promo_desc}>
-                  Сервис: <a href={`/service/${item.service.id}`} className={styles.target_link} target="_blank">{item.service.title}</a>
+                  {t('promoServiceLabel')}<a href={`/service/${item.service.id}`} className={styles.target_link} target="_blank">{item.service.title}</a>
                 </p>
               </div>
             ))}
@@ -1073,6 +1077,7 @@ interface IdentityVerifItem {
 }
 
 function VerificationsTab() {
+  const t = useTranslations('admin')
   const [experiences, setExperiences] = useState<ExperienceVerifItem[]>([])
   const [identities, setIdentities] = useState<IdentityVerifItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -1093,10 +1098,10 @@ function VerificationsTab() {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ verify }),
     })
-    if (!res.ok) { const d = await res.json(); toast.error(d.error ?? 'Ошибка'); return }
+    if (!res.ok) { const d = await res.json(); toast.error(d.error ?? t('expConfirmError')); return }
     const d = await res.json()
     setExperiences(p => p.map(e => e.id === id ? { ...e, verifiedAt: d.experience.verifiedAt } : e))
-    toast.success(verify ? 'Подтверждено' : 'Подтверждение снято')
+    toast.success(verify ? t('passportConfirmedToast') : t('passportRemovedToast'))
   }
 
   const verifyIdentity = async (teacherId: string, verify: boolean) => {
@@ -1104,18 +1109,18 @@ function VerificationsTab() {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ verify }),
     })
-    if (!res.ok) { toast.error('Ошибка'); return }
+    if (!res.ok) { toast.error(t('passportError')); return }
     setIdentities(p => p.map(i => i.id === teacherId ? { ...i, pasportConfirmed: verify } : i))
-    toast.success(verify ? 'Личность подтверждена' : 'Подтверждение снято')
+    toast.success(verify ? t('passportConfirmedToast') : t('passportRemovedToast'))
   }
 
   return (
     <div className={styles.tab_content}>
-      <h3 className={styles.promo_section_title}>Опыт работы репетиторов</h3>
+      <h3 className={styles.promo_section_title}>{t('expHeading')}</h3>
       {loading ? (
         Array.from({ length: 3 }).map((_, i) => <div key={i} className={styles.skeleton} />)
       ) : experiences.length === 0 ? (
-        <div className={styles.empty}><p>Нет записей об опыте</p></div>
+        <div className={styles.empty}><p>{t('expNoRecords')}</p></div>
       ) : (
         <div className={styles.verif_list}>
           {experiences.map(exp => (
@@ -1123,14 +1128,14 @@ function VerificationsTab() {
               <div className={styles.verif_card_top}>
                 <div className={styles.verif_info}>
                   <span className={styles.verif_name}>{exp.teacher.name}</span>
-                  <span className={styles.verif_sub}>{exp.title}{exp.organization ? ` · ${exp.organization}` : ''} · {exp.yearFrom}–{exp.yearTo ?? 'н.в.'}</span>
+                  <span className={styles.verif_sub}>{exp.title}{exp.organization ? ` · ${exp.organization}` : ''} · {exp.yearFrom}–{exp.yearTo ?? t('expPresent')}</span>
                 </div>
                 <div className={styles.verif_actions}>
                   {exp.verifiedAt && (
-                    <span className={styles.verif_check} title={`Подтверждено ${new Date(exp.verifiedAt).toLocaleDateString('ru')}`}>✓</span>
+                    <span className={styles.verif_check} title={t('expVerified', {date: new Date(exp.verifiedAt).toLocaleDateString()})}>✓</span>
                   )}
-                  <span className={styles.verif_docs_count} title={exp.documentUrls.length === 0 ? 'Нет документов' : `${exp.documentUrls.length} документ(ов)`}>
-                    {exp.documentUrls.length === 0 ? '📎 нет' : `📎 ${exp.documentUrls.length}`}
+                  <span className={styles.verif_docs_count} title={exp.documentUrls.length === 0 ? t('expNoDocs') : t('expDocsCount', {count: exp.documentUrls.length})}>
+                    {exp.documentUrls.length === 0 ? '📎' : `📎 ${exp.documentUrls.length}`}
                   </span>
                   {exp.documentUrls.length > 0 && (
                     <div className={styles.verif_doc_previews}>
@@ -1145,9 +1150,9 @@ function VerificationsTab() {
                     className={`${styles.verif_btn} ${exp.verifiedAt ? styles.verif_btn_active : ''}`}
                     onClick={() => verifyExp(exp.id, !exp.verifiedAt)}
                     disabled={!exp.verifiedAt && exp.documentUrls.length === 0}
-                    title={!exp.verifiedAt && exp.documentUrls.length === 0 ? 'Нет документов для подтверждения' : ''}
+                    title={!exp.verifiedAt && exp.documentUrls.length === 0 ? t('expNoDocs2') : ''}
                   >
-                    {exp.verifiedAt ? 'Снять ✓' : 'Подтвердить'}
+                    {exp.verifiedAt ? t('expRemoveConfirm') : t('expConfirmBtn')}
                   </button>
                 </div>
               </div>
@@ -1157,9 +1162,9 @@ function VerificationsTab() {
       )}
 
       <div className={styles.divider} style={{ margin: '12px 0' }} />
-      <h3 className={styles.promo_section_title}>Подтверждение паспорта</h3>
+      <h3 className={styles.promo_section_title}>{t('passportHeading')}</h3>
       {loading ? null : identities.length === 0 ? (
-        <div className={styles.empty}><p>Нет загруженных паспортов</p></div>
+        <div className={styles.empty}><p>{t('passportNone')}</p></div>
       ) : (
         <div className={styles.verif_list}>
           {identities.map(item => (
@@ -1169,14 +1174,14 @@ function VerificationsTab() {
                   <span className={styles.verif_name}>{item.name}</span>
                   <span className={styles.verif_sub}>{item.email}</span>
                   {item.pasportConfirmed && (
-                    <span className={styles.passport_confirmed_badge}>✓ Личность подтверждена</span>
+                    <span className={styles.passport_confirmed_badge}>{t('passportConfirmedBadge')}</span>
                   )}
                 </div>
                 <div className={styles.verif_actions}>
                   <button
                     className={styles.passport_thumb_btn}
                     onClick={() => setPassportViewUrl(item.passportDocumentUrl)}
-                    title="Просмотреть паспорт"
+                    title={t('passportView')}
                   >
                     <img src={item.passportDocumentUrl} alt="passport" className={styles.passport_thumb} />
                     <span className={styles.passport_thumb_overlay}>
@@ -1189,7 +1194,7 @@ function VerificationsTab() {
                     className={`${styles.verif_btn} ${item.pasportConfirmed ? styles.verif_btn_active : ''}`}
                     onClick={() => verifyIdentity(item.id, !item.pasportConfirmed)}
                   >
-                    {item.pasportConfirmed ? 'Снять ✓' : 'Подтвердить'}
+                    {item.pasportConfirmed ? t('passportRemove') : t('passportConfirm')}
                   </button>
                 </div>
               </div>
@@ -1208,7 +1213,7 @@ function VerificationsTab() {
             </button>
             <img src={passportViewUrl} alt="passport" className={styles.passport_modal_img} />
             <a href={passportViewUrl} target="_blank" rel="noreferrer" className={styles.passport_modal_link}>
-              Открыть в новой вкладке ↗
+              {t('passportOpenTab')}
             </a>
           </div>
         </div>
@@ -1222,24 +1227,24 @@ function VerificationsTab() {
 type ContentType = 'posts' | 'roadmaps'
 type ModerationStatus = 'PUBLISHED' | 'PENDING' | 'BLOCKED'
 
-const MODERATION_CFG: Record<ModerationStatus, { label: string; color: string; bg: string }> = {
-  PUBLISHED: { label: 'Опубликовано', color: '#15803D', bg: '#F0FDF4' },
-  PENDING:   { label: 'На модерации', color: '#B45309', bg: '#FFFBEB' },
-  BLOCKED:   { label: 'Заблокировано', color: '#A32D2D', bg: '#FCEBEB' },
+const MODERATION_CFG: Record<ModerationStatus, { tKey: string; color: string; bg: string }> = {
+  PUBLISHED: { tKey: 'moderPublished', color: '#15803D', bg: '#F0FDF4' },
+  PENDING:   { tKey: 'moderPending',   color: '#B45309', bg: '#FFFBEB' },
+  BLOCKED:   { tKey: 'moderBlocked',   color: '#A32D2D', bg: '#FCEBEB' },
 }
 
-const CONTENT_STATUS_FILTERS: { value: string; label: string }[] = [
-  { value: 'all',       label: 'Все' },
-  { value: 'PUBLISHED', label: 'Опубликовано' },
-  { value: 'PENDING',   label: 'На модерации' },
-  { value: 'BLOCKED',   label: 'Заблокировано' },
+const CONTENT_STATUS_FILTER_KEYS: { value: string; tKey: string }[] = [
+  { value: 'all',       tKey: 'filterAll' },
+  { value: 'PUBLISHED', tKey: 'moderPublished' },
+  { value: 'PENDING',   tKey: 'moderPending' },
+  { value: 'BLOCKED',   tKey: 'moderBlocked' },
 ]
 
-const AI_FILTERS: { value: string; label: string; color: string }[] = [
-  { value: 'all',       label: 'Все ИИ',         color: '#6b7280' },
-  { value: 'flagged',   label: '🚩 Нарушения',   color: '#dc2626' },
-  { value: 'unchecked', label: '⏳ Не проверено', color: '#d97706' },
-  { value: 'ok',        label: '✓ ИИ одобрен',   color: '#16a34a' },
+const AI_FILTER_KEYS: { value: string; tKey: string; color: string }[] = [
+  { value: 'all',       tKey: 'aiAll',       color: '#6b7280' },
+  { value: 'flagged',   tKey: 'aiFlagged',   color: '#dc2626' },
+  { value: 'unchecked', tKey: 'aiUnchecked', color: '#d97706' },
+  { value: 'ok',        tKey: 'aiOk',        color: '#16a34a' },
 ]
 
 interface ContentItem {
@@ -1256,6 +1261,7 @@ interface ContentItem {
 }
 
 function ContentTab() {
+  const t = useTranslations('admin')
   const [contentType, setContentType] = useState<ContentType>('posts')
   const [statusFilter, setStatusFilter] = useState('all')
   const [aiFilter, setAiFilter] = useState('all')
@@ -1301,16 +1307,16 @@ function ContentTab() {
       })
       if (!res.ok) throw new Error()
       setItems(prev => prev.map(i => i.id === item.id ? { ...i, moderationStatus: newStatus } : i))
-      toast.success('Статус обновлён')
+      toast.success(t('contentStatusUpdated'))
     } catch {
-      toast.error('Не удалось обновить статус')
+      toast.error(t('contentStatusError'))
     } finally {
       setUpdating(null)
     }
   }
 
   const handleDelete = async (item: ContentItem) => {
-    if (!confirm(`Удалить "${item.title}"? Это действие нельзя отменить.`)) return
+    if (!confirm(t('contentDeleteConfirm', {title: item.title}))) return
     setDeleting(item.id)
     try {
       const params = new URLSearchParams({ id: item.id, type: contentType })
@@ -1318,9 +1324,9 @@ function ContentTab() {
       if (!res.ok) throw new Error()
       setItems(prev => prev.filter(i => i.id !== item.id))
       setTotal(prev => prev - 1)
-      toast.success('Удалено')
+      toast.success(t('contentDeleted'))
     } catch {
-      toast.error('Не удалось удалить')
+      toast.error(t('contentDeleteError'))
     } finally {
       setDeleting(null)
     }
@@ -1328,7 +1334,7 @@ function ContentTab() {
 
   const statusActions = (['PUBLISHED', 'PENDING', 'BLOCKED'] as ModerationStatus[]).map(s => ({
     status: s,
-    label: MODERATION_CFG[s].label,
+    label: t(MODERATION_CFG[s].tKey as Parameters<typeof t>[0]),
     color: MODERATION_CFG[s].color,
     bg: MODERATION_CFG[s].bg,
   }))
@@ -1341,7 +1347,7 @@ function ContentTab() {
             className={`${styles.content_sub_tab} ${contentType === 'posts' ? styles.content_sub_tab_active : ''}`}
             onClick={() => setContentType('posts')}
           >
-            Посты
+            {t('contentPosts')}
           </button>
           <button
             className={`${styles.content_sub_tab} ${contentType === 'roadmaps' ? styles.content_sub_tab_active : ''}`}
@@ -1353,13 +1359,13 @@ function ContentTab() {
       </div>
 
       <div className={styles.filter_tabs}>
-        {CONTENT_STATUS_FILTERS.map(f => (
+        {CONTENT_STATUS_FILTER_KEYS.map(f => (
           <button
             key={f.value}
             className={`${styles.filter_tab} ${statusFilter === f.value ? styles.filter_tab_active : ''}`}
             onClick={() => setStatusFilter(f.value)}
           >
-            {f.label}
+            {t(f.tKey as Parameters<typeof t>[0])}
           </button>
         ))}
         {total > 0 && <span className={styles.total_badge}>{total}</span>}
@@ -1367,14 +1373,14 @@ function ContentTab() {
 
       {contentType === 'posts' && (
         <div className={styles.filter_tabs} style={{marginTop: 6}}>
-          {AI_FILTERS.map(f => (
+          {AI_FILTER_KEYS.map(f => (
             <button
               key={f.value}
               className={`${styles.filter_tab} ${aiFilter === f.value ? styles.filter_tab_active : ''}`}
               style={aiFilter === f.value ? {borderColor: f.color, color: f.color} : {}}
               onClick={() => setAiFilter(f.value)}
             >
-              {f.label}
+              {t(f.tKey as Parameters<typeof t>[0])}
             </button>
           ))}
         </div>
@@ -1392,17 +1398,17 @@ function ContentTab() {
               <line x1="16" y1="17" x2="8" y2="17" />
               <polyline points="10 9 9 9 8 9" />
             </svg>
-            <p>Нет контента</p>
+            <p>{t('noContent')}</p>
           </div>
         ) : (
           items.map(item => {
-            const cfg = MODERATION_CFG[item.moderationStatus] ?? MODERATION_CFG.PUBLISHED
+            const cfg = { ...MODERATION_CFG[item.moderationStatus] ?? MODERATION_CFG.PUBLISHED, label: t((MODERATION_CFG[item.moderationStatus] ?? MODERATION_CFG.PUBLISHED).tKey as Parameters<typeof t>[0]) }
             const href = contentType === 'posts' ? `/post/${item.id}` : `/road-map/${item.id}`
             return (
               <div key={item.id} className={styles.content_card}>
                 <div className={styles.content_card_left}>
                   <Link href={href} className={styles.content_card_title} target="_blank" rel="noreferrer">
-                    {item.title || '(без названия)'}
+                    {item.title || t('noTitle')}
                   </Link>
                   <div className={styles.content_card_meta}>
                     <span>{item.teacher.name}</span>
@@ -1411,17 +1417,17 @@ function ContentTab() {
                     {contentType === 'posts' && item.viewCount !== undefined && (
                       <>
                         <span>·</span>
-                        <span>{item.viewCount} просм.</span>
+                        <span>{t('viewCount', {count: item.viewCount})}</span>
                       </>
                     )}
                     {contentType === 'roadmaps' && item._count.progress !== undefined && (
                       <>
                         <span>·</span>
-                        <span>{item._count.progress} уч.</span>
+                        <span>{t('studentsCount', {count: item._count.progress})}</span>
                       </>
                     )}
                     <span>·</span>
-                    <span>{item._count.comments} комм.</span>
+                    <span>{t('commentsCount', {count: item._count.comments})}</span>
                   </div>
                 </div>
                 <div className={styles.content_card_right}>
@@ -1437,18 +1443,18 @@ function ContentTab() {
                       style={item.aiModerationOk
                         ? { color: '#16a34a', background: '#f0fdf4' }
                         : { color: '#dc2626', background: '#fef2f2' }}
-                      title={item.aiModerationOk ? 'ИИ: контент в порядке' : 'ИИ: обнаружено нарушение'}
+                      title={item.aiModerationOk ? t('aiOkTooltip') : t('aiViolationTooltip')}
                     >
-                      {item.aiModerationOk ? '🤖 ок' : '🤖 нарушение'}
+                      {item.aiModerationOk ? t('aiOkBadge') : t('aiViolationBadge')}
                     </span>
                   )}
                   {contentType === 'posts' && !item.aiModerated && (
                     <span
                       className={styles.status_badge}
                       style={{ color: '#9ca3af', background: '#f9fafb' }}
-                      title='ИИ ещё не проверил'
+                      title={t('aiNotChecked')}
                     >
-                      🤖 ?
+                      {t('aiNotCheckedBadge')}
                     </span>
                   )}
                   {statusActions
@@ -1470,7 +1476,7 @@ function ContentTab() {
                     onClick={() => handleDelete(item)}
                     disabled={deleting === item.id}
                   >
-                    {deleting === item.id ? '…' : 'Удалить'}
+                    {deleting === item.id ? t('contentDeleting') : t('contentDelete')}
                   </button>
                 </div>
               </div>
@@ -1490,11 +1496,11 @@ function ContentTab() {
 
 // ─── Users tab ────────────────────────────────────────────
 
-function daysSince(iso: string | null): string {
-  if (!iso) return 'Никогда'
+function daysSince(iso: string | null): { key: string; n?: number } {
+  if (!iso) return { key: 'userLastVisitNever' }
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000)
-  if (diff === 0) return 'Сегодня'
-  return `${diff} д. назад`
+  if (diff === 0) return { key: 'userLastVisitToday' }
+  return { key: 'userLastVisitDays', n: diff }
 }
 
 function UserCard({
@@ -1506,6 +1512,7 @@ function UserCard({
   onUpdate: (id: string, role: string, patch: Partial<UserItem>) => void
   onDelete: (id: string, role: string) => void
 }) {
+  const t = useTranslations('admin')
   const [banOpen, setBanOpen] = useState(false)
   const [banReasonInput, setBanReasonInput] = useState('')
   const [processing, setProcessing] = useState(false)
@@ -1523,9 +1530,9 @@ function UserCard({
       })
       if (!res.ok) throw new Error()
       onUpdate(item.id, item.role, fields as Partial<UserItem>)
-      toast.success('Обновлено')
+      toast.success(t('userUpdated'))
     } catch {
-      toast.error('Не удалось обновить')
+      toast.error(t('userUpdateError'))
     } finally {
       setProcessing(false)
     }
@@ -1551,16 +1558,16 @@ function UserCard({
   }
 
   const handleDelete = async () => {
-    if (!confirm(`Удалить пользователя "${item.name}"? Это действие нельзя отменить.`)) return
+    if (!confirm(t('userDeleteConfirm', {name: item.name}))) return
     setProcessing(true)
     try {
       const params = new URLSearchParams({ id: item.id, role: item.role })
       const res = await fetch(`/api/admin/users?${params}`, { method: 'DELETE' })
       if (!res.ok) throw new Error()
       onDelete(item.id, item.role)
-      toast.success('Пользователь удалён')
+      toast.success(t('userDeleted'))
     } catch {
-      toast.error('Не удалось удалить')
+      toast.error(t('userDeleteError'))
     } finally {
       setProcessing(false)
     }
@@ -1588,7 +1595,7 @@ function UserCard({
               ? { background: '#eef2ff', color: '#6366f1' }
               : { background: '#f0fdfa', color: '#0d9488' }}
           >
-            {isTeacher ? 'Учитель' : 'Ученик'}
+            {isTeacher ? t('userRoleTeacher') : t('userRoleStudent')}
           </span>
           {item.isVip && (
             <span className={styles.user_badge} style={{ background: '#fef9ee', color: '#d97706' }}>
@@ -1597,32 +1604,32 @@ function UserCard({
           )}
           {item.isBanned && (
             <span className={styles.user_badge} style={{ background: '#fef2f2', color: '#dc2626' }}>
-              БАН
+              {t('userBanned')}
             </span>
           )}
         </div>
 
         <div className={styles.user_stats}>
-          Последний визит: {daysSince(item.lastSeenAt)}
+          {t('userLastVisit')}{(() => { const d = daysSince(item.lastSeenAt); return t(d.key as Parameters<typeof t>[0], d.n !== undefined ? {n: d.n} : undefined) })()}
           {' · '}
-          Рег.: {fmt(item.createdAt)}
+          {t('userReg')}{fmt(item.createdAt)}
           {isTeacher && (
             <>
               {' · '}
-              {item._count.posts ?? 0} постов · {item._count.roadmaps ?? 0} роадмапов · {item._count.students ?? 0} уч.
+              {t('userPosts', {count: item._count.posts ?? 0})} · {t('userRoadmaps', {count: item._count.roadmaps ?? 0})} · {t('userStudentsOf', {count: item._count.students ?? 0})}
             </>
           )}
           {!isTeacher && (
             <>
               {' · '}
-              {item._count.teachers ?? 0} учителей
+              {t('userTeachersOf', {count: item._count.teachers ?? 0})}
             </>
           )}
         </div>
 
         {item.isBanned && item.banReason && (
           <div className={styles.user_stats} style={{ color: '#dc2626' }}>
-            Причина бана: {item.banReason}
+            {t('userBanReason')}{item.banReason}
           </div>
         )}
 
@@ -1632,7 +1639,7 @@ function UserCard({
             <textarea
               className={styles.ban_textarea}
               rows={2}
-              placeholder="Причина бана (необязательно)…"
+              placeholder={t('banPlaceholder')}
               value={banReasonInput}
               onChange={e => setBanReasonInput(e.target.value)}
               disabled={processing}
@@ -1643,14 +1650,14 @@ function UserCard({
                 onClick={handleBan}
                 disabled={processing}
               >
-                {processing ? 'Обработка…' : 'Подтвердить бан'}
+                {processing ? t('banProcessing') : t('banConfirmBtn')}
               </button>
               <button
                 className={styles.filter_tab}
                 onClick={() => { setBanOpen(false); setBanReasonInput('') }}
                 disabled={processing}
               >
-                Отмена
+                {t('banCancel')}
               </button>
             </div>
           </div>
@@ -1666,7 +1673,7 @@ function UserCard({
               onClick={() => setBanOpen(p => !p)}
               disabled={processing}
             >
-              Забанить
+              {t('banBtn')}
             </button>
           ) : (
             <button
@@ -1674,7 +1681,7 @@ function UserCard({
               onClick={handleUnban}
               disabled={processing}
             >
-              Разбанить
+              {t('unbanBtn')}
             </button>
           )}
           <button
@@ -1682,7 +1689,7 @@ function UserCard({
             onClick={handleVipToggle}
             disabled={processing}
           >
-            {item.isVip ? 'Снять VIP' : 'VIP 30д'}
+            {item.isVip ? t('vipRemoveBtn') : t('vipAddBtn')}
           </button>
         </div>
         <div className={styles.user_action_row} style={{ justifyContent: 'flex-end' }}>
@@ -1691,7 +1698,7 @@ function UserCard({
             onClick={handleDelete}
             disabled={processing}
           >
-            Удалить
+            {t('deleteUserBtn')}
           </button>
         </div>
       </div>
@@ -1700,6 +1707,7 @@ function UserCard({
 }
 
 function UsersTab() {
+  const t = useTranslations('admin')
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState<'all' | 'TEACHER' | 'STUDENT'>('all')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'banned' | 'vip'>('all')
@@ -1757,17 +1765,17 @@ function UsersTab() {
     setTotal(prev => prev - 1)
   }, [])
 
-  const ROLE_OPTS: { value: 'all' | 'TEACHER' | 'STUDENT'; label: string }[] = [
-    { value: 'all',     label: 'Все' },
-    { value: 'TEACHER', label: 'Учителя' },
-    { value: 'STUDENT', label: 'Ученики' },
+  const ROLE_OPTS: { value: 'all' | 'TEACHER' | 'STUDENT'; tKey: string }[] = [
+    { value: 'all',     tKey: 'roleAll' },
+    { value: 'TEACHER', tKey: 'roleTeachers' },
+    { value: 'STUDENT', tKey: 'roleStudents' },
   ]
 
-  const STATUS_OPTS: { value: 'all' | 'active' | 'banned' | 'vip'; label: string }[] = [
-    { value: 'all',    label: 'Все' },
-    { value: 'active', label: 'Активные' },
-    { value: 'banned', label: 'Забаненые' },
-    { value: 'vip',    label: 'VIP' },
+  const STATUS_OPTS: { value: 'all' | 'active' | 'banned' | 'vip'; tKey: string }[] = [
+    { value: 'all',    tKey: 'statusAll' },
+    { value: 'active', tKey: 'statusActive' },
+    { value: 'banned', tKey: 'statusBanned' },
+    { value: 'vip',    tKey: 'statusVip' },
   ]
 
   return (
@@ -1777,7 +1785,7 @@ function UsersTab() {
         <input
           className={styles.users_search_input}
           type="text"
-          placeholder="Поиск по имени или email…"
+          placeholder={t('userSearchPlaceholder')}
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
@@ -1788,7 +1796,7 @@ function UsersTab() {
               className={`${styles.filter_tab} ${roleFilter === o.value ? styles.filter_tab_active : ''}`}
               onClick={() => setRoleFilter(o.value)}
             >
-              {o.label}
+              {t(o.tKey as Parameters<typeof t>[0])}
             </button>
           ))}
         </div>
@@ -1799,7 +1807,7 @@ function UsersTab() {
               className={`${styles.filter_tab} ${statusFilter === o.value ? styles.filter_tab_active : ''}`}
               onClick={() => setStatusFilter(o.value)}
             >
-              {o.label}
+              {t(o.tKey as Parameters<typeof t>[0])}
             </button>
           ))}
         </div>
@@ -1816,7 +1824,7 @@ function UsersTab() {
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
               <circle cx="12" cy="7" r="4" />
             </svg>
-            <p>Пользователей не найдено</p>
+            <p>{t('noUsers')}</p>
           </div>
         ) : (
           items.map(item => (
@@ -1875,6 +1883,7 @@ function StatCard({ title, value, sub, subColor }: { title: string; value: numbe
 }
 
 function StatsTab() {
+  const t = useTranslations('admin')
   const [data, setData] = useState<StatsData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -1897,7 +1906,7 @@ function StatsTab() {
   if (!data) {
     return (
       <div className={styles.tab_content}>
-        <div className={styles.empty}><p>Не удалось загрузить статистику</p></div>
+        <div className={styles.empty}><p>{t('statsLoadError')}</p></div>
       </div>
     )
   }
@@ -1908,34 +1917,34 @@ function StatsTab() {
     <div className={styles.tab_content}>
       {/* Users section */}
       <div className={styles.stats_section}>
-        <p className={styles.stats_section_title}>Пользователи</p>
+        <p className={styles.stats_section_title}>{t('statsUsers')}</p>
         <div className={styles.stats_grid}>
-          <StatCard title="Ученики" value={users.totalStudents} sub={`+${users.newStudentsWeek} за неделю`} subColor="#16a34a" />
-          <StatCard title="Учителя" value={users.totalTeachers} sub={`+${users.newTeachersWeek} за неделю`} subColor="#16a34a" />
-          <StatCard title="VIP всего" value={users.vipStudents + users.vipTeachers} sub={`уч. ${users.vipStudents} · учит. ${users.vipTeachers}`} />
-          <StatCard title="Новых за месяц" value={users.newStudentsMonth + users.newTeachersMonth} sub={`уч. ${users.newStudentsMonth} · учит. ${users.newTeachersMonth}`} subColor="#6366f1" />
-          <StatCard title="Заблокированных" value={users.bannedStudents + users.bannedTeachers} sub={`уч. ${users.bannedStudents} · учит. ${users.bannedTeachers}`} subColor={users.bannedStudents + users.bannedTeachers > 0 ? '#dc2626' : undefined} />
+          <StatCard title={t("statsStudents")} value={users.totalStudents} sub={t("statsSubWeek", {count: users.newStudentsWeek})} subColor="#16a34a" />
+          <StatCard title={t("statsTeachers")} value={users.totalTeachers} sub={t("statsSubWeek", {count: users.newTeachersWeek})} subColor="#16a34a" />
+          <StatCard title={t("statsVipTotal")} value={users.vipStudents + users.vipTeachers} sub={t("statsSubVip", {s: users.vipStudents, t: users.vipTeachers})} />
+          <StatCard title={t("statsNewMonth")} value={users.newStudentsMonth + users.newTeachersMonth} sub={t("statsSubNewMonth", {s: users.newStudentsMonth, t: users.newTeachersMonth})} subColor="#6366f1" />
+          <StatCard title={t("statsBanned")} value={users.bannedStudents + users.bannedTeachers} sub={t("statsSubBanned", {s: users.bannedStudents, t: users.bannedTeachers})} subColor={users.bannedStudents + users.bannedTeachers > 0 ? '#dc2626' : undefined} />
         </div>
       </div>
 
       {/* Content section */}
       <div className={styles.stats_section}>
-        <p className={styles.stats_section_title}>Контент</p>
+        <p className={styles.stats_section_title}>{t('statsContent')}</p>
         <div className={styles.stats_content_row}>
           <div className={styles.stats_content_block}>
-            <span className={styles.stats_content_label}>Посты</span>
+            <span className={styles.stats_content_label}>{t('statsPosts')}</span>
             <div className={styles.stats_content_pills}>
-              <span className={styles.stats_pill} style={{ background: '#F0FDF4', color: '#15803D' }}>опубл. {content.publishedPosts}</span>
-              <span className={styles.stats_pill} style={{ background: '#FFFBEB', color: '#B45309' }}>модерация {content.pendingPosts}</span>
-              <span className={styles.stats_pill} style={{ background: '#FCEBEB', color: '#A32D2D' }}>заблок. {content.blockedPosts}</span>
+              <span className={styles.stats_pill} style={{ background: '#F0FDF4', color: '#15803D' }}>{t('statsPublished', {n: content.publishedPosts})}</span>
+              <span className={styles.stats_pill} style={{ background: '#FFFBEB', color: '#B45309' }}>{t('statsPending', {n: content.pendingPosts})}</span>
+              <span className={styles.stats_pill} style={{ background: '#FCEBEB', color: '#A32D2D' }}>{t('statsBlocked', {n: content.blockedPosts})}</span>
             </div>
           </div>
           <div className={styles.stats_content_block}>
             <span className={styles.stats_content_label}>Road-maps</span>
             <div className={styles.stats_content_pills}>
-              <span className={styles.stats_pill} style={{ background: '#F0FDF4', color: '#15803D' }}>опубл. {content.publishedRoadmaps}</span>
-              <span className={styles.stats_pill} style={{ background: '#FFFBEB', color: '#B45309' }}>модерация {content.pendingRoadmaps}</span>
-              <span className={styles.stats_pill} style={{ background: '#FCEBEB', color: '#A32D2D' }}>заблок. {content.blockedRoadmaps}</span>
+              <span className={styles.stats_pill} style={{ background: '#F0FDF4', color: '#15803D' }}>{t('statsPublished', {n: content.publishedRoadmaps})}</span>
+              <span className={styles.stats_pill} style={{ background: '#FFFBEB', color: '#B45309' }}>{t('statsPending', {n: content.pendingRoadmaps})}</span>
+              <span className={styles.stats_pill} style={{ background: '#FCEBEB', color: '#A32D2D' }}>{t('statsBlocked', {n: content.blockedRoadmaps})}</span>
             </div>
           </div>
         </div>
@@ -1943,21 +1952,21 @@ function StatsTab() {
 
       {/* Quick stats row */}
       <div className={styles.stats_grid}>
-        <StatCard title="Жалоб ожидает" value={complaints.pending} sub={`из ${complaints.total} всего`} subColor={complaints.pending > 0 ? '#f59e0b' : undefined} />
-        <StatCard title="Промокодов активных" value={promos.active} sub={`из ${promos.total} всего`} />
+        <StatCard title={t("statsComplaintsPending")} value={complaints.pending} sub={t("statsComplaintsOf", {total: complaints.total})} subColor={complaints.pending > 0 ? '#f59e0b' : undefined} />
+        <StatCard title={t("statsPromoActive")} value={promos.active} sub={t("statsPromoOf", {total: promos.total})} />
       </div>
 
       {/* Recent transactions */}
       {recentTransactions.length > 0 && (
         <div className={styles.stats_section}>
-          <p className={styles.stats_section_title}>Последние VIP-транзакции</p>
+          <p className={styles.stats_section_title}>{t('statsVipTx')}</p>
           <div className={styles.stats_tx_list}>
             {recentTransactions.map(tx => {
               const user = tx.teacher ?? tx.student
               return (
                 <div key={tx.id} className={styles.stats_tx_item}>
                   <span className={styles.stats_tx_name}>{user?.name ?? '—'}</span>
-                  <span className={styles.stats_tx_role}>{tx.userRole === 'TEACHER' ? 'Учитель' : 'Ученик'}</span>
+                  <span className={styles.stats_tx_role}>{tx.userRole === 'TEACHER' ? t('userRoleTeacher') : t('userRoleStudent')}</span>
                   {tx.promoCode && <span className={styles.stats_tx_promo}>{tx.promoCode.code}</span>}
                   <span className={styles.stats_tx_desc}>{tx.description}</span>
                   <span className={styles.stats_tx_date}>{fmt(tx.createdAt)}</span>
@@ -1980,6 +1989,7 @@ interface AdminEmailItem {
 }
 
 function AdminEmailsTab() {
+  const t = useTranslations('admin')
   const { data: session } = useSession()
   const currentEmail = session?.user?.email ?? ''
   const [emails, setEmails] = useState<AdminEmailItem[]>([])
@@ -2003,7 +2013,7 @@ function AdminEmailsTab() {
   useEffect(() => { load() }, [load])
 
   const handleAdd = async () => {
-    if (!newEmail.trim()) { toast.error('Введите email'); return }
+    if (!newEmail.trim()) { toast.error(t('adminEmailsEmailRequired')); return }
     setAdding(true)
     try {
       const res = await fetch('/api/admin/admin-emails', {
@@ -2015,18 +2025,18 @@ function AdminEmailsTab() {
         const d = await res.json()
         throw new Error(d.error ?? 'Ошибка')
       }
-      toast.success('Администратор добавлен')
+      toast.success(t('adminEmailsAdded'))
       setNewEmail('')
       await load()
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Не удалось добавить')
+      toast.error(e instanceof Error ? e.message : t('adminEmailsAddError'))
     } finally {
       setAdding(false)
     }
   }
 
   const handleDelete = async (item: AdminEmailItem) => {
-    if (!confirm(`Удалить администратора "${item.email}"?`)) return
+    if (!confirm(t('adminEmailsDeleteConfirm', {email: item.email}))) return
     setDeletingId(item.id)
     try {
       const res = await fetch(`/api/admin/admin-emails?id=${item.id}`, { method: 'DELETE' })
@@ -2034,10 +2044,10 @@ function AdminEmailsTab() {
         const d = await res.json()
         throw new Error(d.error ?? 'Ошибка')
       }
-      toast.success('Удалено')
+      toast.success(t('adminEmailsDeleted'))
       setEmails(prev => prev.filter(e => e.id !== item.id))
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Не удалось удалить')
+      toast.error(e instanceof Error ? e.message : t('adminEmailsDeleteError'))
     } finally {
       setDeletingId(null)
     }
@@ -2050,7 +2060,7 @@ function AdminEmailsTab() {
           <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
           <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
         </svg>
-        <span>Управление администраторами. Email в этом списке получают роль <strong>ADMIN</strong> при входе через аккаунт учителя.</span>
+        <span>{t('adminEmailsWarning')}</span>
       </div>
 
       {/* Add new */}
@@ -2066,7 +2076,7 @@ function AdminEmailsTab() {
           style={{ flex: 1, maxWidth: 380 }}
         />
         <button className={styles.send_btn} style={{ height: 42 }} onClick={handleAdd} disabled={adding || !newEmail.trim()}>
-          {adding ? 'Добавление…' : 'Добавить'}
+          {adding ? t('adminEmailsAdding') : t('adminEmailsAdd')}
         </button>
       </div>
 
@@ -2074,7 +2084,7 @@ function AdminEmailsTab() {
       {loading ? (
         Array.from({ length: 3 }).map((_, i) => <div key={i} className={styles.skeleton} style={{ height: 52 }} />)
       ) : emails.length === 0 ? (
-        <div className={styles.empty}><p>Нет администраторов</p></div>
+        <div className={styles.empty}><p>{t('adminEmailsNone')}</p></div>
       ) : (
         <div className={styles.admin_emails_list}>
           {emails.map(item => {
@@ -2083,14 +2093,14 @@ function AdminEmailsTab() {
               <div key={item.id} className={styles.admin_email_row}>
                 <div className={styles.admin_email_info}>
                   <span className={styles.admin_email_addr}>{item.email}</span>
-                  {isMe && <span className={styles.admin_email_me}>Это вы</span>}
+                  {isMe && <span className={styles.admin_email_me}>{t('adminEmailsMe')}</span>}
                   <span className={styles.admin_email_date}>{fmt(item.createdAt)}</span>
                 </div>
                 <button
                   className={styles.admin_email_delete_btn}
                   onClick={() => handleDelete(item)}
                   disabled={isMe || deletingId === item.id}
-                  title={isMe ? 'Нельзя удалить себя' : 'Удалить администратора'}
+                  title={isMe ? t('adminEmailsSelfTitle') : t('adminEmailsDeleteTitle')}
                 >
                   {deletingId === item.id ? '…' : (
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -2115,6 +2125,7 @@ function AdminEmailsTab() {
 type AdminTab = 'stats' | 'users' | 'content' | 'complaints' | 'promo' | 'notifications' | 'verifications' | 'admin-emails'
 
 export function AdminPage() {
+  const t = useTranslations('admin')
   const { data: session, status } = useSession()
   const [activeTab, setActiveTab] = useState<AdminTab>('stats')
 
@@ -2122,7 +2133,7 @@ export function AdminPage() {
     return (
       <div className={`container default_content ${styles.page_wrap}`}>
         <NavBar />
-        <div className={styles.loading}>Загрузка…</div>
+        <div className={styles.loading}>{t('loading')}</div>
       </div>
     )
   }
@@ -2136,8 +2147,8 @@ export function AdminPage() {
             <circle cx="12" cy="12" r="10" />
             <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
           </svg>
-          <p>Доступ запрещён</p>
-          <span>Эта страница доступна только администраторам.</span>
+          <p>{t('forbidden')}</p>
+          <span>{t('forbiddenSub')}</span>
         </div>
       </div>
     )
@@ -2148,7 +2159,7 @@ export function AdminPage() {
       <NavBar />
       <div className={styles.content}>
         <div className={styles.page_header}>
-          <h1 className={styles.page_title}>Администрирование</h1>
+          <h1 className={styles.page_title}>{t('pageTitle')}</h1>
         </div>
 
         <div className={styles.main_tabs}>
@@ -2162,7 +2173,7 @@ export function AdminPage() {
               <line x1="12" y1="20" x2="12" y2="4" />
               <line x1="6" y1="20" x2="6" y2="14" />
             </svg>
-            Статистика
+            {t('tabStats')}
           </button>
           <button
             className={`${styles.main_tab} ${activeTab === 'users' ? styles.main_tab_active : ''}`}
@@ -2172,7 +2183,7 @@ export function AdminPage() {
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
               <circle cx="12" cy="7" r="4" />
             </svg>
-            Пользователи
+            {t('tabUsers')}
           </button>
           <button
             className={`${styles.main_tab} ${activeTab === 'content' ? styles.main_tab_active : ''}`}
@@ -2185,7 +2196,7 @@ export function AdminPage() {
               <line x1="16" y1="17" x2="8" y2="17" />
               <polyline points="10 9 9 9 8 9" />
             </svg>
-            Контент
+            {t('tabContent')}
           </button>
           <button
             className={`${styles.main_tab} ${activeTab === 'complaints' ? styles.main_tab_active : ''}`}
@@ -2195,7 +2206,7 @@ export function AdminPage() {
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
               <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
-            Жалобы и обратная связь
+            {t('tabComplaints')}
           </button>
           <button
             className={`${styles.main_tab} ${activeTab === 'promo' ? styles.main_tab_active : ''}`}
@@ -2208,7 +2219,7 @@ export function AdminPage() {
               <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
               <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
             </svg>
-            Промокоды
+            {t('tabPromo')}
           </button>
           <button
             className={`${styles.main_tab} ${activeTab === 'notifications' ? styles.main_tab_active : ''}`}
@@ -2218,7 +2229,7 @@ export function AdminPage() {
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
-            Уведомления
+            {t('tabNotifications')}
           </button>
           <button
             className={`${styles.main_tab} ${activeTab === 'verifications' ? styles.main_tab_active : ''}`}
@@ -2228,7 +2239,7 @@ export function AdminPage() {
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
               <polyline points="22 4 12 14.01 9 11.01" />
             </svg>
-            Верификации
+            {t('tabVerifications')}
           </button>
           <button
             className={`${styles.main_tab} ${activeTab === 'admin-emails' ? styles.main_tab_active : ''}`}
@@ -2237,7 +2248,7 @@ export function AdminPage() {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
-            Администраторы
+            {t('tabAdminEmails')}
           </button>
         </div>
 
