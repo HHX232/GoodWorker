@@ -1195,5 +1195,26 @@
     "type_HIGHLIGHT_TEXT": "हाइलाइट",
     "type_WORD_SCRAMBLE": "अनुक्रम",
     "type_DIALOGUE": "संवाद"
+  },
+  "HighlightEditor": {
+    "editor": "संपादक",
+    "studentPreview": "छात्र पूर्वावलोकन",
+    "addTextHint": "पाठ जोड़ें और कम से कम एक शब्द चिह्नित करें",
+    "instructionLabel": "छात्र के लिए निर्देश",
+    "instructionPlaceholder": "उदाहरण: «भूतकाल की सभी क्रियाओं को हाइलाइट करें»",
+    "textLabel": "कार्य पाठ",
+    "textPlaceholder": "पाठ दर्ज करें, फिर «शब्दों में विभाजित करें» पर क्लिक करें",
+    "splitBtn": "शब्दों में विभाजित करें →",
+    "clickCorrectWords": "सही शब्दों पर क्लिक करें",
+    "selected": "✓ {count} चयनित",
+    "noneSelected": "कोई नहीं चुना",
+    "changeText": "पाठ बदलें",
+    "editorHint": "हरे = सही उत्तर। हटाने के लिए दोबारा क्लिक करें।",
+    "previewLabel": "छात्र इसे देखता है",
+    "checkBtn": "जाँचें",
+    "retryBtn": "फिर से प्रयास करें",
+    "correct": "सही!",
+    "score": "{total} में से {correct}",
+    "extra": " · {count} अतिरिक्त"
   }
 }

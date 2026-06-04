@@ -137,6 +137,18 @@ export const TYPE_CONFIG: Record<string, TypeConfig> = {
     ),
     getHref: () => null,
   },
+  VIDEO_CALL_INVITE: {
+    color: '#0ea5e9',
+    bg: '#f0f9ff',
+    icon: (
+      <svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.2' strokeLinecap='round' strokeLinejoin='round'>
+        <path d='M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14' />
+        <rect x='1' y='6' width='14' height='12' rx='2' />
+      </svg>
+    ),
+    actionLabel: 'Join call',
+    getHref: (p) => p.roomId ? `/call/${p.roomId}` : (p.roomLink as string | null) ?? null,
+  },
 }
 
 export const FALLBACK_CONFIG: TypeConfig = {

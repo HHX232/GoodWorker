@@ -1195,5 +1195,26 @@
     "type_HIGHLIGHT_TEXT": "划线",
     "type_WORD_SCRAMBLE": "重组",
     "type_DIALOGUE": "对话"
+  },
+  "HighlightEditor": {
+    "editor": "编辑器",
+    "studentPreview": "学生预览",
+    "addTextHint": "添加文本并标记至少一个单词",
+    "instructionLabel": "学生说明",
+    "instructionPlaceholder": "例如：«划出所有过去时动词»",
+    "textLabel": "任务文本",
+    "textPlaceholder": "输入文本，然后点击「分词」",
+    "splitBtn": "分词 →",
+    "clickCorrectWords": "点击正确的单词",
+    "selected": "✓ 已选 {count}",
+    "noneSelected": "未选择",
+    "changeText": "修改文本",
+    "editorHint": "绿色 = 正确答案。再次点击取消选择。",
+    "previewLabel": "学生看到的内容",
+    "checkBtn": "检查",
+    "retryBtn": "重试",
+    "correct": "正确！",
+    "score": "{correct}/{total}",
+    "extra": " · 多选{count}个"
   }
 }

@@ -58,8 +58,18 @@ export function CalendarSidebar({tasks, students, onTaskClick, onTaskToggle}: Ca
         <nav className={styles.section}>
           <span className={styles.sectionLabel}>{t('navigation')}</span>
           <NavItem icon='calendar' label={t('calendarNav')} active />
-          <NavItem icon='check' label={t('tasksNav')} badge={pendingCount} />
-          <NavItem icon='users' label={t('studentsNav')} badge={students.length} />
+          <NavItem
+            icon='check'
+            label={t('tasksNav')}
+            badge={pendingCount}
+            onClick={() => setCreateTaskModalStatus(true)}
+          />
+          <NavItem
+            icon='users'
+            label={t('studentsNav')}
+            badge={students.length}
+            onClick={() => setStudentsCollapsed(false)}
+          />
         </nav>
 
         <div className={styles.divider} />
@@ -175,7 +185,7 @@ export function CalendarSidebar({tasks, students, onTaskClick, onTaskToggle}: Ca
   )
 }
 
-function NavItem({icon, label, active, badge}: {icon: string; label: string; active?: boolean; badge?: number}) {
+function NavItem({icon, label, active, badge, onClick}: {icon: string; label: string; active?: boolean; badge?: number; onClick?: () => void}) {
   const icons: Record<string, JSX.Element> = {
     calendar: (
       <svg width='14' height='14' viewBox='0 0 24 24' fill='none'>
@@ -214,7 +224,11 @@ function NavItem({icon, label, active, badge}: {icon: string; label: string; act
   }
 
   return (
-    <div className={`${styles.navItem} ${active ? styles.navItemActive : ''}`}>
+    <div
+      className={`${styles.navItem} ${active ? styles.navItemActive : ''} ${onClick ? styles.navItemClickable : ''}`}
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+    >
       <span className={styles.navIcon}>{icons[icon]}</span>
       <span className={styles.navLabel}>{label}</span>
       {badge !== undefined && <span className={styles.badge}>{badge}</span>}

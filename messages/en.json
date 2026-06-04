@@ -1356,5 +1356,26 @@
     "type_HIGHLIGHT_TEXT": "Highlight",
     "type_WORD_SCRAMBLE": "Scramble",
     "type_DIALOGUE": "Dialogue"
+  },
+  "HighlightEditor": {
+    "editor": "Editor",
+    "studentPreview": "Student preview",
+    "addTextHint": "Add text and mark at least one word",
+    "instructionLabel": "Student instruction",
+    "instructionPlaceholder": "E.g. \"Highlight all past-tense verbs\"",
+    "textLabel": "Task text",
+    "textPlaceholder": "Enter the text, then click \"Split into words\"",
+    "splitBtn": "Split into words →",
+    "clickCorrectWords": "Click on the correct words",
+    "selected": "✓ {count} selected",
+    "noneSelected": "none selected",
+    "changeText": "Change text",
+    "editorHint": "Green = correct answers. Click again to deselect.",
+    "previewLabel": "Student sees this",
+    "checkBtn": "Check",
+    "retryBtn": "Try again",
+    "correct": "Correct!",
+    "score": "{correct} out of {total}",
+    "extra": " · {count} extra"
   }
 }

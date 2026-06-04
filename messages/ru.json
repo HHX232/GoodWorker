@@ -1356,5 +1356,26 @@
     "type_HIGHLIGHT_TEXT": "Выделение",
     "type_WORD_SCRAMBLE": "Анаграмма",
     "type_DIALOGUE": "Диалог"
+  },
+  "HighlightEditor": {
+    "editor": "Редактор",
+    "studentPreview": "Превью ученика",
+    "addTextHint": "Добавьте текст и отметьте хотя бы одно слово",
+    "instructionLabel": "Инструкция для ученика",
+    "instructionPlaceholder": "Например: «Выдели все глаголы в прошедшем времени»",
+    "textLabel": "Текст задания",
+    "textPlaceholder": "Введите текст, затем нажмите «Разбить на слова»",
+    "splitBtn": "Разбить на слова →",
+    "clickCorrectWords": "Кликни на правильные слова",
+    "selected": "✓ {count} выделено",
+    "noneSelected": "ни одного не выделено",
+    "changeText": "Изменить текст",
+    "editorHint": "Зелёные — правильные ответы. Нажми ещё раз чтобы снять.",
+    "previewLabel": "Так видит ученик",
+    "checkBtn": "Проверить",
+    "retryBtn": "Попробовать снова",
+    "correct": "Верно!",
+    "score": "{correct} из {total}",
+    "extra": " · {count} лишних"
   }
 }

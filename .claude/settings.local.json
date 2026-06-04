@@ -177,7 +177,8 @@
       "Bash(xargs -I{} grep -l \"fetch\\\\|mutation\\\\|submit\\\\|save\\\\|delete\\\\|create\" {})",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('auth2', {}\\), indent=2, ensure_ascii=False\\)\\)\")",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('auth2',{}\\).get\\('register',{}\\).get\\('promoSuccess','MISSING'\\)\\)\\)\")",
-      "Bash(mkdir -p \"/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/\\(test\\)/edit-test/[id]\")"
+      "Bash(mkdir -p \"/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/\\(test\\)/edit-test/[id]\")",
+      "Bash(git reset *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\Мастер\\Desktop\\goodworkerremaster\\app\\api\\roadmap",
