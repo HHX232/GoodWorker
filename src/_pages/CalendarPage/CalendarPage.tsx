@@ -173,6 +173,18 @@ export function CalendarPage({ teacherId }: { teacherId: string }) {
       updateEvent(eventData as CalendarEvent)
     } else {
       addEvent(eventData)
+      // fire-and-forget TG notification
+      fetch('/api/teacher/calendar/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: eventData.title,
+          date: eventData.date,
+          startTime: eventData.startTime,
+          endTime: eventData.endTime,
+          studentName: eventData.studentName,
+        }),
+      }).catch(() => {})
     }
     closeCreateModal()
   }

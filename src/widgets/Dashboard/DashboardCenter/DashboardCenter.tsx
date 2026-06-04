@@ -1,6 +1,7 @@
 'use client'
 
 import { ServiceCard } from '@/shared/ui/Service/ServiceCard/ServiceCard'
+import { TestPreviewCard, TestPreviewCardProps } from '@/shared/ui/Test/TestPreviewCard/TestPreviewCard'
 import { CreatePickerModal } from '@/widgets/Dashboard/CreatePickerModal/CreatePickerModal'
 import { CreateServiceModal } from '@/widgets/Dashboard/CreateServiceModal/CreateServiceModal'
 import { BookServiceModal } from '@/widgets/Dashboard/BookServiceModal/BookServiceModal'
@@ -9,11 +10,11 @@ import Card from '@/shared/ui/Posts/Card/Card'
 import { RoadMapPreview } from '@/shared/ui/RoadMap/RoadMapPreview/RoadMapPreview'
 import { useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
-import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import styles from './DashboardCenter.module.scss'
 
-type Tab = 'all' | 'roadmap' | 'posts' | 'services'
+type Tab = 'all' | 'roadmap' | 'posts' | 'services' | 'tests'
 
 interface RoadmapItem {
   id: string
@@ -51,6 +52,8 @@ interface ServiceItem {
   originalLangCode?: string
   isTranslated?: boolean
 }
+
+type TestItem = Omit<TestPreviewCardProps, 'isOwner' | 'onDelete'>
 
 interface Props {
   statsId: string
@@ -107,6 +110,7 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
   const [roadmaps, setRoadmaps] = useState<RoadmapItem[]>([])
   const [posts, setPosts] = useState<PostItem[]>([])
   const [services, setServices] = useState<ServiceItem[]>([])
+  const [tests, setTests] = useState<TestItem[]>([])
   const [loading, setLoading] = useState(true)
   const [pickerOpen, setPickerOpen] = useState(false)
   const [serviceModalOpen, setServiceModalOpen] = useState(false)
@@ -115,16 +119,70 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
 
   const canBook = !isOwner && session?.user?.role === 'STUDENT'
 
+  async function handleDeletePost(id: string) {
+    if (!window.confirm(t('deleteConfirm'))) return
+    const tid = toast.loading(t('loading'))
+    try {
+      const res = await fetch(`/api/post/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error()
+      setPosts(prev => prev.filter(p => p.id !== id))
+      toast.success(t('deleteSuccess'), { id: tid })
+    } catch {
+      toast.error(t('deleteError'), { id: tid })
+    }
+  }
+
+  async function handleDeleteRoadmap(id: string) {
+    if (!window.confirm(t('deleteConfirm'))) return
+    const tid = toast.loading(t('loading'))
+    try {
+      const res = await fetch(`/api/roadmap/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error()
+      setRoadmaps(prev => prev.filter(r => r.id !== id))
+      toast.success(t('deleteSuccess'), { id: tid })
+    } catch {
+      toast.error(t('deleteError'), { id: tid })
+    }
+  }
+
+  async function handleDeleteService(id: string) {
+    if (!window.confirm(t('deleteConfirm'))) return
+    const tid = toast.loading(t('loading'))
+    try {
+      const res = await fetch(`/api/services/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error()
+      setServices(prev => prev.filter(s => s.id !== id))
+      toast.success(t('deleteSuccess'), { id: tid })
+    } catch {
+      toast.error(t('deleteError'), { id: tid })
+    }
+  }
+
+  async function handleDeleteTest(id: string) {
+    if (!window.confirm(t('deleteConfirm'))) return
+    const tid = toast.loading(t('loading'))
+    try {
+      const res = await fetch(`/api/tests/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error()
+      setTests(prev => prev.filter(t => t.id !== id))
+      toast.success(t('deleteSuccess'), { id: tid })
+    } catch {
+      toast.error(t('deleteError'), { id: tid })
+    }
+  }
+
   useEffect(() => {
     setLoading(true)
     Promise.all([
       fetch(`/api/roadmap?teacherId=${statsId}&limit=6`).then(r => r.json()),
       fetch(`/api/posts?teacherId=${statsId}&limit=6`).then(r => r.json()),
       fetch(`/api/services?teacherId=${statsId}`).then(r => r.json()),
-    ]).then(([rmData, postsData, svcData]) => {
+      fetch(`/api/tests?teacherId=${statsId}`).then(r => r.json()),
+    ]).then(([rmData, postsData, svcData, testsData]) => {
       if (Array.isArray(rmData.roadmaps)) setRoadmaps(rmData.roadmaps)
       if (Array.isArray(postsData.posts)) setPosts(postsData.posts)
       if (Array.isArray(svcData.services)) setServices(svcData.services)
+      if (Array.isArray(testsData)) setTests(testsData)
     }).catch(() => {}).finally(() => setLoading(false))
   }, [statsId])
 
@@ -133,6 +191,7 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
     { key: 'roadmap',  label: t('tabRoadmap') },
     { key: 'posts',    label: t('tabPosts') },
     { key: 'services', label: t('tabServices') },
+    { key: 'tests',    label: t('tabTests') },
   ]
 
   const stats = [
@@ -175,15 +234,18 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
   const showRoadmaps = tab === 'all' || tab === 'roadmap'
   const showPosts    = tab === 'all' || tab === 'posts'
   const showServices = tab === 'all' || tab === 'services'
+  const showTests    = tab === 'all' || tab === 'tests'
 
   const visibleRoadmaps = showRoadmaps ? (tab === 'all' ? roadmaps.slice(0, 3) : roadmaps) : []
   const visiblePosts    = showPosts    ? (tab === 'all' ? posts.slice(0, 3)    : posts)    : []
   const visibleServices = showServices ? (tab === 'all' ? services.slice(0, 2) : services) : []
+  const visibleTests    = showTests    ? (tab === 'all' ? tests.slice(0, 2)    : tests)    : []
 
   const isEmpty = !loading
     && visibleRoadmaps.length === 0
     && visiblePosts.length === 0
     && visibleServices.length === 0
+    && visibleTests.length === 0
     && !isOwner
 
   return (
@@ -256,26 +318,23 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
 
           {/* Roadmaps */}
           {visibleRoadmaps.map(rm => (
-            <div key={rm.id} className={styles.cardWrapper}>
-              <RoadMapPreview {...rm} useLink />
-              {isOwner && (
-                <Link href={`/create-road-map?edit=${rm.id}`} className={styles.editBtn}>
-                  {t('edit')}
-                </Link>
-              )}
-            </div>
+            <RoadMapPreview
+              key={rm.id}
+              {...rm}
+              useLink
+              isOwner={isOwner}
+              onDelete={isOwner ? () => handleDeleteRoadmap(rm.id) : undefined}
+            />
           ))}
 
           {/* Posts */}
           {visiblePosts.map(p => (
-            <div key={p.id} className={styles.cardWrapper}>
-              <Card {...mapPost(p)} />
-              {isOwner && (
-                <Link href={`/edit-post/${p.id}`} className={styles.editBtn}>
-                  {t('edit')}
-                </Link>
-              )}
-            </div>
+            <Card
+              key={p.id}
+              {...mapPost(p)}
+              isOwner={isOwner}
+              onDelete={isOwner ? () => handleDeletePost(p.id) : undefined}
+            />
           ))}
 
           {/* Services */}
@@ -294,6 +353,8 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
               locale={locale}
               originalLangCode={s.originalLangCode}
               isTranslated={s.isTranslated}
+              isOwner={isOwner}
+              onDelete={isOwner ? () => handleDeleteService(s.id) : undefined}
               onBook={canBook ? () => setBookingService(s) : undefined}
             />
           ))}
@@ -304,6 +365,16 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
               {t('servicesFirstHint')}
             </div>
           )}
+
+          {/* Tests */}
+          {visibleTests.map(test => (
+            <TestPreviewCard
+              key={test.id}
+              {...test}
+              isOwner={isOwner}
+              onDelete={isOwner ? () => handleDeleteTest(test.id) : undefined}
+            />
+          ))}
 
         </div>
       )}

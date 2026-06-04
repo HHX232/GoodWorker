@@ -50,72 +50,59 @@ export function CalendarHeader({
 
   return (
     <div className={styles.header}>
-      <div className={styles.monthWrap} ref={pickerRef}>
-        <span
-          className={`${styles.month} ${pickerOpen ? styles.monthOpen : ''}`}
-          onClick={() => setPickerOpen((v) => !v)}
-        >
-          {formatMonthYear(currentDate, intlLocale).replace(/^./, (c) => c.toUpperCase())}
-          <svg width='12' height='12' viewBox='0 0 24 24' fill='none'>
-            <path
-              d='M6 9l6 6 6-6'
-              stroke='currentColor'
-              strokeWidth='1.8'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-            />
-          </svg>
-        </span>
 
-        {pickerOpen && (
-          <CalendarPicker
-            currentDate={currentDate}
-            onSelect={(date) => {
-              onDateSelect?.(date)
-              setPickerOpen(false)
-            }}
-          />
-        )}
-      </div>
-      <div className={styles.nav}>
-        <button className={styles.navBtn} onClick={onPrev} aria-label={t('sidebar.collapse')}>
-          <svg width='13' height='13' viewBox='0 0 24 24' fill='none'>
-            <path
-              d='M15 18l-6-6 6-6'
-              stroke='currentColor'
-              strokeWidth='1.8'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-            />
-          </svg>
-        </button>
-        <button className={styles.navBtn} onClick={onNext} aria-label={t('today')}>
-          <svg width='13' height='13' viewBox='0 0 24 24' fill='none'>
-            <path
-              d='M9 18l6-6-6-6'
-              stroke='currentColor'
-              strokeWidth='1.8'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-            />
-          </svg>
-        </button>
-      </div>
-
-      <button className={styles.today} onClick={onToday}>
-        {t('today')}
-      </button>
-      <div className={styles.viewTabs}>
-        {(['month', 'week', 'day'] as const).map((v) => (
-          <button
-            key={v}
-            className={`${styles.viewTab} ${view === v ? styles.viewTabActive : ''}`}
-            onClick={() => onViewChange(v)}
+      {/* Group 1: Navigation — date picker + prev/next + today */}
+      <div className={styles.group}>
+        <div className={styles.monthWrap} ref={pickerRef}>
+          <span
+            className={`${styles.month} ${pickerOpen ? styles.monthOpen : ''}`}
+            onClick={() => setPickerOpen((v) => !v)}
           >
-            {t(v as 'month' | 'week' | 'day')}
+            {formatMonthYear(currentDate, intlLocale).replace(/^./, (c) => c.toUpperCase())}
+            <svg width='12' height='12' viewBox='0 0 24 24' fill='none'>
+              <path d='M6 9l6 6 6-6' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round' />
+            </svg>
+          </span>
+          {pickerOpen && (
+            <CalendarPicker
+              currentDate={currentDate}
+              onSelect={(date) => { onDateSelect?.(date); setPickerOpen(false) }}
+            />
+          )}
+        </div>
+        <div className={styles.nav}>
+          <button className={styles.navBtn} onClick={onPrev} aria-label={t('sidebar.collapse')}>
+            <svg width='13' height='13' viewBox='0 0 24 24' fill='none'>
+              <path d='M15 18l-6-6 6-6' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round' />
+            </svg>
           </button>
-        ))}
+          <button className={styles.navBtn} onClick={onNext} aria-label={t('today')}>
+            <svg width='13' height='13' viewBox='0 0 24 24' fill='none'>
+              <path d='M9 18l6-6-6-6' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round' />
+            </svg>
+          </button>
+        </div>
+        <button className={styles.today} onClick={onToday}>
+          {t('today')}
+        </button>
       </div>
+
+      {/* Group 2: View tabs — month / week / day */}
+      <div className={styles.group}>
+        <div className={styles.viewTabs}>
+          {(['month', 'week', 'day'] as const).map((v) => (
+            <button
+              key={v}
+              className={`${styles.viewTab} ${view === v ? styles.viewTabActive : ''}`}
+              onClick={() => onViewChange(v)}
+            >
+              {t(v as 'month' | 'week' | 'day')}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Group 3: Actions — add event + export */}
       <div className={styles.right}>
         <button className={styles.addBtn} onClick={onAdd}>
           <svg width='13' height='13' viewBox='0 0 24 24' fill='none'>
@@ -133,6 +120,7 @@ export function CalendarHeader({
           {exporting ? t('exporting') : t('exportPDF')}
         </button>
       </div>
+
     </div>
   )
 }

@@ -79,16 +79,16 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
     setSaving(true)
     setSaveError('')
     setSaveSuccess(false)
-    const tid = toast.loading('Сохранение...')
+    const tid = toast.loading(t('savingShort'))
     try {
       await updateProfile({ name: name.trim(), phone: phone.trim() || null, avatarUrl })
       setSaveSuccess(true)
-      toast.success('Профиль сохранён!', { id: tid })
+      toast.success(t('saveSuccessShort'), { id: tid })
       setTimeout(() => setSaveSuccess(false), 3000)
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to save'
+      const msg = err instanceof Error ? err.message : t('saveErrorMsg')
       setSaveError(msg)
-      toast.error('Ошибка сохранения. Попробуйте ещё раз.', { id: tid })
+      toast.error(t('saveErrorMsg'), { id: tid })
     } finally {
       setSaving(false)
     }
@@ -113,7 +113,7 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
     })
     const data = await res.json()
     if (!res.ok) throw new Error(data.error ?? 'Invalid code')
-    toast.success('Email успешно изменён!')
+    toast.success(t('emailUpdated'))
     window.location.href = '/login'
   }
 
@@ -136,7 +136,7 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
     })
     const data = await res.json()
     if (!res.ok) throw new Error(data.error ?? 'Invalid code')
-    toast.success('Пароль успешно изменён!')
+    toast.success(t('passwordUpdated'))
     setNewPassword('')
   }
 

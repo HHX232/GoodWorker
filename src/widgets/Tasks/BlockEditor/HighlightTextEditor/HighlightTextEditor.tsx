@@ -23,7 +23,7 @@ interface StudentViewProps {
   externalChecked?: boolean
 }
 
-export const HighlightStudentView = ({instruction, tokens, onChange, externalChecked}: StudentViewProps) => {
+export const HighlightStudentView = ({instruction, tokens, onChange, externalChecked, standalone = false}: StudentViewProps & {standalone?: boolean}) => {
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [submitted, setSubmitted] = useState(false)
 
@@ -54,7 +54,7 @@ export const HighlightStudentView = ({instruction, tokens, onChange, externalChe
   const allCorrect = isChecked && falsePositives === 0 && missed === 0
 
   return (
-    <div className={styles.student_wrap}>
+    <div className={standalone ? styles.student_wrap : styles.student_inline}>
       {instruction && <p className={styles.student_instruction}>{instruction}</p>}
 
       <div className={styles.tokens}>
@@ -260,7 +260,7 @@ export const HighlightTextEditor = ({blockId, payload}: Props) => {
             <EyeIcon size={13} />
             Так видит ученик
           </div>
-          <HighlightStudentView instruction={payload.instruction} tokens={payload.tokens!} />
+          <HighlightStudentView instruction={payload.instruction} tokens={payload.tokens!} standalone />
         </div>
       )}
     </div>

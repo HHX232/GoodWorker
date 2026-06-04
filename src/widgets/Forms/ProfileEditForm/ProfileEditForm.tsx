@@ -9,6 +9,7 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import {FC, useEffect, useRef, useState} from 'react'
 import { toast } from 'sonner'
+import {useTranslations} from 'next-intl'
 import styles from './ProfileEditForm.module.scss'
 import {useUpdateProfile} from '@/features/hooks/User/useUpdateProfile'
 import {TranscriptsModal} from './TranscriptsModal'
@@ -44,6 +45,7 @@ interface ProfileEditFormProps {
 }
 
 const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, statsId}) => {
+  const t = useTranslations('dashboard')
   const {mutateAsync: updateProfile} = useUpdateProfile(userType)
 
   useEffect(() => {
@@ -125,7 +127,7 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, stats
     setSaving(true)
     setSaveError('')
     setSaveSuccess(false)
-    const tid = toast.loading('Сохранение...')
+    const tid = toast.loading(t('savingShort'))
     try {
       await updateProfile({
         name: name.trim(),
@@ -139,11 +141,11 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, stats
         }),
       })
       setSaveSuccess(true)
-      toast.success('Профиль сохранён!', { id: tid })
+      toast.success(t('saveSuccessShort'), { id: tid })
       setTimeout(() => setSaveSuccess(false), 3000)
     } catch (error) {
-      setSaveError(error instanceof Error ? error.message : 'Failed to save')
-      toast.error('Ошибка сохранения. Попробуйте ещё раз.', { id: tid })
+      setSaveError(error instanceof Error ? error.message : t('saveErrorMsg'))
+      toast.error(t('saveErrorMsg'), { id: tid })
     } finally {
       setSaving(false)
     }
@@ -168,7 +170,7 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, stats
     })
     const data = await res.json()
     if (!res.ok) throw new Error(data.error ?? 'Invalid code')
-    toast.success('Email успешно изменён!')
+    toast.success(t('emailUpdated'))
     window.location.href = '/login'
   }
 
@@ -191,7 +193,7 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, stats
     })
     const data = await res.json()
     if (!res.ok) throw new Error(data.error ?? 'Invalid code')
-    toast.success('Пароль успешно изменён!')
+    toast.success(t('passwordUpdated'))
     setNewPassword('')
   }
 

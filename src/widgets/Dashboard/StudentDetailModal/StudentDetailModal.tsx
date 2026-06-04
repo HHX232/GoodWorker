@@ -1,6 +1,7 @@
 'use client'
 
 import { CreateServiceModal } from '@/widgets/Dashboard/CreateServiceModal/CreateServiceModal'
+import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import styles from './StudentDetailModal.module.scss'
@@ -75,6 +76,7 @@ function minDatetime() {
 export function StudentDetailModal({
   studentId, studentName, studentInitials, avatarColor, avatarTextColor, subject, teacherId, onClose,
 }: Props) {
+  const t = useTranslations('dashboard')
   const [tab, setTab] = useState<Tab>('meetings')
   const [offerOpen, setOfferOpen] = useState(false)
   const [student, setStudent] = useState<StudentData | null>(null)
@@ -83,8 +85,7 @@ export function StudentDetailModal({
   const [loading, setLoading] = useState(true)
   const [services, setServices] = useState<ServiceOption[]>([])
 
-  // schedule form
-  const [schedTitle, setSchedTitle] = useState(`Урок с ${studentName}`)
+  const [schedTitle, setSchedTitle] = useState(t('sdmDefaultTitle', { name: studentName }))
   const [schedAt, setSchedAt] = useState('')
   const [schedDuration, setSchedDuration] = useState(60)
   const [schedServiceId, setSchedServiceId] = useState('')
@@ -137,7 +138,7 @@ export function StudentDetailModal({
     setSchedLoading(true)
     setSchedError(null)
     setSchedConflict(null)
-    const tid = toast.loading('Планирование встречи...')
+    const tid = toast.loading(t('sdmSchedulingToast'))
     try {
       const res = await fetch('/api/teacher/schedule-meeting', {
         method: 'POST',
@@ -147,25 +148,25 @@ export function StudentDetailModal({
       const data = await res.json()
       if (res.status === 409 && data.conflict) {
         setSchedConflict(data.conflict)
-        toast.error('Конфликт времени. Выберите другое время.', { id: tid })
+        toast.error(t('sdmConflictToast'), { id: tid })
       } else if (!res.ok || data.error) {
-        const msg = data.error ?? 'Ошибка'
+        const msg = data.error ?? t('sdmErrorFallback')
         setSchedError(msg)
         toast.error(msg, { id: tid })
       } else {
-        toast.success('Встреча запланирована!', { id: tid })
+        toast.success(t('sdmSuccessToast'), { id: tid })
         setSchedSuccess(true)
         setMeetings(prev => [
           ...prev,
           { id: data.id, title: schedTitle, scheduledAt: localDatetimeToISO(schedAt), roomName: data.roomName },
         ].sort((a, b) => new Date(a.scheduledAt ?? 0).getTime() - new Date(b.scheduledAt ?? 0).getTime()))
-        setSchedTitle(`Урок с ${studentName}`)
+        setSchedTitle(t('sdmDefaultTitle', { name: studentName }))
         setSchedAt('')
         setTimeout(() => setSchedSuccess(false), 3000)
       }
     } catch {
-      setSchedError('Ошибка соединения')
-      toast.error('Ошибка соединения. Попробуйте ещё раз.', { id: tid })
+      setSchedError(t('sdmConnectionError'))
+      toast.error(t('sdmConnectionToast'), { id: tid })
     } finally {
       setSchedLoading(false)
     }
@@ -205,7 +206,7 @@ export function StudentDetailModal({
                   <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
                   <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
                 </svg>
-                Предложение
+                {t('sdmOfferBtn')}
               </button>
             )}
             <button className={styles.closeBtn} onClick={onClose}>
@@ -222,25 +223,25 @@ export function StudentDetailModal({
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
             </svg>
-            Встречи {meetings.length > 0 && <span className={styles.tabBadge}>{meetings.length}</span>}
+            {t('sdmTabMeetings')} {meetings.length > 0 && <span className={styles.tabBadge}>{meetings.length}</span>}
           </button>
           <button className={`${styles.tab} ${tab === 'errors' ? styles.tabActive : ''}`} onClick={() => setTab('errors')}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
-            Ошибки {errors.length > 0 && <span className={styles.tabBadge}>{errors.length}</span>}
+            {t('sdmTabErrors')} {errors.length > 0 && <span className={styles.tabBadge}>{errors.length}</span>}
           </button>
           <button className={`${styles.tab} ${tab === 'schedule' ? styles.tabActive : ''}`} onClick={() => setTab('schedule')}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
             </svg>
-            Запланировать
+            {t('sdmTabSchedule')}
           </button>
         </div>
 
         {/* Body */}
         <div className={styles.body}>
-          {loading && <div className={styles.loading}>Загрузка...</div>}
+          {loading && <div className={styles.loading}>{t('sdmLoading')}</div>}
 
           {/* Meetings tab */}
           {!loading && tab === 'meetings' && (
@@ -250,7 +251,7 @@ export function StudentDetailModal({
                   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                     <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
                   </svg>
-                  <span>Нет запланированных встреч</span>
+                  <span>{t('sdmNoMeetings')}</span>
                 </div>
               ) : (
                 <div className={styles.meetingList}>
@@ -265,7 +266,7 @@ export function StudentDetailModal({
                         <div className={styles.meetingTitle}>{m.title}</div>
                         {m.scheduledAt && <div className={styles.meetingTime}>{formatDateShort(m.scheduledAt)}</div>}
                       </div>
-                      <button className={styles.cancelBtn} title="Отменить" onClick={() => cancelMeeting(m.id)}>
+                      <button className={styles.cancelBtn} title={t('sdmCancelTitle')} onClick={() => cancelMeeting(m.id)}>
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                           <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                         </svg>
@@ -278,7 +279,7 @@ export function StudentDetailModal({
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                   <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
-                Запланировать встречу
+                {t('sdmScheduleMeetingBtn')}
               </button>
             </div>
           )}
@@ -291,7 +292,7 @@ export function StudentDetailModal({
                   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                     <path d="M22 11.08V12a10 10 0 11-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
                   </svg>
-                  <span>Ошибок не найдено</span>
+                  <span>{t('sdmNoErrors')}</span>
                 </div>
               ) : (
                 <div className={styles.errorList}>
@@ -299,7 +300,7 @@ export function StudentDetailModal({
                     <div key={err.id} className={`${styles.errorCard} ${err.isCorrection ? styles.errorCardFixed : ''}`}>
                       <div className={styles.errorMeta}>
                         <span className={styles.errorDate}>{formatDate(err.createdAt)}</span>
-                        {err.isCorrection && <span className={styles.fixedBadge}>исправлено</span>}
+                        {err.isCorrection && <span className={styles.fixedBadge}>{t('sdmFixedBadge')}</span>}
                       </div>
                       {err.fragment && <div className={styles.errorFragment}>{err.fragment}</div>}
                       {err.description && <div className={styles.errorDesc}>{err.description}</div>}
@@ -310,7 +311,7 @@ export function StudentDetailModal({
                           ))}
                         </div>
                       )}
-                      <button className={styles.deleteErrBtn} onClick={() => deleteError(err.id)} title="Удалить">
+                      <button className={styles.deleteErrBtn} onClick={() => deleteError(err.id)} title={t('sdmDeleteTitle')}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                           <polyline points="3 6 5 6 21 6" />
                           <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
@@ -333,23 +334,23 @@ export function StudentDetailModal({
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <path d="M22 11.08V12a10 10 0 11-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
                   </svg>
-                  Встреча запланирована!
+                  {t('sdmScheduledSuccess')}
                 </div>
               )}
               <form className={styles.schedForm} onSubmit={submitSchedule}>
                 <div className={styles.formField}>
-                  <label className={styles.formLabel}>Название</label>
+                  <label className={styles.formLabel}>{t('sdmFormTitleLabel')}</label>
                   <input
                     className={styles.formInput}
                     value={schedTitle}
                     onChange={e => setSchedTitle(e.target.value)}
-                    placeholder="Название встречи"
+                    placeholder={t('sdmFormTitlePlaceholder')}
                     required
                     disabled={schedLoading}
                   />
                 </div>
                 <div className={styles.formField}>
-                  <label className={styles.formLabel}>Дата и время</label>
+                  <label className={styles.formLabel}>{t('sdmFormDateLabel')}</label>
                   <input
                     className={styles.formInput}
                     type="datetime-local"
@@ -361,7 +362,7 @@ export function StudentDetailModal({
                   />
                 </div>
                 <div className={styles.formField}>
-                  <label className={styles.formLabel}>Длительность</label>
+                  <label className={styles.formLabel}>{t('sdmFormDurationLabel')}</label>
                   <div className={styles.durationRow}>
                     {[30, 45, 60, 90, 120].map(min => (
                       <button
@@ -371,7 +372,7 @@ export function StudentDetailModal({
                         onClick={() => setSchedDuration(min)}
                         disabled={schedLoading}
                       >
-                        {min < 60 ? `${min} мин` : `${min / 60} ч`}
+                        {min < 60 ? `${min} ${t('sdmDurationMin')}` : `${min / 60} ${t('sdmDurationH')}`}
                       </button>
                     ))}
                   </div>
@@ -379,17 +380,17 @@ export function StudentDetailModal({
 
                 {services.length > 0 && (
                   <div className={styles.formField}>
-                    <label className={styles.formLabel}>Услуга (необязательно)</label>
+                    <label className={styles.formLabel}>{t('sdmFormServiceLabel')}</label>
                     <select
                       className={styles.formInput}
                       value={schedServiceId}
                       onChange={e => setSchedServiceId(e.target.value)}
                       disabled={schedLoading}
                     >
-                      <option value=''>— Без услуги —</option>
+                      <option value=''>{t('sdmFormServiceNone')}</option>
                       {services.map(s => (
                         <option key={s.id} value={s.id}>
-                          {s.title} — {s.price.toLocaleString()} ₽ / {s.duration} мин
+                          {s.title} — {s.price.toLocaleString()} ₽ / {s.duration} {t('sdmDurationMin')}
                         </option>
                       ))}
                     </select>
@@ -403,8 +404,10 @@ export function StudentDetailModal({
                       <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
                     </svg>
                     <span>
-                      Конфликт: уже есть встреча <strong>«{schedConflict.title}»</strong>
-                      {schedConflict.scheduledAt ? ` в ${formatDate(schedConflict.scheduledAt)}` : ''}
+                      {t('sdmConflictMsg', {
+                        title: schedConflict.title,
+                        time: schedConflict.scheduledAt ? t('sdmConflictAt', { time: formatDate(schedConflict.scheduledAt) }) : '',
+                      })}
                     </span>
                   </div>
                 )}
@@ -418,7 +421,7 @@ export function StudentDetailModal({
                   className={styles.submitBtn}
                   disabled={schedLoading || !schedTitle.trim() || !schedAt}
                 >
-                  {schedLoading ? 'Создание...' : 'Запланировать встречу'}
+                  {schedLoading ? t('sdmSubmitLoading') : t('sdmSubmitBtn')}
                 </button>
               </form>
             </div>

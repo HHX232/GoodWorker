@@ -116,7 +116,7 @@ export function BookServiceModal({ open, onClose, service }: Props) {
   async function handleBook() {
     setSubmitting(true)
     setError('')
-    const tid = toast.loading('Оформление записи...')
+    const tid = toast.loading(t('booking'))
     try {
       const res = await fetch(`/api/services/${service!.id}/book`, {
         method: 'POST',
@@ -130,11 +130,11 @@ export function BookServiceModal({ open, onClose, service }: Props) {
         toast.error(msg, { id: tid })
         return
       }
-      toast.success('Запись оформлена!', { id: tid })
+      toast.success(t('successTitle'), { id: tid })
       setSuccess(true)
     } catch {
       setError(t('errorNetwork'))
-      toast.error('Ошибка соединения. Попробуйте ещё раз.', { id: tid })
+      toast.error(t('errorNetwork'), { id: tid })
     } finally {
       setSubmitting(false)
     }

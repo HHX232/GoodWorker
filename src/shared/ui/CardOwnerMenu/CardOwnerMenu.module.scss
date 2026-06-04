@@ -1,0 +1,64 @@
+.wrap {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 20;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255, 255, 255, 0.85);
+  color: #555;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: #fff;
+    color: #141416;
+  }
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #ebebeb;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  min-width: 130px;
+  padding: 4px;
+  animation: fadeIn 0.12s ease;
+}
+
+.deleteBtn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #e53e3e;
+  font-size: 13px;
+  font-family: 'Roboto', sans-serif;
+  cursor: pointer;
+  transition: background 0.12s;
+
+  &:hover {
+    background: #fff5f5;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

@@ -188,6 +188,21 @@
   white-space: pre-wrap;
 }
 
+// ── Card photo ────────────────────────────────────────────
+.card_photo {
+  border-radius: 8px;
+  overflow: hidden;
+  max-width: 320px;
+}
+
+.card_photo_img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
 // ── Reply ─────────────────────────────────────────────────
 .reply {
   background: #f7f7fa;

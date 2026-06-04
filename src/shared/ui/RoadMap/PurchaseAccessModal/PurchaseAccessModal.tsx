@@ -4,6 +4,7 @@ import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindo
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 import styles from './PurchaseAccessModal.module.scss'
 
 interface Props {
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export function PurchaseAccessModal({ isOpen, onClose, roadmapId, price, title }: Props) {
+  const t = useTranslations('PurchaseAccessModal')
   const queryClient = useQueryClient()
   const [loading, setLoading] = useState(false)
 
@@ -23,10 +25,10 @@ export function PurchaseAccessModal({ isOpen, onClose, roadmapId, price, title }
     try {
       await RoadmapService.purchaseAccess(roadmapId)
       await queryClient.invalidateQueries({ queryKey: ['roadmapAccess', roadmapId] })
-      toast.success('Доступ открыт! Все заблокированные блоки теперь доступны.')
+      toast.success(t('success'))
       onClose()
     } catch {
-      toast.error('Не удалось купить доступ. Попробуйте позже.')
+      toast.error(t('error'))
     } finally {
       setLoading(false)
     }
@@ -36,15 +38,15 @@ export function PurchaseAccessModal({ isOpen, onClose, roadmapId, price, title }
     <ModalWindowDefault
       isOpen={isOpen}
       onClose={onClose}
-      additionalTitle={<span style={{ fontWeight: 700, fontSize: 16 }}>Получить полный доступ</span>}
+      additionalTitle={<span style={{ fontWeight: 700, fontSize: 16 }}>{t('title')}</span>}
       modalFooter={
         <div className={styles.footer}>
           <button className={styles.cancel_btn} onClick={onClose} disabled={loading}>
-            Отмена
+            {t('cancel')}
           </button>
           <button className={styles.buy_btn} onClick={handlePurchase} disabled={loading}>
             {loading ? <span className={styles.spinner} /> : null}
-            {loading ? 'Обработка...' : `Купить доступ${price > 0 ? ` · ${price} ₽` : ''}`}
+            {loading ? t('processing') : `${t('buyBtn')}${price > 0 ? ` · ${price} ₽` : ''}`}
           </button>
         </div>
       }
@@ -58,16 +60,14 @@ export function PurchaseAccessModal({ isOpen, onClose, roadmapId, price, title }
         </div>
         <div className={styles.info}>
           <p className={styles.roadmap_title}>{title}</p>
-          <p className={styles.desc}>
-            После покупки все закрытые блоки этого роадмапа станут доступны вам немедленно.
-          </p>
+          <p className={styles.desc}>{t('desc')}</p>
           {price > 0 && (
             <div className={styles.price_row}>
-              <span className={styles.price_label}>Стоимость</span>
+              <span className={styles.price_label}>{t('priceLabel')}</span>
               <span className={styles.price_value}>{price} ₽</span>
             </div>
           )}
-          <p className={styles.stub_notice}>⚠ Оплата пока не реализована — доступ будет выдан сразу.</p>
+          <p className={styles.stub_notice}>{t('stub')}</p>
         </div>
       </div>
     </ModalWindowDefault>

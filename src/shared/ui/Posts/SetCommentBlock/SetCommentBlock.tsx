@@ -6,6 +6,7 @@ import {usePostRating} from '@/features/hooks/Comments/usePostRating'
 import {TextAreaUI} from '@/shared/ui/inputs/TextAreaUI/TextAreaUI'
 import {useEffect, useState} from 'react'
 import {toast} from 'sonner'
+import {useTranslations} from 'next-intl'
 import {useQueryClient} from '@tanstack/react-query'
 import {StarRating} from '../PostCommentSection/PostCommentSection'
 import styles from './SetCommentBlock.module.scss'
@@ -16,6 +17,7 @@ interface SetCommentBlockProps {
 }
 
 export function SetCommentBlock({postId}: SetCommentBlockProps) {
+  const t = useTranslations('SetCommentBlock')
   const queryClient = useQueryClient()
   const {data: myComment, isLoading: commentLoading} = useMyComment(postId)
   const {data: ratingData, isLoading: ratingLoading} = usePostRating(postId)
@@ -48,7 +50,7 @@ export function SetCommentBlock({postId}: SetCommentBlockProps) {
     if (!trimmed && newFiles.length === 0 && keepImageUrls.length === 0 && stars === null) return
 
     setSending(true)
-    const toastId = toast.loading(hasComment ? 'Сохранение...' : 'Публикуем...')
+    const toastId = toast.loading(hasComment ? t('saving') : t('publishing'))
 
     try {
       await Promise.all([
@@ -73,9 +75,9 @@ export function SetCommentBlock({postId}: SetCommentBlockProps) {
         queryClient.invalidateQueries({queryKey: ['comments', postId]})
       ])
 
-      toast.success(hasComment ? 'Изменения сохранены!' : 'Опубликовано!', {id: toastId})
+      toast.success(hasComment ? t('saved') : t('published'), {id: toastId})
     } catch {
-      toast.error('Не удалось опубликовать', {id: toastId})
+      toast.error(t('publishError'), {id: toastId})
     } finally {
       setSending(false)
     }
@@ -84,7 +86,7 @@ export function SetCommentBlock({postId}: SetCommentBlockProps) {
   if (commentLoading || ratingLoading) {
     return (
       <div className={styles.block}>
-        <p className={styles.heading}>Оставить отзыв</p>
+        <p className={styles.heading}>{t('heading')}</p>
         <div className={styles.skeleton} />
       </div>
     )
@@ -95,14 +97,14 @@ export function SetCommentBlock({postId}: SetCommentBlockProps) {
 
   return (
     <div className={styles.block}>
-      <p className={styles.heading}>Оставить отзыв</p>
+      <p className={styles.heading}>{t('heading')}</p>
 
       <div className={styles.stars_row}>
         <StarRating extraClass={styles.stars} value={stars} onChange={setStars} size={56} />
       </div>
 
       <TextAreaUI
-        placeholder='Поделитесь своими мыслями об этом посте...'
+        placeholder={t('placeholder')}
         currentValue={text}
         onSetValue={setText}
         autoResize
@@ -126,7 +128,7 @@ export function SetCommentBlock({postId}: SetCommentBlockProps) {
 
       <div className={styles.submit_row}>
         <button className={styles.submit_btn} onClick={handleSubmit} disabled={!canSubmit}>
-          {hasComment ? 'Сохранить изменения' : 'Опубликовать'}
+          {hasComment ? t('save') : t('publish')}
         </button>
       </div>
     </div>

@@ -1,11 +1,19 @@
 .header {
    display: flex;
    align-items: center;
-   gap: 10px;
-   padding: 14px 20px 12px;
+   flex-wrap: wrap;
+   gap: 8px 12px;
+   padding: 10px 20px 10px;
+   margin-bottom: 4px;
    background: #ffffff;
    border-bottom: 0.5px solid rgba(0, 0, 0, 0.07);
    flex-shrink: 0;
+}
+
+.group {
+   display: flex;
+   align-items: center;
+   gap: 8px;
 }
 
 .month {
@@ -60,6 +68,7 @@
    display: flex;
    align-items: center;
    gap: 8px;
+   flex-wrap: wrap;
 }
 
 .addBtn {

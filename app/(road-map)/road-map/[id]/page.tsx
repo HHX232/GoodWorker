@@ -2,9 +2,24 @@ import RoadMapViewer from '@/_pages/RoadMapPages/ViewRoadMap/InnerViewer'
 import RoadmapService from '@/features/services/RoadmapService.service'
 import {Edge, Node} from '@xyflow/react'
 import {getLocale} from 'next-intl/server'
+import { getTranslations } from 'next-intl/server'
+import type { Metadata } from 'next'
+
 
 interface Props {
   params: Promise<{id: string}>
+}
+
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params
+  const t = await getTranslations('PageTitles')
+  try {
+    const locale = await getLocale()
+    const roadmap = await RoadmapService.getById(id, locale)
+    if (roadmap?.title) return { title: roadmap.title }
+  } catch {}
+  return { title: t('courses') }
 }
 
 export default async function RoadMapPage({params}: Props) {

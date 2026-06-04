@@ -3,6 +3,15 @@ import RoadmapService, { IRoadmapQuery } from '@/features/services/RoadmapServic
 import { Suspense } from 'react'
 import { getLocale } from 'next-intl/server'
 
+import { getTranslations } from 'next-intl/server'
+import type { Metadata } from 'next'
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('PageTitles')
+  return { title: t('courses') }
+}
+
+
 interface WorkflowsListRouteProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }

@@ -3,6 +3,26 @@ import { TeacherPublicProfile } from '@/_pages/TeacherPublicProfile/TeacherPubli
 import { notFound } from 'next/navigation'
 import { auth } from '../../../../auth'
 
+import { getTranslations } from 'next-intl/server'
+import type { Metadata } from 'next'
+
+interface MetaProps { params: Promise<{ id: string }> }
+
+export async function generateMetadata({ params }: MetaProps): Promise<Metadata> {
+  const { id } = await params
+  const t = await getTranslations('PageTitles')
+  try {
+    const teacher = await prisma.teacher.findUnique({
+      where: { id },
+      select: { name: true }
+    })
+    if (teacher?.name) return { title: teacher.name }
+  } catch {}
+  return { title: t('teacherPublicProfile') }
+}
+
+
+
 interface Props {
   params: Promise<{ id: string }>
 }

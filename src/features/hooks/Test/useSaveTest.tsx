@@ -9,7 +9,7 @@ import {useRouter} from 'next/navigation'
 import {useState} from 'react'
 import {toast} from 'sonner'
 
-function validateBlocks(blocks: TestBlock[]): Map<string, string> {
+export function validateBlocks(blocks: TestBlock[]): Map<string, string> {
   const errors = new Map<string, string>()
   for (const block of blocks) {
     const p = block.payload as any

@@ -303,6 +303,7 @@
   color: #94a3b8;
 }
 
+// standalone = в превью внутри редактора (с рамкой-карточкой)
 .student_wrap {
   display: flex;
   flex-direction: column;
@@ -313,9 +314,17 @@
   background: #f8fafc;
 }
 
+// inline = внутри TestPlayer (без дублирующей карточки)
+.student_inline {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
 .student_instruction {
   font-size: 15px;
-  font-weight: 500;
-  color: #1e293b;
-  line-height: 1.5;
+  font-weight: 600;
+  color: #141416;
+  line-height: 1.6;
+  margin: 0;
 }

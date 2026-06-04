@@ -3,6 +3,15 @@ import { StudentDashboard } from "@/_pages/StudentDashboard/StudentDashboard"
 import { redirect } from "next/navigation"
 import { auth } from "../../../auth"
 
+import { getTranslations } from 'next-intl/server'
+import type { Metadata } from 'next'
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('PageTitles')
+  return { title: t('studentProfile') }
+}
+
+
 export default async function StudentProfilePage() {
   const session = await auth()
 

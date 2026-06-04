@@ -1,15 +1,30 @@
 'use client'
 
-import TestService, {ITestItem} from '@/features/services/TestService.service'
+import {TaskBlockRegistry} from '@/features'
 import {useActions} from '@/features/hooks/store/useActions'
+import {useTypedSelector} from '@/features/hooks/store/useTypedSelector'
+import {validateBlocks} from '@/features/hooks/Test/useSaveTest'
 import {PostMiniTestPayload} from '@/shared/types/Post/Post.type'
+import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
+import {InvalidTestBlocksContext} from '@/shared/ui/Tasks/providers/InvalidBlocksContext/InvalidBlocksContext'
 import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
-import TestPreview from '@/widgets/Tasks/TestPreview/TestPreview'
-import {useQuery} from '@tanstack/react-query'
-import {CheckIcon, ClipboardCheckIcon, SearchIcon, XIcon} from 'lucide-react'
-import {useTranslations} from 'next-intl'
-import {useMemo, useState} from 'react'
+import BlockEditor from '@/widgets/Tasks/BlockEditor/BlockEditor'
+import {ClipboardCheckIcon, PencilIcon} from 'lucide-react'
+import {useState} from 'react'
+import {toast} from 'sonner'
 import styles from './PostBlockEditors.module.scss'
+
+const BLOCK_TYPES: TaskBlockType[] = [
+  TaskBlockType.CHOOSE_OPTION,
+  TaskBlockType.FREE_ANSWER,
+  TaskBlockType.FILL_TEXT,
+  TaskBlockType.SEQUENCE,
+  TaskBlockType.MATCH_PAIRS,
+  TaskBlockType.HIGHLIGHT_TEXT,
+  TaskBlockType.WORD_SCRAMBLE,
+  TaskBlockType.DIALOGUE,
+  TaskBlockType.INFO_TEXT,
+]
 
 interface Props {
   blockId: string
@@ -17,131 +32,147 @@ interface Props {
 }
 
 export function PostMiniTestBlockEditor({blockId, payload}: Props) {
-  const t = useTranslations('PostBlockEditor')
-  const {updatePostBlockPayload} = useActions()
+  const {updatePostBlockPayload, addBlock, addBlocks, resetConstructor} = useActions()
+  const reduxBlocks = useTypedSelector((state) => state.tasks.blocks)
   const [modalOpen, setModalOpen] = useState(false)
-  const [search, setSearch] = useState('')
+  const [invalidBlockIds, setInvalidBlockIds] = useState<Set<string>>(new Set())
+  const [errorsMap, setErrorsMap] = useState<Map<string, string>>(new Map())
 
-  const {data: tests = [], isLoading} = useQuery({
-    queryKey: ['my-tests'],
-    queryFn: () => TestService.getMyTests(),
-    staleTime: 1000 * 60 * 5,
-    enabled: modalOpen
-  })
+  const openModal = () => {
+    resetConstructor()
+    if (payload.blocks.length > 0) addBlocks(payload.blocks)
+    setInvalidBlockIds(new Set())
+    setErrorsMap(new Map())
+    setModalOpen(true)
+  }
 
-  const filtered = useMemo(() => {
-    if (!search.trim()) return tests
-    const q = search.toLowerCase()
-    return tests.filter(
-      (t) => t.title.toLowerCase().includes(q) || (t.aiTopic ?? '').toLowerCase().includes(q)
-    )
-  }, [tests, search])
+  const clearInvalidBlock = (id: string) => {
+    setInvalidBlockIds((prev) => {
+      const next = new Set(prev)
+      next.delete(id)
+      return next
+    })
+  }
 
-  const select = (test: ITestItem) => {
-    updatePostBlockPayload({id: blockId, payload: {testId: test.id, title: test.title}})
+  const save = () => {
+    if (reduxBlocks.length === 0) {
+      toast.error('Добавьте хотя бы один вопрос')
+      return
+    }
+
+    const blockErrors = validateBlocks(reduxBlocks)
+    if (blockErrors.size > 0) {
+      setInvalidBlockIds(new Set(blockErrors.keys()))
+      setErrorsMap(blockErrors)
+      toast.error('Заполните все вопросы перед сохранением')
+      const firstId = blockErrors.keys().next().value
+      if (firstId) {
+        setTimeout(() => {
+          document.getElementById(`block-${firstId}`)?.scrollIntoView({behavior: 'smooth', block: 'center'})
+        }, 50)
+      }
+      return
+    }
+
+    setErrorsMap(new Map())
+    setInvalidBlockIds(new Set())
+    updatePostBlockPayload({id: blockId, payload: {...payload, blocks: [...reduxBlocks]}})
     setModalOpen(false)
   }
 
-  const clear = () => {
-    updatePostBlockPayload({id: blockId, payload: {testId: null, title: null}})
-  }
-
-  const getThemes = (test: ITestItem) =>
-    test.testCategories
-      ?.map((tc) => tc.category.translations.find((tr) => tr.langCode === 'ru')?.name ?? tc.category.slug)
-      .slice(0, 3) ?? []
-
-  const selectedTest = tests.find((t) => t.id === payload.testId)
-
-  if (payload.testId) {
-    return (
-      <div className={styles.mini_test_selected}>
-        <div className={styles.mini_test_badge}>
-          <ClipboardCheckIcon size={14} />
-          <span>Мини-тест</span>
-        </div>
-        {selectedTest ? (
-          <TestPreview
-            useLink={false}
-            useBorder={true}
-            testId={selectedTest.id}
-            avatarUrl={selectedTest.teacher?.avatarUrl ?? 'https://i.pravatar.cc/88?img=1'}
-            authorName={selectedTest.teacher?.name ?? ''}
-            title={selectedTest.title}
-            description={(selectedTest.content as Record<string, unknown>)?.description as string ?? ''}
-            themes={getThemes(selectedTest)}
-            createdAt={selectedTest.createdAt}
-          />
-        ) : (
-          <p className={styles.test_link_id}>{payload.title ?? payload.testId}</p>
-        )}
-        <p className={styles.mini_test_hint}>
-          При просмотре поста читатели смогут пройти этот тест прямо здесь — результат сохранится в статистику.
-        </p>
-        <button type='button' className={styles.test_link_clear} onClick={clear}>
-          <XIcon size={12} />
-          {t('testLinkChange')}
-        </button>
-      </div>
-    )
-  }
+  const hasBlocks = payload.blocks.length > 0
 
   return (
     <>
-      <button type='button' className={styles.mini_test_stub} onClick={() => setModalOpen(true)}>
-        <ClipboardCheckIcon size={20} className={styles.mini_test_stub_icon} />
-        <div>
-          <p className={styles.stub_text}>Выбрать тест для встройки</p>
-          <p className={styles.stub_sub}>Читатели пройдут тест прямо в посте. Результат сохраняется в статистику.</p>
+      <div className={styles.mini_test_editor}>
+        <div className={styles.mini_test_badge}>
+          <ClipboardCheckIcon size={13} />
+          <span>Мини-тест</span>
         </div>
-      </button>
+
+        <input
+          className={styles.mini_test_title_input}
+          placeholder='Название мини-теста'
+          value={payload.title}
+          onChange={(e) =>
+            updatePostBlockPayload({id: blockId, payload: {...payload, title: e.target.value}})
+          }
+        />
+
+        <div className={styles.mini_test_summary}>
+          {hasBlocks ? (
+            <div className={styles.mini_test_block_pills}>
+              {payload.blocks.slice(0, 5).map((b) => {
+                const meta = TaskBlockRegistry[b.type as TaskBlockType]
+                return (
+                  <span key={b.id} className={styles.mini_test_block_pill}>
+                    {meta?.label}
+                  </span>
+                )
+              })}
+              {payload.blocks.length > 5 && (
+                <span className={styles.mini_test_block_pill}>+{payload.blocks.length - 5}</span>
+              )}
+            </div>
+          ) : (
+            <p className={styles.mini_test_no_blocks}>Вопросы не добавлены</p>
+          )}
+        </div>
+
+        <button className={styles.mini_test_edit_btn} onClick={openModal}>
+          <PencilIcon size={13} />
+          {hasBlocks ? `Редактировать вопросы (${payload.blocks.length})` : 'Добавить вопросы'}
+        </button>
+      </div>
 
       <ModalWindowDefault
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        additionalTitle={<p className={styles.modal_title}>Выбрать тест (мини-тест)</p>}
+        additionalTitle={<p className={styles.modal_title}>Вопросы мини-теста</p>}
       >
-        <div className={styles.modal_search_wrap}>
-          <SearchIcon size={14} className={styles.modal_search_icon} />
-          <input
-            className={styles.modal_search_input}
-            placeholder={t('testLinkSearch')}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+        <InvalidTestBlocksContext.Provider
+          value={{ids: invalidBlockIds, errors: errorsMap, clear: clearInvalidBlock}}
+        >
+          <div className={styles.mini_test_type_picker}>
+            {BLOCK_TYPES.map((type) => {
+              const meta = TaskBlockRegistry[type]
+              return (
+                <button
+                  key={type}
+                  className={styles.mini_test_type_btn}
+                  onClick={() => addBlock(type)}
+                  title={meta.description}
+                >
+                  <span className={styles.mini_test_type_icon}>{meta.icon}</span>
+                  <span className={styles.mini_test_type_label}>{meta.label}</span>
+                </button>
+              )
+            })}
+          </div>
 
-        {isLoading && <p className={styles.modal_hint}>{t('testLinkLoading')}</p>}
-        {!isLoading && filtered.length === 0 && <p className={styles.modal_hint}>{t('testLinkNoTests')}</p>}
-
-        <div className={styles.modal_grid}>
-          {filtered.map((test) => {
-            const isSelected = test.id === payload.testId
-            return (
-              <div
-                key={test.id}
-                className={`${styles.modal_test_card} ${isSelected ? styles.modal_test_card_selected : ''}`}
-                onClick={() => select(test)}
-              >
-                <div className={`${styles.modal_checkbox} ${isSelected ? styles.modal_checkbox_checked : ''}`}>
-                  {isSelected && <CheckIcon size={10} />}
+          <div className={styles.mini_test_block_list}>
+            {reduxBlocks.length === 0 ? (
+              <p className={styles.mini_test_empty_hint}>
+                Нажмите на тип вопроса выше, чтобы добавить
+              </p>
+            ) : (
+              reduxBlocks.map((block) => (
+                <div key={block.id} className={styles.mini_test_block_item}>
+                  <BlockEditor block={block} />
                 </div>
-                <TestPreview
-                  useLink={false}
-                  useBorder={false}
-                  grayscale={!isSelected}
-                  testId={test.id}
-                  avatarUrl={test.teacher?.avatarUrl ?? 'https://i.pravatar.cc/88?img=1'}
-                  authorName={test.teacher?.name ?? ''}
-                  title={test.title}
-                  description={(test.content as Record<string, unknown>)?.description as string ?? ''}
-                  themes={getThemes(test)}
-                  createdAt={test.createdAt}
-                />
-              </div>
-            )
-          })}
-        </div>
+              ))
+            )}
+          </div>
+
+          <div className={styles.mini_test_modal_footer}>
+            <button className={styles.mini_test_cancel_btn} onClick={() => setModalOpen(false)}>
+              Отмена
+            </button>
+            <button className={styles.mini_test_save_btn} onClick={save}>
+              Сохранить
+            </button>
+          </div>
+        </InvalidTestBlocksContext.Provider>
       </ModalWindowDefault>
     </>
   )

@@ -176,7 +176,7 @@ export function NavBar({extraClass}: {extraClass?: string}) {
     ]
     bottomItems = [
       {href: '/teacher-profile', label: t('profile'), icon: <Icon.Profile />},
-      {href: '/support',         label: t('support'),  icon: <Icon.Support />},
+      {href: '/feedback',         label: t('support'),  icon: <Icon.Support />},
     ]
   } else if (role === 'STUDENT') {
     topItems = [
@@ -189,7 +189,7 @@ export function NavBar({extraClass}: {extraClass?: string}) {
     ]
     bottomItems = [
       {href: '/student-profile', label: t('profile'), icon: <Icon.Profile />},
-      {href: '/support',         label: t('support'),  icon: <Icon.Support />},
+      {href: '/feedback',         label: t('support'),  icon: <Icon.Support />},
     ]
   } else {
     topItems = [
@@ -199,7 +199,7 @@ export function NavBar({extraClass}: {extraClass?: string}) {
     ]
     bottomItems = [
       {href: '/login',   label: t('login'),   icon: <Icon.Login />},
-      {href: '/support', label: t('support'), icon: <Icon.Support />},
+      {href: '/feedback', label: t('support'), icon: <Icon.Support />},
     ]
   }
 

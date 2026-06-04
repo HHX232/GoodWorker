@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import {usePathname, useRouter} from 'next/navigation'
 import {useCallback, useEffect, useRef, useState} from 'react'
+import {useTranslations} from 'next-intl'
 import styles from './HeaderSearch.module.scss'
 
 // ─── Types ───────────────────────────────────────────────
@@ -36,27 +37,13 @@ const MapIcon = () => (
   </svg>
 )
 
-// ─── Per-page config ──────────────────────────────────────
-
-const SIMPLE_PAGES: Record<string, {placeholder: string; buildUrl: (q: string) => string}> = {
-  '/teachers': {
-    placeholder: 'Поиск учителей...',
-    buildUrl: (q) => `/teachers?q=${encodeURIComponent(q)}`
-  },
-  '/workflows-list': {
-    placeholder: 'Поиск курсов...',
-    buildUrl: (q) => `/workflows-list?search=${encodeURIComponent(q)}`
-  }
-}
-
-const HOME_PLACEHOLDER = 'Поиск по постам, учителям и курсам...'
-
 // ─── Global search dropdown ───────────────────────────────
 
 function GlobalDropdown({
   query,
   onClose
 }: {query: string; onClose: () => void}) {
+  const t = useTranslations('HeaderSearch')
   const [data, setData] = useState<SearchResult | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -81,12 +68,12 @@ function GlobalDropdown({
 
   return (
     <div className={styles.dropdown}>
-      {loading && <p className={styles.loading}>Поиск...</p>}
-      {!loading && data && !hasAny && <p className={styles.empty}>Ничего не найдено</p>}
+      {loading && <p className={styles.loading}>{t('loading')}</p>}
+      {!loading && data && !hasAny && <p className={styles.empty}>{t('notFound')}</p>}
 
       {!loading && data?.posts && data.posts.length > 0 && (
         <>
-          <p className={styles.section_title}>Посты</p>
+          <p className={styles.section_title}>{t('posts')}</p>
           {data.posts.map((p) => (
             <Link key={p.id} href={`/post/${p.id}`} className={styles.result_item} onClick={onClose}>
               <span className={styles.result_icon}><PostIcon /></span>
@@ -97,7 +84,7 @@ function GlobalDropdown({
             </Link>
           ))}
           <Link href={`/?q=${encodeURIComponent(query)}`} className={styles.see_all} onClick={onClose}>
-            Все посты →
+            {t('seeAllPosts')}
           </Link>
         </>
       )}
@@ -105,22 +92,22 @@ function GlobalDropdown({
       {!loading && data?.teachers && data.teachers.length > 0 && (
         <>
           {data.posts && data.posts.length > 0 && <div className={styles.divider} />}
-          <p className={styles.section_title}>Учителя</p>
-          {data.teachers.map((t) => (
-            <Link key={t.id} href={`/users/${t.id}`} className={styles.result_item} onClick={onClose}>
+          <p className={styles.section_title}>{t('teachers')}</p>
+          {data.teachers.map((teacher) => (
+            <Link key={teacher.id} href={`/users/${teacher.id}`} className={styles.result_item} onClick={onClose}>
               <span className={styles.result_icon}>
-                {t.avatarUrl
-                  ? <Image src={t.avatarUrl} alt={t.name} width={28} height={28} className={styles.result_icon_img} />
-                  : t.name[0]?.toUpperCase()
+                {teacher.avatarUrl
+                  ? <Image src={teacher.avatarUrl} alt={teacher.name} width={28} height={28} className={styles.result_icon_img} />
+                  : teacher.name[0]?.toUpperCase()
                 }
               </span>
               <span className={styles.result_text}>
-                <span className={styles.result_name}>{t.name}</span>
+                <span className={styles.result_name}>{teacher.name}</span>
               </span>
             </Link>
           ))}
           <Link href={`/teachers?q=${encodeURIComponent(query)}`} className={styles.see_all} onClick={onClose}>
-            Все учителя →
+            {t('seeAllTeachers')}
           </Link>
         </>
       )}
@@ -130,7 +117,7 @@ function GlobalDropdown({
           {((data.posts && data.posts.length > 0) || (data.teachers && data.teachers.length > 0)) && (
             <div className={styles.divider} />
           )}
-          <p className={styles.section_title}>Курсы</p>
+          <p className={styles.section_title}>{t('courses')}</p>
           {data.roadmaps.map((r) => (
             <Link key={r.id} href={`/road-map/${r.id}`} className={styles.result_item} onClick={onClose}>
               <span className={styles.result_icon}><MapIcon /></span>
@@ -141,7 +128,7 @@ function GlobalDropdown({
             </Link>
           ))}
           <Link href={`/workflows-list?search=${encodeURIComponent(query)}`} className={styles.see_all} onClick={onClose}>
-            Все курсы →
+            {t('seeAllCourses')}
           </Link>
         </>
       )}
@@ -152,6 +139,7 @@ function GlobalDropdown({
 // ─── Main component ───────────────────────────────────────
 
 export function HeaderSearch() {
+  const t = useTranslations('HeaderSearch')
   const pathname = usePathname()
   const router = useRouter()
   const [value, setValue] = useState('')
@@ -160,6 +148,16 @@ export function HeaderSearch() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const isHome = pathname === '/'
+  const SIMPLE_PAGES: Record<string, {placeholder: string; buildUrl: (q: string) => string}> = {
+    '/teachers': {
+      placeholder: t('placeholderTeachers'),
+      buildUrl: (q) => `/teachers?q=${encodeURIComponent(q)}`
+    },
+    '/workflows-list': {
+      placeholder: t('placeholderCourses'),
+      buildUrl: (q) => `/workflows-list?search=${encodeURIComponent(q)}`
+    }
+  }
   const simpleCfg = SIMPLE_PAGES[pathname]
   const showSearch = isHome || !!simpleCfg
 
@@ -207,7 +205,7 @@ export function HeaderSearch() {
         <input
           className={styles.input}
           type='text'
-          placeholder={isHome ? HOME_PLACEHOLDER : simpleCfg?.placeholder}
+          placeholder={isHome ? t('placeholderAll') : simpleCfg?.placeholder}
           value={value}
           onChange={(e) => handleChange(e.target.value)}
           onFocus={() => isHome && value.length >= 2 && setOpen(true)}

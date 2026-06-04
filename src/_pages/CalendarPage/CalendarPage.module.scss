@@ -1,7 +1,10 @@
 .layout {
    display: flex;
-   height: calc(100vh - 106px);
+   height: calc(100vh - 102px);
    overflow: hidden;
+   max-width: 2500px;
+   width: 100%;
+   margin: 0 auto;
 }
 
 .main {

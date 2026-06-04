@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server'
 import { redirect } from 'next/navigation'
 import { auth } from '../../../auth'
 import { prisma } from '@/shared/prisma/prisma'
@@ -9,14 +10,16 @@ interface Props {
 
 export async function generateMetadata({ params }: Props) {
   const { room } = await params
+  const t = await getTranslations('PageTitles')
   try {
     const decoded = decodeURIComponent(room)
     const dbRoom =
       await prisma.videoCallRoom.findUnique({ where: { id: room } }) ??
       await prisma.videoCallRoom.findUnique({ where: { name: decoded } })
-    return { title: dbRoom ? `Комната: ${dbRoom.name}` : `Комната: ${decoded}` }
+    const name = dbRoom ? dbRoom.name : decoded
+    return { title: t('videoRoom', { name }) }
   } catch {
-    return { title: 'Видео-звонок' }
+    return { title: t('videoCall') }
   }
 }
 

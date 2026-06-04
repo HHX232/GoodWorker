@@ -20,7 +20,7 @@ const defaultPayloads: Record<PostBlockType, unknown> = {
   [PostBlockType.MEDIA]: {kind: null, url: null, caption: null},
   [PostBlockType.AUDIO]: {url: null, filename: null},
   [PostBlockType.TEST_LINK]: {testId: null, title: null},
-  [PostBlockType.MINI_TEST]: {testId: null, title: null}
+  [PostBlockType.MINI_TEST]: {title: '', blocks: []}
 }
 
 const initialState: PostConstructorState = {

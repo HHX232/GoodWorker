@@ -2,6 +2,16 @@
 import HomePage from '@/_pages/PublickPages/HomePage/HomePage'
 import PostService, {IPostResponse, IPostsQuery} from '@/features/services/PostService.service'
 
+import { getTranslations } from 'next-intl/server'
+import type { Metadata } from 'next'
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('PageTitles')
+  return { title: t('home') }
+}
+
+
+
 interface HomePageRouteProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }

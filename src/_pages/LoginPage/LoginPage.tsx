@@ -65,14 +65,14 @@ export default function LoginPage() {
 
         <div className={styles.fields}>
           <TextInputUI
-            helpTitle='email'
+            helpTitle={t('fieldEmail')}
             theme='newWhite'
             placeholder={t('emailPlaceholder')}
             currentValue={email}
             onSetValue={setEmail}
           />
           <TextInputUI
-            helpTitle='password'
+            helpTitle={t('fieldPassword')}
             theme='newWhite'
             placeholder={t('passwordPlaceholder')}
             currentValue={password}

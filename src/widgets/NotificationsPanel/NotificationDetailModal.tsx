@@ -1,11 +1,66 @@
 'use client'
 import Link from 'next/link'
-import {useEffect} from 'react'
+import {useEffect, useState} from 'react'
 import {useRouter} from 'next/navigation'
 import {useLocale, useTranslations} from 'next-intl'
 import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
 import {NotificationItem, TYPE_CONFIG, FALLBACK_CONFIG, relativeTime} from './RowNotification'
 import styles from './NotificationDetailModal.module.scss'
+
+// ─── Promo code card ──────────────────────────────────────
+
+function PromoCodeCard({code, days}: {code: string; days?: number}) {
+  const [copied, setCopied] = useState(false)
+
+  const copy = () => {
+    navigator.clipboard.writeText(code).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
+
+  return (
+    <div className={styles.promo_card}>
+      <div className={styles.promo_header}>
+        <span className={styles.promo_crown}>
+          <svg width='12' height='12' viewBox='0 0 24 24' fill='currentColor'>
+            <path d='M2 19h20l-2-10-5 5-3-8-3 8-5-5z' />
+          </svg>
+        </span>
+        <span className={styles.promo_label}>Промокод VIP</span>
+        {days && <span className={styles.promo_days}>{days} дней бесплатно</span>}
+      </div>
+
+      <div className={styles.promo_code_row}>
+        <span className={styles.promo_code_text}>{code}</span>
+        <button className={styles.promo_copy_btn} onClick={copy}>
+          {copied ? (
+            <>
+              <svg width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
+                <polyline points='20 6 9 17 4 12' />
+              </svg>
+              Скопировано
+            </>
+          ) : (
+            <>
+              <svg width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.2' strokeLinecap='round' strokeLinejoin='round'>
+                <rect x='9' y='9' width='13' height='13' rx='2' /><path d='M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1' />
+              </svg>
+              Копировать
+            </>
+          )}
+        </button>
+      </div>
+
+      <Link href='/vip' className={styles.promo_activate_btn}>
+        <svg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
+          <path d='M13 2L3 14h9l-1 8 10-12h-9l1-8z' />
+        </svg>
+        Активировать VIP
+      </Link>
+    </div>
+  )
+}
 
 // ─── Actor chip ───────────────────────────────────────────
 
@@ -62,8 +117,16 @@ export function DetailRow({item, onClick}: {item: NotificationItem; onClick?: ()
           <span className={styles.time}>{relativeTime(item.createdAt, locale)}</span>
         </div>
 
-        {item.type === 'SYSTEM' && payload.html
-          ? <div className={styles.body} dangerouslySetInnerHTML={{__html: payload.html as string}} />
+        {item.type === 'SYSTEM' && payload.promoCode
+          ? (
+            <>
+              {item.body && <p className={styles.body}>{item.body}</p>}
+              <PromoCodeCard
+                code={payload.promoCode as string}
+                days={payload.promoDays as number | undefined}
+              />
+            </>
+          )
           : item.body && <p className={styles.body}>{item.body}</p>
         }
 

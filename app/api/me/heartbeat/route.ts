@@ -13,12 +13,13 @@ export async function POST() {
 
   try {
     if (role === 'TEACHER' || role === 'ADMIN') {
-      await prisma.teacher.update({where: {id}, data: {lastSeenAt: now}})
+      await prisma.teacher.update({where: {id}, data: {lastSeenAt: now}, select: {id: true}})
     } else {
-      await prisma.student.update({where: {id}, data: {lastSeenAt: now}})
+      await prisma.student.update({where: {id}, data: {lastSeenAt: now}, select: {id: true}})
     }
-  } catch {
-    // Non-critical — ignore DB errors silently
+  } catch (err) {
+    console.error('[heartbeat] DB update failed:', err)
+    return NextResponse.json({ok: false, error: String(err)}, {status: 500})
   }
 
   return NextResponse.json({ok: true})

@@ -13,6 +13,7 @@ import { LAYOUTS, LAYOUT_LABELS, type Layout, type Participant } from './types'
 import { useVideoRoom } from './hooks/useVideoRoom'
 import { useTranscription } from './hooks/useTranscription'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import { TestBlock } from '@/entities/store/slices/tasksSlice.slice'
 import {
   CallTestStudentView,
@@ -119,6 +120,7 @@ interface Props {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIdentity, localAvatarUrl, topic, userRole }: Props) {
+  const t = useTranslations('VideoCall')
   const router = useRouter()
   const [roomName] = useState(autoJoinRoom ?? '')
   const [layout, setLayout] = useState<Layout>('pip')
@@ -127,6 +129,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   const [showSummary, setShowSummary] = useState(false)
   const [showNotes, setShowNotes] = useState(false)
   const isMobile = typeof navigator !== 'undefined' && /Android|iP(hone|ad|od)/i.test(navigator.userAgent)
+  const isDev = process.env.NODE_ENV === 'development'
 
   const [debugChunks, setDebugChunks] = useState(0)
   const [debugMsgs, setDebugMsgs] = useState<string[]>([])
@@ -1064,9 +1067,9 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   const renderControls = (overlay: boolean) => (
     <div className={`${styles.controls} ${overlay ? styles.controlsOverlay : ''} ${overlay && controlsActive ? styles.controlsOverlayActive : ''}`}>
       <div className={styles.ctrlLeft}>
-        <button className={`${styles.pill} ${copied ? styles.pillActive : ''}`} onClick={shareLink}>
+        <button className={`${styles.pill} ${copied ? styles.pillActive : ''}`} onClick={shareLink} title={t('linkTooltip')}>
           {copied ? <IconCheck /> : <IconLink />}
-          {copied ? 'Скопировано' : 'Ссылка'}
+          {copied ? t('linkCopied') : t('link')}
         </button>
         {isMainSpeaker && (
           <button className={styles.pill} onClick={() => changeLayout(LAYOUTS[(LAYOUTS.indexOf(layout) + 1) % LAYOUTS.length])}>
@@ -1077,26 +1080,26 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
         <button
           className={`${styles.pill} ${showNotes ? styles.pillActive : ''}`}
           onClick={() => setShowNotes(n => !n)}
-          title={!transcription.browserHasSpeech ? 'Только в Chrome' : undefined}
+          title={!transcription.browserHasSpeech ? t('notesChrome') : t('notesTooltip')}
         >
-          <IconNotes /> Конспект
+          <IconNotes /> {t('notes')}
         </button>
         {isOwner && !callTest && (
           <>
-            <button className={styles.pill} onClick={openTestPicker}>
-              <IconClipboard /> Тест
+            <button className={styles.pill} onClick={openTestPicker} title={t('test')}>
+              <IconClipboard /> {t('test')}
             </button>
-            <button className={styles.pill} onClick={launchWhiteboard}>
-              <IconPalette /> Доска
+            <button className={styles.pill} onClick={launchWhiteboard} title={t('whiteboard')}>
+              <IconPalette /> {t('whiteboard')}
             </button>
-            <button className={styles.pill} onClick={() => { setShowInviteModal(true); setInviteFeedback(null) }}>
+            <button className={styles.pill} onClick={() => { setShowInviteModal(true); setInviteFeedback(null) }} title={t('invite')}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
                 <circle cx="9" cy="7" r="4"/>
                 <line x1="19" y1="8" x2="19" y2="14"/>
                 <line x1="22" y1="11" x2="16" y2="11"/>
               </svg>
-              Пригласить
+              {t('invite')}
             </button>
           </>
         )}
@@ -1116,50 +1119,58 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
 
       <div className={styles.ctrlBottomRow}>
         <div className={styles.ctrlCenter}>
-          <button className={`${styles.roundBtn} ${room.micEnabled ? styles.roundOn : styles.roundOff}`} onClick={toggleMic}>
+          <button
+            className={`${styles.roundBtn} ${room.micEnabled ? styles.roundOn : styles.roundOff}`}
+            onClick={toggleMic}
+            title={room.micEnabled ? t('micTooltipOn') : t('micTooltipOff')}
+          >
             <div className={styles.roundIcon}>{room.micEnabled ? <IconMicOn /> : <IconMicOff />}</div>
-            <span className={styles.roundLabel}>{room.micEnabled ? 'Микрофон' : 'Без звука'}</span>
+            <span className={styles.roundLabel}>{room.micEnabled ? t('micOn') : t('micOff')}</span>
           </button>
-          <button className={`${styles.roundBtn} ${room.camEnabled ? styles.roundOn : styles.roundOff}`} onClick={toggleCam}>
+          <button
+            className={`${styles.roundBtn} ${room.camEnabled ? styles.roundOn : styles.roundOff}`}
+            onClick={toggleCam}
+            title={room.camEnabled ? t('camTooltipOn') : t('camTooltipOff')}
+          >
             <div className={styles.roundIcon}>{room.camEnabled ? <IconCam /> : <IconCamOff />}</div>
-            <span className={styles.roundLabel}>{room.camEnabled ? 'Камера' : 'Без камеры'}</span>
+            <span className={styles.roundLabel}>{room.camEnabled ? t('camOn') : t('camOff')}</span>
           </button>
           {room.videoDevices.length > 1 && (
-            <button className={styles.roundBtn} onClick={handleSwitchCamera} title="Сменить камеру">
+            <button className={styles.roundBtn} onClick={handleSwitchCamera} title={t('switchCamTooltip')}>
               <div className={styles.roundIcon}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
                   <path d="M12 17v-6M9 14l3-3 3 3"/>
                 </svg>
               </div>
-              <span className={styles.roundLabel}>Сменить камеру</span>
+              <span className={styles.roundLabel}>{t('switchCam')}</span>
             </button>
           )}
-          <button className={styles.roundBtn} onClick={handleReloadCamera} title="Перезагрузить камеру">
+          <button className={styles.roundBtn} onClick={handleReloadCamera} title={t('reloadCamTooltip')}>
             <div className={styles.roundIcon}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="1 4 1 10 7 10"/>
                 <path d="M3.51 15a9 9 0 1 0 .49-4.95"/>
               </svg>
             </div>
-            <span className={styles.roundLabel}>Перезапустить</span>
+            <span className={styles.roundLabel}>{t('reloadCam')}</span>
           </button>
           <button
             className={`${styles.roundBtn} ${screenShareEnabled ? styles.roundOn : ''}`}
             onClick={handleToggleScreenShare}
-            title="Демонстрация экрана"
+            title={screenShareEnabled ? t('screenShareStopTooltip') : t('screenShareTooltip')}
           >
             <div className={styles.roundIcon}>
               {screenShareEnabled ? <IconScreenShareOff /> : <IconScreenShare />}
             </div>
-            <span className={styles.roundLabel}>{screenShareEnabled ? 'Стоп экран' : 'Экран'}</span>
+            <span className={styles.roundLabel}>{screenShareEnabled ? t('screenShareStop') : t('screenShare')}</span>
           </button>
         </div>
 
         <div className={styles.ctrlRight}>
-          <button className={`${styles.roundBtn} ${styles.roundLeave}`} onClick={leaveRoom}>
+          <button className={`${styles.roundBtn} ${styles.roundLeave}`} onClick={leaveRoom} title={t('leaveTooltip')}>
             <div className={styles.roundIcon}><IconPhone /></div>
-            <span className={styles.roundLabel}>Завершить</span>
+            <span className={styles.roundLabel}>{t('leave')}</span>
           </button>
         </div>
       </div>
@@ -1225,7 +1236,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
         </div>
       ) : (
         <div className={styles.call}>
-          {isMobile && (
+          {(isMobile || isDev) && (
             <>
               <button className={styles.mobileLogBtn} onClick={() => setShowLogs(v => !v)}>
                 {showLogs ? '✕' : '🪲'} {debugChunks > 0 ? `${debugChunks}✓` : 'лог'}

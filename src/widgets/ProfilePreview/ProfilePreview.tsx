@@ -3,9 +3,11 @@
 import {useMe} from '@/features/hooks/User/useMe'
 import Image from 'next/image'
 import Link from 'next/link'
+import {useTranslations} from 'next-intl'
 import styles from './ProfilePreview.module.scss'
 
 export function ProfilePreview() {
+  const t = useTranslations('Header')
   const {data: user, isLoading} = useMe()
 
   if (isLoading) {
@@ -24,9 +26,9 @@ export function ProfilePreview() {
     return (
       <Link href='/login' className={styles.wrapper}>
         <div className={styles.info}>
-          <p className={styles.name}>Войти</p>
+          <p className={styles.name}>{t('loginTitle')}</p>
           <p style={{whiteSpace: 'nowrap'}} className={styles.username}>
-            в аккаунт
+            {t('loginSub')}
           </p>
         </div>
         <div className={styles.avatarWrap}>

@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 import styles from './VideoCallModal.module.scss'
 
 interface Category {
@@ -25,14 +26,15 @@ interface Props {
 type Step = 'name' | 'details'
 type AccessType = 'ALL' | 'MY_STUDENTS' | 'SELECTED'
 
-const ACCESS_LABELS: Record<AccessType, string> = {
-  ALL: 'Все',
-  MY_STUDENTS: 'Мои ученики',
-  SELECTED: 'По списку',
-}
-
 export function VideoCallModal({ defaultName, onClose }: Props) {
+  const t = useTranslations('dashboard.videoCallModal')
   const router = useRouter()
+
+  const ACCESS_LABELS: Record<AccessType, string> = {
+    ALL: t('accessAll'),
+    MY_STUDENTS: t('accessMyStudents'),
+    SELECTED: t('accessSelected'),
+  }
 
   // Step 1
   const [roomName, setRoomName] = useState(defaultName || '')
@@ -99,7 +101,7 @@ export function VideoCallModal({ defaultName, onClose }: Props) {
         if (data.hasAccess) {
           router.push(`/call/${data.id}`)
         } else {
-          setStep1Error('Нет доступа к этой комнате')
+          setStep1Error(t('errorNoAccess'))
         }
       } else if (data.status === 'ended') {
         setIsEnded(true)
@@ -111,7 +113,7 @@ export function VideoCallModal({ defaultName, onClose }: Props) {
         setStep('details')
       }
     } catch {
-      setStep1Error('Ошибка соединения')
+      setStep1Error(t('errorConnection'))
     } finally {
       setChecking(false)
     }
@@ -128,7 +130,7 @@ export function VideoCallModal({ defaultName, onClose }: Props) {
     const allEmails = accessType === 'SELECTED'
       ? [...Array.from(checkedStudents), ...typedEmails]
       : []
-    const tid = toast.loading('Создание комнаты...')
+    const tid = toast.loading(t('creating'))
     try {
       const res = await fetch('/api/call/rooms', {
         method: 'POST',
@@ -143,16 +145,16 @@ export function VideoCallModal({ defaultName, onClose }: Props) {
       })
       const data = await res.json()
       if (!res.ok || data.error) {
-        const msg = data.error === 'no_access' ? 'Нет доступа к этой комнате' : (data.error ?? 'Ошибка')
+        const msg = data.error === 'no_access' ? t('errorNoAccess') : (data.error ?? t('errorConnection'))
         setStep2Error(msg)
         toast.error(msg, { id: tid })
       } else {
-        toast.success('Комната создана!', { id: tid })
+        toast.success(t('created'), { id: tid })
         router.push(`/call/${data.id}`)
       }
     } catch {
-      setStep2Error('Ошибка соединения')
-      toast.error('Ошибка соединения. Попробуйте ещё раз.', { id: tid })
+      setStep2Error(t('errorConnection'))
+      toast.error(t('errorConnectionRetry'), { id: tid })
     } finally {
       setCreating(false)
     }

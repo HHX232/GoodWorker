@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = await req.json()
-    const { text, subject } = body
+    const { text, subject, photoUrl } = body
 
     if (!text?.trim()) return NextResponse.json({ error: 'Text required' }, { status: 400 })
 
@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
         targetId: 'platform',
         text: fullText,
         status: 'pending',
+        ...(photoUrl ? { photoUrl } : {}),
       },
     })
 
@@ -53,7 +54,7 @@ export async function POST(req: NextRequest) {
           rewardType: 'FREE_VIP',
           vipDays: 7,
           description: 'Бонус за первую обратную связь',
-          maxUses: 1,
+          maxUses: null,
           isActive: true,
         },
       })
@@ -64,7 +65,8 @@ export async function POST(req: NextRequest) {
         title: 'Спасибо за обратную связь!',
         body: `Вы получили промокод за первый отзыв: ${code}`,
         payload: {
-          html: `<p>Спасибо, что поделились мнением! Ваш промокод: <strong>${code}</strong> — активирует 7 дней VIP-статуса бесплатно.</p>`,
+          promoCode: code,
+          promoDays: 7,
         },
         ...(isTeacher ? { teacherId: session.user.id } : { studentId: session.user.id }),
       })

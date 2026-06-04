@@ -37,6 +37,6 @@ export const PostBlockRegistry: PostBlockRegistry = {
     label: 'Мини-тест',
     description: 'Встроенный тест с результатом',
     icon: <ClipboardCheckIcon className='stroke-rose-400' />,
-    defaultPayload: {testId: null, title: null}
+    defaultPayload: {title: '', blocks: []}
   }
 }

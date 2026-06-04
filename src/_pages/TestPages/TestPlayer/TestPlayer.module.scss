@@ -1,14 +1,26 @@
 .block_card {
    display: flex;
    flex-direction: column;
-   gap: 12px;
+   gap: 14px;
    border-radius: 8px;
    transition: outline 0.15s;
 }
 
+.single_block_wrap {
+   background: #fff;
+   border: 0.5px solid #e5e5e5;
+   border-radius: 12px;
+   padding: 16px;
+   transition: border-color 0.15s;
+}
+
+.single_block_wrap_error {
+   border-color: #ef4444;
+   background: #fff8f8;
+}
+
 .block_card_error {
    outline: 1.5px solid #ef4444;
-   padding: 8px;
 }
 
 .block_label {
@@ -52,6 +64,7 @@
    display: flex;
    flex-direction: column;
    gap: 12px;
+   padding: 16px;
 }
 
 .nav {
@@ -127,11 +140,14 @@
 }
 
 .submit_btn {
-   padding: 10px;
+   width: 100%;
+   padding: 12px 20px;
+   margin-top: 4px;
    border-radius: 8px;
    background: #141416;
    color: #fff;
    font-size: 14px;
+   font-weight: 600;
    cursor: pointer;
    border: none;
    transition: opacity 0.15s;

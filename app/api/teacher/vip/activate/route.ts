@@ -33,14 +33,19 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'PROMO_EXHAUSTED' }, { status: 400 })
       }
 
+      const existingUse = await prisma.vipTransaction.findFirst({
+        where: {
+          promoCodeId: promo.id,
+          ...(role === 'TEACHER' || role === 'ADMIN' ? { teacherId: userId } : { studentId: userId }),
+        },
+      })
+      if (existingUse) {
+        return NextResponse.json({ error: 'ALREADY_USED' }, { status: 400 })
+      }
+
       vipDays = promo.vipDays
       promoCodeId = promo.id
       promoDescription = promo.description
-
-      await prisma.promoCode.update({
-        where: { id: promo.id },
-        data: { usedCount: { increment: 1 } },
-      })
     }
 
     const now = new Date()
@@ -71,6 +76,10 @@ export async function POST(req: NextRequest) {
             vipGrantedUntil: newExpiry,
           },
         }),
+        ...(promoCodeId ? [prisma.promoCode.update({
+          where: { id: promoCodeId },
+          data: { usedCount: { increment: 1 } },
+        })] : []),
       ])
 
       return NextResponse.json({ success: true, promoDescription, vipUntil: newExpiry })
@@ -100,6 +109,10 @@ export async function POST(req: NextRequest) {
           vipGrantedUntil: newExpiry,
         },
       }),
+      ...(promoCodeId ? [prisma.promoCode.update({
+        where: { id: promoCodeId },
+        data: { usedCount: { increment: 1 } },
+      })] : []),
     ])
 
     return NextResponse.json({ success: true, promoDescription, vipUntil: newExpiry })

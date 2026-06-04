@@ -2,10 +2,18 @@
 
 import {useSession} from 'next-auth/react'
 import Link from 'next/link'
-import {usePathname} from 'next/navigation'
+import {usePathname, useRouter} from 'next/navigation'
 import React, {useCallback, useEffect, useRef, useState} from 'react'
 import {useLocale, useTranslations} from 'next-intl'
 import styles from './NotificationBell.module.scss'
+
+function getNotifHref(type: string, payload?: Record<string, unknown>): string {
+  if (type === 'NEW_COMPLAINT' || type === 'COMPLAINT_REPLIED' || type === 'COMPLAINT_CLOSED') return '/notifications'
+  if (type === 'NEW_STUDENT' || type === 'NEW_REVIEW') return payload?.roadmapId ? `/road-map/${payload.roadmapId}` : '/notifications'
+  if (type === 'ROADMAP_PURCHASE') return payload?.roadmapId ? `/road-map/${payload.roadmapId}` : '/notifications'
+  if (type === 'NEW_COMMENT_ON_POST' || type === 'NEW_POST') return payload?.postId ? `/post/${payload.postId}` : '/notifications'
+  return '/notifications'
+}
 
 const CREATION_PAGES = ['/create-post', '/create-road-map', '/create-test', '/edit-post']
 const PAGES_WITH_SIDEBAR_NOTIFS = ['/teachers']
@@ -32,6 +40,7 @@ function formatTime(iso: string, t: ReturnType<typeof useTranslations<'notificat
 export function NotificationBell() {
   const {data: session} = useSession()
   const pathname = usePathname()
+  const router = useRouter()
   const t = useTranslations('notifications')
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState<NotifItem[]>([])
@@ -162,6 +171,15 @@ export function NotificationBell() {
               <div
                 key={n.id}
                 className={`${styles.notif_row} ${!n.isRead ? styles.notif_row_unread : ''}`}
+                onClick={async () => {
+                  setOpen(false)
+                  if (!n.isRead) {
+                    setItems((prev) => prev.map((x) => x.id === n.id ? {...x, isRead: true} : x))
+                    setUnread((c) => Math.max(0, c - 1))
+                    fetch('/api/notifications', {method: 'PATCH', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ids: [n.id]})}).catch(() => {})
+                  }
+                  router.push(getNotifHref(n.type))
+                }}
               >
                 <span className={`${styles.notif_dot} ${n.isRead ? styles.notif_dot_read : ''}`} />
                 <div className={styles.notif_content}>

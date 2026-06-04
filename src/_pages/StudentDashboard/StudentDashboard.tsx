@@ -11,6 +11,7 @@ import { StudentTeachersSidebar } from '@/widgets/Dashboard/StudentTeachersSideb
 import { useTranslations } from 'next-intl'
 import { FC, useEffect, useRef, useState } from 'react'
 import { useUpdateProfile } from '@/features/hooks/User/useUpdateProfile'
+import { toast } from 'sonner'
 import styles from './StudentDashboard.module.scss'
 
 interface ProfileData {
@@ -153,12 +154,16 @@ export const StudentDashboard: FC<Props> = ({ initialData }) => {
     setSaving(true)
     setSaveError('')
     setSaveSuccess(false)
+    const tid = toast.loading(t('savingShort'))
     try {
       await updateProfile({ name: name.trim(), phone: phone.trim() || null, avatarUrl })
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 3000)
+      toast.success(t('saveSuccessShort'), { id: tid })
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : t('saveErrorDefault'))
+      const msg = err instanceof Error ? err.message : t('saveErrorDefault')
+      setSaveError(msg)
+      toast.error(msg, { id: tid })
     } finally {
       setSaving(false)
     }
@@ -183,7 +188,7 @@ export const StudentDashboard: FC<Props> = ({ initialData }) => {
     })
     const data = await res.json()
     if (!res.ok) throw new Error(data.error ?? 'Неверный код')
-    alert(t('emailUpdated'))
+    toast.success(t('emailUpdated'))
     window.location.href = '/login'
   }
 

@@ -3,6 +3,15 @@ import { TeacherDashboard } from "@/_pages/TeacherDashboard/TeacherDashboard"
 import { redirect } from "next/navigation"
 import { auth } from "../../../auth"
 
+import { getTranslations } from 'next-intl/server'
+import type { Metadata } from 'next'
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('PageTitles')
+  return { title: t('teacherProfile') }
+}
+
+
 export default async function TeacherProfilePage() {
   const session = await auth()
 

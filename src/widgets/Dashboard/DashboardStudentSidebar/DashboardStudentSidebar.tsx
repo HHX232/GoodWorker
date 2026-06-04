@@ -194,7 +194,7 @@ export function DashboardStudentSidebar({ teacherId }: Props) {
 
               <div className={styles.cardActions} onClick={e => e.stopPropagation()}>
                 <Link href={`/report/${student.id}`} className={styles.reportBtn}>
-                  Отчёт
+                  {t('reportBtn')}
                 </Link>
               </div>
             </div>

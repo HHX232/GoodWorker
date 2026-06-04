@@ -547,3 +547,26 @@
 
   &:hover { color: #8A8A9A; text-decoration: underline; }
 }
+
+// ── Logout ─────────────────────────────────────────────────
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #fee2e2;
+  background: #fff5f5;
+  color: #ef4444;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+  }
+}

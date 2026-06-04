@@ -8,6 +8,8 @@ import { InfiniteData, useInfiniteQuery, useQueryClient } from '@tanstack/react-
 import Image from 'next/image'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
+import { useLocale } from 'next-intl'
 import { CommentImages, CommentItem, DraftImage, DraftPreviews, commentToUI, StarRating } from '../PostCommentSection'
 import styles from './Postcommentmodal.module.scss'
 // TODO разнести функции
@@ -18,13 +20,13 @@ export function getErrorMessage(error: unknown, fallback: string): string {
 }
 // ─── useInfiniteComments ──────────────────────────────────────────────────────
 
-function useInfiniteComments(postId: string, enabled: boolean) {
+function useInfiniteComments(postId: string, enabled: boolean, lang = 'ru') {
   const queryClient = useQueryClient()
   const sentinelRef = useRef<HTMLDivElement | null>(null)
 
   const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = useInfiniteQuery({
     queryKey: ['comments', postId],
-    queryFn: ({pageParam}) => CommentService.getList(postId, {page: pageParam as number, limit: LIMIT}),
+    queryFn: ({pageParam}) => CommentService.getList(postId, {page: pageParam as number, limit: LIMIT, lang}),
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
       lastPage.pagination.page < lastPage.pagination.totalPages
@@ -129,6 +131,7 @@ function CommentRow({
   onDeleted: (id: string) => void
   onZoomImage?: (src: string) => void
 }) {
+  const t = useTranslations('PostCommentModal')
   const isOwn = currentUserId === comment.user.userID
   const [editing, setEditing] = useState(false)
   const [editText, setEditText] = useState(comment.commentText)
@@ -167,7 +170,7 @@ function CommentRow({
     const trimmed = editText.trim()
     if (!trimmed && editExistingUrls.length === 0 && editDrafts.length === 0) return
 
-    const toastId = toast.loading('Сохраняем...')
+    const toastId = toast.loading(t('saving'))
     setSaving(true)
     try {
       const updated = await CommentService.update(postId, comment.id, {
@@ -179,25 +182,25 @@ function CommentRow({
       editDrafts.forEach((d) => URL.revokeObjectURL(d.previewUrl))
       setEditDrafts([])
       setEditing(false)
-      toast.success('Комментарий обновлён', {id: toastId})
+      toast.success(t('updated'), {id: toastId})
     } catch {
-      toast.error('Не удалось обновить', {id: toastId})
+      toast.error(t('updateError'), {id: toastId})
     } finally {
       setSaving(false)
     }
   }
 
   const handleDelete = async () => {
-    if (!confirm('Удалить комментарий?')) return
+    if (!confirm(t('confirmDelete'))) return
 
-    const toastId = toast.loading('Удаляем...')
+    const toastId = toast.loading(t('deleting'))
     setDeleting(true)
     try {
       await CommentService.delete(postId, comment.id)
       onDeleted(comment.id)
-      toast.success('Комментарий удалён', {id: toastId})
+      toast.success(t('deleted'), {id: toastId})
     } catch {
-      toast.error('Не удалось удалить', {id: toastId})
+      toast.error(t('deleteError'), {id: toastId})
       setDeleting(false)
     }
   }
@@ -282,10 +285,10 @@ function CommentRow({
             <div style={{display: 'flex', alignItems: 'center', gap: 8, marginTop: 8}}>
               <SelectPhotoInput size='m' onSelectImageFile={handleSelectFile} />
               <button onClick={handleSave} disabled={saving} style={saveBtnStyle}>
-                {saving ? 'Сохраняем...' : 'Сохранить'}
+                {saving ? t('saving') : t('save')}
               </button>
               <button onClick={handleCancelEdit} style={cancelBtnStyle}>
-                Отмена
+                {t('cancel')}
               </button>
             </div>
           </div>
@@ -312,8 +315,10 @@ interface PostCommentModalProps {
 }
 
 export function PostCommentModal({isOpen, onClose, postId, scrollToCommentId, currentUserId, onZoomImage}: PostCommentModalProps) {
+  const t = useTranslations('PostCommentModal')
+  const locale = useLocale()
   const {comments, total, loading, hasMore, sentinelRef, addComment, updateComment, deleteComment} =
-    useInfiniteComments(postId, isOpen)
+    useInfiniteComments(postId, isOpen, locale)
 
   const [text, setText] = useState('')
   const [drafts, setDrafts] = useState<DraftImage[]>([])
@@ -337,7 +342,7 @@ export function PostCommentModal({isOpen, onClose, postId, scrollToCommentId, cu
     const trimmed = text.trim()
     if (!trimmed && drafts.length === 0 && rating === null) return
 
-    const toastId = toast.loading('Отправляем...')
+    const toastId = toast.loading(t('sending'))
     setSending(true)
     try {
       await Promise.all([
@@ -350,9 +355,9 @@ export function PostCommentModal({isOpen, onClose, postId, scrollToCommentId, cu
       setRating(null)
       drafts.forEach((d) => URL.revokeObjectURL(d.previewUrl))
       setDrafts([])
-      toast.success('Комментарий опубликован', {id: toastId})
+      toast.success(t('published'), {id: toastId})
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Не удалось отправить'), {id: toastId})
+      toast.error(getErrorMessage(error, t('sendError')), {id: toastId})
     } finally {
       setSending(false)
     }
@@ -385,7 +390,7 @@ export function PostCommentModal({isOpen, onClose, postId, scrollToCommentId, cu
           <input
             className={styles.comment_input}
             type='text'
-            placeholder='Напишите ваш комментарий...'
+            placeholder={t('placeholder')}
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -394,7 +399,7 @@ export function PostCommentModal({isOpen, onClose, postId, scrollToCommentId, cu
         </div>
         <button
           className={styles.send_button}
-          aria-label='Отправить комментарий'
+          aria-label={t('send')}
           onClick={handleSend}
           disabled={sending || (!text.trim() && drafts.length === 0 && rating === null)}
           style={{opacity: sending ? 0.5 : 1}}

@@ -32,8 +32,8 @@ export interface PostTestLinkPayload {
 }
 
 export interface PostMiniTestPayload {
-  testId: string | null
-  title: string | null
+  title: string
+  blocks: import('@/entities/store/slices/tasksSlice.slice').TestBlock[]
 }
 
 export type PostBlockPayload = PostTextPayload | PostMediaPayload | PostAudioPayload | PostTestLinkPayload | PostMiniTestPayload

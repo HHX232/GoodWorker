@@ -208,6 +208,114 @@
   }
 }
 
+// ── Promo code card ───────────────────────────────────────
+.promo_card {
+  margin-top: 8px;
+  padding: 14px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%);
+  border: 1px solid #c7d2fe;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.promo_header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.promo_crown {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: #6366f1;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.promo_label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #4338ca;
+}
+
+.promo_days {
+  font-size: 11px;
+  color: #6366f1;
+  margin-left: auto;
+  background: #6366f122;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.promo_code_row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1.5px solid #c7d2fe;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.promo_code_text {
+  flex: 1;
+  font-size: 18px;
+  font-weight: 800;
+  color: #141416;
+  letter-spacing: 3px;
+  font-family: monospace;
+}
+
+.promo_copy_btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6366f1;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.15s;
+  font-family: inherit;
+  flex-shrink: 0;
+
+  &:hover {
+    background: #eef2ff;
+  }
+}
+
+.promo_activate_btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #6366f1;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+  text-decoration: none;
+
+  &:hover {
+    background: #4f46e5;
+  }
+}
+
 .unread_dot {
   position: absolute;
   top: 50%;

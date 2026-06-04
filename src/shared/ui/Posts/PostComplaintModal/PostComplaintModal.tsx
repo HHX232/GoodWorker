@@ -3,6 +3,7 @@ import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindo
 import {TextAreaUI} from '@/shared/ui/inputs/TextAreaUI/TextAreaUI'
 import {useState} from 'react'
 import {toast} from 'sonner'
+import {useTranslations} from 'next-intl'
 import styles from './PostComplaintModal.module.scss'
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export function PostComplaintModal({isOpen, onClose, postId, postTitle}: Props) {
+  const t = useTranslations('PostComplaintModal')
   const [text, setText] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
@@ -36,19 +38,19 @@ export function PostComplaintModal({isOpen, onClose, postId, postTitle}: Props) 
         }),
       })
       if (res.status === 401) {
-        toast.error('Войдите в аккаунт, чтобы оставить жалобу')
+        toast.error(t('loginError'))
         return
       }
       if (res.status === 409) {
-        toast.info('Вы уже подавали жалобу на этот пост')
+        toast.info(t('alreadyReported'))
         handleClose()
         return
       }
       if (!res.ok) throw new Error()
-      toast.success('Жалоба отправлена')
+      toast.success(t('success'))
       handleClose()
     } catch {
-      toast.error('Не удалось отправить жалобу')
+      toast.error(t('error'))
     } finally {
       setSubmitting(false)
     }
@@ -58,18 +60,18 @@ export function PostComplaintModal({isOpen, onClose, postId, postTitle}: Props) 
     <ModalWindowDefault
       isOpen={isOpen}
       onClose={handleClose}
-      additionalTitle={<span style={{fontWeight: 700, fontSize: 16}}>Пожаловаться на пост</span>}
+      additionalTitle={<span style={{fontWeight: 700, fontSize: 16}}>{t('title')}</span>}
       modalFooter={
         <div className={styles.footer}>
           <button className={styles.cancel_btn} onClick={handleClose} disabled={submitting}>
-            Отмена
+            {t('cancel')}
           </button>
           <button
             className={styles.submit_btn}
             onClick={handleSubmit}
             disabled={submitting || !text.trim()}
           >
-            {submitting ? 'Отправка...' : 'Отправить'}
+            {submitting ? t('submitting') : t('submit')}
           </button>
         </div>
       }
@@ -85,9 +87,9 @@ export function PostComplaintModal({isOpen, onClose, postId, postTitle}: Props) 
           </div>
         )}
         <div>
-          <p className={styles.section_title}>Опишите проблему</p>
+          <p className={styles.section_title}>{t('describeLabel')}</p>
           <TextAreaUI
-            placeholder='Что не так с этим постом?'
+            placeholder={t('placeholder')}
             currentValue={text}
             onSetValue={setText}
             theme='newWhite'

@@ -172,28 +172,28 @@ export default function RegisterPage() {
 
             <div className={styles.fields}>
               <TextInputUI
-                helpTitle='name'
+                helpTitle={t('fieldName')}
                 theme='newWhite'
                 placeholder={t('namePlaceholder')}
                 currentValue={name}
                 onSetValue={setName}
               />
               <TextInputUI
-                helpTitle='email'
+                helpTitle={t('fieldEmail')}
                 theme='newWhite'
                 placeholder={t('emailPlaceholder')}
                 currentValue={email}
                 onSetValue={setEmail}
               />
               <TextInputUI
-                helpTitle='phone'
+                helpTitle={t('fieldPhone')}
                 theme='newWhite'
                 placeholder={t('phonePlaceholder')}
                 currentValue={phone}
                 onSetValue={setPhone}
               />
               <TextInputUI
-                helpTitle='password'
+                helpTitle={t('fieldPassword')}
                 theme='newWhite'
                 placeholder={t('passwordPlaceholder')}
                 currentValue={password}
@@ -201,7 +201,7 @@ export default function RegisterPage() {
                 isSecret
               />
               <TextInputUI
-                helpTitle='promoCode'
+                helpTitle={t('fieldPromoCode')}
                 theme='newWhite'
                 placeholder={t('promoPlaceholder')}
                 currentValue={promoCode}
@@ -216,12 +216,12 @@ export default function RegisterPage() {
                   maxLevel={1}
                   value={selectedCategories}
                   onChange={setSelectedCategories}
-                  placeholder='Выберите предметы'
+                  placeholder={t('categoriesPlaceholder')}
                 />
                 <LanguageSelect
                   value={selectedLanguages}
                   onChange={setSelectedLanguages}
-                  label='Языки преподавания'
+                  label={t('languagesLabel')}
                 />
               </>
             )}

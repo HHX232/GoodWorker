@@ -1,14 +1,12 @@
-'use client'
+import {getTranslations} from 'next-intl/server'
+import type {Metadata} from 'next'
+import {CreateRoadMapWrapper} from './CreateRoadMapWrapper'
 
-import CreateRoadMapPage from '@/_pages/TeacherPages/CreateRoadMapPage/CreateRoadMapPage'
-import {ReactFlowProvider} from '@xyflow/react'
-
-function RoadMapPage() {
-  return (
-    <ReactFlowProvider>
-      <CreateRoadMapPage />
-    </ReactFlowProvider>
-  )
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('PageTitles')
+  return {title: t('createCourse')}
 }
 
-export default RoadMapPage
+export default function CreateRoadMapPage() {
+  return <CreateRoadMapWrapper />
+}

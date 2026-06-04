@@ -1,5 +1,7 @@
 'use client'
 
+import { CardOwnerMenu } from '@/shared/ui/CardOwnerMenu/CardOwnerMenu'
+import { useTranslations } from 'next-intl'
 import styles from './ServiceCard.module.scss'
 
 export interface ServiceCardProps {
@@ -15,6 +17,8 @@ export interface ServiceCardProps {
   locale?: string
   originalLangCode?: string
   isTranslated?: boolean
+  isOwner?: boolean
+  onDelete?: () => void
   onBook?: () => void
 }
 
@@ -100,14 +104,20 @@ export function ServiceCard({
   locale = 'ru',
   originalLangCode,
   isTranslated,
+  isOwner = false,
+  onDelete,
   onBook,
 }: ServiceCardProps) {
+  const tDash = useTranslations('dashboard')
   const categoryName = getCategoryName(category, locale)
   const gradient = pickGradient(title)
   const ls = LOCALE_STRINGS[locale] ?? LOCALE_STRINGS.ru
 
   return (
     <div className={styles.card}>
+      {isOwner && onDelete && (
+        <CardOwnerMenu onDelete={onDelete} deleteLabel={tDash('deleteItem')} />
+      )}
       <div
         className={styles.bg}
         style={

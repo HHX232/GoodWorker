@@ -1,19 +1,20 @@
 import {useEffect} from 'react'
-import {useMe} from './useMe'
-import instance from '@/shared/api'
+import {useSession} from 'next-auth/react'
 
 const INTERVAL = 30_000
 
 export function useHeartbeat() {
-  const {data: user} = useMe()
+  const {data: session, status} = useSession()
+  const userId = (session?.user as {id?: string})?.id
 
   useEffect(() => {
-    if (!user) return
+    if (status !== 'authenticated' || !userId) return
 
-    const send = () => instance('/me/heartbeat', {method: 'POST'})
+    const send = () =>
+      fetch('/api/me/heartbeat', {method: 'POST'}).catch(() => {})
+
     send()
-
     const id = setInterval(send, INTERVAL)
     return () => clearInterval(id)
-  }, [user?.id])
+  }, [status, userId])
 }

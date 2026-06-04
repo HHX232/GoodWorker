@@ -1,8 +1,12 @@
 import Link from 'next/link'
 import styles from './privacy.module.css'
 
-export const metadata = {
-  title: 'Политика конфиденциальности — GoodWorker',
+import { getTranslations } from 'next-intl/server'
+import type { Metadata } from 'next'
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('PageTitles')
+  return { title: t('privacy') }
 }
 
 export default function PrivacyPage() {

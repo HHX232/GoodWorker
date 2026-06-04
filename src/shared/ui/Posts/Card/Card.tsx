@@ -1,4 +1,7 @@
+'use client'
+
 import {ICard} from '@/shared/types'
+import {CardOwnerMenu} from '@/shared/ui/CardOwnerMenu/CardOwnerMenu'
 import {useTranslations} from 'next-intl'
 import Link from 'next/link'
 import {FC} from 'react'
@@ -6,7 +9,7 @@ import UserHeaderCard from '../../User/UserHeaderCard/UserHeaderCard'
 import PostFooterMain from '../PostFooter/PostFooterMain'
 import style from './Card.module.scss'
 
-const Card: FC<ICard & {isOwner?: boolean}> = ({
+const Card: FC<ICard & {isOwner?: boolean; onDelete?: () => void}> = ({
   userId,
   comments = '0',
   cardId,
@@ -17,11 +20,16 @@ const Card: FC<ICard & {isOwner?: boolean}> = ({
   user,
   imagesArray = [],
   useLink = true,
-  isOwner = false
+  isOwner = false,
+  onDelete,
 }) => {
   const t = useTranslations('card')
+  const tDash = useTranslations('dashboard')
   return (
-    <div className={style.card_box}>
+    <div className={style.card_box} style={{ position: 'relative' }}>
+      {isOwner && onDelete && (
+        <CardOwnerMenu onDelete={onDelete} deleteLabel={tDash('deleteItem')} />
+      )}
       <UserHeaderCard
         userID={userId}
         cardID={cardId}
@@ -98,12 +106,11 @@ const Card: FC<ICard & {isOwner?: boolean}> = ({
         )}
 
         {isOwner && (
-          <Link href={`/edit-post/${cardId}`} className={style.edit_btn} onClick={(e) => e.stopPropagation()}>
+          <Link href={`/edit-post/${cardId}`} className={style.edit_btn} title={t('editPost')} onClick={(e) => e.stopPropagation()}>
             <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
               <path d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7' />
               <path d='M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z' />
             </svg>
-            <span>{t('editPost')}</span>
           </Link>
         )}
       </div>

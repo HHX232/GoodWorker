@@ -189,7 +189,210 @@
    }
 }
 
-// ── MINI TEST ─────────────────────────────────────────────────
+// ── MINI TEST EDITOR (inline) ──────────────────────────────────
+.mini_test_editor {
+   display: flex;
+   flex-direction: column;
+   gap: 10px;
+   padding: 14px;
+   border-radius: 12px;
+   border: 1.5px solid #e4e4e7;
+   background: #fafafa;
+}
+
+.mini_test_badge {
+   display: inline-flex;
+   align-items: center;
+   gap: 5px;
+   padding: 2px 8px;
+   border-radius: 999px;
+   background: #eef2ff;
+   border: 1px solid #c7d2fe;
+   color: #4338ca;
+   font-size: 11px;
+   font-weight: 600;
+   width: fit-content;
+}
+
+.mini_test_title_input {
+   width: 100%;
+   padding: 7px 11px;
+   border: 1.5px solid #e4e4e7;
+   border-radius: 8px;
+   font-size: 14px;
+   background: #fff;
+   outline: none;
+   color: #141416;
+   transition: border-color 0.15s;
+
+   &::placeholder { color: #c4c4c4; }
+   &:focus { border-color: #6366f1; }
+}
+
+.mini_test_summary {
+   min-height: 22px;
+}
+
+.mini_test_block_pills {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 5px;
+}
+
+.mini_test_block_pill {
+   padding: 2px 9px;
+   border-radius: 999px;
+   background: #fff;
+   border: 1px solid #e4e4e7;
+   color: #6b7280;
+   font-size: 11px;
+}
+
+.mini_test_no_blocks {
+   font-size: 12px;
+   color: #9ca3af;
+   margin: 0;
+}
+
+.mini_test_edit_btn {
+   display: inline-flex;
+   align-items: center;
+   gap: 6px;
+   padding: 6px 13px;
+   border-radius: 8px;
+   border: 1.5px solid #141416;
+   background: #fff;
+   color: #141416;
+   font-size: 13px;
+   font-weight: 600;
+   cursor: pointer;
+   width: fit-content;
+   transition: background 0.15s, color 0.15s;
+
+   &:hover {
+      background: #141416;
+      color: #fff;
+   }
+}
+
+// ── MINI TEST MODAL (builder) ──────────────────────────────────
+.mini_test_type_picker {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 6px;
+   margin-bottom: 14px;
+}
+
+.mini_test_type_btn {
+   display: flex;
+   align-items: center;
+   gap: 5px;
+   padding: 5px 10px;
+   border-radius: 8px;
+   border: 1.5px solid #e4e4e7;
+   background: #fff;
+   color: #374151;
+   font-size: 12px;
+   font-weight: 500;
+   cursor: pointer;
+   transition: all 0.12s;
+
+   &:hover {
+      border-color: #6366f1;
+      background: #eef2ff;
+      color: #4338ca;
+   }
+}
+
+.mini_test_type_icon {
+   display: flex;
+   align-items: center;
+   width: 15px;
+   height: 15px;
+
+   svg { width: 15px; height: 15px; }
+}
+
+.mini_test_type_label {
+   white-space: nowrap;
+}
+
+.mini_test_block_list {
+   display: flex;
+   flex-direction: column;
+   max-height: 55vh;
+   overflow-y: auto;
+   margin-bottom: 16px;
+
+   :global(h3) {
+      font-size: 15px !important;
+      margin-top: 8px !important;
+      font-weight: 600 !important;
+   }
+}
+
+.mini_test_block_item {
+   :global([class*="block_wrap"]) {
+      border: 1.5px solid #e4e4e7 !important;
+      border-radius: 10px !important;
+      margin-bottom: 10px !important;
+      overflow: hidden;
+   }
+
+   :global([style*="margin-right: auto"]) {
+      font-size: 11px !important;
+      padding: 3px 8px !important;
+      border-radius: 6px !important;
+      background: #f3f4f6 !important;
+      color: #374151 !important;
+      border: 1px solid #e4e4e7 !important;
+      cursor: pointer;
+   }
+}
+
+.mini_test_empty_hint {
+   font-size: 13px;
+   color: #9ca3af;
+   text-align: center;
+   padding: 32px 0;
+   margin: 0;
+}
+
+.mini_test_modal_footer {
+   display: flex;
+   gap: 8px;
+   justify-content: flex-end;
+}
+
+.mini_test_cancel_btn {
+   padding: 7px 16px;
+   border-radius: 8px;
+   border: 1.5px solid #e4e4e7;
+   background: #fff;
+   color: #6b7280;
+   font-size: 14px;
+   font-weight: 500;
+   cursor: pointer;
+   transition: background 0.12s;
+
+   &:hover { background: #f3f4f6; }
+}
+
+.mini_test_save_btn {
+   padding: 7px 20px;
+   border-radius: 8px;
+   border: none;
+   background: #141416;
+   color: #fff;
+   font-size: 14px;
+   font-weight: 600;
+   cursor: pointer;
+   transition: background 0.12s;
+
+   &:hover { background: #374151; }
+}
+
+// ── legacy (TEST_LINK editor) ─────────────────────────────────
 .mini_test_stub {
    display: flex;
    align-items: flex-start;
@@ -219,20 +422,6 @@
    display: flex;
    flex-direction: column;
    gap: 8px;
-}
-
-.mini_test_badge {
-   display: inline-flex;
-   align-items: center;
-   gap: 5px;
-   padding: 3px 10px;
-   border-radius: 999px;
-   background: #fff1f2;
-   border: 1px solid #fda4af;
-   color: #e11d48;
-   font-size: 11px;
-   font-weight: 600;
-   width: fit-content;
 }
 
 .mini_test_hint {

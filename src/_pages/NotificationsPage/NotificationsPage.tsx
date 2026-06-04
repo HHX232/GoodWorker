@@ -249,7 +249,7 @@ function NotificationHeatmap({onDayClick, enabledTypes}: {onDayClick: (date: str
 
 // ─── Full notification row ────────────────────────────────
 
-function NotificationPageRow({item, onMarkRead}: {item: NotificationItem; onMarkRead: (id: string) => void}) {
+function NotificationPageRow({item, onMarkRead, onOpen}: {item: NotificationItem; onMarkRead: (id: string) => void; onOpen: (item: NotificationItem) => void}) {
   const router = useRouter()
   const t = useTranslations('notifications')
   const locale = useLocale()
@@ -269,7 +269,7 @@ function NotificationPageRow({item, onMarkRead}: {item: NotificationItem; onMark
 
   const handleRowClick = () => {
     onMarkRead(item.id)
-    if (canReply) setExpanded((p) => !p)
+    onOpen(item)
   }
 
   const handleReply = async (e: React.MouseEvent) => {
@@ -414,6 +414,9 @@ export function NotificationsPage() {
       .then((d) => { if (d) setSubs(d.subscriptions) })
       .catch(() => {})
   }, [])
+
+  // Row detail modal (single notification click)
+  const [selectedItem, setSelectedItem] = useState<NotificationItem | null>(null)
 
   // Day-detail modal
   const [dayDate, setDayDate]         = useState<string | null>(null)
@@ -599,7 +602,7 @@ export function NotificationsPage() {
                 ) : (
                   <>
                     {displayItems.map((item) => (
-                      <NotificationPageRow key={item.id} item={item} onMarkRead={markRead} />
+                      <NotificationPageRow key={item.id} item={item} onMarkRead={markRead} onOpen={setSelectedItem} />
                     ))}
                     {hasMore && <div ref={sentinelRef} style={{height: 1}} />}
                     {loadingMore && <div className={styles.spinner_wrap}><div className={styles.spinner} /></div>}
@@ -616,6 +619,19 @@ export function NotificationsPage() {
           </div>
         </div>
       </div>
+
+      {/* Single notification detail modal */}
+      <NotificationDetailModal
+        notifications={selectedItem ? [selectedItem] : []}
+        isOpen={selectedItem !== null}
+        onClose={() => setSelectedItem(null)}
+        onMarkRead={async (ids) => {
+          const idSet = new Set(ids)
+          setSelectedItem((prev) => prev && idSet.has(prev.id) ? {...prev, isRead: true} : prev)
+          setItems((prev) => prev.map((n) => idSet.has(n.id) ? {...n, isRead: true} : n))
+          await fetch('/api/notifications', {method: 'PATCH', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ids})}).catch(() => {})
+        }}
+      />
 
       {/* Day-detail modal */}
       <NotificationDetailModal

@@ -170,6 +170,56 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // ── Also send reminders for manual calendar events ──────────────────
+    const teachersWithTg = await (prisma.teacher as any).findMany({
+      where: { telegramChatId: { not: null } },
+      select: { id: true, name: true, langCode: true, telegramChatId: true, calendar: true },
+    })
+
+    const calEventMsg = (o: { title: string; student?: string; date: string; time: string }, l: Lang) => ({
+      ru: `📅 *Напоминание о событии!*\n\n📝 ${o.title}${o.student ? `\n👤 Ученик: ${o.student}` : ''}\n📅 ${o.date} в ${o.time}\n\n_Не забудьте подготовиться!_`,
+      en: `📅 *Event Reminder!*\n\n📝 ${o.title}${o.student ? `\n👤 Student: ${o.student}` : ''}\n📅 ${o.date} at ${o.time}\n\n_Don't forget to prepare!_`,
+      hi: `📅 *इवेंट याद दिलाने वाला!*\n\n📝 ${o.title}${o.student ? `\n👤 छात्र: ${o.student}` : ''}\n📅 ${o.date} को ${o.time} पर\n\n_तैयारी मत भूलें!_`,
+      zh: `📅 *活动提醒！*\n\n📝 ${o.title}${o.student ? `\n👤 学生：${o.student}` : ''}\n📅 ${o.date} ${o.time}\n\n_别忘了准备！_`,
+    }[l])
+
+    type CalEvent = { id?: string; title?: string; date?: string; startTime?: string; studentName?: string; status?: string }
+
+    for (const teacher of teachersWithTg) {
+      const calData = teacher.calendar as { events?: CalEvent[] } | null
+      const events: CalEvent[] = calData?.events ?? []
+      const l = lang(teacher.langCode ?? 'en')
+
+      for (const ev of events) {
+        if (!ev.title || !ev.date || !ev.startTime) continue
+        if (ev.status === 'cancelled' || ev.status === 'completed') continue
+
+        // parse event datetime
+        const [y, mo, d] = ev.date.split('-').map(Number)
+        const [h, mi] = ev.startTime.split(':').map(Number)
+        const evDate = new Date(y, mo - 1, d, h, mi)
+
+        if (evDate >= from && evDate < to) {
+          const key = `cal:${teacher.id}:${ev.date}:${ev.startTime}:${ev.title}`
+          if (sent.has(key)) continue
+          sent.add(key)
+
+          const chatId = teacher.telegramChatId.toString()
+          const ok = await tgSend(
+            token,
+            chatId,
+            calEventMsg({
+              title: ev.title,
+              student: ev.studentName,
+              date: fmtDate(evDate, l),
+              time: fmtTime(evDate, l),
+            }, l)
+          )
+          if (ok) count++
+        }
+      }
+    }
+
     return NextResponse.json({ ok: true, conferences: rows.length, sent: count })
   }
 

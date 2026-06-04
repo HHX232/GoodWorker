@@ -22,6 +22,7 @@ async function main() {
     'prisma/seedContent.ts',
     'prisma/seedVipPosts.ts',
     'prisma/seedposts.ts',
+    'prisma/seedAnalytics.ts',
   ]
   for (const file of seeds) {
     console.log(`  → ${file}`)

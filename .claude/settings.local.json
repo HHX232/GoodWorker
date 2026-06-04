@@ -170,7 +170,14 @@
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k: d[k] for k in list\\(d.keys\\(\\)\\)[40:]}, ensure_ascii=False, indent=2\\)\\)\")",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('roadmapPreview', {}\\), ensure_ascii=False, indent=2\\)\\)\")",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k: d[k] for k in ['roadMap','roadmapPreview','PostBlockEditor']}, ensure_ascii=False, indent=2\\)\\)\")",
-      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({'PostBlockEditor': d.get\\('PostBlockEditor',{}\\), 'roadMap_extra': {k:v for k,v in d.get\\('roadMap',{}\\).items\\(\\) if 'load' in k.lower\\(\\) or 'payw' in k.lower\\(\\) or 'edit' in k.lower\\(\\)}}, ensure_ascii=False, indent=2\\)\\)\")"
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({'PostBlockEditor': d.get\\('PostBlockEditor',{}\\), 'roadMap_extra': {k:v for k,v in d.get\\('roadMap',{}\\).items\\(\\) if 'load' in k.lower\\(\\) or 'payw' in k.lower\\(\\) or 'edit' in k.lower\\(\\)}}, ensure_ascii=False, indent=2\\)\\)\")",
+      "Bash(npx tsx *)",
+      "Bash(python3)",
+      "Bash(curl -s -X POST https://openrouter.ai/api/v1/chat/completions *)",
+      "Bash(xargs -I{} grep -l \"fetch\\\\|mutation\\\\|submit\\\\|save\\\\|delete\\\\|create\" {})",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('auth2', {}\\), indent=2, ensure_ascii=False\\)\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('auth2',{}\\).get\\('register',{}\\).get\\('promoSuccess','MISSING'\\)\\)\\)\")",
+      "Bash(mkdir -p \"/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/\\(test\\)/edit-test/[id]\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\Мастер\\Desktop\\goodworkerremaster\\app\\api\\roadmap",
@@ -190,7 +197,9 @@
       "/Users/nikitatisevic/Desktop/pdf-microservice/pdf-service/src",
       "/Users/nikitatisevic/Desktop/pdf-microservice/pdf-service",
       "/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/api/post/[id]/comments",
-      "/Users/nikitatisevic/Desktop/pdf-microservice/nextjs-client"
+      "/Users/nikitatisevic/Desktop/pdf-microservice/nextjs-client",
+      "/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/call/[room]",
+      "/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/(test)/edit-test"
     ]
   }
 }

@@ -183,7 +183,7 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated, initia
 
     setSubmitting(true)
     setError('')
-    const tid = toast.loading('Создание услуги...')
+    const tid = toast.loading(t('creating'))
     try {
       const body: Record<string, unknown> = {
         title: title.trim(),
@@ -220,12 +220,12 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated, initia
         toast.error(msg, { id: tid })
         return
       }
-      toast.success('Услуга создана!', { id: tid })
+      toast.success(t('created'), { id: tid })
       onCreated(data.service)
       onClose()
     } catch {
       setError(t('errorNetwork'))
-      toast.error('Ошибка соединения. Попробуйте ещё раз.', { id: tid })
+      toast.error(t('errorNetwork'), { id: tid })
     } finally {
       setSubmitting(false)
     }

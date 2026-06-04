@@ -258,9 +258,11 @@ export function TestPlayer({blocks, singleBlock = false, onResult, showInlineRes
         </div>
 
         {/* Текущий блок */}
-        <BlockWrapper block={current} hasError={currentHasError}>
-          <BlockView block={current} onChange={setAnswer} isSubmitted={isSubmitted} />
-        </BlockWrapper>
+        <div className={`${styles.single_block_wrap} ${currentHasError ? styles.single_block_wrap_error : ''}`}>
+          <BlockWrapper block={current} hasError={currentHasError}>
+            <BlockView block={current} onChange={setAnswer} isSubmitted={isSubmitted} />
+          </BlockWrapper>
+        </div>
 
         {/* Кнопка завершения на последнем блоке */}
         {activeIdx === blocks.length - 1 && !isSubmitted && (

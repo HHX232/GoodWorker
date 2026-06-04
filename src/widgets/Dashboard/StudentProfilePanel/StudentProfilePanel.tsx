@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { RefObject, useCallback, useEffect, useRef, useState } from 'react'
 import styles from './StudentProfilePanel.module.scss'
-
+import { signOut } from 'next-auth/react'
 import { VideoCallModal } from '@/widgets/Dashboard/VideoCallModal/VideoCallModal'
 import { toast } from 'sonner'
 
@@ -446,6 +446,17 @@ export function StudentProfilePanel({
 
         {/* Telegram */}
         <TelegramSection />
+
+        <div className={styles.divider} />
+
+        <button className={styles.logoutBtn} onClick={() => signOut({ callbackUrl: '/login' })}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          {t('logout')}
+        </button>
 
         <div className={styles.divider} />
 

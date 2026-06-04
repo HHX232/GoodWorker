@@ -4,8 +4,10 @@ import {selectMonthTasks, selectPendingTasksCount, selectWeekTasks} from '@/feat
 import {useActions} from '@/features/hooks/store/useActions'
 import {useTypedSelector} from '@/features/hooks/store/useTypedSelector'
 import {CalendarStudent, CalendarTask} from '@/shared/types/Calendar/calendar.types'
+import {useSession} from 'next-auth/react'
 import {useTranslations} from 'next-intl'
-import {JSX, useState} from 'react'
+import Link from 'next/link'
+import {JSX, useEffect, useState} from 'react'
 import styles from './CalendarSidebar.module.scss'
 
 interface CalendarSidebarProps {
@@ -17,14 +19,26 @@ interface CalendarSidebarProps {
 
 export function CalendarSidebar({tasks, students, onTaskClick, onTaskToggle}: CalendarSidebarProps) {
   const t = useTranslations('calendar.sidebar')
+  const { data: session } = useSession()
+  const role = (session?.user as { role?: string })?.role ?? ''
   const [collapsed, setCollapsed] = useState(false)
   const [weekCollapsed, setWeekCollapsed] = useState(false)
   const [monthCollapsed, setMonthCollapsed] = useState(false)
   const [studentsCollapsed, setStudentsCollapsed] = useState(false)
+  const [isVip, setIsVip] = useState(false)
   const pendingCount = useTypedSelector(selectPendingTasksCount)
   const weekTasks = useTypedSelector(selectWeekTasks)
   const monthTasks = useTypedSelector(selectMonthTasks)
   const {setCreateTaskModalStatus} = useActions()
+
+  useEffect(() => {
+    fetch('/api/teacher/vip')
+      .then(r => r.json())
+      .then(d => { if (d.isVip) setIsVip(true) })
+      .catch(() => {})
+  }, [])
+
+  const showProBlock = !isVip && role !== 'ADMIN'
 
   return (
     <aside className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''}`}>
@@ -144,17 +158,18 @@ export function CalendarSidebar({tasks, students, onTaskClick, onTaskToggle}: Ca
             ))}
         </div>
 
-        <div className={styles.plan}>
-          <div className={styles.planTitle}>{t('proPlan')}</div>
-          <div className={styles.planDesc}>{t('proPlanDesc')}</div>
-          <div className={styles.planPrice}>{t('proPlanPrice')}</div>
-          <div className={styles.planFeats}>
-            <PlanFeat>{t('feat1')}</PlanFeat>
-            <PlanFeat>{t('feat2')}</PlanFeat>
-            <PlanFeat>{t('feat3')}</PlanFeat>
+        {showProBlock && (
+          <div className={styles.plan}>
+            <div className={styles.planTitle}>{t('proPlan')}</div>
+            <div className={styles.planDesc}>{t('proPlanDesc')}</div>
+            <div className={styles.planFeats}>
+              <PlanFeat>{t('feat1')}</PlanFeat>
+              <PlanFeat>{t('feat2')}</PlanFeat>
+              <PlanFeat>{t('feat3')}</PlanFeat>
+            </div>
+            <Link href="/vip" className={styles.planBtn}>{t('proPlanUpgrade')}</Link>
           </div>
-          <button className={styles.planBtn}>{t('proPlanUpgrade')}</button>
-        </div>
+        )}
       </div>
     </aside>
   )

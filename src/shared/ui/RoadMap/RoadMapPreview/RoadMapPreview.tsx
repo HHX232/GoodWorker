@@ -1,6 +1,7 @@
 'use client'
 
 import { CURRENCIES, formatConverted } from '@/shared/utils/currencyConverter'
+import { CardOwnerMenu } from '@/shared/ui/CardOwnerMenu/CardOwnerMenu'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { FC, useState } from 'react'
@@ -20,6 +21,7 @@ interface RoadMapPreviewProps {
   teacher: { id: string; name: string; avatarUrl: string | null }
   useLink?: boolean
   isOwner?: boolean
+  onDelete?: () => void
   grayscale?: boolean
 }
 
@@ -54,6 +56,7 @@ export const RoadMapPreview: FC<RoadMapPreviewProps> = ({
   teacher,
   useLink = true,
   isOwner = false,
+  onDelete,
   grayscale = false,
 }) => {
   const isPartiallyFree = price === 0 && nodeAccessType !== null
@@ -61,6 +64,7 @@ export const RoadMapPreview: FC<RoadMapPreviewProps> = ({
   const [copied, setCopied] = useState(false)
   const locale = useLocale()
   const t = useTranslations('roadmapPreview')
+  const tDash = useTranslations('dashboard')
   const tLangs = useTranslations('roadmapPreview.languages')
   const activeCurrency = CURRENCIES.find((c) => c.code === (LOCALE_CURRENCY[locale] ?? 'RUB')) ?? RUB
   const showLangBadge = originalLanguage && originalLanguage !== locale
@@ -79,7 +83,10 @@ export const RoadMapPreview: FC<RoadMapPreviewProps> = ({
   }
 
   return (
-    <div className={`${styles.card} ${grayscale ? styles.grayscale : ''}`}>
+    <div className={`${styles.card} ${grayscale ? styles.grayscale : ''}`} style={{ position: 'relative' }}>
+      {isOwner && onDelete && (
+        <CardOwnerMenu onDelete={onDelete} deleteLabel={tDash('deleteItem')} />
+      )}
       <UserHeaderCard
         userID={teacher.id}
         cardID={id}
@@ -183,12 +190,11 @@ export const RoadMapPreview: FC<RoadMapPreviewProps> = ({
         )}
 
         {isOwner && (
-          <Link href={`/create-road-map?edit=${id}`} className={styles.edit_btn} onClick={(e) => e.stopPropagation()}>
+          <Link href={`/create-road-map?edit=${id}`} className={styles.edit_btn} title={t('edit')} onClick={(e) => e.stopPropagation()}>
             <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
               <path d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7' />
               <path d='M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z' />
             </svg>
-            <span>{t('edit')}</span>
           </Link>
         )}
 

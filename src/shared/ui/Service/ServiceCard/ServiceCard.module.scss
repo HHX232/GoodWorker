@@ -1,7 +1,6 @@
 .card {
   position: relative;
   border-radius: 12px;
-  overflow: hidden;
   min-height: 160px;
   display: flex;
   flex-direction: column;
@@ -21,6 +20,8 @@
   background-size: cover;
   background-position: center;
   z-index: 0;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .overlay {
@@ -32,6 +33,7 @@
     rgba(0, 0, 0, 0.55) 100%
   );
   z-index: 1;
+  border-radius: 12px;
 }
 
 .top {

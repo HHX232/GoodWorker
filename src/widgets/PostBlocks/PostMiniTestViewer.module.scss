@@ -1,5 +1,5 @@
 .wrap {
-   border: 1.5px solid #fda4af;
+   border: 1.5px solid #e4e4e7;
    border-radius: 14px;
    overflow: hidden;
    background: #fff;
@@ -9,10 +9,10 @@
    display: flex;
    align-items: center;
    gap: 8px;
-   padding: 10px 16px;
-   background: #fff1f2;
-   border-bottom: 1px solid #fda4af;
-   color: #e11d48;
+   padding: 9px 16px;
+   background: #eef2ff;
+   border-bottom: 1px solid #c7d2fe;
+   color: #4338ca;
 }
 
 .label {
@@ -26,12 +26,12 @@
    font-size: 13px;
    font-weight: 500;
    color: #141416;
-   margin-left: 4px;
+   margin-left: 2px;
 }
 
 .hint {
    padding: 24px;
    text-align: center;
-   color: #868897;
+   color: #9ca3af;
    font-size: 13px;
 }

@@ -14,20 +14,50 @@ import {PdfImportModal} from '@/widgets/Tests/PdfImportModal/PdfImportModal'
 import {TestBlock} from '@/entities/store/slices/tasksSlice.slice'
 import {useTranslations} from 'next-intl'
 import {useSearchParams} from 'next/navigation'
-import {Suspense, useRef, useState} from 'react'
+import {Suspense, useEffect, useRef, useState} from 'react'
 import styles from './CreateTestPage.module.scss'
 
 function CreateTestPage() {
   const t = useTranslations('CreateTestPage')
-  const {setTitle, setDescription, addBlocks} = useActions()
+  const {setTitle, setDescription, setTheme, addBlocks, setCategoryIds, resetConstructor} = useActions()
   const {description, title} = useTypedSelector((state) => state.tasks)
   const searchParams = useSearchParams()
   const existingId = searchParams.get('id') ?? undefined
   const {save, status, invalidBlockIds, errorsMap, clearInvalidBlock} = useSaveTest(existingId)
   const mainContentRef = useRef<HTMLDivElement>(null)
-  const {setCategoryIds} = useActions()
   const {categoryIds} = useTypedSelector((s) => s.tasks)
   const [pdfModalOpen, setPdfModalOpen] = useState(false)
+  const [loadingTest, setLoadingTest] = useState(!!existingId)
+
+  useEffect(() => {
+    if (!existingId) return
+    resetConstructor()
+    fetch(`/api/tests/${existingId}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.title) setTitle(data.title)
+        if (data.aiTopic) setTheme(data.aiTopic)
+        const content = data.content as {description?: string; blocks?: TestBlock[]}
+        if (content?.description) setDescription(content.description)
+        if (Array.isArray(content?.blocks) && content.blocks.length > 0) addBlocks(content.blocks)
+        const ids = (data.testCategories ?? []).map((tc: {categoryId: string}) => tc.categoryId)
+        if (ids.length > 0) setCategoryIds(ids)
+      })
+      .catch(() => {})
+      .finally(() => setLoadingTest(false))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [existingId])
+
+  if (loadingTest) {
+    return (
+      <div className={styles.loadingWrap}>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#534AB7" strokeWidth="2" strokeLinecap="round" className={styles.loadingSpinner}>
+          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+        </svg>
+        <span>{t('loading')}</span>
+      </div>
+    )
+  }
 
   return (
     <InvalidTestBlocksContext.Provider value={{ids: invalidBlockIds, errors: errorsMap, clear: clearInvalidBlock}}>
@@ -36,7 +66,7 @@ function CreateTestPage() {
 
         <div className={styles.main_content} ref={mainContentRef}>
           <div className={styles.page_header}>
-            <h1>{t('title')}</h1>
+            <h1>{existingId ? t('titleEdit') : t('title')}</h1>
             <button
               type='button'
               className={styles.pdf_import_btn}
