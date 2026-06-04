@@ -20,7 +20,10 @@ export function CreateTestDndWrapper() {
     const {active, over} = event
     if (!over || over.id !== 'droppable-canvas') return
     const {type, origin} = active.data.current ?? {}
-    if (origin === 'palette') addBlock(type)
+    if (origin === 'palette') {
+      addBlock(type)
+      window.dispatchEvent(new CustomEvent('test-block-dropped'))
+    }
   }
 
   return (

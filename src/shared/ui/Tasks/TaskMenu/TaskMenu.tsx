@@ -10,6 +10,20 @@ import styles from './TaskMenu.module.scss'
 interface TaskMenuProps {
   mainContentRef: RefObject<HTMLDivElement | null>
 }
+const TASK_BTN_IDS: Partial<Record<TaskBlockType, string>> = {
+  [TaskBlockType.CHOOSE_OPTION]:  'test-btn-choose-option',
+  [TaskBlockType.FREE_ANSWER]:    'test-btn-free-answer',
+  [TaskBlockType.FILL_TEXT]:      'test-btn-fill-text',
+  [TaskBlockType.MATCH_PAIRS]:    'test-btn-match-pairs',
+  [TaskBlockType.SEQUENCE]:       'test-btn-sequence',
+  [TaskBlockType.HIGHLIGHT_TEXT]: 'test-btn-highlight',
+  [TaskBlockType.WORD_SCRAMBLE]:  'test-btn-word-scramble',
+  [TaskBlockType.DIALOGUE]:       'test-btn-dialogue',
+  [TaskBlockType.INFO_TEXT]:      'test-btn-info-text',
+  [TaskBlockType.INFO_MEDIA]:     'test-btn-info-media',
+  [TaskBlockType.INFO_AUDIO]:     'test-btn-info-audio',
+}
+
 export const TaskMenu = ({mainContentRef}: TaskMenuProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const [fabTop, setFabTop] = useState<number | null>(null)
@@ -61,12 +75,12 @@ export const TaskMenu = ({mainContentRef}: TaskMenuProps) => {
   return (
     <>
       {/* ── Десктоп сайдбар ── */}
-      <div className={styles.desktop_menu}>
+      <div className={styles.desktop_menu} id="test-task-menu">
         <h3 className={styles.task_title}>Перетащите блок</h3>
         <ul className={styles.task_list}>
           {Object.values(TaskBlockType).map((type) => (
             <li key={type}>
-              <DesktopTaskButton taskType={type} />
+              <DesktopTaskButton taskType={type} id={TASK_BTN_IDS[type]} />
             </li>
           ))}
         </ul>

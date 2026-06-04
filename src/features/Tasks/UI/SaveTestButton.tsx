@@ -18,7 +18,7 @@ export function SaveTestButton({save, status}: Props) {
   }[status]
 
   return (
-    <button type='button' className={`${styles.btn} ${styles[status]}`} onClick={save} disabled={status === 'saving'}>
+    <button type='button' id="test-save-btn" className={`${styles.btn} ${styles[status]}`} onClick={save} disabled={status === 'saving'}>
       {label}
     </button>
   )

@@ -8,7 +8,7 @@ export const TaskCanvas = () => {
   const {blocks} = useTypedSelector(state=>state.tasks)
 
   return (
-    <div className={styles.canvas}>
+    <div className={styles.canvas} id="test-canvas">
       {blocks.map(block => (
         <BlockEditor key={block.id} block={block} />
       ))}

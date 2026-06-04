@@ -10,6 +10,7 @@ import {CategorySelect} from '@/shared/ui/inputs/CategorySelect/CategorySelect'
 import {InvalidTestBlocksContext} from '@/shared/ui/Tasks/providers/InvalidBlocksContext/InvalidBlocksContext'
 import {NavBar} from '@/widgets/BaseUI'
 import {TaskCanvas} from '@/widgets/Tasks/TaskCanvas/TaskCanvas'
+import {CreateTestTutorial} from '@/widgets/Tutorial/CreateTestTutorial'
 import {PdfImportModal} from '@/widgets/Tests/PdfImportModal/PdfImportModal'
 import {TestBlock} from '@/entities/store/slices/tasksSlice.slice'
 import {useTranslations} from 'next-intl'
@@ -62,10 +63,11 @@ function CreateTestPage() {
   return (
     <InvalidTestBlocksContext.Provider value={{ids: invalidBlockIds, errors: errorsMap, clear: clearInvalidBlock}}>
       <div className={`container default_content ${styles.content}`}>
+        <CreateTestTutorial />
         <NavBar />
 
         <div className={styles.main_content} ref={mainContentRef}>
-          <div className={styles.page_header}>
+          <div className={styles.page_header} id="test-header">
             <h1>{existingId ? t('titleEdit') : t('title')}</h1>
             <button
               type='button'
@@ -83,7 +85,7 @@ function CreateTestPage() {
           </div>
 
           <form className={styles.form}>
-            <div className={styles.category_form}>
+            <div className={styles.category_form} id="test-form-fields">
               <div className={styles.inputs_box}>
                 <TextInputUI
                   helpTitle='name'
