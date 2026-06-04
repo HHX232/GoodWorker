@@ -197,7 +197,7 @@ function PromoCodeSection() {
       <div className={styles.divider} />
       <div className={styles.section}>
         <div className={styles.sectionLabel}>{t('promoSection')}</div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <input
             className={styles.input}
             type="text"
@@ -211,7 +211,6 @@ function PromoCodeSection() {
             className={styles.saveBtn}
             onClick={handleApply}
             disabled={applying || !code.trim()}
-            style={{ whiteSpace: 'nowrap' }}
           >
             {applying ? t('promoApplying') : t('promoApplyBtn')}
           </button>

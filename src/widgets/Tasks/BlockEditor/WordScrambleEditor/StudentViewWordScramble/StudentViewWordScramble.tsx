@@ -6,6 +6,7 @@ import {DndContext, DragEndEvent, PointerSensor, closestCenter, useSensor, useSe
 import {SortableContext, arrayMove, horizontalListSortingStrategy, useSortable} from '@dnd-kit/sortable'
 import {CSS} from '@dnd-kit/utilities'
 import {CheckCircle2Icon, LightbulbIcon, XCircleIcon} from 'lucide-react'
+import {useTranslations} from 'next-intl'
 import {useState} from 'react'
 import styles from '../WordScrambleEditor.module.scss'
 
@@ -76,6 +77,7 @@ export const StudentViewWordScramble = ({
   onChange,
   externalChecked
 }: StudentViewProps) => {
+  const t = useTranslations('TaskEditors')
   const [tiles, setTiles] = useState<Array<{id: string; label: string}>>(() =>
     shuffledItems.map((label, i) => ({id: `${label}-${i}`, label}))
   )
@@ -157,23 +159,19 @@ export const StudentViewWordScramble = ({
       {!isStudentMode &&
         (!submitted ? (
           <button type='button' className={styles.submit_btn} onClick={() => setSubmitted(true)}>
-            Проверить
+            {t('checkBtn' as Parameters<typeof t>[0])}
           </button>
         ) : (
           <div className={styles.result_row}>
             <div className={`${styles.result_badge} ${isCorrect ? styles.result_badge_ok : styles.result_badge_err}`}>
               {isCorrect ? (
-                <>
-                  <CheckCircle2Icon size={15} /> Верно!
-                </>
+                <><CheckCircle2Icon size={15} /> {t('correct')}</>
               ) : (
-                <>
-                  <XCircleIcon size={15} /> Правильно: <strong>{source}</strong>
-                </>
+                <><XCircleIcon size={15} /> {t('correctIs')}<strong>{source}</strong></>
               )}
             </div>
             <button type='button' className={styles.retry_btn} onClick={reset}>
-              Попробовать снова
+              {t('retryBtn' as Parameters<typeof t>[0])}
             </button>
           </div>
         ))}
@@ -182,13 +180,9 @@ export const StudentViewWordScramble = ({
         <div className={styles.result_row}>
           <div className={`${styles.result_badge} ${isCorrect ? styles.result_badge_ok : styles.result_badge_err}`}>
             {isCorrect ? (
-              <>
-                <CheckCircle2Icon size={15} /> Верно!
-              </>
+              <><CheckCircle2Icon size={15} /> {t('correct')}</>
             ) : (
-              <>
-                <XCircleIcon size={15} /> Правильно: <strong>{source}</strong>
-              </>
+              <><XCircleIcon size={15} /> {t('correctIs')}<strong>{source}</strong></>
             )}
           </div>
         </div>

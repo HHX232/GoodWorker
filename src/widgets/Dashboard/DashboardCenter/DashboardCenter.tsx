@@ -376,6 +376,13 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
             />
           ))}
 
+          {/* Empty tests hint for owner */}
+          {isOwner && showTests && tests.length === 0 && (
+            <div className={styles.servicesHint}>
+              {t('testsFirstHint')}
+            </div>
+          )}
+
         </div>
       )}
 

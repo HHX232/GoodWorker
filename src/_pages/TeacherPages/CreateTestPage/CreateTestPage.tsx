@@ -101,12 +101,14 @@ function CreateTestPage() {
                 currentValue={description}
                 onSetValue={setDescription}
               />
-              <CategorySelect
-                placeholder={t('categoryPlaceholder')}
-                canSelectMany={false}
-                value={categoryIds}
-                onChange={setCategoryIds}
-              />{' '}
+              <div style={{ marginTop: '16px' }}>
+                <CategorySelect
+                  placeholder={t('categoryPlaceholder')}
+                  canSelectMany={false}
+                  value={categoryIds}
+                  onChange={setCategoryIds}
+                />
+              </div>
             </div>
 
             <Suspense fallback={<div>{t('loading')}</div>}>

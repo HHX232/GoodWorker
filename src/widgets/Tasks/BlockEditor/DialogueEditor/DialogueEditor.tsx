@@ -6,6 +6,7 @@ import {closestCenter, DndContext, DragEndEvent, PointerSensor, useSensor, useSe
 import {arrayMove, SortableContext, useSortable, verticalListSortingStrategy} from '@dnd-kit/sortable'
 import {CSS} from '@dnd-kit/utilities'
 import {CheckCircle2Icon, EyeIcon, GripVerticalIcon, PencilIcon, PlusIcon, Trash2Icon, XCircleIcon} from 'lucide-react'
+import {useTranslations} from 'next-intl'
 import {useState} from 'react'
 import styles from './DialogueEditor.module.scss'
 
@@ -63,6 +64,7 @@ interface SortableLineProps {
 }
 
 const SortableLine = ({line, nameA, nameB, onUpdate, onRemove}: SortableLineProps) => {
+  const t = useTranslations('TaskEditors')
   const {attributes, listeners, setNodeRef, transform, transition, isDragging} = useSortable({id: line.id})
 
   const isB = line.speaker === 'b'
@@ -105,7 +107,7 @@ const SortableLine = ({line, nameA, nameB, onUpdate, onRemove}: SortableLineProp
       {/* Текст */}
       <input
         className={styles.line_input}
-        placeholder='Текст реплики...'
+        placeholder={t('textPlaceholder')}
         value={line.text}
         onChange={(e) => onUpdate({text: e.target.value})}
       />
@@ -126,6 +128,7 @@ interface StudentViewProps {
 }
 
 const StudentView = ({payload, onChange, externalChecked}: StudentViewProps) => {
+  const t = useTranslations('TaskEditors')
   const {lines, speakers, instruction} = payload
   const isStudentMode = !!onChange
 
@@ -208,28 +211,22 @@ const StudentView = ({payload, onChange, externalChecked}: StudentViewProps) => 
       {/* Кнопка проверки — только в standalone превью */}
       {!isStudentMode && !submittedInternal && (
         <button type='button' className={styles.submit_btn} onClick={() => setSubmittedInternal(true)}>
-          Проверить
+          {t('checkBtn' as Parameters<typeof t>[0])}
         </button>
       )}
 
-      {/* Результат */}
       {isChecked && (
         <div className={styles.result_row}>
           <div className={`${styles.result_badge} ${isCorrect ? styles.badge_ok : styles.badge_err}`}>
             {isCorrect ? (
-              <>
-                <CheckCircle2Icon size={15} /> Правильно!
-              </>
+              <><CheckCircle2Icon size={15} /> {t('correct')}</>
             ) : (
-              <>
-                <XCircleIcon size={15} /> Не совсем
-              </>
+              <><XCircleIcon size={15} /> {t('retryBtn' as Parameters<typeof t>[0])}</>
             )}
           </div>
-          {/* Кнопка «Заново» только в standalone */}
           {!isStudentMode && (
             <button type='button' className={styles.retry_btn} onClick={reset}>
-              Заново
+              {t('retryBtn' as Parameters<typeof t>[0])}
             </button>
           )}
         </div>
@@ -281,6 +278,7 @@ const StudentTile = ({line, name, color, correctPos, wrongPos, disabled}: Studen
 
 // ── Основной редактор ─────────────────────────────────────────────────────────
 export const DialogueEditor = ({blockId, payload}: Props) => {
+  const t = useTranslations('TaskEditors')
   const {updateBlockPayload} = useActions()
   const [mode, setMode] = useState<'edit' | 'preview'>('edit')
 
@@ -321,16 +319,16 @@ export const DialogueEditor = ({blockId, payload}: Props) => {
           className={`${styles.mode_btn} ${mode === 'edit' ? styles.mode_btn_active : ''}`}
           onClick={() => setMode('edit')}
         >
-          <PencilIcon size={13} /> Редактор
+          <PencilIcon size={13} /> {t('editor')}
         </button>
         <button
           type='button'
           className={`${styles.mode_btn} ${mode === 'preview' ? styles.mode_btn_active : ''}`}
           onClick={() => setMode('preview')}
           disabled={!canPreview}
-          title={!canPreview ? 'Заполните все реплики (минимум 2)' : undefined}
+          title={!canPreview ? t('fillAllLines') : undefined}
         >
-          <EyeIcon size={13} /> Превью ученика
+          <EyeIcon size={13} /> {t('studentPreview')}
         </button>
       </div>
 
@@ -385,13 +383,13 @@ export const DialogueEditor = ({blockId, payload}: Props) => {
           {/* ── Реплики ── */}
           <div className={styles.field}>
             <div className={styles.lines_header}>
-              <span className={styles.label}>Реплики диалога</span>
+              <span className={styles.label}>{t('addLine').replace('+ ', '')}</span>
               <button type='button' className={styles.add_btn} onClick={addLine}>
-                <PlusIcon size={13} /> Добавить реплику
+                <PlusIcon size={13} /> {t('addLine')}
               </button>
             </div>
 
-            {payload.lines.length === 0 && <p className={styles.empty_hint}>Добавьте первую реплику</p>}
+            {payload.lines.length === 0 && <p className={styles.empty_hint}>{t('addFirstLine')}</p>}
 
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
               <SortableContext items={payload.lines.map((l) => l.id)} strategy={verticalListSortingStrategy}>

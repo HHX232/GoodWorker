@@ -1,5 +1,6 @@
 'use client'
 import {axiosClassic} from '@/shared/api'
+import {useLocale} from 'next-intl'
 import {useQuery} from '@tanstack/react-query'
 import {useEffect, useRef, useState} from 'react'
 import styles from './CategorySelect.module.scss'
@@ -53,18 +54,21 @@ function useCategories(langCode: string) {
 }
 
 export function CategorySelect({
-  langCode = 'ru',
+  langCode,
   canSelectMany = true,
   maxLevel,
   value,
   onChange,
-  placeholder = 'Выберите категории'
+  placeholder
 }: CategorySelectProps) {
+  const locale = useLocale()
+  const activeLang = langCode ?? locale
+  const activePlaceholder = placeholder ?? (locale === 'ru' ? 'Выберите категории' : locale === 'hi' ? 'श्रेणियाँ चुनें' : locale === 'zh' ? '选择类别' : 'Select categories')
   const [open, setOpen] = useState(false)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
   const rootRef = useRef<HTMLDivElement>(null)
 
-  const {data: allCategories = [], isLoading} = useCategories(langCode)
+  const {data: allCategories = [], isLoading} = useCategories(activeLang)
   const categories = maxLevel ? allCategories.filter((c) => c.levelNumber <= maxLevel) : allCategories
 
   const treeMap = buildTree(categories)
@@ -188,7 +192,7 @@ export function CategorySelect({
         disabled={isLoading}
       >
         {selectedCategories.length === 0 ? (
-          <span className={styles.placeholder}>{isLoading ? 'Загрузка...' : placeholder}</span>
+          <span className={styles.placeholder}>{isLoading ? '...' : activePlaceholder}</span>
         ) : (
           <div className={styles.tags}>
             {selectedCategories.map((cat) => (
@@ -230,7 +234,7 @@ export function CategorySelect({
 
       {open && (
         <div className={styles.dropdown}>
-          {(treeMap['root']?.length ?? 0) === 0 && <div className={styles.empty}>Нет категорий</div>}
+          {(treeMap['root']?.length ?? 0) === 0 && !isLoading && <div className={styles.empty}>{activeLang === 'ru' ? 'Нет категорий' : activeLang === 'hi' ? 'कोई श्रेणी नहीं' : activeLang === 'zh' ? '暂无类别' : 'No categories'}</div>}
 
           {renderNodes(null, 1)}
         </div>

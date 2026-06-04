@@ -5,6 +5,7 @@ import {DndContext, DragEndEvent, PointerSensor, closestCenter, useSensor, useSe
 import {SortableContext, arrayMove, useSortable, verticalListSortingStrategy} from '@dnd-kit/sortable'
 import {CSS} from '@dnd-kit/utilities'
 import {nanoid} from '@reduxjs/toolkit'
+import {useTranslations} from 'next-intl'
 import {useEffect, useState} from 'react'
 import styles from './SequenceEditor.module.scss'
 
@@ -14,6 +15,7 @@ interface Props {
 }
 
 function SequenceEditor({blockId, payload}: Props) {
+  const t = useTranslations('TaskEditors')
   const {updateBlockPayload} = useActions()
 
   const update = (updated: Partial<SequencePayload>) => {
@@ -74,6 +76,7 @@ function SequenceEditor({blockId, payload}: Props) {
                 id={item.id}
                 index={index}
                 text={item.text}
+                placeholder={t('itemPlaceholder', {n: index + 1})}
                 onTextChange={(val) => updateItemText(item.id, val)}
                 onRemove={() => removeItem(item.id)}
               />
@@ -83,12 +86,12 @@ function SequenceEditor({blockId, payload}: Props) {
       </DndContext>
 
       <button type='button' className={styles.add_btn} onClick={addItem}>
-        + Добавить элемент
+        {t('addItem')}
       </button>
 
       {payload.items.length >= 2 && (
         <div className={styles.preview_box}>
-          <span className={styles.preview_label}>Превью для ученика</span>
+          <span className={styles.preview_label}>{t('studentPreview')}</span>
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handlePreviewDragEnd}>
             <SortableContext items={previewItems.map((i) => i.id)} strategy={verticalListSortingStrategy}>
               <div className={styles.items_list}>
@@ -108,11 +111,12 @@ interface SortableItemProps {
   id: string
   index: number
   text: string
+  placeholder: string
   onTextChange: (val: string) => void
   onRemove: () => void
 }
 
-function SortableItem({id, index, text, onTextChange, onRemove}: SortableItemProps) {
+function SortableItem({id, index, text, placeholder, onTextChange, onRemove}: SortableItemProps) {
   const {attributes, listeners, setNodeRef, transform, transition, isDragging} = useSortable({id})
 
   return (
@@ -129,7 +133,7 @@ function SortableItem({id, index, text, onTextChange, onRemove}: SortableItemPro
         className={styles.item_input}
         value={text}
         onChange={(e) => onTextChange(e.target.value)}
-        placeholder={`Элемент ${index + 1}`}
+        placeholder={placeholder}
       />
       <button type='button' className={styles.remove_btn} onClick={onRemove}>
         ✕

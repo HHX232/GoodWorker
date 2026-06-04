@@ -1,6 +1,8 @@
+'use client'
 import {StudentAnswer} from '@/features/Tasks/TaskResult/scoreBlock'
 import {FreeAnswerPayload} from '@/shared/types/Tasks/TaskPayload.type'
 import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
+import {useTranslations} from 'next-intl'
 import {useState} from 'react'
 import styles from './FreeAnswerStudent.module.scss'
 export function FreeAnswerStudent({
@@ -10,6 +12,7 @@ export function FreeAnswerStudent({
   payload: FreeAnswerPayload
   onChange: (a: StudentAnswer) => void
 }) {
+  const t = useTranslations('TaskEditors')
   const [value, setValue] = useState('')
 
   return (
@@ -18,7 +21,7 @@ export function FreeAnswerStudent({
       <textarea
         className={styles.textarea}
         rows={4}
-        placeholder='Введите ответ...'
+        placeholder={t('answerPlaceholder')}
         value={value}
         onChange={(e) => {
           setValue(e.target.value)

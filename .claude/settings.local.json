@@ -178,7 +178,8 @@
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('auth2', {}\\), indent=2, ensure_ascii=False\\)\\)\")",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('auth2',{}\\).get\\('register',{}\\).get\\('promoSuccess','MISSING'\\)\\)\\)\")",
       "Bash(mkdir -p \"/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/\\(test\\)/edit-test/[id]\")",
-      "Bash(git reset *)"
+      "Bash(git reset *)",
+      "Bash(grep -n 'Выбери\\\\|Добавьте\\\\|Введите\\\\|Правильн\\\\|Вариант\\\\|Добавить\\\\|Нет вари\\\\|Вопрос\\\\|Ответ\\\\|Загрузк\\\\|Описание\\\\|Текст\\\\|Инструкц\\\\|Источник\\\\|Слово\\\\|Диалог\\\\|Реплик\\\\|Спикер\\\\|Перемеш\\\\|Редактор\\\\|Превью\\\\|Student\\\\|Teacher\\\\|Пустой\\\\|Hint\\\\|placeholder\\\\|label\\\\|title=' /Users/nikitatisevic/Desktop/GoodWorkerRemaster/src/widgets/Tasks/BlockEditor/__TRACKED_VAR__/__TRACKED_VAR__.tsx)"
     ],
     "additionalDirectories": [
       "c:\\Users\\Мастер\\Desktop\\goodworkerremaster\\app\\api\\roadmap",

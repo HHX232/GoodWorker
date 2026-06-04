@@ -1,54 +1,43 @@
-// ChooseOptionEditor.tsx
+'use client'
 import { useActions } from '@/features/hooks/store/useActions'
 import { ChooseOptionPayload } from '@/shared/types/Tasks/TaskPayload.type'
 import { CheckboxUI, RadioUI, TextAreaUI } from '@/shared/ui/inputs'
 import { nanoid } from '@reduxjs/toolkit'
+import { useTranslations } from 'next-intl'
 import styles from './ChooseOptionEditor.module.scss'
 
 interface Props {
   blockId: string
   payload: ChooseOptionPayload
-  readonly?:boolean
+  readonly?: boolean
 }
 
-function ChooseOptionEditor({blockId, payload,readonly = false}: Props) {
+function ChooseOptionEditor({blockId, payload, readonly = false}: Props) {
+  const t = useTranslations('TaskEditors')
   const {updateBlockPayload} = useActions()
 
   const update = (updated: Partial<ChooseOptionPayload>) => {
-    updateBlockPayload({
-      id: blockId,
-      payload: {...payload, ...updated}
-    })
+    updateBlockPayload({id: blockId, payload: {...payload, ...updated}})
   }
 
-  const addOption = () => {
-    update({
-      options: [...payload.options, {id: nanoid(), text: ''}]
-    })
-  }
+  const addOption = () => update({options: [...payload.options, {id: nanoid(), text: ''}]})
 
   const removeOption = (id: string) => {
     const filtered = payload.options.filter((o) => o.id !== id)
     const correctId = Array.isArray(payload.correctId)
       ? payload.correctId.filter((cId) => cId !== id)
-      : payload.correctId === id
-        ? ''
-        : payload.correctId
+      : payload.correctId === id ? '' : payload.correctId
     update({options: filtered, correctId})
   }
 
   const updateOptionText = (id: string, text: string) => {
-    update({
-      options: payload.options.map((o) => (o.id === id ? {...o, text} : o))
-    })
+    update({options: payload.options.map((o) => (o.id === id ? {...o, text} : o))})
   }
 
   const toggleCorrect = (id: string) => {
     if (Array.isArray(payload.correctId)) {
       const already = payload.correctId.includes(id)
-      update({
-        correctId: already ? payload.correctId.filter((cId) => cId !== id) : [...payload.correctId, id]
-      })
+      update({correctId: already ? payload.correctId.filter((cId) => cId !== id) : [...payload.correctId, id]})
     } else {
       update({correctId: id})
     }
@@ -60,23 +49,25 @@ function ChooseOptionEditor({blockId, payload,readonly = false}: Props) {
   }
 
   const isMultiMode = Array.isArray(payload.correctId)
-
   const isChecked = (id: string) =>
     Array.isArray(payload.correctId) ? payload.correctId.includes(id) : payload.correctId === id
 
   return (
     <div className={styles.editor_box}>
+      {readonly ? <p>{payload.question}</p> : (
+        <TextAreaUI
+          minRows={1}
+          currentValue={payload.question}
+          onSetValue={(val) => update({question: val})}
+          placeholder={t('questionPlaceholder')}
+        />
+      )}
 
-      {readonly ? <p>{payload.question}</p> :<TextAreaUI
-        minRows={1}
-        currentValue={payload.question}
-        onSetValue={(val) => update({question: val})}
-        placeholder='Введите вопрос'
-      />}
-
-      {!readonly && <div className={styles.mode_toggle}>
-        <CheckboxUI checked={isMultiMode} label='Несколько правильных ответов' onChange={toggleMode} />
-      </div>}
+      {!readonly && (
+        <div className={styles.mode_toggle}>
+          <CheckboxUI checked={isMultiMode} label={t('multipleCorrect')} onChange={toggleMode} />
+        </div>
+      )}
 
       <div className={styles.options_list}>
         {payload.options.map((option, index) => (
@@ -85,14 +76,14 @@ function ChooseOptionEditor({blockId, payload,readonly = false}: Props) {
               <CheckboxUI
                 checked={isChecked(option.id)}
                 onChange={() => toggleCorrect(option.id)}
-                label={
-                 readonly ? `${option.text}` : <TextAreaUI
+                label={readonly ? `${option.text}` : (
+                  <TextAreaUI
                     minRows={1}
                     currentValue={option.text}
                     onSetValue={(val) => updateOptionText(option.id, val)}
-                    placeholder={`Вариант ${index + 1}`}
+                    placeholder={t('optionPlaceholder', {n: index + 1})}
                   />
-                }
+                )}
               />
             ) : (
               <RadioUI
@@ -100,27 +91,30 @@ function ChooseOptionEditor({blockId, payload,readonly = false}: Props) {
                 value={option.id}
                 name={blockId}
                 onChange={() => toggleCorrect(option.id)}
-                label={
-                    readonly ? `${option.text}` : <TextAreaUI
+                label={readonly ? `${option.text}` : (
+                  <TextAreaUI
                     minRows={1}
                     currentValue={option.text}
                     onSetValue={(val) => updateOptionText(option.id, val)}
-                    placeholder={`Вариант ${index + 1}`}
+                    placeholder={t('optionPlaceholder', {n: index + 1})}
                   />
-                }
+                )}
               />
             )}
-
-          {!readonly &&  <button type='button' className={styles.remove_btn} onClick={() => removeOption(option.id)}>
-              ✕
-            </button>}
+            {!readonly && (
+              <button type='button' className={styles.remove_btn} onClick={() => removeOption(option.id)}>
+                ✕
+              </button>
+            )}
           </div>
         ))}
       </div>
 
-    {!readonly &&   <button type='button' className={styles.add_btn} onClick={addOption}>
-        + Добавить вариант
-      </button>}
+      {!readonly && (
+        <button type='button' className={styles.add_btn} onClick={addOption}>
+          {t('addOption')}
+        </button>
+      )}
     </div>
   )
 }

@@ -2,6 +2,7 @@
 import {useActions} from '@/features/hooks/store/useActions'
 import {MatchPairsPayload} from '@/shared/types/Tasks/TaskPayload.type'
 import {nanoid} from '@reduxjs/toolkit'
+import {useTranslations} from 'next-intl'
 import {useState} from 'react'
 import styles from './MatchPairsEditor.module.scss'
 import {MatchConnector} from './MatchConnector/MatchConnector'
@@ -12,6 +13,7 @@ interface Props {
 }
 
 function MatchPairsEditor({blockId, payload}: Props) {
+  const t = useTranslations('TaskEditors')
   const {updateBlockPayload} = useActions()
   const [previewMatches, setPreviewMatches] = useState<Map<string, string>>(new Map())
 
@@ -61,7 +63,7 @@ function MatchPairsEditor({blockId, payload}: Props) {
               className={styles.pair_input}
               value={pair.left}
               onChange={(e) => updatePair(pair.id, 'left', e.target.value)}
-              placeholder={`Левый элемент ${index + 1}`}
+              placeholder={t('leftPlaceholder', {n: index + 1})}
             />
 
             <div className={styles.pair_arrow}>→</div>
@@ -70,7 +72,7 @@ function MatchPairsEditor({blockId, payload}: Props) {
               className={styles.pair_input}
               value={pair.right}
               onChange={(e) => updatePair(pair.id, 'right', e.target.value)}
-              placeholder={`Правый элемент ${index + 1}`}
+              placeholder={t('rightPlaceholder', {n: index + 1})}
             />
 
             <button type='button' className={styles.remove_btn} onClick={() => removePair(pair.id)}>
@@ -81,12 +83,12 @@ function MatchPairsEditor({blockId, payload}: Props) {
       </div>
 
       <button type='button' className={styles.add_btn} onClick={addPair}>
-        + Добавить пару
+        {t('addPair')}
       </button>
 
       {payload.pairs.length >= 2 && (
         <div className={styles.preview_box}>
-          <span className={styles.preview_label}>Превью для ученика</span>
+          <span className={styles.preview_label}>{t('studentPreview')}</span>
           <MatchConnector
             gradientId={`grad-${blockId}`}
             leftItems={leftItems}

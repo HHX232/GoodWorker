@@ -9,6 +9,7 @@ import {SelectTaskGapNode} from '@/shared/ui/inputs/SelectGapNode/SelectGapNode'
 import Placeholder from '@tiptap/extension-placeholder'
 import {EditorContent, useEditor} from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
+import {useTranslations} from 'next-intl'
 import {useCallback, useRef} from 'react'
 import styles from './FillTextEditor.module.scss'
 
@@ -22,6 +23,7 @@ interface Props {
 }
 
 export const FillTextEditor = ({blockId, payload, onlyPass = false, onChangeAnswer, error}: Props) => {
+  const t = useTranslations('TaskEditors')
   const {updateBlockPayload} = useActions()
 
   const answersRef = useRef<Record<string, string>>({})
@@ -42,7 +44,7 @@ export const FillTextEditor = ({blockId, payload, onlyPass = false, onChangeAnsw
     editable: !onlyPass,
     extensions: [
       StarterKit,
-      ...(!onlyPass ? [Placeholder.configure({placeholder: 'Введите текст задания...'})] : []),
+      ...(!onlyPass ? [Placeholder.configure({placeholder: t('fillTextPlaceholder')})] : []),
       InputTaskGapNode.configure(onlyPass ? {onChangeAnswer: handleGapChange} : {}),
       SelectTaskGapNode.configure(onlyPass ? {onChangeAnswer: handleGapChange} : {})
     ],
@@ -74,7 +76,7 @@ export const FillTextEditor = ({blockId, payload, onlyPass = false, onChangeAnsw
       {!onlyPass && (
         <div className={styles.toolbar}>
           <button type='button' onClick={insertGap} className={styles.toolbar_btn}>
-            + Добавить пропуск
+            {t('addGap')}
           </button>
           <button type='button' onClick={insertSelectGap} className={styles.toolbar_btn}>
             + Выбрать вариант

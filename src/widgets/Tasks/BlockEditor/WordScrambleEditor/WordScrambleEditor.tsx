@@ -2,6 +2,7 @@
 import {useActions} from '@/features/hooks/store/useActions'
 import {WordScrambleMode, WordScramblePayload} from '@/shared/types/Tasks/TaskPayload.type'
 import {CaseSensitiveIcon, EyeIcon, LetterTextIcon, PencilIcon, ShuffleIcon} from 'lucide-react'
+import {useTranslations} from 'next-intl'
 import {useMemo, useState} from 'react'
 import styles from './WordScrambleEditor.module.scss'
 import {getShuffledItems, StudentViewWordScramble} from './StudentViewWordScramble/StudentViewWordScramble'
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export const WordScrambleEditor = ({blockId, payload}: Props) => {
+  const t = useTranslations('TaskEditors')
   const {updateBlockPayload} = useActions()
   const [mode, setMode] = useState<'edit' | 'preview'>('edit')
 
@@ -33,23 +35,23 @@ export const WordScrambleEditor = ({blockId, payload}: Props) => {
           className={`${styles.mode_btn} ${mode === 'edit' ? styles.mode_btn_active : ''}`}
           onClick={() => setMode('edit')}
         >
-          <PencilIcon size={13} /> Редактор
+          <PencilIcon size={13} /> {t('editor')}
         </button>
         <button
           type='button'
           className={`${styles.mode_btn} ${mode === 'preview' ? styles.mode_btn_active : ''}`}
           onClick={() => setMode('preview')}
           disabled={!canPreview}
-          title={!canPreview ? 'Введите слово или предложение' : undefined}
+          title={!canPreview ? t('enterWordOrSentence') : undefined}
         >
-          <EyeIcon size={13} /> Превью ученика
+          <EyeIcon size={13} /> {t('studentPreview')}
         </button>
       </div>
 
       {mode === 'edit' && (
         <>
           <div className={styles.field}>
-            <span className={styles.label}>Режим</span>
+            <span className={styles.label}>{t('wordMode')}</span>
             <div className={styles.mode_tabs}>
               {(['letters', 'words'] as WordScrambleMode[]).map((m) => (
                 <button
@@ -59,28 +61,28 @@ export const WordScrambleEditor = ({blockId, payload}: Props) => {
                   onClick={() => update({mode: m, source: null})}
                 >
                   {m === 'letters'
-                    ? <><CaseSensitiveIcon size={14} /> Буквы слова</>
-                    : <><LetterTextIcon size={14} /> Слова предложения</>}
+                    ? <><CaseSensitiveIcon size={14} /> {t('modeLetters')}</>
+                    : <><LetterTextIcon size={14} /> {t('modeWords')}</>}
                 </button>
               ))}
             </div>
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label}>{payload.mode === 'letters' ? 'Слово' : 'Предложение'}</label>
+            <label className={styles.label}>{payload.mode === 'letters' ? t('wordLabel') : t('sentenceLabel')}</label>
             <input
               className={styles.input}
-              placeholder={payload.mode === 'letters' ? 'Например: elephant' : 'Например: She went to the market'}
+              placeholder={payload.mode === 'letters' ? t('exampleWord') : t('exampleSentence')}
               value={payload.source ?? ''}
               onChange={(e) => update({source: e.target.value || null})}
             />
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label}>Подсказка / перевод (необязательно)</label>
+            <label className={styles.label}>{t('hintLabel')}</label>
             <input
               className={styles.input}
-              placeholder='Например: слон'
+              placeholder={t('hintPlaceholder')}
               value={payload.hint ?? ''}
               onChange={(e) => update({hint: e.target.value || null})}
             />
@@ -90,7 +92,7 @@ export const WordScrambleEditor = ({blockId, payload}: Props) => {
             <div className={styles.editor_preview}>
               <div className={styles.editor_preview_header}>
                 <ShuffleIcon size={12} />
-                <span className={styles.label}>Перемешанный вид</span>
+                <span className={styles.label}>{t('shuffledView')}</span>
               </div>
               <div className={styles.tiles_row}>
                 {shuffledItems.map((item, i) => (
@@ -100,7 +102,7 @@ export const WordScrambleEditor = ({blockId, payload}: Props) => {
                 ))}
               </div>
               <div className={styles.answer_row}>
-                <span className={styles.answer_label}>Правильный ответ:</span>
+                <span className={styles.answer_label}>{t('correctAnswer')}</span>
                 <span className={styles.answer_value}>{payload.source}</span>
               </div>
             </div>
@@ -111,7 +113,7 @@ export const WordScrambleEditor = ({blockId, payload}: Props) => {
       {mode === 'preview' && canPreview && (
         <div className={styles.preview_wrap}>
           <div className={styles.preview_label}>
-            <EyeIcon size={13} /> Так видит ученик
+            <EyeIcon size={13} /> {t('studentSees')}
           </div>
           <StudentViewWordScramble
             source={payload.source!}
