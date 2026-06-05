@@ -69,7 +69,22 @@ export const ImagePreview = memo<{
     )
   }
 
+  const isDataUrl = url.startsWith('data:')
   const isExternalUrl = url.startsWith('http://') || url.startsWith('https://')
+
+  if (isDataUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={url}
+        alt={`Preview ${index}`}
+        className={`${styles.preview} ${isOnlyShow ? styles.clickable : ''}`}
+        onError={handleError}
+        onClick={handleClick}
+        style={{ cursor: isOnlyShow ? 'pointer' : 'default', objectFit: 'cover', width: '100%', height: '100%' }}
+      />
+    )
+  }
 
   if (isExternalUrl) {
     return (
