@@ -28,8 +28,8 @@ export function HomeTutorial() {
       return [
         {
           stepNumber: 1,
-          elementId: 'navbar-create-group',
-          title: t('teacher_create_title'),
+          elementId: 'main-navbar',
+          title: t('student_nav_title'),
           description: t('teacher_create_desc'),
           position: 'right' as const,
         },
@@ -47,34 +47,20 @@ export function HomeTutorial() {
       return [
         {
           stepNumber: 1,
-          elementId: 'navbar-nav',
+          elementId: 'main-navbar',
           title: t('student_nav_title'),
           description: t('student_nav_desc'),
           position: 'right' as const,
         },
         {
           stepNumber: 2,
-          elementId: 'navbar-catalog',
-          title: t('student_catalog_title'),
-          description: t('student_catalog_desc'),
-          position: 'right' as const,
-        },
-        {
-          stepNumber: 3,
-          elementId: 'navbar-tools',
-          title: t('student_tools_title'),
-          description: t('student_tools_desc'),
-          position: 'right' as const,
-        },
-        {
-          stepNumber: 4,
           elementId: 'notifications-panel',
           title: t('student_notif_title'),
           description: t('student_notif_desc'),
           position: 'left' as const,
         },
         {
-          stepNumber: 5,
+          stepNumber: 3,
           elementId: 'posts-catalog',
           title: t('student_posts_title'),
           description: t('student_posts_desc'),
@@ -93,7 +79,7 @@ export function HomeTutorial() {
       },
       {
         stepNumber: 2,
-        elementId: 'navbar-login',
+        elementId: 'main-navbar',
         title: t('guest_login_title'),
         description: t('guest_login_desc'),
         position: 'right' as const,
@@ -104,6 +90,7 @@ export function HomeTutorial() {
   useEffect(() => {
     if (status === 'loading') return
     if (getCookie(COOKIE_KEY)) return
+    if (window.innerWidth <= 770) return
 
     const timer = setTimeout(() => {
       setCookie(COOKIE_KEY, '1')

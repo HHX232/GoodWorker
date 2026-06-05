@@ -257,6 +257,7 @@ export function NavBar({extraClass}: {extraClass?: string}) {
 
   return (
     <nav
+      id="main-navbar"
       ref={sheetRef}
       className={`${styles.navbar} ${mounted && isExpanded ? styles.expanded : ''} ${extraClass ?? ''}`}
     >

@@ -47,6 +47,7 @@ export function CreateTestTutorial() {
   // Auto-start once
   useEffect(() => {
     if (getCookie(COOKIE_KEY)) return
+    if (window.innerWidth <= 770) return
 
     const timer = setTimeout(() => {
       setCookie(COOKIE_KEY, '1')
