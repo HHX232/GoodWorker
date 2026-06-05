@@ -495,148 +495,143 @@ export function DashboardProfilePanel({
 
         <div className={styles.divider} />
 
-        {/* Basic info */}
-        <div className={styles.section}>
-          <div className={styles.sectionLabel}>{t('basicInfo')}</div>
-          <div className={styles.field}>
-            <label className={styles.label}>{t('fullName')}</label>
-            <input
-              className={styles.input}
-              type="text"
-              value={name}
-              onChange={e => onNameChange(e.target.value)}
-              placeholder={t('yourName')}
-            />
-          </div>
-          <div className={styles.field}>
-            <label className={styles.label}>{t('phone')}</label>
-            <input
-              className={styles.input}
-              type="tel"
-              value={phone}
-              onChange={e => onPhoneChange(e.target.value)}
-              placeholder="+7 999 000 00 00"
-            />
-          </div>
-          <div className={styles.saveRow}>
-            <button className={styles.saveBtn} onClick={onSave} disabled={saving}>
-              {saving && <span className={styles.spinner} />}
-              {saving ? t('saving') : t('saveChanges')}
-            </button>
-          </div>
-          {saveError && <span className={styles.errorMsg}>{saveError}</span>}
-          {saveSuccess && <span className={styles.successMsg}>{t('changesSaved')}</span>}
-          {avatarUrl && (
-            <button
-              type="button"
-              className={styles.removeAvatarBtn}
-              onClick={onAvatarRemove}
-            >
-              {t('removePhoto')}
-            </button>
-          )}
-        </div>
-
-        <ExperienceSection />
-
-        <div className={styles.divider} />
-
-        {/* Security */}
-        <div className={styles.section}>
-          <div className={styles.sectionLabel}>{t('security')}</div>
-          <div className={styles.securityRow}>
-            <div className={styles.securityInfo}>
-              <span className={styles.securityLabel}>{t('email')}</span>
-              <span className={styles.securityValue}>{email}</span>
+        {/* Row 1: Basic info (left) + Security (right) */}
+        <div className={styles.contentGrid}>
+          <div className={styles.gridCol}>
+            <div className={styles.section}>
+              <div className={styles.sectionLabel}>{t('basicInfo')}</div>
+              <div className={styles.field}>
+                <label className={styles.label}>{t('fullName')}</label>
+                <input
+                  className={styles.input}
+                  type="text"
+                  value={name}
+                  onChange={e => onNameChange(e.target.value)}
+                  placeholder={t('yourName')}
+                />
+              </div>
+              <div className={styles.field}>
+                <label className={styles.label}>{t('phone')}</label>
+                <input
+                  className={styles.input}
+                  type="tel"
+                  value={phone}
+                  onChange={e => onPhoneChange(e.target.value)}
+                  placeholder="+7 999 000 00 00"
+                />
+              </div>
+              <div className={styles.saveRow}>
+                <button className={styles.saveBtn} onClick={onSave} disabled={saving}>
+                  {saving && <span className={styles.spinner} />}
+                  {saving ? t('saving') : t('saveChanges')}
+                </button>
+              </div>
+              {saveError && <span className={styles.errorMsg}>{saveError}</span>}
+              {saveSuccess && <span className={styles.successMsg}>{t('changesSaved')}</span>}
+              {avatarUrl && (
+                <button type="button" className={styles.removeAvatarBtn} onClick={onAvatarRemove}>
+                  {t('removePhoto')}
+                </button>
+              )}
             </div>
-            <button className={styles.securityBtn} onClick={onChangeEmail}>{t('change')}</button>
+            <ExperienceSection />
           </div>
-          <div className={styles.securityRow}>
-            <div className={styles.securityInfo}>
-              <span className={styles.securityLabel}>{t('password')}</span>
-              <span className={styles.securityValue}>••••••••</span>
+
+          <div className={styles.gridCol}>
+            <div className={styles.section}>
+              <div className={styles.sectionLabel}>{t('security')}</div>
+              <div className={styles.securityRow}>
+                <div className={styles.securityInfo}>
+                  <span className={styles.securityLabel}>{t('email')}</span>
+                  <span className={styles.securityValue}>{email}</span>
+                </div>
+                <button className={styles.securityBtn} onClick={onChangeEmail}>{t('change')}</button>
+              </div>
+              <div className={styles.securityRow}>
+                <div className={styles.securityInfo}>
+                  <span className={styles.securityLabel}>{t('password')}</span>
+                  <span className={styles.securityValue}>••••••••</span>
+                </div>
+                <button className={styles.securityBtn} onClick={onChangePassword}>{t('change')}</button>
+              </div>
             </div>
-            <button className={styles.securityBtn} onClick={onChangePassword}>{t('change')}</button>
+            <IdentitySection />
           </div>
         </div>
 
-        <IdentitySection />
-
         <div className={styles.divider} />
 
-        {/* Quick links */}
-        <div className={styles.section} id="dashboard-history-tools">
-          <div className={styles.sectionLabel}>{t('historyTools')}</div>
-          <div className={styles.actions}>
-            <button className={styles.actionBtn} onClick={onTranscripts}>
-              <span className={styles.actionIcon}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                  <line x1="16" y1="13" x2="8" y2="13" />
-                  <line x1="16" y1="17" x2="8" y2="17" />
-                </svg>
-              </span>
-              {t('callTranscripts')}
-            </button>
+        {/* Row 2: Quick links (left) + Telegram + Promo (right) */}
+        <div className={styles.contentGrid}>
+          <div className={styles.gridCol}>
+            <div className={styles.section} id="dashboard-history-tools">
+              <div className={styles.sectionLabel}>{t('historyTools')}</div>
+              <div className={styles.actions}>
+                <button className={styles.actionBtn} onClick={onTranscripts}>
+                  <span className={styles.actionIcon}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                      <line x1="16" y1="13" x2="8" y2="13" />
+                      <line x1="16" y1="17" x2="8" y2="17" />
+                    </svg>
+                  </span>
+                  {t('callTranscripts')}
+                </button>
+                <button className={styles.actionBtn} onClick={onBookmarks}>
+                  <span className={styles.actionIcon}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                      <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+                    </svg>
+                  </span>
+                  {t('bookmarks')}
+                </button>
+                <Link href={`/statistics/${statsId}`} className={styles.actionBtn}>
+                  <span className={styles.actionIcon}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                      <line x1="18" y1="20" x2="18" y2="10" />
+                      <line x1="12" y1="20" x2="12" y2="4" />
+                      <line x1="6" y1="20" x2="6" y2="14" />
+                    </svg>
+                  </span>
+                  {t('statistics')}
+                </Link>
+                <Link href={`/calendar/${statsId}`} className={styles.actionBtn}>
+                  <span className={styles.actionIcon}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                      <rect x="3" y="4" width="18" height="18" rx="2" />
+                      <path d="M16 2v4M8 2v4M3 10h18" />
+                    </svg>
+                  </span>
+                  {t('calendar')}
+                </Link>
+                <Link href="/complaints" className={styles.actionBtn}>
+                  <span className={styles.actionIcon}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                      <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+                    </svg>
+                  </span>
+                  {t('complaintsLink')}
+                </Link>
+                <Link href="/notifications" className={styles.actionBtn}>
+                  <span className={styles.actionIcon}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                    </svg>
+                  </span>
+                  {t('notificationsLink')}
+                </Link>
+              </div>
+            </div>
+          </div>
 
-            <button className={styles.actionBtn} onClick={onBookmarks}>
-              <span className={styles.actionIcon}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                  <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
-                </svg>
-              </span>
-              {t('bookmarks')}
-            </button>
-
-            <Link href={`/statistics/${statsId}`} className={styles.actionBtn}>
-              <span className={styles.actionIcon}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                  <line x1="18" y1="20" x2="18" y2="10" />
-                  <line x1="12" y1="20" x2="12" y2="4" />
-                  <line x1="6" y1="20" x2="6" y2="14" />
-                </svg>
-              </span>
-              {t('statistics')}
-            </Link>
-
-            <Link href={`/calendar/${statsId}`} className={styles.actionBtn}>
-              <span className={styles.actionIcon}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                  <rect x="3" y="4" width="18" height="18" rx="2" />
-                  <path d="M16 2v4M8 2v4M3 10h18" />
-                </svg>
-              </span>
-              {t('calendar')}
-            </Link>
-
-            <Link href="/complaints" className={styles.actionBtn}>
-              <span className={styles.actionIcon}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                  <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
-                </svg>
-              </span>
-              {t('complaintsLink')}
-            </Link>
-
-            <Link href="/notifications" className={styles.actionBtn}>
-              <span className={styles.actionIcon}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                </svg>
-              </span>
-              {t('notificationsLink')}
-            </Link>
+          <div className={styles.gridCol}>
+            <TelegramSection linkTrigger={tgLinkTrigger} />
+            <PromoCodeSection />
           </div>
         </div>
-
-        <PromoCodeSection />
-
-        <div className={styles.divider} />
-
-        <TelegramSection linkTrigger={tgLinkTrigger} />
 
         <div className={styles.divider} />
 

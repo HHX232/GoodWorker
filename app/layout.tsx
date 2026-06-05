@@ -26,7 +26,16 @@ export const metadata: Metadata = {
     template: '%s | GoodWorker',
     default: 'GoodWorker'
   },
-  description: 'Образовательная платформа для репетиторов и студентов'
+  description: 'Образовательная платформа для репетиторов и студентов',
+  icons: {
+    icon: [
+      { url: '/logos/favicon.ico', sizes: 'any' },
+      { url: '/logos/favicon.svg', type: 'image/svg+xml' },
+      { url: '/logos/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
+    ],
+    apple: '/logos/apple-touch-icon.png',
+  },
+  manifest: '/logos/site.webmanifest',
 }
 
 export default async function RootLayout({

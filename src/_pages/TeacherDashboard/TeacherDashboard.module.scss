@@ -4,46 +4,54 @@
   height: calc(100vh - 83px);
   overflow: hidden;
   background: #EEEFF8;
+  position: relative;
+
+  // ── Column wrappers ───────────────────────────────────────────
+  .colLeft,
+  .colCenter,
+  .colRight {
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  // ── Resize handles ────────────────────────────────────────────
+  .resizeHandle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    cursor: col-resize;
+    z-index: 50;
+    background: transparent;
+    transition: background 0.15s;
+    user-select: none;
+
+    &:hover, &:active {
+      background: rgba(83, 74, 183, 0.18);
+    }
+  }
 
   // ── Tablet: hide left sidebar ─────────────────────────────
   @media (max-width: 1100px) {
-    grid-template-columns: 1fr 296px;
-
-    > :first-child {
-      display: none;
-    }
+    grid-template-columns: 1fr 296px !important;
+    .resizeHandle { display: none; }
+    .colLeft { display: none; }
   }
 
   // ── Mobile: right panel on top, left sidebar in middle, catalog at bottom ─
   @media (max-width: 768px) {
-    display: flex;
+    display: flex !important;
     flex-direction: column;
     height: auto;
     min-height: calc(100vh - 83px);
     overflow: visible;
+    .resizeHandle { display: none; }
 
-    // Left sidebar — show it, centered, second in order
-    > :first-child {
-      display: block;
-      order: 2;
-      height: auto;
-      border-right: none;
-      border-top: 1px solid rgba(0, 0, 0, 0.07);
-    }
-
-    // Center / catalog — bottom
-    > :nth-child(2) {
-      order: 3;
-      height: auto;
-      overflow-y: visible;
-    }
-
-    // Right panel (profile) — top
-    > :last-child {
-      order: 1;
-      height: auto;
-      border-left: none;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.07);
-    }
+    .colLeft  { order: 2; height: auto; border-right: none; border-top: 1px solid rgba(0,0,0,0.07); }
+    .colCenter { order: 3; height: auto; overflow-y: visible; }
+    .colRight { order: 1; height: auto; border-left: none; border-bottom: 1px solid rgba(0,0,0,0.07); }
   }
 }
