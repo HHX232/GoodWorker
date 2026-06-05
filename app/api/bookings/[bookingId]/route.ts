@@ -1,0 +1,100 @@
+import { prisma } from '@/shared/prisma/prisma'
+import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '../../../../auth'
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ bookingId: string }> }
+) {
+  const session = await auth()
+  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (session.user.role !== 'TEACHER' && session.user.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Only teachers can respond to bookings' }, { status: 403 })
+  }
+
+  const { bookingId } = await params
+  const body = await req.json().catch(() => ({}))
+  const { action, confirmedDate, confirmedTime } = body as {
+    action: 'confirm' | 'reschedule' | 'cancel'
+    confirmedDate?: string
+    confirmedTime?: string
+  }
+
+  if (!['confirm', 'reschedule', 'cancel'].includes(action)) {
+    return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+  }
+
+  const booking = await prisma.serviceBooking.findUnique({
+    where: { id: bookingId },
+    include: { service: true, student: true },
+  })
+
+  if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
+
+  // Teacher must own the service
+  if (booking.service.teacherId !== session.user.id && session.user.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  let newStatus: 'CONFIRMED' | 'CANCELLED' = 'CONFIRMED'
+  let notifTitle = ''
+  let notifBody = ''
+
+  const serviceName = booking.service.title
+
+  if (action === 'confirm') {
+    newStatus = 'CONFIRMED'
+    const dateStr = booking.desiredDate && booking.desiredTime
+      ? ` на ${booking.desiredDate} в ${booking.desiredTime}`
+      : booking.desiredDate
+        ? ` на ${booking.desiredDate}`
+        : ''
+    notifTitle = 'Запись подтверждена'
+    notifBody = `Учитель подтвердил вашу запись на «${serviceName}»${dateStr}`
+  } else if (action === 'reschedule') {
+    newStatus = 'CONFIRMED'
+    const dateStr = confirmedDate && confirmedTime
+      ? `${confirmedDate} в ${confirmedTime}`
+      : confirmedDate ?? ''
+    notifTitle = 'Новое время для записи'
+    notifBody = `Учитель предложил другое время: ${dateStr}`
+  } else if (action === 'cancel') {
+    newStatus = 'CANCELLED'
+    notifTitle = 'Запись отменена'
+    notifBody = `Учитель отменил вашу запись на «${serviceName}»`
+  }
+
+  const updatedBooking = await prisma.$transaction(async (tx) => {
+    const updated = await tx.serviceBooking.update({
+      where: { id: bookingId },
+      data: {
+        status: newStatus,
+        ...(action === 'reschedule' && {
+          confirmedDate: confirmedDate ?? null,
+          confirmedTime: confirmedTime ?? null,
+        }),
+      },
+    })
+
+    await tx.notification.create({
+      data: {
+        type: 'BOOKING_RESPONSE',
+        title: notifTitle,
+        body: notifBody,
+        payload: {
+          bookingId,
+          serviceId: booking.serviceId,
+          serviceName,
+          action,
+          confirmedDate: confirmedDate ?? null,
+          confirmedTime: confirmedTime ?? null,
+        },
+        studentId: booking.studentId,
+      },
+    })
+
+    return updated
+  })
+
+  return NextResponse.json({ booking: updatedBooking })
+}

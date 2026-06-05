@@ -8,7 +8,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (session.user.role !== 'STUDENT') return NextResponse.json({ error: 'Only students can book services' }, { status: 403 })
 
   const { id: serviceId } = await params
-  const { promoCode } = await req.json().catch(() => ({}))
+  const { promoCode, desiredDate, desiredTime } = await req.json().catch(() => ({}))
 
   const service = await prisma.service.findUnique({
     where: { id: serviceId },
@@ -43,7 +43,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const booking = await prisma.$transaction(async (tx) => {
     const booking = await tx.serviceBooking.create({
-      data: { serviceId, studentId, finalPrice, promoCode: usedPromoCode },
+      data: {
+        serviceId,
+        studentId,
+        finalPrice,
+        promoCode: usedPromoCode,
+        desiredDate: desiredDate ?? null,
+        desiredTime: desiredTime ?? null,
+      },
     })
 
     if (promoRecordId) {
@@ -61,12 +68,27 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     const student = await tx.student.findUnique({ where: { id: studentId }, select: { name: true } })
 
+    const dateStr = desiredDate && desiredTime
+      ? ` на ${desiredDate} в ${desiredTime}`
+      : desiredDate
+        ? ` на ${desiredDate}`
+        : ''
+
     await tx.notification.create({
       data: {
         type: 'SERVICE_BOOKING',
         title: 'Новая запись на услугу',
-        body: `${student?.name ?? 'Студент'} записался на «${service.title}»`,
-        payload: { serviceId, studentId, studentName: student?.name, finalPrice },
+        body: `${student?.name ?? 'Студент'} записался на «${service.title}»${dateStr}`,
+        payload: {
+          bookingId: booking.id,
+          serviceId,
+          studentId,
+          studentName: student?.name,
+          serviceName: service.title,
+          finalPrice,
+          desiredDate: desiredDate ?? null,
+          desiredTime: desiredTime ?? null,
+        },
         teacherId: service.teacherId,
       },
     })

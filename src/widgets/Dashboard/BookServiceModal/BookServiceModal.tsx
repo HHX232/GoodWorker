@@ -72,6 +72,10 @@ export function BookServiceModal({ open, onClose, service }: Props) {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [desiredDate, setDesiredDate] = useState('')
+  const [desiredTime, setDesiredTime] = useState('')
+  const [dateError, setDateError] = useState('')
+  const [timeError, setTimeError] = useState('')
 
   useEffect(() => {
     if (open) {
@@ -84,6 +88,7 @@ export function BookServiceModal({ open, onClose, service }: Props) {
     if (!open) {
       setPromoInput(''); setPromoApplied(false); setDiscount(0)
       setPromoError(''); setError(''); setSuccess(false)
+      setDesiredDate(''); setDesiredTime(''); setDateError(''); setTimeError('')
     }
   }, [open])
 
@@ -114,6 +119,11 @@ export function BookServiceModal({ open, onClose, service }: Props) {
   }
 
   async function handleBook() {
+    let valid = true
+    if (!desiredDate) { setDateError(t('dateRequired')); valid = false } else { setDateError('') }
+    if (!desiredTime) { setTimeError(t('timeRequired')); valid = false } else { setTimeError('') }
+    if (!valid) return
+
     setSubmitting(true)
     setError('')
     const tid = toast.loading(t('booking'))
@@ -121,7 +131,11 @@ export function BookServiceModal({ open, onClose, service }: Props) {
       const res = await fetch(`/api/services/${service!.id}/book`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ promoCode: promoApplied ? promoInput.trim().toUpperCase() : undefined }),
+        body: JSON.stringify({
+          promoCode: promoApplied ? promoInput.trim().toUpperCase() : undefined,
+          desiredDate,
+          desiredTime,
+        }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -158,7 +172,7 @@ export function BookServiceModal({ open, onClose, service }: Props) {
             <div className={styles.successIcon}><IconCheck /></div>
             <h3 className={styles.successTitle}>{t('successTitle')}</h3>
             <p className={styles.successDesc}>
-              {t('successDesc')}
+              {t('successDescNew')}
             </p>
             <button className={styles.doneBtn} onClick={onClose}>{t('done')}</button>
           </div>
@@ -189,6 +203,29 @@ export function BookServiceModal({ open, onClose, service }: Props) {
                     <span className={styles.priceBase}>{basePrice.toLocaleString('ru-RU')} ₽</span>
                   )}
                 </div>
+              </div>
+
+              {/* Date/Time */}
+              <div className={styles.field}>
+                <label className={styles.label}>{t('desiredDateLabel')}</label>
+                <input
+                  className={styles.input}
+                  type="date"
+                  value={desiredDate}
+                  min={new Date().toISOString().split('T')[0]}
+                  onChange={e => { setDesiredDate(e.target.value); setDateError('') }}
+                />
+                {dateError && <div className={styles.error}>{dateError}</div>}
+              </div>
+              <div className={styles.field}>
+                <label className={styles.label}>{t('desiredTimeLabel')}</label>
+                <input
+                  className={styles.input}
+                  type="time"
+                  value={desiredTime}
+                  onChange={e => { setDesiredTime(e.target.value); setTimeError('') }}
+                />
+                {timeError && <div className={styles.error}>{timeError}</div>}
               </div>
 
               {/* Promo code */}

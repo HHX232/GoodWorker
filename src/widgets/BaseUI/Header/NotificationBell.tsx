@@ -6,6 +6,7 @@ import {usePathname, useRouter} from 'next/navigation'
 import React, {useCallback, useEffect, useRef, useState} from 'react'
 import {useLocale, useTranslations} from 'next-intl'
 import styles from './NotificationBell.module.scss'
+import {BookingResponseModal, BookingInfo} from '@/widgets/Dashboard/BookingResponseModal/BookingResponseModal'
 
 function getNotifHref(type: string, payload?: Record<string, unknown>): string {
   if (type === 'NEW_COMPLAINT' || type === 'COMPLAINT_REPLIED' || type === 'COMPLAINT_CLOSED') return '/notifications'
@@ -25,6 +26,7 @@ interface NotifItem {
   body: string
   isRead: boolean
   createdAt: string
+  payload?: Record<string, unknown>
 }
 
 function formatTime(iso: string, t: ReturnType<typeof useTranslations<'notifications'>>): string {
@@ -48,6 +50,7 @@ export function NotificationBell() {
   const [loading, setLoading] = useState(false)
   const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({})
   const wrapRef = useRef<HTMLDivElement>(null)
+  const [bookingModal, setBookingModal] = useState<BookingInfo | null>(null)
 
   const isCreation = CREATION_PAGES.some((p) => pathname.startsWith(p))
   const hasSidebarPanel = PAGES_WITH_SIDEBAR_NOTIFS.includes(pathname)
@@ -123,6 +126,12 @@ export function NotificationBell() {
   if (!session?.user || hasSidebarPanel) return null
 
   return (
+    <>
+    <BookingResponseModal
+      open={!!bookingModal}
+      onClose={() => setBookingModal(null)}
+      booking={bookingModal}
+    />
     <div className={styles.wrap} ref={wrapRef}>
       <button
         type='button'
@@ -178,6 +187,21 @@ export function NotificationBell() {
                     setUnread((c) => Math.max(0, c - 1))
                     fetch('/api/notifications', {method: 'PATCH', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ids: [n.id]})}).catch(() => {})
                   }
+                  if (
+                    n.type === 'SERVICE_BOOKING' &&
+                    (session?.user?.role === 'TEACHER' || session?.user?.role === 'ADMIN') &&
+                    n.payload?.bookingId
+                  ) {
+                    setBookingModal({
+                      id: String(n.payload.bookingId),
+                      studentName: String(n.payload.studentName ?? ''),
+                      serviceName: String(n.payload.serviceName ?? ''),
+                      desiredDate: String(n.payload.desiredDate ?? ''),
+                      desiredTime: String(n.payload.desiredTime ?? ''),
+                      finalPrice: Number(n.payload.finalPrice ?? 0),
+                    })
+                    return
+                  }
                   router.push(getNotifHref(n.type))
                 }}
               >
@@ -197,5 +221,6 @@ export function NotificationBell() {
         </div>
       )}
     </div>
+    </>
   )
 }

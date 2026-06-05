@@ -481,12 +481,32 @@
 .personalToggle {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-size: 13px;
-  color: #444;
+  font-weight: 500;
+  color: #141416;
   cursor: pointer;
+  background: #F7F7FB;
+  border: 1.5px solid #E0E0EA;
+  border-radius: 10px;
+  padding: 10px 14px;
+  transition: background 0.15s, border-color 0.15s;
+  user-select: none;
+
+  input[type='checkbox'] {
+    width: 16px;
+    height: 16px;
+    accent-color: #141416;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  &:hover {
+    background: #efefef;
+    border-color: #C0C0CC;
+  }
 }
 
 .studentPicker {
-  padding-left: 24px;
+  padding-left: 0;
 }
