@@ -211,9 +211,10 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 10px 8px;
-    width: auto;
+    padding: 10px 4px;
+    width: 100%;
     gap: 0;
+    border-radius: 12px;
 
     .label {
       display: none;

@@ -175,57 +175,54 @@ export function NavBar({extraClass}: {extraClass?: string}) {
     topGroups = [
       {items: [{href: '/', label: t('home'), icon: <Icon.Home />}]},
       {items: [{href: '/workflows-list', label: t('roadmaps'), icon: <Icon.Roadmaps />}]},
-      {items: [{href: '/game', label: t('games'), icon: <Icon.Games />}]},
     ]
     bottomGroups = []
   } else if (role === 'TEACHER' || role === 'ADMIN') {
     topGroups = [
       {items: [{href: '/', label: t('home'), icon: <Icon.Home />}]},
+      {id: 'navbar-catalog', items: [
+        {href: '/workflows-list', label: t('courses'),  icon: <Icon.Roadmaps />},
+        {href: '/teachers',       label: t('teachers'), icon: <Icon.Teachers />},
+      ]},
+    ]
+    bottomGroups = [
       {id: 'navbar-create-group', items: [
         {href: '/create-post',     label: t('createPost'),   icon: <Icon.CreatePost />},
         {href: '/create-road-map', label: t('createCourse'), icon: <Icon.CreateRoadmap />},
         {href: '/create-test',     label: t('createTest'),   icon: <Icon.CreateTest />},
       ]},
-      {id: 'navbar-catalog', items: [
-        {href: '/workflows-list', label: t('courses'),  icon: <Icon.Roadmaps />},
-        {href: '/teachers',       label: t('teachers'), icon: <Icon.Teachers />},
-      ]},
-      {items: [
-        ...(userId ? [{href: `/calendar/${userId}`, label: t('calendar'), icon: <Icon.Calendar />}] : []),
-        {href: '/game', label: t('games'), icon: <Icon.Games />},
-      ]},
+      ...(userId ? [{items: [{href: `/calendar/${userId}`, label: t('calendar'), icon: <Icon.Calendar />}]}] : []),
+      {items: [{href: '/game',           label: t('games'),   icon: <Icon.Games />}]},
+      {items: [{href: '/teacher-profile', label: t('profile'), icon: <Icon.Profile />}]},
+      {items: [{href: '/feedback',        label: t('support'), icon: <Icon.Support />}]},
     ]
-    bottomGroups = [{items: [
-      {href: '/teacher-profile', label: t('profile'), icon: <Icon.Profile />},
-      {href: '/feedback',        label: t('support'), icon: <Icon.Support />},
-    ]}]
   } else if (role === 'STUDENT') {
     topGroups = [
       {items: [{href: '/', label: t('home'), icon: <Icon.Home />}]},
       {id: 'navbar-catalog', items: [
         {href: '/workflows-list', label: t('courseCatalog'), icon: <Icon.Roadmaps />},
         {href: '/teachers',       label: t('teachers'),      icon: <Icon.Teachers />},
-        {href: '/messages',       label: t('messages'),      icon: <Icon.Messages />},
       ]},
+    ]
+    bottomGroups = [
+      {items: [{href: '/messages', label: t('messages'), icon: <Icon.Messages />}]},
       {id: 'navbar-tools', items: [
         {href: '/game',     label: t('games'),    icon: <Icon.Games />},
         {href: '/pomodoro', label: t('pomodoro'), icon: <Icon.Pomodoro />},
       ]},
+      {items: [{href: '/student-profile', label: t('profile'), icon: <Icon.Profile />}]},
+      {items: [{href: '/feedback',        label: t('support'), icon: <Icon.Support />}]},
     ]
-    bottomGroups = [{items: [
-      {href: '/student-profile', label: t('profile'), icon: <Icon.Profile />},
-      {href: '/feedback',        label: t('support'), icon: <Icon.Support />},
-    ]}]
   } else {
     topGroups = [
       {items: [{href: '/', label: t('home'), icon: <Icon.Home />}]},
       {items: [{href: '/workflows-list', label: t('roadmaps'), icon: <Icon.Roadmaps />}]},
-      {items: [{href: '/game', label: t('games'), icon: <Icon.Games />}]},
     ]
-    bottomGroups = [{id: 'navbar-login', items: [
-      {href: '/login',    label: t('login'),   icon: <Icon.Login />},
-      {href: '/feedback', label: t('support'), icon: <Icon.Support />},
-    ]}]
+    bottomGroups = [
+      {items: [{href: '/game', label: t('games'), icon: <Icon.Games />}]},
+      {id: 'navbar-login', items: [{href: '/login', label: t('login'), icon: <Icon.Login />}]},
+      {items: [{href: '/feedback', label: t('support'), icon: <Icon.Support />}]},
+    ]
   }
 
   const isActive = (href: string) =>
@@ -295,20 +292,22 @@ export function NavBar({extraClass}: {extraClass?: string}) {
                   <NavGroupSection key={group.id ?? `bg${i}`} group={group} isActive={isActive} />
                 ))}
                 {role && (
-                  <button
-                    className={styles.logout_btn}
-                    onClick={() => signOut({callbackUrl: '/login'})}
-                    title={t('logout')}
-                  >
-                    <span className={styles.icon}>
-                      <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'>
-                        <path d='M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4' />
-                        <polyline points='16 17 21 12 16 7' />
-                        <line x1='21' y1='12' x2='9' y2='12' />
-                      </svg>
-                    </span>
-                    <span className={styles.label}>{t('logout')}</span>
-                  </button>
+                  <div className={styles.groupSection}>
+                    <button
+                      className={styles.logout_btn}
+                      onClick={() => signOut({callbackUrl: '/login'})}
+                      title={t('logout')}
+                    >
+                      <span className={styles.icon}>
+                        <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'>
+                          <path d='M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4' />
+                          <polyline points='16 17 21 12 16 7' />
+                          <line x1='21' y1='12' x2='9' y2='12' />
+                        </svg>
+                      </span>
+                      <span className={styles.label}>{t('logout')}</span>
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
