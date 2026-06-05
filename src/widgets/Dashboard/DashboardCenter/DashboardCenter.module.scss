@@ -90,6 +90,37 @@
   flex-shrink: 0;
 }
 
+// ── Mobile: stack stats + video vertically ─────────────────
+
+@media (max-width: 600px) {
+  .topRow {
+    flex-direction: column;
+  }
+
+  .statsMerged {
+    width: 100%;
+    padding: 12px 14px;
+  }
+
+  .statsItem {
+    gap: 6px;
+  }
+
+  .statsItemValue {
+    font-size: 17px;
+  }
+
+  .videoCallBlock {
+    width: 100%;
+    min-width: 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    gap: 8px;
+  }
+}
+
 .videoCallTitle {
   display: flex;
   align-items: center;
