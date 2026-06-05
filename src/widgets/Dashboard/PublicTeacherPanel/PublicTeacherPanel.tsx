@@ -3,6 +3,8 @@
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { CreateImagesInput } from '@/shared/ui/inputs/CreateImagesInput/CreateImagesInput'
+import SliderForCreateImages from '@/shared/ui/inputs/CreateImagesInput/SliderForCreateImages/SliderForCreateImages'
+import { useState } from 'react'
 import styles from './PublicTeacherPanel.module.scss'
 
 interface CategoryTranslation {
@@ -64,6 +66,13 @@ export function PublicTeacherPanel({
   experiences,
 }: Props) {
   const t = useTranslations('dashboard')
+  const [sliderImages, setSliderImages] = useState<string[]>([])
+  const [sliderIndex, setSliderIndex] = useState(0)
+
+  const openSlider = (urls: string[], index: number) => {
+    setSliderImages(urls)
+    setSliderIndex(index)
+  }
 
   const categoryNames = categories.map(cat => {
     const tr = cat.translations.find(t => t.langCode === locale)
@@ -112,6 +121,7 @@ export function PublicTeacherPanel({
   ]
 
   return (
+    <>
     <aside className={styles.panel}>
       <div className={styles.scroll}>
 
@@ -285,20 +295,24 @@ export function PublicTeacherPanel({
                     )}
                   </div>
                   {exp.description && <p style={{ fontSize: 11, color: '#6B6B7A', marginTop: 4, lineHeight: 1.4 }}>{exp.description}</p>}
-                  {exp.documentUrls && exp.documentUrls.length > 0 && (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
-                      {exp.documentUrls.map((url, i) => (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          key={i}
-                          src={url}
-                          alt=""
-                          style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 6, border: '1px solid #EEEFF8', cursor: 'pointer' }}
-                          onClick={() => window.open(url, '_blank')}
-                        />
-                      ))}
-                    </div>
-                  )}
+                  {(() => {
+                    const photos = (exp.documentUrls ?? []).filter(u => u && u.trim())
+                    if (!photos.length) return null
+                    return (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+                        {photos.map((url, i) => (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            key={i}
+                            src={url}
+                            alt=""
+                            style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 6, border: '1px solid #EEEFF8', cursor: 'pointer' }}
+                            onClick={() => openSlider(photos, i)}
+                          />
+                        ))}
+                      </div>
+                    )
+                  })()}
                 </div>
               ))}
             </div>
@@ -307,5 +321,15 @@ export function PublicTeacherPanel({
 
       </div>
     </aside>
+
+    {sliderImages.length > 0 && (
+      <SliderForCreateImages
+        isModalOpen
+        images={sliderImages}
+        initialIndex={sliderIndex}
+        onClose={() => setSliderImages([])}
+      />
+    )}
+  </>
   )
 }

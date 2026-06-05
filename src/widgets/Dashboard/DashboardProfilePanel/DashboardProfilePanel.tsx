@@ -406,7 +406,7 @@ function ExperienceSection() {
                 )}
                 <CreateImagesInput
                   key={`${item.id}-${(item.documentUrls ?? []).length}`}
-                  activeImages={item.documentUrls ?? []}
+                  activeImages={(item.documentUrls ?? []).filter(u => u && u.trim())}
                   isOnlyShow={false}
                   onFilesChange={(files) => handleExpFiles(item.id, files, item.documentUrls ?? [])}
                   onActiveImagesChange={(urls) => handleExpImagesChange(item.id, urls)}
