@@ -243,6 +243,12 @@ function ExperienceSection() {
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({ title: '', organization: '', yearFrom: '', yearTo: '', description: '' })
 
+  // per-item edit state
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState({ title: '', organization: '', yearFrom: '', yearTo: '', description: '' })
+  const [savingEditId, setSavingEditId] = useState<string | null>(null)
+  const [savingPhotoId, setSavingPhotoId] = useState<string | null>(null)
+
   useEffect(() => {
     fetch('/api/teacher/experience')
       .then(r => r.json())
@@ -267,31 +273,71 @@ function ExperienceSection() {
   const handleDelete = async (id: string) => {
     await fetch(`/api/teacher/experience/${id}`, { method: 'DELETE' })
     setItems(p => p.filter(e => e.id !== id))
+    if (editingId === id) setEditingId(null)
+  }
+
+  const startEdit = (item: ExpItem) => {
+    setEditingId(item.id)
+    setEditForm({
+      title: item.title,
+      organization: item.organization ?? '',
+      yearFrom: String(item.yearFrom),
+      yearTo: item.yearTo ? String(item.yearTo) : '',
+      description: item.description ?? '',
+    })
+  }
+
+  const handleSaveEdit = async (id: string) => {
+    if (!editForm.title || !editForm.yearFrom) return
+    setSavingEditId(id)
+    try {
+      const resp = await fetch(`/api/teacher/experience/${id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: editForm.title,
+          organization: editForm.organization || null,
+          yearFrom: Number(editForm.yearFrom),
+          yearTo: editForm.yearTo ? Number(editForm.yearTo) : null,
+          description: editForm.description || null,
+        }),
+      })
+      const d = await resp.json()
+      if (d.experience) {
+        setItems(p => p.map(i => i.id === id ? d.experience : i))
+        setEditingId(null)
+      }
+    } finally { setSavingEditId(null) }
   }
 
   const handleExpFiles = async (id: string, files: File[], existingUrls: string[]) => {
     if (!files.length) return
-    const newUrls = await Promise.all(files.map(f => new Promise<string>((resolve) => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result as string)
-      reader.readAsDataURL(f)
-    })))
-    const merged = [...existingUrls, ...newUrls]
-    const resp = await fetch(`/api/teacher/experience/${id}`, {
-      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ documentUrls: merged }),
-    })
-    const d = await resp.json()
-    if (d.experience) setItems(p => p.map(i => i.id === id ? d.experience : i))
+    setSavingPhotoId(id)
+    try {
+      const newUrls = await Promise.all(files.map(f => new Promise<string>((resolve) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result as string)
+        reader.readAsDataURL(f)
+      })))
+      const merged = [...existingUrls, ...newUrls]
+      const resp = await fetch(`/api/teacher/experience/${id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documentUrls: merged }),
+      })
+      const d = await resp.json()
+      if (d.experience) setItems(p => p.map(i => i.id === id ? d.experience : i))
+    } finally { setSavingPhotoId(null) }
   }
 
   const handleExpImagesChange = async (id: string, remainingUrls: string[]) => {
-    const resp = await fetch(`/api/teacher/experience/${id}`, {
-      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ documentUrls: remainingUrls }),
-    })
-    const d = await resp.json()
-    if (d.experience) setItems(p => p.map(i => i.id === id ? d.experience : i))
+    setSavingPhotoId(id)
+    try {
+      const resp = await fetch(`/api/teacher/experience/${id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documentUrls: remainingUrls }),
+      })
+      const d = await resp.json()
+      if (d.experience) setItems(p => p.map(i => i.id === id ? d.experience : i))
+    } finally { setSavingPhotoId(null) }
   }
 
   if (loading) return null
@@ -319,21 +365,45 @@ function ExperienceSection() {
         <div className={styles.expList}>
           {items.map(item => (
             <div key={item.id} className={styles.expItem}>
-              <div className={styles.expItemTop}>
-                <div className={styles.expItemInfo}>
-                  <span className={styles.expTitle}>{item.title}</span>
-                  {item.organization && <span className={styles.expOrg}>{item.organization}</span>}
-                  <span className={styles.expYearsLabel}>{item.yearFrom}–{item.yearTo ?? t('expPresent')}</span>
+              {editingId === item.id ? (
+                <div className={styles.expForm}>
+                  <input className={styles.input} placeholder={t('expPositionPlaceholder')} value={editForm.title} onChange={e => setEditForm(p => ({ ...p, title: e.target.value }))} />
+                  <input className={styles.input} placeholder={t('expOrgPlaceholder')} value={editForm.organization} onChange={e => setEditForm(p => ({ ...p, organization: e.target.value }))} />
+                  <div className={styles.expYears}>
+                    <input className={styles.input} type="number" placeholder={t('expYearFromPlaceholder')} value={editForm.yearFrom} onChange={e => setEditForm(p => ({ ...p, yearFrom: e.target.value }))} />
+                    <input className={styles.input} type="number" placeholder={t('expYearToPlaceholder')} value={editForm.yearTo} onChange={e => setEditForm(p => ({ ...p, yearTo: e.target.value }))} />
+                  </div>
+                  <textarea className={styles.expTextarea} placeholder={t('expDescPlaceholder')} rows={2} value={editForm.description} onChange={e => setEditForm(p => ({ ...p, description: e.target.value }))} />
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <button className={styles.saveBtn} onClick={() => handleSaveEdit(item.id)} disabled={savingEditId === item.id || !editForm.title || !editForm.yearFrom}>
+                      {savingEditId === item.id ? t('expSaving') : t('expSave')}
+                    </button>
+                    <button className={styles.expAddBtn} onClick={() => setEditingId(null)}>{t('expCancel')}</button>
+                  </div>
                 </div>
-                <div className={styles.expItemActions}>
-                  {item.verifiedAt && (
-                    <span className={styles.expVerifiedBadge} title={`${new Date(item.verifiedAt).toLocaleDateString()}`}>✓</span>
-                  )}
-                  <button className={styles.expDeleteBtn} onClick={() => handleDelete(item.id)}>×</button>
-                </div>
-              </div>
-              {item.description && <p className={styles.expDesc}>{item.description}</p>}
+              ) : (
+                <>
+                  <div className={styles.expItemTop}>
+                    <div className={styles.expItemInfo}>
+                      <span className={styles.expTitle}>{item.title}</span>
+                      {item.organization && <span className={styles.expOrg}>{item.organization}</span>}
+                      <span className={styles.expYearsLabel}>{item.yearFrom}–{item.yearTo ?? t('expPresent')}</span>
+                    </div>
+                    <div className={styles.expItemActions}>
+                      {item.verifiedAt && (
+                        <span className={styles.expVerifiedBadge} title={`${new Date(item.verifiedAt).toLocaleDateString()}`}>✓</span>
+                      )}
+                      <button className={styles.expEditBtn} onClick={() => startEdit(item)} title={t('expEdit')}>✎</button>
+                      <button className={styles.expDeleteBtn} onClick={() => handleDelete(item.id)}>×</button>
+                    </div>
+                  </div>
+                  {item.description && <p className={styles.expDesc}>{item.description}</p>}
+                </>
+              )}
               <div className={styles.expDocs}>
+                {savingPhotoId === item.id && (
+                  <span style={{ fontSize: 11, color: '#868897' }}>{t('expSaving')}…</span>
+                )}
                 <CreateImagesInput
                   key={`${item.id}-${(item.documentUrls ?? []).length}`}
                   activeImages={item.documentUrls ?? []}

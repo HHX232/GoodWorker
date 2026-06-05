@@ -926,7 +926,8 @@
     "tabTests": "परीक्षण",
     "testsFirstHint": "पहला परीक्षण जोड़ने के लिए «बनाएं» पर क्लिक करें",
     "serviceLabelsLabel": "सेवाएँ",
-    "serviceLabelsPlaceholder": "व्यक्तिगत पाठ, समूह पाठ्यक्रम..."
+    "serviceLabelsPlaceholder": "व्यक्तिगत पाठ, समूह पाठ्यक्रम...",
+    "expEdit": "संपादित करें"
   },
   "SetCommentBlock": {
     "heading": "समीक्षा छोड़ें",
