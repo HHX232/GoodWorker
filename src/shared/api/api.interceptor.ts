@@ -5,13 +5,11 @@ import {getAccessToken} from './auth.helper'
 let consecutiveAuthFailures = 0
 
 const getBaseURL = () => {
+  if (typeof window !== 'undefined') return '/api'
   const explicit = process.env.NEXT_PUBLIC_API_URL_SECOND
   if (explicit) return explicit + '/api'
-  if (typeof window === 'undefined') {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || `http://localhost:${process.env.PORT || 3000}`
-    return appUrl + '/api'
-  }
-  return '/api'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || `http://localhost:${process.env.PORT || 3000}`
+  return appUrl + '/api'
 }
 
 export const instance = axios.create({
