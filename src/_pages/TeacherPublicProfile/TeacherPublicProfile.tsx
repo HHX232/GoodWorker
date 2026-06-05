@@ -31,7 +31,7 @@ interface Props {
   bio?: string | null
   coverPhotoUrl?: string | null
   socialLinks?: Record<string, string> | null
-  experiences?: { id: string; title: string; organization: string | null; yearFrom: number; yearTo: number | null; description: string | null; verifiedAt: string | null }[]
+  experiences?: { id: string; title: string; organization: string | null; yearFrom: number; yearTo: number | null; description: string | null; verifiedAt: string | null; documentUrls: string[] }[]
   serviceLabels?: string[]
 }
 

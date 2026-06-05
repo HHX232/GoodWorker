@@ -54,7 +54,7 @@ interface Props {
   socialLinks?: Record<string, string> | null
   teachingLanguage?: string | null
   serviceLabels?: string[]
-  experiences?: { id: string; title: string; organization: string | null; yearFrom: number; yearTo: number | null; description: string | null; verifiedAt: string | null }[]
+  experiences?: { id: string; title: string; organization: string | null; yearFrom: number; yearTo: number | null; description: string | null; verifiedAt: string | null; documentUrls: string[] }[]
 }
 
 export function PublicTeacherPanel({
@@ -285,6 +285,20 @@ export function PublicTeacherPanel({
                     )}
                   </div>
                   {exp.description && <p style={{ fontSize: 11, color: '#6B6B7A', marginTop: 4, lineHeight: 1.4 }}>{exp.description}</p>}
+                  {exp.documentUrls && exp.documentUrls.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+                      {exp.documentUrls.map((url, i) => (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          key={i}
+                          src={url}
+                          alt=""
+                          style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 6, border: '1px solid #EEEFF8', cursor: 'pointer' }}
+                          onClick={() => window.open(url, '_blank')}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

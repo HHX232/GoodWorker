@@ -62,7 +62,7 @@ export default async function UserPublicPage({ params }: Props) {
     prisma.videoCallRoom.count({ where: { ownerId: id } }),
     prisma.teacherExperience.findMany({
       where: { teacherId: id },
-      select: { id: true, title: true, organization: true, yearFrom: true, yearTo: true, description: true, verifiedAt: true },
+      select: { id: true, title: true, organization: true, yearFrom: true, yearTo: true, description: true, verifiedAt: true, documentUrls: true },
       orderBy: { yearFrom: 'desc' },
     }),
   ])

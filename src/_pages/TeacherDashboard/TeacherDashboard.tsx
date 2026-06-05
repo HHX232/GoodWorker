@@ -97,9 +97,16 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
   const [phone, setPhone] = useState(initialData.phone ?? '')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(initialData.avatarUrl)
   const [serviceLabels, setServiceLabels] = useState<string[]>(initialData.serviceLabels ?? [])
-  const [saving, setSaving] = useState(false)
+
+  // dirty flags — show save button only when section has unsaved changes
+  const [personalDirty, setPersonalDirty] = useState(false)
+  const [servicesDirty, setServicesDirty] = useState(false)
+
+  const [savingPersonal, setSavingPersonal] = useState(false)
+  const [savingServices, setSavingServices] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [saveSuccess, setSaveSuccess] = useState(false)
+  const [servicesSuccess, setServicesSuccess] = useState(false)
 
   const [cropSrc, setCropSrc] = useState<string | null>(null)
   const [cropOpen, setCropOpen] = useState(false)
@@ -131,20 +138,21 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
 
   const handleCropSave = (croppedFile: File) => {
     const reader = new FileReader()
-    reader.onload = () => setAvatarUrl(reader.result as string)
+    reader.onload = () => { setAvatarUrl(reader.result as string); setPersonalDirty(true) }
     reader.readAsDataURL(croppedFile)
     setCropOpen(false)
     if (cropSrc) URL.revokeObjectURL(cropSrc)
     setCropSrc(null)
   }
 
-  const handleSave = async () => {
-    setSaving(true)
+  const handleSavePersonal = async () => {
+    setSavingPersonal(true)
     setSaveError('')
     setSaveSuccess(false)
     const tid = toast.loading(t('savingShort'))
     try {
-      await updateProfile({ name: name.trim(), phone: phone.trim() || null, avatarUrl, serviceLabels })
+      await updateProfile({ name: name.trim(), phone: phone.trim() || null, avatarUrl })
+      setPersonalDirty(false)
       setSaveSuccess(true)
       toast.success(t('saveSuccessShort'), { id: tid })
       setTimeout(() => setSaveSuccess(false), 3000)
@@ -153,7 +161,23 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
       setSaveError(msg)
       toast.error(t('saveErrorMsg'), { id: tid })
     } finally {
-      setSaving(false)
+      setSavingPersonal(false)
+    }
+  }
+
+  const handleSaveServices = async () => {
+    setSavingServices(true)
+    const tid = toast.loading(t('savingShort'))
+    try {
+      await updateProfile({ serviceLabels })
+      setServicesDirty(false)
+      setServicesSuccess(true)
+      toast.success(t('saveSuccessShort'), { id: tid })
+      setTimeout(() => setServicesSuccess(false), 3000)
+    } catch {
+      toast.error(t('saveErrorMsg'), { id: tid })
+    } finally {
+      setSavingServices(false)
     }
   }
 
@@ -229,21 +253,26 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
         phone={phone}
         avatarUrl={avatarUrl}
         statsId={statsId}
-        saving={saving}
+        savingPersonal={savingPersonal}
+        savingServices={savingServices}
+        personalDirty={personalDirty}
+        servicesDirty={servicesDirty}
         saveError={saveError}
         saveSuccess={saveSuccess}
+        servicesSuccess={servicesSuccess}
         avatarInputRef={avatarInputRef}
-        onNameChange={setName}
-        onPhoneChange={setPhone}
+        onNameChange={v => { setName(v); setPersonalDirty(true) }}
+        onPhoneChange={v => { setPhone(v); setPersonalDirty(true) }}
         onAvatarUploadClick={() => avatarInputRef.current?.click()}
-        onAvatarRemove={() => setAvatarUrl(null)}
-        onSave={handleSave}
+        onAvatarRemove={() => { setAvatarUrl(null); setPersonalDirty(true) }}
+        onSavePersonal={handleSavePersonal}
+        onSaveServices={handleSaveServices}
         onChangeEmail={() => setEmailModalOpen(true)}
         onChangePassword={() => setPasswordModalOpen(true)}
         onTranscripts={() => setTranscriptsOpen(true)}
         onBookmarks={() => setBookmarksOpen(true)}
         serviceLabels={serviceLabels}
-        onServiceLabelsChange={setServiceLabels}
+        onServiceLabelsChange={v => { setServiceLabels(v); setServicesDirty(true) }}
       />
 
       <input

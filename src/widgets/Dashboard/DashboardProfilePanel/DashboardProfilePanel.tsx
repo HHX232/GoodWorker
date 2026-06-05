@@ -419,7 +419,6 @@ interface Props {
   phone: string
   avatarUrl: string | null
   statsId: string
-  saving: boolean
   saveError: string
   saveSuccess: boolean
   avatarInputRef: RefObject<HTMLInputElement | null>
@@ -427,22 +426,30 @@ interface Props {
   onPhoneChange: (v: string) => void
   onAvatarUploadClick: () => void
   onAvatarRemove: () => void
-  onSave: () => void
   onChangeEmail: () => void
   onChangePassword: () => void
   onTranscripts: () => void
   onBookmarks: () => void
   serviceLabels?: string[]
   onServiceLabelsChange?: (v: string[]) => void
+  savingPersonal?: boolean
+  savingServices?: boolean
+  personalDirty?: boolean
+  servicesDirty?: boolean
+  servicesSuccess?: boolean
+  onSavePersonal?: () => void
+  onSaveServices?: () => void
 }
 
 export function DashboardProfilePanel({
   name, email, phone, avatarUrl, statsId,
-  saving, saveError, saveSuccess,
+  savingPersonal = false, savingServices = false,
+  personalDirty = false, servicesDirty = false,
+  saveError, saveSuccess, servicesSuccess = false,
   avatarInputRef,
   onNameChange, onPhoneChange,
   onAvatarUploadClick, onAvatarRemove,
-  onSave,
+  onSavePersonal, onSaveServices,
   onChangeEmail, onChangePassword,
   onTranscripts, onBookmarks,
   serviceLabels = [],
@@ -524,24 +531,14 @@ export function DashboardProfilePanel({
                   placeholder="+7 999 000 00 00"
                 />
               </div>
-              <div className={styles.field}>
-                <label className={styles.label}>{t('serviceLabelsLabel')}</label>
-                <input
-                  className={styles.input}
-                  type="text"
-                  value={serviceLabels.join(', ')}
-                  onChange={e => onServiceLabelsChange?.(
-                    e.target.value.split(',').map(s => s.trim()).filter(Boolean)
-                  )}
-                  placeholder={t('serviceLabelsPlaceholder')}
-                />
-              </div>
-              <div className={styles.saveRow}>
-                <button className={styles.saveBtn} onClick={onSave} disabled={saving}>
-                  {saving && <span className={styles.spinner} />}
-                  {saving ? t('saving') : t('saveChanges')}
-                </button>
-              </div>
+              {personalDirty && (
+                <div className={styles.saveRow}>
+                  <button className={styles.saveBtn} onClick={onSavePersonal} disabled={savingPersonal}>
+                    {savingPersonal && <span className={styles.spinner} />}
+                    {savingPersonal ? t('saving') : t('saveChanges')}
+                  </button>
+                </div>
+              )}
               {saveError && <span className={styles.errorMsg}>{saveError}</span>}
               {saveSuccess && <span className={styles.successMsg}>{t('changesSaved')}</span>}
               {avatarUrl && (
@@ -550,6 +547,29 @@ export function DashboardProfilePanel({
                 </button>
               )}
             </div>
+
+            <div className={styles.section}>
+              <div className={styles.sectionLabel}>{t('serviceLabelsLabel')}</div>
+              <input
+                className={styles.input}
+                type="text"
+                value={serviceLabels.join(', ')}
+                onChange={e => onServiceLabelsChange?.(
+                  e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                )}
+                placeholder={t('serviceLabelsPlaceholder')}
+              />
+              {servicesDirty && (
+                <div className={styles.saveRow}>
+                  <button className={styles.saveBtn} onClick={onSaveServices} disabled={savingServices}>
+                    {savingServices && <span className={styles.spinner} />}
+                    {savingServices ? t('saving') : t('saveChanges')}
+                  </button>
+                </div>
+              )}
+              {servicesSuccess && <span className={styles.successMsg}>{t('changesSaved')}</span>}
+            </div>
+
             <ExperienceSection />
           </div>
 
