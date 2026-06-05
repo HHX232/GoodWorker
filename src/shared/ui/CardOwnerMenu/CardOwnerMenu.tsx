@@ -6,9 +6,11 @@ import styles from './CardOwnerMenu.module.scss'
 interface Props {
   onDelete: () => void
   deleteLabel: string
+  onEdit?: () => void
+  editLabel?: string
 }
 
-export function CardOwnerMenu({ onDelete, deleteLabel }: Props) {
+export function CardOwnerMenu({ onDelete, deleteLabel, onEdit, editLabel }: Props) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -42,6 +44,19 @@ export function CardOwnerMenu({ onDelete, deleteLabel }: Props) {
 
       {open && (
         <div className={styles.menu}>
+          {onEdit && (
+            <button
+              type="button"
+              className={styles.editBtn}
+              onClick={e => { e.preventDefault(); e.stopPropagation(); setOpen(false); onEdit() }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+              {editLabel ?? 'Edit'}
+            </button>
+          )}
           <button
             type="button"
             className={styles.deleteBtn}

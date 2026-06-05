@@ -966,7 +966,8 @@
     "testsFirstHint": "Нажмите «Создать», чтобы добавить первый тест",
     "serviceLabelsLabel": "Услуги",
     "serviceLabelsPlaceholder": "Индивидуальные уроки, Групповые курсы...",
-    "expEdit": "Редактировать"
+    "expEdit": "Редактировать",
+    "editItem": "Редактировать"
   },
   "SetCommentBlock": {
     "heading": "Оставить отзыв",

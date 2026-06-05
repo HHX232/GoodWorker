@@ -81,3 +81,36 @@ export function formatConverted(amountRub: number, currency: CurrencyInfo): stri
 
 /** Currencies to show prominently (first row) — excludes RUB (it's the input). */
 export const FEATURED_CURRENCIES = CURRENCIES.filter((c) => c.code !== 'RUB')
+
+/** Default display currency per app locale. */
+export const LOCALE_DEFAULT_CURRENCY: Record<string, string> = {
+  ru: 'BYN',
+  en: 'USD',
+  zh: 'CNY',
+  hi: 'INR',
+}
+
+/** Convert an amount from one currency to another using RUB as intermediate. */
+export function convertBetween(amount: number, fromCode: string, toCode: string): number {
+  if (fromCode === toCode) return amount
+  const from = CURRENCIES.find(c => c.code === fromCode)
+  const to = CURRENCIES.find(c => c.code === toCode)
+  if (!from || !to || from.rateFromRub === 0) return amount
+  const inRub = amount / from.rateFromRub
+  return inRub * to.rateFromRub
+}
+
+/** Format a price in its native currency with symbol. */
+export function formatPrice(amount: number, currencyCode: string): string {
+  const cur = CURRENCIES.find(c => c.code === currencyCode)
+  if (!cur) return `${amount.toLocaleString()} ${currencyCode}`
+  const formatted = amount >= 1000
+    ? Math.round(amount).toLocaleString('ru-RU')
+    : amount % 1 === 0
+      ? amount.toString()
+      : amount.toFixed(2)
+  return `${formatted} ${cur.symbol}`
+}
+
+/** Small set of currencies to show in the price tooltip. */
+export const TOOLTIP_CURRENCIES = ['USD', 'EUR', 'RUB', 'CNY', 'KZT']

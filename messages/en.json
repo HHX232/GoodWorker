@@ -966,7 +966,8 @@
     "testsFirstHint": "Click \"Create\" to add your first test",
     "serviceLabelsLabel": "Services",
     "serviceLabelsPlaceholder": "Individual lessons, Group courses...",
-    "expEdit": "Edit"
+    "expEdit": "Edit",
+    "editItem": "Edit"
   },
   "SetCommentBlock": {
     "heading": "Leave a review",

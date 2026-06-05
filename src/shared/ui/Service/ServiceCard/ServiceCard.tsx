@@ -1,7 +1,9 @@
 'use client'
 
 import { CardOwnerMenu } from '@/shared/ui/CardOwnerMenu/CardOwnerMenu'
+import { CURRENCIES, TOOLTIP_CURRENCIES, convertBetween } from '@/shared/utils/currencyConverter'
 import { useTranslations } from 'next-intl'
+import { useState } from 'react'
 import styles from './ServiceCard.module.scss'
 
 export interface ServiceCardProps {
@@ -13,12 +15,14 @@ export interface ServiceCardProps {
   timeTo: string
   isGroup: boolean
   price: number
+  currency?: string
   category?: { translations: { langCode: string; name: string }[] } | null
   locale?: string
   originalLangCode?: string
   isTranslated?: boolean
   isOwner?: boolean
   onDelete?: () => void
+  onEdit?: () => void
   onBook?: () => void
 }
 
@@ -100,23 +104,49 @@ export function ServiceCard({
   timeTo,
   isGroup,
   price,
+  currency = 'BYN',
   category,
   locale = 'ru',
   originalLangCode,
   isTranslated,
   isOwner = false,
   onDelete,
+  onEdit,
   onBook,
 }: ServiceCardProps) {
   const tDash = useTranslations('dashboard')
   const categoryName = getCategoryName(category, locale)
   const gradient = pickGradient(title)
   const ls = LOCALE_STRINGS[locale] ?? LOCALE_STRINGS.ru
+  const [tooltipVisible, setTooltipVisible] = useState(false)
+
+  const currencyInfo = CURRENCIES.find(c => c.code === currency)
+  const priceLabel = currencyInfo
+    ? `${price.toLocaleString('ru-RU')} ${currencyInfo.symbol}`
+    : `${price.toLocaleString('ru-RU')} ${currency}`
+
+  const tooltipItems = TOOLTIP_CURRENCIES
+    .filter(code => code !== currency)
+    .map(code => {
+      const cur = CURRENCIES.find(c => c.code === code)
+      if (!cur) return null
+      const converted = convertBetween(price, currency, code)
+      const formatted = converted >= 1000
+        ? Math.round(converted).toLocaleString('ru-RU')
+        : converted >= 1 ? converted.toFixed(2) : converted.toFixed(4)
+      return { code, symbol: cur.symbol, flag: cur.flag, label: `${formatted} ${cur.symbol}` }
+    })
+    .filter(Boolean) as { code: string; symbol: string; flag: string; label: string }[]
 
   return (
     <div className={styles.card}>
       {isOwner && onDelete && (
-        <CardOwnerMenu onDelete={onDelete} deleteLabel={tDash('deleteItem')} />
+        <CardOwnerMenu
+          onDelete={onDelete}
+          deleteLabel={tDash('deleteItem')}
+          onEdit={onEdit}
+          editLabel={tDash('editItem')}
+        />
       )}
       <div
         className={styles.bg}
@@ -155,7 +185,24 @@ export function ServiceCard({
             {isGroup ? <IconGroup /> : <IconPerson />}
           </span>
           <span className={styles.timeRange}>{timeFrom}–{timeTo}</span>
-          <span className={styles.price}>{price.toLocaleString()} ₽</span>
+          <span
+            className={styles.price}
+            onMouseEnter={() => setTooltipVisible(true)}
+            onMouseLeave={() => setTooltipVisible(false)}
+          >
+            {priceLabel}
+            {tooltipVisible && tooltipItems.length > 0 && (
+              <span className={styles.priceTooltip}>
+                {tooltipItems.map(item => (
+                  <span key={item.code} className={styles.tooltipRow}>
+                    <span>{item.flag}</span>
+                    <span className={styles.tooltipCode}>{item.code}</span>
+                    <span className={styles.tooltipAmount}>{item.label}</span>
+                  </span>
+                ))}
+              </span>
+            )}
+          </span>
         </div>
       </div>
 

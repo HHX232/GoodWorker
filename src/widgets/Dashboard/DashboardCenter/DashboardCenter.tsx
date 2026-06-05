@@ -48,6 +48,7 @@ interface ServiceItem {
   timeTo: string
   isGroup: boolean
   price: number
+  currency?: string
   category?: { translations: { langCode: string; name: string }[] } | null
   originalLangCode?: string
   isTranslated?: boolean
@@ -114,6 +115,7 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
   const [loading, setLoading] = useState(true)
   const [pickerOpen, setPickerOpen] = useState(false)
   const [serviceModalOpen, setServiceModalOpen] = useState(false)
+  const [editingService, setEditingService] = useState<ServiceItem | null>(null)
   const [bookingService, setBookingService] = useState<ServiceItem | null>(null)
   const [videoOpen, setVideoOpen] = useState(false)
 
@@ -353,8 +355,10 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
               locale={locale}
               originalLangCode={s.originalLangCode}
               isTranslated={s.isTranslated}
+              currency={s.currency}
               isOwner={isOwner}
               onDelete={isOwner ? () => handleDeleteService(s.id) : undefined}
+              onEdit={isOwner ? () => { setEditingService(s); setServiceModalOpen(true) } : undefined}
               onBook={canBook ? () => setBookingService(s) : undefined}
             />
           ))}
@@ -394,9 +398,17 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
 
       <CreateServiceModal
         open={serviceModalOpen}
-        onClose={() => setServiceModalOpen(false)}
+        onClose={() => { setServiceModalOpen(false); setEditingService(null) }}
         teacherId={statsId}
-        onCreated={(svc) => setServices(prev => [svc as ServiceItem, ...prev])}
+        editService={editingService ?? undefined}
+        onCreated={(svc) => {
+          const service = svc as ServiceItem
+          if (editingService) {
+            setServices(prev => prev.map(s => s.id === service.id ? { ...s, ...service } : s))
+          } else {
+            setServices(prev => [service, ...prev])
+          }
+        }}
       />
 
       <BookServiceModal

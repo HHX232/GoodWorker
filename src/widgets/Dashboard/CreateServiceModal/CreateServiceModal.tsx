@@ -2,7 +2,7 @@
 
 import { CategorySelect } from '@/shared/ui/inputs/CategorySelect/CategorySelect'
 import { ServiceCard } from '@/shared/ui/Service/ServiceCard/ServiceCard'
-import { CURRENCIES } from '@/shared/utils/currencyConverter'
+import { CURRENCIES, LOCALE_DEFAULT_CURRENCY } from '@/shared/utils/currencyConverter'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -15,6 +15,19 @@ interface CategoryOption {
   translations: { langCode: string; name: string }[]
 }
 
+interface EditServiceData {
+  id: string
+  title: string
+  photoUrl: string | null
+  duration: number
+  timeFrom: string
+  timeTo: string
+  isGroup: boolean
+  price: number
+  currency?: string
+  category?: { translations: { langCode: string; name: string }[] } | null
+}
+
 interface Props {
   open: boolean
   onClose: () => void
@@ -22,6 +35,7 @@ interface Props {
   onCreated: (service: unknown) => void
   initialStudentId?: string
   initialIsPersonal?: boolean
+  editService?: EditServiceData
 }
 
 const DURATION_VALUES = [30, 45, 60, 90, 120, 180]
@@ -89,9 +103,11 @@ function TimeSelect({ value, onChange }: { value: string; onChange: (v: string) 
   )
 }
 
-export function CreateServiceModal({ open, onClose, teacherId, onCreated, initialStudentId, initialIsPersonal }: Props) {
+export function CreateServiceModal({ open, onClose, teacherId, onCreated, initialStudentId, initialIsPersonal, editService }: Props) {
   const locale = useLocale()
   const t = useTranslations('dashboard.createService')
+  const defaultCurrency = LOCALE_DEFAULT_CURRENCY[locale] ?? 'BYN'
+  const isEditing = !!editService
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -114,7 +130,7 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated, initia
   const [personalStudentId, setPersonalStudentId] = useState('')
   const [students, setStudents] = useState<{ id: string; name: string; avatarUrl: string | null }[]>([])
   const [studentsLoading, setStudentsLoading] = useState(false)
-  const [currency, setCurrency] = useState('BYN')
+  const [currency, setCurrency] = useState(defaultCurrency)
 
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -145,7 +161,7 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated, initia
       .catch(() => {})
   }, [open])
 
-  // Reset on close, pre-fill on open when initialIsPersonal is set
+  // Reset on close; pre-fill when editing or when initialIsPersonal is set
   useEffect(() => {
     if (!open) {
       setTitle(''); setDescription(''); setPhotoUrl(null)
@@ -155,7 +171,19 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated, initia
       setPromoOpen(false); setPromoCode(''); setPromoDiscount(''); setPromoLimit(''); setPromoConditions('')
       setError('')
       setIsPersonal(false); setPersonalStudentId(''); setStudents([])
-      setCurrency('BYN')
+      setCurrency(defaultCurrency)
+    } else if (editService) {
+      setTitle(editService.title)
+      setDescription('')
+      setPhotoUrl(editService.photoUrl)
+      setDuration(editService.duration)
+      setTimeFrom(editService.timeFrom)
+      setTimeTo(editService.timeTo)
+      setIsGroup(editService.isGroup)
+      setPrice(String(editService.price))
+      setCurrency(editService.currency ?? defaultCurrency)
+      const catId = editService.category?.translations?.[0] ? undefined : undefined
+      if (catId) setCategoryIds([catId])
     } else if (initialIsPersonal) {
       setIsPersonal(true)
       if (initialStudentId) setPersonalStudentId(initialStudentId)
@@ -186,7 +214,7 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated, initia
 
     setSubmitting(true)
     setError('')
-    const tid = toast.loading(t('creating'))
+    const tid = toast.loading(isEditing ? t('saving') : t('creating'))
     try {
       const body: Record<string, unknown> = {
         title: title.trim(),
@@ -212,8 +240,8 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated, initia
         body.isPersonal = true
         body.targetStudentId = personalStudentId
       }
-      const res = await fetch('/api/services', {
-        method: 'POST',
+      const res = await fetch(isEditing ? `/api/services/${editService!.id}` : '/api/services', {
+        method: isEditing ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
@@ -515,7 +543,7 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated, initia
         <div className={styles.footer}>
           <button type="button" className={styles.cancelBtn} onClick={onClose} disabled={submitting}>{t('cancel')}</button>
           <button type="submit" form="service-form" className={styles.submitBtn} disabled={submitting}>
-            {submitting ? t('saving') : t('create')}
+            {submitting ? t('saving') : isEditing ? t('save') : t('create')}
           </button>
         </div>
       </div>

@@ -38,6 +38,26 @@
   animation: fadeIn 0.12s ease;
 }
 
+.editBtn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #141416;
+  font-size: 13px;
+  font-family: 'Roboto', sans-serif;
+  cursor: pointer;
+  transition: background 0.12s;
+
+  &:hover {
+    background: #f5f5f9;
+  }
+}
+
 .deleteBtn {
   display: flex;
   align-items: center;
