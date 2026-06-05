@@ -143,7 +143,7 @@ function NavLink({item, active}: {item: NavItem; active: boolean}) {
 
 function NavGroupSection({group, isActive}: {group: NavGroup; isActive: (href: string) => boolean}) {
   return (
-    <div id={group.id}>
+    <div className={styles.groupSection} id={group.id}>
       {group.items.map(item => (
         <NavLink key={item.href} item={item} active={isActive(item.href)} />
       ))}

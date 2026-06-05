@@ -47,6 +47,7 @@ export default function LoginPage() {
       } else {
         toast.success(t('successLogin'))
         router.push('/')
+        router.refresh()
       }
     } catch {
       toast.error(t('unexpectedError'))
