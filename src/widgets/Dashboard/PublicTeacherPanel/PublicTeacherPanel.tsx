@@ -54,6 +54,7 @@ interface Props {
   socialLinks?: Record<string, string> | null
   teachingLanguage?: string | null
   availableServices?: string[]
+  experiences?: { id: string; title: string; organization: string | null; yearFrom: number; yearTo: number | null; description: string | null; verifiedAt: string | null }[]
 }
 
 const ALL_SERVICE_KEYS = ['individual', 'group', 'homework', 'consultation'] as const
@@ -62,6 +63,7 @@ export function PublicTeacherPanel({
   name, avatarUrl, isVip, createdAt, studentCount, postCount, callCount, categories, locale = 'en',
   bio, coverPhotoUrl, socialLinks, teachingLanguage,
   availableServices = ['individual', 'group', 'homework', 'consultation'],
+  experiences,
 }: Props) {
   const t = useTranslations('dashboard')
 
@@ -265,6 +267,32 @@ export function PublicTeacherPanel({
               </div>
             </div>
           </>
+        )}
+
+        {/* Experience */}
+        {experiences && experiences.length > 0 && (
+          <div style={{ marginTop: 16, borderTop: '1px solid #EEEFF8', paddingTop: 16 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.8px', textTransform: 'uppercase', color: '#ABABAB', marginBottom: 10 }}>
+              Опыт
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {experiences.map(exp => (
+                <div key={exp.id} style={{ border: '1px solid #F0F0F0', borderRadius: 10, padding: '8px 10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 6 }}>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: '#1C1C22' }}>{exp.title}</div>
+                      {exp.organization && <div style={{ fontSize: 11, color: '#6B6B7A' }}>{exp.organization}</div>}
+                      <div style={{ fontSize: 11, color: '#ABABAB' }}>{exp.yearFrom}–{exp.yearTo ?? 'н.в.'}</div>
+                    </div>
+                    {exp.verifiedAt && (
+                      <span style={{ fontSize: 11, color: '#22c55e', fontWeight: 700, flexShrink: 0 }} title={`Подтверждено ${new Date(exp.verifiedAt).toLocaleDateString()}`}>✓</span>
+                    )}
+                  </div>
+                  {exp.description && <p style={{ fontSize: 11, color: '#6B6B7A', marginTop: 4, lineHeight: 1.4 }}>{exp.description}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
       </div>

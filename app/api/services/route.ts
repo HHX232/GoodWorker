@@ -63,6 +63,7 @@ export async function POST(req: NextRequest) {
       promoCode,
       targetStudentId,
       isPersonal,
+      currency,
     } = body
 
     if (!title || !duration || !timeFrom || !timeTo || price == null) {
@@ -81,6 +82,7 @@ export async function POST(req: NextRequest) {
         timeTo,
         isGroup: Boolean(isGroup),
         price: Number(price),
+        currency: currency ?? 'BYN',
         isPersonal: Boolean(isPersonal),
         targetStudentId: (isPersonal && targetStudentId) ? targetStudentId : null,
         ...(promoCode

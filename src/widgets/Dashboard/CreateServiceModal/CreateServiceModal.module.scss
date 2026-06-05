@@ -328,6 +328,9 @@
 
 .priceWrap {
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .priceSuffix {
@@ -339,6 +342,20 @@
   font-weight: 600;
   color: #534AB7;
   pointer-events: none;
+}
+
+.currencySelect {
+  border: none;
+  background: #F5F5F9;
+  border-radius: 8px;
+  padding: 4px 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111118;
+  cursor: pointer;
+  outline: none;
+  flex-shrink: 0;
+  &:focus { outline: none; }
 }
 
 // ── Promo ────────────────────────────────────────────────────

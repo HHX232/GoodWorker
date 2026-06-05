@@ -62,7 +62,7 @@ export function SaveRoadMapButton({ editId }: Props) {
     setPublishOpen(true)
   }
 
-  const handlePublish = async (price: number, nodeAccessType: RoadmapNodeAccessType | null) => {
+  const handlePublish = async (price: number, nodeAccessType: RoadmapNodeAccessType | null, currency: string) => {
     if (!draft) return
     setSaving(true)
     const toastId = toast.loading(t('saving'))
@@ -75,6 +75,7 @@ export function SaveRoadMapButton({ editId }: Props) {
           price,
           previewImageUrl: draft.previewImageUrl,
           nodeAccessType,
+          currency,
         })
       } else {
         roadmap = await RoadmapService.create({
@@ -83,6 +84,7 @@ export function SaveRoadMapButton({ editId }: Props) {
           price,
           previewImageUrl: draft.previewImageUrl,
           nodeAccessType,
+          currency,
         })
       }
       toast.success(t('saveSuccess'), {id: toastId})

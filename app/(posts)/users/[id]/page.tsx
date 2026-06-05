@@ -31,7 +31,7 @@ export default async function UserPublicPage({ params }: Props) {
   const { id } = await params
   const session = await auth()
 
-  const [teacher, studentCount, callCount] = await Promise.all([
+  const [teacher, studentCount, callCount, experiences] = await Promise.all([
     prisma.teacher.findUnique({
       where: { id },
       select: {
@@ -59,6 +59,11 @@ export default async function UserPublicPage({ params }: Props) {
     }),
     prisma.teacherStudent.count({ where: { teacherId: id } }),
     prisma.videoCallRoom.count({ where: { ownerId: id } }),
+    prisma.teacherExperience.findMany({
+      where: { teacherId: id },
+      select: { id: true, title: true, organization: true, yearFrom: true, yearTo: true, description: true, verifiedAt: true },
+      orderBy: { yearFrom: 'desc' },
+    }),
   ])
 
   if (!teacher) notFound()
@@ -81,6 +86,7 @@ export default async function UserPublicPage({ params }: Props) {
       bio={teacher.bio}
       coverPhotoUrl={teacher.coverPhotoUrl}
       socialLinks={teacher.socialLinks as Record<string, string> | null}
+      experiences={experiences.map(e => ({ ...e, verifiedAt: e.verifiedAt ? e.verifiedAt.toISOString() : null }))}
     />
   )
 }

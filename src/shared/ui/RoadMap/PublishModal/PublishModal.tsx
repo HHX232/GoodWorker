@@ -1,7 +1,7 @@
 'use client'
 import { RoadmapNodeAccessType } from '@/features/services/RoadmapService.service'
 import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
-import { FEATURED_CURRENCIES, formatConverted } from '@/shared/utils/currencyConverter'
+import { CURRENCIES, FEATURED_CURRENCIES, formatConverted } from '@/shared/utils/currencyConverter'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -13,7 +13,7 @@ interface Props {
   isOpen: boolean
   onClose: () => void
   hasPaywalledNodes: boolean
-  onConfirm: (price: number, nodeAccessType: RoadmapNodeAccessType | null) => void
+  onConfirm: (price: number, nodeAccessType: RoadmapNodeAccessType | null, currency: string) => void
 }
 
 const ACCESS_OPTIONS: {
@@ -67,6 +67,7 @@ export function PublishModal({ isOpen, onClose, hasPaywalledNodes, onConfirm }: 
   const [step, setStep] = useState<Step>(hasPaywalledNodes ? 'access-type' : 'price')
   const [selectedAccess, setSelectedAccess] = useState<RoadmapNodeAccessType | null>(null)
   const [priceInput, setPriceInput] = useState('')
+  const [currency, setCurrency] = useState('BYN')
   const [isVip, setIsVip] = useState<boolean | null>(null)
   const [vipLoading, setVipLoading] = useState(false)
 
@@ -77,6 +78,7 @@ export function PublishModal({ isOpen, onClose, hasPaywalledNodes, onConfirm }: 
     if (!isOpen) return
     setPriceInput('')
     setSelectedAccess(null)
+    setCurrency('BYN')
     setStep(hasPaywalledNodes ? 'access-type' : 'price')
     setIsVip(null)
   }, [isOpen, hasPaywalledNodes])
@@ -98,13 +100,13 @@ export function PublishModal({ isOpen, onClose, hasPaywalledNodes, onConfirm }: 
     if (selectedAccess === 'PURCHASE') {
       setStep('price')
     } else {
-      onConfirm(0, selectedAccess)
+      onConfirm(0, selectedAccess, currency)
       onClose()
     }
   }
 
   const handlePublish = () => {
-    onConfirm(priceNum, hasPaywalledNodes ? selectedAccess : null)
+    onConfirm(priceNum, hasPaywalledNodes ? selectedAccess : null, currency)
     onClose()
   }
 
@@ -193,7 +195,16 @@ export function PublishModal({ isOpen, onClose, hasPaywalledNodes, onConfirm }: 
                 value={priceInput}
                 onChange={(e) => setPriceInput(e.target.value)}
               />
-              <span className={styles.currency_base}>₽</span>
+              <select
+                style={{ border: 'none', background: '#F5F5F9', borderRadius: 8, padding: '4px 6px', fontSize: 13, fontWeight: 600, color: '#111', cursor: 'pointer', outline: 'none' }}
+                value={currency}
+                onChange={e => setCurrency(e.target.value)}
+              >
+                {['BYN','RUB','USD','EUR','UAH','GBP','KZT','UZS'].map(code => {
+                  const info = CURRENCIES.find(c => c.code === code)
+                  return <option key={code} value={code}>{info?.symbol ?? code} {code}</option>
+                })}
+              </select>
               {!isPaid && <span className={styles.free_badge}>{t('priceFree')}</span>}
             </div>
           </div>

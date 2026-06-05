@@ -84,7 +84,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
 
     const body = await req.json()
-    const { title, content, price, previewImageUrl, nodeAccessType } = body
+    const { title, content, price, previewImageUrl, nodeAccessType, currency } = body
 
     const updated = await prisma.roadmap.update({
       where: { id },
@@ -94,6 +94,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         ...(price !== undefined && { price: Number(price) || 0 }),
         ...(previewImageUrl !== undefined && { previewImageUrl }),
         ...(nodeAccessType !== undefined && { nodeAccessType: nodeAccessType ?? null }),
+        ...(currency !== undefined && { currency }),
       },
       include: {
         teacher: { select: { id: true, name: true, avatarUrl: true } },

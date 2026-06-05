@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { title, content, price = 0, previewImageUrl, nodeAccessType = null } = body
+    const { title, content, price = 0, previewImageUrl, nodeAccessType = null, currency } = body
 
     if (!title?.trim()) return NextResponse.json({ error: 'Title is required' }, { status: 400 })
     if (!content) return NextResponse.json({ error: 'Content is required' }, { status: 400 })
@@ -56,6 +56,7 @@ export async function POST(req: NextRequest) {
         teacherId: session.user.id,
         title: title.trim(),
         price: Number(price) || 0,
+        currency: currency ?? 'BYN',
         content,
         previewImageUrl: previewImageUrl ?? null,
         nodeAccessType: nodeAccessType ?? null,

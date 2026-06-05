@@ -140,6 +140,7 @@ model Service {
   timeTo                 String
   isGroup                Boolean            @default(false)
   price                  Float
+  currency               String             @default("BYN")
   createdAt              DateTime           @default(now())
   targetStudentId        String?
   isPersonal             Boolean            @default(false)
@@ -369,6 +370,7 @@ model Roadmap {
   teacherId           String
   title               String
   price               Float                     @default(0)
+  currency            String                    @default("BYN")
   content             Json
   previewImageUrl     String?
   treeSnapshotUrl     String?

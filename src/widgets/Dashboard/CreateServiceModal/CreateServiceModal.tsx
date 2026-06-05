@@ -2,6 +2,7 @@
 
 import { CategorySelect } from '@/shared/ui/inputs/CategorySelect/CategorySelect'
 import { ServiceCard } from '@/shared/ui/Service/ServiceCard/ServiceCard'
+import { CURRENCIES } from '@/shared/utils/currencyConverter'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -113,6 +114,7 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated, initia
   const [personalStudentId, setPersonalStudentId] = useState('')
   const [students, setStudents] = useState<{ id: string; name: string; avatarUrl: string | null }[]>([])
   const [studentsLoading, setStudentsLoading] = useState(false)
+  const [currency, setCurrency] = useState('BYN')
 
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -153,6 +155,7 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated, initia
       setPromoOpen(false); setPromoCode(''); setPromoDiscount(''); setPromoLimit(''); setPromoConditions('')
       setError('')
       setIsPersonal(false); setPersonalStudentId(''); setStudents([])
+      setCurrency('BYN')
     } else if (initialIsPersonal) {
       setIsPersonal(true)
       if (initialStudentId) setPersonalStudentId(initialStudentId)
@@ -195,6 +198,7 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated, initia
         timeTo,
         isGroup,
         price: Number(price),
+        currency,
       }
       if (promoOpen && promoCode.trim() && promoDiscount) {
         body.promoCode = {
@@ -376,7 +380,16 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated, initia
                   onChange={e => setPrice(e.target.value)}
                   placeholder="0"
                 />
-                <span className={styles.priceSuffix}>₽</span>
+                <select
+                  className={styles.currencySelect}
+                  value={currency}
+                  onChange={e => setCurrency(e.target.value)}
+                >
+                  {['BYN','RUB','USD','EUR','UAH','GBP','KZT','UZS'].map(code => {
+                    const info = CURRENCIES.find(c => c.code === code)
+                    return <option key={code} value={code}>{info?.symbol ?? code} {code}</option>
+                  })}
+                </select>
               </div>
             </div>
 

@@ -31,12 +31,13 @@ interface Props {
   bio?: string | null
   coverPhotoUrl?: string | null
   socialLinks?: Record<string, string> | null
+  experiences?: { id: string; title: string; organization: string | null; yearFrom: number; yearTo: number | null; description: string | null; verifiedAt: string | null }[]
 }
 
 export function TeacherPublicProfile({
   teacherId, name, avatarUrl, isVip, createdAt,
   studentCount, postCount, callCount, categories, locale,
-  bio, coverPhotoUrl, socialLinks,
+  bio, coverPhotoUrl, socialLinks, experiences,
 }: Props) {
   useEffect(() => {
     const header = document.querySelector('header') as HTMLElement | null
@@ -62,6 +63,7 @@ export function TeacherPublicProfile({
         bio={bio}
         coverPhotoUrl={coverPhotoUrl}
         socialLinks={socialLinks}
+        experiences={experiences}
       />
     </div>
   )
