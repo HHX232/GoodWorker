@@ -378,8 +378,8 @@
 .expDocs { margin-top: 8px; }
 .expItemActions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 .expVerifiedBadge { font-size: 11px; color: #22c55e; font-weight: 700; cursor: default; }
-.expEditBtn { font-size: 13px; color: #ABABAB; background: none; border: none; cursor: pointer; padding: 0 2px; line-height: 1; &:hover { color: #534AB7; } }
-.expDeleteBtn { font-size: 14px; color: #ABABAB; background: none; border: none; cursor: pointer; padding: 0 2px; line-height: 1; &:hover { color: #EF4444; } }
+.expEditBtn { font-size: 18px; color: #ABABAB; background: none; border: none; cursor: pointer; padding: 4px 6px; line-height: 1; border-radius: 6px; transition: color 0.15s, background 0.15s; &:hover { color: #534AB7; background: rgba(83,74,183,0.08); } }
+.expDeleteBtn { font-size: 20px; color: #ABABAB; background: none; border: none; cursor: pointer; padding: 4px 6px; line-height: 1; border-radius: 6px; transition: color 0.15s, background 0.15s; &:hover { color: #EF4444; background: rgba(239,68,68,0.08); } }
 
 // ── Identity section ───────────────────────────────────────
 
