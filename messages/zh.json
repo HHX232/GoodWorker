@@ -924,7 +924,9 @@
     "sdmConnectionError": "连接错误",
     "sdmConnectionToast": "连接错误，请重试。",
     "tabTests": "测试",
-    "testsFirstHint": "点击「创建」添加您的第一个测试"
+    "testsFirstHint": "点击「创建」添加您的第一个测试",
+    "serviceLabelsLabel": "服务",
+    "serviceLabelsPlaceholder": "个人课程，小组课程..."
   },
   "SetCommentBlock": {
     "heading": "留下评价",

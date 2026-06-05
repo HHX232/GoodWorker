@@ -18,6 +18,7 @@ interface UpdateProfileDto {
   coverPhotoUrl?: string | null
   socialLinks?: SocialLinks | null
   languages?: string[]
+  serviceLabels?: string[]
 }
 
 const updateProfile = async (userType: 'Student' | 'Teacher', dto: UpdateProfileDto) => {

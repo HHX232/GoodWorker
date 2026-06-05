@@ -53,16 +53,14 @@ interface Props {
   coverPhotoUrl?: string | null
   socialLinks?: Record<string, string> | null
   teachingLanguage?: string | null
-  availableServices?: string[]
+  serviceLabels?: string[]
   experiences?: { id: string; title: string; organization: string | null; yearFrom: number; yearTo: number | null; description: string | null; verifiedAt: string | null }[]
 }
-
-const ALL_SERVICE_KEYS = ['individual', 'group', 'homework', 'consultation'] as const
 
 export function PublicTeacherPanel({
   name, avatarUrl, isVip, createdAt, studentCount, postCount, callCount, categories, locale = 'en',
   bio, coverPhotoUrl, socialLinks, teachingLanguage,
-  availableServices = ['individual', 'group', 'homework', 'consultation'],
+  serviceLabels = [],
   experiences,
 }: Props) {
   const t = useTranslations('dashboard')
@@ -152,16 +150,13 @@ export function PublicTeacherPanel({
         <div className={styles.divider} />
 
         {/* Services */}
+        {serviceLabels.length > 0 && (
         <div className={styles.section}>
           <div className={styles.sectionLabel}>{t('servicesTitle')}</div>
           <div className={styles.chips}>
-            {(availableServices as string[])
-              .filter((k) => (ALL_SERVICE_KEYS as readonly string[]).includes(k))
-              .map((k) => (
-                <span key={k} className={styles.chip}>
-                  {t(`services.${k as typeof ALL_SERVICE_KEYS[number]}.title`)}
-                </span>
-              ))}
+            {serviceLabels.map((label, i) => (
+              <span key={i} className={styles.chip}>{label}</span>
+            ))}
           </div>
           {teachingLanguage && (
             <div className={styles.langBadge}>
@@ -173,6 +168,7 @@ export function PublicTeacherPanel({
             </div>
           )}
         </div>
+        )}
 
         <div className={styles.divider} />
 

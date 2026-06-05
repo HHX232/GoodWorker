@@ -43,6 +43,7 @@ export default async function UserPublicPage({ params }: Props) {
         bio: true,
         coverPhotoUrl: true,
         socialLinks: true,
+        serviceLabels: true,
         categories: {
           select: {
             category: {
@@ -87,6 +88,7 @@ export default async function UserPublicPage({ params }: Props) {
       coverPhotoUrl={teacher.coverPhotoUrl}
       socialLinks={teacher.socialLinks as Record<string, string> | null}
       experiences={experiences.map(e => ({ ...e, verifiedAt: e.verifiedAt ? e.verifiedAt.toISOString() : null }))}
+      serviceLabels={teacher.serviceLabels}
     />
   )
 }

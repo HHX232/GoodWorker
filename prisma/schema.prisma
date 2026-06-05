@@ -96,6 +96,7 @@ model Teacher {
   passportDocumentUrl String?
   experiences         TeacherExperience[]
   supportRequests     SupportRequest[]
+  serviceLabels       String[]            @default([])
   feedbackPromoGiven  Boolean             @default(false)
 }
 

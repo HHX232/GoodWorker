@@ -29,6 +29,7 @@ const updateTeacherSchema = z.object({
   coverPhotoUrl: z.string().optional().nullable(),
   socialLinks:   socialLinksSchema,
   languages:     z.array(z.string()).optional(),
+  serviceLabels: z.array(z.string().max(60)).max(20).optional(),
 })
 
 export async function PATCH(req: NextRequest) {
@@ -63,6 +64,7 @@ export async function PATCH(req: NextRequest) {
       ...(parsed.data.coverPhotoUrl  !== undefined && { coverPhotoUrl:  parsed.data.coverPhotoUrl }),
       ...(parsed.data.socialLinks    !== undefined && { socialLinks:    parsed.data.socialLinks ?? undefined }),
       ...(parsed.data.languages      !== undefined && parsed.data.languages.length > 0 && { languages: parsed.data.languages }),
+      ...(parsed.data.serviceLabels  !== undefined && { serviceLabels: parsed.data.serviceLabels }),
     },
     select: {
       id: true,

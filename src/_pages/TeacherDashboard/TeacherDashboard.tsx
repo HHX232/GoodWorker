@@ -36,6 +36,7 @@ interface ProfileData {
   email: string
   phone: string | null
   avatarUrl: string | null
+  serviceLabels?: string[]
 }
 
 interface Props {
@@ -95,6 +96,7 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
   const [name, setName] = useState(initialData.name)
   const [phone, setPhone] = useState(initialData.phone ?? '')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(initialData.avatarUrl)
+  const [serviceLabels, setServiceLabels] = useState<string[]>(initialData.serviceLabels ?? [])
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [saveSuccess, setSaveSuccess] = useState(false)
@@ -142,7 +144,7 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
     setSaveSuccess(false)
     const tid = toast.loading(t('savingShort'))
     try {
-      await updateProfile({ name: name.trim(), phone: phone.trim() || null, avatarUrl })
+      await updateProfile({ name: name.trim(), phone: phone.trim() || null, avatarUrl, serviceLabels })
       setSaveSuccess(true)
       toast.success(t('saveSuccessShort'), { id: tid })
       setTimeout(() => setSaveSuccess(false), 3000)
@@ -240,6 +242,8 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
         onChangePassword={() => setPasswordModalOpen(true)}
         onTranscripts={() => setTranscriptsOpen(true)}
         onBookmarks={() => setBookmarksOpen(true)}
+        serviceLabels={serviceLabels}
+        onServiceLabelsChange={setServiceLabels}
       />
 
       <input

@@ -23,7 +23,7 @@ export default async function TeacherProfilePage() {
 
   const teacher = await prisma.teacher.findUnique({
     where: { id },
-    select: { name: true, email: true, phone: true, avatarUrl: true },
+    select: { name: true, email: true, phone: true, avatarUrl: true, serviceLabels: true },
   })
 
   // ADMIN is backed by a teacher record — use session fallback if somehow missing

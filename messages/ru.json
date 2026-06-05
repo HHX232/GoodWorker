@@ -963,7 +963,9 @@
     "sdmConnectionError": "Ошибка соединения",
     "sdmConnectionToast": "Ошибка соединения. Попробуйте ещё раз.",
     "tabTests": "Тесты",
-    "testsFirstHint": "Нажмите «Создать», чтобы добавить первый тест"
+    "testsFirstHint": "Нажмите «Создать», чтобы добавить первый тест",
+    "serviceLabelsLabel": "Услуги",
+    "serviceLabelsPlaceholder": "Индивидуальные уроки, Групповые курсы..."
   },
   "SetCommentBlock": {
     "heading": "Оставить отзыв",

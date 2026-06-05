@@ -432,6 +432,8 @@ interface Props {
   onChangePassword: () => void
   onTranscripts: () => void
   onBookmarks: () => void
+  serviceLabels?: string[]
+  onServiceLabelsChange?: (v: string[]) => void
 }
 
 export function DashboardProfilePanel({
@@ -443,6 +445,8 @@ export function DashboardProfilePanel({
   onSave,
   onChangeEmail, onChangePassword,
   onTranscripts, onBookmarks,
+  serviceLabels = [],
+  onServiceLabelsChange,
 }: Props) {
   const t = useTranslations('dashboard')
   const [tgModalOpen, setTgModalOpen] = useState(false)
@@ -518,6 +522,18 @@ export function DashboardProfilePanel({
                   value={phone}
                   onChange={e => onPhoneChange(e.target.value)}
                   placeholder="+7 999 000 00 00"
+                />
+              </div>
+              <div className={styles.field}>
+                <label className={styles.label}>{t('serviceLabelsLabel')}</label>
+                <input
+                  className={styles.input}
+                  type="text"
+                  value={serviceLabels.join(', ')}
+                  onChange={e => onServiceLabelsChange?.(
+                    e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                  )}
+                  placeholder={t('serviceLabelsPlaceholder')}
                 />
               </div>
               <div className={styles.saveRow}>

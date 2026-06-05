@@ -963,7 +963,9 @@
     "sdmConnectionError": "Connection error",
     "sdmConnectionToast": "Connection error. Please try again.",
     "tabTests": "Tests",
-    "testsFirstHint": "Click \"Create\" to add your first test"
+    "testsFirstHint": "Click \"Create\" to add your first test",
+    "serviceLabelsLabel": "Services",
+    "serviceLabelsPlaceholder": "Individual lessons, Group courses..."
   },
   "SetCommentBlock": {
     "heading": "Leave a review",
