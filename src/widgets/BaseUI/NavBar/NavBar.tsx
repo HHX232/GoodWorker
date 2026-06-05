@@ -172,11 +172,11 @@ export function NavBar({extraClass}: {extraClass?: string}) {
   let bottomGroups: NavGroup[]
 
   if (status === 'loading') {
-    topGroups = [{items: [
-      {href: '/', label: t('home'), icon: <Icon.Home />},
-      {href: '/workflows-list', label: t('roadmaps'), icon: <Icon.Roadmaps />},
-      {href: '/game', label: t('games'), icon: <Icon.Games />},
-    ]}]
+    topGroups = [
+      {items: [{href: '/', label: t('home'), icon: <Icon.Home />}]},
+      {items: [{href: '/workflows-list', label: t('roadmaps'), icon: <Icon.Roadmaps />}]},
+      {items: [{href: '/game', label: t('games'), icon: <Icon.Games />}]},
+    ]
     bottomGroups = []
   } else if (role === 'TEACHER' || role === 'ADMIN') {
     topGroups = [
@@ -217,11 +217,11 @@ export function NavBar({extraClass}: {extraClass?: string}) {
       {href: '/feedback',        label: t('support'), icon: <Icon.Support />},
     ]}]
   } else {
-    topGroups = [{items: [
-      {href: '/',               label: t('home'),     icon: <Icon.Home />},
-      {href: '/workflows-list', label: t('roadmaps'), icon: <Icon.Roadmaps />},
-      {href: '/game',           label: t('games'),    icon: <Icon.Games />},
-    ]}]
+    topGroups = [
+      {items: [{href: '/', label: t('home'), icon: <Icon.Home />}]},
+      {items: [{href: '/workflows-list', label: t('roadmaps'), icon: <Icon.Roadmaps />}]},
+      {items: [{href: '/game', label: t('games'), icon: <Icon.Games />}]},
+    ]
     bottomGroups = [{id: 'navbar-login', items: [
       {href: '/login',    label: t('login'),   icon: <Icon.Login />},
       {href: '/feedback', label: t('support'), icon: <Icon.Support />},
