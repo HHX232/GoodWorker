@@ -501,20 +501,18 @@ interface Props {
   onTranscripts: () => void
   onBookmarks: () => void
   serviceLabels?: string[]
-  onServiceLabelsChange?: (v: string[]) => void
   savingPersonal?: boolean
   savingServices?: boolean
   personalDirty?: boolean
-  servicesDirty?: boolean
   servicesSuccess?: boolean
   onSavePersonal?: () => void
-  onSaveServices?: () => void
+  onSaveServices?: (labels: string[]) => void
 }
 
 export function DashboardProfilePanel({
   name, email, phone, avatarUrl, statsId,
   savingPersonal = false, savingServices = false,
-  personalDirty = false, servicesDirty = false,
+  personalDirty = false,
   saveError, saveSuccess, servicesSuccess = false,
   avatarInputRef,
   onNameChange, onPhoneChange,
@@ -523,11 +521,18 @@ export function DashboardProfilePanel({
   onChangeEmail, onChangePassword,
   onTranscripts, onBookmarks,
   serviceLabels = [],
-  onServiceLabelsChange,
 }: Props) {
   const t = useTranslations('dashboard')
   const [tgModalOpen, setTgModalOpen] = useState(false)
   const [tgLinkTrigger, setTgLinkTrigger] = useState(0)
+  const [rawServices, setRawServices] = useState(serviceLabels.join(', '))
+  const [servicesDirtyLocal, setServicesDirtyLocal] = useState(false)
+
+  // sync when parent resets after save
+  useEffect(() => {
+    if (!servicesDirtyLocal) setRawServices(serviceLabels.join(', '))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serviceLabels])
 
   useEffect(() => {
     if (typeof window !== 'undefined' && !localStorage.getItem(TG_MODAL_KEY)) {
@@ -623,15 +628,21 @@ export function DashboardProfilePanel({
               <input
                 className={styles.input}
                 type="text"
-                value={serviceLabels.join(', ')}
-                onChange={e => onServiceLabelsChange?.(
-                  e.target.value.split(',').map(s => s.trim()).filter(Boolean)
-                )}
+                value={rawServices}
+                onChange={e => { setRawServices(e.target.value); setServicesDirtyLocal(true) }}
                 placeholder={t('serviceLabelsPlaceholder')}
               />
-              {servicesDirty && (
+              {servicesDirtyLocal && (
                 <div className={styles.saveRow}>
-                  <button className={styles.saveBtn} onClick={onSaveServices} disabled={savingServices}>
+                  <button
+                    className={styles.saveBtn}
+                    disabled={savingServices}
+                    onClick={() => {
+                      const parsed = rawServices.split(',').map(s => s.trim()).filter(Boolean)
+                      onSaveServices?.(parsed)
+                      setServicesDirtyLocal(false)
+                    }}
+                  >
                     {savingServices && <span className={styles.spinner} />}
                     {savingServices ? t('saving') : t('saveChanges')}
                   </button>

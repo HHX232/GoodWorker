@@ -98,10 +98,7 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
   const [avatarUrl, setAvatarUrl] = useState<string | null>(initialData.avatarUrl)
   const [serviceLabels, setServiceLabels] = useState<string[]>(initialData.serviceLabels ?? [])
 
-  // dirty flags — show save button only when section has unsaved changes
   const [personalDirty, setPersonalDirty] = useState(false)
-  const [servicesDirty, setServicesDirty] = useState(false)
-
   const [savingPersonal, setSavingPersonal] = useState(false)
   const [savingServices, setSavingServices] = useState(false)
   const [saveError, setSaveError] = useState('')
@@ -165,12 +162,12 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
     }
   }
 
-  const handleSaveServices = async () => {
+  const handleSaveServices = async (labels: string[]) => {
     setSavingServices(true)
     const tid = toast.loading(t('savingShort'))
     try {
-      await updateProfile({ serviceLabels })
-      setServicesDirty(false)
+      await updateProfile({ serviceLabels: labels })
+      setServiceLabels(labels)
       setServicesSuccess(true)
       toast.success(t('saveSuccessShort'), { id: tid })
       setTimeout(() => setServicesSuccess(false), 3000)
@@ -256,7 +253,6 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
         savingPersonal={savingPersonal}
         savingServices={savingServices}
         personalDirty={personalDirty}
-        servicesDirty={servicesDirty}
         saveError={saveError}
         saveSuccess={saveSuccess}
         servicesSuccess={servicesSuccess}
@@ -272,7 +268,6 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
         onTranscripts={() => setTranscriptsOpen(true)}
         onBookmarks={() => setBookmarksOpen(true)}
         serviceLabels={serviceLabels}
-        onServiceLabelsChange={v => { setServiceLabels(v); setServicesDirty(true) }}
       />
 
       <input
