@@ -186,13 +186,11 @@ export function NavBar({extraClass}: {extraClass?: string}) {
       ]},
     ]
     bottomGroups = [
-      {id: 'navbar-create-group', items: [
-        {href: '/create-post',     label: t('createPost'),   icon: <Icon.CreatePost />},
-        {href: '/create-road-map', label: t('createCourse'), icon: <Icon.CreateRoadmap />},
-        {href: '/create-test',     label: t('createTest'),   icon: <Icon.CreateTest />},
-      ]},
+      {items: [{href: '/create-post',     label: t('createPost'),   icon: <Icon.CreatePost />}]},
+      {items: [{href: '/create-road-map', label: t('createCourse'), icon: <Icon.CreateRoadmap />}]},
+      {items: [{href: '/create-test',     label: t('createTest'),   icon: <Icon.CreateTest />}]},
       ...(userId ? [{items: [{href: `/calendar/${userId}`, label: t('calendar'), icon: <Icon.Calendar />}]}] : []),
-      {items: [{href: '/game',           label: t('games'),   icon: <Icon.Games />}]},
+      {items: [{href: '/game',            label: t('games'),   icon: <Icon.Games />}]},
       {items: [{href: '/teacher-profile', label: t('profile'), icon: <Icon.Profile />}]},
       {items: [{href: '/feedback',        label: t('support'), icon: <Icon.Support />}]},
     ]
@@ -205,13 +203,11 @@ export function NavBar({extraClass}: {extraClass?: string}) {
       ]},
     ]
     bottomGroups = [
-      {items: [{href: '/messages', label: t('messages'), icon: <Icon.Messages />}]},
-      {id: 'navbar-tools', items: [
-        {href: '/game',     label: t('games'),    icon: <Icon.Games />},
-        {href: '/pomodoro', label: t('pomodoro'), icon: <Icon.Pomodoro />},
-      ]},
-      {items: [{href: '/student-profile', label: t('profile'), icon: <Icon.Profile />}]},
-      {items: [{href: '/feedback',        label: t('support'), icon: <Icon.Support />}]},
+      {items: [{href: '/messages',        label: t('messages'), icon: <Icon.Messages />}]},
+      {items: [{href: '/game',            label: t('games'),    icon: <Icon.Games />}]},
+      {items: [{href: '/pomodoro',        label: t('pomodoro'), icon: <Icon.Pomodoro />}]},
+      {items: [{href: '/student-profile', label: t('profile'),  icon: <Icon.Profile />}]},
+      {items: [{href: '/feedback',        label: t('support'),  icon: <Icon.Support />}]},
     ]
   } else {
     topGroups = [
