@@ -43,9 +43,12 @@ export function validateBlocks(blocks: TestBlock[]): Map<string, string> {
         }
         break
       }
-      case TaskBlockType.DIALOGUE:
-        if (!p?.question?.trim()) errors.set(block.id, 'Введите вопрос')
+      case TaskBlockType.DIALOGUE: {
+        if (!p?.lines?.length || p.lines.length < 2) { errors.set(block.id, 'Добавьте минимум 2 реплики'); break }
+        const hasEmptyLine = p.lines.some((l: any) => !l?.text?.trim())
+        if (hasEmptyLine) errors.set(block.id, 'Заполните все реплики')
         break
+      }
     }
   }
   return errors

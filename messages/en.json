@@ -1468,7 +1468,22 @@
     "fillAllLines": "Fill in all lines (minimum 2)",
     "textPlaceholder": "Line text...",
     "addGap": "+ Add gap",
-    "fillTextPlaceholder": "Enter task text..."
+    "fillTextPlaceholder": "Enter task text...",
+    "checkBtn": "Check",
+    "retryBtn": "Try again",
+    "instructionLabel": "Instruction",
+    "instructionPlaceholder": "E.g.: «Put the lines in the correct order»",
+    "participantsLabel": "Participants",
+    "speakerAPlaceholder": "Character A name",
+    "speakerBPlaceholder": "Character B name",
+    "speakerLeft": "← left",
+    "speakerRight": "right →",
+    "chatPreviewLabel": "Preview",
+    "dragInstruction": "Drag lines into the correct order",
+    "characterA": "Character A",
+    "characterB": "Character B",
+    "studentViewLabel": "Student view",
+    "emptyText": "empty"
   },
   "admin": {
     "pageTitle": "Administration",

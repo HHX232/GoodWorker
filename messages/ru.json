@@ -1468,7 +1468,22 @@
     "fillAllLines": "Заполните все реплики (минимум 2)",
     "textPlaceholder": "Текст реплики...",
     "addGap": "+ Добавить пропуск",
-    "fillTextPlaceholder": "Введите текст задания..."
+    "fillTextPlaceholder": "Введите текст задания...",
+    "checkBtn": "Проверить",
+    "retryBtn": "Попробовать снова",
+    "instructionLabel": "Инструкция",
+    "instructionPlaceholder": "Например: «Расставьте реплики в правильном порядке»",
+    "participantsLabel": "Участники",
+    "speakerAPlaceholder": "Имя персонажа A",
+    "speakerBPlaceholder": "Имя персонажа B",
+    "speakerLeft": "← слева",
+    "speakerRight": "справа →",
+    "chatPreviewLabel": "Предварительный просмотр",
+    "dragInstruction": "Перетащи реплики в правильном порядке",
+    "characterA": "Персонаж A",
+    "characterB": "Персонаж B",
+    "studentViewLabel": "Так видит ученик",
+    "emptyText": "пусто"
   },
   "admin": {
     "pageTitle": "Администрирование",

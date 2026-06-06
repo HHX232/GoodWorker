@@ -1307,7 +1307,22 @@
     "fillAllLines": "填写所有台词（至少2条）",
     "textPlaceholder": "台词文本...",
     "addGap": "+ 添加空格",
-    "fillTextPlaceholder": "输入任务文本..."
+    "fillTextPlaceholder": "输入任务文本...",
+    "checkBtn": "检查",
+    "retryBtn": "重试",
+    "instructionLabel": "说明",
+    "instructionPlaceholder": "例如：«将台词按正确顺序排列»",
+    "participantsLabel": "参与者",
+    "speakerAPlaceholder": "角色 A 名称",
+    "speakerBPlaceholder": "角色 B 名称",
+    "speakerLeft": "← 左",
+    "speakerRight": "右 →",
+    "chatPreviewLabel": "预览",
+    "dragInstruction": "将台词拖动到正确顺序",
+    "characterA": "角色 A",
+    "characterB": "角色 B",
+    "studentViewLabel": "学生视图",
+    "emptyText": "空"
   },
   "admin": {
     "pageTitle": "管理后台",

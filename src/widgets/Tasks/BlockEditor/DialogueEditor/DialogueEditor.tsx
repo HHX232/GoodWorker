@@ -28,6 +28,7 @@ interface BubbleProps {
 }
 
 const Bubble = ({line, nameA, nameB, dimmed}: BubbleProps) => {
+  const t = useTranslations('TaskEditors')
   const isB = line.speaker === 'b'
   const name = isB ? nameB : nameA
   const color = isB ? COLOR_B : COLOR_A
@@ -47,9 +48,9 @@ const Bubble = ({line, nameA, nameB, dimmed}: BubbleProps) => {
         }
       >
         <span className={styles.bubble_author} style={{color: isB ? 'rgba(255,255,255,0.8)' : color}}>
-          {name || (isB ? 'Персонаж B' : 'Персонаж A')}
+          {name || (isB ? t('characterB') : t('characterA'))}
         </span>
-        <p className={styles.bubble_text}>{line.text || <em className={styles.bubble_empty}>пусто</em>}</p>
+        <p className={styles.bubble_text}>{line.text || <em className={styles.bubble_empty}>{t('emptyText')}</em>}</p>
       </div>
     </div>
   )
@@ -175,13 +176,13 @@ const StudentView = ({payload, onChange, externalChecked}: StudentViewProps) => 
   return (
     <div className={styles.student_wrap}>
       {instruction && <p className={styles.student_instruction}>{instruction}</p>}
-      <p className={styles.student_meta}>Перетащи реплики в правильном порядке</p>
+      <p className={styles.student_meta}>{t('dragInstruction')}</p>
 
       <div className={styles.legend}>
         {(['a', 'b'] as const).map((sp) => (
           <div key={sp} className={styles.legend_item}>
             <div className={styles.legend_dot} style={{background: sp === 'a' ? COLOR_A : COLOR_B}} />
-            <span>{sp === 'a' ? speakers.a || 'Персонаж A' : speakers.b || 'Персонаж B'}</span>
+            <span>{sp === 'a' ? speakers.a || t('characterA') : speakers.b || t('characterB')}</span>
           </div>
         ))}
       </div>
@@ -337,10 +338,10 @@ export const DialogueEditor = ({blockId, payload}: Props) => {
         <>
           {/* Инструкция */}
           <div className={styles.field}>
-            <label className={styles.label}>Инструкция</label>
+            <label className={styles.label}>{t('instructionLabel')}</label>
             <input
               className={styles.input}
-              placeholder='Например: «Расставь реплики в правильном порядке»'
+              placeholder={t('instructionPlaceholder')}
               value={payload.instruction ?? ''}
               onChange={(e) => update({instruction: e.target.value || null})}
             />
@@ -348,19 +349,19 @@ export const DialogueEditor = ({blockId, payload}: Props) => {
 
           {/* ── Имена участников ── */}
           <div className={styles.field}>
-            <span className={styles.label}>Участники</span>
+            <span className={styles.label}>{t('participantsLabel')}</span>
             <div className={styles.speakers_row}>
               <div className={styles.speaker_field}>
                 <div className={styles.speaker_dot} style={{background: COLOR_A}} />
                 <input
                   className={styles.speaker_input}
-                  placeholder='Имя персонажа A'
+                  placeholder={t('speakerAPlaceholder')}
                   value={payload.speakers.a}
                   onChange={(e) => update({speakers: {...payload.speakers, a: e.target.value}})}
                   style={{borderColor: COLOR_A + '60'}}
                 />
                 <span className={styles.speaker_side_tag} style={{background: COLOR_A + '15', color: COLOR_A}}>
-                  ← слева
+                  {t('speakerLeft')}
                 </span>
               </div>
 
@@ -368,13 +369,13 @@ export const DialogueEditor = ({blockId, payload}: Props) => {
                 <div className={styles.speaker_dot} style={{background: COLOR_B}} />
                 <input
                   className={styles.speaker_input}
-                  placeholder='Имя персонажа B'
+                  placeholder={t('speakerBPlaceholder')}
                   value={payload.speakers.b}
                   onChange={(e) => update({speakers: {...payload.speakers, b: e.target.value}})}
                   style={{borderColor: COLOR_B + '60'}}
                 />
                 <span className={styles.speaker_side_tag} style={{background: COLOR_B + '15', color: COLOR_B}}>
-                  справа →
+                  {t('speakerRight')}
                 </span>
               </div>
             </div>
@@ -412,14 +413,14 @@ export const DialogueEditor = ({blockId, payload}: Props) => {
           {/* ── Превью чата ── */}
           {hasAnyText && (
             <div className={styles.field}>
-              <span className={styles.label}>Предварительный просмотр</span>
+              <span className={styles.label}>{t('chatPreviewLabel')}</span>
               <div className={styles.chat_box}>
                 {payload.lines.map((line) => (
                   <Bubble
                     key={line.id}
                     line={line}
-                    nameA={payload.speakers.a || 'Персонаж A'}
-                    nameB={payload.speakers.b || 'Персонаж B'}
+                    nameA={payload.speakers.a || t('characterA')}
+                    nameB={payload.speakers.b || t('characterB')}
                   />
                 ))}
               </div>
@@ -432,7 +433,7 @@ export const DialogueEditor = ({blockId, payload}: Props) => {
       {mode === 'preview' && canPreview && (
         <div className={styles.preview_wrap}>
           <div className={styles.preview_label}>
-            <EyeIcon size={13} /> Так видит ученик
+            <EyeIcon size={13} /> {t('studentViewLabel')}
           </div>
           <StudentView payload={payload} />
         </div>

@@ -1307,7 +1307,22 @@
     "fillAllLines": "सभी पंक्तियाँ भरें (न्यूनतम 2)",
     "textPlaceholder": "पंक्ति पाठ...",
     "addGap": "+ रिक्त जोड़ें",
-    "fillTextPlaceholder": "कार्य पाठ दर्ज करें..."
+    "fillTextPlaceholder": "कार्य पाठ दर्ज करें...",
+    "checkBtn": "जाँचें",
+    "retryBtn": "फिर से प्रयास करें",
+    "instructionLabel": "निर्देश",
+    "instructionPlaceholder": "उदा.: «पंक्तियों को सही क्रम में रखें»",
+    "participantsLabel": "प्रतिभागी",
+    "speakerAPlaceholder": "पात्र A का नाम",
+    "speakerBPlaceholder": "पात्र B का नाम",
+    "speakerLeft": "← बाएँ",
+    "speakerRight": "दाएँ →",
+    "chatPreviewLabel": "पूर्वावलोकन",
+    "dragInstruction": "पंक्तियों को सही क्रम में खींचें",
+    "characterA": "पात्र A",
+    "characterB": "पात्र B",
+    "studentViewLabel": "छात्र दृश्य",
+    "emptyText": "खाली"
   },
   "admin": {
     "pageTitle": "प्रशासन",
