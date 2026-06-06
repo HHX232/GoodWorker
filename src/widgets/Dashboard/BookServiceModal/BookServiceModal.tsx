@@ -139,7 +139,11 @@ export function BookServiceModal({ open, onClose, service }: Props) {
       })
       const data = await res.json()
       if (!res.ok) {
-        const msg = data.error ?? t('errorBook')
+        const errKey = data.error as string
+        const knownKeys = ['maxPending', 'sameDayBooking', 'alreadyBooked'] as const
+        const msg = knownKeys.includes(errKey as typeof knownKeys[number])
+          ? t(errKey as typeof knownKeys[number])
+          : t('errorBook')
         setError(msg)
         toast.error(msg, { id: tid })
         return

@@ -7,6 +7,7 @@ import { UserHeaderCardProps } from '@/shared/types'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 import { SelectPhotoInput } from '../../inputs/SelectPhotoInput/SelectPhotoInput'
 import { ModalImageZoom } from '../../Modals/ModalImageZoom/ModalImageZoom'
 import UserHeaderCard from '../../User/UserHeaderCard/UserHeaderCard'
@@ -172,6 +173,7 @@ export function PostCommentSection({
   totalComments: initialTotal,
   currentUserId
 }: PostCommentSectionProps) {
+  const t = useTranslations('PostCommentSection')
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   const {data: commentsData} = useInfiniteQuery({
@@ -257,7 +259,7 @@ const handleSend = async () => {
         {/* Header */}
         <div className={styles.header}>
           <div className={styles.flex_wrapper}>
-            <p className={styles.total_comments}>Comments ({liveTotal})</p>
+            <p className={styles.total_comments}>{t('comments', {count: liveTotal})}</p>
             {avgRating !== null && (
               <span style={{fontSize: 13, color: '#868897', display: 'flex', alignItems: 'center', gap: 4}}>
                 <StarRating value={Math.round(avgRating)} readonly size={14} />
@@ -266,7 +268,7 @@ const handleSend = async () => {
             )}
           </div>
           <button className={styles.view_all_button} onClick={() => setIsModalOpen(true)}>
-            view all
+            {t('viewAll')}
           </button>
         </div>
 
@@ -291,7 +293,7 @@ const handleSend = async () => {
                             }}
                             className={styles.see_more}
                           >
-                            {' '}See more
+                            {' '}{t('seeMore')}
                           </span>
                         </>
                       )}
@@ -303,7 +305,7 @@ const handleSend = async () => {
             })}
             {liveTotal > 3 && (
               <button className={styles.show_all_bottom_button} onClick={() => setIsModalOpen(true)}>
-                Show all {liveTotal} comments
+                {t('showAll', {count: liveTotal})}
               </button>
             )}
           </ul>
@@ -311,7 +313,7 @@ const handleSend = async () => {
 
         {/* Rating row */}
         <div className={styles.rating_row}>
-          <span className={styles.rating_label}>Your rating:</span>
+          <span className={styles.rating_label}>{t('yourRating')}</span>
           <StarRating value={pendingStars ?? userRating} onChange={setPendingStars} size={20} />
           {(pendingStars ?? userRating) !== null && (
             <span className={styles.rating_value}>({pendingStars ?? userRating}/5)</span>
@@ -326,7 +328,7 @@ const handleSend = async () => {
             <input
               className={styles.comment_input}
               type='text'
-              placeholder='Write your comment here'
+              placeholder={t('commentPlaceholder')}
               value={text}
               onChange={(e) => setText(e.target.value)}
               onKeyDown={handleKeyDown}

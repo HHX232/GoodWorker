@@ -94,21 +94,7 @@ function ReportPostButton({postId, postTitle}: {postId: string; postTitle: strin
     <>
       <button
         onClick={() => setOpen(true)}
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 6,
-          fontSize: 12,
-          color: '#bbb',
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          padding: '6px 0',
-          fontFamily: 'inherit',
-          transition: 'color 0.15s',
-        }}
-        onMouseEnter={(e) => (e.currentTarget.style.color = '#f43f5e')}
-        onMouseLeave={(e) => (e.currentTarget.style.color = '#bbb')}
+        className={styles.reportBtn}
       >
         <svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
           <path d='M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z' />

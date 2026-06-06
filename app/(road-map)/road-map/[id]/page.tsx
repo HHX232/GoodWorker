@@ -17,7 +17,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const locale = await getLocale()
     const roadmap = await RoadmapService.getById(id, locale)
-    if (roadmap?.title) return { title: roadmap.title }
+    if (!roadmap?.title) return { title: t('courses') }
+
+    const description = roadmap.description ?? undefined
+    const images = roadmap.previewImageUrl ? [{ url: roadmap.previewImageUrl }] : undefined
+
+    return {
+      title: roadmap.title,
+      description,
+      openGraph: {
+        title: roadmap.title,
+        description,
+        images,
+        type: 'article',
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: roadmap.title,
+        description,
+        images: roadmap.previewImageUrl ? [roadmap.previewImageUrl] : undefined,
+      },
+    }
   } catch {}
   return { title: t('courses') }
 }

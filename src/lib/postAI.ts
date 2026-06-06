@@ -557,14 +557,18 @@ export function localizeRoadmap<T extends {
   titleTranslations?: unknown
   content?: unknown
   contentTranslations?: unknown
+  description?: unknown
+  descriptionTranslations?: unknown
 }>(roadmap: T, lang: string): T {
   const l = (LANGS as readonly string[]).includes(lang) ? lang as Lang : 'ru'
   const tt = roadmap.titleTranslations as Record<string, string> | null | undefined
   const ct = roadmap.contentTranslations as Record<string, unknown> | null | undefined
+  const dt = roadmap.descriptionTranslations as Record<string, string> | null | undefined
   return {
     ...roadmap,
     title: tt?.[l] ?? roadmap.title,
     content: ct?.[l] ?? roadmap.content,
+    description: dt?.[l] ?? (roadmap.description as string | null | undefined) ?? null,
   }
 }
 

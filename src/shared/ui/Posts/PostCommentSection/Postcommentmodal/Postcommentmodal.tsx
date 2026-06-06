@@ -417,7 +417,7 @@ export function PostCommentModal({isOpen, onClose, postId, scrollToCommentId, cu
     <ModalWindowDefault
       isOpen={isOpen}
       onClose={onClose}
-      additionalTitle={<p className={styles.modal_title}>Комментарии ({total})</p>}
+      additionalTitle={<p className={styles.modal_title}>{t('title', {count: total})}</p>}
       modalFooter={footer}
     >
       <ul className={styles.comments_list}>
@@ -438,7 +438,7 @@ export function PostCommentModal({isOpen, onClose, postId, scrollToCommentId, cu
 
       {loading && (
         <p style={{textAlign: 'center', color: '#868897', fontSize: 13, padding: '12px 0'}}>
-          Загрузка…
+          {t('loading')}
         </p>
       )}
     </ModalWindowDefault>

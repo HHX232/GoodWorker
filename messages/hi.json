@@ -560,6 +560,12 @@
   "PostPage": {
     "report": "रिपोर्ट करें"
   },
+  "UserPostInfo": {
+    "userType": "उपयोगकर्ता प्रकार",
+    "totalView": "कुल पोस्ट व्यू",
+    "publishDate": "प्रकाशन तिथि",
+    "postCategory": "पोस्ट श्रेणी"
+  },
   "statsPage": {
     "loading": "सांख्यिकी लोड हो रही है...",
     "noData": "कोई डेटा नहीं",
@@ -618,7 +624,7 @@
   },
   "dashboard": {
     "students": "छात्र",
-    "calls": "कॉल",
+    "calls": "पाठ",
     "hours": "घंटे",
     "tabAll": "सभी",
     "tabRoadmap": "रोड मैप",
@@ -825,7 +831,10 @@
       "desiredDateLabel": "वांछित तिथि",
       "desiredTimeLabel": "वांछित समय",
       "dateRequired": "कृपया तिथि चुनें",
-      "timeRequired": "कृपया समय चुनें"
+      "timeRequired": "कृपया समय चुनें",
+      "maxPending": "आपके 3 लंबित बुकिंग हैं — शिक्षक के जवाब की प्रतीक्षा करें",
+      "sameDayBooking": "इस तारीख के लिए पहले से बुकिंग है — दूसरा दिन चुनें",
+      "alreadyBooked": "आप पहले से इस सेवा के लिए बुक हैं"
     },
     "bookingResponse": {
       "heading": "बुकिंग अनुरोध",
@@ -964,7 +973,17 @@
     "success": "पहुंच खुली! सभी अवरुद्ध ब्लॉक अब उपलब्ध हैं।",
     "error": "पहुंच खरीदने में विफल। बाद में पुनः प्रयास करें।"
   },
+  "PostCommentSection": {
+    "comments": "टिप्पणियाँ ({count})",
+    "viewAll": "सभी देखें",
+    "seeMore": "और पढ़ें",
+    "showAll": "सभी {count} टिप्पणियाँ दिखाएं",
+    "yourRating": "आपकी रेटिंग:",
+    "commentPlaceholder": "यहाँ अपनी टिप्पणी लिखें"
+  },
   "PostCommentModal": {
+    "title": "टिप्पणियाँ ({count})",
+    "loading": "लोड हो रहा है…",
     "placeholder": "अपनी टिप्पणी लिखें...",
     "send": "भेजें",
     "saving": "सहेज रहे हैं...",

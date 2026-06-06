@@ -10,6 +10,7 @@ interface Review {
   authorId: string
   authorName: string
   authorRole: string
+  avatarUrl?: string | null
   text: string
   stars: number
   createdAt: string
@@ -43,9 +44,20 @@ function StarRow({ value, onChange, readonly }: { value: number; onChange?: (n: 
   )
 }
 
-function InitialAvatar({ name, role }: { name: string; role: string }) {
+function ReviewAvatar({ name, role, avatarUrl }: { name: string; role: string; avatarUrl?: string | null }) {
   const initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
   const isTeacher = role === 'TEACHER'
+  if (avatarUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={avatarUrl}
+        alt={name}
+        className={styles.reviewAvatar}
+        style={{ objectFit: 'cover' }}
+      />
+    )
+  }
   return (
     <div
       className={styles.reviewAvatar}
@@ -164,7 +176,7 @@ export function PublicReviewsSidebar({ teacherId }: Props) {
         {!loading && reviews.map(r => (
           <div key={r.id} className={styles.reviewCard}>
             <div className={styles.reviewTop}>
-              <InitialAvatar name={r.authorName} role={r.authorRole} />
+              <ReviewAvatar name={r.authorName} role={r.authorRole} avatarUrl={r.avatarUrl} />
               <div className={styles.reviewMeta}>
                 <span className={styles.reviewName}>{r.authorName}</span>
                 <span className={styles.reviewDate}>

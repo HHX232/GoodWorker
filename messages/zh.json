@@ -560,6 +560,12 @@
   "PostPage": {
     "report": "举报"
   },
+  "UserPostInfo": {
+    "userType": "用户类型",
+    "totalView": "帖子浏览量",
+    "publishDate": "发布日期",
+    "postCategory": "帖子分类"
+  },
   "statsPage": {
     "loading": "加载统计中...",
     "noData": "暂无数据",
@@ -618,7 +624,7 @@
   },
   "dashboard": {
     "students": "学生",
-    "calls": "通话",
+    "calls": "课程",
     "hours": "小时",
     "tabAll": "全部",
     "tabRoadmap": "路线图",
@@ -825,7 +831,10 @@
       "desiredDateLabel": "期望日期",
       "desiredTimeLabel": "期望时间",
       "dateRequired": "请选择日期",
-      "timeRequired": "请选择时间"
+      "timeRequired": "请选择时间",
+      "maxPending": "您有3个待确认预约，请等待教师回复",
+      "sameDayBooking": "该日期已有预约，请选择其他日期",
+      "alreadyBooked": "您已预约此服务"
     },
     "bookingResponse": {
       "heading": "预订请求",
@@ -964,7 +973,17 @@
     "success": "访问已开放！所有锁定的模块现在均可访问。",
     "error": "购买访问权限失败，请稍后重试。"
   },
+  "PostCommentSection": {
+    "comments": "评论 ({count})",
+    "viewAll": "查看全部",
+    "seeMore": "查看更多",
+    "showAll": "显示全部 {count} 条评论",
+    "yourRating": "您的评分：",
+    "commentPlaceholder": "在此写下您的评论"
+  },
   "PostCommentModal": {
+    "title": "评论 ({count})",
+    "loading": "加载中…",
     "placeholder": "写下您的评论...",
     "send": "发送",
     "saving": "保存中...",

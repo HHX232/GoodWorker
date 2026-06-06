@@ -36,10 +36,31 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const studentId = session.user.id
 
-  const existing = await prisma.serviceBooking.findUnique({
-    where: { serviceId_studentId: { serviceId, studentId } },
+  // Max 3 pending bookings globally
+  const pendingCount = await prisma.serviceBooking.count({
+    where: { studentId, status: 'PENDING' },
   })
-  if (existing) return NextResponse.json({ error: 'Вы уже записаны на эту услугу' }, { status: 400 })
+  if (pendingCount >= 3) {
+    return NextResponse.json({ error: 'maxPending' }, { status: 400 })
+  }
+
+  // Same service + same desired date → reject; different day → allow
+  if (desiredDate) {
+    const sameDayBooking = await prisma.serviceBooking.findFirst({
+      where: { serviceId, studentId, desiredDate, status: { in: ['PENDING', 'CONFIRMED'] } },
+    })
+    if (sameDayBooking) {
+      return NextResponse.json({ error: 'sameDayBooking' }, { status: 400 })
+    }
+  } else {
+    // No date provided — fall back to old one-per-service check
+    const anyBooking = await prisma.serviceBooking.findFirst({
+      where: { serviceId, studentId, status: { in: ['PENDING', 'CONFIRMED'] } },
+    })
+    if (anyBooking) {
+      return NextResponse.json({ error: 'alreadyBooked' }, { status: 400 })
+    }
+  }
 
   const booking = await prisma.$transaction(async (tx) => {
     const booking = await tx.serviceBooking.create({

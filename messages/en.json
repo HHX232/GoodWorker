@@ -586,6 +586,12 @@
   "PostPage": {
     "report": "Report"
   },
+  "UserPostInfo": {
+    "userType": "User type",
+    "totalView": "Total post view",
+    "publishDate": "Publication date",
+    "postCategory": "Post category"
+  },
   "statsPage": {
     "loading": "Loading statistics...",
     "noData": "No data",
@@ -657,7 +663,7 @@
   },
   "dashboard": {
     "students": "Students",
-    "calls": "Calls",
+    "calls": "Lessons",
     "hours": "Hours",
     "tabAll": "All",
     "tabRoadmap": "Road Map",
@@ -864,7 +870,10 @@
       "desiredDateLabel": "Desired date",
       "desiredTimeLabel": "Desired time",
       "dateRequired": "Select a date",
-      "timeRequired": "Select a time"
+      "timeRequired": "Select a time",
+      "maxPending": "You have 3 pending bookings — wait for teacher responses",
+      "sameDayBooking": "You already have a booking for this date — choose another day",
+      "alreadyBooked": "You already have a booking for this service"
     },
     "bookingResponse": {
       "heading": "Booking request",
@@ -1003,7 +1012,17 @@
     "success": "Access granted! All locked blocks are now available.",
     "error": "Failed to purchase access. Please try again."
   },
+  "PostCommentSection": {
+    "comments": "Comments ({count})",
+    "viewAll": "View all",
+    "seeMore": "See more",
+    "showAll": "Show all {count} comments",
+    "yourRating": "Your rating:",
+    "commentPlaceholder": "Write your comment here"
+  },
   "PostCommentModal": {
+    "title": "Comments ({count})",
+    "loading": "Loading…",
     "placeholder": "Write your comment...",
     "send": "Send",
     "saving": "Saving...",

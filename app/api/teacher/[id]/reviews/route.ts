@@ -12,7 +12,20 @@ export async function GET(_req: NextRequest, { params }: Params) {
       orderBy: { createdAt: 'desc' },
       take: 50,
     })
-    return NextResponse.json({ reviews })
+
+    const studentIds = reviews.filter(r => r.authorRole === 'STUDENT').map(r => r.authorId)
+    const teacherIds = reviews.filter(r => r.authorRole !== 'STUDENT').map(r => r.authorId)
+    const [students, teachers] = await Promise.all([
+      studentIds.length ? prisma.student.findMany({ where: { id: { in: studentIds } }, select: { id: true, avatarUrl: true } }) : [],
+      teacherIds.length ? prisma.teacher.findMany({ where: { id: { in: teacherIds } }, select: { id: true, avatarUrl: true } }) : [],
+    ])
+    const avatarMap = new Map([
+      ...students.map(s => [s.id, s.avatarUrl] as [string, string | null]),
+      ...teachers.map(t => [t.id, t.avatarUrl] as [string, string | null]),
+    ])
+    const reviewsWithAvatars = reviews.map(r => ({ ...r, avatarUrl: avatarMap.get(r.authorId) ?? null }))
+
+    return NextResponse.json({ reviews: reviewsWithAvatars })
   } catch (error) {
     console.error('[GET /api/teacher/:id/reviews]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -54,7 +67,11 @@ export async function POST(req: NextRequest, { params }: Params) {
       },
     })
 
-    return NextResponse.json({ review })
+    const authorRecord = session.user.role === 'TEACHER'
+      ? await prisma.teacher.findUnique({ where: { id: session.user.id }, select: { avatarUrl: true } })
+      : await prisma.student.findUnique({ where: { id: session.user.id }, select: { avatarUrl: true } })
+
+    return NextResponse.json({ review: { ...review, avatarUrl: authorRecord?.avatarUrl ?? null } })
   } catch (error) {
     console.error('[POST /api/teacher/:id/reviews]', error)
     const msg = error instanceof Error ? error.message : String(error)

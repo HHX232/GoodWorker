@@ -55,6 +55,7 @@ export interface IRoadmapRatingData {
 export interface IRoadmapItem {
   id: string
   title: string
+  description?: string | null
   price: number
   previewImageUrl: string | null
   mediaPreviewUrls: string[]

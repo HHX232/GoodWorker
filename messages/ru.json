@@ -586,6 +586,12 @@
   "PostPage": {
     "report": "Пожаловаться"
   },
+  "UserPostInfo": {
+    "userType": "Тип пользователя",
+    "totalView": "Просмотры поста",
+    "publishDate": "Дата публикации",
+    "postCategory": "Категория поста"
+  },
   "statsPage": {
     "loading": "Загружаем статистику...",
     "noData": "Нет данных",
@@ -657,7 +663,7 @@
   },
   "dashboard": {
     "students": "Учеников",
-    "calls": "Звонков",
+    "calls": "Уроков",
     "hours": "Часов",
     "tabAll": "Все",
     "tabRoadmap": "Road Map",
@@ -864,7 +870,10 @@
       "desiredDateLabel": "Желаемая дата",
       "desiredTimeLabel": "Желаемое время",
       "dateRequired": "Выберите дату",
-      "timeRequired": "Выберите время"
+      "timeRequired": "Выберите время",
+      "maxPending": "У вас уже 3 ожидающих записи — дождитесь ответа учителя",
+      "sameDayBooking": "На эту дату уже есть запись — выберите другой день",
+      "alreadyBooked": "Вы уже записаны на эту услугу"
     },
     "bookingResponse": {
       "heading": "Запрос на запись",
@@ -1003,7 +1012,17 @@
     "success": "Доступ открыт! Все заблокированные блоки теперь доступны.",
     "error": "Не удалось купить доступ. Попробуйте позже."
   },
+  "PostCommentSection": {
+    "comments": "Комментарии ({count})",
+    "viewAll": "Смотреть все",
+    "seeMore": "Читать далее",
+    "showAll": "Показать все {count} комментария(ев)",
+    "yourRating": "Ваша оценка:",
+    "commentPlaceholder": "Напишите комментарий"
+  },
   "PostCommentModal": {
+    "title": "Комментарии ({count})",
+    "loading": "Загрузка…",
     "placeholder": "Напишите ваш комментарий...",
     "send": "Отправить",
     "saving": "Сохраняем...",
