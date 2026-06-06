@@ -2,6 +2,7 @@
 
 import { CardOwnerMenu } from '@/shared/ui/CardOwnerMenu/CardOwnerMenu'
 import { CURRENCIES, TOOLTIP_CURRENCIES, convertBetween } from '@/shared/utils/currencyConverter'
+import { FlagIcon } from '@/shared/ui/FlagIcon/FlagIcon'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import styles from './ServiceCard.module.scss'
@@ -195,7 +196,7 @@ export function ServiceCard({
               <span className={styles.priceTooltip}>
                 {tooltipItems.map(item => (
                   <span key={item.code} className={styles.tooltipRow}>
-                    <span>{item.flag}</span>
+                    <FlagIcon code={item.flag} width={16} />
                     <span className={styles.tooltipCode}>{item.code}</span>
                     <span className={styles.tooltipAmount}>{item.label}</span>
                   </span>

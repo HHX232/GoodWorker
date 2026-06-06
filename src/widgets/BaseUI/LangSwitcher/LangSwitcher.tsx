@@ -5,6 +5,7 @@ import Image from 'next/image'
 import {useRouter} from 'next/navigation'
 import {useEffect, useRef, useState, useTransition} from 'react'
 import styles from './LangSwitcher.module.scss'
+import {FlagIcon} from '@/shared/ui/FlagIcon/FlagIcon'
 
 interface LangItem {
   code: string
@@ -13,10 +14,10 @@ interface LangItem {
 }
 
 const LANGS: LangItem[] = [
-  {code: 'ru', label: 'Русский', flag: '🇷🇺'},
-  {code: 'en', label: 'English', flag: '🇬🇧'},
-  {code: 'zh', label: '中文', flag: '🇨🇳'},
-  {code: 'hi', label: 'हिन्दी', flag: '🇮🇳'}
+  {code: 'ru', label: 'Русский', flag: 'RU'},
+  {code: 'en', label: 'English', flag: 'GB'},
+  {code: 'zh', label: '中文', flag: 'CN'},
+  {code: 'hi', label: 'हिन्दी', flag: 'IN'}
 ]
 
 export function LangSwitcher({extraClass = ''}:{extraClass?:string}) {
@@ -84,7 +85,7 @@ export function LangSwitcher({extraClass = ''}:{extraClass?:string}) {
               className={`${styles.dropdownItem} ${lang.code === locale ? styles.dropdownItemActive : ''}`}
               onMouseDown={() => handleSelect(lang)}
             >
-              <span className={styles.flag}>{lang.flag}</span>
+              <FlagIcon code={lang.flag} width={18} />
               <span className={styles.itemLabel}>{lang.label}</span>
               {lang.code === locale && <span className={styles.checkmark}>✓</span>}
             </li>

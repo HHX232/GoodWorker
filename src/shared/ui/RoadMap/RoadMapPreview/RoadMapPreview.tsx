@@ -1,6 +1,7 @@
 'use client'
 
 import { CURRENCIES, formatConverted } from '@/shared/utils/currencyConverter'
+import { FlagIcon } from '@/shared/ui/FlagIcon/FlagIcon'
 import { CardOwnerMenu } from '@/shared/ui/CardOwnerMenu/CardOwnerMenu'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
@@ -158,7 +159,7 @@ export const RoadMapPreview: FC<RoadMapPreviewProps> = ({
               <div className={styles.price_tooltip}>
                 {TOOLTIP_CURRENCIES.map((cur) => (
                   <div key={cur.code} className={styles.tooltip_item}>
-                    <span className={styles.tooltip_code}>{cur.flag} {cur.code}</span>
+                    <span className={styles.tooltip_code}><FlagIcon code={cur.flag} width={16} /> {cur.code}</span>
                     <span className={styles.tooltip_amount}>{formatConverted(price, cur)}</span>
                   </div>
                 ))}

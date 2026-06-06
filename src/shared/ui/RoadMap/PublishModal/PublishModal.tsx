@@ -2,6 +2,7 @@
 import { RoadmapNodeAccessType } from '@/features/services/RoadmapService.service'
 import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
 import { CURRENCIES, FEATURED_CURRENCIES, formatConverted } from '@/shared/utils/currencyConverter'
+import { FlagIcon } from '@/shared/ui/FlagIcon/FlagIcon'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -215,7 +216,7 @@ export function PublishModal({ isOpen, onClose, hasPaywalledNodes, onConfirm }: 
               <div className={styles.currency_grid}>
                 {FEATURED_CURRENCIES.map((cur) => (
                   <div key={cur.code} className={styles.currency_cell}>
-                    <span className={styles.cell_flag}>{cur.flag}</span>
+                    <FlagIcon code={cur.flag} width={20} />
                     <div className={styles.cell_body}>
                       <span className={styles.cell_code}>{cur.code}</span>
                       <span className={styles.cell_amount}>{formatConverted(priceNum, cur)}</span>

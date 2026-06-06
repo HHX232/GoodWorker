@@ -4,6 +4,7 @@ import {useOnlineStatus} from '@/features/hooks/User/useOnlineStatus'
 import {formatActivity} from '@/shared/helpers/formatActivity'
 import {ITeacherListItem} from '@/features/services/TeacherService.service'
 import {TEACHER_LANGUAGES} from '@/shared/ui/inputs/LanguageSelect/LanguageSelect'
+import {FlagIcon} from '@/shared/ui/FlagIcon/FlagIcon'
 import {getAvatarColor} from '@/shared/ui/User/UserHeaderCard/UserHeaderCard'
 import {useLocale, useTranslations} from 'next-intl'
 import Image from 'next/image'
@@ -39,7 +40,7 @@ const TeacherCard: FC<Props> = ({teacher}) => {
 
   const langs = (teacher.languages ?? []).slice(0, 4).map((code) => {
     const def = TEACHER_LANGUAGES.find((l) => l.code === code)
-    return def ? {code, flag: def.flag} : {code, flag: '🌐'}
+    return def ? {code, flag: def.flag} : {code, flag: 'GLOBE'}
   })
 
   return (
@@ -91,7 +92,8 @@ const TeacherCard: FC<Props> = ({teacher}) => {
         <div className={styles.languages}>
           {langs.map(({code, flag}) => (
             <span key={code} className={styles.lang_chip} title={code.toUpperCase()}>
-              {flag} {code.toUpperCase()}
+              <FlagIcon code={flag} width={16} />
+              {code.toUpperCase()}
             </span>
           ))}
         </div>

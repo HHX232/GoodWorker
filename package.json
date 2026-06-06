@@ -49,6 +49,7 @@
     "bcryptjs": "^3.0.3",
     "chess.js": "^1.4.0",
     "cobe": "^2.0.1",
+    "flag-icons": "^7.5.0",
     "framer-motion": "^12.38.0",
     "html-to-image": "^1.11.13",
     "js-cookie": "^3.0.5",

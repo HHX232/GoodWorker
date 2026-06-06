@@ -1,6 +1,7 @@
 import DefaultProvider from '@/app/providers/DefaultProvider'
 import { TutorialProvider } from '@/widgets/Tutorial/TutorialContext'
 import TutorialOverlay from '@/widgets/Tutorial/TutorialOverlay'
+import 'flag-icons/css/flag-icons.min.css'
 import '@/shared/scss/_variables.scss'
 import '@/shared/scss/config/functions.scss'
 import '@/shared/scss/config/keyframes.scss'
