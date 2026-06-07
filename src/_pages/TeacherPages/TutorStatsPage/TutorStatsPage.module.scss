@@ -25,8 +25,9 @@
    }
 }
 
-// Row height: split remaining screen into 2 equal rows, minimum 180px each
-$row-h: max(180px, calc((100vh - 285px - 28px - 48px) / 2));
+// Row height: minimum 413px per row (→ 850px total for 2 rows + gap).
+// On large screens grows proportionally; container scrolls if needed.
+$row-h: max(413px, calc((100vh - 200px) / 2));
 
 .page {
    display: grid;
