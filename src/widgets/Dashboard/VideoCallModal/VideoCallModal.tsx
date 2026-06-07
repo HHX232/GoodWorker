@@ -4,12 +4,8 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
+import { CategorySelect } from '@/shared/ui/inputs/CategorySelect/CategorySelect'
 import styles from './VideoCallModal.module.scss'
-
-interface Category {
-  id: string
-  name: string
-}
 
 interface MyStudent {
   id: string
@@ -45,8 +41,7 @@ export function VideoCallModal({ defaultName, onClose }: Props) {
   const [step, setStep] = useState<Step>('name')
   const [isEnded, setIsEnded] = useState(false)
   const [topic, setTopic] = useState('')
-  const [categories, setCategories] = useState<Category[]>([])
-  const [categoryId, setCategoryId] = useState('')
+  const [categoryIds, setCategoryIds] = useState<string[]>([])
   const [accessType, setAccessType] = useState<AccessType>('ALL')
   const [myStudents, setMyStudents] = useState<MyStudent[]>([])
   const [checkedStudents, setCheckedStudents] = useState<Set<string>>(new Set())
@@ -65,12 +60,6 @@ export function VideoCallModal({ defaultName, onClose }: Props) {
 
   useEffect(() => {
     if (step !== 'details') return
-    if (categories.length === 0) {
-      fetch('/api/categories?langCode=ru')
-        .then(r => r.json())
-        .then((d: Category[]) => { if (Array.isArray(d)) setCategories(d) })
-        .catch(() => {})
-    }
     if (myStudents.length === 0) {
       fetch('/api/call/my-students')
         .then(r => r.json())
@@ -138,7 +127,7 @@ export function VideoCallModal({ defaultName, onClose }: Props) {
         body: JSON.stringify({
           roomName: roomName.trim(),
           topic: topic.trim() || roomName.trim(),
-          categoryId: categoryId || undefined,
+          categoryId: categoryIds[0] || undefined,
           accessType,
           allowedEmails: allEmails,
         }),
@@ -229,17 +218,12 @@ export function VideoCallModal({ defaultName, onClose }: Props) {
               />
 
               <span className={styles.fieldLabel}>Предмет</span>
-              <select
-                className={styles.select}
-                value={categoryId}
-                onChange={e => setCategoryId(e.target.value)}
-                disabled={creating}
-              >
-                <option value="">Не указан</option>
-                {categories.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
+              <CategorySelect
+                value={categoryIds}
+                onChange={setCategoryIds}
+                canSelectMany={false}
+                maxLevel={2}
+              />
 
               <span className={styles.fieldLabel}>Доступ</span>
               <div className={styles.accessRow}>

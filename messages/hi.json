@@ -692,6 +692,8 @@
     "reviewLoginToLeave": "समीक्षा देने के लिए लॉग इन करें",
     "reviewsEmpty": "अभी तक कोई समीक्षा नहीं",
     "memberSince": "सदस्य बने",
+    "identityVerified": "पहचान सत्यापित",
+    "expVerified": "सत्यापित",
     "subjectsLabel": "विषय",
     "aboutLabel": "परिचय",
     "hoursLabel": "{count} सत्र आयोजित किए",

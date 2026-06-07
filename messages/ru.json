@@ -731,6 +731,8 @@
     "reviewLoginToLeave": "Войдите, чтобы оставить отзыв",
     "reviewsEmpty": "Отзывов пока нет",
     "memberSince": "На платформе с",
+    "identityVerified": "Личность подтверждена",
+    "expVerified": "Подтверждено",
     "subjectsLabel": "Предметы",
     "aboutLabel": "О преподавателе",
     "hoursLabel": "{count} проведённых занятий",

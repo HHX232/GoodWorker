@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { CreateImagesInput } from '@/shared/ui/inputs/CreateImagesInput/CreateImagesInput'
 import SliderForCreateImages from '@/shared/ui/inputs/CreateImagesInput/SliderForCreateImages/SliderForCreateImages'
+import { VerifiedBadge } from '@/shared/ui/VerifiedBadge/VerifiedBadge'
 import { useState } from 'react'
 import styles from './PublicTeacherPanel.module.scss'
 
@@ -57,6 +58,7 @@ interface Props {
   teachingLanguage?: string | null
   serviceLabels?: string[]
   experiences?: { id: string; title: string; organization: string | null; yearFrom: number; yearTo: number | null; description: string | null; verifiedAt: string | null; documentUrls: string[] }[]
+  identityConfirmed?: boolean
 }
 
 export function PublicTeacherPanel({
@@ -64,6 +66,7 @@ export function PublicTeacherPanel({
   bio, coverPhotoUrl, socialLinks, teachingLanguage,
   serviceLabels = [],
   experiences,
+  identityConfirmed,
 }: Props) {
   const t = useTranslations('dashboard')
   const [sliderImages, setSliderImages] = useState<string[]>([])
@@ -146,7 +149,12 @@ export function PublicTeacherPanel({
               </div>
             )}
           </div>
-          <div className={styles.heroName}>{name}</div>
+          <div className={styles.heroName} style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
+            {name}
+            {identityConfirmed && (
+              <VerifiedBadge tooltip={t('identityVerified')} size={16} />
+            )}
+          </div>
           <div className={styles.heroRole}>{t('teacher')}</div>
           <div className={styles.memberSince}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -291,7 +299,7 @@ export function PublicTeacherPanel({
                       <div style={{ fontSize: 11, color: '#ABABAB' }}>{exp.yearFrom}–{exp.yearTo ?? 'н.в.'}</div>
                     </div>
                     {exp.verifiedAt && (
-                      <span style={{ fontSize: 11, color: '#22c55e', fontWeight: 700, flexShrink: 0 }} title={`Подтверждено ${new Date(exp.verifiedAt).toLocaleDateString()}`}>✓</span>
+                      <VerifiedBadge tooltip={`${t('expVerified')} ${new Date(exp.verifiedAt).toLocaleDateString()}`} size={15} />
                     )}
                   </div>
                   {exp.description && <p style={{ fontSize: 11, color: '#6B6B7A', marginTop: 4, lineHeight: 1.4 }}>{exp.description}</p>}

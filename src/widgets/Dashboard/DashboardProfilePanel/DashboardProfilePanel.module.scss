@@ -387,7 +387,7 @@
 .identityStatus { font-size: 12px; flex: 1; }
 .identityPending { color: #ABABAB; }
 .identityUploaded { color: #f59e0b; }
-.identityConfirmed { color: #22c55e; font-weight: 600; cursor: default; }
+.identityConfirmed { display: inline-flex; align-items: center; gap: 5px; color: #22c55e; font-weight: 600; cursor: default; }
 
 // ── Telegram section ───────────────────────────────────────
 

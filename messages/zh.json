@@ -692,6 +692,8 @@
     "reviewLoginToLeave": "登录后留下评价",
     "reviewsEmpty": "暂无评价",
     "memberSince": "加入时间",
+    "identityVerified": "已认证身份",
+    "expVerified": "已认证",
     "subjectsLabel": "科目",
     "aboutLabel": "关于",
     "hoursLabel": "已完成 {count} 次课",

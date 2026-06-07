@@ -731,6 +731,8 @@
     "reviewLoginToLeave": "Log in to leave a review",
     "reviewsEmpty": "No reviews yet",
     "memberSince": "Member since",
+    "identityVerified": "Identity verified",
+    "expVerified": "Verified",
     "subjectsLabel": "Subjects",
     "aboutLabel": "About",
     "hoursLabel": "{count} sessions conducted",

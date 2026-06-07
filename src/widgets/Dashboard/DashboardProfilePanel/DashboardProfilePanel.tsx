@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { RefObject, useCallback, useEffect, useRef, useState } from 'react'
 import { CreateImagesInput } from '@/shared/ui/inputs/CreateImagesInput/CreateImagesInput'
+import { VerifiedBadge } from '@/shared/ui/VerifiedBadge/VerifiedBadge'
 import styles from './DashboardProfilePanel.module.scss'
 import { signOut } from 'next-auth/react'
 import { toast } from 'sonner'
@@ -391,7 +392,7 @@ function ExperienceSection() {
                     </div>
                     <div className={styles.expItemActions}>
                       {item.verifiedAt && (
-                        <span className={styles.expVerifiedBadge} title={`${new Date(item.verifiedAt).toLocaleDateString()}`}>✓</span>
+                        <VerifiedBadge tooltip={`Подтверждено ${new Date(item.verifiedAt).toLocaleDateString()}`} size={15} />
                       )}
                       <button className={styles.expEditBtn} onClick={() => startEdit(item)} title={t('expEdit')}>✎</button>
                       <button className={styles.expDeleteBtn} onClick={() => handleDelete(item.id)}>×</button>
@@ -471,7 +472,12 @@ function IdentitySection() {
           <div className={styles.identityStatus}>
             {!docUrl && <span className={styles.identityPending}>{t('identityNotUploaded')}</span>}
             {docUrl && !confirmed && <span className={styles.identityUploaded}>{t('identityUploaded')}</span>}
-            {docUrl && confirmed && <span className={styles.identityConfirmed} title={t('identityConfirmedTooltip')}>{t('identityConfirmed')}</span>}
+            {docUrl && confirmed && (
+              <span className={styles.identityConfirmed}>
+                <VerifiedBadge tooltip={t('identityConfirmedTooltip')} size={14} />
+                {t('identityConfirmed')}
+              </span>
+            )}
           </div>
           <button className={styles.securityBtn} onClick={() => fileRef.current?.click()} disabled={uploading}>
             {uploading ? '…' : docUrl ? t('identityReplace') : t('identityUpload')}
