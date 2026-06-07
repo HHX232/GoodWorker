@@ -5,6 +5,7 @@ import {useRouter} from 'next/navigation'
 import {useLocale, useTranslations} from 'next-intl'
 import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
 import {NotificationItem, TYPE_CONFIG, FALLBACK_CONFIG, relativeTime} from './RowNotification'
+import {BookServiceModal} from '@/widgets/Dashboard/BookServiceModal/BookServiceModal'
 import styles from './NotificationDetailModal.module.scss'
 
 // ─── Promo code card ──────────────────────────────────────
@@ -73,7 +74,7 @@ function ActorChip({actorId, actorName, actorRole, color}: {
   const t = useTranslations('notifications')
   const initials = actorName.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
   return (
-    <Link href={`/user/${actorId}`} className={styles.actor_chip}>
+    <Link href={`/users/${actorId}`} className={styles.actor_chip}>
       <span className={styles.actor_avatar} style={{background: color + '22', color}}>
         {initials}
       </span>
@@ -92,66 +93,103 @@ function ActorChip({actorId, actorName, actorRole, color}: {
 export function DetailRow({item, onClick}: {item: NotificationItem; onClick?: () => void}) {
   const router = useRouter()
   const locale = useLocale()
+  const t = useTranslations('notifications')
   const cfg = TYPE_CONFIG[item.type] ?? FALLBACK_CONFIG
   const payload = item.payload ?? {}
   const actorId = payload.actorId as string | undefined
   const actorName = payload.actorName as string | undefined
   const actorRole = payload.actorRole as string | undefined
   const href = cfg.getHref?.(payload) ?? null
+  const [bookingOpen, setBookingOpen] = useState(false)
+
+  const personalServiceInfo = item.type === 'PERSONAL_SERVICE' && payload.serviceId
+    ? {
+        id: payload.serviceId as string,
+        title: payload.serviceTitle as string ?? '',
+        duration: 0,
+        timeFrom: '',
+        timeTo: '',
+        isGroup: false,
+        price: payload.price as number ?? 0,
+      }
+    : null
 
   return (
-    <div
-      className={`${styles.detail_row} ${!item.isRead ? styles.unread : ''}`}
-      style={{'--accent': cfg.color} as React.CSSProperties}
-      onClick={onClick}
-    >
-      <div className={styles.accent_bar} />
+    <>
+      <div
+        className={`${styles.detail_row} ${!item.isRead ? styles.unread : ''}`}
+        style={{'--accent': cfg.color} as React.CSSProperties}
+        onClick={onClick}
+      >
+        <div className={styles.accent_bar} />
 
-      <div className={styles.icon_wrap} style={{background: cfg.bg, color: cfg.color}}>
-        {cfg.icon}
-      </div>
-
-      <div className={styles.content}>
-        <div className={styles.top_row}>
-          <span className={styles.title}>{item.title}</span>
-          <span className={styles.time}>{relativeTime(item.createdAt, locale)}</span>
+        <div className={styles.icon_wrap} style={{background: cfg.bg, color: cfg.color}}>
+          {cfg.icon}
         </div>
 
-        {item.type === 'SYSTEM' && payload.promoCode
-          ? (
-            <>
-              {item.body && <p className={styles.body}>{item.body}</p>}
-              <PromoCodeCard
-                code={payload.promoCode as string}
-                days={payload.promoDays as number | undefined}
-              />
-            </>
-          )
-          : item.body && <p className={styles.body}>{item.body}</p>
-        }
+        <div className={styles.content}>
+          <div className={styles.top_row}>
+            <span className={styles.title}>{item.title}</span>
+            <span className={styles.time}>{relativeTime(item.createdAt, locale)}</span>
+          </div>
 
-        {!cfg.hideActor && actorId && actorName && (
-          <ActorChip actorId={actorId} actorName={actorName} actorRole={actorRole} color={cfg.color} />
-        )}
+          {item.type === 'SYSTEM' && payload.promoCode
+            ? (
+              <>
+                {item.body && <p className={styles.body}>{item.body}</p>}
+                <PromoCodeCard
+                  code={payload.promoCode as string}
+                  days={payload.promoDays as number | undefined}
+                />
+              </>
+            )
+            : item.body && <p className={styles.body}>{item.body}</p>
+          }
 
-        {cfg.actionLabel && href && (
-          <button
-            className={styles.action_btn}
-            style={{color: cfg.color}}
-            onClick={() => router.push(href)}
-          >
-            {cfg.actionLabel}
-            <svg width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
-              <path d='M5 12h14M12 5l7 7-7 7' />
-            </svg>
-          </button>
+          {!cfg.hideActor && actorId && actorName && (
+            <ActorChip actorId={actorId} actorName={actorName} actorRole={actorRole} color={cfg.color} />
+          )}
+
+          {personalServiceInfo && (
+            <button
+              className={styles.action_btn}
+              style={{color: cfg.color}}
+              onClick={(e) => { e.stopPropagation(); setBookingOpen(true) }}
+            >
+              {t('bookPersonalService')}
+              <svg width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
+                <path d='M5 12h14M12 5l7 7-7 7' />
+              </svg>
+            </button>
+          )}
+
+          {cfg.actionLabel && href && !personalServiceInfo && (
+            <button
+              className={styles.action_btn}
+              style={{color: cfg.color}}
+              onClick={() => router.push(href)}
+            >
+              {cfg.actionLabel}
+              <svg width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
+                <path d='M5 12h14M12 5l7 7-7 7' />
+              </svg>
+            </button>
+          )}
+        </div>
+
+        {!item.isRead && (
+          <div className={styles.unread_dot} style={{background: cfg.color}} />
         )}
       </div>
 
-      {!item.isRead && (
-        <div className={styles.unread_dot} style={{background: cfg.color}} />
+      {personalServiceInfo && (
+        <BookServiceModal
+          open={bookingOpen}
+          onClose={() => setBookingOpen(false)}
+          service={personalServiceInfo}
+        />
       )}
-    </div>
+    </>
   )
 }
 

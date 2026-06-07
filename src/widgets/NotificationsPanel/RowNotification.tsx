@@ -149,6 +149,38 @@ export const TYPE_CONFIG: Record<string, TypeConfig> = {
     actionLabel: 'Join call',
     getHref: (p) => p.roomId ? `/call/${p.roomId}` : (p.roomLink as string | null) ?? null,
   },
+  PERSONAL_SERVICE: {
+    color: '#FF7A00',
+    bg: '#fff7ed',
+    hideActor: true,
+    icon: (
+      <svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.2' strokeLinecap='round' strokeLinejoin='round'>
+        <path d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2' /><circle cx='12' cy='7' r='4' />
+      </svg>
+    ),
+    getHref: () => null,
+  },
+  BOOKING_RESPONSE: {
+    color: '#16a34a',
+    bg: '#f0fdf4',
+    hideActor: true,
+    icon: (
+      <svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.2' strokeLinecap='round' strokeLinejoin='round'>
+        <rect x='3' y='4' width='18' height='18' rx='2' /><line x1='16' y1='2' x2='16' y2='6' /><line x1='8' y1='2' x2='8' y2='6' /><line x1='3' y1='10' x2='21' y2='10' />
+      </svg>
+    ),
+    getHref: () => null,
+  },
+  SERVICE_BOOKING: {
+    color: '#7c3aed',
+    bg: '#f5f3ff',
+    icon: (
+      <svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.2' strokeLinecap='round' strokeLinejoin='round'>
+        <rect x='3' y='4' width='18' height='18' rx='2' /><line x1='16' y1='2' x2='16' y2='6' /><line x1='8' y1='2' x2='8' y2='6' /><line x1='3' y1='10' x2='21' y2='10' />
+      </svg>
+    ),
+    getHref: () => null,
+  },
 }
 
 export const FALLBACK_CONFIG: TypeConfig = {

@@ -16,7 +16,9 @@ export async function GET(req: NextRequest) {
     const link = await prisma.teacherStudent.findFirst({ where: { teacherId, studentId } })
     if (!link) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-    const [student, errors, meetings] = await Promise.all([
+    const todayStr = new Date().toISOString().split('T')[0]
+
+    const [student, errors, meetings, confirmedBookings] = await Promise.all([
       prisma.student.findUnique({
         where: { id: studentId },
         select: { id: true, name: true, email: true, avatarUrl: true },
@@ -48,9 +50,62 @@ export async function GET(req: NextRequest) {
         take: 10,
         select: { id: true, title: true, scheduledAt: true, roomName: true },
       }),
+
+      prisma.serviceBooking.findMany({
+        where: {
+          studentId,
+          status: 'CONFIRMED',
+          service: { teacherId },
+          OR: [
+            { confirmedDate: { gte: todayStr } },
+            { desiredDate: { gte: todayStr } },
+          ],
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+        select: {
+          id: true,
+          desiredDate: true,
+          desiredTime: true,
+          confirmedDate: true,
+          confirmedTime: true,
+          service: { select: { id: true, title: true, duration: true } },
+        },
+      }),
     ])
 
     if (!student) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+    const conferenceMeetings = meetings.map(m => ({
+      id: m.id,
+      title: m.title,
+      scheduledAt: m.scheduledAt?.toISOString() ?? null,
+      roomName: m.roomName,
+      type: 'conference' as const,
+    }))
+
+    const bookingMeetings = confirmedBookings.map(b => {
+      const date = b.confirmedDate ?? b.desiredDate
+      const time = b.confirmedTime ?? b.desiredTime
+      const scheduledAt = date
+        ? time ? new Date(`${date}T${time}:00`).toISOString() : new Date(`${date}T00:00:00`).toISOString()
+        : null
+      return {
+        id: `booking-${b.id}`,
+        bookingId: b.id,
+        title: b.service.title,
+        scheduledAt,
+        roomName: null,
+        type: 'booking' as const,
+        duration: b.service.duration,
+      }
+    })
+
+    const allMeetings = [...conferenceMeetings, ...bookingMeetings].sort((a, b) => {
+      if (!a.scheduledAt) return 1
+      if (!b.scheduledAt) return -1
+      return new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()
+    })
 
     return NextResponse.json({
       student,
@@ -65,12 +120,7 @@ export async function GET(req: NextRequest) {
           name: c.category.translations[0]?.name ?? c.category.slug,
         })),
       })),
-      meetings: meetings.map(m => ({
-        id: m.id,
-        title: m.title,
-        scheduledAt: m.scheduledAt?.toISOString() ?? null,
-        roomName: m.roomName,
-      })),
+      meetings: allMeetings,
     })
   } catch (e: any) {
     return NextResponse.json({ error: e.message ?? 'Internal error' }, { status: 500 })

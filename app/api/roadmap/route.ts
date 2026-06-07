@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { title, content, price = 0, previewImageUrl, nodeAccessType = null, currency } = body
+    const { title, content, price = 0, previewImageUrl, nodeAccessType = null, currency, categoryIds } = body
 
     if (!title?.trim()) return NextResponse.json({ error: 'Title is required' }, { status: 400 })
     if (!content) return NextResponse.json({ error: 'Content is required' }, { status: 400 })
@@ -51,6 +51,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const validCategoryIds: string[] = Array.isArray(categoryIds) ? categoryIds : []
+
     const roadmap = await prisma.roadmap.create({
       data: {
         teacherId: session.user.id,
@@ -60,10 +62,16 @@ export async function POST(req: NextRequest) {
         content,
         previewImageUrl: previewImageUrl ?? null,
         nodeAccessType: nodeAccessType ?? null,
+        ...(validCategoryIds.length > 0 && {
+          roadmapCategories: {
+            create: validCategoryIds.map((id) => ({ categoryId: id })),
+          },
+        }),
       },
       include: {
         teacher: { select: { id: true, name: true, avatarUrl: true } },
         _count: { select: { comments: true, ratings: true } },
+        roadmapCategories: { include: { category: { include: { translations: true } } } },
       },
     })
 

@@ -359,6 +359,7 @@
     "publishSettings": "प्रकाशन सेटिंग्स",
     "publishCancel": "रद्द करें",
     "publishConfirm": "प्रकाशित करें",
+    "categoryLabel": "श्रेणियाँ",
     "priceLabel": "मूल्य (₽)",
     "priceFree": "निःशुल्क",
     "currencyPreview": "अन्य मुद्राओं में मूल्य",
@@ -649,6 +650,7 @@
     "tabRoadmap": "रोड मैप",
     "tabPosts": "पोस्ट",
     "tabServices": "सेवाएं",
+    "personalOffer": "सिर्फ आपके लिए",
     "loading": "लोड हो रहा है...",
     "empty": "यहाँ अभी कुछ नहीं है",
     "searchPlaceholder": "छात्र खोजें...",
@@ -1141,6 +1143,7 @@
     "newBadge": "{count} नई",
     "roleStudent": "छात्र",
     "roleTeacher": "शिक्षक",
+    "bookPersonalService": "सेवा बुक करें",
     "tabs": {
       "all": "सभी",
       "unread": "अपठित",

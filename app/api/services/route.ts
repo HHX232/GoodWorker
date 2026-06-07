@@ -15,9 +15,22 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    const session = await auth()
+    const viewerId = session?.user?.id ?? null
+    const isOwner = viewerId === teacherId
+
     const [services, teacher] = await Promise.all([
       prisma.service.findMany({
-        where: { teacherId },
+        where: {
+          teacherId,
+          // Personal services: only visible to the target student or to the owner
+          OR: [
+            { isPersonal: false },
+            { isPersonal: true, targetStudentId: null },
+            ...(isOwner ? [{ isPersonal: true }] : []),
+            ...(viewerId && !isOwner ? [{ isPersonal: true, targetStudentId: viewerId }] : []),
+          ],
+        },
         include: {
           category: { include: { translations: true } },
           promoCodes: true,
@@ -34,6 +47,8 @@ export async function GET(req: NextRequest) {
       ...localizeService(s, lang),
       originalLangCode,
       isTranslated: !!(s.titleTranslations) && lang !== originalLangCode,
+      isPersonal: s.isPersonal,
+      isPersonalForMe: s.isPersonal && s.targetStudentId === viewerId,
     }))
 
     return NextResponse.json({ services: localized })
@@ -111,9 +126,15 @@ export async function POST(req: NextRequest) {
 
     if (isPersonal && targetStudentId) {
       await createNotification({
-        type: 'SYSTEM',
-        title: 'Личная услуга от преподавателя',
+        type: 'PERSONAL_SERVICE',
+        title: 'Личное предложение от преподавателя',
         body: `Преподаватель создал для вас личное предложение: «${title}» — ${Number(price)} ₽`,
+        payload: {
+          serviceId: service.id,
+          serviceTitle: title,
+          price: Number(price),
+          currency: body.currency ?? 'BYN',
+        },
         studentId: targetStudentId,
       })
     }

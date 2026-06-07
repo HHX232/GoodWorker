@@ -359,6 +359,7 @@
     "publishSettings": "Publish settings",
     "publishCancel": "Cancel",
     "publishConfirm": "Publish",
+    "categoryLabel": "Categories",
     "priceLabel": "Price (₽)",
     "priceFree": "Free",
     "currencyPreview": "Price in other currencies",
@@ -688,6 +689,7 @@
     "tabRoadmap": "Road Map",
     "tabPosts": "Posts",
     "tabServices": "Services",
+    "personalOffer": "Just for you",
     "loading": "Loading...",
     "empty": "Nothing here yet",
     "searchPlaceholder": "Search students...",
@@ -1149,6 +1151,7 @@
     "newBadge": "{count} new",
     "roleStudent": "student",
     "roleTeacher": "teacher",
+    "bookPersonalService": "Book this service",
     "tabs": {
       "all": "All",
       "unread": "Unread",

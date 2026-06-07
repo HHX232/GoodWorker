@@ -3,6 +3,7 @@ import { RoadmapNodeAccessType } from '@/features/services/RoadmapService.servic
 import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
 import { CURRENCIES, FEATURED_CURRENCIES, formatConverted } from '@/shared/utils/currencyConverter'
 import { FlagIcon } from '@/shared/ui/FlagIcon/FlagIcon'
+import { CategorySelect } from '@/shared/ui/inputs/CategorySelect/CategorySelect'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -14,7 +15,7 @@ interface Props {
   isOpen: boolean
   onClose: () => void
   hasPaywalledNodes: boolean
-  onConfirm: (price: number, nodeAccessType: RoadmapNodeAccessType | null, currency: string) => void
+  onConfirm: (price: number, nodeAccessType: RoadmapNodeAccessType | null, currency: string, categoryIds: string[]) => void
 }
 
 const ACCESS_OPTIONS: {
@@ -69,6 +70,7 @@ export function PublishModal({ isOpen, onClose, hasPaywalledNodes, onConfirm }: 
   const [selectedAccess, setSelectedAccess] = useState<RoadmapNodeAccessType | null>(null)
   const [priceInput, setPriceInput] = useState('')
   const [currency, setCurrency] = useState('BYN')
+  const [categoryIds, setCategoryIds] = useState<string[]>([])
   const [isVip, setIsVip] = useState<boolean | null>(null)
   const [vipLoading, setVipLoading] = useState(false)
 
@@ -101,13 +103,13 @@ export function PublishModal({ isOpen, onClose, hasPaywalledNodes, onConfirm }: 
     if (selectedAccess === 'PURCHASE') {
       setStep('price')
     } else {
-      onConfirm(0, selectedAccess, currency)
+      onConfirm(0, selectedAccess, currency, categoryIds)
       onClose()
     }
   }
 
   const handlePublish = () => {
-    onConfirm(priceNum, hasPaywalledNodes ? selectedAccess : null, currency)
+    onConfirm(priceNum, hasPaywalledNodes ? selectedAccess : null, currency, categoryIds)
     onClose()
   }
 
@@ -182,6 +184,18 @@ export function PublishModal({ isOpen, onClose, hasPaywalledNodes, onConfirm }: 
         </div>
       ) : (
         <div className={styles.content}>
+          <div>
+            <p style={{ fontSize: 13, fontWeight: 600, color: '#868897', marginBottom: 8 }}>
+              {t('categoryLabel') || 'Категории'}
+            </p>
+            <CategorySelect
+              value={categoryIds}
+              onChange={setCategoryIds}
+              canSelectMany
+              maxLevel={2}
+            />
+          </div>
+
           <div>
             <p style={{ fontSize: 13, fontWeight: 600, color: '#868897', marginBottom: 8 }}>
               {t('priceLabel')}

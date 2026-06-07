@@ -176,7 +176,7 @@ model ServiceBooking {
   service       Service       @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   student       Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
-  @@unique([serviceId, studentId])
+  @@index([serviceId, studentId])
   @@index([studentId])
 }
 
@@ -218,6 +218,7 @@ model Category {
   testCategories         TestCategory[]
   conferenceCategories   ConferenceCategory[]
   services               Service[]
+  roadmapCategories      RoadmapCategory[]
 }
 
 model CategoryTranslation {
@@ -389,6 +390,16 @@ model Roadmap {
   accessList      RoadmapAccess[]
   nodeFeedbacks   RoadmapNodeFeedback[]
   views           RoadmapView[]
+  roadmapCategories RoadmapCategory[]
+}
+
+model RoadmapCategory {
+  roadmapId  String
+  categoryId String
+  roadmap    Roadmap  @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([roadmapId, categoryId])
 }
 
 model RoadmapView {

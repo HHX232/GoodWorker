@@ -18,6 +18,12 @@ export const NOTIFICATION_TYPES = {
   VIDEO_CALL_INVITE: 'VIDEO_CALL_INVITE',
   // System broadcast (contains payload.html rendered as rich content)
   SYSTEM: 'SYSTEM',
+  // Personal service offer from teacher to specific student
+  PERSONAL_SERVICE: 'PERSONAL_SERVICE',
+  // Booking response from teacher
+  BOOKING_RESPONSE: 'BOOKING_RESPONSE',
+  // Student booked a service
+  SERVICE_BOOKING: 'SERVICE_BOOKING',
 } as const
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[keyof typeof NOTIFICATION_TYPES]

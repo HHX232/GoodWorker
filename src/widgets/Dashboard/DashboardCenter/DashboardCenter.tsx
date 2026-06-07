@@ -52,6 +52,8 @@ interface ServiceItem {
   category?: { translations: { langCode: string; name: string }[] } | null
   originalLangCode?: string
   isTranslated?: boolean
+  isPersonal?: boolean
+  isPersonalForMe?: boolean
 }
 
 type TestItem = Omit<TestPreviewCardProps, 'isOwner' | 'onDelete'>
@@ -357,6 +359,7 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
               isTranslated={s.isTranslated}
               currency={s.currency}
               isOwner={isOwner}
+              isPersonalForMe={s.isPersonalForMe}
               onDelete={isOwner ? () => handleDeleteService(s.id) : undefined}
               onEdit={isOwner ? () => { setEditingService(s); setServiceModalOpen(true) } : undefined}
               onBook={canBook ? () => setBookingService(s) : undefined}

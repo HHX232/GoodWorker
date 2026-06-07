@@ -359,6 +359,7 @@
     "publishSettings": "发布设置",
     "publishCancel": "取消",
     "publishConfirm": "发布",
+    "categoryLabel": "分类",
     "priceLabel": "价格 (₽)",
     "priceFree": "免费",
     "currencyPreview": "其他货币价格",
@@ -649,6 +650,7 @@
     "tabRoadmap": "路线图",
     "tabPosts": "帖子",
     "tabServices": "服务",
+    "personalOffer": "专属优惠",
     "loading": "加载中...",
     "empty": "暂无内容",
     "searchPlaceholder": "搜索学生...",
@@ -1141,6 +1143,7 @@
     "newBadge": "{count}条新通知",
     "roleStudent": "学生",
     "roleTeacher": "教师",
+    "bookPersonalService": "预订此服务",
     "tabs": {
       "all": "全部",
       "unread": "未读",

@@ -84,22 +84,35 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
 
     const body = await req.json()
-    const { title, content, price, previewImageUrl, nodeAccessType, currency } = body
+    const { title, content, price, previewImageUrl, nodeAccessType, currency, categoryIds } = body
 
-    const updated = await prisma.roadmap.update({
-      where: { id },
-      data: {
-        ...(title?.trim() && { title: title.trim() }),
-        ...(content !== undefined && { content }),
-        ...(price !== undefined && { price: Number(price) || 0 }),
-        ...(previewImageUrl !== undefined && { previewImageUrl }),
-        ...(nodeAccessType !== undefined && { nodeAccessType: nodeAccessType ?? null }),
-        ...(currency !== undefined && { currency }),
-      },
-      include: {
-        teacher: { select: { id: true, name: true, avatarUrl: true } },
-        _count: { select: { comments: true, ratings: true } },
-      },
+    const updated = await prisma.$transaction(async (tx) => {
+      if (Array.isArray(categoryIds)) {
+        await tx.roadmapCategory.deleteMany({ where: { roadmapId: id } })
+        if (categoryIds.length > 0) {
+          await tx.roadmapCategory.createMany({
+            data: categoryIds.map((cid: string) => ({ roadmapId: id, categoryId: cid })),
+            skipDuplicates: true,
+          })
+        }
+      }
+
+      return tx.roadmap.update({
+        where: { id },
+        data: {
+          ...(title?.trim() && { title: title.trim() }),
+          ...(content !== undefined && { content }),
+          ...(price !== undefined && { price: Number(price) || 0 }),
+          ...(previewImageUrl !== undefined && { previewImageUrl }),
+          ...(nodeAccessType !== undefined && { nodeAccessType: nodeAccessType ?? null }),
+          ...(currency !== undefined && { currency }),
+        },
+        include: {
+          teacher: { select: { id: true, name: true, avatarUrl: true } },
+          _count: { select: { comments: true, ratings: true } },
+          roadmapCategories: { include: { category: { include: { translations: true } } } },
+        },
+      })
     })
 
     if (process.env.OPENROUTER_API_KEY && (content !== undefined || title?.trim())) {
