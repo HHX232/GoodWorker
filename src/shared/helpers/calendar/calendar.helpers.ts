@@ -124,3 +124,61 @@ export function eventsOverlap(aStart: string, aEnd: string, bStart: string, bEnd
   const bE = timeToMinutes(bEnd)
   return aS < bE && aE > bS
 }
+
+export interface EventLayout {
+  event: import('@/shared/types/Calendar/calendar.types').CalendarEvent
+  col: number   // column index within the overlap group (0-based)
+  cols: number  // total columns in the group
+}
+
+/**
+ * Assign overlap columns so simultaneous events are rendered side-by-side (stacked left-to-right).
+ */
+export function layoutDayEvents(
+  events: import('@/shared/types/Calendar/calendar.types').CalendarEvent[]
+): EventLayout[] {
+  if (!events.length) return []
+
+  // Sort by start time, then by event id for stable ordering
+  const sorted = [...events].sort((a, b) => {
+    const diff = timeToMinutes(a.startTime) - timeToMinutes(b.startTime)
+    return diff !== 0 ? diff : a.id.localeCompare(b.id)
+  })
+
+  const result: EventLayout[] = sorted.map(e => ({ event: e, col: 0, cols: 1 }))
+
+  // Build overlap groups using a greedy interval sweep
+  let groupStart = 0
+  while (groupStart < sorted.length) {
+    let groupEnd = groupStart + 1
+    let maxEnd = timeToMinutes(sorted[groupStart].endTime)
+
+    while (groupEnd < sorted.length && timeToMinutes(sorted[groupEnd].startTime) < maxEnd) {
+      maxEnd = Math.max(maxEnd, timeToMinutes(sorted[groupEnd].endTime))
+      groupEnd++
+    }
+
+    // Assign columns within this overlap group greedily
+    const cols = groupEnd - groupStart
+    const endTimes: number[] = []
+
+    for (let i = groupStart; i < groupEnd; i++) {
+      const startMin = timeToMinutes(sorted[i].startTime)
+      // Find the first column whose last event has ended
+      let assignedCol = endTimes.findIndex(e => e <= startMin)
+      if (assignedCol === -1) assignedCol = endTimes.length
+      endTimes[assignedCol] = timeToMinutes(sorted[i].endTime)
+      result[i].col = assignedCol
+    }
+
+    // Set actual column count = max column used + 1
+    const maxCol = Math.max(...result.slice(groupStart, groupEnd).map(r => r.col))
+    for (let i = groupStart; i < groupEnd; i++) {
+      result[i].cols = maxCol + 1
+    }
+
+    groupStart = groupEnd
+  }
+
+  return result
+}

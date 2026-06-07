@@ -58,6 +58,7 @@ export function CalendarPage({ teacherId }: { teacherId: string }) {
   const events = useTypedSelector(selectEvents)
 
   const [teacherServices, setTeacherServices] = useState<{id: string; title: string; price: number; duration: number}[]>([])
+  const [teacherSubjects, setTeacherSubjects] = useState<string[]>([])
 
   const loaded = useRef(false)
   useEffect(() => {
@@ -69,6 +70,7 @@ export function CalendarPage({ teacherId }: { teacherId: string }) {
       .then((d) => {
         if (Array.isArray(d.events) && d.events.length > 0) setEvents(d.events)
         if (Array.isArray(d.tasks) && d.tasks.length > 0) setTasks(d.tasks)
+        if (Array.isArray(d.subjects) && d.subjects.length > 0) setTeacherSubjects(d.subjects)
       })
       .catch(() => {})
 
@@ -287,6 +289,8 @@ export function CalendarPage({ teacherId }: { teacherId: string }) {
         onClose={closeCreate}
         onSave={handleSaveEvent}
         teacherServices={teacherServices}
+        teacherStudents={students.map(s => ({ id: s.id, name: s.name }))}
+        teacherSubjects={teacherSubjects}
       />
     </div>
   )

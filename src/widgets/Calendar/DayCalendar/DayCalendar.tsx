@@ -12,7 +12,8 @@ import {
   getEventsForDay,
   isToday,
   minutesToTime,
-  roundToHalfHour
+  roundToHalfHour,
+  layoutDayEvents,
 } from '@/shared/helpers/calendar/calendar.helpers'
 import {LUNCH_BREAKS} from '@/shared/helpers/calendar/calendar.mock'
 import {CalendarEvent, CalendarTask} from '@/shared/types/Calendar/calendar.types'
@@ -178,8 +179,8 @@ export function DayCalendar({
               <span className={styles.lunchLabel}>{t('lunch')}</span>
             </div>
 
-            {dayEvents.map((event) => (
-              <CalendarEventCard key={event.id} event={event} onClick={onEventClick} />
+            {layoutDayEvents(dayEvents).map(({event, col, cols}) => (
+              <CalendarEventCard key={event.id} event={event} onClick={onEventClick} col={col} cols={cols} />
             ))}
 
             {isWeekend && dayEvents.length === 0 && <div className={styles.freeDay}>{t('weekend')}</div>}

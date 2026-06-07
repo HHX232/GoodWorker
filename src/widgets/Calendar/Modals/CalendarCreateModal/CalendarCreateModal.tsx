@@ -14,6 +14,11 @@ interface ServiceOption {
   duration: number
 }
 
+interface StudentOption {
+  id: string
+  name: string
+}
+
 interface CalendarCreateModalProps {
   isOpen: boolean
   onClose: () => void
@@ -23,6 +28,8 @@ interface CalendarCreateModalProps {
   initialEndTime?: string | null
   editingEvent?: CalendarEvent | null
   teacherServices?: ServiceOption[]
+  teacherStudents?: StudentOption[]
+  teacherSubjects?: string[]
 }
 
 const COLOR_OPTIONS = Object.keys(EVENT_COLORS) as CalendarEventColor[]
@@ -48,6 +55,8 @@ export function CalendarCreateModal({
   initialEndTime,
   editingEvent,
   teacherServices,
+  teacherStudents = [],
+  teacherSubjects = [],
 }: CalendarCreateModalProps) {
   const t = useTranslations('calendar.createModal')
   const [form, setForm] = useState(EMPTY_FORM)
@@ -147,13 +156,26 @@ export function CalendarCreateModal({
           </div>
           <div className={styles.field}>
             <label className={styles.label}>{t('studentLabel')}</label>
-            <input
-              className={styles.input}
-              type='text'
-              placeholder={t('studentPlaceholder')}
-              value={form.studentName}
-              onChange={set('studentName')}
-            />
+            {teacherStudents.length > 0 ? (
+              <select
+                className={styles.input}
+                value={form.studentName}
+                onChange={set('studentName')}
+              >
+                <option value=''>{t('studentPlaceholder')}</option>
+                {teacherStudents.map(s => (
+                  <option key={s.id} value={s.name}>{s.name}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                className={styles.input}
+                type='text'
+                placeholder={t('studentPlaceholder')}
+                value={form.studentName}
+                onChange={set('studentName')}
+              />
+            )}
           </div>
         </div>
 
@@ -171,13 +193,26 @@ export function CalendarCreateModal({
         <div className={styles.row}>
           <div className={styles.field}>
             <label className={styles.label}>{t('subjectLabel')}</label>
-            <input
-              className={styles.input}
-              type='text'
-              placeholder={t('subjectPlaceholder')}
-              value={form.subject}
-              onChange={set('subject')}
-            />
+            {teacherSubjects.length > 0 ? (
+              <select
+                className={styles.input}
+                value={form.subject}
+                onChange={set('subject')}
+              >
+                <option value=''>{t('subjectPlaceholder')}</option>
+                {teacherSubjects.map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                className={styles.input}
+                type='text'
+                placeholder={t('subjectPlaceholder')}
+                value={form.subject}
+                onChange={set('subject')}
+              />
+            )}
           </div>
           <div className={styles.field}>
             <label className={styles.label}>{t('statusLabel')}</label>

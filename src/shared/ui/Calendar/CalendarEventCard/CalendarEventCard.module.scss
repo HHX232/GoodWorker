@@ -49,3 +49,13 @@
    text-overflow: ellipsis;
    margin-top: 1px;
 }
+
+.statusDot {
+   position: absolute;
+   top: 5px;
+   right: 6px;
+   width: 6px;
+   height: 6px;
+   border-radius: 50%;
+   opacity: 0.9;
+}
