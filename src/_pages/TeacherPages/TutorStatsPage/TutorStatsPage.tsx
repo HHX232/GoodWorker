@@ -124,7 +124,7 @@ export default function TutorStatsPage({ teacherId }: { teacherId: string }) {
         />
         {data.correctionStats && data.correctionStats.length > 0 && (
           <StudentErrorsWidget
-            extraClass={styles.error_topics}
+            extraClass={styles.error_topics_subjects}
             data={data.correctionStats}
             title={t('correctionStats')}
           />

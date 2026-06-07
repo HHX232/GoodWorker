@@ -18,47 +18,78 @@
    &::-webkit-scrollbar {
       display: none;
    }
+
+   @media (max-width: 900px) {
+      max-height: none;
+      overflow-y: visible;
+   }
 }
 
-$row-h: calc((103vh - 285px - 28px - 48px) / 3);
+// Row height: split remaining screen into 2 equal rows, minimum 180px each
+$row-h: max(180px, calc((100vh - 285px - 28px - 48px) / 2));
 
 .page {
    display: grid;
    grid-template-columns: repeat(4, 1fr);
-   grid-template-rows: $row-h $row-h $row-h;
+   grid-template-rows: $row-h $row-h;
+   grid-auto-rows: $row-h;
    gap: 24px;
    padding-top: 28px;
-   align-items: start;
 
    .hero_card {
       grid-column: span 1;
       height: 100%;
+      min-height: 0;
    }
 
    .hours_chart {
       grid-column: span 2;
       height: 100%;
+      min-height: 0;
    }
 
    .sub_pie {
       grid-column: span 1;
       height: 100%;
+      min-height: 0;
    }
 
-   // Row 2: calendar + error widget (student errors)
+   // Row 2: calendar + error widget
    .week_calendar {
       grid-column: span 3;
       height: 100%;
+      min-height: 0;
    }
 
    .error_topics {
       grid-column: span 1;
       height: 100%;
+      min-height: 0;
    }
 
-   // Row 3: subject topics full width
+   // Optional 3rd row when correctionStats present: full-width
    .error_topics_subjects {
       grid-column: span 4;
       height: 100%;
+      min-height: 0;
+   }
+
+   // ── Mobile: single column, auto heights ──────────────────
+   @media (max-width: 900px) {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding-top: 16px;
+
+      .hero_card,
+      .hours_chart,
+      .sub_pie,
+      .week_calendar,
+      .error_topics,
+      .error_topics_subjects {
+         height: auto;
+         min-height: 0;
+         width: 100%;
+      }
    }
 }
