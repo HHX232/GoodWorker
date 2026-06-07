@@ -557,6 +557,25 @@
     "viewProfile": "查看资料",
     "share": "分享"
   },
+  "StudentProfile": {
+    "joinedAt": "加入于 {date}",
+    "myStudent": "我的学生",
+    "myStudentSince": "我的学生，自 {date}",
+    "notMyStudent": "非我的学生",
+    "statPostsRead": "已读帖子",
+    "statRoadmaps": "已学课程",
+    "statComments": "评论数",
+    "reportUser": "举报用户",
+    "reportTitle": "举报 {name}",
+    "reportPlaceholder": "描述举报原因...",
+    "reportTextRequired": "请输入举报原因",
+    "reportSent": "举报已提交",
+    "reportAlreadySent": "您已举报过此用户",
+    "reportError": "举报失败",
+    "cancel": "取消",
+    "submit": "提交",
+    "sending": "发送中..."
+  },
   "PostPage": {
     "report": "举报"
   },

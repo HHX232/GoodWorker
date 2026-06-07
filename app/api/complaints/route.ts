@@ -13,40 +13,50 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { text, roadmapId, postId, targetId, targetType } = body
+    const { text, roadmapId, postId, userId: reportedUserId, targetId, targetType } = body
 
     if (!text?.trim()) {
       return NextResponse.json({ error: 'Text is required' }, { status: 400 })
     }
-    if (!roadmapId && !postId) {
-      return NextResponse.json({ error: 'roadmapId or postId is required' }, { status: 400 })
+    if (!roadmapId && !postId && !reportedUserId) {
+      return NextResponse.json({ error: 'roadmapId, postId or userId is required' }, { status: 400 })
     }
-    if (!targetId) {
+    if (!targetId && !reportedUserId) {
       return NextResponse.json({ error: 'targetId is required' }, { status: 400 })
     }
 
-    // One complaint per user per post / per roadmap
+    // Prevent self-report
+    if (reportedUserId && reportedUserId === session.user.id) {
+      return NextResponse.json({ error: 'Cannot report yourself' }, { status: 400 })
+    }
+
+    // One complaint per reporter per target
     const duplicate = await prisma.complaint.findFirst({
       where: {
         reporterId: session.user.id,
-        ...(postId ? {postId} : {}),
-        ...(roadmapId ? {roadmapId} : {}),
+        ...(postId ? { postId } : {}),
+        ...(roadmapId ? { roadmapId } : {}),
+        ...(reportedUserId ? { targetId: reportedUserId, targetType: 'USER' } : {}),
       },
-      select: {id: true},
+      select: { id: true },
     })
     if (duplicate) {
-      return NextResponse.json({error: 'already_reported'}, {status: 409})
+      return NextResponse.json({ error: 'already_reported' }, { status: 409 })
     }
+
+    const resolvedTargetId = reportedUserId ?? targetId
+    const resolvedTargetType = reportedUserId ? 'USER' : (targetType ?? (roadmapId ? 'ROADMAP_NODE' : 'POST'))
 
     const complaint = await prisma.complaint.create({
       data: {
         reporterId: session.user.id,
         reporterRole: session.user.role as 'STUDENT' | 'TEACHER' | 'ADMIN',
-        targetType: targetType ?? (roadmapId ? 'ROADMAP_NODE' : 'POST'),
-        targetId,
+        targetType: resolvedTargetType,
+        targetId: resolvedTargetId,
         text: text.trim(),
         roadmapId: roadmapId ?? null,
         postId: postId ?? null,
+        studentId: reportedUserId ?? null,
         status: 'pending',
       },
     })

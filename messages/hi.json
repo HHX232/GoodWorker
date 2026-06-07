@@ -557,6 +557,25 @@
     "viewProfile": "प्रोफ़ाइल देखें",
     "share": "शेयर करें"
   },
+  "StudentProfile": {
+    "joinedAt": "{date} से सदस्य",
+    "myStudent": "मेरा छात्र",
+    "myStudentSince": "{date} से मेरा छात्र",
+    "notMyStudent": "मेरा छात्र नहीं",
+    "statPostsRead": "पढ़े गए पोस्ट",
+    "statRoadmaps": "कोर्स पूरे किए",
+    "statComments": "टिप्पणियाँ",
+    "reportUser": "रिपोर्ट करें",
+    "reportTitle": "{name} की रिपोर्ट करें",
+    "reportPlaceholder": "रिपोर्ट का कारण बताएं...",
+    "reportTextRequired": "कृपया कारण दर्ज करें",
+    "reportSent": "रिपोर्ट भेजी गई",
+    "reportAlreadySent": "आपने इस उपयोगकर्ता की पहले ही रिपोर्ट की है",
+    "reportError": "रिपोर्ट भेजने में विफल",
+    "cancel": "रद्द करें",
+    "submit": "भेजें",
+    "sending": "भेज रहे हैं..."
+  },
   "PostPage": {
     "report": "रिपोर्ट करें"
   },

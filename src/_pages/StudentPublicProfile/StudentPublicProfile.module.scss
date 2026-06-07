@@ -1,0 +1,258 @@
+.page {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 32px 16px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+// ── Hero card ────────────────────────────────────────────────
+
+.card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  padding: 28px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatarWrap {
+  position: relative;
+}
+
+.avatarRing {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #111118;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #EEEFF8;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.avatarInitials {
+  font-size: 28px;
+  font-weight: 700;
+  color: #534AB7;
+}
+
+.onlineDot {
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #22c55e;
+  border: 2px solid #fff;
+}
+
+.name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #141416;
+  text-align: center;
+  margin: 0;
+}
+
+.meta {
+  font-size: 12px;
+  color: #868897;
+  text-align: center;
+}
+
+// ── My student badge ─────────────────────────────────────────
+
+.myStudentBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: #EEF2FF;
+  color: #534AB7;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.notMyStudentBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: #F7F7F7;
+  color: #868897;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+// ── Stats grid ───────────────────────────────────────────────
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.statCard {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.statIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.statValue {
+  font-size: 22px;
+  font-weight: 700;
+  color: #141416;
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 11px;
+  color: #868897;
+  text-align: center;
+  line-height: 1.3;
+}
+
+// ── Actions ──────────────────────────────────────────────────
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reportBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 11px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  color: #868897;
+  background: none;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+  &:hover {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: #fff;
+
+    svg { stroke: #fff; }
+  }
+}
+
+// ── Report modal ─────────────────────────────────────────────
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modalTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #141416;
+  margin: 0;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 10px 12px;
+  border: 1px solid #E5E5E5;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #141416;
+  resize: vertical;
+  outline: none;
+  box-sizing: border-box;
+
+  &:focus { border-color: #534AB7; }
+}
+
+.modalActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.cancelBtn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #E5E5E5;
+  background: #F7F7F7;
+  color: #868897;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.submitBtn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background: #ef4444;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+
+  &:disabled { opacity: 0.5; }
+}
+
+.errorText {
+  font-size: 12px;
+  color: #ef4444;
+}

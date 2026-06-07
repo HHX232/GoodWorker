@@ -583,6 +583,25 @@
     "viewProfile": "View profile",
     "share": "Share"
   },
+  "StudentProfile": {
+    "joinedAt": "Member since {date}",
+    "myStudent": "My student",
+    "myStudentSince": "My student since {date}",
+    "notMyStudent": "Not my student",
+    "statPostsRead": "Posts read",
+    "statRoadmaps": "Courses taken",
+    "statComments": "Comments",
+    "reportUser": "Report user",
+    "reportTitle": "Report {name}",
+    "reportPlaceholder": "Describe the reason for reporting...",
+    "reportTextRequired": "Please enter a reason",
+    "reportSent": "Report submitted",
+    "reportAlreadySent": "You have already reported this user",
+    "reportError": "Failed to submit report",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "sending": "Sending..."
+  },
   "PostPage": {
     "report": "Report"
   },

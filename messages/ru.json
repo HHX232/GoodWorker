@@ -583,6 +583,25 @@
     "viewProfile": "Смотреть профиль",
     "share": "Поделиться"
   },
+  "StudentProfile": {
+    "joinedAt": "На платформе с {date}",
+    "myStudent": "Мой ученик",
+    "myStudentSince": "Мой ученик с {date}",
+    "notMyStudent": "Не мой ученик",
+    "statPostsRead": "Прочитано постов",
+    "statRoadmaps": "Курсов пройдено",
+    "statComments": "Комментариев",
+    "reportUser": "Пожаловаться",
+    "reportTitle": "Пожаловаться на {name}",
+    "reportPlaceholder": "Опишите причину жалобы...",
+    "reportTextRequired": "Введите текст жалобы",
+    "reportSent": "Жалоба отправлена",
+    "reportAlreadySent": "Вы уже подавали жалобу на этого пользователя",
+    "reportError": "Не удалось отправить жалобу",
+    "cancel": "Отмена",
+    "submit": "Отправить",
+    "sending": "Отправка..."
+  },
   "PostPage": {
     "report": "Пожаловаться"
   },
