@@ -6,6 +6,72 @@ import {NodeViewWrapper, ReactNodeViewProps} from '@tiptap/react'
 import {ChevronDownIcon, GripVerticalIcon, PlusIcon, XIcon} from 'lucide-react'
 import {useEffect, useRef, useState} from 'react'
 import styles from './SelectGapNode.module.scss'
+import dropStyles from './SelectGapDropdown.module.scss'
+
+// ─── Student dropdown (pass mode) ────────────────────────────────────────────
+
+interface SelectGapPassProps {
+  options: string[]
+  gapId: string
+  onChangeAnswer: (gapId: string, value: string) => void
+}
+
+function SelectGapPassComponent({ options, gapId, onChangeAnswer }: SelectGapPassProps) {
+  const [selected, setSelected] = useState('')
+  const [open, setOpen] = useState(false)
+  const wrapRef = useRef<HTMLSpanElement>(null)
+
+  // shuffle once on mount so correct answer isn't always first
+  const [shuffled] = useState(() => [...options].sort(() => Math.random() - 0.5))
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    if (open) document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  const choose = (opt: string) => {
+    setSelected(opt)
+    setOpen(false)
+    onChangeAnswer(gapId ?? options[0], opt)
+  }
+
+  return (
+    <NodeViewWrapper as='span' className={dropStyles.wrap} contentEditable={false} ref={wrapRef as React.Ref<HTMLElement>}>
+      <button
+        type='button'
+        className={`${dropStyles.trigger} ${open ? dropStyles.open : ''} ${selected ? dropStyles.answered : ''}`}
+        onClick={() => setOpen((v) => !v)}
+      >
+        {selected
+          ? <span>{selected}</span>
+          : <span className={dropStyles.placeholder}>выбрать…</span>
+        }
+        <ChevronDownIcon size={12} className={dropStyles.chevron} />
+      </button>
+
+      {open && (
+        <span className={dropStyles.dropdown}>
+          {shuffled.map((opt) => (
+            <button
+              key={opt}
+              type='button'
+              className={`${dropStyles.option} ${opt === selected ? dropStyles.selected : ''}`}
+              onMouseDown={(e) => { e.preventDefault(); choose(opt) }}
+            >
+              <span className={dropStyles.optionDot} />
+              {opt}
+            </button>
+          ))}
+        </span>
+      )}
+    </NodeViewWrapper>
+  )
+}
 
 // ─── Sortable row ─────────────────────────────────────────────────────────────
 
@@ -98,36 +164,7 @@ export const SelectTaskGapComponent = ({node, updateAttributes, extension}: Reac
   }
 
   if (isPass) {
-    return (
-      <NodeViewWrapper as='span' contentEditable={false}>
-        <select
-          defaultValue=''
-          onChange={(e) => onChangeAnswer(node.attrs.gapId ?? options[0], e.target.value)}
-          style={{
-            padding: '3px 8px',
-            fontSize: 15,
-            border: '1.5px solid #c4c8d0',
-            borderRadius: 6,
-            background: '#f0f1f3',
-            margin: '0 4px',
-            cursor: 'pointer'
-          }}
-        >
-          <option value='' disabled>
-            —
-          </option>
-          {/* перемешиваем чтобы правильный не был первым визуально */}
-          {[...options]
-            // eslint-disable-next-line react-hooks/purity
-            .sort(() => Math.random() - 0.5)
-            .map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
-              </option>
-            ))}
-        </select>
-      </NodeViewWrapper>
-    )
+    return <SelectGapPassComponent options={options} gapId={node.attrs.gapId} onChangeAnswer={onChangeAnswer} />
   }
 
   return (

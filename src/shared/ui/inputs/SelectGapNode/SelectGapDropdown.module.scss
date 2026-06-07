@@ -1,0 +1,131 @@
+.wrap {
+  position: relative;
+  display: inline-block;
+  vertical-align: baseline;
+  margin: 0 4px;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px 3px 10px;
+  border: 1.5px solid #c4c8d0;
+  border-radius: 7px;
+  background: #f5f6f8;
+  font-size: inherit;
+  font-family: inherit;
+  line-height: inherit;
+  color: #141416;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: #9ca3af;
+    background: #eff0f3;
+  }
+
+  &.open {
+    border-color: #534AB7;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(83, 74, 183, 0.12);
+  }
+
+  &.answered {
+    border-color: #94a3b8;
+    background: #f0f1f4;
+    color: #374151;
+  }
+
+  &.correct {
+    border-color: #22c55e;
+    background: #f0fdf4;
+    color: #15803d;
+  }
+
+  &.wrong {
+    border-color: #ef4444;
+    background: #fef2f2;
+    color: #dc2626;
+  }
+}
+
+.placeholder {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.chevron {
+  flex-shrink: 0;
+  opacity: 0.5;
+  transition: transform 0.18s ease;
+
+  .open & {
+    transform: rotate(180deg);
+    opacity: 0.8;
+  }
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 300;
+  min-width: 160px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.07), 0 10px 30px -3px rgba(0,0,0,0.12);
+  overflow: hidden;
+  animation: dropIn 0.12s ease;
+}
+
+@keyframes dropIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 14px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #374151;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.1s;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  &:hover {
+    background: #f5f6ff;
+    color: #534AB7;
+  }
+
+  &.selected {
+    background: #eef2ff;
+    color: #534AB7;
+    font-weight: 600;
+  }
+}
+
+.optionDot {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #d1d5db;
+  transition: background 0.1s;
+
+  .selected & { background: #534AB7; }
+  .option:hover & { background: #534AB7; }
+}

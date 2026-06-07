@@ -3,6 +3,7 @@
 
 import {RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
 import {useViewMode} from '@/shared/ui/RoadMap/context/ViewModeContext'
+import {compressImageToThumbnail} from '@/shared/helpers/compressImage'
 import {useReactFlow, useStore} from '@xyflow/react'
 import {ImagePlusIcon, XIcon} from 'lucide-react'
 import Image from 'next/image'
@@ -29,15 +30,19 @@ export default function EntryPointBlock({nodeId}: {nodeId: string}) {
 
   const update = (patch: Partial<EntryData>) => updateNodeData(nodeId, patch as any)
 
-  const handlePreview = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePreview = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = () => {
-      update({roadPreview: reader.result as string})
-      if (fileRef.current) fileRef.current.value = ''
+    if (fileRef.current) fileRef.current.value = ''
+    try {
+      const compressed = await compressImageToThumbnail(file)
+      update({roadPreview: compressed})
+    } catch {
+      // fallback to direct base64 if canvas fails
+      const reader = new FileReader()
+      reader.onload = () => update({roadPreview: reader.result as string})
+      reader.readAsDataURL(file)
     }
-    reader.readAsDataURL(file)
   }
 
   return (

@@ -24,6 +24,7 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       allowedOrigins: [appUrl.replace(/^https?:\/\//, "")],
+      bodySizeLimit: '10mb',
     },
   },
   webpack: (config, { isServer }) => {

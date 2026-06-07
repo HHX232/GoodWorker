@@ -25,15 +25,11 @@
    }
 }
 
-// Row height: minimum 413px per row (→ 850px total for 2 rows + gap).
-// On large screens grows proportionally; container scrolls if needed.
-$row-h: max(413px, calc((100vh - 200px) / 2));
-
 .page {
    display: grid;
    grid-template-columns: repeat(4, 1fr);
-   grid-template-rows: $row-h $row-h;
-   grid-auto-rows: $row-h;
+   grid-template-rows: max(370px, 50vh - 160px) max(370px, 50vh - 160px);
+   grid-auto-rows: max(370px, 50vh - 160px);
    gap: 24px;
    padding-top: 28px;
 

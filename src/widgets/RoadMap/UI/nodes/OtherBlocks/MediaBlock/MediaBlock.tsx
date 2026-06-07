@@ -3,6 +3,7 @@
 
 import {RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
 import {useViewMode} from '@/shared/ui/RoadMap/context/ViewModeContext'
+import {compressImageToBase64} from '@/shared/helpers/compressImage'
 import {useReactFlow, useStore} from '@xyflow/react'
 import {
   ChevronLeftIcon,
@@ -103,7 +104,9 @@ export default function MediaBlock({nodeId}: {nodeId: string}) {
       const isVideo = file.type.startsWith('video/')
       const cost = isVideo ? POINTS_VIDEO : POINTS_IMAGE
       if (pts + cost > MAX_POINTS) continue
-      const url = await fileToBase64(file)
+      const url = isVideo
+        ? await fileToBase64(file)
+        : await compressImageToBase64(file, 1200, 900, 0.75)
       newItems.push({ url, type: isVideo ? 'video' : 'image', points: cost })
       pts += cost
     }
