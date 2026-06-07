@@ -198,6 +198,8 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
 
   // Keep refs in sync via effect (React Compiler forbids ref writes during render)
   useEffect(() => { callTestRef.current = callTest }, [callTest])
+  const isOwnerRef = useRef(isOwner)
+  useEffect(() => { isOwnerRef.current = isOwner }, [isOwner])
   const whiteboardElementsRef = useRef<any[] | null>(null)
   useEffect(() => { whiteboardElementsRef.current = whiteboardElements }, [whiteboardElements])
   // Tracks previous testIsMain value so we only reload camera on hide/stop, not on initial mount
@@ -272,8 +274,10 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
         return
       }
       if (type === 'call_test_request') {
-        // Student is requesting test state — re-broadcast if we're the owner and test is active
-        if (isOwner && callTestRef.current) {
+        // Student is requesting test state — re-broadcast if we're the owner and test is active.
+        // Use isOwnerRef (not the closed-over isOwner) — the closure is created once and isOwner
+        // can change after ownerIdentity resolves asynchronously.
+        if (isOwnerRef.current && callTestRef.current) {
           const t = callTestRef.current
           if (t.mode === 'whiteboard') {
             broadcast({ type: 'call_whiteboard_start' })
@@ -481,7 +485,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   const participantCount = room.participants.length
   useEffect(() => {
     if (!room.connected || participantCount === 0) return
-    if (isOwner) {
+    if (isOwnerRef.current) {
       // Re-announce test to newly joined participants
       if (callTestRef.current) {
         const t = callTestRef.current

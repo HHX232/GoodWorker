@@ -159,9 +159,11 @@ async def transcribe_participant_audio(
 
 def build_final_transcript() -> str:
     all_entries = [e for entries in session_transcript.values() for e in entries]
+    if not all_entries:
+        return ""
     all_entries.sort(key=lambda e: e["time"])
 
-    lines = ["📝 КОНСПЕКТ", "=" * 40]
+    lines = []
     for e in all_entries:
         role_label = {"tutor": "Репетитор", "student": "Ученик"}.get(e["role"], e["role"])
         lang_tag = f"[{e.get('lang', '?')}] " if e.get("lang") else ""

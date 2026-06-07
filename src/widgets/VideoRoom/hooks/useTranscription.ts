@@ -206,7 +206,12 @@ export function useTranscription({
       }
 
       if (type === 'session_transcript') {
-        if (text) setFinalTranscript(text)
+        // Only accept agent transcript if it contains real timed entries ([HH:MM:SS] pattern).
+        // An agent may send just the header "📝 КОНСПЕКТ\n===..." with no entries when
+        // Whisper received no audio — that must not overwrite the good browser-SR callNotes.
+        if (text && /\[\d{2}:\d{2}:\d{2}\]/.test(text)) {
+          setFinalTranscript(text)
+        }
       }
     },
     [userName, browserHasSpeech],
