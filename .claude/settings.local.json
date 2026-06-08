@@ -183,7 +183,36 @@
       "Bash(mkdir -p /Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/api/bookings/[bookingId])",
       "Bash(mkdir -p \"/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/api/bookings/[bookingId]\")",
       "Bash(python3 -c \"import json; json.load\\(open\\('/Users/nikitatisevic/Desktop/GoodWorkerRemaster/messages/zh.json'\\)\\); print\\('OK'\\)\")",
-      "Bash(npx --prefix /Users/nikitatisevic/Desktop/GoodWorkerRemaster tsc --noEmit)"
+      "Bash(npx --prefix /Users/nikitatisevic/Desktop/GoodWorkerRemaster tsc --noEmit)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:JMFZOZlsPXplsrMKKQlIkWwOKzQQsGpH@turntable.proxy.rlwy.net:53259/railway\" npx prisma generate)",
+      "Bash(git -C /Users/nikitatisevic/Desktop/GoodWorkerRemaster diff --stat)",
+      "Bash(git -C /Users/nikitatisevic/Desktop/GoodWorkerRemaster push origin main)",
+      "Bash(git -C /Users/nikitatisevic/Desktop/GoodWorkerRemaster add prisma/migrations/20260606000000_add_service_booking_date_fields/migration.sql src/_pages/TeacherPublicProfile/TeacherPublicProfile.module.scss src/shared/ui/FlagIcon/FlagIcon.tsx app/layout.tsx src/shared/ui/inputs/LanguageSelect/LanguageSelect.tsx src/widgets/BaseUI/LangSwitcher/LangSwitcher.tsx src/shared/utils/currencyConverter.ts src/shared/ui/Teacher/TeacherCard/TeacherCard.tsx src/shared/ui/Service/ServiceCard/ServiceCard.tsx src/shared/ui/RoadMap/RoadMapPreview/RoadMapPreview.tsx src/shared/ui/RoadMap/PublishModal/PublishModal.tsx package.json package-lock.json)",
+      "Bash(git -C /Users/nikitatisevic/Desktop/GoodWorkerRemaster add src/_pages/TeacherPublicProfile/TeacherPublicProfile.module.scss)",
+      "Bash(git -C /Users/nikitatisevic/Desktop/GoodWorkerRemaster commit -m 'fix: profile page — stack all columns at 1100px instead of hiding left panel *)",
+      "Bash(git -C /Users/nikitatisevic/Desktop/GoodWorkerRemaster add src/features/hooks/Test/useSaveTest.tsx src/widgets/Tasks/BlockEditor/DialogueEditor/DialogueEditor.tsx messages/ru.json messages/en.json messages/zh.json messages/hi.json)",
+      "Bash(mkdir -p /Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/api/users/\\\\[id\\\\])",
+      "Bash(git -C /Users/nikitatisevic/Desktop/GoodWorkerRemaster add app/api/users/[id]/route.ts app/api/complaints/route.ts 'app/\\(posts\\)/users/[id]/page.tsx' src/_pages/StudentPublicProfile/StudentPublicProfile.tsx src/_pages/StudentPublicProfile/StudentPublicProfile.module.scss messages/ru.json messages/en.json messages/zh.json messages/hi.json)",
+      "Bash(sed -n '649,655p' /Users/nikitatisevic/Desktop/GoodWorkerRemaster/messages/zh.json)",
+      "Bash(sed -n '649,655p' /Users/nikitatisevic/Desktop/GoodWorkerRemaster/messages/hi.json)",
+      "Bash(sed -n '1151,1154p' /Users/nikitatisevic/Desktop/GoodWorkerRemaster/messages/en.json)",
+      "Bash(sed -n '1143,1146p' /Users/nikitatisevic/Desktop/GoodWorkerRemaster/messages/zh.json)",
+      "Bash(sed -n '1143,1146p' /Users/nikitatisevic/Desktop/GoodWorkerRemaster/messages/hi.json)",
+      "Bash(sed -n '359,363p' /Users/nikitatisevic/Desktop/GoodWorkerRemaster/messages/zh.json)",
+      "Bash(sed -n '359,363p' /Users/nikitatisevic/Desktop/GoodWorkerRemaster/messages/hi.json)",
+      "Bash(git -C /Users/nikitatisevic/Desktop/GoodWorkerRemaster add src/_pages/TeacherPages/TutorStatsPage/TutorStatsPage.module.scss src/_pages/TeacherPages/TutorStatsPage/TutorStatsPage.tsx)",
+      "Bash(git -C /Users/nikitatisevic/Desktop/GoodWorkerRemaster commit -m 'fix: stats page — 2-row grid fills screen, mobile stacks vertically *)",
+      "Bash(git -C /Users/nikitatisevic/Desktop/GoodWorkerRemaster add src/_pages/TeacherPages/TutorStatsPage/TutorStatsPage.module.scss)",
+      "Bash(git -C /Users/nikitatisevic/Desktop/GoodWorkerRemaster commit -m 'fix: stats page row height — min 413px per row \\(~850px total grid\\) *)",
+      "Bash(git -C /Users/nikitatisevic/Desktop/GoodWorkerRemaster add src/_pages/TeacherPages/TutorStatsPage/TutorStatsPage.module.scss next.config.ts src/shared/helpers/compressImage.ts src/widgets/RoadMap/UI/nodes/OtherBlocks/EntryPointBlock/EntryPointBlock.tsx src/widgets/RoadMap/UI/nodes/OtherBlocks/MediaBlock/MediaBlock.tsx src/shared/ui/inputs/SelectGapNode/SelectTaskGapComponent.tsx src/shared/ui/inputs/SelectGapNode/SelectGapDropdown.module.scss)",
+      "Bash(git -C /Users/nikitatisevic/Desktop/GoodWorkerRemaster add app/api/call/transcript/route.ts app/api/teacher/calendar/route.ts src/shared/helpers/calendar/calendar.helpers.ts src/shared/ui/Calendar/CalendarEventCard/CalendarEventCard.tsx src/shared/ui/Calendar/CalendarEventCard/CalendarEventCard.module.scss src/widgets/Calendar/WeekCalendar/WeekCalendar.tsx src/widgets/Calendar/DayCalendar/DayCalendar.tsx src/widgets/Calendar/Modals/CalendarCreateModal/CalendarCreateModal.tsx src/_pages/CalendarPage/CalendarPage.tsx)",
+      "Bash(git -C /Users/nikitatisevic/Desktop/GoodWorkerRemaster add src/shared/ui/VerifiedBadge/VerifiedBadge.tsx src/shared/ui/VerifiedBadge/VerifiedBadge.module.scss src/widgets/Dashboard/PublicTeacherPanel/PublicTeacherPanel.tsx src/widgets/Dashboard/DashboardProfilePanel/DashboardProfilePanel.tsx src/widgets/Dashboard/DashboardProfilePanel/DashboardProfilePanel.module.scss src/widgets/Dashboard/VideoCallModal/VideoCallModal.tsx 'app/\\(posts\\)/users/[id]/page.tsx' messages/ru.json messages/en.json messages/zh.json messages/hi.json)",
+      "Bash(git -C /Users/nikitatisevic/Desktop/GoodWorkerRemaster add src/widgets/VideoRoom/VideoCallPage.tsx src/widgets/VideoRoom/hooks/useTranscription.ts stt-agent/agent.py)",
+      "Bash(git -C /Users/nikitatisevic/Desktop/GoodWorkerRemaster add src/_pages/TeacherPublicProfile/TeacherPublicProfile.tsx)",
+      "Bash(git -C /Users/nikitatisevic/Desktop/GoodWorkerRemaster commit -m 'fix: add identityConfirmed prop to TeacherPublicProfile \\(build type error\\) *)",
+      "Bash(git -C /Users/nikitatisevic/Desktop/GoodWorkerRemaster add app/api/call/transcript/route.ts src/widgets/Dashboard/VideoCallModal/VideoCallModal.tsx)",
+      "Bash(git -C /Users/nikitatisevic/Desktop/GoodWorkerRemaster commit -m 'fix: resolve build type errors in transcript route and VideoCallModal *)",
+      "Bash(git -C /Users/nikitatisevic/Desktop/GoodWorkerRemaster show fda4499 -- app/api/call/transcript/route.ts)"
     ],
     "additionalDirectories": [
       "c:\\Users\\Мастер\\Desktop\\goodworkerremaster\\app\\api\\roadmap",
@@ -206,7 +235,8 @@
       "/Users/nikitatisevic/Desktop/pdf-microservice/nextjs-client",
       "/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/call/[room]",
       "/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/(test)/edit-test",
-      "/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/api/bookings"
+      "/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/api/bookings",
+      "/Users/nikitatisevic/Desktop/GoodWorkerRemaster/app/api/users"
     ]
   }
 }
