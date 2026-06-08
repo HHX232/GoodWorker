@@ -966,11 +966,11 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
                 blocks={callTest.blocks}
                 title={callTest.title}
                 onAnswer={(blockId, answer) =>
-                  broadcast({ type: 'call_test_answer', blockId, answer: serializeAnswer(answer as StudentAnswer) })
+                  broadcastChunked({ type: 'call_test_answer', blockId, answer: serializeAnswer(answer as StudentAnswer) })
                 }
                 onSubmit={(answers: AnswerRecord) => {
                   setLocalTestSubmitted(true)
-                  broadcast({ type: 'call_test_submit', answers })
+                  broadcastChunked({ type: 'call_test_submit', answers })
                 }}
                 submitted={localTestSubmitted}
               />
