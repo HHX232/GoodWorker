@@ -23,6 +23,19 @@ export function serializeAnswer(answer: StudentAnswer): any {
   return answer
 }
 
+/** Inverse of serializeAnswer — restores Map values for MATCH_PAIRS after JSON round-trip. */
+export function deserializeAnswer(answer: any): StudentAnswer {
+  if (answer?.type === TaskBlockType.MATCH_PAIRS && answer.value && !(answer.value instanceof Map)) {
+    return { type: TaskBlockType.MATCH_PAIRS, value: new Map(Object.entries(answer.value)) }
+  }
+  return answer as StudentAnswer
+}
+
+/** Build a properly typed answers Map from a received AnswerRecord. */
+export function answersToMap(rec: AnswerRecord): Map<string, StudentAnswer> {
+  return new Map(Object.entries(rec).map(([k, v]) => [k, deserializeAnswer(v)]))
+}
+
 const ANSWERABLE = new Set<string>([
   TaskBlockType.CHOOSE_OPTION, TaskBlockType.FREE_ANSWER,
   TaskBlockType.SEQUENCE, TaskBlockType.MATCH_PAIRS,
@@ -195,7 +208,7 @@ export function CallTestTeacherView({ blocks, title, studentProgress, studentCou
             const hasAnswers = prog && Object.keys(prog.answers).length > 0
             let score: number | null = null
             if (hasSubmitted) {
-              const answersMap = new Map(Object.entries(prog.answers)) as Map<string, StudentAnswer>
+              const answersMap = answersToMap(prog.answers)
               const res = calculateResult(blocks, answersMap)
               score = res.percent
             }
@@ -276,7 +289,7 @@ function ParticipantAnswersModal({ identity, blocks, progress, onClose }: Partic
 
   let scoreData: { percent: number; totalScore: number; maxScore: number } | null = null
   if (progress?.submitted) {
-    const answersMap = new Map(Object.entries(progress.answers)) as Map<string, StudentAnswer>
+    const answersMap = answersToMap(progress.answers)
     const res = calculateResult(blocks, answersMap)
     scoreData = { percent: res.percent, totalScore: res.totalScore, maxScore: res.maxScore }
   }
@@ -408,7 +421,7 @@ function ScoreDistributionView({ blocks, studentProgress, selectedStudent }: {
     if (!progress?.submitted) {
       return <div className={styles.statsBlock}><p className={styles.emptyNote}>Не сдал</p></div>
     }
-    const answersMap = new Map(Object.entries(progress.answers)) as Map<string, StudentAnswer>
+    const answersMap = answersToMap(progress.answers)
     const res = calculateResult(blocks, answersMap)
     const { label } = gradeColor(res.percent)
     const answerableBlocks = blocks.filter(b => ANSWERABLE.has(b.type as string))
@@ -440,7 +453,7 @@ function ScoreDistributionView({ blocks, studentProgress, selectedStudent }: {
     { label: 'Слабо',   min:  0, count: 0 },
   ]
   for (const [, progress] of submittedEntries) {
-    const answersMap = new Map(Object.entries(progress.answers)) as Map<string, StudentAnswer>
+    const answersMap = answersToMap(progress.answers)
     const res = calculateResult(blocks, answersMap)
     const bucket = buckets.find(b => res.percent >= b.min)
     if (bucket) bucket.count++
