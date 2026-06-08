@@ -200,6 +200,9 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   useEffect(() => { callTestRef.current = callTest }, [callTest])
   const isOwnerRef = useRef(isOwner)
   useEffect(() => { isOwnerRef.current = isOwner }, [isOwner])
+  // broadcastChunked is declared further below — use a ref so the data-router
+  // closure (created before broadcastChunked) always calls the latest version
+  const broadcastChunkedRef = useRef<((msg: object) => void) | null>(null)
   const whiteboardElementsRef = useRef<any[] | null>(null)
   useEffect(() => { whiteboardElementsRef.current = whiteboardElements }, [whiteboardElements])
   // Tracks previous testIsMain value so we only reload camera on hide/stop, not on initial mount
@@ -282,10 +285,10 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
           if (t.mode === 'whiteboard') {
             broadcast({ type: 'call_whiteboard_start' })
             if (whiteboardElementsRef.current && whiteboardElementsRef.current.length > 0) {
-              broadcast({ type: 'call_whiteboard_update', elements: whiteboardElementsRef.current })
+              broadcastChunkedRef.current?.({ type: 'call_whiteboard_update', elements: whiteboardElementsRef.current })
             }
           } else {
-            broadcast({ type: 'call_test_start', testId: t.testId, title: t.title, blocks: t.blocks })
+            broadcastChunkedRef.current?.({ type: 'call_test_start', testId: t.testId, title: t.title, blocks: t.blocks })
           }
         }
         return
@@ -338,6 +341,8 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
       broadcast({ type: '_chunk', id, i: idx, n: total, d: str.slice(idx * CHUNK_SIZE, (idx + 1) * CHUNK_SIZE) })
     }
   }, [broadcast])
+  // Wire ref so data-router closure (created before broadcastChunked) always calls the latest version
+  useEffect(() => { broadcastChunkedRef.current = broadcastChunked }, [broadcastChunked])
 
   // ── Room-level broadcast actions ──────────────────────────────────────────
   const changeLayout = useCallback((l: Layout) => {
@@ -489,7 +494,7 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
       // Re-announce test to newly joined participants
       if (callTestRef.current) {
         const t = callTestRef.current
-        broadcast({ type: 'call_test_start', testId: t.testId, title: t.title, blocks: t.blocks })
+        broadcastChunkedRef.current?.({ type: 'call_test_start', testId: t.testId, title: t.title, blocks: t.blocks })
       }
     } else {
       // Ask teacher to send current test state
@@ -859,11 +864,11 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
     setCallTest({ testId, title, blocks })
     setCallTestProgress({})
     setLocalTestSubmitted(false)
-    broadcast(payload)
+    broadcastChunked(payload)   // blocks can exceed 50KB → must chunk
     setShowTestPicker(false)
     setMainSpeaker('__test__')
     broadcast({ type: 'speaker', identity: '__test__' })
-  }, [broadcast])
+  }, [broadcast, broadcastChunked])
 
   const stopTest = useCallback(() => {
     setCallTest(null)
