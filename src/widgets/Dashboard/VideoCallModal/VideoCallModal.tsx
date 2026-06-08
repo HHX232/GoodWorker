@@ -66,7 +66,7 @@ export function VideoCallModal({ defaultName, onClose }: Props) {
         .then(d => { if (Array.isArray(d.students)) setMyStudents(d.students) })
         .catch(() => {})
     }
-  }, [step, categories.length, myStudents.length])
+  }, [step, myStudents.length])
 
   const toggleStudent = (email: string) => {
     setCheckedStudents(prev => {

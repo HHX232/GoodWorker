@@ -106,8 +106,9 @@ export async function POST(req: NextRequest) {
             } else {
               // Called same day but different time — completed at actual time
               changed = true
-              const durMins = (ev.durationMinutes as number) ??
-                (timeToMins((ev.endTime as string) ?? '00:00') - scheduledMins) ?? 60
+              const durMins: number = ((ev.durationMinutes as number | null | undefined)
+                ?? (ev.endTime ? timeToMins(ev.endTime as string) - scheduledMins : 0)
+              ) || 60
               const endMins = callMins + durMins
               const endH = Math.floor(endMins / 60) % 24
               const endM = endMins % 60
