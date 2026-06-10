@@ -42,6 +42,24 @@
   text-overflow: ellipsis;
 }
 
+.mini_test_badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+  padding: 3px 10px 3px 8px;
+  border-radius: 20px;
+  background: #eef6ff;
+  border: 1px solid #c7dffe;
+  color: #2563eb;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  width: fit-content;
+
+  svg { flex-shrink: 0; }
+}
+
 .card_images_list {
   display: flex;
   gap: 4px;

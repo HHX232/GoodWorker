@@ -22,6 +22,7 @@ const Card: FC<ICard & {isOwner?: boolean; onDelete?: () => void}> = ({
   useLink = true,
   isOwner = false,
   onDelete,
+  hasMiniTest = false,
 }) => {
   const t = useTranslations('card')
   const tDash = useTranslations('dashboard')
@@ -43,12 +44,32 @@ const Card: FC<ICard & {isOwner?: boolean; onDelete?: () => void}> = ({
       {useLink ? (
         <Link href={`/post/${cardId}`} className={style.card_text_box}>
           <h5 className={style.card_title}>{title}</h5>
-          <p className={style.card_subtitle}>{subTitle}</p>
+          {subTitle && <p className={style.card_subtitle}>{subTitle}</p>}
+          {hasMiniTest && (
+            <span className={style.mini_test_badge}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+                <rect x="9" y="3" width="6" height="4" rx="1"/>
+                <path d="M9 12l2 2 4-4"/>
+              </svg>
+              {t('miniTestBadge')}
+            </span>
+          )}
         </Link>
       ) : (
         <div className={style.card_text_box}>
           <h5 className={style.card_title}>{title}</h5>
-          <p className={style.card_subtitle}>{subTitle}</p>
+          {subTitle && <p className={style.card_subtitle}>{subTitle}</p>}
+          {hasMiniTest && (
+            <span className={style.mini_test_badge}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+                <rect x="9" y="3" width="6" height="4" rx="1"/>
+                <path d="M9 12l2 2 4-4"/>
+              </svg>
+              {t('miniTestBadge')}
+            </span>
+          )}
         </div>
       )}
 

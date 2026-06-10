@@ -15,6 +15,7 @@ interface Props {
   isOpen: boolean
   onClose: () => void
   hasPaywalledNodes: boolean
+  initialCategoryIds?: string[]
   onConfirm: (price: number, nodeAccessType: RoadmapNodeAccessType | null, currency: string, categoryIds: string[]) => void
 }
 
@@ -63,7 +64,7 @@ const ACCESS_OPTIONS: {
   },
 ]
 
-export function PublishModal({ isOpen, onClose, hasPaywalledNodes, onConfirm }: Props) {
+export function PublishModal({ isOpen, onClose, hasPaywalledNodes, initialCategoryIds, onConfirm }: Props) {
   const t = useTranslations('roadMap')
   const router = useRouter()
   const [step, setStep] = useState<Step>(hasPaywalledNodes ? 'access-type' : 'price')
@@ -84,6 +85,9 @@ export function PublishModal({ isOpen, onClose, hasPaywalledNodes, onConfirm }: 
     setCurrency('BYN')
     setStep(hasPaywalledNodes ? 'access-type' : 'price')
     setIsVip(null)
+    if (initialCategoryIds && initialCategoryIds.length > 0) {
+      setCategoryIds(initialCategoryIds)
+    }
   }, [isOpen, hasPaywalledNodes])
 
   useEffect(() => {

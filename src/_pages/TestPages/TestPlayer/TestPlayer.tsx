@@ -16,7 +16,8 @@ import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
 import {DialogueStudentView} from '@/widgets/Tasks/BlockEditor/DialogueEditor/DialogueEditor'
 import {FillTextEditor} from '@/widgets/Tasks/BlockEditor/FillTextEditor/FillTextEditor'
 import {HighlightStudentView} from '@/widgets/Tasks/BlockEditor/HighlightTextEditor/HighlightTextEditor'
-import {useState} from 'react'
+import {useTranslations} from 'next-intl'
+import {useEffect, useState} from 'react'
 import {toast} from 'sonner'
 
 import {InfoTextEditor} from '@/features/BlockEditors/InfoTextEditor/InfoTextEditor'
@@ -192,39 +193,7 @@ export function TestPlayer({blocks, singleBlock = false, onResult, showInlineRes
 
   // ── Результат ──
   if (result && showInlineResult) {
-    const percent = result.percent
-    const {label, color} = grade(percent)
-    return (
-      <div className={styles.result}>
-        <div className={styles.ring} style={{borderColor: color}}>
-          <span className={styles.pct} style={{color}}>
-            {percent}%
-          </span>
-          <span className={styles.lbl} style={{color}}>
-            {label}
-          </span>
-        </div>
-        <p className={styles.score}>
-          {result.totalScore} / {result.maxScore} баллов
-        </p>
-        <div className={styles.result_rows}>
-          {result.blocks.map((br, i) => (
-            <div key={br.blockId} className={`${styles.result_row} ${br.isCorrect ? styles.ok : styles.err}`}>
-              <span className={styles.num}>{i + 1}</span>
-              <span className={`${styles.badge} ${br.isCorrect ? styles.badge_ok : styles.badge_err}`}>
-                {br.isCorrect ? '✓' : '✗'}
-              </span>
-              <span className={styles.pts}>
-                {br.score}/{br.maxScore}
-              </span>
-            </div>
-          ))}
-        </div>
-        <button className={styles.retry_btn} onClick={handleRetry}>
-          Пройти снова
-        </button>
-      </div>
-    )
+    return <ResultView result={result} onRetry={handleRetry} />
   }
 
   if (singleBlock) {
@@ -258,7 +227,7 @@ export function TestPlayer({blocks, singleBlock = false, onResult, showInlineRes
         </div>
 
         {/* Текущий блок */}
-        <div className={`${styles.single_block_wrap} ${currentHasError ? styles.single_block_wrap_error : ''}`}>
+        <div key={current.id} className={`${styles.single_block_wrap} ${currentHasError ? styles.single_block_wrap_error : ''}`}>
           <BlockWrapper block={current} hasError={currentHasError}>
             <BlockView block={current} onChange={setAnswer} isSubmitted={isSubmitted} />
           </BlockWrapper>
@@ -293,9 +262,67 @@ export function TestPlayer({blocks, singleBlock = false, onResult, showInlineRes
   )
 }
 
-function grade(percent: number) {
-  if (percent >= 90) return {label: 'Отлично', color: '#1D9E75'}
-  if (percent >= 70) return {label: 'Хорошо', color: '#378ADD'}
-  if (percent >= 50) return {label: 'Удовлетворительно', color: '#EF9F27'}
-  return {label: 'Нужно повторить', color: '#E24B4A'}
+const RADIUS = 48
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS
+
+function ResultView({result, onRetry}: {result: TestResult; onRetry: () => void}) {
+  const t = useTranslations('TestPlayer')
+  const {percent, totalScore, maxScore, blocks} = result
+  const {key, color} = gradeKey(percent)
+  const targetOffset = CIRCUMFERENCE * (1 - percent / 100)
+  const [animOffset, setAnimOffset] = useState(CIRCUMFERENCE)
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setAnimOffset(targetOffset))
+    return () => cancelAnimationFrame(id)
+  }, [targetOffset])
+
+  const msgKey = `msg${key.charAt(0).toUpperCase()}${key.slice(1)}` as `msg${Capitalize<typeof key>}`
+
+  return (
+    <div className={styles.result}>
+      <div className={styles.ring_wrap}>
+        <svg width="120" height="120" viewBox="0 0 120 120" className={styles.ring_svg}>
+          <circle cx="60" cy="60" r={RADIUS} fill="none" stroke="#f0f0f0" strokeWidth="8" />
+          <circle
+            cx="60" cy="60" r={RADIUS} fill="none"
+            stroke={color} strokeWidth="8"
+            strokeLinecap="round"
+            strokeDasharray={CIRCUMFERENCE}
+            strokeDashoffset={animOffset}
+            transform="rotate(-90 60 60)"
+            className={styles.ring_progress}
+          />
+        </svg>
+        <span className={styles.pct} style={{color}}>{percent}%</span>
+      </div>
+
+      <span className={styles.grade_label} style={{color}}>{t(key)}</span>
+      <span className={styles.grade_message}>{t(msgKey)}</span>
+      <p className={styles.score}>{t('score', {score: totalScore, max: maxScore})}</p>
+
+      <div className={styles.result_rows}>
+        {blocks.map((br, i) => (
+          <div key={br.blockId} className={`${styles.result_row} ${br.isCorrect ? styles.ok : styles.err}`}>
+            <span className={styles.num}>{i + 1}</span>
+            <span className={`${styles.badge} ${br.isCorrect ? styles.badge_ok : styles.badge_err}`}>
+              {br.isCorrect ? '✓' : '✗'}
+            </span>
+            <span className={styles.pts}>{br.score}/{br.maxScore}</span>
+          </div>
+        ))}
+      </div>
+
+      <button className={styles.retry_btn} onClick={onRetry}>{t('retryBtn')}</button>
+    </div>
+  )
+}
+
+type GradeKey = 'excellent' | 'good' | 'satisfactory' | 'needsWork'
+
+function gradeKey(percent: number): {key: GradeKey; color: string} {
+  if (percent >= 90) return {key: 'excellent',     color: '#1D9E75'}
+  if (percent >= 70) return {key: 'good',          color: '#378ADD'}
+  if (percent >= 50) return {key: 'satisfactory',  color: '#EF9F27'}
+  return                    {key: 'needsWork',      color: '#E24B4A'}
 }

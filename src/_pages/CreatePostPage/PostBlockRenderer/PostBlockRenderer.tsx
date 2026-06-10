@@ -48,6 +48,7 @@ export const PostBlockRenderer = ({blocks, postId, titleNode}: Props) => {
                 key={block.id}
                 payload={block.payload as PostMiniTestPayload}
                 postId={postId}
+                blockId={block.id}
               />
             )
           default:

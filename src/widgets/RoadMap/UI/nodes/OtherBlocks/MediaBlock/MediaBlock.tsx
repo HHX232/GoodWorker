@@ -15,7 +15,6 @@ import {
   UploadIcon
 } from 'lucide-react'
 import {useTranslations} from 'next-intl'
-import Image from 'next/image'
 import {useRef, useState} from 'react'
 import 'swiper/css'
 import 'swiper/css/navigation'
@@ -77,13 +76,10 @@ export default function MediaBlock({nodeId}: {nodeId: string}) {
   const t = useTranslations('roadMap')
 
   const mediaData = useStore((s) => {
-    const data = s.nodeLookup.get(nodeId)?.data as RoadNodeData & {
-      mediaItems?: MediaItem[]
-      mediaSize?: MediaSize
-    }
+    const data = s.nodeLookup.get(nodeId)?.data as RoadNodeData
     return {
       items: (data?.mediaItems ?? []) as MediaItem[],
-      size: (data?.mediaSize ?? 'medium') as MediaSize
+      size: (data?.mediaSize ?? 'medium') as MediaSize,
     }
   })
 
@@ -258,7 +254,8 @@ function SlideContent({
   return (
     <div className={styles.slideContent} style={{height}}>
       {item.type === 'image' ? (
-        <Image src={item.url} alt='media' fill style={{objectFit: 'cover'}} unoptimized />
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={item.url} alt='media' style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block'}} />
       ) : (
         <video src={item.url} controls className={styles.video} style={{height: '100%'}} />
       )}

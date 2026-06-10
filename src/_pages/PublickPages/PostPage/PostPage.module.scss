@@ -113,6 +113,15 @@
    flex-direction: column;
    overflow: hidden;
 
+   @media (min-width: 1041px) and (max-height: 899px) {
+      overflow-y: auto;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+         display: none;
+      }
+   }
+
    @include mixins.lgg {
       order: -1;
       max-height: 60vh;

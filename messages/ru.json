@@ -334,7 +334,7 @@
     "noPostsSelected": "Посты не выбраны, возможно будут добавлены в будущем",
     "addPost": "Добавить пост",
     "selectPosts": "Выберите посты",
-    "selectedCount": "{{count}} выбрано",
+    "selectedCount": "{count} выбрано",
     "removePost": "Убрать",
     "addCondition": "Добавить условие",
     "placeholderCondition": "Условие...",
@@ -472,7 +472,8 @@
     "noTestsFound": "Тесты не найдены",
     "loadingTests": "Загрузка тестов...",
     "noPostsFound": "Посты не найдены",
-    "loadingPosts": "Загрузка постов..."
+    "loadingPosts": "Загрузка постов...",
+    "completed": "Пройдено"
   },
   "fileBlock": {
     "filesNotAttached": "Файлы не прикреплены",
@@ -999,7 +1000,10 @@
     "serviceLabelsLabel": "Услуги",
     "serviceLabelsPlaceholder": "Индивидуальные уроки, Групповые курсы...",
     "expEdit": "Редактировать",
-    "editItem": "Редактировать"
+    "editItem": "Редактировать",
+    "vipUntil": "VIP до {date}",
+    "vipInfinite": "VIP ∞",
+    "getVip": "Получить VIP"
   },
   "SetCommentBlock": {
     "heading": "Оставить отзыв",
@@ -1041,7 +1045,10 @@
     "seeMore": "Читать далее",
     "showAll": "Показать все {count} комментария(ев)",
     "yourRating": "Ваша оценка:",
-    "commentPlaceholder": "Напишите комментарий"
+    "commentPlaceholder": "Напишите комментарий",
+    "compactTitle": "Оценка поста",
+    "compactLeftCount": "Оставлено {count} комментариев",
+    "compactViewAll": "Просмотреть все комментарии"
   },
   "PostCommentModal": {
     "title": "Комментарии ({count})",
@@ -1365,7 +1372,8 @@
   },
   "card": {
     "readFullPost": "Читать пост",
-    "editPost": "Редактировать"
+    "editPost": "Редактировать",
+    "miniTestBadge": "Есть мини-тест"
   },
   "PageTitles": {
     "home": "Главная",
@@ -1865,5 +1873,28 @@
     "ct_drag_desc": "Перетащите любой блок из правой панели на холст. Туториал продолжится автоматически.",
     "ct_save_title": "Сохранить и опубликовать",
     "ct_save_desc": "Когда тест готов, нажмите «Сохранить». Он будет доступен в вашем курсе, профиле и каталоге тестов."
+  },
+  "TestPlayer": {
+    "excellent": "Отлично",
+    "good": "Хорошо",
+    "satisfactory": "Удовлетворительно",
+    "needsWork": "Нужно повторить",
+    "msgExcellent": "Превосходный результат! Ты отлично разобрался в теме.",
+    "msgGood": "Хороший результат! Есть пара моментов, которые стоит повторить.",
+    "msgSatisfactory": "Неплохо, но материал стоит перечитать ещё раз.",
+    "msgNeedsWork": "Пройди тест снова — это поможет лучше запомнить материал.",
+    "score": "{score} / {max} баллов",
+    "retryBtn": "Пройти снова",
+    "miniTestLabel": "Мини-тест"
+  },
+  "roadmapTutorial": {
+    "title": "Как пройти курс",
+    "hint1Title": "Отметить шаг",
+    "hint1Desc": "Двойной клик по ноде — пройдено. Предыдущие шаги отмечаются автоматически.",
+    "hint2Title": "Снять отметку",
+    "hint2Desc": "Двойной клик по уже пройденной ноде — снимает отметку.",
+    "hint3Title": "Навигация",
+    "hint3Desc": "Зажми и тяни — перемещение. Колёсико — масштаб.",
+    "dismiss": "Понятно"
   }
 }

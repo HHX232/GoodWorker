@@ -8,29 +8,47 @@ type Lang = typeof LANGS[number]
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function extractTextBlocks(content: unknown): { index: number; text: string }[] {
-  const c = content as { blocks?: { type: string; payload?: { text?: string } }[] } | null
-  if (!c?.blocks) return []
-  return c.blocks
-    .map((b, i) => ({ index: i, text: b.type === 'TEXT' ? (b.payload?.text ?? '') : '' }))
-    .filter(b => b.text.trim().length > 0)
+function walkTiptapExtract(nodes: unknown[], prefix: string, items: TranslatableItem[]): void {
+  nodes.forEach((node, i) => {
+    const n = node as { type?: string; content?: unknown[] }
+    const k = `${prefix}.${i}`
+    switch (n.type) {
+      case 'paragraph':
+      case 'heading': {
+        const text = serializeParagraphChildren(n.content ?? [])
+        if (text.trim()) items.push({ key: k, text })
+        break
+      }
+      case 'bulletList':
+      case 'orderedList':
+      case 'blockquote':
+      case 'listItem':
+        walkTiptapExtract(n.content ?? [], k, items)
+        break
+    }
+  })
 }
 
-function applyTextTranslations(
-  content: unknown,
-  translations: { index: number; [k: string]: string | number }[],
-  lang: Lang,
-): unknown {
-  const c = content as { blocks?: unknown[] } | null
-  if (!c?.blocks) return c
-  const blocks = c.blocks.map((block, idx) => {
-    const b = block as { type: string; payload?: { text?: string } }
-    if (b.type !== 'TEXT' || !b.payload?.text) return block
-    const t = translations.find(x => x.index === idx)
-    if (!t) return block
-    return { ...b, payload: { ...b.payload, text: (t[lang] as string) ?? b.payload.text } }
+function walkTiptapApply(nodes: unknown[], prefix: string, map: TranslationMap, lang: Lang): unknown[] {
+  return nodes.map((node, i) => {
+    const n = node as { type?: string; content?: unknown[]; [k: string]: unknown }
+    const key = `${prefix}.${i}`
+    switch (n.type) {
+      case 'paragraph':
+      case 'heading': {
+        const translated = map.get(key)?.[lang]
+        if (!translated) return node
+        return { ...n, content: [{ type: 'text', text: translated }] }
+      }
+      case 'bulletList':
+      case 'orderedList':
+      case 'blockquote':
+      case 'listItem':
+        return { ...n, content: walkTiptapApply(n.content ?? [], key, map, lang) }
+      default:
+        return node
+    }
   })
-  return { ...c, blocks }
 }
 
 // ─── Post enrichment ──────────────────────────────────────────────────────────
@@ -38,6 +56,59 @@ function applyTextTranslations(
 const POST_SYSTEM = `You are a multilingual translation and categorization assistant for an educational platform.
 Translate posts to all four languages: ru, en, hi, zh. Pick the single best matching category from the provided list.
 Return ONLY valid JSON, no markdown.`
+
+type PostBlock = { id: string; type: string; payload: unknown }
+
+function extractPostItems(content: unknown): TranslatableItem[] {
+  const items: TranslatableItem[] = []
+  const c = content as { blocks?: PostBlock[] } | null
+  for (const [i, block] of (c?.blocks ?? []).entries()) {
+    if (block.type === 'TEXT') {
+      const p = block.payload as { content?: { type?: string; content?: unknown[] } }
+      if (p?.content?.content) walkTiptapExtract(p.content.content, `b${i}.tp`, items)
+    } else if (block.type === 'MINI_TEST') {
+      const p = block.payload as { title?: string; blocks?: RoadmapTestBlock[] }
+      if (p.title) items.push({ key: `b${i}.mt.title`, text: p.title })
+      for (const [j, mb] of (p.blocks ?? []).entries()) {
+        extractFromBlock(mb, `b${i}.mt.${j}`, items)
+      }
+    }
+  }
+  return items
+}
+
+function applyPostTranslations(content: unknown, map: TranslationMap, lang: Lang): unknown {
+  const c = content as { blocks?: PostBlock[]; [k: string]: unknown } | null
+  if (!c) return content
+  const blocks = (c.blocks ?? []).map((block, i) => {
+    if (block.type === 'TEXT') {
+      const p = block.payload as { content?: { type?: string; content?: unknown[]; [k: string]: unknown } }
+      if (!p?.content?.content) return block
+      return {
+        ...block,
+        payload: {
+          ...p,
+          content: {
+            ...p.content,
+            content: walkTiptapApply(p.content.content, `b${i}.tp`, map, lang),
+          },
+        },
+      }
+    } else if (block.type === 'MINI_TEST') {
+      const p = block.payload as { title?: string; blocks?: RoadmapTestBlock[]; [k: string]: unknown }
+      return {
+        ...block,
+        payload: {
+          ...p,
+          title: map.get(`b${i}.mt.title`)?.[lang] ?? p.title,
+          blocks: (p.blocks ?? []).map((mb, j) => applyToBlock(mb, `b${i}.mt.${j}`, map, lang)),
+        },
+      }
+    }
+    return block
+  })
+  return { ...c, blocks }
+}
 
 export async function enrichPostWithAI(postId: string): Promise<void> {
   const apiKey = process.env.OPENROUTER_API_KEY
@@ -55,29 +126,26 @@ export async function enrichPostWithAI(postId: string): Promise<void> {
     id: c.id,
     name: c.translations[0]?.name ?? c.slug,
   }))
-
   const categoriesBlock = cats.map(c => `  - id="${c.id}" name="${c.name}"`).join('\n')
-  const textBlocks = extractTextBlocks(post.content)
-  const blocksJson = JSON.stringify(
-    textBlocks.slice(0, 20).map(b => ({ index: b.index, text: b.text }))
-  )
+
+  const translatableItems: TranslatableItem[] = [
+    { key: 'title', text: post.title },
+    ...(post.additionalTitle ? [{ key: 'additionalTitle', text: post.additionalTitle }] : []),
+    ...extractPostItems(post.content),
+  ]
 
   const prompt = `Available categories:\n${categoriesBlock}
 
-Translate this educational post to ru, en, hi, zh and pick the best category.
-Also evaluate content safety: flag as unsafe ONLY if the post clearly contains spam, adult/sexual content,
-hate speech, violence promotion, scams, or illegal activities.
+Translate all items below to ru, en, hi, zh. Pick the best category. Evaluate content safety.
+Flag as unsafe ONLY for spam, adult/sexual content, hate speech, violence, scams, or illegal activities.
 Educational discussion of sensitive topics is acceptable.
 
-Title: ${JSON.stringify(post.title)}
-AdditionalTitle: ${post.additionalTitle ? JSON.stringify(post.additionalTitle) : 'null'}
-TextBlocks: ${blocksJson}
+Items:
+${JSON.stringify(translatableItems.slice(0, 200))}
 
-Return exactly this JSON structure:
+Return exactly this JSON:
 {
-  "titleTranslations": {"ru":"...","en":"...","hi":"...","zh":"..."},
-  "additionalTitleTranslations": ${post.additionalTitle ? '{"ru":"...","en":"...","hi":"...","zh":"..."}' : 'null'},
-  "textBlockTranslations": [{"index":0,"ru":"...","en":"...","hi":"...","zh":"..."}],
+  "items": [{"key":"<same key>","ru":"...","en":"...","hi":"...","zh":"..."}],
   "suggestedCategoryId": "<id or null>",
   "contentOk": true,
   "contentReason": null
@@ -85,35 +153,39 @@ Return exactly this JSON structure:
 
   const raw = await callAI(POST_SYSTEM, prompt, { temperature: 0.1 })
   const parsed = parseJSON<{
-    titleTranslations?: Record<Lang, string>
-    additionalTitleTranslations?: Record<Lang, string> | null
-    textBlockTranslations?: { index: number; [k: string]: string | number }[]
+    items?: ({ key: string } & Record<Lang, string>)[]
     suggestedCategoryId?: string | null
     contentOk?: boolean
     contentReason?: string | null
   }>(raw)
 
-  const contentOk: boolean = parsed.contentOk !== false
-  const contentTranslations: Record<string, unknown> = {}
-  for (const lang of LANGS) {
-    contentTranslations[lang] = applyTextTranslations(
-      post.content,
-      parsed.textBlockTranslations ?? [],
-      lang,
-    )
+  const translationMap: TranslationMap = new Map()
+  for (const item of (parsed.items ?? [])) {
+    translationMap.set(item.key, { ru: item.ru, en: item.en, hi: item.hi, zh: item.zh })
   }
 
+  const makeTitleTrans = (key: string, fallback: string) => {
+    const e = translationMap.get(key)
+    return e ? { ru: e.ru, en: e.en, hi: e.hi, zh: e.zh } : { ru: fallback, en: fallback, hi: fallback, zh: fallback }
+  }
+
+  const contentTranslations: Record<string, unknown> = {}
+  for (const lang of LANGS) {
+    contentTranslations[lang] = applyPostTranslations(post.content, translationMap, lang)
+  }
+
+  const contentOk: boolean = parsed.contentOk !== false
   await prisma.post.update({
     where: { id: postId },
     data: {
-      titleTranslations: (parsed.titleTranslations ?? undefined) as Prisma.InputJsonValue | undefined,
-      additionalTitleTranslations: (parsed.additionalTitleTranslations ?? undefined) as Prisma.InputJsonValue | undefined,
+      titleTranslations: makeTitleTrans('title', post.title) as Prisma.InputJsonValue,
+      additionalTitleTranslations: post.additionalTitle
+        ? (makeTitleTrans('additionalTitle', post.additionalTitle) as Prisma.InputJsonValue)
+        : undefined,
       contentTranslations: contentTranslations as Prisma.InputJsonValue,
       aiModerated: true,
       aiModerationOk: contentOk,
-      ...(!post.categoryId && parsed.suggestedCategoryId
-        ? { categoryId: parsed.suggestedCategoryId }
-        : {}),
+      ...(!post.categoryId && parsed.suggestedCategoryId ? { categoryId: parsed.suggestedCategoryId } : {}),
       ...(contentOk === false ? { moderationStatus: 'BLOCKED' as const } : {}),
     },
   })

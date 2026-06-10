@@ -4,14 +4,12 @@
 import {RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
 import {useViewMode} from '@/shared/ui/RoadMap/context/ViewModeContext'
 import {compressImageToThumbnail} from '@/shared/helpers/compressImage'
+import {CategorySelect} from '@/shared/ui/inputs/CategorySelect/CategorySelect'
 import {useReactFlow, useStore} from '@xyflow/react'
 import {ImagePlusIcon, XIcon} from 'lucide-react'
-import Image from 'next/image'
 import {useTranslations} from 'next-intl'
 import {useRef} from 'react'
 import styles from './EntryPointBlock.module.scss'
-
-const CATEGORY_VALUES = ['programming', 'design', 'math', 'languages', 'business', 'science'] as const
 
 type EntryData = RoadNodeData & {
   roadTitle?: string
@@ -128,26 +126,19 @@ export default function EntryPointBlock({nodeId}: {nodeId: string}) {
           />
         )}
 
-        <div className={styles.fieldGroup}>
-          <label className={styles.fieldLabel}>{t('entryCategory')}</label>
-
-          {!onlyView && (
-            <select
-              className={styles.select}
-              value={data?.roadCategory ?? ''}
-              onChange={(e) => update({roadCategory: e.target.value})}
-            >
-              <option value=''>{t('entrySelectCategory')}</option>
-              {CATEGORY_VALUES.map((v) => (
-                <option key={v} value={v}>
-                  {t(`cat${v.charAt(0).toUpperCase()}${v.slice(1)}` as Parameters<typeof t>[0])}
-                </option>
-              ))}
-            </select>
-          )}
-
-          {onlyView && data?.roadCategory && <span className={styles.categoryView}>{data.roadCategory}</span>}
-        </div>
+        {!onlyView && (
+          <div className={styles.fieldGroup}>
+            <label className={styles.fieldLabel}>{t('entryCategory')}</label>
+            <div className='nodrag nopan'>
+              <CategorySelect
+                value={data?.roadCategoryIds ?? []}
+                onChange={(ids) => update({roadCategoryIds: ids})}
+                canSelectMany={false}
+                maxLevel={2}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -72,6 +72,16 @@
    }
 }
 
+@keyframes completedBorderIn {
+   from { border-color: transparent; }
+   to   { border-color: #22c55e; }
+}
+
+.completed {
+   border-color: #22c55e !important;
+   animation: completedBorderIn 0.35s ease forwards;
+}
+
 .locked {
    min-width: 200px;
    border-color: #fca5a5;

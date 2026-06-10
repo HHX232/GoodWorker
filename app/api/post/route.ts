@@ -5,11 +5,18 @@ import {NextRequest, NextResponse} from 'next/server'
 import {auth} from '../../../auth'
 import {enrichPostWithAI} from '@/lib/postAI'
 
-function extractMediaUrls(content: {blocks?: {type: string; payload: {url?: string | null}}[]} | null): string[] {
+type ContentBlock = {type: string; payload: {url?: string | null}}
+type PostContent = {blocks?: ContentBlock[]} | null
+
+function extractMediaUrls(content: PostContent): string[] {
   if (!content?.blocks) return []
   return content.blocks
     .filter((b) => b.type === 'MEDIA' && b.payload?.url && !b.payload.url.startsWith('blob:'))
     .map((b) => b.payload.url as string)
+}
+
+function detectHasMiniTest(content: PostContent): boolean {
+  return (content?.blocks ?? []).some((b) => b.type === 'MINI_TEST')
 }
 
 export async function POST(req: NextRequest) {
@@ -45,6 +52,7 @@ export async function POST(req: NextRequest) {
 
     const categoryId = categoryIds?.[0] ?? null
     const mediaUrls = extractMediaUrls(content)
+    const hasMiniTest = detectHasMiniTest(content)
 
     const post = await prisma.post.create({
       data: {
@@ -55,6 +63,7 @@ export async function POST(req: NextRequest) {
         categoryId,
         content,
         mediaUrls,
+        hasMiniTest,
         aiTopics: [],
         isVip,
         vipExpiresAt: isVip && vipExpiresAt ? new Date(vipExpiresAt) : null,

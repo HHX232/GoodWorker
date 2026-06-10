@@ -17,6 +17,7 @@ interface ValidatedDraft {
   title: string
   previewImageUrl: string | null
   hasPaywalledNodes: boolean
+  initialCategoryIds: string[]
 }
 
 interface Props {
@@ -57,8 +58,9 @@ export function SaveRoadMapButton({ editId }: Props) {
     const title = (entryNode?.data as any)?.roadTitle?.trim() ?? ''
     const previewImageUrl = (entryNode?.data as any)?.roadPreview ?? null
     const hasPaywalledNodes = nodes.some((n) => (n.data as any).isPaywallHidden === true)
+    const initialCategoryIds: string[] = (entryNode?.data as any)?.roadCategoryIds ?? []
 
-    setDraft({nodes, edges, title, previewImageUrl, hasPaywalledNodes})
+    setDraft({nodes, edges, title, previewImageUrl, hasPaywalledNodes, initialCategoryIds})
     setPublishOpen(true)
   }
 
@@ -122,6 +124,7 @@ export function SaveRoadMapButton({ editId }: Props) {
         isOpen={publishOpen}
         onClose={() => setPublishOpen(false)}
         hasPaywalledNodes={draft?.hasPaywalledNodes ?? false}
+        initialCategoryIds={draft?.initialCategoryIds ?? []}
         onConfirm={handlePublish}
       />
     </>

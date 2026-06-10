@@ -14,7 +14,9 @@ type Validator = (data: RoadNodeData) => string | null
 const validators: Partial<Record<RoadMapBlockType, Validator>> = {
   [RoadMapBlockType.ENTRY_POINT]: (data) => {
     if (!data.roadTitle?.trim()) return 'Укажите название road-map'
-    if (!data.roadCategory?.trim()) return 'Укажите категорию'
+    const hasCategory = (data.roadCategoryIds as string[] | undefined)?.length
+      || data.roadCategory?.trim()
+    if (!hasCategory) return 'Укажите категорию'
     return null
   },
 

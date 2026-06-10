@@ -7,10 +7,13 @@ import {ViewModeContext} from '@/shared/ui/RoadMap/context/ViewModeContext'
 import {PurchaseAccessModal} from '@/shared/ui/RoadMap/PurchaseAccessModal/PurchaseAccessModal'
 import {RoadmapReviewBar} from '@/shared/ui/RoadMap/RoadmapReviewBar/RoadmapReviewBar'
 import {RoadmapStatsModal} from '@/shared/ui/RoadMap/RoadmapStatsModal/RoadmapStatsModal'
+import {RoadmapProgressProvider} from '@/shared/ui/RoadMap/context/RoadmapProgressContext'
 import {useLocale, useTranslations} from 'next-intl'
+import {useSession} from 'next-auth/react'
 import Link from 'next/link'
 import DeletableEdge from '@/widgets/RoadMap/UI/nodes/DeletableEdge/DeletableEdge'
 import NodeComponent from '@/widgets/RoadMap/UI/nodes/NodeComponent/NodeComponent'
+import RoadmapTutorial from '@/widgets/RoadMap/UI/RoadmapTutorial/RoadmapTutorial'
 import {
   Background,
   BackgroundVariant,
@@ -117,6 +120,8 @@ function InnerFlow({
   originalLanguage,
 }: RoadMapViewerProps) {
   const {hasAccess, nodeAccessType, isOwner, roadmapPrice} = useRoadmapAccessContext()
+  const {data: session} = useSession()
+  const canComplete = !isOwner && session?.user?.role === 'STUDENT'
   const locale = useLocale()
   const t = useTranslations('roadmapPreview')
   const tLangs = useTranslations('roadmapPreview.languages')
@@ -178,6 +183,7 @@ function InnerFlow({
   }
 
   return (
+    <RoadmapProgressProvider roadmapId={roadmapId} canComplete={canComplete}>
     <div style={{width: '100%', height: containerH, backgroundColor: '#FFF', position: 'relative'}}>
       <ReactFlow
         nodes={nodes}
@@ -195,6 +201,7 @@ function InnerFlow({
       >
         <Background variant={BackgroundVariant.Dots} gap={15} />
         <Controls position='top-left' />
+        <RoadmapTutorial canComplete={canComplete} />
 
         {/* Language indicator — top-left below controls */}
         {showLangBadge && (
@@ -259,6 +266,7 @@ function InnerFlow({
         />
       )}
     </div>
+    </RoadmapProgressProvider>
   )
 }
 

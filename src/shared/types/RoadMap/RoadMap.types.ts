@@ -59,6 +59,7 @@ export interface RoadNodeData extends Record<string, unknown> {
   outputs?: {name: string; type: RoadMapParamType}[]
   headerColor?: string
   mediaSize?: 'mini' | 'medium' | 'large'
+  mediaItems?: { url: string; type: 'image' | 'video'; points: number }[]
   isPaywallHidden?: boolean
   selectedPostIds?: string[]
   uploadedFiles?: {name: string; size: number; mimeType: string; url: string}[]
@@ -68,6 +69,7 @@ export interface RoadNodeData extends Record<string, unknown> {
   roadTitle?: string
   roadDescription?: string
   roadCategory?: string
+  roadCategoryIds?: string[]
   roadPreview?: string
 }
 

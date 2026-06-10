@@ -472,7 +472,8 @@
     "noTestsFound": "No tests found",
     "loadingTests": "Loading tests...",
     "noPostsFound": "No posts found",
-    "loadingPosts": "Loading posts..."
+    "loadingPosts": "Loading posts...",
+    "completed": "Completed"
   },
   "fileBlock": {
     "filesNotAttached": "No files attached",
@@ -999,7 +1000,10 @@
     "serviceLabelsLabel": "Services",
     "serviceLabelsPlaceholder": "Individual lessons, Group courses...",
     "expEdit": "Edit",
-    "editItem": "Edit"
+    "editItem": "Edit",
+    "vipUntil": "VIP until {date}",
+    "vipInfinite": "VIP ∞",
+    "getVip": "Get VIP"
   },
   "SetCommentBlock": {
     "heading": "Leave a review",
@@ -1041,7 +1045,10 @@
     "seeMore": "See more",
     "showAll": "Show all {count} comments",
     "yourRating": "Your rating:",
-    "commentPlaceholder": "Write your comment here"
+    "commentPlaceholder": "Write your comment here",
+    "compactTitle": "Post rating",
+    "compactLeftCount": "{count} comments",
+    "compactViewAll": "View all comments"
   },
   "PostCommentModal": {
     "title": "Comments ({count})",
@@ -1365,7 +1372,8 @@
   },
   "card": {
     "readFullPost": "Read full post",
-    "editPost": "Edit"
+    "editPost": "Edit",
+    "miniTestBadge": "Has mini-test"
   },
   "PageTitles": {
     "home": "Home",
@@ -1865,5 +1873,28 @@
     "ct_drag_desc": "Drag any question block from the right panel to the canvas. The tutorial will continue automatically.",
     "ct_save_title": "Save & Publish",
     "ct_save_desc": "When your test is ready, click Save. It will be available in your course, your profile, and the test catalog."
+  },
+  "TestPlayer": {
+    "excellent": "Excellent",
+    "good": "Good",
+    "satisfactory": "Satisfactory",
+    "needsWork": "Needs More Practice",
+    "msgExcellent": "Outstanding result! You've mastered this topic.",
+    "msgGood": "Good job! A couple of points are worth reviewing.",
+    "msgSatisfactory": "Not bad, but it's worth reading the material once more.",
+    "msgNeedsWork": "Take the test again — it will help you remember the material better.",
+    "score": "{score} / {max} points",
+    "retryBtn": "Try again",
+    "miniTestLabel": "Mini-test"
+  },
+  "roadmapTutorial": {
+    "title": "How to take the course",
+    "hint1Title": "Mark a step",
+    "hint1Desc": "Double-click a node to mark it complete. All prior steps are marked automatically.",
+    "hint2Title": "Unmark",
+    "hint2Desc": "Double-click a completed node to remove the mark.",
+    "hint3Title": "Navigation",
+    "hint3Desc": "Click and drag to pan. Scroll wheel to zoom.",
+    "dismiss": "Got it"
   }
 }

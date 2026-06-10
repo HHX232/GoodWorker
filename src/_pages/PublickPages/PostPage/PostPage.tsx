@@ -13,9 +13,21 @@ import { NavBar } from '@/widgets/BaseUI'
 import { BorderTextHandler } from '@/widgets/Cards'
 import { Prisma, Role } from '@prisma/client'
 import { useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import styles from './PostPage.module.scss'
 import { BookmarkHighlighter } from '@/shared/ui/bookmark/BookmarkHighlighter'
+import { PostCommentCompact } from '@/shared/ui/Posts/PostCommentCompact/PostCommentCompact'
+
+function useCompactSidebar() {
+  const [compact, setCompact] = useState(false)
+  useEffect(() => {
+    const check = () => setCompact(window.innerWidth > 1040 && window.innerHeight < 900)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return compact
+}
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -115,6 +127,7 @@ function ReportPostButton({postId, postTitle}: {postId: string; postTitle: strin
 // ─── Page ─────────────────────────────────────────────────
 
 function PostPage({post, initialComments, currentUserId}: PostPageProps) {
+  const isCompact = useCompactSidebar()
   const resolvedComments: CommentItem[] = initialComments ?? (post.enrichedComments ?? []).map(enrichedToCommentItem)
 
   const userPostInfo = {
@@ -185,7 +198,16 @@ function PostPage({post, initialComments, currentUserId}: PostPageProps) {
       <div className={`${styles.sticky_sidebar} ${styles.not_mobile_box}`}>
         <UserPostInfo {...userPostInfo} />
         {reportBtn}
-        <div style={{flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column'}}>{commentSection}</div>
+        {isCompact ? (
+          <PostCommentCompact
+            postId={post.id}
+            initialComments={resolvedComments}
+            totalComments={post._count?.comments ?? 0}
+            currentUserId={currentUserId}
+          />
+        ) : (
+          <div style={{flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column'}}>{commentSection}</div>
+        )}
       </div>
     </div>
   )

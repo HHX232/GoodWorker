@@ -8,6 +8,7 @@ import {RoadMapBlockType, RoadNode} from '@/shared/types/RoadMap/RoadMap.types'
 import {Button} from '@/shared/ui/base/Buttons/Button/Button'
 import {useRoadmapAccessContext} from '@/shared/ui/RoadMap/context/RoadmapAccessContext'
 import {useViewMode} from '@/shared/ui/RoadMap/context/ViewModeContext'
+import {useRoadmapProgress} from '@/shared/ui/RoadMap/context/RoadmapProgressContext'
 import {NodeComplaintModal} from '@/shared/ui/RoadMap/NodeComplaintModal/NodeComplaintModal'
 import {useReactFlow} from '@xyflow/react'
 import {CopyIcon, GripVerticalIcon, PaletteIcon, TrashIcon} from 'lucide-react'
@@ -59,6 +60,8 @@ export default function NodeHeader({
   const activeColor = color || ''
   const iconColor = activeColor ? getNodeHeaderIconColor(activeColor) : undefined
   const onlyView = useViewMode() === 'view'
+  const {completedNodeIds} = useRoadmapProgress()
+  const isCompleted = onlyView && completedNodeIds.has(nodeId)
 
   return (
     <div
@@ -81,6 +84,15 @@ export default function NodeHeader({
           {task?.isEntryPoint && (
             <span className={styles.badge} style={{color: iconColor}}>
               {t('startEntryPoint')}
+            </span>
+          )}
+
+          {isCompleted && (
+            <span className={styles.completedBadge}>
+              <svg width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='3' strokeLinecap='round' strokeLinejoin='round'>
+                <polyline points='20 6 9 17 4 12' />
+              </svg>
+              {t('completed')}
             </span>
           )}
 

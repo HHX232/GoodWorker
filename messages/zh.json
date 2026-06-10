@@ -446,7 +446,13 @@
     "noTestsFound": "未找到测验",
     "loadingTests": "正在加载测验...",
     "noPostsFound": "未找到帖子",
-    "loadingPosts": "正在加载帖子..."
+    "loadingPosts": "正在加载帖子...",
+    "completed": "已完成",
+    "paywallBannerText": "付费墙模式 — 点击模块隐藏它及其后的所有模块",
+    "paywallModeTitle": "付费墙模式",
+    "paywallExit": "退出",
+    "paywallBuy": "购买访问权限",
+    "paywallLocked": "锁定模块"
   },
   "fileBlock": {
     "filesNotAttached": "未附加文件",
@@ -960,7 +966,10 @@
     "serviceLabelsLabel": "服务",
     "serviceLabelsPlaceholder": "个人课程，小组课程...",
     "expEdit": "编辑",
-    "editItem": "编辑"
+    "editItem": "编辑",
+    "vipUntil": "VIP 有效至 {date}",
+    "vipInfinite": "VIP ∞",
+    "getVip": "获取 VIP"
   },
   "SetCommentBlock": {
     "heading": "留下评价",
@@ -1002,7 +1011,10 @@
     "seeMore": "查看更多",
     "showAll": "显示全部 {count} 条评论",
     "yourRating": "您的评分：",
-    "commentPlaceholder": "在此写下您的评论"
+    "commentPlaceholder": "在此写下您的评论",
+    "compactTitle": "帖子评分",
+    "compactLeftCount": "{count} 条评论",
+    "compactViewAll": "查看所有评论"
   },
   "PostCommentModal": {
     "title": "评论 ({count})",
@@ -1204,7 +1216,8 @@
   },
   "card": {
     "readFullPost": "阅读全文",
-    "editPost": "编辑"
+    "editPost": "编辑",
+    "miniTestBadge": "含小测验"
   },
   "PageTitles": {
     "home": "首页",
@@ -1704,5 +1717,28 @@
     "ct_drag_desc": "从右侧面板拖动任意块到画布上，教程将自动继续。",
     "ct_save_title": "保存并发布",
     "ct_save_desc": "测试完成后点击保存，它将在您的课程、主页和测试目录中可用。"
+  },
+  "TestPlayer": {
+    "excellent": "优秀",
+    "good": "良好",
+    "satisfactory": "及格",
+    "needsWork": "需要复习",
+    "msgExcellent": "成绩出色！您已完全掌握了这个主题。",
+    "msgGood": "成绩不错！有几个地方值得再复习一下。",
+    "msgSatisfactory": "还不错，但建议再读一遍材料。",
+    "msgNeedsWork": "再做一次测试——这有助于更好地记住材料。",
+    "score": "{score} / {max} 分",
+    "retryBtn": "再试一次",
+    "miniTestLabel": "小测验"
+  },
+  "roadmapTutorial": {
+    "title": "如何完成课程",
+    "hint1Title": "标记步骤",
+    "hint1Desc": "双击节点标记为已完成。之前的所有步骤将自动标记。",
+    "hint2Title": "取消标记",
+    "hint2Desc": "双击已完成的节点可取消标记。",
+    "hint3Title": "导航",
+    "hint3Desc": "拖拽移动，滚轮缩放。",
+    "dismiss": "明白了"
   }
 }

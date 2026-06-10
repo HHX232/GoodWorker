@@ -19,4 +19,5 @@ export interface ICard {
   cardId: string
   userId?: string
   useLink?: boolean
+  hasMiniTest?: boolean
 }

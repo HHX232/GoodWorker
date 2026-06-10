@@ -446,7 +446,13 @@
     "noTestsFound": "कोई टेस्ट नहीं",
     "loadingTests": "लोड हो रहा है...",
     "noPostsFound": "कोई पोस्ट नहीं",
-    "loadingPosts": "पोस्ट लोड हो रहे हैं..."
+    "loadingPosts": "पोस्ट लोड हो रहे हैं...",
+    "completed": "पूर्ण",
+    "paywallBannerText": "पेवॉल मोड — ब्लॉक पर क्लिक करें इसे और इसके बाद के सभी ब्लॉक छुपाने के लिए",
+    "paywallModeTitle": "पेवॉल मोड",
+    "paywallExit": "बाहर निकलें",
+    "paywallBuy": "एक्सेस खरीदें",
+    "paywallLocked": "बंद ब्लॉक"
   },
   "fileBlock": {
     "filesNotAttached": "कोई फ़ाइल संलग्न नहीं",
@@ -960,7 +966,10 @@
     "serviceLabelsLabel": "सेवाएँ",
     "serviceLabelsPlaceholder": "व्यक्तिगत पाठ, समूह पाठ्यक्रम...",
     "expEdit": "संपादित करें",
-    "editItem": "संपादित करें"
+    "editItem": "संपादित करें",
+    "vipUntil": "VIP {date} तक",
+    "vipInfinite": "VIP ∞",
+    "getVip": "VIP प्राप्त करें"
   },
   "SetCommentBlock": {
     "heading": "समीक्षा छोड़ें",
@@ -1002,7 +1011,10 @@
     "seeMore": "और पढ़ें",
     "showAll": "सभी {count} टिप्पणियाँ दिखाएं",
     "yourRating": "आपकी रेटिंग:",
-    "commentPlaceholder": "यहाँ अपनी टिप्पणी लिखें"
+    "commentPlaceholder": "यहाँ अपनी टिप्पणी लिखें",
+    "compactTitle": "पोस्ट रेटिंग",
+    "compactLeftCount": "{count} टिप्पणियाँ",
+    "compactViewAll": "सभी टिप्पणियाँ देखें"
   },
   "PostCommentModal": {
     "title": "टिप्पणियाँ ({count})",
@@ -1204,7 +1216,8 @@
   },
   "card": {
     "readFullPost": "पूरी पोस्ट पढ़ें",
-    "editPost": "संपादित करें"
+    "editPost": "संपादित करें",
+    "miniTestBadge": "मिनी-परीक्षण है"
   },
   "PageTitles": {
     "home": "होम",
@@ -1704,5 +1717,28 @@
     "ct_drag_desc": "दाएं पैनल से किसी भी ब्लॉक को कैनवास पर खींचें। ट्यूटोरियल स्वचालित रूप से जारी रहेगा।",
     "ct_save_title": "सहेजें और प्रकाशित करें",
     "ct_save_desc": "जब परीक्षण तैयार हो, सहेजें पर क्लिक करें।"
+  },
+  "TestPlayer": {
+    "excellent": "उत्कृष्ट",
+    "good": "अच्छा",
+    "satisfactory": "संतोषजनक",
+    "needsWork": "और अभ्यास करें",
+    "msgExcellent": "शानदार परिणाम! आपने इस विषय को बहुत अच्छी तरह समझ लिया।",
+    "msgGood": "अच्छा परिणाम! कुछ बिंदुओं को दोबारा देखना फायदेमंद होगा।",
+    "msgSatisfactory": "बुरा नहीं, लेकिन सामग्री को एक बार फिर पढ़ना उचित है।",
+    "msgNeedsWork": "परीक्षा फिर से दें — इससे सामग्री बेहतर याद होगी।",
+    "score": "{score} / {max} अंक",
+    "retryBtn": "फिर से प्रयास करें",
+    "miniTestLabel": "मिनी-परीक्षण"
+  },
+  "roadmapTutorial": {
+    "title": "कोर्स कैसे करें",
+    "hint1Title": "चरण चिह्नित करें",
+    "hint1Desc": "नोड पर डबल-क्लिक करें — पूर्ण। पिछले सभी चरण स्वचालित रूप से चिह्नित होंगे।",
+    "hint2Title": "चिह्न हटाएं",
+    "hint2Desc": "पहले से पूर्ण नोड पर डबल-क्लिक करें — चिह्न हटा दें।",
+    "hint3Title": "नेविगेशन",
+    "hint3Desc": "खींचें — स्थानांतरित करें। स्क्रॉल — ज़ूम।",
+    "dismiss": "समझ गया"
   }
 }

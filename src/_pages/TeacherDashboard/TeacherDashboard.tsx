@@ -44,9 +44,11 @@ interface Props {
   statsId: string
   studentCount: number
   callCount: number
+  isVip?: boolean
+  vipExpiresAt?: string | null
 }
 
-export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount, callCount }) => {
+export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount, callCount, isVip = false, vipExpiresAt = null }) => {
   const t = useTranslations('dashboard')
   const { mutateAsync: updateProfile } = useUpdateProfile('Teacher')
 
@@ -250,6 +252,8 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
         phone={phone}
         avatarUrl={avatarUrl}
         statsId={statsId}
+        isVip={isVip}
+        vipExpiresAt={vipExpiresAt}
         savingPersonal={savingPersonal}
         savingServices={savingServices}
         personalDirty={personalDirty}

@@ -513,6 +513,8 @@ interface Props {
   servicesSuccess?: boolean
   onSavePersonal?: () => void
   onSaveServices?: (labels: string[]) => void
+  isVip?: boolean
+  vipExpiresAt?: string | null
 }
 
 export function DashboardProfilePanel({
@@ -527,6 +529,8 @@ export function DashboardProfilePanel({
   onChangeEmail, onChangePassword,
   onTranscripts, onBookmarks,
   serviceLabels = [],
+  isVip = false,
+  vipExpiresAt = null,
 }: Props) {
   const t = useTranslations('dashboard')
   const [tgModalOpen, setTgModalOpen] = useState(false)
@@ -564,7 +568,8 @@ export function DashboardProfilePanel({
         {/* Avatar hero */}
         <div className={styles.avatarHero}>
           <div className={styles.avatarWrap} onClick={onAvatarUploadClick}>
-            <div className={styles.avatarRing}>
+            {isVip && <div className={styles.rgbRing} aria-hidden />}
+            <div className={`${styles.avatarRing} ${isVip ? styles.avatarRingVip : ''}`}>
               {avatarUrl ? (
                 <Image width={72} height={72} src={avatarUrl} alt="Avatar" className={styles.avatarImg} />
               ) : (
@@ -583,6 +588,21 @@ export function DashboardProfilePanel({
           </div>
           <div className={styles.heroName}>{name || t('yourName')}</div>
           <div className={styles.heroRole}>{t('teacher')}</div>
+          {isVip ? (
+            <div className={styles.vipBadge}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+              </svg>
+              {vipExpiresAt ? t('vipUntil', { date: new Date(vipExpiresAt).toLocaleDateString() }) : t('vipInfinite')}
+            </div>
+          ) : (
+            <Link href="/vip" className={styles.getVipBtn}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+              </svg>
+              {t('getVip')}
+            </Link>
+          )}
         </div>
 
         <div className={styles.divider} />

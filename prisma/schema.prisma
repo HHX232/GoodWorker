@@ -271,6 +271,8 @@ model Post {
   additionalTitleTranslations Json?
   contentTranslations         Json?
 
+  hasMiniTest      Boolean   @default(false)
+
   allowedStudents  PostAllowedStudent[]
   miniTestAttempts PostTestAttempt[]
 }

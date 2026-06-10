@@ -35,6 +35,7 @@ interface PostItem {
   mediaUrls: string[]
   viewCount: number
   avgRating: number
+  hasMiniTest?: boolean
   _count: { comments: number }
   teacher: { id: string; name: string; avatarUrl: string | null }
 }
@@ -89,6 +90,7 @@ function mapPost(p: PostItem) {
     cardId: p.id,
     title: p.title,
     subTitle: p.additionalTitle ?? '',
+    hasMiniTest: p.hasMiniTest ?? false,
     user: {
       id: p.teacher.id,
       name: p.teacher.name,
