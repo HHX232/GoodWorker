@@ -850,7 +850,7 @@
       "errorBook": "预订错误",
       "cancel": "取消",
       "booking": "正在预订...",
-      "bookFor": "预订 {price} 卢布",
+      "bookFor": "预订 {price}",
       "successTitle": "预订已确认！",
       "successDesc": "老师已收到通知，将尽快与您联系。",
       "successDescNew": "教师已收到您的请求，将确认时间。",

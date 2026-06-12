@@ -884,7 +884,7 @@
       "errorBook": "Booking error",
       "cancel": "Cancel",
       "booking": "Booking...",
-      "bookFor": "Book for {price} ₽",
+      "bookFor": "Book for {price}",
       "successTitle": "Booking confirmed!",
       "successDesc": "The teacher has been notified and will contact you soon.",
       "successDescNew": "The teacher received your request and will confirm the time.",
