@@ -1172,7 +1172,10 @@
       "NEW_COMMENT_ON_POST": "评论",
       "NEW_REVIEW": "评价",
       "NEW_POST": "帖子",
-      "VIDEO_CALL_INVITE": "视频通话邀请",
+      "VIDEO_CALL_INVITE": "视频通话",
+      "PERSONAL_SERVICE": "个人服务",
+      "BOOKING_RESPONSE": "预约回复",
+      "SERVICE_BOOKING": "服务预约",
       "SYSTEM": "系统"
     },
     "actions": {

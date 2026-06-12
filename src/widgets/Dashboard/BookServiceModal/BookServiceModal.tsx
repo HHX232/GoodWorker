@@ -1,9 +1,28 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import styles from './BookServiceModal.module.scss'
+
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  RUB: '₽', EUR: '€', USD: '$', BYN: 'Br', GBP: '£', UAH: '₴', KZT: '₸',
+}
+const CURRENCY_NAMES: Record<string, string> = {
+  RUB: 'Российский рубль', EUR: 'Евро', USD: 'Доллар США',
+  BYN: 'Белорусский рубль', GBP: 'Фунт стерлингов', UAH: 'Украинская гривна', KZT: 'Казахстанский тенге',
+}
+
+function CurrencyBadge({ currency }: { currency: string }) {
+  const sym = CURRENCY_SYMBOLS[currency] ?? currency
+  const name = CURRENCY_NAMES[currency] ?? currency
+  return (
+    <span className={styles.currencyBadge} data-tooltip={`${currency} — ${name}`}>
+      {sym}
+    </span>
+  )
+}
 
 interface ServiceInfo {
   id: string
@@ -13,6 +32,7 @@ interface ServiceInfo {
   timeTo: string
   isGroup: boolean
   price: number
+  currency?: string
 }
 
 interface Props {
@@ -94,6 +114,7 @@ export function BookServiceModal({ open, onClose, service }: Props) {
 
   if (!open || !service) return null
 
+  const currency = service.currency ?? 'BYN'
   const basePrice = service.price
   const finalPrice = promoApplied ? basePrice * (1 - discount / 100) : basePrice
 
@@ -158,7 +179,7 @@ export function BookServiceModal({ open, onClose, service }: Props) {
     }
   }
 
-  return (
+  return createPortal(
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={e => e.stopPropagation()}>
 
@@ -199,12 +220,12 @@ export function BookServiceModal({ open, onClose, service }: Props) {
                 <div className={styles.priceRow}>
                   {promoApplied ? (
                     <>
-                      <span className={styles.priceFinal}>{Math.round(finalPrice).toLocaleString('ru-RU')} ₽</span>
-                      <span className={styles.priceOld}>{basePrice.toLocaleString('ru-RU')} ₽</span>
+                      <span className={styles.priceFinal}>{Math.round(finalPrice).toLocaleString('ru-RU')} <CurrencyBadge currency={currency} /></span>
+                      <span className={styles.priceOld}>{basePrice.toLocaleString('ru-RU')} <CurrencyBadge currency={currency} /></span>
                       <span className={styles.discountBadge}>−{discount}%</span>
                     </>
                   ) : (
-                    <span className={styles.priceBase}>{basePrice.toLocaleString('ru-RU')} ₽</span>
+                    <span className={styles.priceBase}>{basePrice.toLocaleString('ru-RU')} <CurrencyBadge currency={currency} /></span>
                   )}
                 </div>
               </div>
@@ -266,12 +287,13 @@ export function BookServiceModal({ open, onClose, service }: Props) {
             <div className={styles.footer}>
               <button className={styles.cancelBtn} onClick={onClose} disabled={submitting}>{t('cancel')}</button>
               <button className={styles.submitBtn} onClick={handleBook} disabled={submitting}>
-                {submitting ? t('booking') : t('bookFor', {price: Math.round(finalPrice).toLocaleString()})}
+                {submitting ? t('booking') : `${t('bookFor', {price: Math.round(finalPrice).toLocaleString()})} ${CURRENCY_SYMBOLS[currency] ?? currency}`}
               </button>
             </div>
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

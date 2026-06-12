@@ -1175,7 +1175,10 @@
       "NEW_COMMENT_ON_POST": "Comments",
       "NEW_REVIEW": "Reviews",
       "NEW_POST": "Posts",
-      "VIDEO_CALL_INVITE": "Video call invites",
+      "VIDEO_CALL_INVITE": "Video calls",
+      "PERSONAL_SERVICE": "Personal services",
+      "BOOKING_RESPONSE": "Booking responses",
+      "SERVICE_BOOKING": "Service bookings",
       "SYSTEM": "System"
     },
     "actions": {

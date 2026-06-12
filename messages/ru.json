@@ -1175,7 +1175,10 @@
       "NEW_COMMENT_ON_POST": "Комментарии",
       "NEW_REVIEW": "Отзывы",
       "NEW_POST": "Посты",
-      "VIDEO_CALL_INVITE": "Приглашения в звонок",
+      "VIDEO_CALL_INVITE": "Видеозвонки",
+      "PERSONAL_SERVICE": "Личные услуги",
+      "BOOKING_RESPONSE": "Ответы на запись",
+      "SERVICE_BOOKING": "Запись на услуги",
       "SYSTEM": "Системные"
     },
     "actions": {

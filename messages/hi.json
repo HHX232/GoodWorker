@@ -1172,7 +1172,10 @@
       "NEW_COMMENT_ON_POST": "टिप्पणियां",
       "NEW_REVIEW": "समीक्षाएं",
       "NEW_POST": "पोस्ट",
-      "VIDEO_CALL_INVITE": "वीडियो कॉल आमंत्रण",
+      "VIDEO_CALL_INVITE": "वीडियो कॉल",
+      "PERSONAL_SERVICE": "व्यक्तिगत सेवाएं",
+      "BOOKING_RESPONSE": "बुकिंग प्रतिक्रियाएं",
+      "SERVICE_BOOKING": "सेवा बुकिंग",
       "SYSTEM": "सिस्टम"
     },
     "actions": {

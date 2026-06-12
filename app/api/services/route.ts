@@ -125,15 +125,20 @@ export async function POST(req: NextRequest) {
     }
 
     if (isPersonal && targetStudentId) {
+      const svcCurrency: string = body.currency ?? 'BYN'
+      const CURRENCY_SYMBOLS: Record<string, string> = {
+        RUB: '₽', EUR: '€', USD: '$', BYN: 'Br', GBP: '£', UAH: '₴', KZT: '₸',
+      }
+      const sym = CURRENCY_SYMBOLS[svcCurrency] ?? svcCurrency
       await createNotification({
         type: 'PERSONAL_SERVICE',
         title: 'Личное предложение от преподавателя',
-        body: `Преподаватель создал для вас личное предложение: «${title}» — ${Number(price)} ₽`,
+        body: `Преподаватель создал для вас личное предложение: «${title}» — ${Number(price)} ${sym}`,
         payload: {
           serviceId: service.id,
           serviceTitle: title,
           price: Number(price),
-          currency: body.currency ?? 'BYN',
+          currency: svcCurrency,
         },
         studentId: targetStudentId,
       })

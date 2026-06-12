@@ -278,3 +278,32 @@
 
   &:hover { background: #4540A0; }
 }
+
+.currencyBadge {
+  position: relative;
+  cursor: default;
+  border-bottom: 1px dashed #ABABAB;
+
+  &::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #141416;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+    padding: 4px 8px;
+    border-radius: 6px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 10;
+  }
+
+  &:hover::after {
+    opacity: 1;
+  }
+}

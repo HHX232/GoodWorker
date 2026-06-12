@@ -111,6 +111,7 @@ export function DetailRow({item, onClick}: {item: NotificationItem; onClick?: ()
         timeTo: '',
         isGroup: false,
         price: payload.price as number ?? 0,
+        currency: payload.currency as string ?? 'BYN',
       }
     : null
 
