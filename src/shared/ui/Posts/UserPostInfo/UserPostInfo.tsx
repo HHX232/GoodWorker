@@ -45,7 +45,7 @@ export function UserPostInfo({
       <ul className={styles.info_block}>
         <li className={styles.info_row}>
           <span className={styles.info_label}>{t('userType')}:</span>
-          <span className={styles.info_value}>{userType}</span>
+          <span className={styles.info_value}>{t(`role${userType}`)}</span>
         </li>
         <li className={styles.info_row}>
           <span className={styles.info_label}>{t('totalView')}:</span>

@@ -110,6 +110,20 @@
     "dropHere": "+ Перетащите блок сюда",
     "dropFromPalette": "Перетащите блок из панели справа"
   },
+  "postMenu": {
+    "dragTitle": "Перетащите блок",
+    "addTitle": "Добавить блок",
+    "TEXT_label": "Текст",
+    "TEXT_desc": "Абзац, заголовки, форматирование",
+    "MEDIA_label": "Медиа",
+    "MEDIA_desc": "Фото или видео",
+    "AUDIO_label": "Аудио",
+    "AUDIO_desc": "Аудиозапись или подкаст",
+    "TEST_LINK_label": "Тест",
+    "TEST_LINK_desc": "Ссылка на тест",
+    "MINI_TEST_label": "Мини-тест",
+    "MINI_TEST_desc": "Встроенный тест с результатом"
+  },
   "PostBlockEditor": {
     "textLabel": "Текст",
     "mediaLabel": "Медиа",
@@ -367,6 +381,18 @@
     "vipRequiredDesc": "Для создания платных курсов необходим VIP-статус. Он открывает монетизацию и приоритетный показ в каталоге.",
     "purchaseVip": "Приобрести VIP",
     "vipChecking": "Проверяем статус VIP...",
+    "editBtn": "Редактировать",
+    "publishNext": "Далее →",
+    "publishBack": "← Назад",
+    "accessConditionTitle": "Условие доступа к закрытым блокам",
+    "accessHint": "В вашем роадмапе есть закрытые блоки. Выберите, кто сможет их видеть:",
+    "accessStudentsLabel": "Доступ ученикам",
+    "accessStudentsDesc": "Все ваши прикреплённые ученики увидят закрытые блоки",
+    "accessSelectedLabel": "Выбранным людям",
+    "accessSelectedDesc": "Вы сами выберете, кому открыть доступ вручную",
+    "accessPurchaseLabel": "Только купившим",
+    "accessPurchaseDesc": "Закрытые блоки откроются после оплаты",
+    "accessSoon": "скоро",
     "commentsBtn": "Комментарии",
     "commentsTitle": "Комментарии",
     "noComments": "Комментариев пока нет",
@@ -611,7 +637,10 @@
     "userType": "Тип пользователя",
     "totalView": "Просмотры поста",
     "publishDate": "Дата публикации",
-    "postCategory": "Категория поста"
+    "postCategory": "Категория поста",
+    "roleTeacher": "Учитель",
+    "roleStudent": "Ученик",
+    "roleAdmin": "Администратор"
   },
   "statsPage": {
     "loading": "Загружаем статистику...",
@@ -1888,7 +1917,20 @@
     "msgNeedsWork": "Пройди тест снова — это поможет лучше запомнить материал.",
     "score": "{score} / {max} баллов",
     "retryBtn": "Пройти снова",
-    "miniTestLabel": "Мини-тест"
+    "miniTestLabel": "Мини-тест",
+    "submitBtn": "Завершить",
+    "submitBtnAll": "Завершить тест",
+    "unansweredError": "Ответьте на все вопросы (осталось {count})",
+    "labelChooseOption": "Выберите вариант ответа",
+    "labelFreeAnswer": "Напишите ответ",
+    "labelSequence": "Расставьте в правильном порядке",
+    "labelMatchPairs": "Сопоставьте пары",
+    "labelHighlightText": "Выделите правильные слова",
+    "labelWordScramble": "Составьте слово / предложение",
+    "labelDialogue": "Расставьте диалог в верном порядке",
+    "labelFillText": "Заполните пропуски",
+    "testLinkTitle": "Тест",
+    "testLinkBtn": "Перейти к тесту →"
   },
   "roadmapTutorial": {
     "title": "Как пройти курс",

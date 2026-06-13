@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import PostPage, { EnrichedComment } from '@/_pages/PublickPages/PostPage/PostPage'
+import { localizePost } from '@/lib/postAI'
 import { prisma } from '@/shared/prisma/prisma'
 import { SeoPostContent } from '@/shared/ui/Posts/SeoPostContent/SeoPostContent'
 import { Prisma } from '@prisma/client'
 import { Metadata } from 'next'
+import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { auth } from '../../../../auth'
 
@@ -117,6 +119,7 @@ export async function generateMetadata({params}: {params: Promise<{id: string}>}
 
 async function PostServerPage({params}: {params: Promise<{id: string}>}) {
   const {id} = await params
+  const locale = (await cookies()).get('NEXT_LOCALE')?.value ?? 'ru'
 
   const [post, session] = await Promise.all([
     withDbRetry(() => prisma.post.findUnique({
@@ -208,7 +211,7 @@ async function PostServerPage({params}: {params: Promise<{id: string}>}) {
         publishedAt={post.createdAt}
         categoryName={categoryName}
       />
-      <PostPage post={{...post, enrichedComments}} currentUserId={session?.user?.id} />
+      <PostPage post={localizePost({...post, enrichedComments}, locale)} currentUserId={session?.user?.id} />
     </>
   )
 }

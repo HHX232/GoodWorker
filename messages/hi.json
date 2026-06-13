@@ -124,6 +124,20 @@
     "dropHere": "+ ब्लॉक यहाँ खींचें",
     "dropFromPalette": "दाईं पैनल से ब्लॉक खींचें"
   },
+  "postMenu": {
+    "dragTitle": "ब्लॉक खींचें",
+    "addTitle": "ब्लॉक जोड़ें",
+    "TEXT_label": "टेक्स्ट",
+    "TEXT_desc": "पैराग्राफ, शीर्षक, फॉर्मेटिंग",
+    "MEDIA_label": "मीडिया",
+    "MEDIA_desc": "फोटो या वीडियो",
+    "AUDIO_label": "ऑडियो",
+    "AUDIO_desc": "ऑडियो रिकॉर्डिंग या पॉडकास्ट",
+    "TEST_LINK_label": "टेस्ट",
+    "TEST_LINK_desc": "टेस्ट का लिंक",
+    "MINI_TEST_label": "मिनी-टेस्ट",
+    "MINI_TEST_desc": "परिणाम सहित एम्बेडेड टेस्ट"
+  },
   "PostBlockEditor": {
     "textLabel": "टेक्स्ट",
     "mediaLabel": "मीडिया",
@@ -367,6 +381,18 @@
     "vipRequiredDesc": "भुगतान कोर्स प्रकाशित करने के लिए VIP सदस्यता आवश्यक है।",
     "purchaseVip": "VIP खरीदें",
     "vipChecking": "VIP स्थिति जाँच रहे हैं...",
+    "editBtn": "संपादित करें",
+    "publishNext": "आगे →",
+    "publishBack": "← वापस",
+    "accessConditionTitle": "बंद ब्लॉक के लिए पहुँच शर्त",
+    "accessHint": "आपके रोडमैप में बंद ब्लॉक हैं। चुनें कि कौन उन्हें देख सकता है:",
+    "accessStudentsLabel": "छात्रों को पहुँच",
+    "accessStudentsDesc": "आपके सभी जुड़े छात्र बंद ब्लॉक देख पाएंगे",
+    "accessSelectedLabel": "चुने हुए लोग",
+    "accessSelectedDesc": "आप स्वयं तय करें कि किसे पहुँच दें",
+    "accessPurchaseLabel": "केवल खरीदारों के लिए",
+    "accessPurchaseDesc": "भुगतान के बाद बंद ब्लॉक खुलेंगे",
+    "accessSoon": "जल्द",
     "commentsBtn": "टिप्पणियाँ",
     "commentsTitle": "टिप्पणियाँ",
     "noComments": "अभी तक कोई टिप्पणी नहीं",
@@ -590,7 +616,10 @@
     "userType": "उपयोगकर्ता प्रकार",
     "totalView": "कुल पोस्ट व्यू",
     "publishDate": "प्रकाशन तिथि",
-    "postCategory": "पोस्ट श्रेणी"
+    "postCategory": "पोस्ट श्रेणी",
+    "roleTeacher": "शिक्षक",
+    "roleStudent": "छात्र",
+    "roleAdmin": "व्यवस्थापक"
   },
   "statsPage": {
     "loading": "सांख्यिकी लोड हो रही है...",
@@ -1732,7 +1761,20 @@
     "msgNeedsWork": "परीक्षा फिर से दें — इससे सामग्री बेहतर याद होगी।",
     "score": "{score} / {max} अंक",
     "retryBtn": "फिर से प्रयास करें",
-    "miniTestLabel": "मिनी-परीक्षण"
+    "miniTestLabel": "मिनी-परीक्षण",
+    "submitBtn": "जमा करें",
+    "submitBtnAll": "परीक्षण जमा करें",
+    "unansweredError": "सभी प्रश्नों का उत्तर दें ({count} शेष)",
+    "labelChooseOption": "सही उत्तर चुनें",
+    "labelFreeAnswer": "अपना उत्तर लिखें",
+    "labelSequence": "सही क्रम में लगाएं",
+    "labelMatchPairs": "जोड़े मिलाएं",
+    "labelHighlightText": "सही शब्दों को हाइलाइट करें",
+    "labelWordScramble": "शब्द / वाक्य बनाएं",
+    "labelDialogue": "संवाद को सही क्रम में लगाएं",
+    "labelFillText": "रिक्त स्थान भरें",
+    "testLinkTitle": "परीक्षण",
+    "testLinkBtn": "परीक्षण पर जाएं →"
   },
   "roadmapTutorial": {
     "title": "कोर्स कैसे करें",

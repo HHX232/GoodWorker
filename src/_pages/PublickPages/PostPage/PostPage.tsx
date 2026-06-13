@@ -12,7 +12,7 @@ import { SetCommentBlock } from '@/shared/ui/Posts/SetCommentBlock/SetCommentBlo
 import { NavBar } from '@/widgets/BaseUI'
 import { BorderTextHandler } from '@/widgets/Cards'
 import { Prisma, Role } from '@prisma/client'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useState, useEffect } from 'react'
 import styles from './PostPage.module.scss'
 import { BookmarkHighlighter } from '@/shared/ui/bookmark/BookmarkHighlighter'
@@ -127,6 +127,7 @@ function ReportPostButton({postId, postTitle}: {postId: string; postTitle: strin
 // ─── Page ─────────────────────────────────────────────────
 
 function PostPage({post, initialComments, currentUserId}: PostPageProps) {
+  const locale = useLocale()
   const isCompact = useCompactSidebar()
   const resolvedComments: CommentItem[] = initialComments ?? (post.enrichedComments ?? []).map(enrichedToCommentItem)
 
@@ -138,7 +139,9 @@ function PostPage({post, initialComments, currentUserId}: PostPageProps) {
     userType: UserRolesObject.Teacher,
     totalView: post.viewCount ?? 0,
     publishDate: new Date(post.createdAt),
-    postCategory: post.category?.translations.find((t) => t.langCode === 'ru')?.name ?? '—'
+    postCategory: post.category?.translations.find((t) => t.langCode === locale)?.name
+      ?? post.category?.translations.find((t) => t.langCode === 'ru')?.name
+      ?? '—'
   }
 
   const blocks = parsePostContent(post.content)
@@ -156,7 +159,7 @@ function PostPage({post, initialComments, currentUserId}: PostPageProps) {
   const content = blocks.length > 0 ? (
     <>
       {!firstBlockIsText && standaloneTitle}
-      <PostBlockRenderer postId={post.id} blocks={blocks} titleNode={firstBlockIsText ? titleNode : undefined} />
+      <PostBlockRenderer key={locale} postId={post.id} blocks={blocks} titleNode={firstBlockIsText ? titleNode : undefined} />
       <BookmarkHighlighter postId={post.id} />
     </>
   ) : standaloneTitle

@@ -2,7 +2,7 @@
 import HomePage from '@/_pages/PublickPages/HomePage/HomePage'
 import PostService, {IPostResponse, IPostsQuery} from '@/features/services/PostService.service'
 
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 import type { Metadata } from 'next'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -18,6 +18,7 @@ interface HomePageRouteProps {
 
 export default async function Home({searchParams}: HomePageRouteProps) {
   const params = await searchParams
+  const locale = await getLocale()
 
   const query: IPostsQuery = {
     page: params.page ? Number(params.page) : 1,
@@ -25,7 +26,8 @@ export default async function Home({searchParams}: HomePageRouteProps) {
     categoryId: typeof params.categoryId === 'string' ? params.categoryId : undefined,
     teacherId: typeof params.teacherId === 'string' ? params.teacherId : undefined,
     visibility: typeof params.visibility === 'string' ? (params.visibility as any) : 'any',
-    search: typeof params.search === 'string' ? params.search : undefined
+    search: typeof params.search === 'string' ? params.search : undefined,
+    lang: locale,
   }
 
   const emptyResponse = {posts: [], pagination: {page: 1, limit: query.limit ?? 12, total: 0, totalPages: 0}}

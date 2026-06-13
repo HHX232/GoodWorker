@@ -19,16 +19,11 @@ interface Props {
   onConfirm: (price: number, nodeAccessType: RoadmapNodeAccessType | null, currency: string, categoryIds: string[]) => void
 }
 
-const ACCESS_OPTIONS: {
-  value: RoadmapNodeAccessType
-  label: string
-  desc: string
-  icon: React.ReactNode
-}[] = [
+const ACCESS_OPTION_VALUES: { value: RoadmapNodeAccessType; labelKey: 'accessStudentsLabel' | 'accessSelectedLabel' | 'accessPurchaseLabel'; descKey: 'accessStudentsDesc' | 'accessSelectedDesc' | 'accessPurchaseDesc'; icon: React.ReactNode }[] = [
   {
     value: 'STUDENTS',
-    label: 'Доступ ученикам',
-    desc: 'Все ваши прикреплённые ученики увидят закрытые блоки',
+    labelKey: 'accessStudentsLabel',
+    descKey: 'accessStudentsDesc',
     icon: (
       <svg width='18' height='18' viewBox='0 0 24 24' fill='none'>
         <path d='M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' />
@@ -39,8 +34,8 @@ const ACCESS_OPTIONS: {
   },
   {
     value: 'SELECTED',
-    label: 'Выбранным людям',
-    desc: 'Вы сами выберете, кому открыть доступ вручную',
+    labelKey: 'accessSelectedLabel',
+    descKey: 'accessSelectedDesc',
     icon: (
       <svg width='18' height='18' viewBox='0 0 24 24' fill='none'>
         <circle cx='12' cy='8' r='4' stroke='currentColor' strokeWidth='1.8' />
@@ -51,8 +46,8 @@ const ACCESS_OPTIONS: {
   },
   {
     value: 'PURCHASE',
-    label: 'Только купившим',
-    desc: 'Закрытые блоки откроются после оплаты',
+    labelKey: 'accessPurchaseLabel',
+    descKey: 'accessPurchaseDesc',
     icon: (
       <svg width='18' height='18' viewBox='0 0 24 24' fill='none'>
         <rect x='2' y='7' width='20' height='14' rx='2' stroke='currentColor' strokeWidth='1.8' />
@@ -117,7 +112,7 @@ export function PublishModal({ isOpen, onClose, hasPaywalledNodes, initialCatego
     onClose()
   }
 
-  const titleText = step === 'access-type' ? 'Условие доступа к закрытым блокам' : t('publishSettings')
+  const titleText = step === 'access-type' ? t('accessConditionTitle') : t('publishSettings')
 
   const footer =
     step === 'access-type' ? (
@@ -130,14 +125,14 @@ export function PublishModal({ isOpen, onClose, hasPaywalledNodes, initialCatego
           onClick={handleAccessNext}
           disabled={!canConfirmAccessType}
         >
-          {selectedAccess === 'PURCHASE' ? 'Далее →' : t('publishConfirm')}
+          {selectedAccess === 'PURCHASE' ? t('publishNext') : t('publishConfirm')}
         </button>
       </div>
     ) : (
       <div className={styles.footer}>
         {hasPaywalledNodes && (
           <button className={styles.cancel_btn} onClick={() => setStep('access-type')}>
-            ← Назад
+            {t('publishBack')}
           </button>
         )}
         {!hasPaywalledNodes && (
@@ -164,11 +159,9 @@ export function PublishModal({ isOpen, onClose, hasPaywalledNodes, initialCatego
     >
       {step === 'access-type' ? (
         <div className={styles.content}>
-          <p className={styles.access_hint}>
-            В вашем роадмапе есть закрытые блоки. Выберите, кто сможет их видеть:
-          </p>
+          <p className={styles.access_hint}>{t('accessHint')}</p>
           <div className={styles.access_options}>
-            {ACCESS_OPTIONS.map((opt) => (
+            {ACCESS_OPTION_VALUES.map((opt) => (
               <button
                 key={opt.value}
                 className={`${styles.access_option} ${selectedAccess === opt.value ? styles.selected : ''}`}
@@ -176,11 +169,11 @@ export function PublishModal({ isOpen, onClose, hasPaywalledNodes, initialCatego
               >
                 <span className={styles.opt_icon}>{opt.icon}</span>
                 <span className={styles.opt_body}>
-                  <span className={styles.opt_label}>{opt.label}</span>
-                  <span className={styles.opt_desc}>{opt.desc}</span>
+                  <span className={styles.opt_label}>{t(opt.labelKey)}</span>
+                  <span className={styles.opt_desc}>{t(opt.descKey)}</span>
                 </span>
                 {opt.value === 'SELECTED' && (
-                  <span className={styles.stub_tag}>скоро</span>
+                  <span className={styles.stub_tag}>{t('accessSoon')}</span>
                 )}
               </button>
             ))}

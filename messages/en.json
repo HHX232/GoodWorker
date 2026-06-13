@@ -110,6 +110,20 @@
     "dropHere": "+ Drop block here",
     "dropFromPalette": "Drag a block from the right panel"
   },
+  "postMenu": {
+    "dragTitle": "Drag a block",
+    "addTitle": "Add block",
+    "TEXT_label": "Text",
+    "TEXT_desc": "Paragraph, headings, formatting",
+    "MEDIA_label": "Media",
+    "MEDIA_desc": "Photo or video",
+    "AUDIO_label": "Audio",
+    "AUDIO_desc": "Audio recording or podcast",
+    "TEST_LINK_label": "Test",
+    "TEST_LINK_desc": "Link to a test",
+    "MINI_TEST_label": "Mini-test",
+    "MINI_TEST_desc": "Embedded test with result"
+  },
   "PostBlockEditor": {
     "textLabel": "Text",
     "mediaLabel": "Media",
@@ -367,6 +381,18 @@
     "vipRequiredDesc": "A VIP subscription is required to publish paid courses. It unlocks monetization and priority placement in the catalog.",
     "purchaseVip": "Get VIP",
     "vipChecking": "Checking VIP status...",
+    "editBtn": "Edit",
+    "publishNext": "Next →",
+    "publishBack": "← Back",
+    "accessConditionTitle": "Access condition for locked blocks",
+    "accessHint": "Your roadmap has locked blocks. Choose who can see them:",
+    "accessStudentsLabel": "Access for students",
+    "accessStudentsDesc": "All your attached students will see locked blocks",
+    "accessSelectedLabel": "Selected people",
+    "accessSelectedDesc": "You choose manually who gets access",
+    "accessPurchaseLabel": "Purchasers only",
+    "accessPurchaseDesc": "Locked blocks unlock after payment",
+    "accessSoon": "soon",
     "commentsBtn": "Comments",
     "commentsTitle": "Comments",
     "noComments": "No comments yet",
@@ -611,7 +637,10 @@
     "userType": "User type",
     "totalView": "Total post view",
     "publishDate": "Publication date",
-    "postCategory": "Post category"
+    "postCategory": "Post category",
+    "roleTeacher": "Teacher",
+    "roleStudent": "Student",
+    "roleAdmin": "Admin"
   },
   "statsPage": {
     "loading": "Loading statistics...",
@@ -1888,7 +1917,20 @@
     "msgNeedsWork": "Take the test again — it will help you remember the material better.",
     "score": "{score} / {max} points",
     "retryBtn": "Try again",
-    "miniTestLabel": "Mini-test"
+    "miniTestLabel": "Mini-test",
+    "submitBtn": "Submit",
+    "submitBtnAll": "Submit test",
+    "unansweredError": "Answer all questions ({count} remaining)",
+    "labelChooseOption": "Choose the correct answer",
+    "labelFreeAnswer": "Write your answer",
+    "labelSequence": "Put in the correct order",
+    "labelMatchPairs": "Match the pairs",
+    "labelHighlightText": "Highlight the correct words",
+    "labelWordScramble": "Form a word / sentence",
+    "labelDialogue": "Arrange the dialogue in the correct order",
+    "labelFillText": "Fill in the blanks",
+    "testLinkTitle": "Test",
+    "testLinkBtn": "Go to test →"
   },
   "roadmapTutorial": {
     "title": "How to take the course",

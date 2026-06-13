@@ -110,23 +110,24 @@ const ANSWERABLE_TYPES = new Set<TaskBlockType>([
 
 // ── BlockWrapper ──────────────────────────────────────────────────────────────
 
-const BLOCK_LABELS: Partial<Record<TaskBlockType, string>> = {
-  [TaskBlockType.CHOOSE_OPTION]: 'Выберите вариант ответа',
-  [TaskBlockType.FREE_ANSWER]: 'Напишите ответ',
-  [TaskBlockType.SEQUENCE]: 'Расставьте в правильном порядке',
-  [TaskBlockType.MATCH_PAIRS]: 'Сопоставьте пары',
-  [TaskBlockType.HIGHLIGHT_TEXT]: 'Выделите правильные слова',
-  [TaskBlockType.WORD_SCRAMBLE]: 'Составьте слово / предложение',
-  [TaskBlockType.DIALOGUE]: 'Расставьте диалог в верном порядке',
-  [TaskBlockType.FILL_TEXT]: 'Заполните пропуски'
+const BLOCK_LABEL_KEYS: Partial<Record<TaskBlockType, string>> = {
+  [TaskBlockType.CHOOSE_OPTION]: 'labelChooseOption',
+  [TaskBlockType.FREE_ANSWER]: 'labelFreeAnswer',
+  [TaskBlockType.SEQUENCE]: 'labelSequence',
+  [TaskBlockType.MATCH_PAIRS]: 'labelMatchPairs',
+  [TaskBlockType.HIGHLIGHT_TEXT]: 'labelHighlightText',
+  [TaskBlockType.WORD_SCRAMBLE]: 'labelWordScramble',
+  [TaskBlockType.DIALOGUE]: 'labelDialogue',
+  [TaskBlockType.FILL_TEXT]: 'labelFillText',
 }
 
 export function BlockWrapper({block, children, hasError}: {block: TestBlock; children: React.ReactNode; hasError?: boolean}) {
-  const label = BLOCK_LABELS[block.type as TaskBlockType]
-  if (!label) return <>{children}</>
+  const t = useTranslations('TestPlayer')
+  const labelKey = BLOCK_LABEL_KEYS[block.type as TaskBlockType]
+  if (!labelKey) return <>{children}</>
   return (
     <div className={`${styles.block_card} ${hasError ? styles.block_card_error : ''}`}>
-      <span className={styles.block_label}>{label}</span>
+      <span className={styles.block_label}>{t(labelKey as Parameters<typeof t>[0])}</span>
       {children}
     </div>
   )
@@ -144,6 +145,7 @@ interface TestPlayerProps {
 }
 
 export function TestPlayer({blocks, singleBlock = false, onResult, showInlineResult}: TestPlayerProps) {
+  const t = useTranslations('TestPlayer')
   const [answers, setAnswers] = useState<Map<string, StudentAnswer>>(new Map())
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [result, setResult] = useState<TestResult | null>(null)
@@ -167,7 +169,7 @@ export function TestPlayer({blocks, singleBlock = false, onResult, showInlineRes
 
     if (unanswered.length > 0) {
       setErrorBlockIds(new Set(unanswered))
-      toast.error(`Ответьте на все вопросы (осталось ${unanswered.length})`)
+      toast.error(t('unansweredError', {count: unanswered.length}))
       if (singleBlock) {
         const firstErrorIdx = blocks.findIndex((b) => unanswered.includes(b.id))
         if (firstErrorIdx !== -1) setActiveIdx(firstErrorIdx)
@@ -236,7 +238,7 @@ export function TestPlayer({blocks, singleBlock = false, onResult, showInlineRes
         {/* Кнопка завершения на последнем блоке */}
         {activeIdx === blocks.length - 1 && !isSubmitted && (
           <button className={styles.submit_btn} onClick={handleSubmit}>
-            Завершить
+            {t('submitBtn')}
           </button>
         )}
       </div>
@@ -256,7 +258,7 @@ export function TestPlayer({blocks, singleBlock = false, onResult, showInlineRes
         ))}
       </div>
       <button className={styles.submit_btn} onClick={handleSubmit}>
-        Завершить тест
+        {t('submitBtnAll')}
       </button>
     </div>
   )

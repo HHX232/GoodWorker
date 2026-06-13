@@ -27,6 +27,7 @@ import styles from './CreatePostPage.module.scss'
 
 function CreatePostPage({id}: {id?: string}) {
   const t = useTranslations('CreatePostPage')
+  const tMenu = useTranslations('postMenu')
   const searchParams = useSearchParams()
   const existingId = searchParams.get('id') ?? undefined
   const activeId = id || existingId
@@ -119,7 +120,7 @@ function CreatePostPage({id}: {id?: string}) {
         {draggingType && (
           <div className={styles.drag_ghost}>
             {PostBlockRegistry[draggingType].icon}
-            {PostBlockRegistry[draggingType].label}
+            {tMenu(`${draggingType}_label`)}
           </div>
         )}
       </DragOverlay>

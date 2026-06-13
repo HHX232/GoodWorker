@@ -5,6 +5,7 @@ import {PostBlockRegistry} from '@/features/Post/PostBlockRegistry'
 import {PostBlockType} from '@/shared/types/Post/Post.type'
 import {useDraggable} from '@dnd-kit/core'
 import {PlusIcon, XIcon} from 'lucide-react'
+import {useTranslations} from 'next-intl'
 import {RefObject, useEffect, useState} from 'react'
 import styles from './PostMenu.module.scss'
 
@@ -13,6 +14,7 @@ interface PostMenuProps {
 }
 
 export const PostMenu = ({mainContentRef}: PostMenuProps) => {
+  const t = useTranslations('postMenu')
   const [isOpen, setIsOpen] = useState(false)
   const [fabTop, setFabTop] = useState<number | null>(null)
 
@@ -45,11 +47,11 @@ export const PostMenu = ({mainContentRef}: PostMenuProps) => {
     <>
       {/* Desktop */}
       <div className={styles.desktop_menu}>
-        <h3 className={styles.menu_title}>Перетащите блок</h3>
+        <h3 className={styles.menu_title}>{t('dragTitle')}</h3>
         <ul className={styles.menu_list}>
           {Object.values(PostBlockType).map((type) => (
             <li key={type}>
-              <DesktopPostButton blockType={type} />
+              <DesktopPostButton blockType={type} t={t} />
             </li>
           ))}
         </ul>
@@ -59,7 +61,7 @@ export const PostMenu = ({mainContentRef}: PostMenuProps) => {
       <div className={styles.mobile_menu}>
         <button className={styles.fab} style={fabStyle} onClick={() => setIsOpen(true)}>
           <PlusIcon size={22} />
-          <span>Добавить блок</span>
+          <span>{t('addTitle')}</span>
         </button>
 
         <div className={`${styles.overlay} ${isOpen ? styles.overlay_visible : ''}`} onClick={() => setIsOpen(false)} />
@@ -67,14 +69,14 @@ export const PostMenu = ({mainContentRef}: PostMenuProps) => {
         <div className={`${styles.bottom_sheet} ${isOpen ? styles.bottom_sheet_open : ''}`}>
           <div className={styles.sheet_handle} />
           <div className={styles.sheet_header}>
-            <h3 className={styles.sheet_title}>Добавить блок</h3>
+            <h3 className={styles.sheet_title}>{t('addTitle')}</h3>
             <button className={styles.sheet_close} onClick={() => setIsOpen(false)}>
               <XIcon size={18} />
             </button>
           </div>
           <div className={styles.sheet_grid}>
             {Object.values(PostBlockType).map((type) => (
-              <MobilePostButton key={type} blockType={type} onAdd={() => setIsOpen(false)} />
+              <MobilePostButton key={type} blockType={type} onAdd={() => setIsOpen(false)} t={t} />
             ))}
           </div>
         </div>
@@ -83,7 +85,9 @@ export const PostMenu = ({mainContentRef}: PostMenuProps) => {
   )
 }
 
-const DesktopPostButton = ({blockType}: {blockType: PostBlockType}) => {
+type TFn = (key: string) => string
+
+const DesktopPostButton = ({blockType, t}: {blockType: PostBlockType; t: TFn}) => {
   const meta = PostBlockRegistry[blockType]
   const {attributes, listeners, setNodeRef, isDragging} = useDraggable({
     id: `palette-${blockType}`,
@@ -100,14 +104,14 @@ const DesktopPostButton = ({blockType}: {blockType: PostBlockType}) => {
         {meta.icon}
       </div>
       <div className={styles.block_info}>
-        <span className={styles.block_label}>{meta.label}</span>
-        <span className={styles.block_desc}>{meta.description}</span>
+        <span className={styles.block_label}>{t(`${blockType}_label`)}</span>
+        <span className={styles.block_desc}>{t(`${blockType}_desc`)}</span>
       </div>
     </div>
   )
 }
 
-const MobilePostButton = ({blockType, onAdd}: {blockType: PostBlockType; onAdd: () => void}) => {
+const MobilePostButton = ({blockType, onAdd, t}: {blockType: PostBlockType; onAdd: () => void; t: TFn}) => {
   const meta = PostBlockRegistry[blockType]
   const {addPostBlock} = useActions()
   return (
@@ -119,7 +123,7 @@ const MobilePostButton = ({blockType, onAdd}: {blockType: PostBlockType; onAdd: 
       }}
     >
       <div className={styles.mobile_block_icon}>{meta.icon}</div>
-      <span className={styles.mobile_block_label}>{meta.label}</span>
+      <span className={styles.mobile_block_label}>{t(`${blockType}_label`)}</span>
     </button>
   )
 }

@@ -124,6 +124,20 @@
     "dropHere": "+ 将块拖放至此",
     "dropFromPalette": "从右侧面板拖入块"
   },
+  "postMenu": {
+    "dragTitle": "拖入块",
+    "addTitle": "添加块",
+    "TEXT_label": "文本",
+    "TEXT_desc": "段落、标题、格式化",
+    "MEDIA_label": "媒体",
+    "MEDIA_desc": "图片或视频",
+    "AUDIO_label": "音频",
+    "AUDIO_desc": "录音或播客",
+    "TEST_LINK_label": "测验",
+    "TEST_LINK_desc": "测验链接",
+    "MINI_TEST_label": "迷你测验",
+    "MINI_TEST_desc": "含结果的嵌入式测验"
+  },
   "PostBlockEditor": {
     "textLabel": "文本",
     "mediaLabel": "媒体",
@@ -367,6 +381,18 @@
     "vipRequiredDesc": "发布付费课程需要VIP订阅，解锁变现功能及目录优先展示。",
     "purchaseVip": "获取VIP",
     "vipChecking": "正在验证VIP状态...",
+    "editBtn": "编辑",
+    "publishNext": "下一步 →",
+    "publishBack": "← 返回",
+    "accessConditionTitle": "锁定块的访问条件",
+    "accessHint": "您的路线图包含锁定块，请选择谁可以查看：",
+    "accessStudentsLabel": "学生访问",
+    "accessStudentsDesc": "您的所有学生将看到锁定块",
+    "accessSelectedLabel": "指定人员",
+    "accessSelectedDesc": "您手动选择谁可以访问",
+    "accessPurchaseLabel": "仅限购买者",
+    "accessPurchaseDesc": "付款后锁定块将解锁",
+    "accessSoon": "即将推出",
     "commentsBtn": "评论",
     "commentsTitle": "评论",
     "noComments": "暂无评论",
@@ -590,7 +616,10 @@
     "userType": "用户类型",
     "totalView": "帖子浏览量",
     "publishDate": "发布日期",
-    "postCategory": "帖子分类"
+    "postCategory": "帖子分类",
+    "roleTeacher": "教师",
+    "roleStudent": "学生",
+    "roleAdmin": "管理员"
   },
   "statsPage": {
     "loading": "加载统计中...",
@@ -1732,7 +1761,20 @@
     "msgNeedsWork": "再做一次测试——这有助于更好地记住材料。",
     "score": "{score} / {max} 分",
     "retryBtn": "再试一次",
-    "miniTestLabel": "小测验"
+    "miniTestLabel": "小测验",
+    "submitBtn": "提交",
+    "submitBtnAll": "提交测验",
+    "unansweredError": "请回答所有问题（剩余 {count} 道）",
+    "labelChooseOption": "选择正确答案",
+    "labelFreeAnswer": "写下您的答案",
+    "labelSequence": "按正确顺序排列",
+    "labelMatchPairs": "配对",
+    "labelHighlightText": "标记正确的词语",
+    "labelWordScramble": "组成单词/句子",
+    "labelDialogue": "按正确顺序排列对话",
+    "labelFillText": "填写空白处",
+    "testLinkTitle": "测验",
+    "testLinkBtn": "前往测验 →"
   },
   "roadmapTutorial": {
     "title": "如何完成课程",

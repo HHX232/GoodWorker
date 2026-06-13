@@ -2,6 +2,7 @@ import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../auth'
 import { enrichRoadmapWithAI, localizeRoadmap } from '@/lib/postAI'
+import { hasAIProvider } from '@/lib/openrouter'
 
 function extractMediaPreviewUrls(content: unknown): string[] {
   try {
@@ -75,7 +76,7 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    if (process.env.OPENROUTER_API_KEY) {
+    if (hasAIProvider()) {
       enrichRoadmapWithAI(roadmap.id).catch((e) => console.error('[roadmapAI]', e))
     }
 

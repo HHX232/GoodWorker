@@ -234,6 +234,7 @@ export function CalendarPage({ teacherId }: { teacherId: string }) {
             events={events}
             onEventClick={(event) => selectEvent(event.id)}
             onCellClick={(date, startTime, endTime) => openCreateModal({date, startTime, endTime})}
+            onEventUpdate={updateEvent}
           />
         )}
         {view === 'day' && (
@@ -245,6 +246,7 @@ export function CalendarPage({ teacherId }: { teacherId: string }) {
             tasks={tasks}
             onEventClick={(event) => selectEvent(event.id)}
             onCellClick={(date, startTime, endTime) => openCreateModal({date, startTime, endTime})}
+            onEventUpdate={updateEvent}
           />
         )}
         {view === 'month' && (

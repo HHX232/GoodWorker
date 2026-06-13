@@ -66,22 +66,27 @@ export async function callAI(
   if (provider === 'openrouter' && !process.env.OPENROUTER_API_KEY) throw new Error('OPENROUTER_API_KEY is not set')
 
   const { endpoint, headers, body } = buildRequest(systemPrompt, userPrompt, opts)
+  const promptPreview = userPrompt.slice(0, 120).replace(/\n/g, ' ')
+  console.log(`[AI] provider=${provider} prompt="${promptPreview}..."`)
 
   for (let attempt = 0; attempt < 3; attempt++) {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(new Error(`AI timed out after ${TIMEOUT_MS / 1000}s`)), TIMEOUT_MS)
+    const t0 = Date.now()
 
     let res: Response
     try {
       res = await fetch(endpoint, { method: 'POST', headers, body, signal: controller.signal })
     } catch (err) {
       clearTimeout(timer)
+      console.warn(`[AI] attempt=${attempt + 1} network error: ${(err as Error).message}`)
       if (attempt < 2) { await sleep(3000 * (attempt + 1)); continue }
       throw new Error(`${provider} network error: ${(err as Error).message}`)
     }
 
     if (res.status === 429) {
       clearTimeout(timer)
+      console.warn(`[AI] attempt=${attempt + 1} rate limited (429)`)
       if (attempt < 2) { await sleep(2000 * (attempt + 1)); continue }
       const text = await res.text()
       throw new Error(`${provider} 429 (rate limit): ${text}`)
@@ -90,6 +95,7 @@ export async function callAI(
     if (!res.ok) {
       clearTimeout(timer)
       const text = await res.text()
+      console.error(`[AI] attempt=${attempt + 1} HTTP ${res.status}: ${text.slice(0, 200)}`)
       throw new Error(`${provider} ${res.status}: ${text}`)
     }
 
@@ -97,10 +103,12 @@ export async function callAI(
       const content = await readStream(res)
       clearTimeout(timer)
       if (!content) throw new Error(`${provider} returned empty content`)
+      console.log(`[AI] ok attempt=${attempt + 1} ms=${Date.now() - t0} chars=${content.length}`)
       return content
     } catch (err) {
       clearTimeout(timer)
       const msg = (err as Error).message ?? ''
+      console.warn(`[AI] attempt=${attempt + 1} stream error: ${msg}`)
       if (attempt < 2 && (msg.includes('timed out') || msg.includes('abort') || msg.includes('TIMEOUT'))) {
         await sleep(3000 * (attempt + 1))
         continue
@@ -147,7 +155,7 @@ function sleep(ms: number) {
 }
 
 export function hasAIProvider(): boolean {
-  return !!(process.env.DEEPSEEK_API_KEY || process.env.OPENROUTER_API_KEY)
+  return !!process.env.DEEPSEEK_API_KEY
 }
 
 export function parseJSON<T>(raw: string): T {

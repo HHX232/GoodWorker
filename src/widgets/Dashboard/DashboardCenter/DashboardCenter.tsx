@@ -180,8 +180,8 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
   useEffect(() => {
     setLoading(true)
     Promise.all([
-      fetch(`/api/roadmap?teacherId=${statsId}&limit=6`).then(r => r.json()),
-      fetch(`/api/posts?teacherId=${statsId}&limit=6`).then(r => r.json()),
+      fetch(`/api/roadmap?teacherId=${statsId}&limit=6&lang=${locale}`).then(r => r.json()),
+      fetch(`/api/posts?teacherId=${statsId}&limit=6&lang=${locale}`).then(r => r.json()),
       fetch(`/api/services?teacherId=${statsId}`).then(r => r.json()),
       fetch(`/api/tests?teacherId=${statsId}`).then(r => r.json()),
     ]).then(([rmData, postsData, svcData, testsData]) => {

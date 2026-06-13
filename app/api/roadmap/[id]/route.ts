@@ -2,6 +2,7 @@ import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
 import { enrichRoadmapWithAI, localizeRoadmap } from '@/lib/postAI'
+import { hasAIProvider } from '@/lib/openrouter'
 
 interface Params {
   params: Promise<{ id: string }>
@@ -115,7 +116,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       })
     })
 
-    if (process.env.OPENROUTER_API_KEY && (content !== undefined || title?.trim())) {
+    if (hasAIProvider() && (content !== undefined || title?.trim())) {
       enrichRoadmapWithAI(id).catch((e) => console.error('[roadmapAI]', e))
     }
 
