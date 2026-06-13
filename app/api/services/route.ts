@@ -4,6 +4,7 @@ import { localizeService } from '@/lib/postAI'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../auth'
 import { enrichServiceWithAI } from '@/lib/postAI'
+import { hasAIProvider } from '@/lib/openrouter'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -120,7 +121,7 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    if (process.env.OPENROUTER_API_KEY) {
+    if (hasAIProvider()) {
       enrichServiceWithAI(service.id).catch((e) => console.error('[serviceAI]', e))
     }
 

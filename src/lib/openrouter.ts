@@ -1,73 +1,102 @@
-const MODEL = 'openrouter/free'
-const ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions'
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://goodworker.ru'
-const TIMEOUT_MS = 120_000
+const DEEPSEEK_MODEL    = 'deepseek-chat'
+const DEEPSEEK_ENDPOINT = 'https://api.deepseek.com/chat/completions'
+
+const OR_MODEL    = 'openrouter/free'
+const OR_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions'
+const SITE_URL    = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://goodworker.ru'
+const TIMEOUT_MS  = 120_000
+
+type Provider = 'deepseek' | 'openrouter'
+
+function getProvider(): Provider {
+  return process.env.DEEPSEEK_API_KEY ? 'deepseek' : 'openrouter'
+}
+
+function buildRequest(systemPrompt: string, userPrompt: string, opts: { temperature?: number }): { endpoint: string; headers: Record<string, string>; body: string } {
+  const provider = getProvider()
+
+  if (provider === 'deepseek') {
+    return {
+      endpoint: DEEPSEEK_ENDPOINT,
+      headers: {
+        Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: DEEPSEEK_MODEL,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: opts.temperature ?? 0.1,
+        response_format: { type: 'json_object' },
+        stream: true,
+      }),
+    }
+  }
+
+  return {
+    endpoint: OR_ENDPOINT,
+    headers: {
+      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': SITE_URL,
+      'X-Title': 'GoodWorker',
+    },
+    body: JSON.stringify({
+      model: OR_MODEL,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      temperature: opts.temperature ?? 0.1,
+      response_format: { type: 'json_object' },
+      stream: true,
+    }),
+  }
+}
 
 export async function callAI(
   systemPrompt: string,
   userPrompt: string,
   opts: { temperature?: number } = {},
 ): Promise<string> {
-  const apiKey = process.env.OPENROUTER_API_KEY
-  if (!apiKey) throw new Error('OPENROUTER_API_KEY is not set')
+  const provider = getProvider()
+  if (provider === 'deepseek' && !process.env.DEEPSEEK_API_KEY) throw new Error('DEEPSEEK_API_KEY is not set')
+  if (provider === 'openrouter' && !process.env.OPENROUTER_API_KEY) throw new Error('OPENROUTER_API_KEY is not set')
 
-  const body = JSON.stringify({
-    model: MODEL,
-    messages: [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: userPrompt },
-    ],
-    temperature: opts.temperature ?? 0.1,
-    response_format: { type: 'json_object' },
-    stream: true,
-  })
-
-  const headers = {
-    Authorization: `Bearer ${apiKey}`,
-    'Content-Type': 'application/json',
-    'HTTP-Referer': SITE_URL,
-    'X-Title': 'GoodWorker',
-  }
+  const { endpoint, headers, body } = buildRequest(systemPrompt, userPrompt, opts)
 
   for (let attempt = 0; attempt < 3; attempt++) {
-    // Manual AbortController is more reliable than AbortSignal.timeout()
     const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(new Error(`OpenRouter timed out after ${TIMEOUT_MS / 1000}s`)), TIMEOUT_MS)
+    const timer = setTimeout(() => controller.abort(new Error(`AI timed out after ${TIMEOUT_MS / 1000}s`)), TIMEOUT_MS)
 
     let res: Response
     try {
-      res = await fetch(ENDPOINT, { method: 'POST', headers, body, signal: controller.signal })
+      res = await fetch(endpoint, { method: 'POST', headers, body, signal: controller.signal })
     } catch (err) {
       clearTimeout(timer)
-      if (attempt < 2) {
-        await sleep(3000 * (attempt + 1))
-        continue
-      }
-      throw new Error(`OpenRouter network error: ${(err as Error).message}`)
+      if (attempt < 2) { await sleep(3000 * (attempt + 1)); continue }
+      throw new Error(`${provider} network error: ${(err as Error).message}`)
     }
 
     if (res.status === 429) {
       clearTimeout(timer)
-      if (attempt < 2) {
-        await sleep(2000 * (attempt + 1))
-        continue
-      }
+      if (attempt < 2) { await sleep(2000 * (attempt + 1)); continue }
       const text = await res.text()
-      throw new Error(`OpenRouter 429 (rate limit): ${text}`)
+      throw new Error(`${provider} 429 (rate limit): ${text}`)
     }
 
     if (!res.ok) {
       clearTimeout(timer)
       const text = await res.text()
-      throw new Error(`OpenRouter ${res.status}: ${text}`)
+      throw new Error(`${provider} ${res.status}: ${text}`)
     }
 
-    // Stream the response — keeps the TCP connection alive through NAT devices
-    // and lets us enforce the timeout even if the model stalls mid-generation.
     try {
       const content = await readStream(res)
       clearTimeout(timer)
-      if (!content) throw new Error('OpenRouter returned empty content')
+      if (!content) throw new Error(`${provider} returned empty content`)
       return content
     } catch (err) {
       clearTimeout(timer)
@@ -80,7 +109,7 @@ export async function callAI(
     }
   }
 
-  throw new Error('OpenRouter: all retries exhausted')
+  throw new Error(`${provider}: all retries exhausted`)
 }
 
 async function readStream(res: Response): Promise<string> {
@@ -115,6 +144,10 @@ async function readStream(res: Response): Promise<string> {
 
 function sleep(ms: number) {
   return new Promise(r => setTimeout(r, ms))
+}
+
+export function hasAIProvider(): boolean {
+  return !!(process.env.DEEPSEEK_API_KEY || process.env.OPENROUTER_API_KEY)
 }
 
 export function parseJSON<T>(raw: string): T {

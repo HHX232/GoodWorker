@@ -4,6 +4,7 @@ import {PostVisibility} from '@prisma/client'
 import {NextRequest, NextResponse} from 'next/server'
 import {auth} from '../../../auth'
 import {enrichPostWithAI} from '@/lib/postAI'
+import {hasAIProvider} from '@/lib/openrouter'
 
 type ContentBlock = {type: string; payload: {url?: string | null}}
 type PostContent = {blocks?: ContentBlock[]} | null
@@ -73,7 +74,7 @@ export async function POST(req: NextRequest) {
       include: {allowedStudents: true}
     })
 
-    if (process.env.OPENROUTER_API_KEY) {
+    if (hasAIProvider()) {
       enrichPostWithAI(post.id)
         .then(() => console.log(`[postAI] translated post ${post.id}`))
         .catch(e => console.error(`[postAI] failed for post ${post.id}:`, e?.message ?? e))

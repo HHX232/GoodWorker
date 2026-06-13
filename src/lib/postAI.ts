@@ -1,7 +1,7 @@
 import { prisma } from '@/shared/prisma/prisma'
 import type { CategoryRef } from '@/shared/lib/gemini'
 import type { Prisma } from '@prisma/client'
-import { callAI, parseJSON } from '@/lib/openrouter'
+import { callAI, parseJSON, hasAIProvider } from '@/lib/openrouter'
 
 const LANGS = ['ru', 'en', 'hi', 'zh'] as const
 type Lang = typeof LANGS[number]
@@ -111,8 +111,7 @@ function applyPostTranslations(content: unknown, map: TranslationMap, lang: Lang
 }
 
 export async function enrichPostWithAI(postId: string): Promise<void> {
-  const apiKey = process.env.OPENROUTER_API_KEY
-  if (!apiKey) return
+  if (!hasAIProvider()) return
 
   const post = await prisma.post.findUnique({ where: { id: postId } })
   if (!post) return
@@ -194,7 +193,7 @@ Return exactly this JSON:
 // ─── Comment translation ──────────────────────────────────────────────────────
 
 export async function enrichCommentWithAI(commentId: string): Promise<void> {
-  if (!process.env.OPENROUTER_API_KEY) return
+  if (!hasAIProvider()) return
 
   const comment = await prisma.postComment.findUnique({ where: { id: commentId } })
   if (!comment || !comment.text.trim()) return
@@ -224,7 +223,7 @@ export function localizeComment<T extends {
 // ─── Service AI ───────────────────────────────────────────────────────────────
 
 export async function enrichServiceWithAI(serviceId: string): Promise<void> {
-  if (!process.env.OPENROUTER_API_KEY) return
+  if (!hasAIProvider()) return
 
   const service = await prisma.service.findUnique({ where: { id: serviceId } })
   if (!service || !service.title.trim()) return
@@ -572,7 +571,7 @@ function applyRoadmapTranslations(content: unknown, map: TranslationMap, lang: L
 }
 
 export async function enrichRoadmapWithAI(roadmapId: string): Promise<void> {
-  if (!process.env.OPENROUTER_API_KEY) return
+  if (!hasAIProvider()) return
 
   const roadmap = await prisma.roadmap.findUnique({ where: { id: roadmapId } })
   if (!roadmap) return
@@ -647,7 +646,7 @@ export function localizeRoadmap<T extends {
 // ─── Notification AI translation ─────────────────────────────────────────────
 
 export async function enrichNotificationWithAI(notificationId: string): Promise<void> {
-  if (!process.env.OPENROUTER_API_KEY) return
+  if (!hasAIProvider()) return
 
   const notif = await prisma.notification.findUnique({ where: { id: notificationId } })
   if (!notif || (!notif.title.trim() && !notif.body.trim())) return
