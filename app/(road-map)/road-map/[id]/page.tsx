@@ -51,7 +51,7 @@ export default async function RoadMapPage({params}: Props) {
   if (!roadmap) {
     return (
       <div style={{padding: 40, fontFamily: 'Roboto, sans-serif', color: '#141416'}}>
-        <h2>Роадмап не найден</h2>
+        <h2>Курс не найден</h2>
         <p style={{color: '#868897'}}>ID: {id}</p>
       </div>
     )
@@ -68,7 +68,7 @@ export default async function RoadMapPage({params}: Props) {
       roadmapPrice={roadmap.price}
       nodeAccessType={roadmap.nodeAccessType ?? null}
       initialAvgRating={roadmap.avgRating}
-      originalLanguage={roadmap.originalLanguage ?? null}
+      originalLang={roadmap.originalLang ?? null}
     />
   )
 }

@@ -18,7 +18,7 @@ interface RoadMapPreviewProps {
   mediaPreviewUrls: string[]
   avgRating: number
   nodeAccessType?: string | null
-  originalLanguage?: string | null
+  originalLang?: string | null
   _count: { comments: number; ratings: number }
   teacher: { id: string; name: string; avatarUrl: string | null }
   useLink?: boolean
@@ -53,7 +53,7 @@ export const RoadMapPreview: FC<RoadMapPreviewProps> = ({
   mediaPreviewUrls,
   avgRating,
   nodeAccessType = null,
-  originalLanguage = null,
+  originalLang = null,
   _count,
   teacher,
   useLink = true,
@@ -69,7 +69,7 @@ export const RoadMapPreview: FC<RoadMapPreviewProps> = ({
   const tDash = useTranslations('dashboard')
   const tLangs = useTranslations('roadmapPreview.languages')
   const activeCurrency = CURRENCIES.find((c) => c.code === (LOCALE_CURRENCY[locale] ?? 'RUB')) ?? RUB
-  const showLangBadge = originalLanguage && originalLanguage !== locale
+  const showLangBadge = originalLang && originalLang !== locale
 
   const images = [
     previewImageUrl,
@@ -115,7 +115,7 @@ export const RoadMapPreview: FC<RoadMapPreviewProps> = ({
             <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
             <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
           </svg>
-          <span>{t('originalLang')}: {tLangs(originalLanguage as Parameters<typeof tLangs>[0]) ?? originalLanguage}</span>
+          <span>{t('originalLang')}: {tLangs(originalLang as Parameters<typeof tLangs>[0]) ?? originalLang}</span>
         </div>
       )}
 

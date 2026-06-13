@@ -8,7 +8,7 @@ import styles from './vip.module.scss'
 const BENEFITS = [
   {
     title: 'Монетизация курсов',
-    desc: 'Устанавливайте цену на свои роадмапы и получайте оплату напрямую.',
+    desc: 'Устанавливайте цену на свои курсы и получайте оплату напрямую.',
     bg: '#F5F4FF', stroke: '#534AB7',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">

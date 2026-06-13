@@ -1,6 +1,7 @@
 import {prisma} from '@/shared/prisma/prisma'
 import {NextRequest, NextResponse} from 'next/server'
 import {auth} from '../../../auth'
+import {cookies} from 'next/headers'
 
 export async function POST(req: Request) {
   const session = await auth()
@@ -18,6 +19,8 @@ export async function POST(req: Request) {
   }
 
   const {title, theme, description, blocks, categoryIds} = await req.json()
+  const cookieStore = await cookies()
+  const originalLang = cookieStore.get('NEXT_LOCALE')?.value ?? 'ru'
 
   const test = await prisma.test.create({
     data: {
@@ -25,6 +28,7 @@ export async function POST(req: Request) {
       title,
       aiTopic: theme,
       content: {description, blocks},
+      originalLang,
       testCategories: {
         create: (categoryIds as string[]).map((categoryId) => ({categoryId}))
       }
@@ -43,6 +47,7 @@ const testSelect = {
   createdAt: true,
   updatedAt: true,
   teacherId: true,
+  originalLang: true,
   teacher: {
     select: {id: true, name: true, avatarUrl: true}
   },

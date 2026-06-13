@@ -5,6 +5,7 @@ import {NextRequest, NextResponse} from 'next/server'
 import {auth} from '../../../auth'
 import {enrichPostWithAI} from '@/lib/postAI'
 import {hasAIProvider} from '@/lib/openrouter'
+import {cookies} from 'next/headers'
 
 type ContentBlock = {type: string; payload: {url?: string | null}}
 type PostContent = {blocks?: ContentBlock[]} | null
@@ -55,6 +56,9 @@ export async function POST(req: NextRequest) {
     const mediaUrls = extractMediaUrls(content)
     const hasMiniTest = detectHasMiniTest(content)
 
+    const cookieStore = await cookies()
+    const originalLang = cookieStore.get('NEXT_LOCALE')?.value ?? 'ru'
+
     const post = await prisma.post.create({
       data: {
         teacherId: session.user.id,
@@ -68,6 +72,7 @@ export async function POST(req: NextRequest) {
         aiTopics: [],
         isVip,
         vipExpiresAt: isVip && vipExpiresAt ? new Date(vipExpiresAt) : null,
+        originalLang,
         allowedStudents:
           visibility === 'SELECTED' ? {create: allowedStudentIds.map((studentId: string) => ({studentId}))} : undefined
       },

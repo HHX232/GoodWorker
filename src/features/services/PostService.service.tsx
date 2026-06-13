@@ -44,6 +44,7 @@ export interface IPostResponse {
   categoryId: string | null
   isVip: boolean
   vipExpiresAt?: string | null
+  originalLang?: string | null
   teacher: {
     id: string
     name: string

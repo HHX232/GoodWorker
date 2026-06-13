@@ -43,7 +43,7 @@ interface RoadMapViewerProps {
   roadmapPrice?: number
   nodeAccessType?: RoadmapNodeAccessType | null
   initialAvgRating?: number
-  originalLanguage?: string | null
+  originalLang?: string | null
 }
 
 function BuyButton({price}: {price: number}) {
@@ -117,7 +117,7 @@ function InnerFlow({
   edges: initialEdges,
   roadmapId,
   initialAvgRating,
-  originalLanguage,
+  originalLang,
 }: RoadMapViewerProps) {
   const {hasAccess, nodeAccessType, isOwner, roadmapPrice} = useRoadmapAccessContext()
   const {data: session} = useSession()
@@ -126,7 +126,7 @@ function InnerFlow({
   const t = useTranslations('roadmapPreview')
   const tViewer = useTranslations('roadmapViewer')
   const tLangs = useTranslations('roadmapPreview.languages')
-  const showLangBadge = originalLanguage && originalLanguage !== locale
+  const showLangBadge = originalLang && originalLang !== locale
   const isPaid = nodeAccessType !== null || roadmapPrice > 0
   const showBuyButton = isPaid && !hasAccess && !isOwner
   const [statsOpen, setStatsOpen] = useState(false)
@@ -218,7 +218,7 @@ function InnerFlow({
                 <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
               </svg>
-              {t('originalLang')}: {tLangs(originalLanguage as Parameters<typeof tLangs>[0]) ?? originalLanguage}
+              {t('originalLang')}: {tLangs(originalLang as Parameters<typeof tLangs>[0]) ?? originalLang}
             </div>
           </Panel>
         )}
@@ -291,7 +291,7 @@ export default function RoadMapViewer(props: RoadMapViewerProps) {
         }}
       >
         <ReactFlowProvider>
-          <InnerFlow {...props} originalLanguage={props.originalLanguage} />
+          <InnerFlow {...props} originalLang={props.originalLang} />
 
           <PurchaseAccessModal
             isOpen={purchaseOpen}

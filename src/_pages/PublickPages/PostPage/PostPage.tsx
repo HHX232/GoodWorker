@@ -11,7 +11,7 @@ import { SetCommentBlock } from '@/shared/ui/Posts/SetCommentBlock/SetCommentBlo
 import { NavBar } from '@/widgets/BaseUI'
 import { BorderTextHandler } from '@/widgets/Cards'
 import { Prisma, Role } from '@prisma/client'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useState, useEffect } from 'react'
 import styles from './PostPage.module.scss'
 import { BookmarkHighlighter } from '@/shared/ui/bookmark/BookmarkHighlighter'
@@ -101,7 +101,10 @@ function parsePostContent(content: Prisma.JsonValue): any[] {
 
 function PostPage({post, initialComments, currentUserId}: PostPageProps) {
   const locale = useLocale()
+  const tPreview = useTranslations('roadmapPreview')
+  const tLangs = useTranslations('roadmapPreview.languages')
   const isCompact = useCompactSidebar()
+  const showLangBadge = (post as any).originalLang && (post as any).originalLang !== locale
   const resolvedComments: CommentItem[] = initialComments ?? (post.enrichedComments ?? []).map(enrichedToCommentItem)
 
   const userPostInfo = {
@@ -128,6 +131,16 @@ function PostPage({post, initialComments, currentUserId}: PostPageProps) {
       {titleNode}
     </div>
   )
+
+  const langBadge = showLangBadge ? (
+    <div style={{display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 8, background: 'rgba(83,74,183,0.1)', color: '#534AB7', fontSize: 12, fontWeight: 600, fontFamily: 'Roboto, sans-serif', margin: '0 0 8px', boxShadow: '0 1px 6px rgba(83,74,183,0.12)'}}>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+      </svg>
+      {tPreview('originalLang')}: {tLangs((post as any).originalLang as Parameters<typeof tLangs>[0]) ?? (post as any).originalLang}
+    </div>
+  ) : null
 
   const content = blocks.length > 0 ? (
     <>
@@ -159,6 +172,7 @@ function PostPage({post, initialComments, currentUserId}: PostPageProps) {
       <div className={styles.mobile_wrapper}>
         {cardHeader}
         <UserPostInfo {...userPostInfo} />
+        {langBadge}
         {content}
         <SetCommentBlock postId={post.id} />
         {commentSection}
@@ -167,6 +181,7 @@ function PostPage({post, initialComments, currentUserId}: PostPageProps) {
       {/* desktop: main content column */}
       <div className={styles.extra_full_bot}>
         {cardHeader}
+        {langBadge}
         {content}
         <SetCommentBlock postId={post.id} />
       </div>

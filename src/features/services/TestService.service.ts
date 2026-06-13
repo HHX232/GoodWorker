@@ -7,6 +7,7 @@ export interface ITestItem {
   createdAt: string
   updatedAt: string
   teacherId: string
+  originalLang?: string | null
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   content?: { blocks: any[] }
   teacher?: { id: string; name: string; avatarUrl: string | null }

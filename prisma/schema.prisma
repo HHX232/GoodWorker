@@ -272,6 +272,7 @@ model Post {
   contentTranslations         Json?
 
   hasMiniTest      Boolean   @default(false)
+  originalLang     String?
 
   allowedStudents  PostAllowedStudent[]
   miniTestAttempts PostTestAttempt[]
@@ -381,6 +382,7 @@ model Roadmap {
   nodeAccessType      RoadmapNodeAccessType?
   titleTranslations   Json?
   contentTranslations Json?
+  originalLang        String?
   createdAt           DateTime                  @default(now())
   updatedAt           DateTime                  @updatedAt
   moderationStatus    ModerationStatus          @default(PUBLISHED)
@@ -507,6 +509,7 @@ model Test {
   title          String
   aiTopic        String?
   content        Json
+  originalLang   String?
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
   attempts       StudentTestAttempt[]

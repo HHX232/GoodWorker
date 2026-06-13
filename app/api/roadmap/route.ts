@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../auth'
 import { enrichRoadmapWithAI, localizeRoadmap } from '@/lib/postAI'
 import { hasAIProvider } from '@/lib/openrouter'
+import { cookies } from 'next/headers'
 
 function extractMediaPreviewUrls(content: unknown): string[] {
   try {
@@ -53,6 +54,8 @@ export async function POST(req: NextRequest) {
     }
 
     const validCategoryIds: string[] = Array.isArray(categoryIds) ? categoryIds : []
+    const cookieStore = await cookies()
+    const originalLang = cookieStore.get('NEXT_LOCALE')?.value ?? 'ru'
 
     const roadmap = await prisma.roadmap.create({
       data: {
@@ -63,6 +66,7 @@ export async function POST(req: NextRequest) {
         content,
         previewImageUrl: previewImageUrl ?? null,
         nodeAccessType: nodeAccessType ?? null,
+        originalLang,
         ...(validCategoryIds.length > 0 && {
           roadmapCategories: {
             create: validCategoryIds.map((id) => ({ categoryId: id })),
@@ -141,6 +145,7 @@ export async function GET(req: NextRequest) {
       createdAt: true,
       updatedAt: true,
       nodeAccessType: true,
+      originalLang: true,
       teacher: { select: { id: true, name: true, avatarUrl: true } },
       _count: { select: { comments: true, ratings: true } },
     } as const
