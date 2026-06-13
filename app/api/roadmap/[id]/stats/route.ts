@@ -70,7 +70,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
         .map((n) => [n.id, n.data?.activeComment ?? []])
     )
 
-    const [comments, complaints, accesses, allNodeFeedback, views] = await Promise.all([
+    const [comments, complaints, accesses, allNodeFeedback, views, progressRecords] = await Promise.all([
       prisma.roadmapComment.findMany({
         where: { roadmapId },
         select: { createdAt: true },
@@ -91,6 +91,10 @@ export async function GET(_req: NextRequest, { params }: Params) {
       prisma.roadmapView.findMany({
         where: { roadmapId },
         select: { viewedAt: true },
+      }),
+      prisma.studentRoadmapProgress.findMany({
+        where: { roadmapId },
+        select: { completedSteps: true },
       }),
     ])
 
@@ -147,6 +151,13 @@ export async function GET(_req: NextRequest, { params }: Params) {
       }
     })
 
+    const nodeProgress: Record<string, number> = {}
+    for (const record of progressRecords) {
+      for (const nodeId of record.completedSteps) {
+        nodeProgress[nodeId] = (nodeProgress[nodeId] ?? 0) + 1
+      }
+    }
+
     return NextResponse.json({
       views: { total: views.length, byPeriod: viewPeriods },
       comments: { total: comments.length, byPeriod: commentPeriods },
@@ -159,6 +170,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
       },
       feedback: feedbackStats,
       testResults: testStats,
+      nodeProgress,
+      totalProgressStudents: progressRecords.length,
     })
   } catch (error) {
     console.error('[GET /api/roadmap/:id/stats]', error)

@@ -1,0 +1,135 @@
+.bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 12px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid rgba(20, 20, 22, 0.08);
+  box-shadow: 0 1px 3px rgba(20, 20, 22, 0.05);
+  margin-bottom: 16px;
+}
+
+// ── Category ─────────────────────────────────────────────────
+
+.category_wrap {
+  flex: 1;
+  min-width: 160px;
+  max-width: 260px;
+}
+
+// ── Separator ───────────────────────────────────────────────
+
+.sep {
+  width: 1px;
+  height: 18px;
+  background: rgba(20, 20, 22, 0.1);
+  flex-shrink: 0;
+
+  @media (max-width: 600px) {
+    display: none;
+  }
+}
+
+// ── Rating slider ────────────────────────────────────────────
+
+.rating_wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+  max-width: 200px;
+  flex: 1;
+  padding: 0 4px;
+}
+
+.rating_label {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(20, 20, 22, 0.5);
+  white-space: nowrap;
+  text-align: center;
+  letter-spacing: 0.01em;
+}
+
+.slider_root {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 20px;
+  touch-action: none;
+  user-select: none;
+}
+
+.slider_track {
+  background: rgba(20, 20, 22, 0.1);
+  position: relative;
+  flex-grow: 1;
+  border-radius: 9999px;
+  height: 4px;
+}
+
+.slider_range {
+  position: absolute;
+  background: #141416;
+  border-radius: 9999px;
+  height: 100%;
+}
+
+.slider_thumb {
+  display: block;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border: 2px solid #141416;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+
+  &:hover {
+    box-shadow: 0 0 0 4px rgba(20, 20, 22, 0.08);
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 4px rgba(20, 20, 22, 0.15);
+  }
+}
+
+// ── Sort ────────────────────────────────────────────────────
+
+.sort_group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  background: rgba(20, 20, 22, 0.05);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.sort_btn {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(20, 20, 22, 0.5);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    color: #141416;
+  }
+
+  &.sort_active {
+    background: #fff;
+    color: #141416;
+    box-shadow: 0 1px 3px rgba(20, 20, 22, 0.1);
+  }
+}

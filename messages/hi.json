@@ -370,6 +370,7 @@
     "reviewSaving": "समीक्षा सहेज रहे हैं…",
     "reviewSaved": "समीक्षा सहेजी गई!",
     "reviewError": "समीक्षा सहेजने में विफल",
+    "accessHint": "आपके कोर्स में लॉक ब्लॉक हैं। चुनें कि उन्हें कौन देख सकता है:",
     "publishSettings": "प्रकाशन सेटिंग्स",
     "publishCancel": "रद्द करें",
     "publishConfirm": "प्रकाशित करें",
@@ -437,6 +438,8 @@
     "statsFeedbackBlocks": "ब्लॉक",
     "statsFeedbackAnswers": "उत्तर",
     "statsViewFeedback": "फ़ीडबैक देखें",
+    "statsNodeProgress": "चरणों द्वारा प्रगति",
+    "statsNodeProgressStudents": "{count} छात्रों ने पाठ्यक्रम शुरू किया",
     "complaintsTitle": "शिकायतें ({count})",
     "complaintsEmpty": "कोई शिकायत नहीं",
     "complaintStatusOpen": "खुली",
@@ -577,6 +580,18 @@
     "title": "सभी पोस्ट",
     "noMore": "और पोस्ट नहीं हैं"
   },
+  "PostCatalogFilters": {
+    "searchPlaceholder": "पोस्ट खोजें...",
+    "clearSearch": "खोज साफ़ करें",
+    "all": "सभी",
+    "newest": "नए",
+    "popular": "लोकप्रिय",
+    "rated": "सर्वश्रेष्ठ",
+    "allCategories": "सभी श्रेणियाँ",
+    "anyRating": "कोई भी रेटिंग",
+    "ratingMin": "न्यूनतम रेटिंग",
+    "ratingMax": "अधिकतम रेटिंग"
+  },
   "TeachersPage": {
     "title": "शिक्षक",
     "searchPlaceholder": "नाम से खोजें...",
@@ -610,7 +625,12 @@
     "sending": "भेज रहे हैं..."
   },
   "PostPage": {
-    "report": "रिपोर्ट करें"
+    "report": "रिपोर्ट करें",
+    "backBtn": "वापस",
+    "share": "शेयर करें",
+    "copied": "कॉपी हो गया!",
+    "bookmark": "बुकमार्क में जोड़ें",
+    "bookmarkRemove": "बुकमार्क हटाएं"
   },
   "UserPostInfo": {
     "userType": "उपयोगकर्ता प्रकार",
@@ -1220,10 +1240,10 @@
   "roadmapPreview": {
     "free": "निःशुल्क",
     "partiallyFree": "आंशिक रूप से निःशुल्क",
-    "open": "रोडमैप खोलें",
+    "open": "कोर्स खोलें",
     "share": "शेयर करें",
-    "notFound": "कोई रोडमैप नहीं मिला",
-    "noMore": "और कोई रोडमैप नहीं",
+    "notFound": "कोई कोर्स नहीं मिला",
+    "noMore": "और कोई कोर्स नहीं",
     "originalLang": "मूल भाषा",
     "languages": {
       "ru": "रूसी",
@@ -1241,10 +1261,15 @@
     },
     "edit": "संपादित करें"
   },
+  "roadmapOutline": {
+    "title": "सामग्री",
+    "noSteps": "कोई चरण नहीं मिला"
+  },
   "roadmapViewer": {
-    "buy": "रोडमैप खरीदें",
+    "buy": "कोर्स खरीदें",
     "buyAccess": "पहुँच प्राप्त करें",
-    "stats": "सांख्यिकी"
+    "stats": "सांख्यिकी",
+    "edit": "संपादित करें"
   },
   "card": {
     "readFullPost": "पूरी पोस्ट पढ़ें",
@@ -1774,7 +1799,14 @@
     "labelDialogue": "संवाद को सही क्रम में लगाएं",
     "labelFillText": "रिक्त स्थान भरें",
     "testLinkTitle": "परीक्षण",
-    "testLinkBtn": "परीक्षण पर जाएं →"
+    "testLinkBtn": "परीक्षण पर जाएं →",
+    "correctAnswers": "सही उत्तर: {score} में से {max}",
+    "completedAt": "पूर्ण: {date}",
+    "breakdown": "कार्यों द्वारा विश्लेषण",
+    "correct": "✓ सही",
+    "wrong": "✗ गलत",
+    "homeBtn": "मुखपृष्ठ",
+    "closeBtn": "बंद करें"
   },
   "roadmapTutorial": {
     "title": "कोर्स कैसे करें",

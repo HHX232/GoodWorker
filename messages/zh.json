@@ -370,6 +370,7 @@
     "reviewSaving": "正在保存评论…",
     "reviewSaved": "评论已保存！",
     "reviewError": "保存评论失败",
+    "accessHint": "您的课程有锁定的内容块。选择谁可以查看：",
     "publishSettings": "发布设置",
     "publishCancel": "取消",
     "publishConfirm": "发布",
@@ -437,6 +438,8 @@
     "statsFeedbackBlocks": "块数",
     "statsFeedbackAnswers": "答题数",
     "statsViewFeedback": "查看反馈",
+    "statsNodeProgress": "按步骤进度",
+    "statsNodeProgressStudents": "{count}名学生已开始课程",
     "complaintsTitle": "投诉（{count}）",
     "complaintsEmpty": "暂无投诉",
     "complaintStatusOpen": "开放",
@@ -577,6 +580,18 @@
     "title": "所有帖子",
     "noMore": "没有更多帖子"
   },
+  "PostCatalogFilters": {
+    "searchPlaceholder": "搜索帖子...",
+    "clearSearch": "清除搜索",
+    "all": "全部",
+    "newest": "最新",
+    "popular": "热门",
+    "rated": "好评",
+    "allCategories": "所有类别",
+    "anyRating": "任意评分",
+    "ratingMin": "最低评分",
+    "ratingMax": "最高评分"
+  },
   "TeachersPage": {
     "title": "教师",
     "searchPlaceholder": "按姓名搜索...",
@@ -610,7 +625,12 @@
     "sending": "发送中..."
   },
   "PostPage": {
-    "report": "举报"
+    "report": "举报",
+    "backBtn": "返回",
+    "share": "分享",
+    "copied": "已复制！",
+    "bookmark": "添加书签",
+    "bookmarkRemove": "移除书签"
   },
   "UserPostInfo": {
     "userType": "用户类型",
@@ -1220,10 +1240,10 @@
   "roadmapPreview": {
     "free": "免费",
     "partiallyFree": "部分免费",
-    "open": "打开路线图",
+    "open": "打开课程",
     "share": "分享",
-    "notFound": "未找到路线图",
-    "noMore": "没有更多路线图",
+    "notFound": "未找到课程",
+    "noMore": "没有更多课程",
     "originalLang": "原始语言",
     "languages": {
       "ru": "俄语",
@@ -1241,10 +1261,15 @@
     },
     "edit": "编辑"
   },
+  "roadmapOutline": {
+    "title": "目录",
+    "noSteps": "未找到步骤"
+  },
   "roadmapViewer": {
-    "buy": "获取路线图",
+    "buy": "获取课程",
     "buyAccess": "获取访问权限",
-    "stats": "统计"
+    "stats": "统计",
+    "edit": "编辑"
   },
   "card": {
     "readFullPost": "阅读全文",
@@ -1774,7 +1799,14 @@
     "labelDialogue": "按正确顺序排列对话",
     "labelFillText": "填写空白处",
     "testLinkTitle": "测验",
-    "testLinkBtn": "前往测验 →"
+    "testLinkBtn": "前往测验 →",
+    "correctAnswers": "正确答案：{score} / {max}",
+    "completedAt": "完成：{date}",
+    "breakdown": "按任务分析",
+    "correct": "✓ 正确",
+    "wrong": "✗ 错误",
+    "homeBtn": "首页",
+    "closeBtn": "关闭"
   },
   "roadmapTutorial": {
     "title": "如何完成课程",

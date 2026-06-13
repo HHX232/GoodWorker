@@ -1,6 +1,8 @@
 'use client'
 import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
 import {useEffect, useRef, useState} from 'react'
+import {RoadmapNodeProgress} from './RoadmapNodeProgress'
+import type {OutlineStep} from '@/shared/lib/roadmapOutline'
 import {
   Bar,
   BarChart,
@@ -40,6 +42,8 @@ interface StatsData {
   purchases: {total: number; totalIncome: number; price: number; byPeriod: PeriodPoint[]}
   feedback: {nodeId: string; questions: unknown[]; submissionCount: number; submissions: {answers: unknown}[]}[]
   testResults: {nodeId: string; submissionCount: number; avgPercent: number | null}[]
+  nodeProgress: Record<string, number>
+  totalProgressStudents: number
 }
 
 // ─── Helpers ─────────────────────────────────────────────
@@ -290,13 +294,19 @@ export function RoadmapStatsModal({roadmapId, isOpen, onClose}: {roadmapId: stri
   const [loading, setLoading] = useState(false)
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [complaintsOpen, setComplaintsOpen] = useState(false)
+  const [outlineSteps, setOutlineSteps] = useState<OutlineStep[] | null>(null)
 
   useEffect(() => {
     if (!isOpen || stats) return
     setLoading(true)
-    fetch(`/api/roadmap/${roadmapId}/stats`)
-      .then((r) => r.json())
-      .then(setStats)
+    Promise.all([
+      fetch(`/api/roadmap/${roadmapId}/stats`).then((r) => r.json()),
+      fetch(`/api/roadmap/${roadmapId}/outline`).then((r) => r.json()),
+    ])
+      .then(([statsData, outlineData]) => {
+        setStats(statsData)
+        setOutlineSteps(outlineData.steps ?? [])
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [isOpen, roadmapId, stats])
@@ -446,6 +456,32 @@ export function RoadmapStatsModal({roadmapId, isOpen, onClose}: {roadmapId: stri
                       </div>
                     ))}
                   </div>
+                </section>
+              </>
+            )}
+
+            {/* Node progress plan */}
+            {outlineSteps && outlineSteps.length > 0 && (
+              <>
+                <hr className={styles.divider} />
+                <section className={styles.section}>
+                  <div className={styles.section_header}>
+                    <span className={styles.section_title}>
+                      <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='#868897' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+                        <line x1='8' y1='6' x2='21' y2='6'/><line x1='8' y1='12' x2='21' y2='12'/><line x1='8' y1='18' x2='21' y2='18'/>
+                        <line x1='3' y1='6' x2='3.01' y2='6'/><line x1='3' y1='12' x2='3.01' y2='12'/><line x1='3' y1='18' x2='3.01' y2='18'/>
+                      </svg>
+                      {t('statsNodeProgress')}
+                    </span>
+                    {stats.totalProgressStudents > 0 && (
+                      <span className={styles.section_sub}>{t('statsNodeProgressStudents', {count: stats.totalProgressStudents})}</span>
+                    )}
+                  </div>
+                  <RoadmapNodeProgress
+                    steps={outlineSteps}
+                    nodeProgress={stats.nodeProgress}
+                    totalStudents={stats.totalProgressStudents}
+                  />
                 </section>
               </>
             )}

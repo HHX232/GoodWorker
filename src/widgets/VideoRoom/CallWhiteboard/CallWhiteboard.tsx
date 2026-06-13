@@ -28,9 +28,11 @@ export function CallWhiteboard({ isOwner, remoteElements, remoteFiles, onBroadca
   const lastBroadcast = useRef<readonly ExcalidrawElement[]>([])
   // Track which file IDs have already been sent to avoid re-broadcasting unchanged images
   const sentFilesRef = useRef<Set<string>>(new Set())
+  // Prevents re-broadcasting when a remote update triggers onChange
+  const isApplyingRemoteRef = useRef(false)
   const [ready, setReady] = useState(false)
 
-  // Apply remote elements when they arrive (students only)
+  // Apply remote elements when they arrive
   useEffect(() => {
     if (!remoteElements || !apiRef.current || !ready) return
     const remoteMap = new Map(remoteElements.map(e => [e.id, e]))
@@ -39,7 +41,9 @@ export function CallWhiteboard({ isOwner, remoteElements, remoteFiles, onBroadca
     for (const el of current) {
       if (!remoteMap.has(el.id)) merged.push(el)
     }
+    isApplyingRemoteRef.current = true
     apiRef.current.updateScene({ elements: merged })
+    setTimeout(() => { isApplyingRemoteRef.current = false }, 0)
   }, [remoteElements, ready])
 
   // Apply remote image files when they arrive
@@ -47,13 +51,15 @@ export function CallWhiteboard({ isOwner, remoteElements, remoteFiles, onBroadca
     if (!remoteFiles || !apiRef.current || !ready) return
     const filesArray = Object.values(remoteFiles)
     if (filesArray.length > 0) {
+      isApplyingRemoteRef.current = true
       apiRef.current.addFiles(filesArray)
+      setTimeout(() => { isApplyingRemoteRef.current = false }, 0)
     }
   }, [remoteFiles, ready])
 
   const handleChange = useCallback(
     (elements: readonly ExcalidrawElement[], _state: AppState, files: BinaryFiles) => {
-      if (!isOwner) return
+      if (isApplyingRemoteRef.current) return
       if (broadcastTimer.current) clearTimeout(broadcastTimer.current)
       broadcastTimer.current = setTimeout(() => {
         // Only include files that haven't been sent yet
@@ -93,7 +99,7 @@ export function CallWhiteboard({ isOwner, remoteElements, remoteFiles, onBroadca
         <Excalidraw
           excalidrawAPI={api => { apiRef.current = api; setReady(true) }}
           onChange={handleChange}
-          viewModeEnabled={!isOwner}
+          viewModeEnabled={false}
           isCollaborating={false}
           UIOptions={{
             canvasActions: {

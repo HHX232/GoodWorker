@@ -1,0 +1,124 @@
+import { prisma } from '@/shared/prisma/prisma'
+import { generateAutoOutline } from '@/shared/lib/roadmapOutline'
+import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '../../../../../auth'
+
+const VALID_LANGS = new Set(['ru', 'en', 'hi', 'zh'])
+
+interface Params {
+  params: Promise<{ id: string }>
+}
+
+export async function GET(req: NextRequest, { params }: Params) {
+  const { id: roadmapId } = await params
+  const lang = req.nextUrl.searchParams.get('lang') ?? 'ru'
+  const safeLang = VALID_LANGS.has(lang) ? lang : 'ru'
+
+  try {
+    const outline = await prisma.roadmapOutline.findUnique({
+      where: { roadmapId },
+    })
+
+    // For non-Russian: always generate from localized content (don't use cached ru steps)
+    // For Russian (default): AI steps take priority, then cached auto steps
+    if (safeLang === 'ru') {
+      if (outline?.aiSteps) {
+        return NextResponse.json({ steps: outline.aiSteps, source: 'ai' })
+      }
+      if (outline?.autoSteps) {
+        return NextResponse.json({ steps: outline.autoSteps, source: 'auto' })
+      }
+    }
+
+    // Generate auto steps from localized content
+    const roadmap = await prisma.roadmap.findUnique({
+      where: { id: roadmapId },
+      select: { content: true, contentTranslations: true },
+    })
+    if (!roadmap) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+
+    // Use translated content if available, fallback to original
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const translations = roadmap.contentTranslations as Record<string, any> | null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const content = (translations?.[safeLang] ?? roadmap.content) as any
+
+    const steps = generateAutoOutline({
+      nodes: content?.nodes ?? [],
+      edges: content?.edges ?? [],
+    }, safeLang)
+
+    // Cache ru auto steps only (other langs are generated on-the-fly)
+    if (safeLang === 'ru') {
+      await prisma.roadmapOutline.upsert({
+        where: { roadmapId },
+        create: { roadmapId, autoSteps: steps },
+        update: { autoSteps: steps },
+      })
+    }
+
+    return NextResponse.json({ steps, source: 'auto' })
+  } catch (e) {
+    console.error('[GET /api/roadmap/[id]/outline]', e)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+// Teacher saves AI-generated outline
+export async function POST(req: NextRequest, { params }: Params) {
+  const { id: roadmapId } = await params
+
+  const session = await auth()
+  if (!session?.user?.id || session.user.role !== 'TEACHER') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    const roadmap = await prisma.roadmap.findUnique({
+      where: { id: roadmapId },
+      select: { teacherId: true },
+    })
+    if (!roadmap || roadmap.teacherId !== session.user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    const { steps } = await req.json()
+    if (!Array.isArray(steps)) {
+      return NextResponse.json({ error: 'steps must be an array' }, { status: 400 })
+    }
+
+    const outline = await prisma.roadmapOutline.upsert({
+      where: { roadmapId },
+      create: { roadmapId, aiSteps: steps },
+      update: { aiSteps: steps },
+    })
+
+    return NextResponse.json({ outline })
+  } catch (e) {
+    console.error('[POST /api/roadmap/[id]/outline]', e)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+// Teacher clears AI outline (revert to auto)
+export async function DELETE(_req: NextRequest, { params }: Params) {
+  const { id: roadmapId } = await params
+
+  const session = await auth()
+  if (!session?.user?.id || session.user.role !== 'TEACHER') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    await prisma.roadmapOutline.updateMany({
+      where: { roadmapId },
+      data: { aiSteps: null },
+    })
+    return NextResponse.json({ ok: true })
+  } catch (e) {
+    console.error('[DELETE /api/roadmap/[id]/outline]', e)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}

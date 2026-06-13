@@ -370,6 +370,7 @@
     "reviewSaving": "Saving review…",
     "reviewSaved": "Review saved!",
     "reviewError": "Failed to save review",
+    "accessHint": "Your course has locked blocks. Choose who can see them:",
     "publishSettings": "Publish settings",
     "publishCancel": "Cancel",
     "publishConfirm": "Publish",
@@ -437,6 +438,8 @@
     "statsFeedbackBlocks": "Blocks",
     "statsFeedbackAnswers": "Answers",
     "statsViewFeedback": "View feedback",
+    "statsNodeProgress": "Progress by steps",
+    "statsNodeProgressStudents": "{count} students started the course",
     "complaintsTitle": "Complaints ({count})",
     "complaintsEmpty": "No complaints",
     "complaintStatusOpen": "Open",
@@ -598,6 +601,18 @@
     "title": "All posts",
     "noMore": "No more posts"
   },
+  "PostCatalogFilters": {
+    "searchPlaceholder": "Search posts...",
+    "clearSearch": "Clear search",
+    "all": "All",
+    "newest": "Newest",
+    "popular": "Popular",
+    "rated": "Top rated",
+    "allCategories": "All categories",
+    "anyRating": "Any rating",
+    "ratingMin": "Min rating",
+    "ratingMax": "Max rating"
+  },
   "TeachersPage": {
     "title": "Teachers",
     "searchPlaceholder": "Search by name...",
@@ -631,7 +646,12 @@
     "sending": "Sending..."
   },
   "PostPage": {
-    "report": "Report"
+    "report": "Report",
+    "backBtn": "Back",
+    "share": "Share",
+    "copied": "Copied!",
+    "bookmark": "Add to bookmarks",
+    "bookmarkRemove": "Remove bookmark"
   },
   "UserPostInfo": {
     "userType": "User type",
@@ -1343,14 +1363,15 @@
     }
   },
   "roadmapViewer": {
-    "buy": "Get roadmap",
+    "buy": "Get course",
     "buyAccess": "Get access",
-    "stats": "Statistics"
+    "stats": "Statistics",
+    "edit": "Edit"
   },
   "roadmapPreview": {
     "free": "Free",
     "partiallyFree": "Partially free",
-    "open": "Open roadmap",
+    "open": "Open course",
     "share": "Share",
     "notFound": "No roadmaps found",
     "noMore": "No more roadmaps",
@@ -1370,6 +1391,10 @@
       "pt": "Portuguese"
     },
     "edit": "Edit"
+  },
+  "roadmapOutline": {
+    "title": "Contents",
+    "noSteps": "No steps found"
   },
   "pdfImport": {
     "importBtn": "Import from PDF",
@@ -1930,7 +1955,14 @@
     "labelDialogue": "Arrange the dialogue in the correct order",
     "labelFillText": "Fill in the blanks",
     "testLinkTitle": "Test",
-    "testLinkBtn": "Go to test →"
+    "testLinkBtn": "Go to test →",
+    "correctAnswers": "Correct answers: {score} of {max}",
+    "completedAt": "Completed: {date}",
+    "breakdown": "Breakdown by tasks",
+    "correct": "✓ Correct",
+    "wrong": "✗ Wrong",
+    "homeBtn": "Home",
+    "closeBtn": "Close"
   },
   "roadmapTutorial": {
     "title": "How to take the course",

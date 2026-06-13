@@ -616,6 +616,9 @@ $text-muted: #94a3b8;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.22s ease;
+  // Pip thumbnails sit at right:16px (200px wide) — keep buttons on the left
+  justify-content: flex-start;
+  padding-right: 230px;
 }
 
 .controlsOverlayActive {

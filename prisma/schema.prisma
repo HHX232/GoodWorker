@@ -393,6 +393,7 @@ model Roadmap {
   nodeFeedbacks   RoadmapNodeFeedback[]
   views           RoadmapView[]
   roadmapCategories RoadmapCategory[]
+  outline         RoadmapOutline?
 }
 
 model RoadmapCategory {
@@ -402,6 +403,15 @@ model RoadmapCategory {
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@id([roadmapId, categoryId])
+}
+
+model RoadmapOutline {
+  id        String   @id @default(uuid())
+  roadmapId String   @unique
+  aiSteps   Json?
+  autoSteps Json?
+  updatedAt DateTime @updatedAt
+  roadmap   Roadmap  @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
 }
 
 model RoadmapView {

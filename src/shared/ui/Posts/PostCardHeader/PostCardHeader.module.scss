@@ -1,0 +1,113 @@
+.bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 6px 8px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid rgba(20, 20, 22, 0.08);
+  box-shadow: 0 1px 3px rgba(20, 20, 22, 0.06);
+}
+
+.back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: rgba(20, 20, 22, 0.55);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba(20, 20, 22, 0.06);
+    color: #141416;
+  }
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: rgba(20, 20, 22, 0.5);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: rgba(20, 20, 22, 0.06);
+    color: #141416;
+  }
+
+  &.action_ok {
+    color: #16a34a;
+  }
+
+  &.action_active {
+    color: #141416;
+  }
+
+  &.action_report:hover {
+    background: rgba(239, 68, 68, 0.08);
+    color: #ef4444;
+  }
+}
+
+// ── Tooltip ──────────────────────────────────────────────────
+
+.tip_wrap {
+  position: relative;
+  display: inline-flex;
+
+  &:hover .tip_box {
+    opacity: 1;
+    transform: translateX(-50%) translateY(2px);
+  }
+}
+
+.tip_box {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  background: #141416;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  padding: 5px 9px;
+  border-radius: 8px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(20, 20, 22, 0.2);
+  z-index: 9999;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-bottom-color: #141416;
+  }
+}

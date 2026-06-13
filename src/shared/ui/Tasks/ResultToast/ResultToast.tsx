@@ -1,25 +1,17 @@
+'use client'
+
 import {TestResult} from '@/features/Tasks/TaskResult/scoreBlock'
 import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
 import {SavedTest} from '@/widgets/Tasks/Storage/testStorage'
 import {PieChart} from '@mui/x-charts/PieChart'
+import {useTranslations} from 'next-intl'
 import styles from './ResultToast.module.scss'
 
-const BLOCK_LABELS: Partial<Record<TaskBlockType, string>> = {
-  [TaskBlockType.CHOOSE_OPTION]: 'Выбор варианта',
-  [TaskBlockType.SEQUENCE]: 'Последовательность',
-  [TaskBlockType.MATCH_PAIRS]: 'Соединить пары',
-  [TaskBlockType.FREE_ANSWER]: 'Свободный ответ',
-  [TaskBlockType.HIGHLIGHT_TEXT]: 'Выделение текста',
-  [TaskBlockType.WORD_SCRAMBLE]: 'Сборка слова',
-  [TaskBlockType.DIALOGUE]: 'Диалог',
-  [TaskBlockType.FILL_TEXT]: 'Заполнение пропусков'
-}
-
-function grade(percent: number): {label: string; color: string} {
-  if (percent >= 90) return {label: 'Отлично', color: '#1D9E75'}
-  if (percent >= 70) return {label: 'Хорошо', color: '#378ADD'}
-  if (percent >= 50) return {label: 'Удовлетворительно', color: '#EF9F27'}
-  return {label: 'Нужно повторить', color: '#E24B4A'}
+function grade(percent: number): {color: string} {
+  if (percent >= 90) return {color: '#1D9E75'}
+  if (percent >= 70) return {color: '#378ADD'}
+  if (percent >= 50) return {color: '#EF9F27'}
+  return {color: '#E24B4A'}
 }
 
 interface Props {
@@ -29,7 +21,24 @@ interface Props {
   onClose: () => void
 }
 
-export function ResultToast({test, result, onRetry, onClose}: Props) {
+export function ResultToast({test: _test, result, onRetry, onClose}: Props) {
+  const t = useTranslations('TestPlayer')
+  const tMap = useTranslations('roadMap')
+
+  const blockLabel = (type: TaskBlockType): string => {
+    const map: Partial<Record<TaskBlockType, string>> = {
+      [TaskBlockType.CHOOSE_OPTION]: tMap('chooseOption'),
+      [TaskBlockType.SEQUENCE]: tMap('sequence'),
+      [TaskBlockType.MATCH_PAIRS]: tMap('matchPairs'),
+      [TaskBlockType.FREE_ANSWER]: tMap('freeAnswer'),
+      [TaskBlockType.HIGHLIGHT_TEXT]: tMap('highlightText'),
+      [TaskBlockType.WORD_SCRAMBLE]: tMap('wordScramble'),
+      [TaskBlockType.DIALOGUE]: tMap('dialogue'),
+      [TaskBlockType.FILL_TEXT]: tMap('fillText'),
+    }
+    return map[type] ?? type
+  }
+
   const {color} = grade(result.percent)
   const correct = result.totalScore
   const wrong = result.maxScore - result.totalScore
@@ -42,41 +51,29 @@ export function ResultToast({test, result, onRetry, onClose}: Props) {
             id: 'result',
             arcLabel: (item) => `${item.value}`,
             innerRadius: 0,
-
             outerRadius: 60,
             data: [
-              {id: 'correct', value: correct, label: 'Верно'},
-              {id: 'wrong', value: wrong, label: 'Неверно'}
-            ]
+              {id: 'correct', value: correct, label: t('correct')},
+              {id: 'wrong', value: wrong, label: t('wrong')},
+            ],
           },
           {
             id: 'types',
             innerRadius: 70,
             outerRadius: 90,
             data: [
-              {id: 'correct', value: correct, label: 'Верно'},
-              {id: 'wrong', value: wrong, label: 'Неверно'}
-            ]
-          }
+              {id: 'correct', value: correct, label: t('correct')},
+              {id: 'wrong', value: wrong, label: t('wrong')},
+            ],
+          },
         ]}
         slotProps={{
-          tooltip: {
-            sx: {
-              zIndex: 9999999
-            },
-            trigger: 'none'
-          }
+          tooltip: {sx: {zIndex: 9999999}, trigger: 'none'},
         }}
         sx={{
-          '& .MuiPieArc-root': {
-            transition: 'all 0.5s ease-out'
-          },
-          '& .MuiPieArcLabel-root': {
-            fill: '#fff',
-            fontSize: 18,
-            fontWeight: 600
-          },
-          zIndex: 9999999
+          '& .MuiPieArc-root': {transition: 'all 0.5s ease-out'},
+          '& .MuiPieArcLabel-root': {fill: '#fff', fontSize: 18, fontWeight: 600},
+          zIndex: 9999999,
         }}
         width={200}
         height={200}
@@ -91,9 +88,9 @@ export function ResultToast({test, result, onRetry, onClose}: Props) {
         {result.blocks.map((br, i) => (
           <div key={br.blockId} className={`${styles.row} ${br.isCorrect ? styles.ok : styles.err}`}>
             <span className={styles.num}>{i + 1}</span>
-            <span className={styles.type}>{BLOCK_LABELS[br.blockType] ?? br.blockType}</span>
+            <span className={styles.type}>{blockLabel(br.blockType)}</span>
             <span className={`${styles.badge} ${br.isCorrect ? styles.badge_ok : styles.badge_err}`}>
-              {br.isCorrect ? '✓ Верно' : '✗ Неверно'}
+              {br.isCorrect ? t('correct') : t('wrong')}
             </span>
             <span className={styles.pts}>
               {br.score}/{br.maxScore}
@@ -104,10 +101,10 @@ export function ResultToast({test, result, onRetry, onClose}: Props) {
 
       <div className={styles.actions}>
         <button type='button' className={styles.btn_retry} onClick={onRetry}>
-          Пройти снова
+          {t('retryBtn')}
         </button>
         <button type='button' className={styles.btn_close} onClick={onClose}>
-          Закрыть
+          {t('closeBtn')}
         </button>
       </div>
     </div>

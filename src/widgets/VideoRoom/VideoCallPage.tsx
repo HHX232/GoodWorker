@@ -931,8 +931,8 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
             <div className={styles.testTileContent}>
               <CallWhiteboard
                 isOwner={isOwner}
-                remoteElements={isOwner ? null : whiteboardElements}
-                remoteFiles={isOwner ? null : whiteboardFiles}
+                remoteElements={whiteboardElements}
+                remoteFiles={whiteboardFiles}
                 onBroadcast={broadcastWhiteboard}
                 onStop={stopTest}
                 onHide={isOwner ? hideTest : localHideWhiteboard}

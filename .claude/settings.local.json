@@ -263,7 +263,8 @@
       "Bash(identify /Users/nikitatisevic/Desktop/GoodWorkerRemaster/public/logos/web-app-manifest-512x512.png)",
       "Bash(sips -g pixelWidth -g pixelHeight /Users/nikitatisevic/Desktop/GoodWorkerRemaster/public/logos/web-app-manifest-512x512.png)",
       "Bash(pip3 show *)",
-      "Bash(pip3 install *)"
+      "Bash(pip3 install *)",
+      "Bash(git pull *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\Мастер\\Desktop\\goodworkerremaster\\app\\api\\roadmap",

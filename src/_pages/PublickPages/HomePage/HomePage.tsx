@@ -2,9 +2,11 @@
 import PostService, {IPostResponse, IPostsQuery, IPostsResponse} from '@/features/services/PostService.service'
 import {NavBar} from '@/widgets/BaseUI'
 import {CardsCatalog, HighlightedSlider, type ISliderPost} from '@/widgets/Cards'
+import {PostCatalogFilters, type PostFiltersValue} from '@/widgets/Cards/PostCatalogFilters/PostCatalogFilters'
 import {NotificationsPanel} from '@/widgets/NotificationsPanel/NotificationsPanel'
 import {HomeTutorial} from '@/widgets/Tutorial/HomeTutorial'
 import {useTranslations} from 'next-intl'
+import {useCallback, useEffect, useState} from 'react'
 import styles from './HomePage.module.scss'
 
 interface HomePageProps {
@@ -44,10 +46,50 @@ const mapVipPost = (post: IPostResponse): ISliderPost => ({
   },
 })
 
+function sortQueryParam(sort: PostFiltersValue['sort']): Partial<IPostsQuery> {
+  if (sort === 'popular') return {visibility: 'any'}
+  if (sort === 'rated') return {visibility: 'any'}
+  return {}
+}
+
 function HomePage({initialData, initialQuery, vipPosts}: HomePageProps) {
   const t = useTranslations('HomePage')
+
+  const [filters, setFilters] = useState<PostFiltersValue>({
+    categoryId: initialQuery.categoryId ?? '',
+    sort: 'newest',
+    ratingMin: 0,
+    ratingMax: 5,
+  })
+
+  const [cards, setCards] = useState(initialData.posts.map(mapPost))
+  const [hasMore, setHasMore] = useState(initialData.pagination.page < initialData.pagination.totalPages)
+  const [currentQuery, setCurrentQuery] = useState<IPostsQuery>({...initialQuery, page: 1})
+
+  const fetchPage = useCallback(async (query: IPostsQuery) => {
+    const res = await PostService.getList(query)
+    return res
+  }, [])
+
+  // Re-fetch when filters change
+  useEffect(() => {
+    const query: IPostsQuery = {
+      ...initialQuery,
+      page: 1,
+      limit: initialQuery.limit ?? 12,
+      categoryId: filters.categoryId || undefined,
+      ...sortQueryParam(filters.sort),
+    }
+    setCurrentQuery(query)
+    fetchPage(query).then(res => {
+      setCards(res.posts.map(mapPost))
+      setHasMore(res.pagination.page < res.pagination.totalPages)
+    }).catch(() => {})
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters])
+
   const handleLoadMore = async (page: number) => {
-    const res = await PostService.getList({...initialQuery, page})
+    const res = await PostService.getList({...currentQuery, page})
     return res.posts.map(mapPost)
   }
 
@@ -63,10 +105,11 @@ function HomePage({initialData, initialQuery, vipPosts}: HomePageProps) {
           <h1>{t('title')}</h1>
           <div className={styles.decor_line}></div>
         </div>
+        <PostCatalogFilters value={filters} onChange={setFilters} />
         <CardsCatalog
-          initialCards={initialData.posts.map(mapPost)}
+          initialCards={cards}
           onLoadMore={handleLoadMore}
-          hasMore={initialData.pagination.page < initialData.pagination.totalPages}
+          hasMore={hasMore}
         />
       </div>
 
