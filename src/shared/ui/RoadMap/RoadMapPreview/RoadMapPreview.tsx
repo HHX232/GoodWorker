@@ -3,6 +3,7 @@
 import { CURRENCIES, formatConverted } from '@/shared/utils/currencyConverter'
 import { FlagIcon } from '@/shared/ui/FlagIcon/FlagIcon'
 import { CardOwnerMenu } from '@/shared/ui/CardOwnerMenu/CardOwnerMenu'
+import { RoadmapOutlineDropdown } from '@/shared/ui/RoadMap/RoadmapOutlineDropdown/RoadmapOutlineDropdown'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { FC, useState } from 'react'
@@ -135,6 +136,8 @@ export const RoadMapPreview: FC<RoadMapPreviewProps> = ({
           ))}
         </ul>
       )}
+
+      <RoadmapOutlineDropdown roadmapId={id} />
 
       <div className={styles.footer}>
         <div className={styles.stats}>

@@ -165,7 +165,7 @@ export function PublishModal({ isOpen, onClose, hasPaywalledNodes, initialCatego
       {step === 'access-type' ? (
         <div className={styles.content}>
           <p className={styles.access_hint}>
-            В вашем роадмапе есть закрытые блоки. Выберите, кто сможет их видеть:
+            {t('accessHint')}
           </p>
           <div className={styles.access_options}>
             {ACCESS_OPTIONS.map((opt) => (

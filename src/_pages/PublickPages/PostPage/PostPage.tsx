@@ -7,16 +7,15 @@ import { PostBlockType } from '@/shared/types/Post/Post.type'
 import { UserRolesObject } from '@/shared/constants/user/user.const'
 import { UserPostInfo } from '@/shared/ui'
 import { CommentItem, PostCommentSection } from '@/shared/ui/Posts/PostCommentSection/PostCommentSection'
-import { PostComplaintModal } from '@/shared/ui/Posts/PostComplaintModal/PostComplaintModal'
 import { SetCommentBlock } from '@/shared/ui/Posts/SetCommentBlock/SetCommentBlock'
 import { NavBar } from '@/widgets/BaseUI'
 import { BorderTextHandler } from '@/widgets/Cards'
 import { Prisma, Role } from '@prisma/client'
-import { useTranslations } from 'next-intl'
 import { useState, useEffect } from 'react'
 import styles from './PostPage.module.scss'
 import { BookmarkHighlighter } from '@/shared/ui/bookmark/BookmarkHighlighter'
 import { PostCommentCompact } from '@/shared/ui/Posts/PostCommentCompact/PostCommentCompact'
+import { PostCardHeader } from '@/shared/ui/Posts/PostCardHeader/PostCardHeader'
 
 function useCompactSidebar() {
   const [compact, setCompact] = useState(false)
@@ -97,33 +96,6 @@ function parsePostContent(content: Prisma.JsonValue): any[] {
   return obj.blocks as any[]
 }
 
-// ─── Report button ────────────────────────────────────────
-
-function ReportPostButton({postId, postTitle}: {postId: string; postTitle: string}) {
-  const t = useTranslations('PostPage')
-  const [open, setOpen] = useState(false)
-  return (
-    <>
-      <button
-        onClick={() => setOpen(true)}
-        className={styles.reportBtn}
-      >
-        <svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
-          <path d='M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z' />
-          <line x1='4' y1='22' x2='4' y2='15' />
-        </svg>
-        {t('report')}
-      </button>
-      <PostComplaintModal
-        isOpen={open}
-        onClose={() => setOpen(false)}
-        postId={postId}
-        postTitle={postTitle}
-      />
-    </>
-  )
-}
-
 // ─── Page ─────────────────────────────────────────────────
 
 function PostPage({post, initialComments, currentUserId}: PostPageProps) {
@@ -170,8 +142,8 @@ function PostPage({post, initialComments, currentUserId}: PostPageProps) {
     />
   )
 
-  const reportBtn = (
-    <ReportPostButton postId={post.id} postTitle={post.title} />
+  const cardHeader = (
+    <PostCardHeader postId={post.id} postTitle={post.title} />
   )
 
   return (
@@ -181,8 +153,8 @@ function PostPage({post, initialComments, currentUserId}: PostPageProps) {
 
       {/* mobile layout */}
       <div className={styles.mobile_wrapper}>
+        {cardHeader}
         <UserPostInfo {...userPostInfo} />
-        {reportBtn}
         {content}
         <SetCommentBlock postId={post.id} />
         {commentSection}
@@ -190,6 +162,7 @@ function PostPage({post, initialComments, currentUserId}: PostPageProps) {
 
       {/* desktop: main content column */}
       <div className={styles.extra_full_bot}>
+        {cardHeader}
         {content}
         <SetCommentBlock postId={post.id} />
       </div>
@@ -197,7 +170,6 @@ function PostPage({post, initialComments, currentUserId}: PostPageProps) {
       {/* desktop: right sticky sidebar */}
       <div className={`${styles.sticky_sidebar} ${styles.not_mobile_box}`}>
         <UserPostInfo {...userPostInfo} />
-        {reportBtn}
         {isCompact ? (
           <PostCommentCompact
             postId={post.id}
