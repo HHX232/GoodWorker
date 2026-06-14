@@ -7,40 +7,155 @@ import { nanoid } from 'nanoid'
 const VIP_PAGE_LIMIT = 50
 const FREE_PAGE_LIMIT = 5
 
+// ─── Block normalizers ────────────────────────────────────────────────────────
+
 function textToTiptap(text: string) {
   const paragraphs = text
     .split(/\n+/)
     .map((s) => s.trim())
     .filter(Boolean)
-    .map((s) => ({
-      type: 'paragraph',
-      content: [{ type: 'text', text: s }],
-    }))
+    .map((s) => ({ type: 'paragraph', content: [{ type: 'text', text: s }] }))
   return { type: 'doc', content: paragraphs.length ? paragraphs : [{ type: 'paragraph', content: [] }] }
 }
 
 function normalizeBlocks(raw: unknown[]): unknown[] {
-  return raw.map((b: any) => {
-    const id = nanoid()
-    if (b.type === 'INFO_TEXT') {
-      return {
-        id,
-        type: 'INFO_TEXT',
-        payload: { content: textToTiptap(b.payload?.text ?? '') },
+  return raw
+    .map((b: any) => {
+      const id = nanoid()
+      if (b.type === 'INFO_TEXT') {
+        return { id, type: 'INFO_TEXT', payload: { content: textToTiptap(b.payload?.text ?? '') } }
       }
-    }
-    if (b.type === 'CHOOSE_OPTION') {
-      return { id, type: 'CHOOSE_OPTION', payload: b.payload }
-    }
-    if (b.type === 'FREE_ANSWER') {
-      return { id, type: 'FREE_ANSWER', payload: b.payload }
-    }
-    if (b.type === 'MATCH_PAIRS') {
-      return { id, type: 'MATCH_PAIRS', payload: b.payload }
-    }
-    return null
-  }).filter(Boolean)
+      if (b.type === 'CHOOSE_OPTION') {
+        // correctId may be string (single) or string[] (multi-answer)
+        const correctId = Array.isArray(b.payload?.correctId)
+          ? b.payload.correctId
+          : b.payload?.correctId ?? ''
+        return { id, type: 'CHOOSE_OPTION', payload: { ...b.payload, correctId } }
+      }
+      if (b.type === 'FREE_ANSWER') return { id, type: 'FREE_ANSWER', payload: b.payload }
+      if (b.type === 'MATCH_PAIRS') return { id, type: 'MATCH_PAIRS', payload: b.payload }
+      return null
+    })
+    .filter(Boolean)
 }
+
+// ─── PDF microservice calls ───────────────────────────────────────────────────
+
+interface PdfExtractResult {
+  text: string
+  pageCount: number
+  tablesText: string
+  imageBlocks: unknown[]
+}
+
+async function extractFromPdf(pdfServiceUrl: string, file: File): Promise<PdfExtractResult> {
+  // Run text + tables + images in parallel (best-effort for tables & images)
+  const textForm = new FormData()
+  textForm.append('file', file)
+
+  const tableForm = new FormData()
+  tableForm.append('file', file)
+
+  const imageForm = new FormData()
+  imageForm.append('file', file)
+
+  const [textRes, tableRes, imageRes] = await Promise.allSettled([
+    fetch(`${pdfServiceUrl}/api/pdf/extract-from-upload`, { method: 'POST', body: textForm }),
+    fetch(`${pdfServiceUrl}/api/pdf/extract-tables-from-upload`, { method: 'POST', body: tableForm }),
+    fetch(`${pdfServiceUrl}/api/pdf/extract-images-from-upload`, { method: 'POST', body: imageForm }),
+  ])
+
+  // Text is required
+  if (textRes.status === 'rejected' || !textRes.value.ok) {
+    const msg = textRes.status === 'rejected'
+      ? textRes.reason?.message
+      : (await textRes.value.json().catch(() => ({}))).message
+    throw new Error(msg ?? `PDF extraction failed for "${file.name}"`)
+  }
+  const textData = await textRes.value.json()
+  const text = (textData.data?.text as string) ?? ''
+  const pageCount = (textData.data?.pageCount as number) ?? 0
+
+  // Tables (optional)
+  let tablesText = ''
+  if (tableRes.status === 'fulfilled' && tableRes.value.ok) {
+    const td = await tableRes.value.json()
+    const tables: any[] = td.data?.tables ?? []
+    if (tables.length > 0) {
+      tablesText = tables
+        .slice(0, 5)
+        .map((t: any, i: number) => {
+          const rows = (t.rows ?? []).map((r: string[]) => r.join(' | ')).join('\n')
+          return `Table ${i + 1}:\n${rows}`
+        })
+        .join('\n\n')
+    }
+  }
+
+  // Images → INFO_MEDIA blocks (optional, stored as base64 data URLs)
+  const imageBlocks: unknown[] = []
+  if (imageRes.status === 'fulfilled' && imageRes.value.ok) {
+    const id = await imageRes.value.json()
+    const images: any[] = id.data?.images ?? []
+    for (const img of images.slice(0, 10)) {
+      if (!img.data) continue
+      const dataUrl = `data:image/${img.format ?? 'png'};base64,${img.data}`
+      imageBlocks.push({
+        id: nanoid(),
+        type: 'INFO_MEDIA',
+        payload: { kind: 'image', url: dataUrl, caption: null },
+      })
+    }
+  }
+
+  console.log(
+    `[import-pdf] "${file.name}": ${pageCount} pages, ${text.length} chars, ${tablesText ? 'tables ✓' : 'no tables'}, ${imageBlocks.length} images`,
+  )
+
+  return { text, pageCount, tablesText, imageBlocks }
+}
+
+// ─── AI prompt ────────────────────────────────────────────────────────────────
+
+function buildPrompt(chunk: string, chunkIndex: number, totalChunks: number, fileCount: number) {
+  const chunkNote =
+    totalChunks > 1 ? `\nThis is part ${chunkIndex + 1} of ${totalChunks}. Generate blocks only for this part.` : ''
+  const fileNote =
+    fileCount > 1
+      ? `\nYou are analyzing ${fileCount} documents together. Generate a unified set of blocks covering material from all documents.`
+      : ''
+
+  return `Analyze the content below (extracted from a PDF) and generate structured test blocks for an e-learning platform.${fileNote}${chunkNote}
+
+Use ONLY these block types:
+- CHOOSE_OPTION: question with options. Use "correctId": "o1" for ONE correct answer, or "correctId": ["o1","o3"] for MULTIPLE correct answers (when the source explicitly lists multiple correct answers, e.g. "A1 — 1,2,3")
+- FREE_ANSWER: open-ended question requiring a written answer
+- MATCH_PAIRS: matching left items to right items (3–6 pairs)
+- INFO_TEXT: informational/context block (section header, instructions, definition)
+
+Rules:
+- Generate between 5 and 30 blocks depending on content length
+- Detect the language of the content and generate all questions in THAT SAME LANGUAGE
+- For CHOOSE_OPTION: option ids must be "o1","o2",... — correctId is a string for single answer, string array for multiple
+- For MATCH_PAIRS: pair ids must be "p1","p2",...
+- For INFO_TEXT: preserve important context or section headings as plain text
+- NEVER generate SEQUENCE, WORD_SCRAMBLE, DIALOGUE, HIGHLIGHT_TEXT blocks
+- Include referenceAnswer in FREE_ANSWER whenever a model answer can be inferred
+
+PDF CONTENT:
+${chunk}
+
+Return ONLY a valid JSON object {"blocks":[...]}:
+{"blocks":[
+  {"type":"CHOOSE_OPTION","payload":{"question":"...","options":[{"id":"o1","text":"..."},{"id":"o2","text":"..."},{"id":"o3","text":"..."}],"correctId":"o1"}},
+  {"type":"CHOOSE_OPTION","payload":{"question":"...","options":[{"id":"o1","text":"..."},{"id":"o2","text":"..."},{"id":"o3","text":"..."}],"correctId":["o1","o3"]}},
+  {"type":"FREE_ANSWER","payload":{"question":"...","referenceAnswer":"..."}},
+  {"type":"MATCH_PAIRS","payload":{"pairs":[{"id":"p1","left":"...","right":"..."},{"id":"p2","left":"...","right":"..."},{"id":"p3","left":"...","right":"..."}]}},
+  {"type":"INFO_TEXT","payload":{"text":"..."}}
+]}`
+}
+
+// ─── Route ────────────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
   try {
@@ -52,158 +167,85 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Teachers only' }, { status: 403 })
     }
 
-    // Check VIP status
     const teacher = await (prisma.teacher as any).findUnique({
       where: { id: userId },
       select: { isVip: true, vipExpiresAt: true },
     })
     const now = new Date()
     const isVip = !!(teacher?.isVip && teacher?.vipExpiresAt && new Date(teacher.vipExpiresAt) > now)
-    const pageLimit = isVip ? VIP_PAGE_LIMIT : FREE_PAGE_LIMIT
+    const isAdmin = role === 'ADMIN'
+    const pageLimit = isAdmin ? Infinity : isVip ? VIP_PAGE_LIMIT : FREE_PAGE_LIMIT
 
-    // Parse uploaded file
     const formData = await req.formData()
-    const file = formData.get('file') as File | null
-    if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 })
-    if (!file.name.toLowerCase().endsWith('.pdf')) {
-      return NextResponse.json({ error: 'Only PDF files are supported' }, { status: 400 })
-    }
+    const fileEntries = formData.getAll('files') as File[]
+    const files = fileEntries.filter((f) => f instanceof File && f.name.toLowerCase().endsWith('.pdf'))
 
-    // Forward to PDF microservice
+    if (files.length === 0) return NextResponse.json({ error: 'No PDF files provided' }, { status: 400 })
+
     const pdfServiceUrl = process.env.PDF_SERVICE_URL
-    console.log('[import-pdf] PDF_SERVICE_URL =', pdfServiceUrl)
     if (!pdfServiceUrl) return NextResponse.json({ error: 'PDF service not configured' }, { status: 503 })
 
-    console.log(`[import-pdf] Forwarding "${file.name}" (${file.size} bytes) to microservice`)
-    const pdfForm = new FormData()
-    pdfForm.append('file', file)
+    console.log(`[import-pdf] Processing ${files.length} file(s)`)
 
-    let pdfRes: Response
-    try {
-      pdfRes = await fetch(`${pdfServiceUrl}/api/pdf/extract-from-upload`, {
-        method: 'POST',
-        body: pdfForm,
-      })
-    } catch (fetchErr) {
-      console.error('[import-pdf] Fetch to microservice failed:', fetchErr)
-      return NextResponse.json({ error: 'PDF service unreachable' }, { status: 503 })
+    // Extract all files via microservice
+    const results: (PdfExtractResult & { name: string })[] = []
+    for (const file of files) {
+      try {
+        const r = await extractFromPdf(pdfServiceUrl, file)
+        results.push({ name: file.name, ...r })
+      } catch (err) {
+        return NextResponse.json({ error: (err as Error).message }, { status: 502 })
+      }
     }
 
-    console.log('[import-pdf] Microservice responded:', pdfRes.status)
-    if (!pdfRes.ok) {
-      const err = await pdfRes.json().catch(() => ({}))
-      return NextResponse.json({ error: err.message ?? 'PDF extraction failed' }, { status: 502 })
-    }
-
-    const pdfData = await pdfRes.json()
-    const { text, pageCount } = pdfData.data as { text: string; pageCount: number }
-    console.log(`[import-pdf] Got ${pageCount} pages, ${text.length} chars`)
-
-    if (pageCount > pageLimit) {
+    const totalPages = results.reduce((s, r) => s + r.pageCount, 0)
+    if (totalPages > pageLimit) {
       return NextResponse.json(
-        {
-          error: 'PAGE_LIMIT_EXCEEDED',
-          pageCount,
-          limit: pageLimit,
-          isVip,
-        },
+        { error: 'PAGE_LIMIT_EXCEEDED', pageCount: totalPages, limit: pageLimit, isVip },
         { status: 422 },
       )
-    }
-
-    // Extract tables too (best-effort)
-    let tablesText = ''
-    try {
-      const tableForm = new FormData()
-      tableForm.append('file', file)
-      const tableRes = await fetch(`${pdfServiceUrl}/api/pdf/extract-tables-from-upload`, {
-        method: 'POST',
-        body: tableForm,
-      })
-      if (tableRes.ok) {
-        const tableData = await tableRes.json()
-        const tables = tableData.data?.tables ?? []
-        if (tables.length > 0) {
-          tablesText = '\n\nTABLES:\n' + tables
-            .slice(0, 5)
-            .map((t: any, i: number) => {
-              const rows = (t.rows ?? []).map((r: string[]) => r.join(' | ')).join('\n')
-              return `Table ${i + 1}:\n${rows}`
-            })
-            .join('\n\n')
-        }
-      }
-    } catch {
-      // tables are optional, ignore errors
     }
 
     if (!process.env.OPENROUTER_API_KEY)
       return NextResponse.json({ error: 'AI service not configured' }, { status: 503 })
 
-    const isUnlimited = isVip || role === 'ADMIN'
-    const CHUNK_SIZE = 40000
+    // Combine content: tables first (better structure), then text — no images
+    const combinedContent = results
+      .map((r) => {
+        const header = results.length > 1 ? `=== DOCUMENT: ${r.name} ===\n` : ''
+        const tablesSection = r.tablesText ? `TABLES:\n${r.tablesText}\n\nTEXT:\n` : ''
+        return `${header}${tablesSection}${r.text}`
+      })
+      .join('\n\n')
 
-    const buildPrompt = (chunk: string, chunkIndex: number, totalChunks: number) => {
-      const chunkNote = totalChunks > 1
-        ? `\nThis is part ${chunkIndex + 1} of ${totalChunks}. Generate blocks only for this part's content.`
-        : ''
-      return `Analyze the content below (extracted from a PDF) and generate structured test blocks for an e-learning platform.${chunkNote}
+    // All image blocks from all files (prepended before AI blocks)
+    const allImageBlocks = results.flatMap((r) => r.imageBlocks)
 
-Use ONLY these block types:
-- CHOOSE_OPTION: multiple-choice question (3–5 options)
-- FREE_ANSWER: open-ended question requiring a written answer
-- MATCH_PAIRS: matching left items to right items (3–6 pairs)
-- INFO_TEXT: informational/context block (section header, instructions, definition block)
-
-Rules:
-- Generate between 5 and 30 blocks depending on content length
-- Detect the language of the content and generate all questions in THAT SAME LANGUAGE
-- For CHOOSE_OPTION: option ids must be "o1", "o2", etc.; correctId must exactly match one option id
-- For MATCH_PAIRS: pair ids must be "p1", "p2", etc.; use it when there are clear term↔definition or cause↔effect relationships
-- For INFO_TEXT: preserve important context or section headings as plain text
-- NEVER generate SEQUENCE, WORD_SCRAMBLE, DIALOGUE, HIGHLIGHT_TEXT blocks
-- Include referenceAnswer in FREE_ANSWER whenever a model answer can be inferred
-
-PDF CONTENT:
-${chunk}
-
-Return ONLY a valid JSON array (wrapped in {"blocks":[...]}):
-{"blocks":[
-  {"type":"CHOOSE_OPTION","payload":{"question":"...","options":[{"id":"o1","text":"..."},{"id":"o2","text":"..."},{"id":"o3","text":"..."}],"correctId":"o1"}},
-  {"type":"FREE_ANSWER","payload":{"question":"...","referenceAnswer":"..."}},
-  {"type":"MATCH_PAIRS","payload":{"pairs":[{"id":"p1","left":"...","right":"..."},{"id":"p2","left":"...","right":"..."},{"id":"p3","left":"...","right":"..."}]}},
-  {"type":"INFO_TEXT","payload":{"text":"..."}}
-]}`
-    }
-
+    const isUnlimited = isAdmin || isVip
+    const CHUNK_SIZE = 40_000
     const SYSTEM = 'You are an expert educational test generator. Return ONLY valid JSON, no markdown.'
-    let allBlocks: unknown[] = []
+    let aiBlocks: unknown[] = []
 
-    if (isUnlimited && text.length > CHUNK_SIZE) {
-      // VIP/ADMIN: split into chunks, tables appended to first chunk only
+    if (isUnlimited && combinedContent.length > CHUNK_SIZE) {
       const chunks: string[] = []
-      for (let i = 0; i < text.length; i += CHUNK_SIZE) {
-        chunks.push(text.slice(i, i + CHUNK_SIZE))
-      }
-      const MAX_CHUNKS = 8
-      const toProcess = chunks.slice(0, MAX_CHUNKS)
-      console.log(`[import-pdf] VIP/ADMIN: processing ${toProcess.length} chunks of ${CHUNK_SIZE} chars`)
-
+      for (let i = 0; i < combinedContent.length; i += CHUNK_SIZE) chunks.push(combinedContent.slice(i, i + CHUNK_SIZE))
+      const toProcess = chunks.slice(0, 8)
+      console.log(`[import-pdf] VIP/ADMIN: ${toProcess.length} chunk(s)`)
       for (let i = 0; i < toProcess.length; i++) {
-        const chunkContent = toProcess[i] + (i === 0 ? tablesText : '')
-        const raw = await callAI(SYSTEM, buildPrompt(chunkContent, i, toProcess.length), { temperature: 0.2 })
+        const raw = await callAI(SYSTEM, buildPrompt(toProcess[i], i, toProcess.length, files.length), { temperature: 0.2 })
         const parsed = parseJSON<{ blocks: unknown[] }>(raw)
-        allBlocks.push(...normalizeBlocks(parsed.blocks ?? []))
+        aiBlocks.push(...normalizeBlocks(parsed.blocks ?? []))
       }
     } else {
-      // Free: single chunk, limit to CHUNK_SIZE chars (covers ~5 pages)
-      const chunk = text.slice(0, CHUNK_SIZE) + tablesText
-      const raw = await callAI(SYSTEM, buildPrompt(chunk, 0, 1), { temperature: 0.2 })
+      const raw = await callAI(SYSTEM, buildPrompt(combinedContent.slice(0, CHUNK_SIZE), 0, 1, files.length), { temperature: 0.2 })
       const parsed = parseJSON<{ blocks: unknown[] }>(raw)
-      allBlocks = normalizeBlocks(parsed.blocks ?? [])
+      aiBlocks = normalizeBlocks(parsed.blocks ?? [])
     }
 
-    return NextResponse.json({ blocks: allBlocks, pageCount, isVip })
+    // Images go first so the teacher sees them before questions
+    const blocks = [...allImageBlocks, ...aiBlocks]
+
+    return NextResponse.json({ blocks, pageCount: totalPages, isVip })
   } catch (error) {
     console.error('[POST /api/tests/import-pdf]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

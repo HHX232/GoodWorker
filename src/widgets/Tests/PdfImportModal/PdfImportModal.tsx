@@ -8,7 +8,7 @@ import styles from './PdfImportModal.module.scss'
 
 interface GeneratedBlock {
   id: string
-  type: 'CHOOSE_OPTION' | 'FREE_ANSWER' | 'MATCH_PAIRS' | 'INFO_TEXT'
+  type: 'CHOOSE_OPTION' | 'FREE_ANSWER' | 'MATCH_PAIRS' | 'INFO_TEXT' | 'INFO_MEDIA'
   payload: unknown
 }
 
@@ -27,6 +27,7 @@ const TYPE_STYLE = {
   FREE_ANSWER:   { color: '#111118', bg: '#f0f0f0' },
   MATCH_PAIRS:   { color: '#111118', bg: '#f0f0f0' },
   INFO_TEXT:     { color: '#111118', bg: '#f0f0f0' },
+  INFO_MEDIA:    { color: '#111118', bg: '#f0f0f0' },
 } as const
 
 function formatSize(bytes: number) {
@@ -61,6 +62,7 @@ function BlockPreview({ block, selected, onToggle, t }: {
     FREE_ANSWER:   t('typeFree'),
     MATCH_PAIRS:   t('typeMatch'),
     INFO_TEXT:     t('typeInfo'),
+    INFO_MEDIA:    t('typeImage'),
   }[block.type]
 
   return (
@@ -123,6 +125,11 @@ function BlockPreview({ block, selected, onToggle, t }: {
         {block.type === 'INFO_TEXT' && (
           <p className={styles.block_info_preview}>{extractTextFromTiptap(p.content)}</p>
         )}
+
+        {block.type === 'INFO_MEDIA' && p.url && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={p.url} alt="" className={styles.block_image_preview} />
+        )}
       </div>
     </div>
   )
@@ -139,38 +146,46 @@ export function PdfImportModal({ onClose, onImport }: PdfImportModalProps) {
   const t = useTranslations('pdfImport')
 
   const [step, setStep] = useState<Step>('upload')
-  const [file, setFile] = useState<File | null>(null)
+  const [files, setFiles] = useState<File[]>([])
   const [dragging, setDragging] = useState(false)
   const [processingStep, setProcessingStep] = useState('')
   const [blocks, setBlocks] = useState<GeneratedBlock[]>([])
   const [selected, setSelected] = useState<Set<string>>(new Set())
-  const [pageCount, setPageCount] = useState<number | null>(null)
+  const [totalPages, setTotalPages] = useState<number | null>(null)
   const [error, setError] = useState<ErrorState | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleFile = (f: File) => {
-    if (!f.name.toLowerCase().endsWith('.pdf')) return
-    setFile(f)
+  const addFiles = (incoming: FileList | File[]) => {
+    const pdfs = Array.from(incoming).filter(f => f.name.toLowerCase().endsWith('.pdf'))
+    if (!pdfs.length) return
+    setFiles(prev => {
+      const existingNames = new Set(prev.map(f => f.name))
+      const deduped = pdfs.filter(f => !existingNames.has(f.name))
+      return [...prev, ...deduped]
+    })
     setError(null)
+  }
+
+  const removeFile = (name: string) => {
+    setFiles(prev => prev.filter(f => f.name !== name))
   }
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setDragging(false)
-    const f = e.dataTransfer.files[0]
-    if (f) handleFile(f)
+    addFiles(e.dataTransfer.files)
   }, [])
 
   const handleProcess = async () => {
-    if (!file) return
+    if (!files.length) return
     setStep('processing')
     setProcessingStep(t('step1'))
 
     try {
       const form = new FormData()
-      form.append('file', file)
+      for (const f of files) form.append('files', f)
 
-      await new Promise((r) => setTimeout(r, 400))
+      await new Promise((r) => setTimeout(r, 300))
       setProcessingStep(t('step2'))
 
       const res = await fetch('/api/tests/import-pdf', { method: 'POST', body: form })
@@ -197,7 +212,7 @@ export function PdfImportModal({ onClose, onImport }: PdfImportModalProps) {
 
       const generatedBlocks: GeneratedBlock[] = data.blocks
       setBlocks(generatedBlocks)
-      setPageCount(data.pageCount)
+      setTotalPages(data.pageCount)
       setSelected(new Set(generatedBlocks.map((b) => b.id)))
       setStep('preview')
     } catch {
@@ -226,12 +241,14 @@ export function PdfImportModal({ onClose, onImport }: PdfImportModalProps) {
 
   const reset = () => {
     setStep('upload')
-    setFile(null)
+    setFiles([])
     setBlocks([])
     setSelected(new Set())
     setError(null)
-    setPageCount(null)
+    setTotalPages(null)
   }
+
+  const totalSize = files.reduce((s, f) => s + f.size, 0)
 
   return (
     <div className={styles.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -263,49 +280,81 @@ export function PdfImportModal({ onClose, onImport }: PdfImportModalProps) {
           {/* ── Step 1: Upload ─────────────────────────────── */}
           {step === 'upload' && (
             <>
-              {!file ? (
-                <div
-                  className={`${styles.drop_zone} ${dragging ? styles.drop_zone_active : ''}`}
-                  onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
-                  onDragLeave={() => setDragging(false)}
-                  onDrop={handleDrop}
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <svg className={styles.drop_icon} width='40' height='40' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round'>
-                    <path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/>
-                    <polyline points='14 2 14 8 20 8'/>
-                    <line x1='12' y1='18' x2='12' y2='12'/>
-                    <polyline points='9 15 12 12 15 15'/>
-                  </svg>
-                  <p className={styles.drop_label}>
-                    {t('dropLabel')} <span>{t('dropLabelLink')}</span>
-                  </p>
-                  <p className={styles.drop_sub}>{t('dropSub')}</p>
-                  <input
-                    ref={fileInputRef}
-                    type='file'
-                    accept='.pdf'
-                    className={styles.file_input}
-                    onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
-                  />
-                </div>
-              ) : (
-                <div className={styles.file_card}>
-                  <div className={styles.file_icon}>
-                    <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+              {/* Drop zone — always visible */}
+              <div
+                className={`${styles.drop_zone} ${files.length ? styles.drop_zone_compact : ''} ${dragging ? styles.drop_zone_active : ''}`}
+                onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {files.length === 0 ? (
+                  <>
+                    <svg className={styles.drop_icon} width='40' height='40' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round'>
                       <path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/>
                       <polyline points='14 2 14 8 20 8'/>
+                      <line x1='12' y1='18' x2='12' y2='12'/>
+                      <polyline points='9 15 12 12 15 15'/>
                     </svg>
-                  </div>
-                  <div className={styles.file_info}>
-                    <p className={styles.file_name}>{file.name}</p>
-                    <p className={styles.file_size}>{formatSize(file.size)}</p>
-                  </div>
-                  <button className={styles.file_remove} onClick={reset}>
-                    <svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
-                      <line x1='18' y1='6' x2='6' y2='18'/><line x1='6' y1='6' x2='18' y2='18'/>
+                    <p className={styles.drop_label}>
+                      {t('dropLabel')} <span>{t('dropLabelLink')}</span>
+                    </p>
+                    <p className={styles.drop_sub}>{t('dropSub')}</p>
+                  </>
+                ) : (
+                  <div className={styles.drop_compact_inner}>
+                    <svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+                      <line x1='12' y1='18' x2='12' y2='12'/>
+                      <polyline points='9 15 12 12 15 15'/>
+                      <path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/>
                     </svg>
-                  </button>
+                    <span>{t('addMore')}</span>
+                  </div>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type='file'
+                  accept='.pdf'
+                  multiple
+                  className={styles.file_input}
+                  onChange={(e) => { if (e.target.files) addFiles(e.target.files); e.target.value = '' }}
+                />
+              </div>
+
+              {/* File list */}
+              {files.length > 0 && (
+                <div className={styles.file_list}>
+                  <div className={styles.file_list_header}>
+                    <span className={styles.file_list_label}>
+                      {files.length === 1
+                        ? `1 файл · ${formatSize(totalSize)}`
+                        : `${files.length} файла · ${formatSize(totalSize)}`
+                      }
+                    </span>
+                  </div>
+                  {files.map((f) => (
+                    <div key={f.name} className={styles.file_card}>
+                      <div className={styles.file_icon}>
+                        <svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+                          <path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/>
+                          <polyline points='14 2 14 8 20 8'/>
+                        </svg>
+                      </div>
+                      <div className={styles.file_info}>
+                        <p className={styles.file_name}>{f.name}</p>
+                        <p className={styles.file_size}>{formatSize(f.size)}</p>
+                      </div>
+                      <button
+                        className={styles.file_remove}
+                        onClick={(e) => { e.stopPropagation(); removeFile(f.name) }}
+                        type='button'
+                      >
+                        <svg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
+                          <line x1='18' y1='6' x2='6' y2='18'/><line x1='6' y1='6' x2='18' y2='18'/>
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
                 </div>
               )}
 
@@ -330,12 +379,12 @@ export function PdfImportModal({ onClose, onImport }: PdfImportModalProps) {
           {/* ── Step 3: Preview ───────────────────────────── */}
           {step === 'preview' && (
             <>
-              {pageCount !== null && (
+              {totalPages !== null && (
                 <div className={styles.success_notice}>
                   <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
                     <polyline points='20 6 9 17 4 12'/>
                   </svg>
-                  <span dangerouslySetInnerHTML={{ __html: t.raw('successNotice').replace('{pages}', String(pageCount)).replace('{count}', String(blocks.length)) }} />
+                  <span dangerouslySetInnerHTML={{ __html: t.raw('successNotice').replace('{pages}', String(totalPages)).replace('{count}', String(blocks.length)) }} />
                 </div>
               )}
 
@@ -384,8 +433,11 @@ export function PdfImportModal({ onClose, onImport }: PdfImportModalProps) {
           </button>
 
           {step === 'upload' && (
-            <button className={styles.action_btn} disabled={!file} onClick={handleProcess}>
-              {t('processBtn')}
+            <button className={styles.action_btn} disabled={files.length === 0} onClick={handleProcess}>
+              {files.length > 1
+                ? t('processBtnMulti', { count: files.length })
+                : t('processBtn')
+              }
             </button>
           )}
 

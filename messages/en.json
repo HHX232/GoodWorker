@@ -1404,6 +1404,8 @@
     "dropSub": "PDF files only",
     "vipNotice": "Free: up to <b>5 pages</b>. VIP: up to <b>50 pages</b> per import. AI will generate questions — you pick the ones you need.",
     "processBtn": "Process PDF",
+    "processBtnMulti": "Process {count} files",
+    "addMore": "Add more files",
     "cancel": "Cancel",
     "uploadAnother": "Upload another",
     "processing": "Processing PDF...",
@@ -1424,6 +1426,7 @@
     "typeFree": "Free answer",
     "typeMatch": "Match pairs",
     "typeInfo": "Text",
+    "typeImage": "Image",
     "refAnswer": "Reference: {text}",
     "morePairs": "+{n} more..."
   },

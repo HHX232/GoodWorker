@@ -1148,6 +1148,8 @@
     "dropSub": "केवल PDF फ़ाइलें",
     "vipNotice": "नि:शुल्क: <b>5 पृष्ठ</b> तक। VIP: प्रति आयात <b>50 पृष्ठ</b> तक।",
     "processBtn": "PDF प्रोसेस करें",
+    "processBtnMulti": "{count} फाइलें प्रोसेस करें",
+    "addMore": "और फाइलें जोड़ें",
     "cancel": "रद्द करें",
     "uploadAnother": "दूसरी फ़ाइल अपलोड करें",
     "processing": "PDF प्रोसेस हो रहा है...",

@@ -5,7 +5,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 1100;
   padding: 16px;
 }
 
@@ -131,6 +131,45 @@
 
 .file_input {
   display: none;
+}
+
+// ─── Compact drop zone (when files already added) ──────────
+
+.drop_zone_compact {
+  padding: 12px 20px;
+  flex-direction: row;
+  justify-content: center;
+  gap: 8px;
+}
+
+.drop_compact_inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+// ─── File list ─────────────────────────────────────────────
+
+.file_list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.file_list_header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2px;
+}
+
+.file_list_label {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
 }
 
 // ─── File preview ──────────────────────────────────────────
@@ -411,6 +450,15 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.block_image_preview {
+  max-width: 100%;
+  max-height: 120px;
+  border-radius: 6px;
+  object-fit: contain;
+  margin-top: 4px;
+  background: #f5f5f5;
 }
 
 // ─── Error state ───────────────────────────────────────────

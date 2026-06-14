@@ -1148,6 +1148,8 @@
     "dropSub": "仅支持PDF文件",
     "vipNotice": "免费版：最多<b>5页</b>。VIP：每次最多<b>50页</b>。",
     "processBtn": "处理PDF",
+    "processBtnMulti": "处理{count}个文件",
+    "addMore": "添加更多文件",
     "cancel": "取消",
     "uploadAnother": "上传其他文件",
     "processing": "正在处理PDF...",
@@ -1168,6 +1170,7 @@
     "typeFree": "自由作答",
     "typeMatch": "配对",
     "typeInfo": "文本",
+    "typeImage": "图片",
     "refAnswer": "参考答案：{text}",
     "morePairs": "+{n}更多..."
   },
