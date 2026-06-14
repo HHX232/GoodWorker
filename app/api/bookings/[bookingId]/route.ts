@@ -1,4 +1,5 @@
 import { prisma } from '@/shared/prisma/prisma'
+import { tplBookingConfirmed, tplBookingRescheduled, tplBookingCancelled } from '@/shared/lib/notificationTemplates'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
 
@@ -37,32 +38,15 @@ export async function PATCH(
   }
 
   let newStatus: 'CONFIRMED' | 'CANCELLED' = 'CONFIRMED'
-  let notifTitle = ''
-  let notifBody = ''
-
   const serviceName = booking.service.title
 
-  if (action === 'confirm') {
-    newStatus = 'CONFIRMED'
-    const dateStr = booking.desiredDate && booking.desiredTime
-      ? ` на ${booking.desiredDate} в ${booking.desiredTime}`
-      : booking.desiredDate
-        ? ` на ${booking.desiredDate}`
-        : ''
-    notifTitle = 'Запись подтверждена'
-    notifBody = `Учитель подтвердил вашу запись на «${serviceName}»${dateStr}`
-  } else if (action === 'reschedule') {
-    newStatus = 'CONFIRMED'
-    const dateStr = confirmedDate && confirmedTime
-      ? `${confirmedDate} в ${confirmedTime}`
-      : confirmedDate ?? ''
-    notifTitle = 'Новое время для записи'
-    notifBody = `Учитель предложил другое время: ${dateStr}`
-  } else if (action === 'cancel') {
-    newStatus = 'CANCELLED'
-    notifTitle = 'Запись отменена'
-    notifBody = `Учитель отменил вашу запись на «${serviceName}»`
-  }
+  const notifTpl = action === 'confirm'
+    ? tplBookingConfirmed(serviceName, booking.desiredDate, booking.desiredTime)
+    : action === 'reschedule'
+      ? tplBookingRescheduled(confirmedDate, confirmedTime)
+      : tplBookingCancelled(serviceName)
+
+  if (action === 'cancel') newStatus = 'CANCELLED'
 
   const updatedBooking = await prisma.$transaction(async (tx) => {
     const updated = await tx.serviceBooking.update({
@@ -79,8 +63,10 @@ export async function PATCH(
     await tx.notification.create({
       data: {
         type: 'BOOKING_RESPONSE',
-        title: notifTitle,
-        body: notifBody,
+        title: notifTpl.title,
+        body: notifTpl.body,
+        titleTranslations: notifTpl.titleTranslations,
+        bodyTranslations: notifTpl.bodyTranslations,
         payload: {
           bookingId,
           serviceId: booking.serviceId,

@@ -1,4 +1,5 @@
 import { prisma } from '@/shared/prisma/prisma'
+import { tplServiceBooking } from '@/shared/lib/notificationTemplates'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../../auth'
 
@@ -88,18 +89,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     })
 
     const student = await tx.student.findUnique({ where: { id: studentId }, select: { name: true } })
-
-    const dateStr = desiredDate && desiredTime
-      ? ` на ${desiredDate} в ${desiredTime}`
-      : desiredDate
-        ? ` на ${desiredDate}`
-        : ''
+    const bookingTpl = tplServiceBooking(student?.name ?? 'Студент', service.title, desiredDate, desiredTime)
 
     await tx.notification.create({
       data: {
         type: 'SERVICE_BOOKING',
-        title: 'Новая запись на услугу',
-        body: `${student?.name ?? 'Студент'} записался на «${service.title}»${dateStr}`,
+        title: bookingTpl.title,
+        body: bookingTpl.body,
+        titleTranslations: bookingTpl.titleTranslations,
+        bodyTranslations: bookingTpl.bodyTranslations,
         payload: {
           bookingId: booking.id,
           serviceId,

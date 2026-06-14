@@ -706,17 +706,17 @@ export function localizeRoadmap<T extends {
 
 // ─── Notification AI translation ─────────────────────────────────────────────
 
-export async function enrichNotificationWithAI(notificationId: string): Promise<void> {
-  if (!hasAIProvider()) return
-
-  const notif = await prisma.notification.findUnique({ where: { id: notificationId } })
-  if (!notif || (!notif.title.trim() && !notif.body.trim())) return
+export async function translateNotificationText(title: string, body: string): Promise<{
+  titleTranslations: Record<string, string>
+  bodyTranslations: Record<string, string>
+} | null> {
+  if (!hasAIProvider()) return null
 
   const prompt = `Translate this system notification for an educational platform to ru, en, hi, zh.
 Return ONLY valid JSON, no markdown.
 
-Title: ${JSON.stringify(notif.title)}
-Body: ${JSON.stringify(notif.body)}
+Title: ${JSON.stringify(title)}
+Body: ${JSON.stringify(body)}
 
 Return:
 {
@@ -734,11 +734,25 @@ Return:
     bodyTranslations?: Record<Lang, string>
   }>(raw)
 
+  if (!parsed.titleTranslations || !parsed.bodyTranslations) return null
+  return {
+    titleTranslations: parsed.titleTranslations,
+    bodyTranslations: parsed.bodyTranslations,
+  }
+}
+
+export async function enrichNotificationWithAI(notificationId: string): Promise<void> {
+  const notif = await prisma.notification.findUnique({ where: { id: notificationId } })
+  if (!notif || (!notif.title.trim() && !notif.body.trim())) return
+
+  const result = await translateNotificationText(notif.title, notif.body)
+  if (!result) return
+
   await (prisma.notification as any).update({
     where: { id: notificationId },
     data: {
-      titleTranslations: parsed.titleTranslations ?? undefined,
-      bodyTranslations: parsed.bodyTranslations ?? undefined,
+      titleTranslations: result.titleTranslations,
+      bodyTranslations: result.bodyTranslations,
     },
   })
 }

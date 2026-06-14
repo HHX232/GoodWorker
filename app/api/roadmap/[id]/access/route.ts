@@ -1,5 +1,6 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { createNotification, NOTIFICATION_TYPES } from '@/shared/lib/notifications'
+import { tplNewStudent } from '@/shared/lib/notificationTemplates'
 import { RoadmapAccessGrant } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../../auth'
@@ -98,8 +99,7 @@ export async function POST(req: NextRequest, { params }: Params) {
 
     await createNotification({
       type: NOTIFICATION_TYPES.NEW_STUDENT,
-      title: 'Новый ученик',
-      body: `${student?.name ?? 'Ученик'} получил доступ к роадмапу «${roadmapCheck.title ?? 'Без названия'}»`,
+      ...tplNewStudent(student?.name ?? 'Ученик', roadmapCheck.title ?? 'Без названия'),
       payload: {
         actorId: studentId,
         actorName: student?.name ?? 'Ученик',

@@ -1,5 +1,6 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { createNotification, NOTIFICATION_TYPES } from '@/shared/lib/notifications'
+import { tplComplaintReplied, tplComplaintClosed } from '@/shared/lib/notificationTemplates'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
 
@@ -52,8 +53,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       if (complaint.reporterRole === 'STUDENT') {
         await createNotification({
           type: NOTIFICATION_TYPES.COMPLAINT_REPLIED,
-          title: 'Ответ на вашу жалобу',
-          body: `Автор контента ответил на вашу жалобу`,
+          ...tplComplaintReplied(),
           payload: { complaintId: id },
           studentId: complaint.reporterId,
         })
@@ -78,8 +78,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         if (complaint.reporterRole === 'STUDENT') {
           await createNotification({
             type: NOTIFICATION_TYPES.COMPLAINT_CLOSED,
-            title: 'Жалоба закрыта',
-            body: `Ваша жалоба была закрыта администратором`,
+            ...tplComplaintClosed(),
             payload: { complaintId: id },
             studentId: complaint.reporterId,
           })

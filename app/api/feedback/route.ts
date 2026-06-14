@@ -1,5 +1,6 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { createNotification } from '@/shared/lib/notifications'
+import { tplFeedbackPromo } from '@/shared/lib/notificationTemplates'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../auth'
 
@@ -62,8 +63,7 @@ export async function POST(req: NextRequest) {
       const isTeacher = (session.user.role === 'TEACHER' || session.user.role === 'ADMIN')
       await createNotification({
         type: 'SYSTEM',
-        title: 'Спасибо за обратную связь!',
-        body: `Вы получили промокод за первый отзыв: ${code}`,
+        ...tplFeedbackPromo(code),
         payload: {
           promoCode: code,
           promoDays: 7,

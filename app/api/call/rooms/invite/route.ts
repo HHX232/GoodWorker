@@ -2,6 +2,7 @@ import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../../auth'
 import { createNotification, NOTIFICATION_TYPES } from '@/shared/lib/notifications'
+import { tplVideoCallInvite } from '@/shared/lib/notificationTemplates'
 import { sendTelegramMessage } from '@/lib/telegram'
 
 const APP_URL = 'https://goodworker.up.railway.app'
@@ -28,8 +29,8 @@ export async function POST(req: NextRequest) {
 
     const senderName = session.user.name ?? 'Пользователь'
     const roomLink = `${APP_URL}/call/${roomId}`
-    const notifTitle = `Приглашение в видеозвонок`
-    const notifBody = `${senderName} приглашает вас в комнату «${room.topic ?? room.name}»`
+    const roomName = room.topic ?? room.name
+    const notifTpl = tplVideoCallInvite(senderName, roomName)
 
     // Find target: try teacher first, then student
     const teacher = await prisma.teacher.findUnique({
@@ -40,8 +41,7 @@ export async function POST(req: NextRequest) {
     if (teacher) {
       await createNotification({
         type: NOTIFICATION_TYPES.VIDEO_CALL_INVITE,
-        title: notifTitle,
-        body: notifBody,
+        ...notifTpl,
         payload: { roomId, roomLink, senderName },
         teacherId: teacher.id,
       })
@@ -60,8 +60,7 @@ export async function POST(req: NextRequest) {
     if (student) {
       await createNotification({
         type: NOTIFICATION_TYPES.VIDEO_CALL_INVITE,
-        title: notifTitle,
-        body: notifBody,
+        ...notifTpl,
         payload: { roomId, roomLink, senderName },
         studentId: student.id,
       })

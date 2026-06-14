@@ -1,5 +1,6 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { createNotification } from '@/shared/lib/notifications'
+import { tplPersonalService } from '@/shared/lib/notificationTemplates'
 import { localizeService } from '@/lib/postAI'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../auth'
@@ -133,8 +134,7 @@ export async function POST(req: NextRequest) {
       const sym = CURRENCY_SYMBOLS[svcCurrency] ?? svcCurrency
       await createNotification({
         type: 'PERSONAL_SERVICE',
-        title: 'Личное предложение от преподавателя',
-        body: `Преподаватель создал для вас личное предложение: «${title}» — ${Number(price)} ${sym}`,
+        ...tplPersonalService(title, Number(price), sym),
         payload: {
           serviceId: service.id,
           serviceTitle: title,

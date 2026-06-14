@@ -1,5 +1,6 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { createNotification, NOTIFICATION_TYPES } from '@/shared/lib/notifications'
+import { tplNewComplaint } from '@/shared/lib/notificationTemplates'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../auth'
 
@@ -76,8 +77,7 @@ export async function POST(req: NextRequest) {
       if (roadmap) {
         await createNotification({
           type: NOTIFICATION_TYPES.NEW_COMPLAINT,
-          title: 'Новая жалоба',
-          body: `${actorName} пожаловался на блок роадмапа «${roadmap.title ?? 'Без названия'}»`,
+          ...tplNewComplaint(actorName, roadmap.title ?? 'Без названия', 'roadmap'),
           payload: {
             actorId: session.user.id,
             actorName,
@@ -98,8 +98,7 @@ export async function POST(req: NextRequest) {
       if (post) {
         await createNotification({
           type: NOTIFICATION_TYPES.NEW_COMPLAINT,
-          title: 'Новая жалоба',
-          body: `${actorName} пожаловался на пост «${post.title ?? 'Без названия'}»`,
+          ...tplNewComplaint(actorName, post.title ?? 'Без названия', 'post'),
           payload: {
             actorId: session.user.id,
             actorName,

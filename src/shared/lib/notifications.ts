@@ -56,6 +56,8 @@ interface CreateNotificationInput {
   type: NotificationType
   title: string
   body: string
+  titleTranslations?: Record<string, string>
+  bodyTranslations?: Record<string, string>
   payload?: Record<string, unknown>
   // Exactly one recipient
   teacherId?: string
@@ -72,6 +74,8 @@ export async function createNotification(input: CreateNotificationInput) {
       type: input.type,
       title: input.title,
       body: input.body,
+      ...(input.titleTranslations && { titleTranslations: input.titleTranslations }),
+      ...(input.bodyTranslations && { bodyTranslations: input.bodyTranslations }),
       payload: input.payload ? JSON.parse(JSON.stringify(input.payload)) : undefined,
       isRead: false,
       teacherId: input.teacherId ?? null,
@@ -79,5 +83,8 @@ export async function createNotification(input: CreateNotificationInput) {
     },
   })
 
-  enrichNotificationWithAI(created.id).catch(() => {})
+  // Skip AI translation when static templates already provide all languages
+  if (!input.titleTranslations) {
+    enrichNotificationWithAI(created.id).catch(() => {})
+  }
 }

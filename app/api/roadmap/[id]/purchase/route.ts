@@ -1,5 +1,6 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { createNotification, NOTIFICATION_TYPES } from '@/shared/lib/notifications'
+import { tplRoadmapPurchase } from '@/shared/lib/notificationTemplates'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../../auth'
 
@@ -43,8 +44,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
     const studentName = buyer?.name ?? 'Ученик'
     await createNotification({
       type: NOTIFICATION_TYPES.ROADMAP_PURCHASE,
-      title: 'Новая покупка',
-      body: `${studentName} приобрёл роадмап «${roadmap.title ?? 'Без названия'}»`,
+      ...tplRoadmapPurchase(studentName, roadmap.title ?? 'Без названия'),
       payload: {
         actorId: session.user.id,
         actorName: studentName,

@@ -1,5 +1,6 @@
 import {prisma} from '@/shared/prisma/prisma'
 import {createNotification, NOTIFICATION_TYPES} from '@/shared/lib/notifications'
+import {tplNewComment} from '@/shared/lib/notificationTemplates'
 import {NextRequest, NextResponse} from 'next/server'
 import {auth} from '../../../../../auth'
 import {enrichCommentWithAI, localizeComment} from '@/lib/postAI'
@@ -135,8 +136,7 @@ export async function POST(req: NextRequest, {params}: RouteParams) {
     if (post.teacherId && post.teacherId !== session.user.id) {
       await createNotification({
         type: NOTIFICATION_TYPES.NEW_COMMENT_ON_POST,
-        title: 'Новый комментарий',
-        body: `${author?.name ?? 'Пользователь'} оставил комментарий к посту «${post.title ?? 'Без названия'}»`,
+        ...tplNewComment(author?.name ?? 'Пользователь', post.title ?? 'Без названия'),
         payload: {
           actorId: session.user.id,
           actorName: author?.name ?? 'Пользователь',

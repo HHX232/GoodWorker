@@ -1,5 +1,6 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { createNotification } from '@/shared/lib/notifications'
+import { tplFeedbackValuable } from '@/shared/lib/notificationTemplates'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
 
@@ -27,8 +28,7 @@ export async function POST(req: NextRequest) {
 
     await createNotification({
       type: 'SYSTEM',
-      title: 'Ваш отзыв отмечен как ценный',
-      body: 'Администраторы рассмотрели ваш отзыв и нашли информацию полезной. Если она окажется стоящей — вы получите вознаграждение.',
+      ...tplFeedbackValuable(),
       payload: {
         html: '<p>Администраторы рассмотрели ваш отзыв и нашли информацию полезной. Если она окажется стоящей, вы получите вознаграждение в уведомлениях. Спасибо за участие в развитии платформы!</p>',
       },

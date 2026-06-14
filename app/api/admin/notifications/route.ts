@@ -1,5 +1,6 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { NOTIFICATION_TYPES } from '@/shared/lib/notifications'
+import { translateNotificationText } from '@/lib/postAI'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
 
@@ -29,6 +30,14 @@ export async function POST(req: NextRequest) {
     }
 
     const payload = html?.trim() ? { html: html.trim() } : undefined
+    const cleanTitle = title.trim()
+    const cleanBody = notifBody.trim()
+
+    // Translate once via AI, then apply to all recipients
+    const translations = await translateNotificationText(cleanTitle, cleanBody).catch(() => null)
+    const titleTranslations = translations?.titleTranslations ?? undefined
+    const bodyTranslations = translations?.bodyTranslations ?? undefined
+
     let created = 0
 
     // Send to a specific user by email
@@ -42,8 +51,10 @@ export async function POST(req: NextRequest) {
         await prisma.notification.create({
           data: {
             type: NOTIFICATION_TYPES.SYSTEM,
-            title: title.trim(),
-            body: notifBody.trim(),
+            title: cleanTitle,
+            body: cleanBody,
+            titleTranslations: titleTranslations ?? undefined,
+            bodyTranslations: bodyTranslations ?? undefined,
             payload: payload ?? undefined,
             isRead: false,
             teacherId: teacher.id,
@@ -56,8 +67,10 @@ export async function POST(req: NextRequest) {
           await prisma.notification.create({
             data: {
               type: NOTIFICATION_TYPES.SYSTEM,
-              title: title.trim(),
-              body: notifBody.trim(),
+              title: cleanTitle,
+              body: cleanBody,
+              titleTranslations: titleTranslations ?? undefined,
+              bodyTranslations: bodyTranslations ?? undefined,
               payload: payload ?? undefined,
               isRead: false,
               studentId: student.id,
@@ -77,8 +90,10 @@ export async function POST(req: NextRequest) {
         await prisma.notification.createMany({
           data: teachers.map(t => ({
             type: NOTIFICATION_TYPES.SYSTEM,
-            title: title.trim(),
-            body: notifBody.trim(),
+            title: cleanTitle,
+            body: cleanBody,
+            titleTranslations: titleTranslations ?? undefined,
+            bodyTranslations: bodyTranslations ?? undefined,
             payload: payload ?? undefined,
             isRead: false,
             teacherId: t.id,
@@ -94,8 +109,10 @@ export async function POST(req: NextRequest) {
         await prisma.notification.createMany({
           data: students.map(s => ({
             type: NOTIFICATION_TYPES.SYSTEM,
-            title: title.trim(),
-            body: notifBody.trim(),
+            title: cleanTitle,
+            body: cleanBody,
+            titleTranslations: titleTranslations ?? undefined,
+            bodyTranslations: bodyTranslations ?? undefined,
             payload: payload ?? undefined,
             isRead: false,
             studentId: s.id,
