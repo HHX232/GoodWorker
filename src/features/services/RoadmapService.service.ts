@@ -167,9 +167,9 @@ const RoadmapService = {
     }
   },
 
-  async getComments(roadmapId: string, page = 1, limit = 10): Promise<IRoadmapCommentsResponse> {
+  async getComments(roadmapId: string, page = 1, limit = 10, lang = 'ru'): Promise<IRoadmapCommentsResponse> {
     try {
-      const params = new URLSearchParams({ page: String(page), limit: String(limit) })
+      const params = new URLSearchParams({ page: String(page), limit: String(limit), lang })
       const res = await instance.get<IRoadmapCommentsResponse>(`/roadmap/${roadmapId}/comments?${params}`)
       return res.data
     } catch (error) {

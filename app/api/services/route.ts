@@ -1,11 +1,11 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { createNotification } from '@/shared/lib/notifications'
 import { tplPersonalService } from '@/shared/lib/notificationTemplates'
-import { localizeService } from '@/lib/postAI'
+import { localizeService, enrichServiceWithAI } from '@/lib/postAI'
+import { hasAIProvider } from '@/lib/openrouter'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../auth'
-import { enrichServiceWithAI } from '@/lib/postAI'
-import { hasAIProvider } from '@/lib/openrouter'
+import { cookies } from 'next/headers'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -43,15 +43,16 @@ export async function GET(req: NextRequest) {
       prisma.teacher.findUnique({ where: { id: teacherId }, select: { langCode: true } }),
     ])
 
-    const originalLangCode = teacher?.langCode ?? 'ru'
-
-    const localized = services.map((s) => ({
-      ...localizeService(s, lang),
-      originalLangCode,
-      isTranslated: !!(s.titleTranslations) && lang !== originalLangCode,
-      isPersonal: s.isPersonal,
-      isPersonalForMe: s.isPersonal && s.targetStudentId === viewerId,
-    }))
+    const localized = services.map((s) => {
+      const originalLangCode = (s as any).originalLang ?? teacher?.langCode ?? 'ru'
+      return {
+        ...localizeService(s, lang),
+        originalLangCode,
+        isTranslated: !!(s.titleTranslations) && lang !== originalLangCode,
+        isPersonal: s.isPersonal,
+        isPersonalForMe: s.isPersonal && s.targetStudentId === viewerId,
+      }
+    })
 
     return NextResponse.json({ services: localized })
   } catch {
@@ -87,6 +88,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
+    const cookieStore = await cookies()
+    const originalLang = cookieStore.get('NEXT_LOCALE')?.value ?? 'ru'
+
     const service = await prisma.service.create({
       data: {
         teacherId: session.user.id,
@@ -102,6 +106,7 @@ export async function POST(req: NextRequest) {
         currency: currency ?? 'BYN',
         isPersonal: Boolean(isPersonal),
         targetStudentId: (isPersonal && targetStudentId) ? targetStudentId : null,
+        originalLang,
         ...(promoCode
           ? {
               promoCodes: {

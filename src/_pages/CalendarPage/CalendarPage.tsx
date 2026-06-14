@@ -81,7 +81,7 @@ export function CalendarPage({ teacherId }: { teacherId: string }) {
       })
       .catch(() => {})
 
-    fetch(`/api/services?teacherId=${teacherId}&lang=ru`)
+    fetch(`/api/services?teacherId=${teacherId}&lang=${locale}`)
       .then(r => r.json())
       .then(d => {
         if (Array.isArray(d.services)) {

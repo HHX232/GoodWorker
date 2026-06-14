@@ -3,7 +3,7 @@ import RoadmapService, { IRoadmapComment } from '@/features/services/RoadmapServ
 import { ModalImageZoom } from '@/shared/ui/Modals/ModalImageZoom/ModalImageZoom'
 import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
 import { StarRating } from '@/shared/ui/Posts/PostCommentSection/PostCommentSection'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import styles from './RoadmapCommentsModal.module.scss'
 
@@ -65,6 +65,7 @@ interface Props {
 
 export function RoadmapCommentsModal({ roadmapId, isOpen, onClose, onLeaveReview }: Props) {
   const t = useTranslations('roadMap')
+  const locale = useLocale()
   const [comments, setComments] = useState<CommentWithStars[]>([])
   const [hasMore, setHasMore] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -79,7 +80,7 @@ export function RoadmapCommentsModal({ roadmapId, isOpen, onClose, onLeaveReview
       loadingRef.current = true
       setLoading(true)
       try {
-        const res = await RoadmapService.getComments(roadmapId, pageNum, 10)
+        const res = await RoadmapService.getComments(roadmapId, pageNum, 10, locale)
         setComments((prev) => (reset ? res.comments : [...prev, ...res.comments]))
         pageRef.current = pageNum
         const more = pageNum < res.pagination.totalPages

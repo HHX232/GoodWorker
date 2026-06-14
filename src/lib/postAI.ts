@@ -203,23 +203,30 @@ Return exactly this JSON:
 
 // ─── Comment translation ──────────────────────────────────────────────────────
 
-export async function enrichCommentWithAI(commentId: string): Promise<void> {
-  if (!hasAIProvider()) return
-
-  const comment = await prisma.postComment.findUnique({ where: { id: commentId } })
-  if (!comment || !comment.text.trim()) return
-
+async function translateCommentText(text: string): Promise<Record<Lang, string> | null> {
+  if (!hasAIProvider()) return null
   const raw = await callAI(
     'You are a multilingual translation assistant. Return ONLY valid JSON, no markdown.',
-    `Translate this comment to ru, en, hi, zh. Return ONLY JSON: {"ru":"...","en":"...","hi":"...","zh":"..."}\n\nComment: ${JSON.stringify(comment.text)}`,
+    `Translate this comment to ru, en, hi, zh. Return ONLY JSON: {"ru":"...","en":"...","hi":"...","zh":"..."}\n\nComment: ${JSON.stringify(text)}`,
     { temperature: 0.1 },
   )
-  const parsed = parseJSON<Record<Lang, string>>(raw)
+  return parseJSON<Record<Lang, string>>(raw)
+}
 
-  await prisma.postComment.update({
-    where: { id: commentId },
-    data: { textTranslations: parsed },
-  })
+export async function enrichCommentWithAI(commentId: string): Promise<void> {
+  const comment = await prisma.postComment.findUnique({ where: { id: commentId } })
+  if (!comment || !comment.text.trim()) return
+  const parsed = await translateCommentText(comment.text)
+  if (!parsed) return
+  await prisma.postComment.update({ where: { id: commentId }, data: { textTranslations: parsed } })
+}
+
+export async function enrichRoadmapCommentWithAI(commentId: string): Promise<void> {
+  const comment = await (prisma.roadmapComment as any).findUnique({ where: { id: commentId } })
+  if (!comment || !comment.text.trim()) return
+  const parsed = await translateCommentText(comment.text)
+  if (!parsed) return
+  await (prisma.roadmapComment as any).update({ where: { id: commentId }, data: { textTranslations: parsed } })
 }
 
 export function localizeComment<T extends {

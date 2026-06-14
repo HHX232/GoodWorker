@@ -1,4 +1,5 @@
 import { prisma } from '@/shared/prisma/prisma'
+import { enrichRoadmapCommentWithAI, localizeComment } from '@/lib/postAI'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../../auth'
 
@@ -10,9 +11,10 @@ export async function GET(req: NextRequest, { params }: Params) {
     const { searchParams } = new URL(req.url)
     const page  = Math.max(1, parseInt(searchParams.get('page')  ?? '1'))
     const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') ?? '20')))
+    const lang  = searchParams.get('lang') ?? 'ru'
 
     const [comments, total] = await Promise.all([
-      prisma.roadmapComment.findMany({
+      (prisma.roadmapComment as any).findMany({
         where: { roadmapId },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
@@ -21,7 +23,8 @@ export async function GET(req: NextRequest, { params }: Params) {
       prisma.roadmapComment.count({ where: { roadmapId } }),
     ])
 
-    const authorIds = comments.map((c) => c.authorId)
+    const commentList = comments as any[]
+    const authorIds = commentList.map((c: any) => c.authorId)
 
     const [teacherMap, studentMap, ratingMap] = await Promise.all([
       prisma.teacher
@@ -35,9 +38,10 @@ export async function GET(req: NextRequest, { params }: Params) {
         .then((rows) => new Map(rows.map((r) => [r.authorId, r.stars]))),
     ])
 
-    const enriched = comments.map((c) => {
+    const enriched = commentList.map((c: any) => {
       const author = c.authorRole === 'TEACHER' ? teacherMap.get(c.authorId) : studentMap.get(c.authorId)
-      return { ...c, author: author ?? null, userStars: ratingMap.get(c.authorId) ?? null }
+      const { textTranslations, ...localized } = localizeComment(c, lang)
+      return { ...localized, author: author ?? null, userStars: ratingMap.get(c.authorId) ?? null }
     })
 
     return NextResponse.json({
@@ -74,11 +78,11 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
 
     const comment = existing
-      ? await prisma.roadmapComment.update({
+      ? await (prisma.roadmapComment as any).update({
           where: { id: existing.id },
           data: { ...data, editedAt: new Date() },
         })
-      : await prisma.roadmapComment.create({
+      : await (prisma.roadmapComment as any).create({
           data: {
             roadmapId,
             authorId: session.user.id,
@@ -86,6 +90,8 @@ export async function POST(req: NextRequest, { params }: Params) {
             ...data,
           },
         })
+
+    enrichRoadmapCommentWithAI(comment.id).catch(e => console.error('[roadmapCommentAI]', e))
 
     return NextResponse.json(comment, { status: existing ? 200 : 201 })
   } catch (error) {

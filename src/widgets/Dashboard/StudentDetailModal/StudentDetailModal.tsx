@@ -1,7 +1,7 @@
 'use client'
 
 import { CreateServiceModal } from '@/widgets/Dashboard/CreateServiceModal/CreateServiceModal'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import styles from './StudentDetailModal.module.scss'
@@ -77,6 +77,7 @@ export function StudentDetailModal({
   studentId, studentName, studentInitials, avatarColor, avatarTextColor, subject, teacherId, onClose,
 }: Props) {
   const t = useTranslations('dashboard')
+  const locale = useLocale()
   const [tab, setTab] = useState<Tab>('meetings')
   const [offerOpen, setOfferOpen] = useState(false)
   const [student, setStudent] = useState<StudentData | null>(null)
@@ -116,7 +117,7 @@ export function StudentDetailModal({
 
   useEffect(() => {
     if (!teacherId) return
-    fetch(`/api/services?teacherId=${teacherId}&lang=ru`)
+    fetch(`/api/services?teacherId=${teacherId}&lang=${locale}`)
       .then(r => r.json())
       .then(d => { if (Array.isArray(d.services)) setServices(d.services) })
       .catch(() => {})
