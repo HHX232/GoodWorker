@@ -54,8 +54,10 @@ export async function GET(req: NextRequest, { params }: Params) {
     if (safeLang === 'ru') {
       await prisma.roadmapOutline.upsert({
         where: { roadmapId },
-        create: { roadmapId, autoSteps: steps },
-        update: { autoSteps: steps },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        create: { roadmapId, autoSteps: steps as any },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        update: { autoSteps: steps as any },
       })
     }
 
@@ -114,7 +116,8 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   try {
     await prisma.roadmapOutline.updateMany({
       where: { roadmapId },
-      data: { aiSteps: null },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      data: { aiSteps: null as any },
     })
     return NextResponse.json({ ok: true })
   } catch (e) {
