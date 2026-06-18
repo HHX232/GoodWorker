@@ -4,6 +4,8 @@ import { tooManyRequests } from '@/shared/api/rate-limit-response'
 import { prisma } from '@/shared/prisma/prisma'
 import { applyPromoCode } from '@/lib/applyPromoCode'
 import { hasCyrillic, transliterateCyrillicToLatin } from '@/shared/lib/transliterate'
+import { refineNameTransliterationWithAI } from '@/lib/postAI'
+import { hasAIProvider } from '@/lib/openrouter'
 import bcrypt from 'bcryptjs'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -166,6 +168,12 @@ const sendUserSchema = z
       })
     } else {
       return NextResponse.json({ error: 'Неверный userType' }, { status: 400 })
+    }
+
+    // Refine transliteration via AI in background (non-blocking)
+    if (user && hasCyrillic(name) && hasAIProvider()) {
+      const userType = body.userType === 'Teacher' ? 'teacher' : 'student'
+      refineNameTransliterationWithAI(name, user.id, userType).catch(() => {})
     }
 
     // Apply promo code silently if provided — registration always succeeds regardless

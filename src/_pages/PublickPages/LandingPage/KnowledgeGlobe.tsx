@@ -1,8 +1,10 @@
 'use client'
 import { useEffect, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 import * as THREE from 'three'
 
 export default function KnowledgeGlobe() {
+  const t = useTranslations('LandingPage')
   const containerRef = useRef<HTMLDivElement>(null)
   const tooltipRef   = useRef<HTMLDivElement>(null)
   const hintRef      = useRef<HTMLDivElement>(null)
@@ -286,7 +288,7 @@ export default function KnowledgeGlobe() {
           strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M5 9l-3 3 3 3M19 9l3 3-3 3M9 5l3-3 3 3M9 19l3 3 3-3" />
         </svg>
-        перетащите · наведите на ●
+        {t('globe_hint')}
       </div>
     </div>
   )

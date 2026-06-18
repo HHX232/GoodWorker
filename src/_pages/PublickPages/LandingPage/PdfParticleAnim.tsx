@@ -1,5 +1,6 @@
 'use client'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import * as THREE from 'three'
 
 // ── Particle count & weights ─────────────────────────────────
@@ -218,11 +219,15 @@ const STAGE_ICONS = [
     <line x1="11" y1="15" x2="21" y2="15"/>
   </svg>,
 ]
-const STAGE_NAMES = ['Загрузка', 'Скан', 'Документ', 'Тест']
-
 export default function PdfParticleAnim() {
-  const wrapRef     = useRef<HTMLDivElement>(null)
-  const stageBarRef = useRef<HTMLDivElement>(null)
+  const t = useTranslations('LandingPage')
+  const wrapRef       = useRef<HTMLDivElement>(null)
+  const stageBarRef   = useRef<HTMLDivElement>(null)
+  const pinnedRef       = useRef<number>(-1)   // -1 = auto-cycle
+  const pinnedAtRef     = useRef<number>(0)
+  const burstClickTime  = useRef<number>(-9999)
+  const [activeStage, setActiveStage] = useState(0)
+  const PIN_MS = 5000
 
   useEffect(() => {
     const wrap = wrapRef.current
@@ -288,8 +293,9 @@ export default function PdfParticleAnim() {
     const start = performance.now()
     let mx=0, my=0, tmx=0, tmy=0
     let lastStage = -1
-    let burstClickTime = -9999
     let isHovering = false
+    let lastSetStage = -1
+    burstClickTime.current = -9999
     // precompute for mouse→world conversion at z=0 plane
     const tanHalfFov = Math.tan((FOV * Math.PI / 180) / 2)
 
@@ -300,7 +306,7 @@ export default function PdfParticleAnim() {
       isHovering = true
     }
     const onLeave = () => { tmx=0; tmy=0; isHovering=false }
-    const onClick  = () => { burstClickTime = performance.now() }
+    const onClick  = () => { burstClickTime.current = performance.now() }
     wrap.addEventListener('pointermove', onMove)
     wrap.addEventListener('pointerleave', onLeave)
     wrap.addEventListener('click', onClick)
@@ -310,16 +316,22 @@ export default function PdfParticleAnim() {
       const elapsed = performance.now()-start
       mat.uniforms.uTime.value = elapsed*0.001
 
-      const phase = Math.floor(elapsed/STEP)%4
+      // check if user pinned a stage; auto-unpin after PIN_MS
+      const now = performance.now()
+      const pinned = pinnedRef.current
+      const isPinned = pinned >= 0 && (now - pinnedAtRef.current) < PIN_MS
+      if (!isPinned && pinnedRef.current >= 0) pinnedRef.current = -1
+
+      const phase = isPinned ? pinned : Math.floor(elapsed/STEP)%4
       const tl    = elapsed%STEP
-      const transitioning = tl>HOLD
-      const p     = transitioning ? (tl-HOLD)/TRANS : 0
+      const transitioning = !isPinned && tl>HOLD
+      const p     = transitioning ? (tl-HOLD)/TRANS : (isPinned ? 1 : 0)
       const nxt   = (phase+1)%4
       const fromP = stagePos[phase], toP = stagePos[nxt]
       const fromS = stageSize[phase], toS = stageSize[nxt]
 
       // click burst: sharp spike then decay
-      const sinceClick = (performance.now() - burstClickTime) / 1000
+      const sinceClick = (performance.now() - burstClickTime.current) / 1000
       const burstAmt = sinceClick < 0.8 ? Math.sin(Math.PI * sinceClick / 0.8) * 0.9 : 0
 
       // cursor → world position at z=0 plane (same as particle depth)
@@ -382,22 +394,10 @@ export default function PdfParticleAnim() {
       if (active!==lastStage) {
         lastStage=active
         mat.uniforms.uColor.value.set(STAGE_COLORS[active])
-        if (stageBarRef.current) {
-          stageBarRef.current.querySelectorAll('[data-stage]').forEach((el, i) => {
-            const pill = el as HTMLElement
-            if (i === active) {
-              pill.style.color = STAGE_COLORS[active]
-              pill.style.fontWeight = '700'
-              pill.style.background = `${STAGE_COLORS[active]}18`
-              pill.style.border = `1px solid ${STAGE_COLORS[active]}55`
-            } else {
-              pill.style.color = 'rgba(14,14,18,0.3)'
-              pill.style.fontWeight = '400'
-              pill.style.background = 'transparent'
-              pill.style.border = '1px solid transparent'
-            }
-          })
-        }
+      }
+      if (active !== lastSetStage) {
+        lastSetStage = active
+        setActiveStage(active)
       }
 
       const t = elapsed*0.001
@@ -427,16 +427,23 @@ export default function PdfParticleAnim() {
     }
   }, [])
 
+  const STAGE_NAMES = [t('pdf_stage1'), t('pdf_stage2'), t('pdf_stage3'), t('pdf_stage4')]
+
+  const handleStageClick = (i: number) => {
+    pinnedRef.current = i
+    pinnedAtRef.current = performance.now()
+    burstClickTime.current = performance.now()
+  }
+
   return (
     <div style={{ position: 'relative', width: '100%', height: 420, cursor: 'crosshair' }}>
       <div ref={wrapRef} style={{ position: 'absolute', inset: 0 }} />
 
-      {/* Stage indicator: horizontal row, each item = icon above + label below */}
       <div ref={stageBarRef} style={{
         position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)',
         display: 'flex', alignItems: 'stretch', gap: 2,
         fontFamily: 'JetBrains Mono, monospace',
-        pointerEvents: 'none', zIndex: 2,
+        pointerEvents: 'all', zIndex: 2,
       }}>
         {STAGE_NAMES.map((name, i) => (
           <div key={name} style={{ display: 'flex', alignItems: 'center' }}>
@@ -446,15 +453,20 @@ export default function PdfParticleAnim() {
                 margin: '0 3px', alignSelf: 'center',
               }}>→</span>
             )}
-            <div data-stage={i} style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-              padding: '5px 9px', borderRadius: 9,
-              border: '1px solid transparent',
-              color: i === 0 ? STAGE_COLORS[0] : 'rgba(14,14,18,0.28)',
-              background: i === 0 ? `${STAGE_COLORS[0]}14` : 'transparent',
-              transition: 'all 0.35s',
-              minWidth: 52,
-            }}>
+            <div
+              data-stage={i}
+              onClick={e => { e.stopPropagation(); handleStageClick(i) }}
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                padding: '5px 9px', borderRadius: 9,
+                border: `1px solid ${i === activeStage ? `${STAGE_COLORS[i]}55` : 'transparent'}`,
+                color: i === activeStage ? STAGE_COLORS[i] : 'rgba(14,14,18,0.28)',
+                background: i === activeStage ? `${STAGE_COLORS[i]}18` : 'transparent',
+                fontWeight: i === activeStage ? 700 : 400,
+                transition: 'all 0.35s',
+                minWidth: 52, cursor: 'pointer',
+              }}
+            >
               <span style={{ display: 'flex', lineHeight: 1 }}>
                 {STAGE_ICONS[i]}
               </span>
@@ -465,7 +477,6 @@ export default function PdfParticleAnim() {
           </div>
         ))}
       </div>
-
     </div>
   )
 }

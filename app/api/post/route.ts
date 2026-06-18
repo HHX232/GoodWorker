@@ -59,6 +59,8 @@ export async function POST(req: NextRequest) {
     const cookieStore = await cookies()
     const originalLang = cookieStore.get('NEXT_LOCALE')?.value ?? 'ru'
 
+    const aiEnabled = hasAIProvider()
+
     const post = await prisma.post.create({
       data: {
         teacherId: session.user.id,
@@ -73,13 +75,15 @@ export async function POST(req: NextRequest) {
         isVip,
         vipExpiresAt: isVip && vipExpiresAt ? new Date(vipExpiresAt) : null,
         originalLang,
+        // hold in PENDING until AI moderation completes; publish immediately if no AI
+        moderationStatus: aiEnabled ? 'PENDING' : 'PUBLISHED',
         allowedStudents:
           visibility === 'SELECTED' ? {create: allowedStudentIds.map((studentId: string) => ({studentId}))} : undefined
       },
       include: {allowedStudents: true}
     })
 
-    if (hasAIProvider()) {
+    if (aiEnabled) {
       enrichPostWithAI(post.id)
         .then(() => console.log(`[postAI] translated post ${post.id}`))
         .catch(e => console.error(`[postAI] failed for post ${post.id}:`, e?.message ?? e))

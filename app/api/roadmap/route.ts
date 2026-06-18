@@ -57,6 +57,8 @@ export async function POST(req: NextRequest) {
     const cookieStore = await cookies()
     const originalLang = cookieStore.get('NEXT_LOCALE')?.value ?? 'ru'
 
+    const aiEnabled = hasAIProvider()
+
     const roadmap = await prisma.roadmap.create({
       data: {
         teacherId: session.user.id,
@@ -67,6 +69,7 @@ export async function POST(req: NextRequest) {
         previewImageUrl: previewImageUrl ?? null,
         nodeAccessType: nodeAccessType ?? null,
         originalLang,
+        moderationStatus: aiEnabled ? 'PENDING' : 'PUBLISHED',
         ...(validCategoryIds.length > 0 && {
           roadmapCategories: {
             create: validCategoryIds.map((id) => ({ categoryId: id })),
@@ -80,7 +83,7 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    if (hasAIProvider()) {
+    if (aiEnabled) {
       enrichRoadmapWithAI(roadmap.id).catch((e) => console.error('[roadmapAI]', e))
     }
 

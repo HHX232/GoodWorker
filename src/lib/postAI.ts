@@ -196,7 +196,7 @@ Return exactly this JSON:
       aiModerated: true,
       aiModerationOk: contentOk,
       ...(!post.categoryId && parsed.suggestedCategoryId ? { categoryId: parsed.suggestedCategoryId } : {}),
-      ...(contentOk === false ? { moderationStatus: 'BLOCKED' as const } : {}),
+      moderationStatus: contentOk === false ? 'BLOCKED' as const : 'PUBLISHED' as const,
     },
   })
 }
@@ -687,6 +687,7 @@ Response format:
     data: {
       ...(titleEntry ? { titleTranslations: titleEntry as Prisma.InputJsonValue } : {}),
       contentTranslations: contentTranslations as Prisma.InputJsonValue,
+      moderationStatus: 'PUBLISHED' as const,
     },
   })
 }
@@ -800,5 +801,33 @@ export function localizePost<T extends {
     title: tt?.[l] ?? post.title,
     additionalTitle: att?.[l] ?? post.additionalTitle,
     content: ct?.[l] ?? post.content,
+  }
+}
+
+// ─── Name transliteration via AI ──────────────────────────────────────────────
+
+export async function refineNameTransliterationWithAI(
+  name: string,
+  userId: string,
+  userType: 'student' | 'teacher',
+): Promise<void> {
+  if (!hasAIProvider()) return
+  try {
+    const raw = await callAI(
+      'You are a name romanization expert. Return ONLY valid JSON, no markdown.',
+      `Romanize this Russian name to Latin script for international audiences. Use natural English-friendly spelling (e.g. "Юрий"→"Yuri", "Алексей"→"Alexei", "Михаил"→"Mikhail", "Екатерина"→"Ekaterina"). Name: "${name}"\n\nReturn: {"romanized":"..."}`,
+      { temperature: 0 },
+    )
+    const parsed = parseJSON<{ romanized: string }>(raw)
+    if (!parsed?.romanized) return
+    const transliterated = parsed.romanized.trim()
+    if (userType === 'teacher') {
+      await prisma.teacher.update({ where: { id: userId }, data: { nameTransliterated: transliterated } })
+    } else {
+      await prisma.student.update({ where: { id: userId }, data: { nameTransliterated: transliterated } })
+    }
+    console.log(`[nameTranslit] ${name} → ${transliterated}`)
+  } catch (e) {
+    console.error('[nameTranslit]', e)
   }
 }

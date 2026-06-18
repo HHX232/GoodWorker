@@ -3,7 +3,7 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useRef, useState, useCallback, useEffect, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import TypingText from './TypingText'
 import s from './LandingPage.module.scss'
 
@@ -606,10 +606,6 @@ const PALETTE = [
   { color: '#fce7f3', border: '#f9a8d4', text: '#831843' },
   { color: '#fee2e2', border: '#fca5a5', text: '#7f1d1d' },
 ]
-const NEW_LABELS = [
-  'Звонок · ученик', 'Урок React', 'Консультация', 'Дедлайн проекта',
-  'Тест по TypeScript', 'Разбор ошибок', 'Проверка ДЗ',
-]
 const STEP_PX = 34   // px per hour slot
 
 interface CalEvent {
@@ -621,16 +617,19 @@ let nextId = 10
 
 function CalendarMockup() {
   const t = useTranslations('LandingPage')
-  const days  = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+  const days  = [t('cal_mon'), t('cal_tue'), t('cal_wed'), t('cal_thu'), t('cal_fri'), t('cal_sat'), t('cal_sun')]
   const dates = [25, 26, 27, 28, 29, 30, 31]
   const TIMES = ['9:00', '10:00', '11:00', '12:00', '13:00', '14:00']
+  const NEW_LABELS = [
+    t('cal_ev1'), t('cal_ev2'), t('cal_ev3'), t('cal_ev4'), t('cal_ev5'), t('cal_ev6'), t('cal_ev7'),
+  ]
 
   const [events, setEvents] = useState<CalEvent[]>([
-    { id: 1, day: 1, top: 28,  h: 32, label: 'Звонок · React Flow', ...PALETTE[0] },
-    { id: 2, day: 1, top: 74,  h: 32, label: 'Лекция: JSX',         ...PALETTE[1] },
-    { id: 3, day: 2, top: 62,  h: 32, label: 'Дедлайн TODO',         ...PALETTE[4] },
-    { id: 4, day: 3, top: 96,  h: 32, label: 'Тест по хукам',        ...PALETTE[2] },
-    { id: 5, day: 5, top: 46,  h: 32, label: 'Доклад · CSS',         ...PALETTE[3] },
+    { id: 1, day: 1, top: 28,  h: 32, label: t('cal_ev_a'), ...PALETTE[0] },
+    { id: 2, day: 1, top: 74,  h: 32, label: t('cal_ev_b'), ...PALETTE[1] },
+    { id: 3, day: 2, top: 62,  h: 32, label: t('cal_ev_c'), ...PALETTE[4] },
+    { id: 4, day: 3, top: 96,  h: 32, label: t('cal_ev_d'), ...PALETTE[2] },
+    { id: 5, day: 5, top: 46,  h: 32, label: t('cal_ev_e'), ...PALETTE[3] },
   ])
 
   const dragRef = useRef<{
@@ -688,7 +687,7 @@ function CalendarMockup() {
   return (
     <div className={s.cal_mockup} onPointerMove={onDragMove} onPointerUp={onDragEnd} onPointerCancel={onDragEnd}>
       <div className={s.cal_header}>
-        <span className={s.cal_month}>Май 2026 ▾</span>
+        <span className={s.cal_month}>{t('cal_month')} ▾</span>
         <button className={s.btn_red_sm} onClick={addRandom}>{t('cal_add')}</button>
       </div>
 
@@ -747,19 +746,24 @@ function CalendarMockup() {
 }
 
 // ─── Teachers Block ─────────────────────────────────────────────
-const TEACHERS = [
-  { name: 'Мария Соколова', spec: 'CSS · Дизайн-системы', rating: '5.0', students: '2310', hue: 278, rank: 1 },
-  { name: 'Анна Петрова', spec: 'React · TypeScript', rating: '4.9', students: '1849', hue: 205, rank: 2 },
-  { name: 'Елена Иванова', spec: 'UX · Продукт', rating: '4.8', students: '1640', hue: 18, rank: 3 },
-]
-const TABLE_TEACHERS = [
-  { name: 'Дмитрий Козлов', spec: 'Next.js · Backend', rating: '4.8', students: 1328, growth: 196, n: 4 },
-  { name: 'Игорь Волков', spec: 'Node.js · Postgres', rating: '4.7', students: 1184, growth: 28, n: 5 },
-  { name: 'Наталья Белова', spec: 'Python · ML', rating: '4.7', students: 1102, growth: 142, n: 6 },
-  { name: 'Сергей Орлов', spec: 'Go · Системы', rating: '4.6', students: 980, growth: 88, n: 7 },
-]
+interface ApiTeacher {
+  id: string; name: string; nameTransliterated: string | null; avatarUrl: string | null
+  isVip: boolean; languages: string[]
+  categories: { category: { id: string; slug: string; translations: { langCode: string; name: string }[] } }[]
+  _count: { posts: number; students: number }
+}
 
-function Sparkline({ data }: { data: number[] }) {
+function nameHue(name: string) {
+  let h = 0
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffffff
+  return h % 360
+}
+
+function Sparkline({ seed, students }: { seed: number; students: number }) {
+  const data = Array.from({ length: 7 }, (_, i) => {
+    const base = students > 0 ? Math.max(1, students - 300 + i * 40) : i + 1
+    return base + ((seed * (i + 1) * 17) % 50)
+  })
   const min = Math.min(...data), max = Math.max(...data), span = max - min || 1
   const w = 80, h = 28
   const pts = data.map((v, i) => [
@@ -778,6 +782,32 @@ function Sparkline({ data }: { data: number[] }) {
 
 function TeachersBlock() {
   const t = useTranslations('LandingPage')
+  const locale = useLocale()
+  const [teachers, setTeachers] = useState<ApiTeacher[]>([])
+
+  useEffect(() => {
+    fetch('/api/teachers?limit=7&page=1')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.teachers?.length) setTeachers(d.teachers) })
+      .catch(() => {})
+  }, [])
+
+  const displayName = (tc: ApiTeacher) =>
+    locale !== 'ru' && tc.nameTransliterated ? tc.nameTransliterated : tc.name
+
+  const teacherSpec = (tc: ApiTeacher) =>
+    tc.categories
+      .map(c => {
+        const tr = c.category.translations.find(x => x.langCode === locale) ?? c.category.translations[0]
+        return tr?.name ?? c.category.slug
+      })
+      .slice(0, 3).join(' · ')
+
+  const podium = teachers.slice(0, 3)
+  const tableRows = teachers.slice(3, 7)
+
+  const podiumOrder = [1, 0, 2]
+
   return (
     <div>
       <div className={s.teachers_head}>
@@ -787,76 +817,84 @@ function TeachersBlock() {
           </h2>
           <div className={s.teachers_sub}>{t('teachers_sub')}</div>
         </div>
-        <Link href="/posts/teachers" className={s.link_red}>{t('teachers_all')}</Link>
+        <Link href="/teachers" className={s.link_red}>{t('teachers_all')}</Link>
       </div>
 
-      <div className={s.teachers_grid}>
-        <div className={s.podium}>
-          {TEACHERS.sort((a, b) => {
-            const order = [2, 1, 3]
-            return order.indexOf(a.rank) - order.indexOf(b.rank)
-          }).map(teacher => (
-            <div key={teacher.name} className={s.podium_col}>
-              {teacher.rank === 1 && (
-                <svg width="28" height="20" viewBox="0 0 24 24" fill={RED} style={{ marginBottom: 6 }}>
-                  <path d="M3 7l4 4 5-7 5 7 4-4v11H3z" />
-                </svg>
-              )}
-              <div className={s.podium_avatar} style={{
-                width: teacher.rank === 1 ? 88 : 72, height: teacher.rank === 1 ? 88 : 72,
-                background: `linear-gradient(140deg, hsl(${teacher.hue} 60% 62%), hsl(${teacher.hue + 35} 62% 42%))`,
-                boxShadow: teacher.rank === 1 ? `0 0 0 3px ${RED}, 0 0 0 6px #fff` : 'none',
-              }}>
-                {teacher.name.split(' ').map(w => w[0]).slice(0, 2).join('')}
-                <span className={s.rank_badge} style={{ background: teacher.rank === 1 ? RED : '#0e0e12' }}>{teacher.rank}</span>
-              </div>
-              <div className={s.podium_name}>{teacher.name}</div>
-              <div className={s.podium_spec}>{teacher.spec}</div>
-              <div className={s.podium_stats}>
-                <span>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill={RED}><path d="M12 2l3 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.9 21l1.2-6.8-5-4.9 6.9-1z" /></svg>
-                  {teacher.rating}
-                </span>
-                <span>{teacher.students}</span>
-              </div>
-              <div className={s.podium_base} style={{
-                height: teacher.rank === 1 ? 56 : teacher.rank === 2 ? 38 : 26,
-                borderTop: `3px solid ${teacher.rank === 1 ? RED : '#d8d8e0'}`,
-                background: teacher.rank === 1 ? `rgba(237,6,6,0.08)` : '#f1f1f5',
-              }} />
-            </div>
-          ))}
+      {teachers.length === 0 ? (
+        <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#b4b4be' }}>
+          {t('bar_loading')}
         </div>
+      ) : (
+        <div className={s.teachers_grid}>
+          <div className={s.podium}>
+            {podiumOrder.map((idx, pos) => {
+              const rank = [2, 1, 3][pos]
+              const teacher = podium[idx]
+              if (!teacher) return null
+              const hue = nameHue(teacher.name)
+              return (
+                <div key={teacher.id} className={s.podium_col}>
+                  {rank === 1 && (
+                    <svg width="28" height="20" viewBox="0 0 24 24" fill={RED} style={{ marginBottom: 6 }}>
+                      <path d="M3 7l4 4 5-7 5 7 4-4v11H3z" />
+                    </svg>
+                  )}
+                  <Link href={`/teacher-profile?id=${teacher.id}`} style={{ textDecoration: 'none' }}>
+                    <div className={s.podium_avatar} style={{
+                      width: rank === 1 ? 88 : 72, height: rank === 1 ? 88 : 72,
+                      background: teacher.avatarUrl
+                        ? `url(${teacher.avatarUrl}) center/cover`
+                        : `linear-gradient(140deg, hsl(${hue} 60% 62%), hsl(${(hue + 35) % 360} 62% 42%))`,
+                      boxShadow: rank === 1 ? `0 0 0 3px ${RED}, 0 0 0 6px #fff` : 'none',
+                    }}>
+                      {!teacher.avatarUrl && displayName(teacher).split(' ').map(w => w[0]).slice(0, 2).join('')}
+                      <span className={s.rank_badge} style={{ background: rank === 1 ? RED : '#0e0e12' }}>{rank}</span>
+                    </div>
+                  </Link>
+                  <div className={s.podium_name}>{displayName(teacher)}</div>
+                  <div className={s.podium_spec}>{teacherSpec(teacher)}</div>
+                  <div className={s.podium_stats}>
+                    <span>{teacher._count.students}</span>
+                  </div>
+                  <div className={s.podium_base} style={{
+                    height: rank === 1 ? 56 : rank === 2 ? 38 : 26,
+                    borderTop: `3px solid ${rank === 1 ? RED : '#d8d8e0'}`,
+                    background: rank === 1 ? `rgba(237,6,6,0.08)` : '#f1f1f5',
+                  }} />
+                </div>
+              )
+            })}
+          </div>
 
-        <div className={s.teachers_table_wrap}>
-          <div className={s.teachers_table}>
-            <div className={s.table_head}>
-              <span>{t('table_teacher')}</span><span>{t('table_spec')}</span>
-              <span>{t('table_rating')}</span><span>{t('table_students')}</span>
-              <span style={{ textAlign: 'right' }}>{t('table_dynamics')}</span>
-            </div>
-            {TABLE_TEACHERS.map((row, i) => (
-              <div key={row.name} className={s.table_row} style={{ borderBottom: i < TABLE_TEACHERS.length - 1 ? '1px solid #f3f3f7' : 'none' }}>
-                <span className={s.table_teacher}>
-                  <span className={s.table_n}>{row.n}</span>
-                  <Avatar name={row.name} size={34} />
-                  <span className={s.table_tname}>{row.name}</span>
-                </span>
-                <span className={s.table_spec}>{row.spec}</span>
-                <span className={s.table_rating}>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill={RED}><path d="M12 2l3 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.9 21l1.2-6.8-5-4.9 6.9-1z" /></svg>
-                  {row.rating}
-                </span>
-                <span className={s.table_students}>{row.students.toLocaleString()}</span>
-                <span className={s.table_spark}>
-                  <Sparkline data={[3, 4, 5, 6, 5, 7, 8].map((v, j) => v + j * i * 0.3)} />
-                  <span style={{ color: RED, fontSize: 12, fontWeight: 600 }}>+{row.growth}</span>
-                </span>
+          <div className={s.teachers_table_wrap}>
+            <div className={s.teachers_table}>
+              <div className={s.table_head}>
+                <span>{t('table_teacher')}</span><span>{t('table_spec')}</span>
+                <span>{t('table_students')}</span>
+                <span style={{ textAlign: 'right' }}>{t('table_dynamics')}</span>
               </div>
-            ))}
+              {tableRows.map((row, i) => (
+                <div key={row.id} className={s.table_row} style={{ borderBottom: i < tableRows.length - 1 ? '1px solid #f3f3f7' : 'none' }}>
+                  <span className={s.table_teacher}>
+                    <span className={s.table_n}>{i + 4}</span>
+                    {row.avatarUrl
+                      ? <img src={row.avatarUrl} alt={displayName(row)} style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover' }} />
+                      : <Avatar name={displayName(row)} size={34} />
+                    }
+                    <Link href={`/teacher-profile?id=${row.id}`} className={s.table_tname}>{displayName(row)}</Link>
+                  </span>
+                  <span className={s.table_spec}>{teacherSpec(row)}</span>
+                  <span className={s.table_students}>{row._count.students.toLocaleString()}</span>
+                  <span className={s.table_spark}>
+                    <Sparkline seed={i + 1} students={row._count.students} />
+                    <span style={{ color: RED, fontSize: 12, fontWeight: 600 }}>+{Math.max(1, row._count.students % 200)}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
