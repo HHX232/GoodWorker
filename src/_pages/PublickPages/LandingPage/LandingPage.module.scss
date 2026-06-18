@@ -5,11 +5,25 @@ $ink: #0e0e12;
 $gray: #8c8c98;
 $border: #ececf2;
 
+// Global keyframes for waveform bars (referenced in inline styles)
+:global {
+  @keyframes wave_bar {
+    0%   { transform: scaleY(0.18); }
+    100% { transform: scaleY(1); }
+  }
+}
+
 // ─── Layout ─────────────────────────────────────────
 .page {
   background: #fff;
-  min-height: 100vh;
-  padding-bottom: 80px;
+  margin-top: -4px;
+  overflow-y: scroll;
+  overflow-x: clip;
+  height: calc(100vh - 85px);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar { display: none; }
 }
 
 .container {
@@ -51,11 +65,20 @@ $border: #ececf2;
 .hero_h1 {
   margin: 0;
   font-family: 'Russo One', system-ui, sans-serif;
-  font-size: clamp(36px, 4vw, 58px);
+  font-size: 49px;
   font-weight: 400;
   line-height: 1.08;
   letter-spacing: -0.01em;
   color: $ink;
+
+  span {
+    font-family: 'Russo One', system-ui, sans-serif;
+    font-size: 49px;
+    font-weight: 400;
+  }
+
+  @media (max-width: 1100px) { font-size: 40px; span { font-size: 40px; } }
+  @media (max-width: 600px)  { font-size: 32px; span { font-size: 32px; } }
 }
 
 .hero_typing {
@@ -109,8 +132,9 @@ $border: #ececf2;
 }
 
 .hero_globe {
-  min-height: 480px;
+  min-height: 540px;
   position: relative;
+  overflow: visible;
 
   @media (max-width: 860px) { display: none; }
 }
@@ -131,8 +155,21 @@ $border: #ececf2;
   align-items: center;
   gap: 9px;
   text-decoration: none;
+  transition: background 0.18s ease, transform 0.13s ease, box-shadow 0.18s ease;
+  box-shadow: 0 4px 16px -6px rgba(14,14,18,0.30);
 
-  span { font-size: 20px; line-height: 1; }
+  span { font-size: 20px; line-height: 1; transition: transform 0.2s ease; }
+
+  &:hover {
+    background: #1c1c22;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -8px rgba(14,14,18,0.38);
+    span { transform: rotate(90deg); }
+  }
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px -4px rgba(14,14,18,0.25);
+  }
 }
 
 .btn_outline {
@@ -149,6 +186,18 @@ $border: #ececf2;
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  transition: border-color 0.18s ease, transform 0.13s ease, box-shadow 0.18s ease, background 0.18s ease;
+
+  &:hover {
+    border-color: $ink;
+    background: #f7f7fa;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px -8px rgba(14,14,18,0.14);
+  }
+  &:active {
+    transform: translateY(0);
+    box-shadow: none;
+  }
 }
 
 .btn_red {
@@ -168,6 +217,17 @@ $border: #ececf2;
   cursor: pointer;
   text-decoration: none;
   box-shadow: 0 12px 32px -14px rgba(237, 6, 6, 0.6);
+  transition: transform 0.13s ease, box-shadow 0.18s ease, background 0.18s ease;
+
+  &:hover {
+    background: #c80505;
+    transform: translateY(-2px);
+    box-shadow: 0 16px 36px -14px rgba(237, 6, 6, 0.7);
+  }
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 6px 18px -10px rgba(237, 6, 6, 0.5);
+  }
 }
 
 .btn_red_sm {
@@ -181,6 +241,10 @@ $border: #ececf2;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+  transition: background 0.15s ease, transform 0.12s ease;
+
+  &:hover { background: #c80505; transform: translateY(-1px); }
+  &:active { transform: translateY(0); }
 }
 
 // ─── Typography ──────────────────────────────────────
@@ -196,11 +260,19 @@ $border: #ececf2;
 .section_h2 {
   margin: 0;
   font-family: 'Russo One', system-ui, sans-serif;
-  font-size: clamp(26px, 2.8vw, 36px);
+  font-size: 36px;
   font-weight: 400;
   line-height: 1.12;
   letter-spacing: -0.01em;
   color: $ink;
+
+  span {
+    font-family: 'Russo One', system-ui, sans-serif;
+    font-size: 36px;
+    font-weight: 400;
+  }
+
+  @media (max-width: 600px) { font-size: 28px; span { font-size: 28px; } }
 }
 
 .section_text {
@@ -212,9 +284,10 @@ $border: #ececf2;
 }
 
 .hl {
+  font-family: 'Russo One', system-ui, sans-serif;
   background: rgba(237, 6, 6, 0.11);
   color: $ink;
-  font-weight: 700;
+  font-weight: 400;
   padding: 2px 5px;
   border-radius: 5px;
   box-shadow: inset 0 -2px 0 rgba(237, 6, 6, 0.35);
@@ -701,11 +774,19 @@ $border: #ececf2;
   margin: 0;
   max-width: 720px;
   font-family: 'Russo One', system-ui, sans-serif;
-  font-size: clamp(22px, 2.6vw, 30px);
+  font-size: 36px;
   font-weight: 400;
-  line-height: 1.18;
+  line-height: 1.12;
   letter-spacing: -0.01em;
   color: $ink;
+
+  span {
+    font-family: 'Russo One', system-ui, sans-serif;
+    font-size: 36px;
+    font-weight: 400;
+  }
+
+  @media (max-width: 600px) { font-size: 28px; span { font-size: 28px; } }
 }
 
 .cycle_steps {
@@ -863,6 +944,64 @@ $border: #ececf2;
   transition: background 0.15s;
 
   &:hover { background: #f5f5f5; }
+}
+
+// ─── Features Block ──────────────────────────────────
+.features_grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.feature_card {
+  border: 1px solid $border;
+  border-radius: 20px;
+  padding: 26px 24px;
+  position: relative;
+  overflow: hidden;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.feature_shape {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  // pointer-events intentionally active so 3D shapes can be dragged
+}
+
+.feature_badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 4px 9px;
+  border-radius: 6px;
+  display: inline-block;
+  width: fit-content;
+}
+
+.feature_title {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: $ink;
+  max-width: 55%;
+  line-height: 1.2;
+}
+
+.feature_desc {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: $gray;
+  max-width: 62%;
 }
 
 // ─── Keyframes ───────────────────────────────────────

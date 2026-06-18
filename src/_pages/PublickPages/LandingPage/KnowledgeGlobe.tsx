@@ -1,213 +1,293 @@
 'use client'
 import { useEffect, useRef } from 'react'
-
-interface Vec3 { x: number; y: number; z: number }
-
-const phi = (i: number, n: number) => Math.acos(-1 + (2 * i) / n)
-const theta = (i: number, n: number) => Math.sqrt(n * Math.PI) * phi(i, n)
-
-function fibSphere(n: number, r: number): Vec3[] {
-  return Array.from({ length: n }, (_, i) => ({
-    x: r * Math.cos(theta(i, n)) * Math.sin(phi(i, n)),
-    y: r * Math.sin(theta(i, n)) * Math.sin(phi(i, n)),
-    z: r * Math.cos(phi(i, n)),
-  }))
-}
-
-function rotateX(p: Vec3, a: number): Vec3 {
-  return { x: p.x, y: p.y * Math.cos(a) - p.z * Math.sin(a), z: p.y * Math.sin(a) + p.z * Math.cos(a) }
-}
-function rotateY(p: Vec3, a: number): Vec3 {
-  return { x: p.x * Math.cos(a) + p.z * Math.sin(a), y: p.y, z: -p.x * Math.sin(a) + p.z * Math.cos(a) }
-}
-function project(p: Vec3, fov: number, cx: number, cy: number) {
-  const z = p.z + fov
-  return { sx: (p.x * fov) / z + cx, sy: (p.y * fov) / z + cy, scale: fov / z }
-}
-
-const LABELS = [
-  'Курс · React', 'Звонок · Анна', 'Пост · TypeScript', 'Тест · JSX',
-  'Учитель · Дмитрий', 'Курс · CSS', 'Дедлайн · TODO', 'Курс · Next.js',
-  'Урок · Хуки', 'Пост · Node.js', 'Учитель · Мария', 'Курс · Python',
-]
-
-const N = 44
-const R = 1.0
-const FOV = 3.5
+import * as THREE from 'three'
 
 export default function KnowledgeGlobe() {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const tooltipRef   = useRef<HTMLDivElement>(null)
+  const hintRef      = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const canvas = canvasRef.current
     const container = containerRef.current
-    if (!canvas || !container) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    if (!container) return
+    let w = container.clientWidth
+    let h = container.clientHeight
+    if (w === 0 || h === 0) return
 
-    const nodes = fibSphere(N, R)
-    const stride = Math.floor(N / LABELS.length)
-    const labelSet = new Set(LABELS.map((_, k) => k * stride + 1))
+    const scene  = new THREE.Scene()
+    const camera = new THREE.PerspectiveCamera(38, w / h, 0.1, 100)
+    camera.position.z = 9.5
 
-    const edges: [number, number][] = []
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+    renderer.setSize(w, h)
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    container.appendChild(renderer.domElement)
+
+    // Fibonacci sphere — 44 узла, r=2.7
+    const N = 44, r = 2.7
+    const nodePositions: THREE.Vector3[] = []
+    for (let i = 0; i < N; i++) {
+      const p = Math.acos(-1 + (2 * i) / N)
+      const t = Math.sqrt(N * Math.PI) * p
+      nodePositions.push(new THREE.Vector3(
+        r * Math.cos(t) * Math.sin(p),
+        r * Math.sin(t) * Math.sin(p),
+        r * Math.cos(p),
+      ))
+    }
+
+    const labels = [
+      'Курс · React 19', 'Звонок · Анна', 'Пост · TypeScript', 'Тест · JSX',
+      'Учитель · Дмитрий', 'Курс · CSS Grid', 'Дедлайн · TODO',
+      'Звонок · Дизайн', 'Урок · Хуки', 'Пост · Next.js',
+      'Учитель · Мария', 'Курс · Node.js',
+    ]
+    const miniLabels = [
+      'задание', 'теория', 'видео', 'практика', 'разбор', 'конспект',
+      'база', 'алгоритм', 'паттерн', 'архитектура', 'лекция', 'код',
+      'проект', 'задача', 'прогресс', 'сессия', 'материал', 'ссылка',
+      'урок', 'тема', 'цель', 'этап', 'модуль', 'блок', 'навык',
+      'зачёт', 'план', 'итог', 'обзор', 'ответ', 'вопрос', 'фрейм',
+    ]
+    const stride   = Math.floor(N / labels.length)
+    const labelMap = new Map<number, string>()
+    labels.forEach((lbl, k) => labelMap.set(k * stride + 1, lbl))
+
+    // Assign mini-labels to ALL non-big-labeled nodes
+    const miniLabelMap = new Map<number, string>()
+    let miniIdx = 0
+    for (let i = 0; i < N; i++) {
+      if (!labelMap.has(i) && miniIdx < miniLabels.length) {
+        miniLabelMap.set(i, miniLabels[miniIdx++])
+      }
+    }
+
+    const group = new THREE.Group()
+
+    const accentMat = new THREE.MeshBasicMaterial({ color: 0x9333ea })
+    const inkMat    = new THREE.MeshBasicMaterial({ color: 0x7c3aed })
+    const grayMat   = new THREE.MeshBasicMaterial({ color: 0xc4b5fd })
+    const geoSmall  = new THREE.IcosahedronGeometry(0.07, 0)
+    const geoMed    = new THREE.IcosahedronGeometry(0.10, 1)
+    const geoBig    = new THREE.IcosahedronGeometry(0.16, 1)
+
+    const spheres: THREE.Mesh[] = []
+    nodePositions.forEach((p, i) => {
+      const isLabeled  = labelMap.has(i)
+      const isMini     = !isLabeled && miniLabelMap.has(i)
+      const isInk      = !isLabeled && i % 3 === 0
+      const mat = isLabeled ? accentMat : (isInk ? inkMat : grayMat)
+      const geo = isLabeled ? geoBig   : (isInk ? geoMed  : geoSmall)
+      const m   = new THREE.Mesh(geo, mat)
+      m.position.copy(p)
+      m.userData = {
+        phase: Math.random() * Math.PI * 2,
+        label: labelMap.get(i) ?? miniLabelMap.get(i) ?? null,
+        isLabeled,
+        isMini,
+      }
+      group.add(m)
+      spheres.push(m)
+    })
+
+    // Рёбра — 3 ближайших соседа
     const edgeSet = new Set<string>()
-    nodes.forEach((p, i) => {
-      const sorted = nodes
-        .map((q, j) => ({ j, d: Math.hypot(p.x - q.x, p.y - q.y, p.z - q.z) }))
+    nodePositions.forEach((p, i) => {
+      nodePositions
+        .map((q, j) => ({ j, d: p.distanceTo(q) }))
         .filter(x => x.j !== i)
         .sort((a, b) => a.d - b.d)
         .slice(0, 3)
-      sorted.forEach(({ j }) => {
-        const key = i < j ? `${i}-${j}` : `${j}-${i}`
-        if (!edgeSet.has(key)) { edgeSet.add(key); edges.push([i, j]) }
-      })
+        .forEach(({ j }) => edgeSet.add(i < j ? `${i}-${j}` : `${j}-${i}`))
     })
+    const edges = [...edgeSet].map(k => k.split('-').map(Number))
+    const linePos = new Float32Array(edges.length * 6)
+    edges.forEach(([a, b], k) => {
+      linePos[k*6]   = nodePositions[a].x; linePos[k*6+1] = nodePositions[a].y; linePos[k*6+2] = nodePositions[a].z
+      linePos[k*6+3] = nodePositions[b].x; linePos[k*6+4] = nodePositions[b].y; linePos[k*6+5] = nodePositions[b].z
+    })
+    const lineGeo = new THREE.BufferGeometry()
+    lineGeo.setAttribute('position', new THREE.BufferAttribute(linePos, 3))
+    const lineMat = new THREE.LineBasicMaterial({ color: 0xa78bfa, transparent: true, opacity: 0.42 })
+    group.add(new THREE.LineSegments(lineGeo, lineMat))
 
-    let rotX = 0.2, rotY = 0
-    let dragging = false, lastX = 0, lastY = 0
-    let raf = 0
+    // Кольцо орбиты
+    const ringGeo = new THREE.RingGeometry(3.05, 3.08, 96)
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0xa855f7, transparent: true, opacity: 0.18, side: THREE.DoubleSide })
+    const ring    = new THREE.Mesh(ringGeo, ringMat)
+    ring.rotation.x = Math.PI * 0.42
+    group.add(ring)
 
-    const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2)
-      canvas.width = container.clientWidth * dpr
-      canvas.height = container.clientHeight * dpr
-      canvas.style.width = container.clientWidth + 'px'
-      canvas.style.height = container.clientHeight + 'px'
-      ctx.scale(dpr, dpr)
+    scene.add(group)
+
+    // Интерактивность — hover на всех нодах
+    const raycaster = new THREE.Raycaster()
+    raycaster.params.Points = { threshold: 0.1 }
+    const mouseVec  = new THREE.Vector2()
+    const state = { dragging: false, lastX: 0, lastY: 0, hovered: null as THREE.Mesh | null, hintHidden: false }
+
+    const showTooltip = () => {
+      const tt = tooltipRef.current
+      if (!state.hovered || !tt) return
+      const v = state.hovered.position.clone().applyMatrix4(group.matrixWorld)
+      v.project(camera)
+      if (v.z > 1) { tt.style.display = 'none'; return }
+      const x = (v.x * 0.5 + 0.5) * container.clientWidth
+      const y = (-v.y * 0.5 + 0.5) * container.clientHeight
+      tt.textContent    = state.hovered.userData.label
+      tt.style.left     = x + 'px'
+      tt.style.top      = y + 'px'
+      tt.style.display  = 'block'
+      tt.style.transform = x > container.clientWidth * 0.6 ? 'translate(-100%, -50%)' : 'translate(8px, -50%)'
     }
-    resize()
-    const ro = new ResizeObserver(resize)
-    ro.observe(container)
+    const hideTooltip = () => { if (tooltipRef.current) tooltipRef.current.style.display = 'none' }
+    const hideHint    = () => {
+      if (!state.hintHidden && hintRef.current) { hintRef.current.style.opacity = '0'; state.hintHidden = true }
+    }
 
     const onDown = (e: PointerEvent) => {
-      dragging = true; lastX = e.clientX; lastY = e.clientY
-      canvas.setPointerCapture(e.pointerId)
+      e.stopPropagation(); state.dragging = true; state.lastX = e.clientX; state.lastY = e.clientY
+      container.style.cursor = 'grabbing'; state.hovered = null; hideTooltip(); hideHint()
+      container.setPointerCapture(e.pointerId)
     }
     const onMove = (e: PointerEvent) => {
-      if (!dragging) return
-      rotY += (e.clientX - lastX) * 0.01
-      rotX += (e.clientY - lastY) * 0.01
-      rotX = Math.max(-1.3, Math.min(1.3, rotX))
-      lastX = e.clientX; lastY = e.clientY
-    }
-    const onUp = () => { dragging = false }
-
-    canvas.addEventListener('pointerdown', onDown)
-    canvas.addEventListener('pointermove', onMove)
-    canvas.addEventListener('pointerup', onUp)
-    canvas.addEventListener('pointercancel', onUp)
-
-    let t = 0
-    const draw = (dt: number) => {
-      t += dt
-      if (!dragging) rotY += 0.004
-
-      const W = container.clientWidth
-      const H = container.clientHeight
-      const cx = W / 2, cy = H / 2
-      const scale = Math.min(W, H) * 0.38
-
-      ctx.clearRect(0, 0, W, H)
-
-      const transformed = nodes.map(p => rotateY(rotateX(p, rotX), rotY))
-      const projected = transformed.map(p => project(
-        { x: p.x * scale, y: p.y * scale, z: p.z * scale },
-        FOV * scale, cx, cy
-      ))
-
-      // subtle ring
-      ctx.save()
-      ctx.strokeStyle = 'rgba(147,51,234,0.13)'
-      ctx.lineWidth = 1.5
-      ctx.beginPath()
-      const ringR = scale * 1.08
-      ctx.ellipse(cx, cy, ringR, ringR * 0.38, rotX * 0.4, 0, Math.PI * 2)
-      ctx.stroke()
-      ctx.restore()
-
-      // edges
-      edges.forEach(([a, b]) => {
-        const pa = projected[a], pb = projected[b]
-        const depthFade = ((projected[a].scale + projected[b].scale) / 2 - 0.4) / 0.6
-        ctx.beginPath()
-        ctx.moveTo(pa.sx, pa.sy)
-        ctx.lineTo(pb.sx, pb.sy)
-        ctx.strokeStyle = `rgba(167,139,250,${Math.max(0, depthFade * 0.35)})`
-        ctx.lineWidth = 1
-        ctx.stroke()
-      })
-
-      // nodes
-      const sorted = projected
-        .map((p, i) => ({ ...p, i }))
-        .sort((a, b) => a.scale - b.scale)
-
-      sorted.forEach(({ sx, sy, scale: s, i }) => {
-        const isLabeled = labelSet.has(i)
-        const depth = (s - 0.4) / 0.6
-        const pulse = 1 + Math.sin(t * 2 + i * 0.7) * 0.08
-
-        if (isLabeled) {
-          const r = 5 * s * pulse
-          ctx.beginPath()
-          ctx.arc(sx, sy, r, 0, Math.PI * 2)
-          ctx.fillStyle = `rgba(147,51,234,${0.5 + depth * 0.5})`
-          ctx.fill()
-
-          // label
-          if (depth > 0.3) {
-            ctx.font = `${Math.round(10 * s)}px -apple-system, sans-serif`
-            ctx.fillStyle = `rgba(90,30,180,${Math.max(0, (depth - 0.3) * 1.4)})`
-            ctx.textAlign = 'left'
-            const lbl = LABELS[Array.from(labelSet).indexOf(i)]
-            if (lbl) ctx.fillText(lbl, sx + r + 3, sy + 3)
-          }
-        } else {
-          const r = (i % 3 === 0 ? 3 : 2) * s
-          ctx.beginPath()
-          ctx.arc(sx, sy, r, 0, Math.PI * 2)
-          ctx.fillStyle = `rgba(14,14,18,${0.25 + depth * 0.45})`
-          ctx.fill()
+      const rect = container.getBoundingClientRect()
+      if (state.dragging) {
+        e.stopPropagation()
+        group.rotation.y += (e.clientX - state.lastX) * 0.008
+        group.rotation.x  = Math.max(-1.4, Math.min(1.4, group.rotation.x + (e.clientY - state.lastY) * 0.008))
+        state.lastX = e.clientX; state.lastY = e.clientY; return
+      }
+      mouseVec.x = ((e.clientX - rect.left) / rect.width)  *  2 - 1
+      mouseVec.y = ((e.clientY - rect.top)  / rect.height) * -2 + 1
+      raycaster.setFromCamera(mouseVec, camera)
+      const hits = raycaster.intersectObjects(spheres, false)
+      if (hits.length > 0) {
+        const obj = hits[0].object as THREE.Mesh
+        const v   = obj.position.clone().applyMatrix4(group.matrixWorld); v.project(camera)
+        if (v.z < 1) {
+          state.hovered = obj
+          container.style.cursor = 'pointer'
+          if (obj.userData.label) {
+            const el = tooltipRef.current
+            if (el) {
+              el.style.fontSize = obj.userData.isMini ? '10px' : '12px'
+              el.style.opacity  = obj.userData.isMini ? '0.8' : '1'
+            }
+            showTooltip()
+          } else hideTooltip()
+          hideHint()
+          return
         }
+      }
+      state.hovered = null; container.style.cursor = 'grab'; hideTooltip()
+    }
+    const onUp = (e: PointerEvent) => {
+      if (state.dragging) {
+        state.dragging = false; container.style.cursor = state.hovered ? 'pointer' : 'grab'
+        try { container.releasePointerCapture(e.pointerId) } catch {}
+      }
+    }
+    const onLeave = () => { state.dragging = false; state.hovered = null; container.style.cursor = 'grab'; hideTooltip() }
+
+    container.addEventListener('pointerdown',   onDown)
+    container.addEventListener('pointermove',   onMove)
+    container.addEventListener('pointerup',     onUp)
+    container.addEventListener('pointerleave',  onLeave)
+    container.addEventListener('pointercancel', onLeave)
+    container.style.cursor      = 'grab'
+    container.style.touchAction = 'none'
+
+    let raf = 0, tt = 0, last = performance.now()
+    const animate = () => {
+      const now = performance.now(), dt = Math.min((now - last) / 1000, 0.1)
+      last = now; tt += dt
+      if (!state.dragging && !state.hovered) {
+        group.rotation.y += 0.35 * dt
+        const tx = Math.sin(tt * 0.32) * 0.18
+        group.rotation.x += (tx - group.rotation.x) * 0.5 * dt
+      }
+      spheres.forEach(c => {
+        const base   = state.hovered === c ? 1.7 : 1
+        const target = base + Math.sin(tt * 2 + c.userData.phase) * 0.06
+        c.scale.setScalar(c.scale.x + (target - c.scale.x) * 0.25)
       })
-
-      // live badge
-      ctx.font = '11px JetBrains Mono, monospace'
-      ctx.fillStyle = 'rgba(124,58,237,0.65)'
-      ctx.textAlign = 'left'
-      ctx.fillText('knowledge_graph · live', 12, 22)
+      if (state.hovered) showTooltip()
+      renderer.render(scene, camera)
+      raf = requestAnimationFrame(animate)
     }
+    animate()
 
-    let last = performance.now()
-    const loop = (now: number) => {
-      draw((now - last) / 1000)
-      last = now
-      raf = requestAnimationFrame(loop)
+    const onResize = () => {
+      w = container.clientWidth; h = container.clientHeight
+      if (!w || !h) return
+      camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h)
     }
-    raf = requestAnimationFrame(loop)
+    const ro = new ResizeObserver(onResize)
+    ro.observe(container)
 
     return () => {
-      cancelAnimationFrame(raf)
-      ro.disconnect()
-      canvas.removeEventListener('pointerdown', onDown)
-      canvas.removeEventListener('pointermove', onMove)
-      canvas.removeEventListener('pointerup', onUp)
-      canvas.removeEventListener('pointercancel', onUp)
+      cancelAnimationFrame(raf); ro.disconnect()
+      container.removeEventListener('pointerdown',   onDown)
+      container.removeEventListener('pointermove',   onMove)
+      container.removeEventListener('pointerup',     onUp)
+      container.removeEventListener('pointerleave',  onLeave)
+      container.removeEventListener('pointercancel', onLeave)
+      geoSmall.dispose(); geoMed.dispose(); geoBig.dispose()
+      lineGeo.dispose(); ringGeo.dispose()
+      ;[accentMat, inkMat, grayMat, lineMat, ringMat].forEach(m => m.dispose())
+      renderer.dispose()
+      if (renderer.domElement.parentNode === container) container.removeChild(renderer.domElement)
     }
   }, [])
 
   return (
-    <div ref={containerRef} style={{ position: 'relative', width: '100%', height: '100%', minHeight: 480 }}>
+    <div style={{ position: 'relative', width: '100%', height: '100%', minHeight: 540 }}>
+      {/* фиолетовое свечение */}
       <div style={{
-        position: 'absolute', inset: '10% 5%', borderRadius: '50%', pointerEvents: 'none',
-        background: 'radial-gradient(circle at 50% 45%, rgba(168,85,247,0.22), rgba(124,58,237,0.07) 50%, transparent 70%)',
-        filter: 'blur(8px)',
+        position: 'absolute', inset: '8% 4%', borderRadius: '50%', pointerEvents: 'none',
+        background: 'radial-gradient(circle at 50% 45%, rgba(168,85,247,0.26), rgba(124,58,237,0.09) 45%, transparent 70%)',
+        filter: 'blur(6px)',
       }} />
-      <canvas
-        ref={canvasRef}
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', cursor: 'grab' }}
-      />
+
+      {/* Three.js canvas */}
+      <div ref={containerRef} style={{ position: 'absolute', inset: 0 }} />
+
+      {/* live-dot */}
+      <div style={{
+        position: 'absolute', top: 16, left: 10, pointerEvents: 'none', zIndex: 2,
+        display: 'flex', alignItems: 'center', gap: 5,
+        fontFamily: 'JetBrains Mono, monospace', fontSize: 10.5, color: '#a78bfa',
+        letterSpacing: '0.06em',
+      }}>
+        <span style={{
+          width: 6, height: 6, borderRadius: '50%', background: '#22c55e',
+          animation: 'rd_pulse 1.6s infinite', flexShrink: 0,
+        }} />
+        live
+      </div>
+
+      {/* tooltip */}
+      <div ref={tooltipRef} style={{
+        position: 'absolute', display: 'none', pointerEvents: 'none', zIndex: 10,
+        background: 'rgba(14,14,18,0.82)', backdropFilter: 'blur(6px)',
+        color: '#fff', fontSize: 12, fontWeight: 500, letterSpacing: '0.01em',
+        padding: '5px 10px', borderRadius: 8, whiteSpace: 'nowrap',
+      }} />
+
+      {/* drag hint */}
+      <div ref={hintRef} style={{
+        position: 'absolute', bottom: 14, left: '50%', transform: 'translateX(-50%)',
+        display: 'flex', alignItems: 'center', gap: 6, zIndex: 2,
+        fontSize: 11, color: '#a78bfa', opacity: 1, transition: 'opacity 0.5s',
+        pointerEvents: 'none',
+      }}>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 9l-3 3 3 3M19 9l3 3-3 3M9 5l3-3 3 3M9 19l3 3 3-3" />
+        </svg>
+        перетащите · наведите на ●
+      </div>
     </div>
   )
 }
