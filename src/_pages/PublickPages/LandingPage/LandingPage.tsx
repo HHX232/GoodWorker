@@ -97,13 +97,17 @@ function Avatar({ name, size = 36 }: { name: string; size?: number }) {
 // ─── Hero ───────────────────────────────────────────────────────
 function HeroSection() {
   const t = useTranslations('LandingPage')
+  const { data: session } = useSession()
+  const user = session?.user as { name?: string; role?: string } | undefined
   return (
     <div className={s.hero}>
       <div className={s.hero_left}>
-        <div className={s.hero_greeting}>
-          <span className={s.hero_greeting_name}>{t('hero_greeting')}</span>
-          <span className={s.hero_greeting_sub}> {t('hero_today')}</span>
-        </div>
+        {user && (
+          <div className={s.hero_greeting}>
+            <span className={s.hero_greeting_name}>{t('hero_greeting_prefix')}{user.name}</span>
+            <span className={s.hero_greeting_sub}> {t('hero_today')}</span>
+          </div>
+        )}
 
         <h1 className={s.hero_h1}>
           {t('hero_h1')}{' '}
@@ -159,28 +163,24 @@ function StatItem({ n, label, first }: { n: string; label: string; first?: boole
 }
 
 // ─── Video Section ──────────────────────────────────────────────
-const VIDEO_SUBS = [
-  { speaker: 'Анна', text: 'Продолжаем — сегодня разбираем замыкания в JavaScript.' },
-  { speaker: 'Иван', text: 'А в чём разница замыкания и области видимости?' },
-  { speaker: 'Анна', text: 'Скоп определяет правила, замыкание — захватывает переменные внутрь функции.' },
-  { speaker: 'Мария', text: 'Можно показать пример с функцией-счётчиком?' },
-  { speaker: 'Анна', text: 'const make = () => { let n = 0; return () => ++n }' },
-  { speaker: 'Иван', text: 'Понял! Каждый вызов make — новый независимый счётчик.' },
-]
-
-const TRANSCRIPT = [
-  { role: 'teacher', name: 'Анна Петрова', time: '00:03', text: 'Сегодня разбираем замыкания в JavaScript — одна из ключевых тем для понимания React.' },
-  { role: 'teacher', name: 'Анна Петрова', time: '00:12', text: 'Замыкание — функция, которая помнит переменные из своей области видимости даже после завершения внешней функции.' },
-  { role: 'student', name: 'Иван', time: '00:28', text: 'Чем это отличается от обычной области видимости?' },
-  { role: 'teacher', name: 'Анна Петрова', time: '00:35', text: 'Скоп задаёт правила видимости. Замыкание — захватывает переменные и сохраняет их живыми внутри функции.' },
-  { role: 'student', name: 'Мария', time: '00:51', text: 'Можно пример со счётчиком? Видела такое в хуках React.' },
-  { role: 'teacher', name: 'Анна Петрова', time: '00:58', text: 'const makeCounter = () => { let n = 0; return () => ++n }. Каждый вызов makeCounter — отдельный счётчик.' },
-  { role: 'student', name: 'Иван', time: '01:14', text: 'Значит n живёт в каждом замыкании отдельно, не пересекается!' },
-  { role: 'teacher', name: 'Анна Петрова', time: '01:20', text: 'Именно. Задание: функция, создающая счётчик с произвольным шагом. Дедлайн — следующий урок.' },
-]
 
 function TranscriptModal({ onClose }: { onClose: () => void }) {
   const t = useTranslations('LandingPage')
+
+  const teacherName = t('vid_teacher_name')
+  const s1 = t('vid_student1')
+  const s2 = t('vid_student2')
+  const TRANSCRIPT = [
+    { role: 'teacher', name: teacherName, time: '00:03', text: t('vid_tr1') },
+    { role: 'teacher', name: teacherName, time: '00:12', text: t('vid_tr2') },
+    { role: 'student', name: s1,          time: '00:28', text: t('vid_tr3') },
+    { role: 'teacher', name: teacherName, time: '00:35', text: t('vid_tr4') },
+    { role: 'student', name: s2,          time: '00:51', text: t('vid_tr5') },
+    { role: 'teacher', name: teacherName, time: '00:58', text: t('vid_tr6') },
+    { role: 'student', name: s1,          time: '01:14', text: t('vid_tr7') },
+    { role: 'teacher', name: teacherName, time: '01:20', text: t('vid_tr8') },
+  ]
+
   return (
     <div
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
@@ -407,6 +407,21 @@ function VideoSection() {
   const [subVis, setSubVis] = useState(true)
   const [showTranscript, setShowTranscript] = useState(false)
 
+  const teacherName  = t('vid_teacher_name')
+  const teacherAbbr  = t('vid_teacher_abbr')
+  const teacherShort = t('vid_teacher_short')
+  const student1     = t('vid_student1')
+  const student2     = t('vid_student2')
+
+  const VIDEO_SUBS = [
+    { speaker: teacherShort, text: t('vid_sub1') },
+    { speaker: student1,     text: t('vid_sub2') },
+    { speaker: teacherShort, text: t('vid_sub3') },
+    { speaker: student2,     text: t('vid_sub4') },
+    { speaker: teacherShort, text: t('vid_sub5') },
+    { speaker: student1,     text: t('vid_sub6') },
+  ]
+
   const barMeta = useMemo(() =>
     Array.from({ length: 28 }, (_, i) => ({
       delay: `${(i * 0.045 + Math.sin(i * 0.9) * 0.08).toFixed(3)}s`,
@@ -428,17 +443,17 @@ function VideoSection() {
     <>
       <div className={s.section_grid}>
         <div ref={wrapRef} className={s.video_wrap}>
-          <FeedTile name="Анна Петрова" hue={258} speaking noLabel style={{ aspectRatio: '16/10', width: '100%' }} />
+          <FeedTile name={teacherName} hue={258} speaking noLabel style={{ aspectRatio: '16/10', width: '100%' }} />
 
-          {/* Top-left: name (was "Запись урока") */}
+          {/* Top-left: teacher name badge */}
           <div className={s.rec_badge}>
             <div style={{
               width: 26, height: 26, borderRadius: '50%',
               background: 'linear-gradient(135deg, hsl(258 55% 30%), hsl(288 60% 18%))',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#fff', fontSize: 10, fontWeight: 700, flexShrink: 0,
-            }}>АП</div>
-            Анна Петрова
+            }}>{teacherAbbr}</div>
+            {teacherName}
           </div>
 
           {/* Top-right: REC */}
@@ -511,8 +526,8 @@ function VideoSection() {
           </button>
 
           {/* Draggable participant tiles */}
-          <DraggableTile name="Иван"  hue={210} muted initRight={14} initTop={14}  wrapRef={wrapRef} />
-          <DraggableTile name="Мария" hue={12}        initRight={14} initTop={108} wrapRef={wrapRef} />
+          <DraggableTile name={student1} hue={210} muted initRight={14} initTop={14}  wrapRef={wrapRef} />
+          <DraggableTile name={student2} hue={12}        initRight={14} initTop={108} wrapRef={wrapRef} />
         </div>
 
         <div>
@@ -991,10 +1006,6 @@ function CourseCycle() {
             )}
           </div>
         ))}
-        <svg width="56" height="36" viewBox="0 0 56 36" fill="none" stroke={RED} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 18, flexShrink: 0 }}>
-          <path d="M6 10a22 22 0 0 1 44 0v10a22 22 0 0 1-44 0" />
-          <path d="M1 14l5-6 6 5" />
-        </svg>
       </div>
       <div className={s.cycle_caption}>{t('cycle_caption')}</div>
     </div>

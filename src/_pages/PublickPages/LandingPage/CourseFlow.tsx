@@ -1,5 +1,6 @@
 'use client'
 import { useCallback, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import {
   ReactFlow,
   Background,
@@ -19,7 +20,6 @@ import {
   DownloadIcon,
 } from 'lucide-react'
 
-// ── Visual constants matching real NodeCard ──────────────────────
 const CARD: React.CSSProperties = {
   background: '#fff',
   border: '1px solid #e2e2e9',
@@ -61,14 +61,14 @@ function Body({ children }: { children: React.ReactNode }) {
   return <div style={{ padding: '10px 12px', fontSize: 13 }}>{children}</div>
 }
 
-// ── ENTRY POINT ──────────────────────────────────────────────────
 function EntryNode() {
+  const t = useTranslations('CourseFlow')
   return (
     <div style={CARD}>
-      <NodeHeader label="Точка входа" Icon={MapIcon} color="#141416" />
+      <NodeHeader label={t('entry_label')} Icon={MapIcon} color="#141416" />
       <Body>
         <div style={{ fontSize: 12, color: '#8c8c98', lineHeight: 1.5 }}>
-          Начало курса — все блоки соединяются отсюда
+          {t('entry_desc')}
         </div>
       </Body>
       <Handle type="source" position={Position.Right} style={HANDLE_STYLE} />
@@ -76,11 +76,11 @@ function EntryNode() {
   )
 }
 
-// ── INFO TEXT ────────────────────────────────────────────────────
 function TextNode({ data }: { data: { title: string; preview: string } }) {
+  const t = useTranslations('CourseFlow')
   return (
     <div style={CARD}>
-      <NodeHeader label="Текст" Icon={TextCursorIcon} />
+      <NodeHeader label={t('text_label')} Icon={TextCursorIcon} />
       <Body>
         <div style={{ fontWeight: 600, marginBottom: 4 }}>{data.title}</div>
         <div style={{ fontSize: 12, color: '#8c8c98', lineHeight: 1.5 }}>{data.preview}</div>
@@ -91,17 +91,19 @@ function TextNode({ data }: { data: { title: string; preview: string } }) {
   )
 }
 
-// ── INFO MEDIA ───────────────────────────────────────────────────
 function MediaNode({ data }: { data: { title: string } }) {
+  const t = useTranslations('CourseFlow')
   return (
     <div style={CARD}>
-      <NodeHeader label="Медиа" Icon={ImageIcon} color="#f0f9ff" />
+      <NodeHeader label={t('media_label')} Icon={ImageIcon} color="#f0f9ff" />
       <Body>
         <div style={{
-          height: 56, borderRadius: 8, background: 'linear-gradient(135deg, #e0f2fe, #bae6fd)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8,
+          width: '100%', height: 70, borderRadius: 8,
+          background: 'linear-gradient(135deg, #dbeafe, #e0e7ff)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          marginBottom: 8,
         }}>
-          <ImageIcon size={22} color="#0ea5e9" />
+          <ImageIcon size={22} color="#6366f1" />
         </div>
         <div style={{ fontWeight: 600, fontSize: 12 }}>{data.title}</div>
       </Body>
@@ -111,11 +113,12 @@ function MediaNode({ data }: { data: { title: string } }) {
   )
 }
 
-// ── ACTIVE TEST — interactive checkboxes ────────────────────────
-const TEST_OPTIONS = ['JSX — это синтаксис JS', 'Компиляция в createElement', 'Только для React Native']
 const TEST_CORRECT = [0, 1]
 
 function TestNode({ data }: { data: { title: string; count: number } }) {
+  const t = useTranslations('CourseFlow')
+  const TEST_OPTIONS = [t('test_opt1'), t('test_opt2'), t('test_opt3')]
+
   const [checked, setChecked] = useState<number[]>([])
   const [submitted, setSubmitted] = useState(false)
 
@@ -123,14 +126,8 @@ function TestNode({ data }: { data: { title: string; count: number } }) {
     if (submitted) return
     setChecked(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i])
   }
-  const submit = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setSubmitted(true)
-  }
-  const reset = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setChecked([]); setSubmitted(false)
-  }
+  const submit = (e: React.MouseEvent) => { e.stopPropagation(); setSubmitted(true) }
+  const reset  = (e: React.MouseEvent) => { e.stopPropagation(); setChecked([]); setSubmitted(false) }
 
   const score = submitted
     ? checked.filter(i => TEST_CORRECT.includes(i)).length === TEST_CORRECT.length
@@ -139,7 +136,7 @@ function TestNode({ data }: { data: { title: string; count: number } }) {
 
   return (
     <div style={{ ...CARD, borderColor: '#ED0606' }}>
-      <NodeHeader label="Тест" Icon={NotebookPen} color="#ED0606" />
+      <NodeHeader label={t('test_label')} Icon={NotebookPen} color="#ED0606" />
       <Body>
         <div style={{ fontWeight: 600, marginBottom: 8, fontSize: 12, lineHeight: 1.4 }}>{data.title}</div>
 
@@ -154,23 +151,18 @@ function TestNode({ data }: { data: { title: string; count: number } }) {
             : on ? '#ED0606' : '#e2e2e9'
 
           return (
-            <button
-              key={i}
-              onClick={() => toggle(i)}
-              onPointerDown={e => e.stopPropagation()}
+            <button key={i} onClick={() => toggle(i)} onPointerDown={e => e.stopPropagation()}
               style={{
                 display: 'flex', alignItems: 'center', gap: 7, width: '100%',
                 marginTop: 5, padding: '5px 7px', borderRadius: 7, cursor: submitted ? 'default' : 'pointer',
                 border: `1.5px solid ${borderColor}`, background: bg,
                 font: 'inherit', textAlign: 'left', transition: 'all 0.15s',
-              }}
-            >
+              }}>
               <span style={{
                 width: 14, height: 14, borderRadius: 4, flexShrink: 0,
                 border: `1.5px solid ${borderColor}`,
                 background: on ? (submitted ? (isRight ? '#16a34a' : '#dc2626') : '#ED0606') : '#fff',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                transition: 'all 0.15s',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s',
               }}>
                 {on && <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4"><path d="M20 6 9 17l-5-5"/></svg>}
               </span>
@@ -180,33 +172,21 @@ function TestNode({ data }: { data: { title: string; count: number } }) {
         })}
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 }}>
-          <span style={{ fontSize: 11, color: '#ED0606', fontWeight: 600 }}>{data.count} вопросов</span>
-          {!submitted
-            ? (
-              <button
-                onClick={submit}
-                onPointerDown={e => e.stopPropagation()}
-                style={{
-                  fontSize: 10, fontWeight: 700, padding: '4px 9px', borderRadius: 6,
-                  background: '#ED0606', color: '#fff', border: 'none', cursor: 'pointer',
-                }}
-              >Ответить</button>
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: score ? '#16a34a' : '#dc2626' }}>
-                  {score ? '✓ Верно!' : '✗ Ошибка'}
-                </span>
-                <button
-                  onClick={reset}
-                  onPointerDown={e => e.stopPropagation()}
-                  style={{
-                    fontSize: 10, padding: '4px 8px', borderRadius: 6, cursor: 'pointer',
-                    border: '1px solid #d8d8e0', background: '#fff', color: '#666',
-                  }}
-                >↺</button>
-              </div>
-            )
-          }
+          <span style={{ fontSize: 11, color: '#ED0606', fontWeight: 600 }}>{data.count} {t('test_questions')}</span>
+          {!submitted ? (
+            <button onClick={submit} onPointerDown={e => e.stopPropagation()}
+              style={{ fontSize: 10, fontWeight: 700, padding: '4px 9px', borderRadius: 6, background: '#ED0606', color: '#fff', border: 'none', cursor: 'pointer' }}>
+              {t('test_submit')}
+            </button>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: score ? '#16a34a' : '#dc2626' }}>
+                {score ? t('test_correct') : t('test_wrong')}
+              </span>
+              <button onClick={reset} onPointerDown={e => e.stopPropagation()}
+                style={{ fontSize: 10, padding: '4px 8px', borderRadius: 6, cursor: 'pointer', border: '1px solid #d8d8e0', background: '#fff', color: '#666' }}>↺</button>
+            </div>
+          )}
         </div>
       </Body>
       <Handle type="target" position={Position.Left}  style={{ ...HANDLE_STYLE, background: '#ED0606' }} />
@@ -215,14 +195,14 @@ function TestNode({ data }: { data: { title: string; count: number } }) {
   )
 }
 
-// ── POST LINK ────────────────────────────────────────────────────
 function PostNode({ data }: { data: { title: string } }) {
+  const t = useTranslations('CourseFlow')
   return (
     <div style={CARD}>
-      <NodeHeader label="Пост" Icon={LayoutGridIcon} color="#faf5ff" />
+      <NodeHeader label={t('post_label')} Icon={LayoutGridIcon} color="#faf5ff" />
       <Body>
         <div style={{ fontWeight: 600, marginBottom: 4 }}>{data.title}</div>
-        <div style={{ fontSize: 11, color: '#8c8c98' }}>Ссылка на пост в ленте</div>
+        <div style={{ fontSize: 11, color: '#8c8c98' }}>{t('post_desc')}</div>
       </Body>
       <Handle type="target" position={Position.Left}  style={HANDLE_STYLE} />
       <Handle type="source" position={Position.Right} style={HANDLE_STYLE} />
@@ -230,8 +210,8 @@ function PostNode({ data }: { data: { title: string } }) {
   )
 }
 
-// ── FILE LINK ────────────────────────────────────────────────────
 function FileNode({ data }: { data: { title: string; ext: string } }) {
+  const t = useTranslations('CourseFlow')
   const [installing, setInstalling] = useState(false)
   const [done, setDone] = useState(false)
 
@@ -244,7 +224,7 @@ function FileNode({ data }: { data: { title: string; ext: string } }) {
 
   return (
     <div style={CARD}>
-      <NodeHeader label="Файл" Icon={PaperclipIcon} color="#fffbeb" />
+      <NodeHeader label={t('file_label')} Icon={PaperclipIcon} color="#fffbeb" />
       <Body>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0 }}>
@@ -254,19 +234,15 @@ function FileNode({ data }: { data: { title: string; ext: string } }) {
             }}>{data.ext}</span>
             <span style={{ fontSize: 12, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{data.title}</span>
           </div>
-          <button
-            onClick={handleInstall}
-            onPointerDown={e => e.stopPropagation()}
-            title={done ? 'Установлено' : 'Скачать'}
+          <button onClick={handleInstall} onPointerDown={e => e.stopPropagation()}
+            title={done ? t('file_installed') : t('file_download')}
             style={{
               flexShrink: 0, width: 28, height: 28, borderRadius: 8,
               border: `1.5px solid ${done ? '#16a34a' : '#e2e2e9'}`,
               background: done ? '#dcfce7' : '#fff',
               cursor: done ? 'default' : 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'all 0.2s',
-            }}
-          >
+              display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s',
+            }}>
             {installing ? (
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ca8a04" strokeWidth="2.5" strokeLinecap="round">
                 <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83">
@@ -284,10 +260,7 @@ function FileNode({ data }: { data: { title: string; ext: string } }) {
         </div>
         {installing && (
           <div style={{ marginTop: 8, height: 3, background: '#e2e2e9', borderRadius: 2, overflow: 'hidden' }}>
-            <div style={{
-              height: '100%', background: '#ca8a04', borderRadius: 2,
-              animation: 'fileProgress 1.4s ease-in-out forwards',
-            }}/>
+            <div style={{ height: '100%', background: '#ca8a04', borderRadius: 2, animation: 'fileProgress 1.4s ease-in-out forwards' }}/>
           </div>
         )}
         <style>{`@keyframes fileProgress { from { width: 0% } to { width: 100% } }`}</style>
@@ -298,27 +271,24 @@ function FileNode({ data }: { data: { title: string; ext: string } }) {
   )
 }
 
-// ── DONE ─────────────────────────────────────────────────────────
 function DoneNode() {
+  const t = useTranslations('CourseFlow')
   return (
     <div style={{ ...CARD, borderColor: '#16a34a' }}>
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 8,
-        padding: '10px 14px', background: '#16a34a',
-      }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: '#16a34a' }}>
         <CheckCircle2Icon size={16} color="#fff" />
-        <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>Курс пройден</span>
+        <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{t('done_label')}</span>
       </div>
       <Handle type="target" position={Position.Left} style={{ ...HANDLE_STYLE, background: '#16a34a' }} />
     </div>
   )
 }
 
-// ── AUDIO ────────────────────────────────────────────────────────
 function AudioNode({ data }: { data: { title: string; duration: string } }) {
+  const t = useTranslations('CourseFlow')
   return (
     <div style={CARD}>
-      <NodeHeader label="Аудио" Icon={Volume2Icon} color="#f0fdf4" />
+      <NodeHeader label={t('audio_label')} Icon={Volume2Icon} color="#f0fdf4" />
       <Body>
         <div style={{
           display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px',
@@ -354,17 +324,6 @@ const nodeTypes: NodeTypes = {
   done:   DoneNode   as NodeTypes[string],
 }
 
-const initNodes: Node[] = [
-  { id: '1', type: 'entry', position: { x: 0,   y: 160 }, data: {} },
-  { id: '2', type: 'text',  position: { x: 280, y: 20  }, data: { title: 'Введение в React', preview: 'Что такое JSX, компоненты и props...' } },
-  { id: '3', type: 'media', position: { x: 280, y: 180 }, data: { title: 'Видео: Hello World' } },
-  { id: '4', type: 'file',  position: { x: 280, y: 330 }, data: { title: 'Шпаргалка по хукам', ext: 'PDF' } },
-  { id: '5', type: 'post',  position: { x: 570, y: 20  }, data: { title: 'React Flow на практике' } },
-  { id: '6', type: 'audio', position: { x: 570, y: 180 }, data: { title: 'Разбор кода урока', duration: '12:34' } },
-  { id: '7', type: 'test',  position: { x: 570, y: 335 }, data: { title: 'Тест: Основы React', count: 10 } },
-  { id: '8', type: 'done',  position: { x: 860, y: 205 }, data: {} },
-]
-
 const E = (id: string, s: string, t: string, animated = false): Edge => ({
   id, source: s, target: t, type: 'smoothstep', animated,
   style: { stroke: animated ? '#ED0606' : '#d0d0dc', strokeWidth: animated ? 2 : 1.5 },
@@ -377,6 +336,19 @@ const initEdges: Edge[] = [
 ]
 
 export default function CourseFlow() {
+  const t = useTranslations('CourseFlow')
+
+  const initNodes: Node[] = [
+    { id: '1', type: 'entry', position: { x: 0,   y: 160 }, data: {} },
+    { id: '2', type: 'text',  position: { x: 280, y: 20  }, data: { title: t('n_text_title'),  preview: t('n_text_preview') } },
+    { id: '3', type: 'media', position: { x: 280, y: 180 }, data: { title: t('n_media_title') } },
+    { id: '4', type: 'file',  position: { x: 280, y: 330 }, data: { title: t('n_file_title'),  ext: 'PDF' } },
+    { id: '5', type: 'post',  position: { x: 570, y: 20  }, data: { title: t('n_post_title') } },
+    { id: '6', type: 'audio', position: { x: 570, y: 180 }, data: { title: t('n_audio_title'), duration: '12:34' } },
+    { id: '7', type: 'test',  position: { x: 570, y: 335 }, data: { title: t('n_test_title'),  count: 10 } },
+    { id: '8', type: 'done',  position: { x: 860, y: 205 }, data: {} },
+  ]
+
   const [nodes, , onNodesChange] = useNodesState(initNodes)
   const [edges, , onEdgesChange] = useEdgesState(initEdges)
   const onInit = useCallback(() => {}, [])
@@ -384,7 +356,7 @@ export default function CourseFlow() {
   return (
     <div style={{ border: '1px solid #ececf2', borderRadius: 18, overflow: 'hidden', background: '#fff', height: 480 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 18px', borderBottom: '1px solid #ececf2' }}>
-        <span style={{ fontSize: 15, fontWeight: 700, color: '#0e0e12' }}>Конструктор курса</span>
+        <span style={{ fontSize: 15, fontWeight: 700, color: '#0e0e12' }}>{t('header')}</span>
         <span style={{
           fontSize: 10, fontWeight: 700, color: '#ED0606',
           background: 'rgba(237,6,6,0.08)', padding: '3px 7px', borderRadius: 999, letterSpacing: '0.05em',

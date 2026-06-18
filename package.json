@@ -44,6 +44,7 @@
     "@tiptap/pm": "^3.20.1",
     "@tiptap/react": "^3.20.1",
     "@tiptap/starter-kit": "^3.20.1",
+    "@types/three": "^0.184.1",
     "@xyflow/react": "^12.10.1",
     "auth": "^1.6.5",
     "axios": "^1.13.6",
@@ -72,7 +73,8 @@
     "remark-parse": "^11.0.0",
     "sonner": "^2.0.7",
     "swiper": "^12.1.2",
-    "swr": "^2.4.1"
+    "swr": "^2.4.1",
+    "three": "^0.184.0"
   },
   "devDependencies": {
     "@mermaid-js/mermaid-cli": "^11.12.0",

@@ -5,9 +5,28 @@ import * as THREE from 'three'
 
 export default function KnowledgeGlobe() {
   const t = useTranslations('LandingPage')
-  const containerRef = useRef<HTMLDivElement>(null)
-  const tooltipRef   = useRef<HTMLDivElement>(null)
-  const hintRef      = useRef<HTMLDivElement>(null)
+  const containerRef  = useRef<HTMLDivElement>(null)
+  const tooltipRef    = useRef<HTMLDivElement>(null)
+  const hintRef       = useRef<HTMLDivElement>(null)
+  const labelsRef     = useRef<string[]>([])
+  const miniLabelsRef = useRef<string[]>([])
+
+  // Populate translated labels in render phase so they're ready when useEffect reads them
+  labelsRef.current = [
+    t('globe_l1'), t('globe_l2'), t('globe_l3'), t('globe_l4'),
+    t('globe_l5'), t('globe_l6'), t('globe_l7'), t('globe_l8'),
+    t('globe_l9'), t('globe_l10'), t('globe_l11'), t('globe_l12'),
+  ]
+  miniLabelsRef.current = [
+    t('globe_m1'), t('globe_m2'), t('globe_m3'), t('globe_m4'),
+    t('globe_m5'), t('globe_m6'), t('globe_m7'), t('globe_m8'),
+    t('globe_m9'), t('globe_m10'), t('globe_m11'), t('globe_m12'),
+    t('globe_m13'), t('globe_m14'), t('globe_m15'), t('globe_m16'),
+    t('globe_m17'), t('globe_m18'), t('globe_m19'), t('globe_m20'),
+    t('globe_m21'), t('globe_m22'), t('globe_m23'), t('globe_m24'),
+    t('globe_m25'), t('globe_m26'), t('globe_m27'), t('globe_m28'),
+    t('globe_m29'), t('globe_m30'), t('globe_m31'), t('globe_m32'),
+  ]
 
   useEffect(() => {
     const container = containerRef.current
@@ -25,7 +44,6 @@ export default function KnowledgeGlobe() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     container.appendChild(renderer.domElement)
 
-    // Fibonacci sphere — 44 узла, r=2.7
     const N = 44, r = 2.7
     const nodePositions: THREE.Vector3[] = []
     for (let i = 0; i < N; i++) {
@@ -38,19 +56,8 @@ export default function KnowledgeGlobe() {
       ))
     }
 
-    const labels = [
-      'Курс · React 19', 'Звонок · Анна', 'Пост · TypeScript', 'Тест · JSX',
-      'Учитель · Дмитрий', 'Курс · CSS Grid', 'Дедлайн · TODO',
-      'Звонок · Дизайн', 'Урок · Хуки', 'Пост · Next.js',
-      'Учитель · Мария', 'Курс · Node.js',
-    ]
-    const miniLabels = [
-      'задание', 'теория', 'видео', 'практика', 'разбор', 'конспект',
-      'база', 'алгоритм', 'паттерн', 'архитектура', 'лекция', 'код',
-      'проект', 'задача', 'прогресс', 'сессия', 'материал', 'ссылка',
-      'урок', 'тема', 'цель', 'этап', 'модуль', 'блок', 'навык',
-      'зачёт', 'план', 'итог', 'обзор', 'ответ', 'вопрос', 'фрейм',
-    ]
+    const labels     = labelsRef.current
+    const miniLabels = miniLabelsRef.current
     const stride   = Math.floor(N / labels.length)
     const labelMap = new Map<number, string>()
     labels.forEach((lbl, k) => labelMap.set(k * stride + 1, lbl))
