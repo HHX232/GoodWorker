@@ -2,6 +2,8 @@
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useRef, useState, useCallback, useEffect, useMemo } from 'react'
+import { useSession } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 import TypingText from './TypingText'
 import s from './LandingPage.module.scss'
 
@@ -11,6 +13,70 @@ const CourseFlow        = dynamic(() => import('./CourseFlow'),        { ssr: fa
 const PdfParticleAnim   = dynamic(() => import('./PdfParticleAnim'),   { ssr: false })
 
 const RED = '#ED0606'
+
+// ─── Teacher Appointment Bar ────────────────────────────────────
+type AppointmentEvent = { id: string; title: string; date: string; startTime: string; studentName?: string }
+
+function TeacherAppointmentBar() {
+  const { data: session } = useSession()
+  const t = useTranslations('LandingPage')
+  const [nearest, setNearest] = useState<AppointmentEvent | null | 'loading'>('loading')
+
+  useEffect(() => {
+    if ((session?.user as { role?: string } | undefined)?.role !== 'TEACHER') { setNearest(null); return }
+    fetch('/api/teacher/calendar')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data?.events) { setNearest(null); return }
+        const now = new Date()
+        const upcoming = (data.events as AppointmentEvent[])
+          .filter(e => new Date(`${e.date}T${e.startTime}`) > now)
+          .sort((a, b) => +new Date(`${a.date}T${a.startTime}`) - +new Date(`${b.date}T${b.startTime}`))
+        setNearest(upcoming[0] ?? null)
+      })
+      .catch(() => setNearest(null))
+  }, [session])
+
+  const role = (session?.user as { role?: string } | undefined)?.role
+  if (role !== 'TEACHER' || nearest === null) return null
+
+  if (nearest === 'loading') return (
+    <div style={{ background: '#f5f0ff', borderBottom: '1px solid #e9e0ff', padding: '9px 24px', fontSize: 13, color: '#8c8c98' }}>
+      {t('bar_loading')}
+    </div>
+  )
+
+  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const evDate = new Date(nearest.date + 'T00:00:00')
+  const diff = Math.round((evDate.getTime() - today.getTime()) / 86400000)
+  const dateLabel = diff === 0 ? t('bar_today') : diff === 1 ? t('bar_tomorrow')
+    : nearest.date.split('-').reverse().slice(0, 2).join('.')
+
+  return (
+    <div style={{
+      background: '#f5f0ff', borderBottom: '1px solid #e9e0ff',
+      padding: '9px 24px', display: 'flex', alignItems: 'center', gap: 10,
+      fontSize: 13, color: '#0e0e12', flexWrap: 'wrap', position: 'sticky', top: 0, zIndex: 50,
+    }}>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+      </svg>
+      <span style={{ color: '#7c3aed', fontWeight: 600 }}>{t('bar_eyebrow')}:</span>
+      <span>{dateLabel} {t('bar_at')} {nearest.startTime}</span>
+      {nearest.studentName && <span style={{ color: '#8c8c98' }}>· {nearest.studentName}</span>}
+      <span style={{ color: '#6b6b7a' }}>· {nearest.title}</span>
+      <Link href={`/calendar/${(session!.user as { id: string }).id}`} style={{
+        marginLeft: 'auto', color: '#7c3aed', fontWeight: 600, fontSize: 12,
+        textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap',
+      }}>
+        {t('bar_goto')}
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 12h14M13 5l7 7-7 7"/>
+        </svg>
+      </Link>
+    </div>
+  )
+}
 
 // ─── Avatar ────────────────────────────────────────────────────
 function Avatar({ name, size = 36 }: { name: string; size?: number }) {
@@ -30,50 +96,48 @@ function Avatar({ name, size = 36 }: { name: string; size?: number }) {
 
 // ─── Hero ───────────────────────────────────────────────────────
 function HeroSection() {
+  const t = useTranslations('LandingPage')
   return (
     <div className={s.hero}>
       <div className={s.hero_left}>
         <div className={s.hero_greeting}>
-          <span className={s.hero_greeting_name}>С возвращением, Иван.</span>
-          <span className={s.hero_greeting_sub}> Сегодня 3 занятия и звонок в 18:00.</span>
+          <span className={s.hero_greeting_name}>{t('hero_greeting')}</span>
+          <span className={s.hero_greeting_sub}> {t('hero_today')}</span>
         </div>
 
         <h1 className={s.hero_h1}>
-          Учитесь там,{' '}
-          <span style={{ color: RED }}>где знания связаны</span>
+          {t('hero_h1')}{' '}
+          <span style={{ color: RED }}>{t('hero_h1_hl')}</span>
         </h1>
 
         <div className={s.hero_typing}>
           <TypingText
             phrases={[
-              'Собирайте курсы как графы знаний.',
-              'Записывайте звонки с авто-конспектом.',
-              'Учитесь оффлайн, обсуждайте в постах.',
-              'Преподавайте без барьеров и подписок.',
+              t('hero_phrase1'),
+              t('hero_phrase2'),
+              t('hero_phrase3'),
+              t('hero_phrase4'),
             ]}
             accent={RED}
           />
         </div>
 
-        <p className={s.hero_desc}>
-          GoodWorker — open-платформа для учителей и студентов: визуальный конструктор
-          уроков, авто-транскрипция звонков, общая лента постов и календарь занятий — всё в одном месте.
-        </p>
+        <p className={s.hero_desc}>{t('hero_desc')}</p>
 
         <div className={s.hero_stats}>
-          <StatItem n="2.4k" label="звонков" first />
-          <StatItem n="380+" label="учеников" />
-          <StatItem n="42" label="учителей" />
-          <StatItem n="120" label="курсов" />
+          <StatItem n="2.4k" label={t('stat_calls')} first />
+          <StatItem n="380+" label={t('stat_students')} />
+          <StatItem n="42"   label={t('stat_teachers')} />
+          <StatItem n="120"  label={t('stat_courses')} />
         </div>
 
         <div className={s.hero_cta}>
           <Link href="/profile" className={s.btn_dark}>
-            Создать курс <span>+</span>
+            {t('btn_create')} <span>+</span>
           </Link>
           <button className={s.btn_outline}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-            Как это работает · 2:14
+            {t('btn_how')}
           </button>
         </div>
       </div>
@@ -116,6 +180,7 @@ const TRANSCRIPT = [
 ]
 
 function TranscriptModal({ onClose }: { onClose: () => void }) {
+  const t = useTranslations('LandingPage')
   return (
     <div
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
@@ -139,8 +204,8 @@ function TranscriptModal({ onClose }: { onClose: () => void }) {
           flexShrink: 0,
         }}>
           <div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: '#0e0e12' }}>Конспект урока</div>
-            <div style={{ fontSize: 12, color: '#8c8c98', marginTop: 2 }}>JavaScript · Замыкания · 01:25</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: '#0e0e12' }}>{t('transcript_title')}</div>
+            <div style={{ fontSize: 12, color: '#8c8c98', marginTop: 2 }}>{t('transcript_sub')}</div>
           </div>
           <button onClick={onClose} style={{
             width: 32, height: 32, borderRadius: 8, border: '1px solid #ececf2',
@@ -187,7 +252,7 @@ function TranscriptModal({ onClose }: { onClose: () => void }) {
                         fontSize: 9, fontWeight: 600, letterSpacing: '0.05em',
                         background: '#f0ebff', color: '#7c3aed',
                         padding: '1px 6px', borderRadius: 4,
-                      }}>учитель</span>
+                      }}>{t('transcript_teacher')}</span>
                     )}
                   </div>
                   <div style={{
@@ -336,6 +401,7 @@ function DraggableTile({ name, hue, muted, initRight, initTop, wrapRef }: {
 }
 
 function VideoSection() {
+  const t = useTranslations('LandingPage')
   const wrapRef = useRef<HTMLDivElement>(null)
   const [subIdx, setSubIdx] = useState(0)
   const [subVis, setSubVis] = useState(true)
@@ -441,7 +507,7 @@ function VideoSection() {
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/>
             </svg>
-            Просмотреть конспект
+            {t('video_btn_notes')}
           </button>
 
           {/* Draggable participant tiles */}
@@ -450,30 +516,28 @@ function VideoSection() {
         </div>
 
         <div>
-          <div className={s.eyebrow}>Авто-конспект звонка</div>
+          <div className={s.eyebrow}>{t('video_eyebrow')}</div>
           <h2 className={s.section_h2}>
-            Урок ведёт <span style={{ color: RED }}>конспект</span> за вас
+            {t('video_h2')} <span style={{ color: RED }}>{t('video_h2_hl')}</span> {t('video_h2_after')}
           </h2>
-          <p className={s.section_text}>
-            Пока идёт занятие, платформа расшифровывает речь и собирает структурированный конспект — с тезисами, заданиями и таймкодами. Ничего не нужно записывать вручную.
-          </p>
+          <p className={s.section_text}>{t('video_desc1')}</p>
           <p className={s.section_text} style={{ marginTop: 16 }}>
-            <mark className={s.hl}>ИИ запоминает ошибки ученика и сохраняет их прямо в его профиль.</mark>{' '}
-            Так репетитор экономит время на записи пройденного урока и сразу видит прогресс и слабые места.
+            <mark className={s.hl}>{t('video_hl')}</mark>{' '}
+            {t('video_desc2')}
           </p>
           <div className={s.check_list}>
-            {[
-              ['Конспект готов сразу после звонка', 'тезисы, задания и таймкоды'],
-              ['Ошибки — в профиле ученика', 'ИИ группирует их по темам'],
-              ['Меньше рутины', 'не нужно расписывать урок вручную'],
-            ].map(([t, d]) => (
-              <div key={t} className={s.check_item}>
+            {([
+              [t('video_c1'), t('video_c1s')],
+              [t('video_c2'), t('video_c2s')],
+              [t('video_c3'), t('video_c3s')],
+            ] as [string, string][]).map(([title, sub]) => (
+              <div key={title} className={s.check_item}>
                 <span className={s.check_icon}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
                 </span>
                 <div>
-                  <div className={s.check_title}>{t}</div>
-                  <div className={s.check_sub}>{d}</div>
+                  <div className={s.check_title}>{title}</div>
+                  <div className={s.check_sub}>{sub}</div>
                 </div>
               </div>
             ))}
@@ -488,86 +552,42 @@ function VideoSection() {
 
 // ─── Course Section ─────────────────────────────────────────────
 function CourseSection() {
+  const t = useTranslations('LandingPage')
   return (
     <div className={s.section_grid} style={{ direction: 'ltr' }}>
       <div className={s.course_preview}>
         <CourseFlow />
       </div>
       <div>
-        <div className={s.eyebrow}>Конструктор курса</div>
+        <div className={s.eyebrow}>{t('course_eyebrow')}</div>
         <h2 className={s.section_h2}>
-          Курс как <span style={{ color: RED }}>схема знаний</span>
+          {t('course_h2')} <span style={{ color: RED }}>{t('course_h2_hl')}</span>
         </h2>
-        <p className={s.section_text}>
-          Визуальный редактор превращает разрозненный материал — файлы, тексты, тесты — в наглядную схему: ученику видно, как темы связаны между собой.
-        </p>
+        <p className={s.section_text}>{t('course_desc1')}</p>
         <p className={s.section_text} style={{ marginTop: 16 }}>
-          <mark className={s.hl}>А готовый граф курса работает на саморекламу.</mark>{' '}
-          Им удобно делиться, он показывает глубину программы и сам привлекает новых учеников.
+          <mark className={s.hl}>{t('course_hl')}</mark>{' '}
+          {t('course_desc2')}
         </p>
       </div>
     </div>
   )
 }
 
-function CourseMockup() {
-  const nodes = [
-    { label: 'Начало', x: 8, y: 28, w: 38 },
-    { label: 'Файлы', x: 52, y: 8, w: 36 },
-    { label: 'Текст', x: 52, y: 40, w: 36 },
-    { label: 'Тест ✓', x: 78, y: 24, w: 34 },
-  ]
-  const edges: [number, number][] = [[0, 1], [0, 2], [1, 3], [2, 3]]
-  return (
-    <div className={s.course_mockup}>
-      <div className={s.course_mockup_header}>
-        <span className={s.course_mockup_title}>Конструктор курса</span>
-        <span className={s.badge_accent}>REACT FLOW</span>
-      </div>
-      <div className={s.course_canvas}>
-        <svg width="100%" height="100%" viewBox="0 0 120 70" preserveAspectRatio="xMidYMid meet">
-          <defs>
-            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto">
-              <path d="M0 0L10 5L0 10z" fill="#c4c4cc" />
-            </marker>
-          </defs>
-          {edges.map(([a, b], i) => {
-            const na = nodes[a], nb = nodes[b]
-            const x1 = na.x + na.w, y1 = na.y + 6
-            const x2 = nb.x, y2 = nb.y + 6
-            const mx = (x1 + x2) / 2
-            return <path key={i} d={`M${x1} ${y1} C${mx} ${y1},${mx} ${y2},${x2} ${y2}`}
-              fill="none" stroke="#d8d8e0" strokeWidth="1.2" strokeDasharray="3 3" markerEnd="url(#arr)" />
-          })}
-          {nodes.map((n, i) => (
-            <g key={i}>
-              <rect x={n.x} y={n.y} width={n.w} height={12} rx={3}
-                fill={i === 3 ? RED : '#fff'} stroke={i === 3 ? RED : '#e2e2e9'} strokeWidth="1" />
-              <text x={n.x + n.w / 2} y={n.y + 7.5} textAnchor="middle" dominantBaseline="middle"
-                fontSize="4.5" fontWeight="600" fill={i === 3 ? '#fff' : '#0e0e12'}>{n.label}</text>
-            </g>
-          ))}
-        </svg>
-      </div>
-    </div>
-  )
-}
 
 // ─── Calendar Section ───────────────────────────────────────────
 function CalendarSection() {
+  const t = useTranslations('LandingPage')
   return (
     <div className={s.section_grid_rev}>
       <div>
-        <div className={s.eyebrow}>Расписание</div>
+        <div className={s.eyebrow}>{t('cal_eyebrow')}</div>
         <h2 className={s.section_h2}>
-          Всё расписание <span style={{ color: RED }}>в одном ритме</span>
+          {t('cal_h2')} <span style={{ color: RED }}>{t('cal_h2_hl')}</span>
         </h2>
-        <p className={s.section_text}>
-          Занятия, звонки и дедлайны — на одной неделе. Цветные метки по типам, напоминания и переход в звонок одним кликом.
-        </p>
+        <p className={s.section_text}>{t('cal_desc1')}</p>
         <p className={s.section_text} style={{ marginTop: 16 }}>
-          <mark className={s.hl}>Ученики не пропускают занятия, а вы видите загрузку наперёд.</mark>{' '}
-          Меньше переносов и забытых уроков — больше стабильного дохода.
+          <mark className={s.hl}>{t('cal_hl')}</mark>{' '}
+          {t('cal_desc2')}
         </p>
       </div>
       <div>
@@ -600,6 +620,7 @@ interface CalEvent {
 let nextId = 10
 
 function CalendarMockup() {
+  const t = useTranslations('LandingPage')
   const days  = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
   const dates = [25, 26, 27, 28, 29, 30, 31]
   const TIMES = ['9:00', '10:00', '11:00', '12:00', '13:00', '14:00']
@@ -668,14 +689,7 @@ function CalendarMockup() {
     <div className={s.cal_mockup} onPointerMove={onDragMove} onPointerUp={onDragEnd} onPointerCancel={onDragEnd}>
       <div className={s.cal_header}>
         <span className={s.cal_month}>Май 2026 ▾</span>
-        <button className={s.btn_red_sm} onClick={addRandom}>+ Запись</button>
-      </div>
-
-      <div style={{
-        fontSize: 10, color: '#b4b4be', padding: '0 8px 6px',
-        fontFamily: 'JetBrains Mono, monospace', letterSpacing: '0.04em',
-      }}>
-        клик на пустое место — создать · перетащить — переместить
+        <button className={s.btn_red_sm} onClick={addRandom}>{t('cal_add')}</button>
       </div>
 
       <div className={s.cal_grid}>
@@ -763,80 +777,80 @@ function Sparkline({ data }: { data: number[] }) {
 }
 
 function TeachersBlock() {
+  const t = useTranslations('LandingPage')
   return (
     <div>
       <div className={s.teachers_head}>
         <div>
           <h2 className={s.section_h2} style={{ marginBottom: 6 }}>
-            Учителя на <span style={{ color: RED }}>платформе</span>
+            {t('teachers_h2')} <span style={{ color: RED }}>{t('teachers_h2_hl')}</span>
           </h2>
-          <div className={s.teachers_sub}>Рейтинг по количеству учеников · май 2026</div>
+          <div className={s.teachers_sub}>{t('teachers_sub')}</div>
         </div>
-        <Link href="/posts/teachers" className={s.link_red}>Все 42 →</Link>
+        <Link href="/posts/teachers" className={s.link_red}>{t('teachers_all')}</Link>
       </div>
 
       <div className={s.teachers_grid}>
-        {/* Podium */}
         <div className={s.podium}>
           {TEACHERS.sort((a, b) => {
             const order = [2, 1, 3]
             return order.indexOf(a.rank) - order.indexOf(b.rank)
-          }).map(t => (
-            <div key={t.name} className={s.podium_col}>
-              {t.rank === 1 && (
+          }).map(teacher => (
+            <div key={teacher.name} className={s.podium_col}>
+              {teacher.rank === 1 && (
                 <svg width="28" height="20" viewBox="0 0 24 24" fill={RED} style={{ marginBottom: 6 }}>
                   <path d="M3 7l4 4 5-7 5 7 4-4v11H3z" />
                 </svg>
               )}
               <div className={s.podium_avatar} style={{
-                width: t.rank === 1 ? 88 : 72, height: t.rank === 1 ? 88 : 72,
-                background: `linear-gradient(140deg, hsl(${t.hue} 60% 62%), hsl(${t.hue + 35} 62% 42%))`,
-                boxShadow: t.rank === 1 ? `0 0 0 3px ${RED}, 0 0 0 6px #fff` : 'none',
+                width: teacher.rank === 1 ? 88 : 72, height: teacher.rank === 1 ? 88 : 72,
+                background: `linear-gradient(140deg, hsl(${teacher.hue} 60% 62%), hsl(${teacher.hue + 35} 62% 42%))`,
+                boxShadow: teacher.rank === 1 ? `0 0 0 3px ${RED}, 0 0 0 6px #fff` : 'none',
               }}>
-                {t.name.split(' ').map(w => w[0]).slice(0, 2).join('')}
-                <span className={s.rank_badge} style={{ background: t.rank === 1 ? RED : '#0e0e12' }}>{t.rank}</span>
+                {teacher.name.split(' ').map(w => w[0]).slice(0, 2).join('')}
+                <span className={s.rank_badge} style={{ background: teacher.rank === 1 ? RED : '#0e0e12' }}>{teacher.rank}</span>
               </div>
-              <div className={s.podium_name}>{t.name}</div>
-              <div className={s.podium_spec}>{t.spec}</div>
+              <div className={s.podium_name}>{teacher.name}</div>
+              <div className={s.podium_spec}>{teacher.spec}</div>
               <div className={s.podium_stats}>
                 <span>
                   <svg width="11" height="11" viewBox="0 0 24 24" fill={RED}><path d="M12 2l3 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.9 21l1.2-6.8-5-4.9 6.9-1z" /></svg>
-                  {t.rating}
+                  {teacher.rating}
                 </span>
-                <span>{t.students} уч.</span>
+                <span>{teacher.students}</span>
               </div>
               <div className={s.podium_base} style={{
-                height: t.rank === 1 ? 56 : t.rank === 2 ? 38 : 26,
-                borderTop: `3px solid ${t.rank === 1 ? RED : '#d8d8e0'}`,
-                background: t.rank === 1 ? `rgba(237,6,6,0.08)` : '#f1f1f5',
+                height: teacher.rank === 1 ? 56 : teacher.rank === 2 ? 38 : 26,
+                borderTop: `3px solid ${teacher.rank === 1 ? RED : '#d8d8e0'}`,
+                background: teacher.rank === 1 ? `rgba(237,6,6,0.08)` : '#f1f1f5',
               }} />
             </div>
           ))}
         </div>
 
-        {/* Table */}
         <div className={s.teachers_table_wrap}>
           <div className={s.teachers_table}>
             <div className={s.table_head}>
-              <span>Учитель</span><span>Специальность</span><span>Рейтинг</span><span>Ученики</span>
-              <span style={{ textAlign: 'right' }}>Динамика</span>
+              <span>{t('table_teacher')}</span><span>{t('table_spec')}</span>
+              <span>{t('table_rating')}</span><span>{t('table_students')}</span>
+              <span style={{ textAlign: 'right' }}>{t('table_dynamics')}</span>
             </div>
-            {TABLE_TEACHERS.map((t, i) => (
-              <div key={t.name} className={s.table_row} style={{ borderBottom: i < TABLE_TEACHERS.length - 1 ? '1px solid #f3f3f7' : 'none' }}>
+            {TABLE_TEACHERS.map((row, i) => (
+              <div key={row.name} className={s.table_row} style={{ borderBottom: i < TABLE_TEACHERS.length - 1 ? '1px solid #f3f3f7' : 'none' }}>
                 <span className={s.table_teacher}>
-                  <span className={s.table_n}>{t.n}</span>
-                  <Avatar name={t.name} size={34} />
-                  <span className={s.table_tname}>{t.name}</span>
+                  <span className={s.table_n}>{row.n}</span>
+                  <Avatar name={row.name} size={34} />
+                  <span className={s.table_tname}>{row.name}</span>
                 </span>
-                <span className={s.table_spec}>{t.spec}</span>
+                <span className={s.table_spec}>{row.spec}</span>
                 <span className={s.table_rating}>
                   <svg width="11" height="11" viewBox="0 0 24 24" fill={RED}><path d="M12 2l3 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.9 21l1.2-6.8-5-4.9 6.9-1z" /></svg>
-                  {t.rating}
+                  {row.rating}
                 </span>
-                <span className={s.table_students}>{t.students.toLocaleString('ru')}</span>
+                <span className={s.table_students}>{row.students.toLocaleString()}</span>
                 <span className={s.table_spark}>
                   <Sparkline data={[3, 4, 5, 6, 5, 7, 8].map((v, j) => v + j * i * 0.3)} />
-                  <span style={{ color: RED, fontSize: 12, fontWeight: 600 }}>+{t.growth}</span>
+                  <span style={{ color: RED, fontSize: 12, fontWeight: 600 }}>+{row.growth}</span>
                 </span>
               </div>
             ))}
@@ -849,26 +863,25 @@ function TeachersBlock() {
 
 // ─── PDF Promo ──────────────────────────────────────────────────
 function PdfTestPromo() {
+  const t = useTranslations('LandingPage')
   return (
     <div className={s.section_grid}>
       <div style={{ minWidth: 0 }}>
         <PdfParticleAnim />
       </div>
       <div>
-        <div className={s.eyebrow}>Новый инструмент</div>
+        <div className={s.eyebrow}>{t('pdf_eyebrow')}</div>
         <h2 className={s.section_h2}>
-          PDF превращается в <span style={{ color: RED }}>электронный тест</span>
+          {t('pdf_h2')} <span style={{ color: RED }}>{t('pdf_h2_hl')}</span>
         </h2>
-        <p className={s.section_text}>
-          Загрузите PDF с вопросами и ответами — сервис распознаёт структуру и собирает интерактивный тест: выбор вариантов, сопоставление пар, ввод ответа. Ученики проходят онлайн, результаты считаются автоматически.
-        </p>
+        <p className={s.section_text}>{t('pdf_desc')}</p>
         <div className={s.tag_row}>
-          {['выбор вариантов', 'пары', 'ввод ответа', 'авто-проверка'].map(t => (
-            <span key={t} className={s.tag_chip}>{t}</span>
+          {(['pdf_tag1', 'pdf_tag2', 'pdf_tag3', 'pdf_tag4'] as const).map(key => (
+            <span key={key} className={s.tag_chip}>{t(key)}</span>
           ))}
         </div>
         <Link href="/profile" className={s.btn_red}>
-          Открыть конструктор тестов
+          {t('pdf_btn')}
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="M13 5l7 7-7 7" /></svg>
         </Link>
       </div>
@@ -877,48 +890,31 @@ function PdfTestPromo() {
 }
 
 // ─── Features Block ─────────────────────────────────────────────
-const FEATURES = [
-  {
-    badge: 'AI · АКТИВНО', badgeColor: '#1f8a4c',
-    title: 'Авто-поиск ошибок',
-    desc: 'AI читает работу студента в реальном времени и подсвечивает ошибки — с примером исправления.',
-    kind: 'ico' as const,
-    accent: '#ff7a3d',
-  },
-  {
-    badge: 'AI · BETA', badgeColor: RED,
-    title: 'Тесты из материала',
-    desc: 'Загрузите лекцию, PDF или текст урока — платформа сгенерирует 10 разноформатных вопросов.',
-    kind: 'cube' as const,
-    accent: RED,
-  },
-  {
-    badge: 'СКОРО · Q3 2026', badgeColor: '#7c3aed',
-    title: 'Заработок и авто-оплата',
-    desc: 'Подключите карту — продавайте курсы и получайте оплату автоматически. Комиссия всего 5%.',
-    kind: 'torus' as const,
-    accent: '#7c3aed',
-  },
-]
 
 function FeaturesBlock() {
+  const t = useTranslations('LandingPage')
+  const features = [
+    { badgeKey: 'f1_badge', badgeColor: '#1f8a4c', titleKey: 'f1_title', descKey: 'f1_desc', kind: 'ico' as const, accent: '#ff7a3d' },
+    { badgeKey: 'f2_badge', badgeColor: RED, titleKey: 'f2_title', descKey: 'f2_desc', kind: 'cube' as const, accent: RED },
+    { badgeKey: 'f3_badge', badgeColor: '#7c3aed', titleKey: 'f3_title', descKey: 'f3_desc', kind: 'torus' as const, accent: '#7c3aed' },
+  ]
   return (
     <div>
       <div style={{ marginBottom: 32 }}>
-        <div className={s.eyebrow}>Дорожная карта</div>
+        <div className={s.eyebrow}>{t('features_eyebrow')}</div>
         <h2 className={s.section_h2}>
-          Что нового — <span style={{ color: RED }}>и что скоро</span>
+          {t('features_h2')} <span style={{ color: RED }}>{t('features_h2_hl')}</span>
         </h2>
       </div>
       <div className={s.features_grid}>
-        {FEATURES.map(f => (
-          <div key={f.title} className={s.feature_card}>
+        {features.map(f => (
+          <div key={f.titleKey} className={s.feature_card}>
             <div className={s.feature_shape}>
               <ThreeShape kind={f.kind} accent={f.accent} size={120} />
             </div>
-            <span className={s.feature_badge} style={{ color: f.badgeColor, background: `${f.badgeColor}18` }}>{f.badge}</span>
-            <div className={s.feature_title}>{f.title}</div>
-            <p className={s.feature_desc}>{f.desc}</p>
+            <span className={s.feature_badge} style={{ color: f.badgeColor, background: `${f.badgeColor}18` }}>{t(f.badgeKey as Parameters<typeof t>[0])}</span>
+            <div className={s.feature_title}>{t(f.titleKey as Parameters<typeof t>[0])}</div>
+            <p className={s.feature_desc}>{t(f.descKey as Parameters<typeof t>[0])}</p>
           </div>
         ))}
       </div>
@@ -928,25 +924,27 @@ function FeaturesBlock() {
 
 // ─── Learning Cycle ─────────────────────────────────────────────
 function CourseCycle() {
+  const t = useTranslations('LandingPage')
+  const steps = [
+    { labelKey: 'cycle_s1', subKey: 'cycle_s1s', icon: <path d="M12 3v18M5 10l7-7 7 7" /> },
+    { labelKey: 'cycle_s2', subKey: 'cycle_s2s', icon: <><path d="M4 7h16M4 12h10M4 17h13" /></> },
+    { labelKey: 'cycle_s3', subKey: 'cycle_s3s', icon: <><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /></> },
+  ]
   return (
     <div className={s.cycle_wrap}>
-      <span className={s.cycle_or}>ИЛИ</span>
+      <span className={s.cycle_or}>{t('cycle_or')}</span>
       <h3 className={s.cycle_h3}>
-        проходите курсы — <span style={{ color: RED }}>получайте новые</span> и закрепляйте старые знания
+        {t('cycle_h3')} <span style={{ color: RED }}>{t('cycle_h3_hl')}</span> {t('cycle_h3_after')}
       </h3>
       <div className={s.cycle_steps}>
-        {[
-          { label: 'Новое', sub: 'осваиваете тему', icon: <path d="M12 3v18M5 10l7-7 7 7" /> },
-          { label: 'Практика', sub: 'решаете задания', icon: <><path d="M4 7h16M4 12h10M4 17h13" /></> },
-          { label: 'Повторение', sub: 'закрепляете в памяти', icon: <><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /></> },
-        ].map(({ label, sub, icon }, i, arr) => (
-          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+        {steps.map(({ labelKey, subKey, icon }, i, arr) => (
+          <div key={labelKey} style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
             <div className={s.cycle_step}>
               <span className={s.cycle_icon}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{icon}</svg>
               </span>
-              <div className={s.cycle_label}>{label}</div>
-              <div className={s.cycle_sub}>{sub}</div>
+              <div className={s.cycle_label}>{t(labelKey as Parameters<typeof t>[0])}</div>
+              <div className={s.cycle_sub}>{t(subKey as Parameters<typeof t>[0])}</div>
             </div>
             {i < arr.length - 1 && (
               <svg width="56" height="16" viewBox="0 0 56 16" fill="none" stroke="#d8a0a0" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 28, flexShrink: 0 }}>
@@ -960,7 +958,7 @@ function CourseCycle() {
           <path d="M1 14l5-6 6 5" />
         </svg>
       </div>
-      <div className={s.cycle_caption}>непрерывный цикл знаний</div>
+      <div className={s.cycle_caption}>{t('cycle_caption')}</div>
     </div>
   )
 }
@@ -974,23 +972,26 @@ interface RealPost {
   _count: { comments: number }
 }
 
-function timeAgo(iso: string) {
-  const d = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
-  if (d < 60)  return `${d}м назад`
-  if (d < 1440) return `${Math.floor(d/60)}ч назад`
-  return `${Math.floor(d/1440)}д назад`
-}
-
 function PostCard({ post }: { post: RealPost }) {
-  const cat = post.category?.translations.find(t => t.langCode === 'ru')?.name
+  const t = useTranslations('LandingPage')
+  const locale = typeof window !== 'undefined'
+    ? document.cookie.match(/(?:^|;\s*)NEXT_LOCALE=([^;]+)/)?.[1] ?? 'ru'
+    : 'ru'
+  const cat = post.category?.translations.find(tr => tr.langCode === locale)?.name
     ?? post.category?.translations[0]?.name ?? 'Пост'
+  const d = Math.floor((Date.now() - new Date(post.createdAt).getTime()) / 60000)
+  const ago = d < 60
+    ? `${d} ${t('posts_ago_min')}`
+    : d < 1440
+    ? `${Math.floor(d/60)} ${t('posts_ago_hour')}`
+    : `${Math.floor(d/1440)} ${t('posts_ago_day')}`
   return (
     <div className={s.post_card}>
       <div className={s.post_head}>
         <Avatar name={post.teacher.name} size={42} />
         <div>
           <div className={s.post_author}>{post.teacher.name}</div>
-          <div className={s.post_meta}>{timeAgo(post.createdAt)} · <span style={{ color: RED }}>Учитель</span></div>
+          <div className={s.post_meta}>{ago} · <span style={{ color: RED }}>{t('posts_teacher')}</span></div>
         </div>
       </div>
       <div className={s.post_cat}>{cat}</div>
@@ -1011,12 +1012,13 @@ function PostCard({ post }: { post: RealPost }) {
           </span>
         )}
       </div>
-      <Link href={`/posts/${post.id}`} className={s.post_btn}>Читать полностью →</Link>
+      <Link href={`/posts/${post.id}`} className={s.post_btn}>{t('posts_read')}</Link>
     </div>
   )
 }
 
 function PostsSlider() {
+  const t = useTranslations('LandingPage')
   const ref = useRef<HTMLDivElement>(null)
   const [posts, setPosts] = useState<RealPost[]>([])
   const scroll = (dir: number) => ref.current?.scrollBy({ left: dir * 380, behavior: 'smooth' })
@@ -1032,11 +1034,11 @@ function PostsSlider() {
     <div>
       <div className={s.posts_head}>
         <div>
-          <div className={s.eyebrow}>Каталог постов</div>
-          <h2 className={s.section_h2}>Лента <span style={{ color: RED }}>сообщества</span></h2>
+          <div className={s.eyebrow}>{t('posts_eyebrow')}</div>
+          <h2 className={s.section_h2}>{t('posts_h2')} <span style={{ color: RED }}>{t('posts_h2_hl')}</span></h2>
         </div>
         <div className={s.posts_controls}>
-          <Link href="/posts" className={s.link_red}>Все посты →</Link>
+          <Link href="/posts" className={s.link_red}>{t('posts_all')}</Link>
           <div className={s.slider_btns}>
             {([-1, 1] as const).map(d => (
               <button key={d} className={s.slider_btn} onClick={() => scroll(d)}>
@@ -1074,6 +1076,8 @@ function Divider() {
 // ─── Page ───────────────────────────────────────────────────────
 export default function LandingPage() {
   return (
+    <>
+    <TeacherAppointmentBar />
     <div className={s.page}>
       <div className={s.container}>
         <HeroSection />
@@ -1094,5 +1098,6 @@ export default function LandingPage() {
         <PostsSlider />
       </div>
     </div>
+    </>
   )
 }
