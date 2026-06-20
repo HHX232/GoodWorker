@@ -10,10 +10,27 @@ import { StudentStatsModal } from '@/widgets/Dashboard/StudentStatsModal/Student
 import { StudentTeachersSidebar } from '@/widgets/Dashboard/StudentTeachersSidebar/StudentTeachersSidebar'
 import { ProfileSubNav } from '@/shared/ui/ProfileSubNav/ProfileSubNav'
 import { useTranslations } from 'next-intl'
-import { FC, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useUpdateProfile } from '@/features/hooks/User/useUpdateProfile'
 import { toast } from 'sonner'
 import styles from './StudentDashboard.module.scss'
+
+const LEFT_DEFAULT = 272
+const RIGHT_DEFAULT = 296
+const COL_MIN = 180
+const COL_MAX = 860
+const LS_KEY = 'student-dashboard-col-widths'
+
+function loadWidths(): [number, number] {
+  try {
+    const s = localStorage.getItem(LS_KEY)
+    if (s) {
+      const [l, r] = JSON.parse(s)
+      return [Number(l) || LEFT_DEFAULT, Number(r) || RIGHT_DEFAULT]
+    }
+  } catch {}
+  return [LEFT_DEFAULT, RIGHT_DEFAULT]
+}
 
 interface ProfileData {
   name: string
@@ -95,6 +112,49 @@ interface Props {
 export const StudentDashboard: FC<Props> = ({ initialData }) => {
   const t = useTranslations('dashboard')
   const { mutateAsync: updateProfile } = useUpdateProfile('Student')
+
+  // ── Resizable columns ──────────────────────────────────────
+  const [leftWidth, setLeftWidth] = useState(LEFT_DEFAULT)
+  const [rightWidth, setRightWidth] = useState(RIGHT_DEFAULT)
+
+  useEffect(() => {
+    const [l, r] = loadWidths()
+    setLeftWidth(l)
+    setRightWidth(r)
+  }, [])
+
+  const widthsRef = useRef({ left: leftWidth, right: rightWidth })
+  widthsRef.current = { left: leftWidth, right: rightWidth }
+
+  const startResize = useCallback((side: 'left' | 'right') => (e: React.MouseEvent) => {
+    e.preventDefault()
+    const startX = e.clientX
+    const startLeft = widthsRef.current.left
+    const startRight = widthsRef.current.right
+
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+
+    const onMove = (ev: MouseEvent) => {
+      const delta = ev.clientX - startX
+      if (side === 'left') {
+        setLeftWidth(Math.max(COL_MIN, Math.min(COL_MAX, startLeft + delta)))
+      } else {
+        setRightWidth(Math.max(COL_MIN, Math.min(COL_MAX, startRight - delta)))
+      }
+    }
+
+    const onUp = () => {
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+      localStorage.setItem(LS_KEY, JSON.stringify([widthsRef.current.left, widthsRef.current.right]))
+    }
+
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }, [])
 
   const [name, setName] = useState(initialData.name)
   const [phone, setPhone] = useState(initialData.phone ?? '')
@@ -218,45 +278,59 @@ export const StudentDashboard: FC<Props> = ({ initialData }) => {
   return (
     <div className={styles.wrapper}>
       <ProfileSubNav />
-      <div className={styles.dashboard}>
-      <StudentTeachersSidebar
-        teachers={profileData?.teachers ?? []}
-        loading={profileLoading}
-      />
+      <div
+        className={styles.dashboard}
+        style={{ gridTemplateColumns: `${leftWidth}px 1fr ${rightWidth}px` }}
+      >
+      {/* Left resize handle */}
+      <div className={styles.resizeHandle} style={{ left: leftWidth - 3 }} onMouseDown={startResize('left')} />
+      {/* Right resize handle */}
+      <div className={styles.resizeHandle} style={{ right: rightWidth - 3 }} onMouseDown={startResize('right')} />
 
-      <StudentCenter
-        teacherCount={profileData?.teacherCount ?? 0}
-        callCount={profileData?.callCount ?? 0}
-        errorCount={profileData?.errorCount ?? 0}
-        roadmapAccess={profileData?.roadmapAccess ?? []}
-        serviceBookings={profileData?.serviceBookings ?? []}
-        personalServices={profileData?.personalServices ?? []}
-        loading={profileLoading}
-      />
+      <div className={styles.colLeft}>
+        <StudentTeachersSidebar
+          teachers={profileData?.teachers ?? []}
+          loading={profileLoading}
+        />
+      </div>
 
-      <StudentProfilePanel
-        name={name}
-        email={initialData.email}
-        phone={phone}
-        avatarUrl={avatarUrl}
-        memberSince={profileData?.memberSince ?? new Date().toISOString()}
-        errorCount={profileData?.errorCount ?? 0}
-        correctedCount={profileData?.correctedCount ?? 0}
-        saving={saving}
-        saveError={saveError}
-        saveSuccess={saveSuccess}
-        avatarInputRef={avatarInputRef}
-        onNameChange={setName}
-        onPhoneChange={setPhone}
-        onAvatarUploadClick={() => avatarInputRef.current?.click()}
-        onAvatarRemove={() => setAvatarUrl(null)}
-        onSave={handleSave}
-        onChangeEmail={() => setEmailModalOpen(true)}
-        onChangePassword={() => setPasswordModalOpen(true)}
-        onTranscripts={() => setTranscriptsOpen(true)}
-        onBookmarks={() => setBookmarksOpen(true)}
-        onStats={() => setStatsOpen(true)}
-      />
+      <div className={styles.colCenter}>
+        <StudentCenter
+          teacherCount={profileData?.teacherCount ?? 0}
+          callCount={profileData?.callCount ?? 0}
+          errorCount={profileData?.errorCount ?? 0}
+          roadmapAccess={profileData?.roadmapAccess ?? []}
+          serviceBookings={profileData?.serviceBookings ?? []}
+          personalServices={profileData?.personalServices ?? []}
+          loading={profileLoading}
+        />
+      </div>
+
+      <div className={styles.colRight}>
+        <StudentProfilePanel
+          name={name}
+          email={initialData.email}
+          phone={phone}
+          avatarUrl={avatarUrl}
+          memberSince={profileData?.memberSince ?? new Date().toISOString()}
+          errorCount={profileData?.errorCount ?? 0}
+          correctedCount={profileData?.correctedCount ?? 0}
+          saving={saving}
+          saveError={saveError}
+          saveSuccess={saveSuccess}
+          avatarInputRef={avatarInputRef}
+          onNameChange={setName}
+          onPhoneChange={setPhone}
+          onAvatarUploadClick={() => avatarInputRef.current?.click()}
+          onAvatarRemove={() => setAvatarUrl(null)}
+          onSave={handleSave}
+          onChangeEmail={() => setEmailModalOpen(true)}
+          onChangePassword={() => setPasswordModalOpen(true)}
+          onTranscripts={() => setTranscriptsOpen(true)}
+          onBookmarks={() => setBookmarksOpen(true)}
+          onStats={() => setStatsOpen(true)}
+        />
+      </div>
 
       <input
         ref={avatarInputRef}

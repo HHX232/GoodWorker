@@ -90,14 +90,19 @@
 
 .miniStats {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
+  align-items: stretch;
+  flex-wrap: wrap;
   padding: 4px 0;
 }
 
 .miniStat {
+  flex: 1;
+  min-width: 60px;
   text-align: center;
+  padding: 4px 12px;
+  border-right: 1px solid #EEEFF8;
+
+  &:last-child { border-right: none; }
 }
 
 .miniStatValue {
@@ -105,18 +110,14 @@
   font-weight: 700;
   color: #111118;
   letter-spacing: -0.02em;
+  word-break: break-word;
 }
 
 .miniStatLabel {
   font-size: 11px;
   color: #ABABAB;
   margin-top: 2px;
-}
-
-.miniStatDivider {
-  width: 1px;
-  height: 32px;
-  background: #EEEFF8;
+  white-space: nowrap;
 }
 
 .section {
@@ -481,9 +482,9 @@
   .scroll { &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); } }
   .heroName { color: #e8eaf0; }
   .heroRole { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.4); }
+  .miniStat { border-right-color: rgba(255,255,255,0.07); }
   .miniStatValue { color: #e8eaf0 !important; }
   .miniStatLabel { color: rgba(255,255,255,0.3); }
-  .miniStatDivider { background: rgba(255,255,255,0.07); }
   .avatarRing { border-color: rgba(255,255,255,0.2); background: #23263a; }
   .avatarEditBadge { background: #818cf8; border-color: #1a1c24; }
   .sectionLabel { color: rgba(255,255,255,0.25); }

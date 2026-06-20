@@ -193,8 +193,10 @@ export function StudentCenter({
         {stats.map(s => (
           <div key={s.label} className={styles.statCard}>
             <div className={styles.statIcon} style={{ background: s.bg }}>{s.icon}</div>
-            <div className={styles.statValue}>{s.value}</div>
-            <div className={styles.statLabel}>{s.label}</div>
+            <div className={styles.statText}>
+              <div className={styles.statValue}>{s.value}</div>
+              <div className={styles.statLabel}>{s.label}</div>
+            </div>
           </div>
         ))}
       </div>

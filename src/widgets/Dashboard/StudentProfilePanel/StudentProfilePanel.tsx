@@ -294,12 +294,10 @@ export function StudentProfilePanel({
             <div className={styles.miniStatValue} style={{ color: '#EF4444' }}>{errorCount}</div>
             <div className={styles.miniStatLabel}>{t('errorsLabel')}</div>
           </div>
-          <div className={styles.miniStatDivider} />
           <div className={styles.miniStat}>
             <div className={styles.miniStatValue} style={{ color: '#22c55e' }}>{correctedCount}</div>
             <div className={styles.miniStatLabel}>{t('correctedLabel')}</div>
           </div>
-          <div className={styles.miniStatDivider} />
           <div className={styles.miniStat}>
             <div className={styles.miniStatValue}>{formatMemberSince(memberSince)}</div>
             <div className={styles.miniStatLabel}>{t('memberSinceStudent')}</div>

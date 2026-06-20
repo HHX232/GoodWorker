@@ -12,18 +12,27 @@
 }
 
 .statsRow {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
   margin-bottom: 20px;
-}
-
-.statCard {
   background: #ffffff;
   border: 1px solid #DADCEB;
   border-radius: 12px;
-  padding: 16px;
+  overflow: hidden;
+}
+
+.statCard {
+  flex: 1;
+  min-width: 90px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
   cursor: default;
+  border-right: 1px solid #DADCEB;
+
+  &:last-child { border-right: none; }
 }
 
 .statIcon {
@@ -33,21 +42,28 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.statText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 .statValue {
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 700;
   color: #141416;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   line-height: 1;
-  margin-bottom: 3px;
 }
 
 .statLabel {
-  font-size: 12px;
+  font-size: 11px;
   color: #868897;
+  white-space: nowrap;
 }
 
 .tabs {
@@ -208,7 +224,8 @@
 
 :global(html.theme-dark), :global(html.pomodoro-dark) {
   .center { background: #12141f; }
-  .statCard { background: #1a1c24; border-color: rgba(255,255,255,0.07); }
+  .statsRow { background: #1a1c24; border-color: rgba(255,255,255,0.07); }
+  .statCard { border-right-color: rgba(255,255,255,0.07); }
   .statValue { color: #e8eaf0; }
   .statLabel { color: rgba(255,255,255,0.35); }
   .tabs { border-bottom-color: rgba(255,255,255,0.07); }

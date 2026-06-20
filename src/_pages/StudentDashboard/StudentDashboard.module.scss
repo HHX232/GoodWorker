@@ -17,49 +17,67 @@
   overflow: hidden;
   background: #EEEFF8;
   transition: background 0.2s;
+  position: relative;
 
-  // ── Tablet: hide left sidebar, collapse right panel ──────────────
-  @media (max-width: 1100px) {
-    grid-template-columns: 1fr 296px;
-    grid-template-rows: 1fr;
+  // ── Column wrappers ───────────────────────────────────────────
+  .colLeft,
+  .colCenter,
+  .colRight {
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
 
-    // Left sidebar becomes hidden — use the mobile drawer pattern
-    > :first-child {
-      display: none;
+  // ── Resize handles ────────────────────────────────────────────
+  .resizeHandle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    cursor: col-resize;
+    z-index: 50;
+    background: transparent;
+    transition: background 0.15s;
+    user-select: none;
+
+    &:hover, &:active {
+      background: rgba(83, 74, 183, 0.18);
     }
   }
 
-  // ── Mobile: right panel on top, left sidebar in middle, catalog at bottom ─
+  // ── Tablet: hide left sidebar ─────────────────────────────────
+  @media (max-width: 1100px) {
+    grid-template-columns: 1fr 296px !important;
+    .resizeHandle { display: none; }
+    .colLeft { display: none; }
+  }
+
+  // ── Mobile: stack columns ─────────────────────────────────────
   @media (max-width: 768px) {
-    display: flex;
+    display: flex !important;
     flex-direction: column;
     height: auto;
     min-height: 0;
     overflow: visible;
 
-    > :first-child {
-      display: block;
-      order: 2;
-      height: auto;
-      border-right: none;
-      border-top: 1px solid rgba(0, 0, 0, 0.07);
-    }
-
-    > :nth-child(2) {
-      order: 3;
-      height: auto;
-      overflow-y: visible;
-    }
-
-    > :last-child {
-      order: 1;
-      height: auto;
-      border-left: none;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.07);
-    }
+    .resizeHandle { display: none; }
+    .colLeft  { order: 2; height: auto; border-right: none; border-top: 1px solid rgba(0,0,0,0.07); }
+    .colCenter { order: 3; height: auto; overflow-y: visible; }
+    .colRight { order: 1; height: auto; border-left: none; border-bottom: 1px solid rgba(0,0,0,0.07); }
   }
 }
 
 :global(html.theme-dark), :global(html.pomodoro-dark) {
-  .dashboard { background: #12141f; }
+  .dashboard {
+    background: #12141f;
+
+    .resizeHandle {
+      &:hover, &:active { background: rgba(129,140,248,0.15); }
+    }
+
+    .colLeft  { border-color: rgba(255,255,255,0.07); }
+    .colRight { border-color: rgba(255,255,255,0.07); }
+  }
 }
