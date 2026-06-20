@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 import styles from './StudentTeachersSidebar.module.scss'
@@ -92,7 +93,7 @@ export function StudentTeachersSidebar({ teachers, loading }: Props) {
         )}
 
         {!loading && filtered.map(teacher => (
-          <div key={teacher.id} className={styles.card}>
+          <Link key={teacher.id} href={`/users/${teacher.id}`} className={styles.card} style={{ textDecoration: 'none', display: 'block' }}>
             <div className={styles.cardTop}>
               <div
                 className={styles.avatar}
@@ -114,7 +115,7 @@ export function StudentTeachersSidebar({ teachers, loading }: Props) {
             {teacher.subject && (
               <div className={styles.subjectChip}>{teacher.subject}</div>
             )}
-          </div>
+          </Link>
         ))}
       </div>
     </aside>

@@ -152,13 +152,19 @@ function HeroSection() {
         </div>
 
         <div className={s.hero_cta}>
-          <Link href="/profile" className={s.btn_dark}>
-            {t('btn_create')} <span>+</span>
-          </Link>
-          <button className={s.btn_outline}>
+          {user?.role === 'TEACHER' ? (
+            <Link href="/create-road-map" className={s.btn_dark}>
+              {t('btn_create')} <span>+</span>
+            </Link>
+          ) : (
+            <Link href="/teachers" className={`${s.btn_dark} ${s.btn_dark_bordered}`}>
+              {t('btn_find_teacher')}
+            </Link>
+          )}
+          <Link href="/profile" className={s.btn_outline}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
             {t('btn_how')}
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -182,6 +188,7 @@ function StatItem({ n, label, first }: { n: string; label: string; first?: boole
 
 function TranscriptModal({ onClose }: { onClose: () => void }) {
   const t = useTranslations('LandingPage')
+  const { isDark } = useThemeCtx()
 
   const teacherName = t('vid_teacher_name')
   const s1 = t('vid_student1')
@@ -208,24 +215,24 @@ function TranscriptModal({ onClose }: { onClose: () => void }) {
       }}
     >
       <div style={{
-        background: '#fff', borderRadius: 20, width: '100%', maxWidth: 540,
+        background: isDark ? '#1a1c24' : '#fff', borderRadius: 20, width: '100%', maxWidth: 540,
         maxHeight: '82vh', display: 'flex', flexDirection: 'column',
         boxShadow: '0 24px 60px -12px rgba(0,0,0,0.28)',
         overflow: 'hidden',
       }}>
         {/* Header */}
         <div style={{
-          padding: '18px 22px', borderBottom: '1px solid #ececf2',
+          padding: '18px 22px', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : '#ececf2'}`,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           flexShrink: 0,
         }}>
           <div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: '#0e0e12' }}>{t('transcript_title')}</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: isDark ? '#e8eaf0' : '#0e0e12' }}>{t('transcript_title')}</div>
             <div style={{ fontSize: 12, color: '#8c8c98', marginTop: 2 }}>{t('transcript_sub')}</div>
           </div>
           <button onClick={onClose} style={{
-            width: 32, height: 32, borderRadius: 8, border: '1px solid #ececf2',
-            background: '#f5f5f8', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: 32, height: 32, borderRadius: 8, border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : '#ececf2'}`,
+            background: isDark ? '#23263a' : '#f5f5f8', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8c8c98" strokeWidth="2.5" strokeLinecap="round">
               <path d="M18 6 6 18M6 6l12 12"/>
@@ -261,7 +268,7 @@ function TranscriptModal({ onClose }: { onClose: () => void }) {
                     display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4,
                     flexDirection: isTeacher ? 'row' : 'row-reverse',
                   }}>
-                    <span style={{ fontSize: 11.5, fontWeight: 600, color: '#0e0e12' }}>{entry.name}</span>
+                    <span style={{ fontSize: 11.5, fontWeight: 600, color: isDark ? '#e8eaf0' : '#0e0e12' }}>{entry.name}</span>
                     <span style={{ fontSize: 10, color: '#b0b0bc' }}>{entry.time}</span>
                     {isTeacher && (
                       <span style={{
@@ -272,11 +279,15 @@ function TranscriptModal({ onClose }: { onClose: () => void }) {
                     )}
                   </div>
                   <div style={{
-                    background: isTeacher ? '#f8f6ff' : '#f0f9ff',
-                    border: `1px solid ${isTeacher ? '#e9e0ff' : '#bae6fd'}`,
+                    background: isTeacher
+                      ? (isDark ? 'rgba(124,58,237,0.15)' : '#f8f6ff')
+                      : (isDark ? 'rgba(14,165,233,0.1)' : '#f0f9ff'),
+                    border: `1px solid ${isTeacher
+                      ? (isDark ? 'rgba(124,58,237,0.3)' : '#e9e0ff')
+                      : (isDark ? 'rgba(14,165,233,0.2)' : '#bae6fd')}`,
                     borderRadius: isTeacher ? '4px 14px 14px 14px' : '14px 4px 14px 14px',
                     padding: '9px 13px',
-                    fontSize: 13.5, lineHeight: 1.5, color: '#1a1a2e',
+                    fontSize: 13.5, lineHeight: 1.5, color: isDark ? (isTeacher ? '#d8c8ff' : '#c7e8ff') : '#1a1a2e',
                     fontFamily: entry.text.includes('=>') ? 'JetBrains Mono, monospace' : 'inherit',
                   }}>{entry.text}</div>
                 </div>
@@ -508,6 +519,7 @@ function VideoSection() {
             {/* Subtitle */}
             <div style={{
               display: 'flex', alignItems: 'flex-start', gap: 6,
+              maxWidth: '50%',
               opacity: subVis ? 1 : 0,
               transition: 'opacity 0.28s ease',
             }}>
@@ -848,7 +860,12 @@ function TeachersBlock() {
           <h2 className={s.section_h2} style={{ marginBottom: 6 }}>
             {t('teachers_h2')} <span style={{ color: RED }}>{t('teachers_h2_hl')}</span>
           </h2>
-          <div className={s.teachers_sub}>{t('teachers_sub')}</div>
+          <div className={s.teachers_sub}>
+            {t('teachers_sub')} · {new Date().toLocaleString(
+              locale === 'ru' ? 'ru-RU' : locale === 'zh' ? 'zh-CN' : locale === 'hi' ? 'hi-IN' : 'en-US',
+              { month: 'long', year: 'numeric' }
+            )}
+          </div>
         </div>
         <Link href="/teachers" className={s.link_red}>{t('teachers_all')}</Link>
       </div>
@@ -947,7 +964,7 @@ function PdfTestPromo() {
         </h2>
         <p className={s.section_text}>{t('pdf_desc')}</p>
         <div className={s.tag_row}>
-          {(['pdf_tag1', 'pdf_tag2', 'pdf_tag3', 'pdf_tag4'] as const).map(key => (
+          {(['pdf_tag1', 'pdf_tag2', 'pdf_tag3', 'pdf_tag4', 'pdf_tag5'] as const).map(key => (
             <span key={key} className={s.tag_chip}>{t(key)}</span>
           ))}
         </div>
@@ -1041,9 +1058,7 @@ interface RealPost {
 
 function PostCard({ post }: { post: RealPost }) {
   const t = useTranslations('LandingPage')
-  const locale = typeof window !== 'undefined'
-    ? document.cookie.match(/(?:^|;\s*)NEXT_LOCALE=([^;]+)/)?.[1] ?? 'ru'
-    : 'ru'
+  const locale = useLocale()
   const cat = post.category?.translations.find(tr => tr.langCode === locale)?.name
     ?? post.category?.translations[0]?.name ?? 'Пост'
   const d = Math.floor((Date.now() - new Date(post.createdAt).getTime()) / 60000)

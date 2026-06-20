@@ -216,3 +216,20 @@
       background: #f7d5d5;
    }
 }
+
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .header { border-bottom-color: rgba(255,255,255,0.07); }
+  .eyebrow { color: rgba(255,255,255,0.25); }
+  .title { color: #e8eaf0; }
+  .closeBtn { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); &:hover { background: #23263a; } }
+  .row { border-bottom-color: rgba(255,255,255,0.05); }
+  .rowIcon { background: #23263a; color: rgba(255,255,255,0.3); }
+  .rowLabel { color: rgba(255,255,255,0.2); }
+  .rowValue { color: #e8eaf0; }
+  .descBlock { border-top-color: rgba(255,255,255,0.05); }
+  .descLabel { color: rgba(255,255,255,0.2); }
+  .descText { color: rgba(255,255,255,0.55); }
+  .footer { border-top-color: rgba(255,255,255,0.07); }
+  .btnSecondary { color: rgba(255,255,255,0.4); border-color: rgba(255,255,255,0.1); &:hover { background: #23263a; } }
+  .btnDanger { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.25); color: #f87171; &:hover { background: rgba(239,68,68,0.18); } }
+}

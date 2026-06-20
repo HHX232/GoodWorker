@@ -172,6 +172,10 @@ $border: #ececf2;
   }
 }
 
+.btn_dark_bordered {
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+
 .btn_outline {
   height: 52px;
   padding: 0 24px;
@@ -1017,8 +1021,19 @@ $border: #ececf2;
   gap: 4px;
   flex-wrap: wrap;
   padding-bottom: 16px;
-  border-bottom: 1px solid #f0eff4;
   margin-bottom: -16px;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100vw;
+    height: 1px;
+    background: #f0eff4;
+  }
 }
 
 .subnav_link {
@@ -1065,7 +1080,7 @@ $border: #ececf2;
   .divider       { background: rgba(255,255,255,0.07); }
   .stat_item_sep { border-left-color: rgba(255,255,255,0.08); }
 
-  .subnav        { border-bottom-color: rgba(255,255,255,0.07); }
+  .subnav        { &::after { background: rgba(255,255,255,0.07); } }
   .subnav_link   { color: #7a7a90; &:hover { background: #1a1c24; color: #d8dae8; } }
 
   .hero_greeting_name { color: #e0e2ec; }

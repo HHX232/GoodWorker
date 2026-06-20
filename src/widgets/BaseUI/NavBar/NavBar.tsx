@@ -120,6 +120,12 @@ const Icon = {
       <polyline points='12 6 12 12 16 14' />
     </svg>
   ),
+  VideoCall: () => (
+    <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'>
+      <polygon points='23 7 16 12 23 17 23 7' />
+      <rect x='1' y='5' width='15' height='14' rx='2' ry='2' />
+    </svg>
+  ),
 }
 
 // ─── Nav item definition ──────────────────────────────────
@@ -201,6 +207,7 @@ export function NavBar({extraClass}: {extraClass?: string}) {
     ]
     bottomGroups = [
       {items: [{href: '/create-post',     label: t('createPost'),   icon: <Icon.CreatePost />}]},
+      {items: [{href: '/call',            label: t('videoCall'),    icon: <Icon.VideoCall />}]},
       {items: [{href: '/create-road-map', label: t('createCourse'), icon: <Icon.CreateRoadmap />, extraClass: styles.create_course_item}]},
       {items: [{href: '/create-test',     label: t('createTest'),   icon: <Icon.CreateTest />}]},
       ...(userId ? [{items: [{href: `/calendar/${userId}`, label: t('calendar'), icon: <Icon.Calendar />}]}] : []),
@@ -218,7 +225,7 @@ export function NavBar({extraClass}: {extraClass?: string}) {
       ]},
     ]
     bottomGroups = [
-      {items: [{href: '/messages',        label: t('messages'), icon: <Icon.Messages />}]},
+      ...(userId ? [{items: [{href: `/student-calendar`, label: t('calendar'), icon: <Icon.Calendar />}]}] : []),
       {items: [{href: '/game',            label: t('games'),    icon: <Icon.Games />}]},
       {items: [{href: '/pomodoro',        label: t('pomodoro'), icon: <Icon.Pomodoro />}]},
       {items: [{href: '/student-profile', label: t('profile'),  icon: <Icon.Profile />}]},

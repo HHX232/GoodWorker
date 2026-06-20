@@ -189,3 +189,15 @@
     background: #7F77DD;
   }
 }
+
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .eyebrow { color: rgba(255,255,255,0.25); }
+  .title { color: #e8eaf0; }
+  .closeBtn { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); &:hover { background: #23263a; } }
+  .header { border-bottom-color: rgba(255,255,255,0.07); }
+  .label { color: rgba(255,255,255,0.25); }
+  .input { background: #23263a; border-color: rgba(255,255,255,0.08); color: #e8eaf0; &:focus { border-color: #818cf8; background: #1f2130; } }
+  .textarea { background: #23263a; border-color: rgba(255,255,255,0.08); color: #e8eaf0; &:focus { border-color: #818cf8; background: #1f2130; } }
+  .footer { border-top-color: rgba(255,255,255,0.07); }
+  .btnSecondary { color: rgba(255,255,255,0.4); border-color: rgba(255,255,255,0.1); &:hover { background: #23263a; } }
+}

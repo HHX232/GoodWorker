@@ -142,25 +142,22 @@ function PromoCodeSection({ t }: { t: ReturnType<typeof useTranslations> }) {
       <div className={styles.section}>
         <div className={styles.sectionLabel}>{t('promoSection')}</div>
         <div className={styles.field}>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <input
-              className={styles.input}
-              type="text"
-              value={code}
-              onChange={e => setCode(e.target.value.toUpperCase())}
-              placeholder={t('promoInputPlaceholder')}
-              maxLength={32}
-              onKeyDown={e => e.key === 'Enter' && handleApply()}
-            />
-            <button
-              className={styles.saveBtn}
-              onClick={handleApply}
-              disabled={applying || !code.trim()}
-              style={{ whiteSpace: 'nowrap' }}
-            >
-              {applying ? t('promoApplying') : t('promoApplyBtn')}
-            </button>
-          </div>
+          <input
+            className={styles.input}
+            type="text"
+            value={code}
+            onChange={e => setCode(e.target.value.toUpperCase())}
+            placeholder={t('promoInputPlaceholder')}
+            maxLength={32}
+            onKeyDown={e => e.key === 'Enter' && handleApply()}
+          />
+          <button
+            className={styles.saveBtn}
+            onClick={handleApply}
+            disabled={applying || !code.trim()}
+          >
+            {applying ? t('promoApplying') : t('promoApplyBtn')}
+          </button>
         </div>
       </div>
     </>
@@ -392,6 +389,18 @@ export function StudentProfilePanel({
               </span>
               {t('bookmarks')}
             </button>
+
+            <Link href="/student-calendar" className={styles.actionBtn}>
+              <span className={styles.actionIcon}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+              </span>
+              {t('calendar')}
+            </Link>
 
             <Link href="/complaints" className={styles.actionBtn}>
               <span className={styles.actionIcon}>

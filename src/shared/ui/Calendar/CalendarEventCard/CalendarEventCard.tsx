@@ -89,6 +89,19 @@ export function CalendarEventCard({
           {event.studentName}
         </div>
       )}
+      {event.teacherName && (
+        <div className={styles.student} style={{color: colors.title}}>
+          {event.teacherName}
+        </div>
+      )}
+      {event.fromTeacher && (
+        <div className={styles.crownBadge}>
+          <svg width='9' height='9' viewBox='0 0 20 16' fill='currentColor'>
+            <path d='M10 0L13 6L20 3L17 12H3L0 3L7 6L10 0Z' />
+            <rect x='3' y='13' width='14' height='3' rx='1' />
+          </svg>
+        </div>
+      )}
       {event.status === 'completed' && (
         <div className={styles.statusDot} style={{background: '#22c55e'}} />
       )}

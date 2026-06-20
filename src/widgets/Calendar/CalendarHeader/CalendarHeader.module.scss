@@ -177,3 +177,14 @@
    transform: rotate(180deg);
    opacity: 0.7;
 }
+
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .header { background: #1a1c24; border-bottom-color: rgba(255,255,255,0.07); }
+  .month { color: #e8eaf0; &:hover { background: rgba(255,255,255,0.05); } }
+  .navBtn { background: #23263a; border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); &:hover { background: #2e3148; color: #e8eaf0; } }
+  .today { background: #23263a; border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); &:hover { background: #2e3148; } }
+  .viewTabs { background: #23263a; border-color: rgba(255,255,255,0.1); }
+  .viewTab { color: rgba(255,255,255,0.35); &:hover { background: rgba(129,140,248,0.1); color: #818cf8; } }
+  .viewTabActive { background: #1a1c24; color: #818cf8; }
+  .share { background: #23263a; &:hover:not(:disabled) { background: #2e3148; } }
+}

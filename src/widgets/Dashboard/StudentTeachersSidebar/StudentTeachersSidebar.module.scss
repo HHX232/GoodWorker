@@ -189,3 +189,18 @@
   background: rgba(83, 74, 183, 0.08);
   color: #534AB7;
 }
+
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .sidebar { background: #1a1c24; border-right-color: rgba(255,255,255,0.07); }
+  .title { color: #e8eaf0; }
+  .badge { background: rgba(129,140,248,0.12); color: #818cf8; }
+  .search { background: #23263a; border-color: rgba(255,255,255,0.08); color: #e8eaf0; &:focus { border-color: #818cf8; background: #1a1c24; } &::placeholder { color: rgba(255,255,255,0.25); } }
+  .searchIcon { color: rgba(255,255,255,0.3); }
+  .filterBtn { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); &:hover { border-color: #818cf8; color: #818cf8; } }
+  .filterBtnActive { background: #818cf8; border-color: #818cf8; color: #fff; }
+  .empty { color: rgba(255,255,255,0.3); }
+  .card { background: #1f2130; border-color: rgba(255,255,255,0.07); &:hover { border-color: rgba(129,140,248,0.4); box-shadow: 0 4px 18px rgba(83,74,183,0.18); } }
+  .cardName { color: #e8eaf0; }
+  .cardSubject { color: rgba(255,255,255,0.4); }
+  .subjectChip { background: rgba(129,140,248,0.12); color: #818cf8; }
+}

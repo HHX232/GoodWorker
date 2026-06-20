@@ -127,3 +127,14 @@
    color: #aaa;
    padding-left: 4px;
 }
+
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .monthGrid { background: #12141f; }
+  .monthDayName { background: #1a1c24; color: rgba(255,255,255,0.25); border-bottom-color: rgba(255,255,255,0.07); }
+  .monthCell { background: #12141f; border-color: rgba(255,255,255,0.05); &:hover { background: rgba(129,140,248,0.03); } }
+  .monthNum { color: #e8eaf0; &.weekend { color: #e24b4a; } }
+  .monthTask { background: rgba(129,140,248,0.1); border-color: rgba(129,140,248,0.2); }
+  .monthTaskCheck { background: #1a1c24; }
+  .monthTaskTitle { color: #818cf8; }
+  .monthMore { color: rgba(255,255,255,0.25); }
+}

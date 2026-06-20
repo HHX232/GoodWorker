@@ -4,6 +4,7 @@ import styles from '@/shared/scss/not_found.module.scss'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useThemeCtx } from '@/app/providers/ThemeContext'
 
 interface Dot {
   id: string
@@ -213,6 +214,7 @@ export default function NotFound() {
     setMousePos({x: -1000, y: -1000})
   }, [])
 
+  const { isDark } = useThemeCtx()
   const isMobile = windowWidth < 600
   const svgWidth = isMobile ? 300 : 500
   const svgHeight = isMobile ? 150 : 250
@@ -266,7 +268,8 @@ export default function NotFound() {
                 marginLeft: marginLeft,
                 maxHeight: '17.5rem',
                 maxWidth: '100%',
-                marginTop: '40px'
+                marginTop: '40px',
+                filter: isDark ? 'invert(1) brightness(0.85)' : 'none',
               }}
             >
               {dots.map((dot) => (

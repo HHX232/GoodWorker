@@ -476,6 +476,36 @@
 }
 
 
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .panel { background: #1a1c24; border-left-color: rgba(255,255,255,0.07); }
+  .scroll { &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); } }
+  .heroName { color: #e8eaf0; }
+  .heroRole { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.4); }
+  .miniStatValue { color: #e8eaf0 !important; }
+  .miniStatLabel { color: rgba(255,255,255,0.3); }
+  .miniStatDivider { background: rgba(255,255,255,0.07); }
+  .avatarRing { border-color: rgba(255,255,255,0.2); background: #23263a; }
+  .avatarEditBadge { background: #818cf8; border-color: #1a1c24; }
+  .sectionLabel { color: rgba(255,255,255,0.25); }
+  .label { color: rgba(255,255,255,0.35); }
+  .input { background: #23263a; border-color: rgba(255,255,255,0.08); color: #e8eaf0; &::placeholder { color: rgba(255,255,255,0.2); } &:focus { border-color: #818cf8; background: #1f2130; } }
+  .divider { background: rgba(255,255,255,0.07); }
+  .actionBtn { background: #1f2130; border-color: rgba(255,255,255,0.08); color: #e8eaf0; .actionIcon { background: rgba(129,140,248,0.1); color: #818cf8; } &:hover { background: #818cf8; border-color: #818cf8; color: #fff; .actionIcon { background: rgba(255,255,255,0.15); color: #fff; } } }
+  .securityRow { background: #1f2130; border-color: rgba(255,255,255,0.07); }
+  .securityLabel { color: rgba(255,255,255,0.35); }
+  .securityValue { color: #e8eaf0; }
+  .videoToggle { background: #1f2130; border-color: rgba(255,255,255,0.07); color: #e8eaf0; &:hover { background: #23263a; } }
+  .tgRow { background: #1f2130; border-color: rgba(255,255,255,0.07); }
+  .tgTitle { color: #e8eaf0; }
+  .tgStatus { color: rgba(255,255,255,0.35); }
+  .meetingCard { background: #1f2130; border-color: rgba(255,255,255,0.07); }
+  .meetingTime { color: #e8eaf0; }
+  .meetingTitle { color: #e8eaf0; }
+  .meetingTeacher { color: rgba(255,255,255,0.4); }
+  .saveBtn { background: #818cf8; &:hover:not(:disabled) { background: #6366f1; } }
+  .logoutBtn { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.2); }
+}
+
 // ── Logout ─────────────────────────────────────────────────
 .logoutBtn {
   display: flex;

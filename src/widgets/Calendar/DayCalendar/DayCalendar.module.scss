@@ -501,3 +501,34 @@
       background: #eaeaef;
    }
 }
+
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .root { background: #12141f; }
+  .dayHeader { background: #1a1c24; border-bottom-color: rgba(255,255,255,0.07); }
+  .dayName { color: #e8eaf0; }
+  .dayNum { color: #e8eaf0; }
+  .eventCount { color: rgba(255,255,255,0.25); }
+  .hourLine { background: rgba(255,255,255,0.05); }
+  .halfLine { background: rgba(255,255,255,0.025); }
+  .dayTrack { border-left-color: rgba(255,255,255,0.04); &.weekend { background: rgba(255,255,255,0.008); } &:not(.weekend):hover { background: rgba(129,140,248,0.03); } }
+  .timeLabel { color: rgba(255,255,255,0.2); }
+  .hoverGhost { background: rgba(129,140,248,0.1); border-color: rgba(129,140,248,0.35); }
+  .lunchBreak { border-color: rgba(255,255,255,0.06); background: rgba(255,255,255,0.012); }
+  .lunchLabel { color: rgba(255,255,255,0.2); }
+  .freeDay { color: rgba(255,255,255,0.15); }
+  .tasksPanel { background: #1a1c24; border-bottom-color: rgba(255,255,255,0.07); }
+  .tasksLabel { color: rgba(255,255,255,0.2); }
+  .taskChip { background: #23263a; border-color: rgba(255,255,255,0.08); color: #e8eaf0; &:hover { background: #2e3148; border-color: rgba(129,140,248,0.4); } }
+  .taskChipTitle { color: #e8eaf0; }
+  .modalTitle { color: #e8eaf0; }
+  .modalEyebrow { color: rgba(255,255,255,0.25); }
+  .modalCloseBtn { background: #23263a; border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); &:hover { background: #2e3148; } }
+  .modalDesc { color: rgba(255,255,255,0.6); }
+  .metaCard { background: #23263a; }
+  .metaLabel { color: rgba(255,255,255,0.25); }
+  .metaValue { color: #e8eaf0; }
+  .checklistItem { color: #e8eaf0; &.checklistItemDone { color: rgba(255,255,255,0.3); } }
+  .modalFooter { border-top-color: rgba(255,255,255,0.07); }
+  .btnSecondary { background: #23263a; border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); &:hover { background: #2e3148; } }
+  .btnToggle.btnToggleDone { background: #23263a; color: rgba(255,255,255,0.4); &:hover { background: #2e3148; } }
+}

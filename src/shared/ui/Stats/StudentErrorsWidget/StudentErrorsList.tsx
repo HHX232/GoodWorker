@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import styles from './StudentErrorsList.module.scss'
 
 type Sort = 'time' | 'freq'
@@ -40,6 +41,7 @@ function IconAlertCircle() {
 }
 
 export function StudentErrorsList() {
+  const t = useTranslations('dashboard')
   const [sort, setSort] = useState<Sort>('time')
   const [timeErrors, setTimeErrors] = useState<ErrorItem[]>([])
   const [freqErrors, setFreqErrors] = useState<FreqItem[]>([])
@@ -62,19 +64,19 @@ export function StudentErrorsList() {
   return (
     <div className={styles.wrap}>
       <div className={styles.header}>
-        <h3 className={styles.title}>Мои ошибки</h3>
+        <h3 className={styles.title}>{t('myErrors')}</h3>
         <div className={styles.toggle}>
           <button
             className={`${styles.toggleBtn} ${sort === 'time' ? styles.toggleActive : ''}`}
             onClick={() => setSort('time')}
           >
-            По времени
+            {t('sortByTime')}
           </button>
           <button
             className={`${styles.toggleBtn} ${sort === 'freq' ? styles.toggleActive : ''}`}
             onClick={() => setSort('freq')}
           >
-            Частые
+            {t('sortByFreq')}
           </button>
         </div>
       </div>
@@ -82,13 +84,13 @@ export function StudentErrorsList() {
       <div className={styles.body}>
         {loading ? (
           <div className={styles.empty}>
-            <span>Загрузка...</span>
+            <span>{t('loading')}</span>
           </div>
         ) : sort === 'time' ? (
           timeErrors.length === 0 ? (
             <div className={styles.empty}>
               <div className={styles.emptyIcon}><IconAlertCircle /></div>
-              <span>Ошибок пока нет</span>
+              <span>{t('errorsEmpty')}</span>
             </div>
           ) : (
             timeErrors.map(e => (
@@ -112,7 +114,7 @@ export function StudentErrorsList() {
           freqErrors.length === 0 ? (
             <div className={styles.empty}>
               <div className={styles.emptyIcon}><IconAlertCircle /></div>
-              <span>Ошибок пока нет</span>
+              <span>{t('errorsEmpty')}</span>
             </div>
           ) : (
             freqErrors.map((item, i) => (

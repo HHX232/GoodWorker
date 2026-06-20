@@ -85,12 +85,18 @@ export function MonthCalendar({
               <div
                 key={e.id}
                 className={styles.monthEvent}
-                style={{background: e.color ?? getColorForEvent(e.id)}}
+                style={{background: e.color ?? getColorForEvent(e.id), display: 'flex', alignItems: 'center', gap: 3}}
                 onClick={(ev) => {
                   ev.stopPropagation()
                   onEventClick(e)
                 }}
               >
+                {e.fromTeacher && (
+                  <svg width='8' height='8' viewBox='0 0 20 16' fill='rgba(255,210,60,0.95)' style={{flexShrink: 0}}>
+                    <path d='M10 0L13 6L20 3L17 12H3L0 3L7 6L10 0Z' />
+                    <rect x='3' y='13' width='14' height='3' rx='1' />
+                  </svg>
+                )}
                 {e.title}
               </div>
             ))}

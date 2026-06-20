@@ -319,3 +319,22 @@
       background: #2c2c2e;
    }
 }
+
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .eyebrow { color: rgba(255,255,255,0.25); }
+  .title { color: #e8eaf0; }
+  .label { color: rgba(255,255,255,0.25); }
+  .input { background: #23263a; border-color: rgba(255,255,255,0.08); color: #e8eaf0; &:focus { border-color: #818cf8; background: #1f2130; } }
+  .textarea { background: #23263a; border-color: rgba(255,255,255,0.08); color: #e8eaf0; &:focus { border-color: #818cf8; background: #1f2130; } }
+  .priorityBtn { background: #23263a; border-color: rgba(255,255,255,0.08); color: rgba(255,255,255,0.35); &:hover { background: #2e3148; } }
+  .checklistProgress { background: #23263a; color: rgba(255,255,255,0.4); }
+  .progressBar { background: rgba(255,255,255,0.08); }
+  .checklistCheck { border-color: rgba(255,255,255,0.15); }
+  .checklistItemInput { color: #e8eaf0; &.checklistItemDone { color: rgba(255,255,255,0.3); } }
+  .checklistAddDot { border-color: rgba(255,255,255,0.12); }
+  .checklistAddInput { color: #e8eaf0; &::placeholder { color: rgba(255,255,255,0.2); } }
+  .checklistAddBtn { background: rgba(129,140,248,0.12); border-color: rgba(129,140,248,0.3); color: #818cf8; &:hover { background: rgba(129,140,248,0.22); } }
+  .checklistRemove { color: rgba(255,255,255,0.2); }
+  .btnSecondary { color: rgba(255,255,255,0.4); border-color: rgba(255,255,255,0.1); &:hover { background: #23263a; } }
+  .btnPrimary { background: #818cf8; &:hover { background: #6366f1; } }
+}

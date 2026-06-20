@@ -14,9 +14,11 @@ export interface CalendarEvent {
   date: string
   color: CalendarEventColor
   studentName?: string
+  teacherName?: string
   subject?: string
   description?: string
   status?: 'scheduled' | 'completed' | 'cancelled'
+  fromTeacher?: boolean
   serviceId?: string
   serviceTitle?: string
   servicePrice?: number

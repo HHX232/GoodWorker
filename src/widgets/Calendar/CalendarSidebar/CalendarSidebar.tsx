@@ -15,9 +15,10 @@ interface CalendarSidebarProps {
   students: CalendarStudent[]
   onTaskClick: (task: CalendarTask) => void
   onTaskToggle: (taskId: string) => void
+  peopleLabel?: string
 }
 
-export function CalendarSidebar({tasks, students, onTaskClick, onTaskToggle}: CalendarSidebarProps) {
+export function CalendarSidebar({tasks, students, onTaskClick, onTaskToggle, peopleLabel}: CalendarSidebarProps) {
   const t = useTranslations('calendar.sidebar')
   const { data: session } = useSession()
   const role = (session?.user as { role?: string })?.role ?? ''
@@ -66,7 +67,7 @@ export function CalendarSidebar({tasks, students, onTaskClick, onTaskToggle}: Ca
           />
           <NavItem
             icon='users'
-            label={t('studentsNav')}
+            label={peopleLabel ?? t('studentsNav')}
             badge={students.length}
             onClick={() => setStudentsCollapsed(false)}
           />
@@ -140,7 +141,7 @@ export function CalendarSidebar({tasks, students, onTaskClick, onTaskToggle}: Ca
 
         <div className={styles.section}>
           <button className={styles.sectionToggle} onClick={() => setStudentsCollapsed((v) => !v)}>
-            <span className={styles.sectionLabel}>{t('studentsNav')}</span>
+            <span className={styles.sectionLabel}>{peopleLabel ?? t('studentsNav')}</span>
             <svg
               width='10'
               height='10'

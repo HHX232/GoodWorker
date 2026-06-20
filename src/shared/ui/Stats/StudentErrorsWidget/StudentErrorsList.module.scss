@@ -201,3 +201,25 @@
   color: #ABABAB;
   flex-shrink: 0;
 }
+
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .wrap { background: #1a1c24; border-color: rgba(255,255,255,0.07); }
+  .header { border-bottom-color: rgba(255,255,255,0.07); }
+  .title { color: #e8eaf0; }
+  .toggle { background: #23263a; }
+  .toggleBtn { color: rgba(255,255,255,0.35); &:hover { color: #e8eaf0; } }
+  .toggleActive { background: #2e3148; color: #e8eaf0; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+  .body { &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); } }
+  .empty { color: rgba(255,255,255,0.25); }
+  .errorItem { border-bottom-color: rgba(255,255,255,0.05); &:hover { background: rgba(255,255,255,0.02); } }
+  .errorDate { color: rgba(255,255,255,0.25); }
+  .catChip { background: rgba(129,140,248,0.12); color: #818cf8; }
+  .errorDesc { color: rgba(255,255,255,0.7); }
+  .errorFragment { color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.04); border-left-color: rgba(255,255,255,0.12); }
+  .freqItem { border-bottom-color: rgba(255,255,255,0.05); &:hover { background: rgba(255,255,255,0.02); } }
+  .freqRank { color: rgba(255,255,255,0.25); }
+  .freqName { color: #e8eaf0; }
+  .freqTrack { background: rgba(255,255,255,0.07); }
+  .freqCount { color: #818cf8; }
+  .freqLast { color: rgba(255,255,255,0.25); }
+}
