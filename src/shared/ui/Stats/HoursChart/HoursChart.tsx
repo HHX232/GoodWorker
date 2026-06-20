@@ -3,6 +3,7 @@ import {useMemo, useState} from 'react'
 import {useTranslations} from 'next-intl'
 import {Bar, BarChart, CartesianGrid, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts'
 import ModalWindowDefault from '../../Modals/ModalWindowDefault/ModalWindowDefault'
+import {useThemeCtx} from '@/app/providers/ThemeContext'
 import styles from './HoursChart.module.scss'
 
 function CustomTooltip({active, payload, label, dayLabel, hoursUnit}: {active?: boolean; payload?: {value: number}[]; label?: string; dayLabel: string; hoursUnit: string}) {
@@ -26,6 +27,7 @@ function HoursChart({
 }) {
   const t = useTranslations('statsPage.hoursChart')
   const MONTHS = monthsData ? Object.keys(monthsData) : []
+  const {isDark} = useThemeCtx()
   const [selectedMonth, setSelectedMonth] = useState<string>('')
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
 
@@ -43,6 +45,13 @@ function HoursChart({
   const avg = useMemo(() => activeDays > 0 ? +totalHours / activeDays : 0, [totalHours, activeDays])
 
   const getBarColor = (entry: {day: string; hours: number}, idx: number) => {
+    if (isDark) {
+      if (hoveredIdx !== null) {
+        if (idx === hoveredIdx) return '#818cf8'
+        return entry.day === maxDay.day ? '#6366f1' : 'rgba(255,255,255,0.12)'
+      }
+      return entry.day === maxDay.day ? '#818cf8' : 'rgba(255,255,255,0.1)'
+    }
     if (hoveredIdx !== null) {
       if (idx === hoveredIdx) return '#1a1a1a'
       return entry.day === maxDay.day ? '#888' : '#e0e0e0'
@@ -80,15 +89,15 @@ function HoursChart({
       {/* Stat chips вверху — анимированные */}
       <div className={styles.chart_chips}>
         <div className={styles.chip}>
-          <span className={styles.chip_dot} style={{background: '#1a1a1a'}} />
+          <span className={styles.chip_dot} style={{background: isDark ? '#818cf8' : '#1a1a1a'}} />
           {t('peak')}: {maxDay.day} — <strong>{maxDay.hours} {t('hoursUnit')}</strong>
         </div>
         <div className={styles.chip}>
-          <span className={styles.chip_dot} style={{background: '#d4d4d4', border: '1px solid #bbb'}} />
+          <span className={styles.chip_dot} style={{background: isDark ? 'rgba(255,255,255,0.15)' : '#d4d4d4', border: isDark ? 'none' : '1px solid #bbb'}} />
           {t('avg')}: <strong>{avgHours} {t('hoursUnit')}</strong>
         </div>
         <div className={styles.chip}>
-          <span className={styles.chip_dot} style={{background: '#888'}} />
+          <span className={styles.chip_dot} style={{background: isDark ? 'rgba(255,255,255,0.3)' : '#888'}} />
           {t('activeDays')}: <strong>{activeDays}</strong>
         </div>
       </div>
@@ -96,30 +105,29 @@ function HoursChart({
       <div className={styles.chart_wrap}>
         <ResponsiveContainer width='100%' height='100%'>
           <BarChart data={data} barCategoryGap='28%' onMouseLeave={() => setHoveredIdx(null)}>
-            <CartesianGrid vertical={false} stroke='#f0f0f0' strokeDasharray='0' />
-            {/* Линия среднего */}
+            <CartesianGrid vertical={false} stroke={isDark ? 'rgba(255,255,255,0.06)' : '#f0f0f0'} strokeDasharray='0' />
             <ReferenceLine
               y={avg}
-              stroke='#bbb'
+              stroke={isDark ? 'rgba(255,255,255,0.25)' : '#bbb'}
               strokeDasharray='4 3'
               strokeWidth={1}
               label={{
                 value: `avg`,
                 position: 'insideTopRight',
                 fontSize: 10,
-                fill: '#bbb',
+                fill: isDark ? 'rgba(255,255,255,0.25)' : '#bbb',
                 dy: -4
               }}
             />
-            <XAxis dataKey='day' tick={{fontSize: 10, fill: '#bbb'}} axisLine={false} tickLine={false} interval={1} />
+            <XAxis dataKey='day' tick={{fontSize: 10, fill: isDark ? 'rgba(255,255,255,0.3)' : '#bbb'}} axisLine={false} tickLine={false} interval={1} />
             <YAxis
-              tick={{fontSize: 10, fill: '#bbb'}}
+              tick={{fontSize: 10, fill: isDark ? 'rgba(255,255,255,0.3)' : '#bbb'}}
               axisLine={false}
               tickLine={false}
               width={26}
               tickFormatter={(v) => `${v}${t('hoursUnit')}`}
             />
-            <Tooltip content={<CustomTooltip dayLabel={t('dayTooltip')} hoursUnit={t('hoursUnit')} />} cursor={{fill: 'rgba(0,0,0,0.03)'}} />
+            <Tooltip content={<CustomTooltip dayLabel={t('dayTooltip')} hoursUnit={t('hoursUnit')} />} cursor={{fill: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'}} />
             <Bar
               dataKey='hours'
               radius={[4, 4, 0, 0]}

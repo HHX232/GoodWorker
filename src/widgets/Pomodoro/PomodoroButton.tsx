@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { usePomodoroCtx } from "./PomodoroContext";
 import { PomodoroCore } from "./PomodoroCore";
 import styles from "./PomodoroButton.module.scss";
 
 export function PomodoroButton() {
+  const t = useTranslations("Pomodoro");
   const { btnVisible, modalOpen, setModalOpen } = usePomodoroCtx();
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // Close on outside click
   useEffect(() => {
     if (!modalOpen) return;
     const handler = (e: MouseEvent) => {
@@ -26,8 +27,8 @@ export function PomodoroButton() {
       <button
         className={`${styles.clockBtn} ${modalOpen ? styles.clockBtnActive : ""}`}
         onClick={() => setModalOpen(!modalOpen)}
-        title="Помодоро (Ctrl+P → M)"
-        aria-label="Помодоро таймер"
+        title={t("btn_tooltip")}
+        aria-label={t("modal_title")}
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="10"/>
@@ -38,8 +39,8 @@ export function PomodoroButton() {
       {modalOpen && (
         <div className={styles.modal}>
           <div className={styles.modalHeader}>
-            <span className={styles.modalTitle}>Помодоро</span>
-            <button className={styles.closeBtn} onClick={() => setModalOpen(false)} aria-label="Закрыть">
+            <span className={styles.modalTitle}>{t("modal_title")}</span>
+            <button className={styles.closeBtn} onClick={() => setModalOpen(false)} aria-label={t("close")}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
               </svg>

@@ -13,10 +13,119 @@ import { BorderTextHandler } from '@/widgets/Cards'
 import { Prisma, Role } from '@prisma/client'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
+import { usePomodoroCtx } from '@/widgets/Pomodoro/PomodoroContext'
 import styles from './PostPage.module.scss'
+
 import { BookmarkHighlighter } from '@/shared/ui/bookmark/BookmarkHighlighter'
 import { PostCommentCompact } from '@/shared/ui/Posts/PostCommentCompact/PostCommentCompact'
 import { PostCardHeader } from '@/shared/ui/Posts/PostCardHeader/PostCardHeader'
+
+// ─── Pomodoro bar ─────────────────────────────────────────────────────────────
+
+function ClockFace({ progress, phaseColor }: { progress: number; phaseColor: string }) {
+  const r = 13
+  const circ = 2 * Math.PI * r
+  const angle = (progress * 360 - 90) * (Math.PI / 180)
+  const hx = 16 + 8 * Math.cos(angle)
+  const hy = 16 + 8 * Math.sin(angle)
+  return (
+    <svg width="34" height="34" viewBox="0 0 32 32" style={{ flexShrink: 0 }}>
+      {Array.from({ length: 12 }).map((_, i) => {
+        const a = ((i * 30 - 90) * Math.PI) / 180
+        return (
+          <line key={i}
+            x1={16 + 11.2 * Math.cos(a)} y1={16 + 11.2 * Math.sin(a)}
+            x2={16 + 13 * Math.cos(a)} y2={16 + 13 * Math.sin(a)}
+            stroke="currentColor" strokeOpacity={i % 3 === 0 ? 0.3 : 0.1} strokeWidth={i % 3 === 0 ? 1.5 : 1}
+          />
+        )
+      })}
+      <circle cx="16" cy="16" r={r} fill="none" stroke="currentColor" strokeOpacity="0.08" strokeWidth="2.5" />
+      <circle cx="16" cy="16" r={r} fill="none" stroke={phaseColor} strokeWidth="2.5"
+        strokeDasharray={`${circ * progress} ${circ}`}
+        strokeLinecap="round" transform="rotate(-90 16 16)"
+        style={{ transition: 'stroke-dasharray 0.9s linear' }}
+      />
+      <line x1="16" y1="16" x2={hx} y2={hy}
+        stroke={phaseColor} strokeWidth="2" strokeLinecap="round"
+        style={{ transition: 'x2 0.9s linear, y2 0.9s linear' }}
+      />
+      <circle cx="16" cy="16" r="2.2" fill={phaseColor} />
+    </svg>
+  )
+}
+
+function PostPomodoroBar() {
+  const t = useTranslations('Pomodoro')
+  const { phase, timeLeft, isRunning, progress, toggle, settings, applySettings } = usePomodoroCtx()
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [localSettings, setLocalSettings] = useState(settings)
+
+  const mm = String(Math.floor(timeLeft / 60)).padStart(2, '0')
+  const ss = String(timeLeft % 60).padStart(2, '0')
+  const phaseLabel = phase === 'work' ? t('phase_work') : phase === 'short-break' ? t('phase_short') : t('phase_long')
+  const phaseColor = phase === 'work' ? '#6366f1' : phase === 'short-break' ? '#22c55e' : '#f59e0b'
+
+  const handleApply = () => {
+    applySettings(localSettings)
+    setSettingsOpen(false)
+  }
+
+  return (
+    <div className={styles.pom_wrap}>
+      <div className={styles.pomodoro_bar}>
+        <ClockFace progress={progress} phaseColor={phaseColor} />
+
+        <div className={styles.pom_center}>
+          <span className={styles.pom_time}>{mm}:{ss}</span>
+          <span className={styles.pom_phase} style={{ color: phaseColor }}>{phaseLabel}</span>
+        </div>
+
+        <div className={styles.pom_actions}>
+          <button className={styles.pom_btn} onClick={toggle} aria-label={isRunning ? 'Пауза' : 'Старт'}>
+            {isRunning
+              ? <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              : <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            }
+          </button>
+          <button
+            className={`${styles.pom_btn} ${settingsOpen ? styles.pom_btn_active : ''}`}
+            onClick={() => setSettingsOpen(o => !o)}
+            aria-label="Настройки"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {settingsOpen && (
+        <div className={styles.pom_settings}>
+          {([
+            { key: 'work',       labelKey: 'setting_work',  min: 5, max: 60, step: 5 },
+            { key: 'shortBreak', labelKey: 'setting_short', min: 1, max: 15, step: 1 },
+            { key: 'longBreak',  labelKey: 'setting_long',  min: 5, max: 30, step: 5 },
+          ] as const).map(({ key, labelKey, min, max, step }) => (
+            <label key={key} className={styles.pom_setting_row}>
+              <span className={styles.pom_setting_label}>{t(labelKey)}</span>
+              <input type="range" min={min} max={max} step={step}
+                value={localSettings[key]}
+                onChange={e => setLocalSettings(v => ({ ...v, [key]: +e.target.value }))}
+                className={styles.pom_range}
+                style={{ '--fill': phaseColor } as React.CSSProperties}
+              />
+              <span className={styles.pom_setting_val}>{localSettings[key]} {t('setting_min')}</span>
+            </label>
+          ))}
+          <button className={styles.pom_apply} onClick={handleApply}>{t('apply')}</button>
+        </div>
+      )}
+    </div>
+  )
+}
 
 function useCompactSidebar() {
   const [compact, setCompact] = useState(false)
@@ -104,6 +213,14 @@ function PostPage({post, initialComments, currentUserId}: PostPageProps) {
   const tPreview = useTranslations('roadmapPreview')
   const tLangs = useTranslations('roadmapPreview.languages')
   const isCompact = useCompactSidebar()
+  const { data: session } = useSession()
+  const isStudent = session?.user?.role === 'STUDENT'
+
+  useEffect(() => {
+    document.documentElement.classList.add('post-page')
+    return () => document.documentElement.classList.remove('post-page')
+  }, [])
+
   const showLangBadge = (post as any).originalLang && (post as any).originalLang !== locale
   const resolvedComments: CommentItem[] = initialComments ?? (post.enrichedComments ?? []).map(enrichedToCommentItem)
 
@@ -171,6 +288,7 @@ function PostPage({post, initialComments, currentUserId}: PostPageProps) {
       {/* mobile layout */}
       <div className={styles.mobile_wrapper}>
         {cardHeader}
+        {isStudent && <PostPomodoroBar />}
         <UserPostInfo {...userPostInfo} />
         {langBadge}
         {content}
@@ -181,6 +299,7 @@ function PostPage({post, initialComments, currentUserId}: PostPageProps) {
       {/* desktop: main content column */}
       <div className={styles.extra_full_bot}>
         {cardHeader}
+        {isStudent && <PostPomodoroBar />}
         {langBadge}
         {content}
         <SetCommentBlock postId={post.id} />

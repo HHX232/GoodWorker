@@ -97,3 +97,26 @@
   from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .content {
+    background: #1e2030;
+    border-color: rgba(255,255,255,0.1);
+  }
+  .text { color: #d0d3e0; }
+  .save_btn {
+    background: rgba(255,255,255,0.12);
+    color: #e8eaf0;
+    &:hover { background: rgba(255,255,255,0.18); }
+    &:active { background: rgba(255,255,255,0.08); }
+  }
+  .copy_btn {
+    background: rgba(255,255,255,0.06);
+    color: #d0d3e0;
+    &:hover { background: rgba(255,255,255,0.1); }
+    &:active { background: rgba(255,255,255,0.04); }
+  }
+  .top .arrow { border-top-color: rgba(255,255,255,0.1); }
+  .bottom .arrow { border-bottom-color: rgba(255,255,255,0.1); }
+}

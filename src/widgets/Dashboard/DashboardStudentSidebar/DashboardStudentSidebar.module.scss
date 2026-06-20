@@ -260,3 +260,25 @@
     color: #3d34a0;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .sidebar { background: #1a1c24; border-color: rgba(255,255,255,0.07); }
+  .head { border-color: rgba(255,255,255,0.07); }
+  .title { color: #e8eaf0; }
+  .badge { background: rgba(129,140,248,0.15); color: #a5b4fc; }
+  .searchIcon { color: rgba(255,255,255,0.2); }
+  .search { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &::placeholder { color: rgba(255,255,255,0.2); } &:focus { border-color: #818cf8; background: rgba(255,255,255,0.07); } }
+  .filterBtn { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); &:hover { border-color: #818cf8; color: #a5b4fc; } }
+  .filterBtnActive { background: #534AB7; border-color: #534AB7; color: #fff; }
+  .list { &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); } }
+  .empty { color: rgba(255,255,255,0.2); }
+  .loading { color: rgba(255,255,255,0.2); }
+  .card { background: #1e2030; border-color: rgba(255,255,255,0.08); &:hover { box-shadow: 0 4px 18px rgba(0,0,0,0.3); border-color: rgba(129,140,248,0.3); } }
+  .cardName { color: #e8eaf0; }
+  .cardSubject { color: rgba(255,255,255,0.35); }
+  .nextRow { color: rgba(255,255,255,0.3); }
+  .nextTime { color: #e8eaf0; }
+  .progressWrap { background: rgba(255,255,255,0.08); }
+  .reportBtn { background: rgba(129,140,248,0.1); border-color: rgba(129,140,248,0.2); color: #a5b4fc; &:hover { background: rgba(129,140,248,0.2); color: #c7d2fe; } }
+}

@@ -1,5 +1,6 @@
 'use client'
 import {NavBar} from '@/widgets/BaseUI'
+import {useThemeCtx} from '@/app/providers/ThemeContext'
 import {useSession} from 'next-auth/react'
 import Link from 'next/link'
 import {useCallback, useEffect, useRef, useState} from 'react'
@@ -27,11 +28,11 @@ interface ComplaintItem {
 
 // ─── Status config ────────────────────────────────────────
 
-const STATUS_CFG: Record<string, {label: string; color: string; bg: string}> = {
-  pending:  {label: 'Ожидает',  color: '#f59e0b', bg: '#fffbeb'},
-  answered: {label: 'Отвечено', color: '#6366f1', bg: '#eef2ff'},
-  resolved: {label: 'Решено',   color: '#22c55e', bg: '#f0fdf4'},
-  closed:   {label: 'Закрыто',  color: '#868897', bg: '#f7f7f7'},
+const STATUS_CFG: Record<string, {label: string; color: string; bg: string; darkColor: string; darkBg: string}> = {
+  pending:  {label: 'Ожидает',  color: '#f59e0b', bg: '#fffbeb', darkColor: '#fbbf24', darkBg: 'rgba(245,158,11,0.13)'},
+  answered: {label: 'Отвечено', color: '#6366f1', bg: '#eef2ff', darkColor: '#818cf8', darkBg: 'rgba(99,102,241,0.13)'},
+  resolved: {label: 'Решено',   color: '#22c55e', bg: '#f0fdf4', darkColor: '#4ade80', darkBg: 'rgba(34,197,94,0.13)'},
+  closed:   {label: 'Закрыто',  color: '#868897', bg: '#f7f7f7', darkColor: 'rgba(255,255,255,0.35)', darkBg: 'rgba(255,255,255,0.07)'},
 }
 
 const TABS = ['all', 'pending', 'answered', 'resolved', 'closed'] as const
@@ -64,6 +65,7 @@ function ComplaintCard({
   role: string
   onReplied: (id: string, reply: string) => void
 }) {
+  const {isDark} = useThemeCtx()
   const [expanded, setExpanded] = useState(false)
   const [replyText, setReplyText] = useState('')
   const [sending, setSending] = useState(false)
@@ -131,7 +133,7 @@ function ComplaintCard({
         </div>
 
         <div className={styles.card_right}>
-          <span className={styles.status_badge} style={{color: activeCfg.color, background: activeCfg.bg}}>
+          <span className={styles.status_badge} style={{color: isDark ? activeCfg.darkColor : activeCfg.color, background: isDark ? activeCfg.darkBg : activeCfg.bg}}>
             {activeCfg.label}
           </span>
           {item.reply && (
@@ -209,7 +211,7 @@ function ComplaintCard({
                   <button
                     key={key}
                     className={`${styles.status_chip} ${statusValue === key ? styles.status_chip_active : ''}`}
-                    style={statusValue === key ? {color: s.color, background: s.bg, borderColor: s.color + '44'} : {}}
+                    style={statusValue === key ? {color: isDark ? s.darkColor : s.color, background: isDark ? s.darkBg : s.bg, borderColor: (isDark ? s.darkColor : s.color) + '44'} : {}}
                     onClick={() => handleStatusChange(key)}
                   >
                     {s.label}

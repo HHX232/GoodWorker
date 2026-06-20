@@ -1,4 +1,35 @@
 
+.view_wrap {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px 16px;
+  max-width: 350px;
+}
+
+// ── Dark theme ────────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .view_wrap {
+    background: #1a1c22;
+
+    h1, h2, h3, h4, h5, h6, p, li, strong, em { color: #d0d3e0; }
+  }
+
+  .box { background: #1e2030; border-color: rgba(255,255,255,0.08); }
+  .toolbar { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.07); }
+  .tool_btn { color: rgba(255,255,255,0.35); &:hover { background: rgba(255,255,255,0.08); color: #e8eaf0; } }
+  .tool_btn_active { background: rgba(2,132,199,0.2); color: #38bdf8; &:hover { background: rgba(2,132,199,0.3); color: #38bdf8; } }
+
+  .editor {
+    color: #d0d3e0;
+
+    :global(.ProseMirror) {
+      color: #d0d3e0;
+
+      p { color: #d0d3e0; }
+    }
+  }
+}
+
 .box {
   display: flex;
   flex-direction: column;

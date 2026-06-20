@@ -1,16 +1,17 @@
 @use '../../shared/scss/config/mixins.scss' as *;
 
 .page {
-  min-height: fit-content;
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  // background-color: #f5f5f3;
-  // padding: 24px;
+  padding: 24px 16px;
+  position: relative;
+  z-index: 1;
 
   @include sm {
     align-items: flex-start;
-    // padding: 16px;
+    padding: 16px;
   }
 }
 .card {
@@ -206,5 +207,45 @@
 
   &:hover {
     color: #0a0c12;
+  }
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .card {
+    background: #1a1c24;
+    border-color: rgba(255,255,255,0.08);
+  }
+
+  .title { color: #e8eaf0; }
+  .subtitle {
+    color: rgba(255,255,255,0.4);
+    strong { color: #e8eaf0; }
+  }
+
+  .roleTab {
+    border-color: rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.45);
+    &:hover { background: rgba(255,255,255,0.07); }
+    &.active {
+      border-color: #818cf8;
+      background: #818cf8;
+      color: #fff;
+    }
+  }
+
+  .btn {
+    background: rgba(255,255,255,0.12);
+    &:hover { opacity: 0.85; }
+    &:disabled { opacity: 0.3; }
+  }
+
+  .hint { color: rgba(255,255,255,0.35); }
+  .link { color: #818cf8; }
+  .resendHint { color: rgba(255,255,255,0.3); }
+  .resendBtn { color: #818cf8; }
+  .backBtn {
+    color: rgba(255,255,255,0.35);
+    &:hover { color: #e8eaf0; }
   }
 }

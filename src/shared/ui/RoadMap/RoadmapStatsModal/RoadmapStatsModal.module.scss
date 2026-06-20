@@ -395,3 +395,35 @@
     cursor: not-allowed;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .section_title { color: #e8eaf0; }
+  .section_sub { color: rgba(255,255,255,0.3); }
+  .chip { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.35); strong { color: #e8eaf0; } }
+  .complaints_badge {
+    &.ok { background: rgba(34,197,94,0.12); color: #4ade80; }
+    &.warn { background: rgba(244,63,94,0.12); color: #f87171; }
+  }
+  .test_row { background: rgba(255,255,255,0.05); }
+  .test_row_label { color: rgba(255,255,255,0.35); }
+  .test_row_count { color: #e8eaf0; }
+  .test_percent {
+    &.high { background: rgba(34,197,94,0.12); color: #4ade80; }
+    &.mid { background: rgba(234,179,8,0.12); color: #fbbf24; }
+    &.low { background: rgba(244,63,94,0.12); color: #f87171; }
+  }
+  .feedback_btn { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &:hover { border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.08); } }
+  .empty_hint { color: rgba(255,255,255,0.2); }
+  .divider { border-top-color: rgba(255,255,255,0.07); }
+  .loading { color: rgba(255,255,255,0.2); }
+  .complaint_item { border-color: rgba(255,255,255,0.07); background: rgba(255,255,255,0.03); }
+  .complaint_date { color: rgba(255,255,255,0.2); }
+  .complaint_text { color: rgba(255,255,255,0.7); }
+  .complaint_reply_box { background: rgba(255,255,255,0.05); }
+  .complaint_reply_label { color: rgba(255,255,255,0.3); }
+  .complaint_reply_text { color: rgba(255,255,255,0.7); }
+  .complaint_reply_btn { border-color: rgba(99,102,241,0.3); color: #818cf8; &:hover { background: rgba(99,102,241,0.1); border-color: #818cf8; } }
+  .complaint_reply_textarea { border-color: rgba(255,255,255,0.1); background: #141620; color: #e8eaf0; &:focus { border-color: #818cf8; } }
+  .reply_cancel_btn { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); &:hover { border-color: rgba(255,255,255,0.25); } }
+}

@@ -256,7 +256,7 @@ function CommentRow({
               onChange={(e) => setEditText(e.target.value)}
               onKeyDown={handleKeyDown}
               rows={3}
-              style={editTextareaStyle}
+              className={styles.edit_textarea}
             />
 
             {editExistingUrls.length > 0 && (
@@ -284,10 +284,10 @@ function CommentRow({
 
             <div style={{display: 'flex', alignItems: 'center', gap: 8, marginTop: 8}}>
               <SelectPhotoInput size='m' onSelectImageFile={handleSelectFile} />
-              <button onClick={handleSave} disabled={saving} style={saveBtnStyle}>
+              <button onClick={handleSave} disabled={saving} className={styles.save_btn}>
                 {saving ? t('saving') : t('save')}
               </button>
-              <button onClick={handleCancelEdit} style={cancelBtnStyle}>
+              <button onClick={handleCancelEdit} className={styles.cancel_btn}>
                 {t('cancel')}
               </button>
             </div>
@@ -380,6 +380,7 @@ export function PostCommentModal({isOpen, onClose, postId, scrollToCommentId, cu
 
   const footer = (
     <div className={styles.comment_input_bar}>
+      <div className={styles.footer_label}>{t('title', {count: total})}</div>
       <div className={styles.stars_row}>
         <StarRating value={rating} onChange={setRating} size={22} />
       </div>
@@ -458,20 +459,4 @@ const removeImgBtnStyle: React.CSSProperties = {
   border: 'none', background: '#AC2525', color: '#fff',
   fontSize: 12, cursor: 'pointer',
   display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0
-}
-const editTextareaStyle: React.CSSProperties = {
-  width: '100%', padding: '8px 12px', borderRadius: 8,
-  border: '1px solid #E5E5E5', background: '#fff',
-  fontSize: 14, color: '#141416', lineHeight: 1.5,
-  resize: 'none', outline: 'none', fontFamily: 'inherit'
-}
-const saveBtnStyle: React.CSSProperties = {
-  height: 32, padding: '0 16px', borderRadius: 8,
-  border: 'none', background: '#141416', color: '#fff',
-  fontSize: 13, fontWeight: 500, cursor: 'pointer'
-}
-const cancelBtnStyle: React.CSSProperties = {
-  height: 32, padding: '0 16px', borderRadius: 8,
-  border: '1px solid #E5E5E5', background: '#F7F7F7',
-  color: '#868897', fontSize: 13, cursor: 'pointer'
 }

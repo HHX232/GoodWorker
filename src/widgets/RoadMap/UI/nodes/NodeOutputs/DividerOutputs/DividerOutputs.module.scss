@@ -105,3 +105,11 @@
       color: #141416;
    }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .handle { border-color: #1a1c24; }
+  .nameInput { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.08); color: #e8eaf0; &:focus { border-color: rgba(255,255,255,0.25); } }
+  .removeBtn { color: rgba(255,255,255,0.25); &:hover { background: rgba(255,255,255,0.07); color: #f87171; } }
+  .addBtn { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); &:hover { background: rgba(255,255,255,0.06); color: #e8eaf0; } }
+}

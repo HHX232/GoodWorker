@@ -115,3 +115,20 @@
   text-align: center;
   padding: 40px 0;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .node_block { border-color: rgba(255,255,255,0.07); }
+  .node_title { color: #e8eaf0; }
+  .node_count { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.35); }
+  .question_text { color: #e8eaf0; }
+  .option_row { color: rgba(255,255,255,0.6); }
+  .option_bar_wrap { background: rgba(255,255,255,0.07); }
+  .option_bar { background: rgba(255,255,255,0.5); }
+  .option_label { color: rgba(255,255,255,0.3); }
+  .option_count { color: #e8eaf0; }
+  .free_answer_item { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.7); }
+  .no_answers { color: rgba(255,255,255,0.2); }
+  .divider { border-top-color: rgba(255,255,255,0.07); }
+  .empty { color: rgba(255,255,255,0.2); }
+}

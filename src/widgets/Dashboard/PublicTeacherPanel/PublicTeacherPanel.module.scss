@@ -254,3 +254,24 @@
 
   svg { flex-shrink: 0; }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .panel { background: #1a1c24; border-color: rgba(255,255,255,0.07); }
+  .scroll { &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); } }
+  .avatarRing { border-color: rgba(255,255,255,0.2); background: #1e2030; }
+  .vipBadge { background: #1a1c24; border-color: rgba(255,255,255,0.1); }
+  .heroName { color: #e8eaf0; }
+  .heroRole { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.4); }
+  .memberSince { color: rgba(255,255,255,0.25); }
+  .divider { background: rgba(255,255,255,0.06); }
+  .statCard { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.07); }
+  .statValue { color: #e8eaf0; }
+  .statLabel { color: rgba(255,255,255,0.3); }
+  .sectionLabel { color: rgba(255,255,255,0.2); }
+  .chip { background: rgba(83,74,183,0.2); color: #a5b4fc; }
+  .langBadge { background: rgba(5,150,105,0.15); color: #34d399; }
+  .aboutItem { color: rgba(255,255,255,0.5); }
+  .bio { color: rgba(255,255,255,0.5); }
+  .socialLink { background: rgba(83,74,183,0.12); color: #a5b4fc; &:hover { background: rgba(83,74,183,0.2); } }
+}

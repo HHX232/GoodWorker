@@ -58,3 +58,9 @@
   height: 1px;
   background-color: #DADCEB;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .title_box h1 { color: #e8eaf0; }
+  .decor_line { background-color: rgba(255,255,255,0.07); }
+}

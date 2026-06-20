@@ -123,3 +123,19 @@
    font-weight: 500;
    line-height: 1.4;
  }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .checkboxLabel {
+    background-color: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.1);
+    &:hover:not(.disabled) { background-color: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.2); }
+    &.error { background-color: rgba(214,20,20,0.08); border-color: rgba(214,20,20,0.3); }
+  }
+  .checkboxCustom {
+    background-color: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.15);
+  }
+  .labelText { color: #e8eaf0; }
+  .labelDescription { color: rgba(255,255,255,0.4); }
+}

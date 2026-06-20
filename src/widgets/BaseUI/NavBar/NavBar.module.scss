@@ -206,7 +206,7 @@
     min-width: 0;
   }
 
-  .logout_btn {
+  .logout_btn, .theme_toggle_btn {
     flex: 1;
     flex-direction: column;
     justify-content: center;
@@ -285,6 +285,35 @@
   }
 }
 
+.theme_toggle_btn {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  text-align: left;
+  width: 100%;
+  white-space: nowrap;
+  color: #868d97;
+
+  .icon { color: #868d97; }
+  .label { color: #868d97; }
+
+  &:hover {
+    background-color: rgba(20, 20, 22, 0.05);
+    .icon, .label { color: #141416; }
+  }
+}
+
+.create_course_item {
+  border: 1px solid rgba(20, 20, 22, 0.14) !important;
+}
+
 // ─── Pomodoro dark theme ──────────────────────────────────────────────────────
 :global(html.pomodoro-dark) {
   .navbar {
@@ -321,5 +350,101 @@
 
   .logout_btn {
     &:hover { background-color: rgba(239,68,68,0.12); }
+  }
+
+  .theme_toggle_btn {
+    &:hover {
+      background-color: rgba(255,255,255,0.06);
+      .icon, .label { color: #e8eaf0; }
+    }
+  }
+
+  .create_course_item {
+    border-color: rgba(255,255,255,0.2) !important;
+  }
+}
+
+// ─── Global dark theme ────────────────────────────────────────────────────────
+:global(html.theme-dark) {
+  .navbar {
+    background-color: #111318;
+    transition: background-color 0.2s;
+  }
+
+  .item {
+    color: #9ca3af;
+    &:hover:not(.active) { background-color: rgba(255,255,255,0.06); }
+    &.active {
+      background-color: rgba(255,255,255,0.1);
+      .label { color: #fff; }
+      .icon  { color: #fff; }
+    }
+  }
+
+  .icon  { color: #6b7280; }
+  .label { color: #6b7280; }
+  .divider { background-color: rgba(255,255,255,0.07); }
+  .drag_handle { background-color: rgba(255,255,255,0.1); }
+  .logout_btn { &:hover { background-color: rgba(239,68,68,0.12); } }
+
+  .theme_toggle_btn {
+    &:hover {
+      background-color: rgba(255,255,255,0.06);
+      .icon, .label { color: #e8eaf0; }
+    }
+  }
+
+  .create_course_item {
+    border-color: rgba(255,255,255,0.2) !important;
+  }
+}
+
+// ─── VIP page dark theme ──────────────────────────────────────────────────────
+:global(html.vip-dark) {
+  .navbar {
+    background-color: #0e0f11;
+    box-shadow: 0 -4px 32px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.35);
+    transition: background-color 0.25s, box-shadow 0.25s;
+  }
+
+  .item {
+    color: #9ca3af;
+
+    &:hover:not(.active) {
+      background-color: rgba(255,255,255,0.06);
+    }
+
+    &.active {
+      background-color: rgba(255,255,255,0.1);
+
+      .label { color: #fff; }
+      .icon  { color: #fff; }
+    }
+  }
+
+  .icon  { color: #6b7280; }
+  .label { color: #6b7280; }
+
+  .divider {
+    background-color: rgba(255,255,255,0.07);
+  }
+
+  .drag_handle {
+    background-color: rgba(255,255,255,0.1);
+  }
+
+  .logout_btn {
+    &:hover { background-color: rgba(239,68,68,0.12); }
+  }
+
+  .theme_toggle_btn {
+    &:hover {
+      background-color: rgba(255,255,255,0.06);
+      .icon, .label { color: #e8eaf0; }
+    }
+  }
+
+  .create_course_item {
+    border-color: rgba(255,255,255,0.2) !important;
   }
 }

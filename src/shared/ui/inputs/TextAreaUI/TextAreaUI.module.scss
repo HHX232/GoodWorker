@@ -203,3 +203,20 @@
     box-shadow: none !important;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .newWhite, .superWhite, .dark, .lightBlue {
+    .textarea__inner__box {
+      background-color: #1a1c22;
+      border-color: rgba(255,255,255,0.1);
+      box-shadow: none;
+    }
+    .textarea {
+      color: #e8eaf0;
+      &::placeholder { color: rgba(255,255,255,0.2); }
+    }
+    .textarea__title { color: #9ea4b5; }
+    .help__title { color: rgba(255,255,255,0.4); }
+  }
+}

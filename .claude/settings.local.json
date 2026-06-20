@@ -306,7 +306,14 @@
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('NavBar', {}\\), indent=2, ensure_ascii=False\\)\\)\")",
       "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('messages/ru.json','utf8'\\)\\); JSON.parse\\(require\\('fs'\\).readFileSync\\('messages/en.json','utf8'\\)\\); JSON.parse\\(require\\('fs'\\).readFileSync\\('messages/zh.json','utf8'\\)\\); JSON.parse\\(require\\('fs'\\).readFileSync\\('messages/hi.json','utf8'\\)\\); console.log\\('All JSON valid'\\)\")",
       "Bash(node -e \"['ru','en','zh','hi'].forEach\\(l => { JSON.parse\\(require\\('fs'\\).readFileSync\\('messages/'+l+'.json','utf8'\\)\\); console.log\\(l+' OK'\\) }\\)\")",
-      "Bash(git -C /Users/nikitatisevic/Desktop/GoodWorkerRemaster diff HEAD -- package.json)"
+      "Bash(git -C /Users/nikitatisevic/Desktop/GoodWorkerRemaster diff HEAD -- package.json)",
+      "Bash(curl -s \"http://localhost:3000/api/posts?limit=6&visibility=PUBLIC\")",
+      "Bash(grep -E \"\\\\.\\(tsx|scss\\)$\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('NavBar', {}\\), indent=2\\)\\)\")",
+      "Bash(grep -iE \"\\\\.\\(tsx|ts\\)$\")",
+      "Bash(grep -iE \"\\\\.\\(ts|tsx\\)$\")",
+      "Bash(sed -i '' -e s/您的路线图包含/您的课程包含/g -e s/此路线图的所有/此课程的所有/g -e s/路线图和测试/课程和测试/g -e s/数千条路线图和课程/数千条课程/g -e s/数千条路线图/数千条课程/g -e s/全部、路线图、/全部、课程、/g -e s/——路线图、/——课程、/g messages/zh.json)",
+      "Bash(sed -i '' -e 's/रोडमैप में बंद ब्लॉक/कोर्स में बंद ब्लॉक/g' -e 's/इस रोडमैप की रिपोर्ट/इस कोर्स की रिपोर्ट/g' -e 's/एक रोडमैप पूरा/एक कोर्स पूरा/g' -e 's/इस रोडमैप के सभी/इस कोर्स के सभी/g' -e 's/रोड मैप और टेस्ट/कोर्स और टेस्ट/g' -e 's/हजारों रोडमैप और पाठ/हजारों कोर्स और पाठ/g' -e 's/सभी, रोड मैप,/सभी, कोर्स,/g' -e 's/— रोड मैप,/— कोर्स,/g' messages/hi.json)"
     ],
     "additionalDirectories": [
       "c:\\Users\\Мастер\\Desktop\\goodworkerremaster\\app\\api\\roadmap",

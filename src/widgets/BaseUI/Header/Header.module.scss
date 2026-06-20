@@ -86,14 +86,146 @@
   flex-shrink: 0;
 }
 
+.theme_btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid #e2e5ee;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6a6a7a;
+  transition: background 0.16s, border-color 0.16s, color 0.16s;
+  flex-shrink: 0;
+
+  &:hover {
+    background: #f4f4f8;
+    color: #0e0e12;
+  }
+
+  &.theme_btn_active {
+    background: #1e2029;
+    border-color: rgba(255,255,255,0.12);
+    color: #e0e0ea;
+
+    &:hover {
+      background: #252830;
+      color: #fff;
+    }
+  }
+}
+
+:global(html.theme-dark) .theme_btn {
+  border-color: rgba(255,255,255,0.1);
+  color: #9ea4b5;
+
+  &:hover {
+    background: #252830;
+    color: #fff;
+  }
+}
+
+:global(html.pomodoro-dark) .theme_btn {
+  border-color: rgba(255,255,255,0.1);
+  color: #9ea4b5;
+
+  &:hover {
+    background: #252830;
+    color: #fff;
+  }
+}
+
 .extra_switcher {
   margin-left: auto;
+}
+
+.center_nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  justify-content: center;
+
+  @media (max-width: 700px) {
+    display: none;
+  }
+}
+
+.center_nav_link {
+  display: flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6a6a7a;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #111;
+  }
+}
+
+.center_nav_link_active {
+  background: rgba(83, 74, 183, 0.08);
+  color: #534AB7;
+
+  &:hover {
+    background: rgba(83, 74, 183, 0.12);
+    color: #534AB7;
+  }
+}
+
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .center_nav_link {
+    color: rgba(255,255,255,0.3);
+    &:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.75); }
+  }
+  .center_nav_link_active {
+    background: rgba(129,140,248,0.1);
+    color: #a5b4fc;
+    &:hover { background: rgba(129,140,248,0.16); color: #a5b4fc; }
+  }
 }
 
 // ─── Pomodoro dark theme ──────────────────────────────────────────────────────
 :global(html.pomodoro-dark) .wrapper {
   background-color: #12141c;
   transition: background-color 0.25s;
+}
+
+// ─── VIP page dark theme ──────────────────────────────────────────────────────
+:global(html.vip-dark) .wrapper {
+  background-color: #0e0f11;
+  border-bottom-color: rgba(255,255,255,0.07);
+  margin-bottom: 0;
+  transition: background-color 0.25s;
+}
+
+:global(html.vip-dark) .logo_big,
+:global(html.vip-dark) .logo_small {
+  filter: invert(1);
+}
+
+// ─── Post page — a bit more breathing room ────────────────────────────────────
+:global(html.post-page) .wrapper {
+  margin-bottom: 12px;
+}
+
+// ─── Global dark theme ────────────────────────────────────────────────────────
+:global(html.theme-dark) .wrapper {
+  background-color: #111318;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  transition: background-color 0.2s;
+}
+
+:global(html.theme-dark) .logo_big,
+:global(html.theme-dark) .logo_small {
+  filter: invert(1);
 }
 
 // ─── Road-map fullscreen (no gap below header) ────────────────────────────────

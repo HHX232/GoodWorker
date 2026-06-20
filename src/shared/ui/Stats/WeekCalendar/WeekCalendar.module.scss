@@ -434,6 +434,29 @@ $sb-width: 8px;
    }
 }
 
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .card { background: #1a1c24; box-shadow: none; }
+  .header { border-color: rgba(255,255,255,0.07); }
+  .title { color: #e8eaf0; }
+  .month { color: rgba(255,255,255,0.2); }
+  .nav_btn { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.35); &:hover { background: rgba(255,255,255,0.12); color: #e8eaf0; } }
+  .nav_btn_today { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.35); &:hover { background: rgba(255,255,255,0.12); color: #e8eaf0; } }
+  .day_header_row { background: rgba(255,255,255,0.025); border-color: rgba(255,255,255,0.07); }
+  .day_header { border-color: rgba(255,255,255,0.07); }
+  .day_header__name { color: rgba(255,255,255,0.18); }
+  .day_header__num { color: rgba(255,255,255,0.55); }
+  .hour_label { color: rgba(255,255,255,0.14); }
+  .hour_line { background: rgba(255,255,255,0.07); }
+  .column { border-color: rgba(255,255,255,0.07); &:hover { background: rgba(255,255,255,0.015); } }
+  .column_empty { background: rgba(255,255,255,0.01); &:hover { background: rgba(255,255,255,0.03); } }
+  .lesson_block { background: rgba(79,110,247,0.14); }
+  .lesson_block__name { color: #c7d2fe; }
+  .lesson_block__subject { color: #a5b4fc; }
+  .lesson_block__time { color: rgba(165,180,252,0.45); }
+  .grid_scroll { &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); } }
+}
+
 // ── Now indicator ────────────────────────────────
 .now_line {
    position: absolute;

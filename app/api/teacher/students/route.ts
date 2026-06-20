@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
 
   const rows = await prisma.teacherStudent.findMany({
     where: { teacherId },
-    include: { student: { select: { id: true, name: true, avatarUrl: true } } },
+    include: { student: { select: { id: true, name: true, nameTransliterated: true, avatarUrl: true } } },
     orderBy: { linkedAt: 'asc' },
   })
 
@@ -46,6 +46,7 @@ export async function GET(req: NextRequest) {
     return {
       id: r.student.id,
       name: r.student.name,
+      nameTransliterated: r.student.nameTransliterated ?? null,
       initials: getInitials(r.student.name),
       subject: '',
       avatarUrl: r.student.avatarUrl ?? null,

@@ -1,7 +1,19 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 83px);
+
+  @media (max-width: 1100px) {
+    height: auto;
+    min-height: calc(100vh - 83px);
+  }
+}
+
 .dashboard {
   display: grid;
   grid-template-columns: 272px 1fr 296px;
-  height: calc(100vh - 83px);
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
   background: #EEEFF8;
 
@@ -9,7 +21,6 @@
     display: flex;
     flex-direction: column;
     height: auto;
-    min-height: calc(100vh - 83px);
     overflow: visible;
 
     > * {
@@ -19,4 +30,9 @@
       min-height: 0 !important;
     }
   }
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .dashboard { background: #111318; }
 }

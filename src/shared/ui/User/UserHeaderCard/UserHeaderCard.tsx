@@ -4,6 +4,7 @@ import {useOnlineStatus} from '@/features/hooks/User/useOnlineStatus'
 import {formatActivity} from '@/shared/helpers/formatActivity'
 import {DotsMenuProps, UserHeaderCardProps} from '@/shared/types'
 import {PostComplaintModal} from '@/shared/ui/Posts/PostComplaintModal/PostComplaintModal'
+import {useThemeCtx} from '@/app/providers/ThemeContext'
 import Image from 'next/image'
 import Link from 'next/link'
 import {FC, useState} from 'react'
@@ -145,6 +146,8 @@ const UserHeaderCard: FC<UserHeaderCardProps> = ({
   size = 'lg'
 }) => {
   const [activeMenu, setActiveMenu] = useState(false)
+  const {isDark} = useThemeCtx()
+  const nameColor = isDark ? '#e8eaf0' : `#${colorTitle}`
   const {online, lastSeenAt} = useOnlineStatus(userID)
   const computedDateActivity = dateActivity || formatActivity(online, lastSeenAt)
   const toggleMenu = (e: React.MouseEvent) => {
@@ -188,7 +191,7 @@ const UserHeaderCard: FC<UserHeaderCardProps> = ({
         {useLink ? (
           <Link href={`/users/${userID}`} className={style.some_text_box}>
             <p
-              style={{color: `#${colorTitle}`}}
+              style={{color: nameColor}}
               className={`${style.user_name} ${size === 'sm' && style.user__little_name}`}
             >
               {name}
@@ -214,7 +217,7 @@ const UserHeaderCard: FC<UserHeaderCardProps> = ({
         ) : (
           <div className={style.some_text_box}>
             <p
-              style={{color: `#${colorTitle}`}}
+              style={{color: nameColor}}
               className={`${style.user_name} ${size === 'sm' && style.user__little_name}`}
             >
               {name}

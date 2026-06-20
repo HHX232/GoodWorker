@@ -105,6 +105,40 @@ html.pomodoro-dark {
   }
 }
 
+// ─── Global dark theme ────────────────────────────────────────────────────────
+html.theme-dark {
+  background-color: #111318;
+
+  body {
+    background-color: #111318;
+  }
+}
+
+// ─── ReactFlow Controls dark theme ───────────────────────────────────────────
+html.theme-dark, html.pomodoro-dark {
+  .react-flow__controls {
+    background: #1a1c24;
+    border-color: rgba(255,255,255,0.1);
+    box-shadow: 0 1px 8px rgba(0,0,0,0.4);
+
+    .react-flow__controls-button {
+      background: #1a1c24;
+      border-bottom-color: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.5);
+      fill: rgba(255,255,255,0.5);
+
+      &:hover {
+        background: rgba(255,255,255,0.07);
+        fill: #e8eaf0;
+      }
+    }
+  }
+
+  .react-flow__minimap {
+    background: #1a1c24;
+  }
+}
+
 .swiper-button-next,
 .swiper-button-prev {
   display: none !important;

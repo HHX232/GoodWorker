@@ -278,3 +278,19 @@
   top: 6px;
   right: 6px;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .desktop_menu { background-color: #1a1c24; }
+  .task_title { color: rgba(255,255,255,0.25); }
+  .task_button_box { color: rgba(255,255,255,0.35); &:hover .task_info { color: rgba(255,255,255,0.7); } }
+  .task_icon { border-color: rgba(255,255,255,0.15); &:hover { border-color: rgba(255,255,255,0.3); background-color: rgba(255,255,255,0.06); } }
+  .dragging { background-color: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.3); }
+  .bottom_sheet { background: #1a1c24; }
+  .sheet_handle { background: rgba(255,255,255,0.12); }
+  .sheet_title { color: #e8eaf0; }
+  .sheet_close { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.5); &:active { background: rgba(255,255,255,0.12); } }
+  .mobile_block_btn { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); &:active { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); } }
+  .mobile_block_icon { border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.3); }
+  .mobile_block_label { color: rgba(255,255,255,0.5); }
+}

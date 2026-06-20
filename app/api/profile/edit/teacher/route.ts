@@ -2,6 +2,8 @@ import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { auth } from '../../../../../auth'
+import { refineNameTransliterationWithAI } from '@/lib/postAI'
+import { hasAIProvider } from '@/lib/openrouter'
 
 const urlOrEmpty = z.string().refine(
   v => !v || /^https?:\/\/.+/.test(v),
@@ -79,6 +81,10 @@ export async function PATCH(req: NextRequest) {
       languages: true,
     },
   })
+
+  if (parsed.data.name && hasAIProvider()) {
+    refineNameTransliterationWithAI(parsed.data.name, teacher.id, 'teacher').catch(() => {})
+  }
 
   return NextResponse.json(updated)
 }

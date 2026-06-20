@@ -1,110 +1,223 @@
 .page {
-  max-width: 780px;
-  margin: 0 auto;
-  padding: 40px 20px 80px;
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
+  min-height: 100vh;
+  background: #0e0f11;
+  font-family: inherit;
 }
 
-// ── Hero card ──────────────────────────────────────────────────────────────────
+// ── Starfield / hero ───────────────────────────────────────
 
-.heroCard {
-  border-radius: 20px;
-  overflow: hidden;
-  border: 1px solid #e5e5e5;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-}
-
-.heroBand {
-  background: #141416;
-  padding: 28px 32px 24px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
+.hero {
   position: relative;
   overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at 80% 50%, rgba(255,255,255,0.08) 0%, transparent 70%);
-    pointer-events: none;
-  }
-}
-
-.crownWrap {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  background: rgba(255,255,255,0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  flex-shrink: 0;
-}
-
-.vipBadge {
-  height: 26px;
-  padding: 0 10px;
-  border-radius: 6px;
-  background: rgba(255,255,255,0.18);
-  border: 1px solid rgba(255,255,255,0.25);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  display: flex;
-  align-items: center;
-}
-
-.heroBody {
-  background: #fff;
-  padding: 28px 32px 32px;
+  background: #0e0f11;
+  padding: 80px 24px 72px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  align-items: center;
+  text-align: center;
+  gap: 20px;
+}
 
-  @media (max-width: 480px) {
-    padding: 20px;
-  }
+.starfield {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.heroBadge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 100px;
+  padding: 6px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.55);
+  background: rgba(255,255,255,0.05);
 }
 
 .heroTitle {
-  font-size: 22px;
-  font-weight: 700;
-  color: #0a0c12;
+  position: relative;
+  font-size: clamp(32px, 6vw, 52px);
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
   margin: 0;
-  letter-spacing: -0.02em;
+  max-width: 600px;
 }
 
 .heroSub {
-  font-size: 14px;
-  color: #6b6b6b;
-  line-height: 1.55;
+  position: relative;
+  font-size: 16px;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.6;
   margin: 0;
-  max-width: 480px;
+  max-width: 440px;
 }
 
-// ── Promo block ────────────────────────────────────────────────────────────────
+// ── Divider line between hero and content ──────────────────
 
-.promoBlock {
+.divider {
+  width: 100%;
+  height: 1px;
+  background: rgba(255,255,255,0.07);
+}
+
+// ── Main content (dark) ────────────────────────────────────
+
+.content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 56px 24px 80px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 4px;
+  gap: 56px;
 }
+
+// ── Section labels ─────────────────────────────────────────
+
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.3);
+  text-transform: uppercase;
+  margin: 0 0 20px;
+}
+
+// ── Features grid ──────────────────────────────────────────
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+
+  @media (max-width: 680px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 400px) { grid-template-columns: 1fr; }
+}
+
+.featureCard {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: border-color 0.15s, background 0.15s;
+
+  &:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.12);
+  }
+}
+
+.featureIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+.featureTitle {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 4px;
+  line-height: 1.3;
+}
+
+.featureDesc {
+  font-size: 12.5px;
+  color: rgba(255,255,255,0.4);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.featureTag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: 100px;
+  margin-top: 4px;
+  opacity: 0.9;
+}
+
+// ── How to get VIP ─────────────────────────────────────────
+
+.getSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.getCard {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+
+  &:hover { border-color: rgba(255,255,255,0.13); }
+}
+
+.getCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 22px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.getCardNum {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.getCardTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+.getCardSub {
+  font-size: 12.5px;
+  color: rgba(255,255,255,0.38);
+  margin: 2px 0 0;
+}
+
+.getCardBody {
+  padding: 20px 22px;
+}
+
+// ── Promo block ────────────────────────────────────────────
 
 .promoRow {
   display: flex;
   gap: 10px;
   align-items: stretch;
 
-  @media (max-width: 480px) {
-    flex-direction: column;
-  }
+  @media (max-width: 480px) { flex-direction: column; }
 }
 
 .promoInputWrap {
@@ -114,53 +227,50 @@
   align-items: center;
 }
 
-.promoIcon {
+.promoIconWrap {
   position: absolute;
   left: 12px;
-  color: #9CA3AF;
+  color: rgba(255,255,255,0.3);
   pointer-events: none;
-  flex-shrink: 0;
+  display: flex;
 }
 
 .promoInput {
   width: 100%;
-  height: 42px;
-  border: 1px solid #E5E7EB;
+  height: 44px;
+  border: 1px solid rgba(255,255,255,0.1);
   border-radius: 10px;
-  padding: 0 12px 0 36px;
+  padding: 0 12px 0 38px;
   font-size: 13px;
   font-family: inherit;
-  color: #0a0c12;
-  background: #FAFAFA;
+  color: #fff;
+  background: rgba(255,255,255,0.05);
   outline: none;
   transition: border-color 0.15s, background 0.15s;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
 
-  &::placeholder { color: #9CA3AF; letter-spacing: 0; }
-
+  &::placeholder { color: rgba(255,255,255,0.25); letter-spacing: 0; }
   &:focus {
-    border-color: #141416;
-    background: #fff;
+    border-color: rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.08);
   }
 }
 
 .promoInputError {
-  border-color: #F87171;
-  background: #FFF5F5;
-
-  &:focus { border-color: #F87171; }
+  border-color: rgba(248, 113, 113, 0.5) !important;
+  background: rgba(248, 113, 113, 0.06) !important;
 }
 
 .promoError {
   font-size: 12px;
-  color: #EF4444;
-  margin: 0;
+  color: #f87171;
+  margin: 6px 0 0;
 }
 
 .promoHint {
   font-size: 12px;
-  color: #9CA3AF;
-  margin: 0;
+  color: rgba(255,255,255,0.25);
+  margin: 8px 0 0;
   line-height: 1.5;
 }
 
@@ -169,11 +279,11 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  height: 42px;
-  padding: 0 22px;
+  height: 44px;
+  padding: 0 24px;
   border-radius: 10px;
-  background: #141416;
-  color: #fff;
+  background: #fff;
+  color: #0e0f11;
   font-size: 13px;
   font-weight: 600;
   font-family: inherit;
@@ -183,52 +293,39 @@
   transition: opacity 0.15s, transform 0.12s;
   flex-shrink: 0;
 
-  &:hover:not(:disabled) {
-    opacity: 0.88;
-  }
-
-  &:active:not(:disabled) {
-    transform: scale(0.98);
-  }
-
-  &:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-  }
+  &:hover:not(:disabled) { opacity: 0.88; }
+  &:active:not(:disabled) { transform: scale(0.98); }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
 }
 
 .spinner {
-  width: 15px;
-  height: 15px;
-  border: 2px solid rgba(255,255,255,0.35);
-  border-top-color: #fff;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0,0,0,0.15);
+  border-top-color: #0e0f11;
   border-radius: 50%;
   animation: spin 0.65s linear infinite;
-  flex-shrink: 0;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-// ── Success block ──────────────────────────────────────────────────────────────
+// ── Success state ──────────────────────────────────────────
 
 .successBlock {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 4px;
-  padding: 14px 16px;
-  background: #F0FDF4;
-  border: 1px solid #BBF7D0;
+  gap: 14px;
+  padding: 16px 18px;
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.2);
   border-radius: 12px;
 }
 
-.successIcon {
-  width: 38px;
-  height: 38px;
+.successIconWrap {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: #22C55E;
+  background: #22c55e;
   color: #fff;
   display: flex;
   align-items: center;
@@ -239,12 +336,12 @@
 .successTitle {
   font-size: 14px;
   font-weight: 600;
-  color: #15803D;
+  color: #4ade80;
 }
 
 .successSub {
   font-size: 12px;
-  color: #16A34A;
+  color: rgba(74, 222, 128, 0.7);
   margin-top: 2px;
 }
 
@@ -253,10 +350,10 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 34px;
-  padding: 0 14px;
+  height: 36px;
+  padding: 0 16px;
   border-radius: 8px;
-  background: #15803D;
+  background: #22c55e;
   color: #fff;
   font-size: 12px;
   font-weight: 600;
@@ -265,117 +362,61 @@
   cursor: pointer;
   flex-shrink: 0;
   transition: opacity 0.15s;
+  white-space: nowrap;
+  text-decoration: none;
 
   &:hover { opacity: 0.85; }
 
   @media (max-width: 480px) { display: none; }
 }
 
-// ── Benefits section ───────────────────────────────────────────────────────────
+// ── Free feedback hint ─────────────────────────────────────
 
-.benefits {
+.freeHintCard {
   display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.benefitsHeader {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.benefitsTitle {
-  font-size: 18px;
-  font-weight: 700;
-  color: #0a0c12;
-  margin: 0;
-  letter-spacing: -0.01em;
-}
-
-.benefitsSub {
-  font-size: 13px;
-  color: #9CA3AF;
-  margin: 0;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-
-  @media (max-width: 600px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @media (max-width: 380px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.card {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 16px;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 20px;
+  background: rgba(251, 191, 36, 0.05);
+  border: 1px solid rgba(251, 191, 36, 0.15);
   border-radius: 14px;
-  background: #fff;
-  border: 1px solid #F0F0F0;
-  transition: border-color 0.15s, box-shadow 0.15s;
-
-  &:hover {
-    border-color: #d0d0d0;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-  }
 }
 
-.cardIcon {
-  width: 38px;
-  height: 38px;
+.freeHintIcon {
+  width: 36px;
+  height: 36px;
   border-radius: 10px;
+  background: rgba(251, 191, 36, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  color: #fbbf24;
 }
 
-.cardText {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.freeHintText {
+  flex: 1;
+
+  p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    margin: 0;
+    line-height: 1.55;
+
+    strong { color: rgba(255,255,255,0.75); }
+  }
 }
 
-.cardTitle {
-  font-size: 13px;
-  font-weight: 600;
-  color: #0a0c12;
-  margin: 0;
-}
-
-.cardDesc {
-  font-size: 12px;
-  color: #6b6b6b;
-  margin: 0;
-  line-height: 1.45;
-}
-
-// ── Bottom CTA ─────────────────────────────────────────────────────────────────
-
-.bottomCta {
-  display: flex;
-  flex-direction: column;
+.freeHintLink {
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
-  padding: 32px 20px;
-  border-radius: 16px;
-  background: #fafafa;
-  border: 1px solid #e5e5e5;
-  text-align: center;
-}
-
-.bottomCtaText {
-  font-size: 15px;
+  gap: 5px;
+  margin-top: 8px;
+  font-size: 12px;
   font-weight: 600;
-  color: #0a0c12;
-  margin: 0;
+  color: #fbbf24;
+  text-decoration: none;
+  transition: opacity 0.15s;
+
+  &:hover { opacity: 0.75; }
 }

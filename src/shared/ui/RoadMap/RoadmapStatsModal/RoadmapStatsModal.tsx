@@ -15,6 +15,7 @@ import {
 } from 'recharts'
 import {useTranslations} from 'next-intl'
 import {toast} from 'sonner'
+import {useThemeCtx} from '@/app/providers/ThemeContext'
 import {RoadmapFeedbackDetailModal} from '../RoadmapFeedbackDetailModal/RoadmapFeedbackDetailModal'
 import styles from './RoadmapStatsModal.module.scss'
 
@@ -290,6 +291,7 @@ function ComplaintsListModal({
 
 export function RoadmapStatsModal({roadmapId, isOpen, onClose}: {roadmapId: string; isOpen: boolean; onClose: () => void}) {
   const t = useTranslations('roadMap')
+  const {isDark} = useThemeCtx()
   const [stats, setStats] = useState<StatsData | null>(null)
   const [loading, setLoading] = useState(false)
   const [feedbackOpen, setFeedbackOpen] = useState(false)
@@ -343,35 +345,35 @@ export function RoadmapStatsModal({roadmapId, isOpen, onClose}: {roadmapId: stri
                   {t('statsViews')}: <strong>{stats.views.total}</strong>
                 </div>
                 <div className={styles.chip}>
-                  <span className={styles.chip_dot} style={{background: '#141416'}} />
+                  <span className={styles.chip_dot} style={{background: isDark ? '#a5b4fc' : '#141416'}} />
                   {t('statsComments')}: <strong>{stats.comments.total}</strong>
                 </div>
               </div>
               <div className={styles.chart_wrap}>
                 <ResponsiveContainer width='100%' height='100%'>
                   <BarChart data={combinedData} barCategoryGap='25%' barGap={3}>
-                    <CartesianGrid vertical={false} stroke='#f0f0f0' strokeDasharray='0' />
+                    <CartesianGrid vertical={false} stroke={isDark ? 'rgba(255,255,255,0.06)' : '#f0f0f0'} strokeDasharray='0' />
                     <XAxis
                       dataKey='week'
                       tickFormatter={formatWeek}
-                      tick={{fontSize: 10, fill: '#bbb'}}
+                      tick={{fontSize: 10, fill: isDark ? 'rgba(255,255,255,0.3)' : '#bbb'}}
                       axisLine={false}
                       tickLine={false}
                     />
                     <YAxis
-                      tick={{fontSize: 10, fill: '#bbb'}}
+                      tick={{fontSize: 10, fill: isDark ? 'rgba(255,255,255,0.3)' : '#bbb'}}
                       axisLine={false}
                       tickLine={false}
                       width={28}
                       allowDecimals={false}
                     />
-                    <Tooltip content={<CombinedTooltip />} cursor={{fill: 'rgba(0,0,0,0.03)'}} />
+                    <Tooltip content={<CombinedTooltip />} cursor={{fill: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'}} />
                     <Legend
                       wrapperStyle={{fontSize: 11, paddingTop: 8}}
-                      formatter={(value) => <span style={{color: '#868897'}}>{value}</span>}
+                      formatter={(value) => <span style={{color: isDark ? 'rgba(255,255,255,0.4)' : '#868897'}}>{value}</span>}
                     />
                     <Bar dataKey='Просмотры' fill='#6366f1' radius={[3, 3, 0, 0]} animationDuration={500} />
-                    <Bar dataKey='Комментарии' fill='#141416' radius={[3, 3, 0, 0]} animationDuration={500} />
+                    <Bar dataKey='Комментарии' fill={isDark ? '#a5b4fc' : '#141416'} radius={[3, 3, 0, 0]} animationDuration={500} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -395,10 +397,10 @@ export function RoadmapStatsModal({roadmapId, isOpen, onClose}: {roadmapId: stri
                   <div className={styles.chart_wrap}>
                     <ResponsiveContainer width='100%' height='100%'>
                       <BarChart data={stats.purchases.byPeriod} barCategoryGap='30%'>
-                        <CartesianGrid vertical={false} stroke='#f0f0f0' strokeDasharray='0' />
-                        <XAxis dataKey='week' tickFormatter={formatWeek} tick={{fontSize: 10, fill: '#bbb'}} axisLine={false} tickLine={false} />
-                        <YAxis tick={{fontSize: 10, fill: '#bbb'}} axisLine={false} tickLine={false} width={36} allowDecimals={false} tickFormatter={(v) => `${v}₽`} />
-                        <Tooltip content={<IncomeTooltip />} cursor={{fill: 'rgba(0,0,0,0.03)'}} />
+                        <CartesianGrid vertical={false} stroke={isDark ? 'rgba(255,255,255,0.06)' : '#f0f0f0'} strokeDasharray='0' />
+                        <XAxis dataKey='week' tickFormatter={formatWeek} tick={{fontSize: 10, fill: isDark ? 'rgba(255,255,255,0.3)' : '#bbb'}} axisLine={false} tickLine={false} />
+                        <YAxis tick={{fontSize: 10, fill: isDark ? 'rgba(255,255,255,0.3)' : '#bbb'}} axisLine={false} tickLine={false} width={36} allowDecimals={false} tickFormatter={(v) => `${v}₽`} />
+                        <Tooltip content={<IncomeTooltip />} cursor={{fill: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'}} />
                         <Bar dataKey='income' fill='#22c55e' radius={[4, 4, 0, 0]} animationDuration={500} />
                       </BarChart>
                     </ResponsiveContainer>

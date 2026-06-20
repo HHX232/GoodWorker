@@ -1,6 +1,7 @@
 'use client'
 
 import { CreateServiceModal } from '@/widgets/Dashboard/CreateServiceModal/CreateServiceModal'
+import {getDisplayName} from '@/shared/utils/transliterate'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -39,6 +40,7 @@ interface ServiceOption {
 interface Props {
   studentId: string
   studentName: string
+  studentNameTransliterated?: string | null
   studentInitials: string
   avatarColor: string
   avatarTextColor: string
@@ -74,10 +76,11 @@ function minDatetime() {
 }
 
 export function StudentDetailModal({
-  studentId, studentName, studentInitials, avatarColor, avatarTextColor, subject, teacherId, onClose,
+  studentId, studentName, studentNameTransliterated, studentInitials, avatarColor, avatarTextColor, subject, teacherId, onClose,
 }: Props) {
   const t = useTranslations('dashboard')
   const locale = useLocale()
+  const displayName = getDisplayName(studentName, locale, studentNameTransliterated)
   const [tab, setTab] = useState<Tab>('meetings')
   const [offerOpen, setOfferOpen] = useState(false)
   const [student, setStudent] = useState<StudentData | null>(null)
@@ -86,7 +89,7 @@ export function StudentDetailModal({
   const [loading, setLoading] = useState(true)
   const [services, setServices] = useState<ServiceOption[]>([])
 
-  const [schedTitle, setSchedTitle] = useState(t('sdmDefaultTitle', { name: studentName }))
+  const [schedTitle, setSchedTitle] = useState(t('sdmDefaultTitle', { name: displayName }))
   const [schedAt, setSchedAt] = useState('')
   const [schedDuration, setSchedDuration] = useState(60)
   const [schedServiceId, setSchedServiceId] = useState('')
@@ -161,7 +164,7 @@ export function StudentDetailModal({
           ...prev,
           { id: data.id, title: schedTitle, scheduledAt: localDatetimeToISO(schedAt), roomName: data.roomName },
         ].sort((a, b) => new Date(a.scheduledAt ?? 0).getTime() - new Date(b.scheduledAt ?? 0).getTime()))
-        setSchedTitle(t('sdmDefaultTitle', { name: studentName }))
+        setSchedTitle(t('sdmDefaultTitle', { name: displayName }))
         setSchedAt('')
         setTimeout(() => setSchedSuccess(false), 3000)
       }
@@ -194,7 +197,7 @@ export function StudentDetailModal({
               {studentInitials}
             </div>
             <div>
-              <div className={styles.studentName}>{studentName}</div>
+              <div className={styles.studentName}>{displayName}</div>
               {subject && <div className={styles.studentSubject}>{subject}</div>}
               {student?.email && <div className={styles.studentEmail}>{student.email}</div>}
             </div>

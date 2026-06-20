@@ -24,10 +24,7 @@ interface Props {
 }
 
 const DeleteBlockButton = ({label, onDelete}: {label: string; onDelete: () => void}) => (
-  <button
-    style={{marginRight: 'auto', padding: '5px', borderRadius: '5px', backgroundColor: '#f3f3f3'}}
-    onClick={onDelete}
-  >
+  <button className={styles.delete_btn} onClick={onDelete}>
     {label}
   </button>
 )
@@ -43,7 +40,7 @@ function BlockEditor({block}: Props) {
   const wrapper = (heading: string, children: React.ReactNode) => (
     <div id={`block-${block.id}`} className={`${styles.block_wrap} ${isInvalid ? styles.block_invalid : ''}`}>
       <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
-        <h3 style={{marginTop: '15px', fontWeight: '500', fontSize: '32px'}}>{heading}</h3>
+        <h3 className={styles.block_heading}>{heading}</h3>
         {deleteBtn}
         {children}
       </div>

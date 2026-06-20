@@ -96,6 +96,15 @@ const Icon = {
       <line x1='3' y1='10' x2='21' y2='10' />
     </svg>
   ),
+  Posts: () => (
+    <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'>
+      <path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z' />
+      <polyline points='14 2 14 8 20 8' />
+      <line x1='16' y1='13' x2='8' y2='13' />
+      <line x1='16' y1='17' x2='8' y2='17' />
+      <polyline points='10 9 9 9 8 9' />
+    </svg>
+  ),
   Games: () => (
     <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'>
       <rect x='2' y='6' width='20' height='12' rx='3' ry='3' />
@@ -119,6 +128,7 @@ interface NavItem {
   href: string
   label: string
   icon: React.ReactNode
+  extraClass?: string
 }
 
 interface NavGroup {
@@ -132,7 +142,7 @@ function NavLink({item, active}: {item: NavItem; active: boolean}) {
   return (
     <Link
       href={item.href}
-      className={`${styles.item} ${active ? styles.active : ''}`}
+      className={`${styles.item} ${active ? styles.active : ''} ${item.extraClass ?? ''}`}
       title={item.label}
     >
       <span className={styles.icon}>{item.icon}</span>
@@ -174,20 +184,24 @@ export function NavBar({extraClass}: {extraClass?: string}) {
   if (status === 'loading') {
     topGroups = [
       {items: [{href: '/', label: t('home'), icon: <Icon.Home />}]},
-      {items: [{href: '/workflows-list', label: t('roadmaps'), icon: <Icon.Roadmaps />}]},
+      {id: 'navbar-catalog', items: [
+        {href: '/posts',          label: t('posts'),    icon: <Icon.Posts />},
+        {href: '/workflows-list', label: t('roadmaps'), icon: <Icon.Roadmaps />},
+      ]},
     ]
     bottomGroups = []
   } else if (role === 'TEACHER' || role === 'ADMIN') {
     topGroups = [
       {items: [{href: '/', label: t('home'), icon: <Icon.Home />}]},
       {id: 'navbar-catalog', items: [
+        {href: '/posts',          label: t('posts'),    icon: <Icon.Posts />},
         {href: '/workflows-list', label: t('courses'),  icon: <Icon.Roadmaps />},
         {href: '/teachers',       label: t('teachers'), icon: <Icon.Teachers />},
       ]},
     ]
     bottomGroups = [
       {items: [{href: '/create-post',     label: t('createPost'),   icon: <Icon.CreatePost />}]},
-      {items: [{href: '/create-road-map', label: t('createCourse'), icon: <Icon.CreateRoadmap />}]},
+      {items: [{href: '/create-road-map', label: t('createCourse'), icon: <Icon.CreateRoadmap />, extraClass: styles.create_course_item}]},
       {items: [{href: '/create-test',     label: t('createTest'),   icon: <Icon.CreateTest />}]},
       ...(userId ? [{items: [{href: `/calendar/${userId}`, label: t('calendar'), icon: <Icon.Calendar />}]}] : []),
       {items: [{href: '/game',            label: t('games'),   icon: <Icon.Games />}]},
@@ -198,6 +212,7 @@ export function NavBar({extraClass}: {extraClass?: string}) {
     topGroups = [
       {items: [{href: '/', label: t('home'), icon: <Icon.Home />}]},
       {id: 'navbar-catalog', items: [
+        {href: '/posts',          label: t('posts'),        icon: <Icon.Posts />},
         {href: '/workflows-list', label: t('courseCatalog'), icon: <Icon.Roadmaps />},
         {href: '/teachers',       label: t('teachers'),      icon: <Icon.Teachers />},
       ]},
@@ -212,7 +227,11 @@ export function NavBar({extraClass}: {extraClass?: string}) {
   } else {
     topGroups = [
       {items: [{href: '/', label: t('home'), icon: <Icon.Home />}]},
-      {items: [{href: '/workflows-list', label: t('roadmaps'), icon: <Icon.Roadmaps />}]},
+      {id: 'navbar-catalog', items: [
+        {href: '/posts',          label: t('posts'),    icon: <Icon.Posts />},
+        {href: '/workflows-list', label: t('courses'),  icon: <Icon.Roadmaps />},
+        {href: '/teachers',       label: t('teachers'), icon: <Icon.Teachers />},
+      ]},
     ]
     bottomGroups = [
       {items: [{href: '/game', label: t('games'), icon: <Icon.Games />}]},

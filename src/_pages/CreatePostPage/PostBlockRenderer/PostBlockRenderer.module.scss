@@ -35,3 +35,9 @@
     background: #7f77dd;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .testLink { background: rgba(83,74,183,0.12); border-color: rgba(83,74,183,0.25); }
+  .testLinkTitle { color: #e8eaf0; }
+}

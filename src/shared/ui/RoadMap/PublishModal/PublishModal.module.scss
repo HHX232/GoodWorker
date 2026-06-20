@@ -317,3 +317,37 @@
     opacity: 0.75;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .price_input {
+    border-color: rgba(255,255,255,0.1);
+    background: #141620;
+    color: #e8eaf0;
+    &:focus { border-color: rgba(255,255,255,0.3); background: #1a1c24; }
+  }
+  .currency_base { color: #e8eaf0; }
+  .free_badge { background: rgba(45,122,79,0.2); color: #4ade80; }
+  .grid_label { color: rgba(255,255,255,0.3); }
+  .currency_grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); }
+  .currency_cell { background: rgba(255,255,255,0.05); }
+  .cell_code { color: rgba(255,255,255,0.3); }
+  .cell_amount { color: #e8eaf0; }
+  .vip_notice { background: linear-gradient(135deg, rgba(120,53,15,0.3) 0%, rgba(120,53,15,0.45) 100%); border-color: rgba(253,230,138,0.2); }
+  .vip_title { color: #fcd34d; }
+  .vip_desc { color: rgba(253,211,77,0.7); }
+  .access_hint { color: rgba(255,255,255,0.4); }
+  .access_option {
+    border-color: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.02);
+    &:hover { border-color: rgba(165,148,252,0.4); background: rgba(165,148,252,0.05); }
+    &.selected { border-color: rgba(83,74,183,0.6); background: rgba(83,74,183,0.12); }
+  }
+  .opt_icon { background: rgba(255,255,255,0.07); .selected & { background: rgba(83,74,183,0.2); } }
+  .opt_label { color: #e8eaf0; }
+  .opt_desc { color: rgba(255,255,255,0.4); }
+  .stub_tag { background: rgba(253,243,199,0.1); color: #fbbf24; }
+  .footer { background: #111318; }
+  .cancel_btn { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); &:hover { border-color: rgba(255,255,255,0.25); } }
+  .confirm_btn { background: rgba(255,255,255,0.12); &:disabled { opacity: 0.25; } }
+}

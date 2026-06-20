@@ -17,6 +17,8 @@ import {useEffect, useRef, useState} from 'react'
 import {HexColorPicker} from 'react-colorful'
 import styles from './NodeHeader.module.scss'
 import {getNodeHeaderIconColor} from '@/shared/helpers/Node/getNodeHeaderIconColor'
+import {useThemeCtx} from '@/app/providers/ThemeContext'
+
 
 export default function NodeHeader({
   taskType,
@@ -57,8 +59,9 @@ export default function NodeHeader({
     setColor(newColor)
     updateNodeData(nodeId, {headerColor: newColor} as any)
   }
+  const {isDark} = useThemeCtx()
   const activeColor = color || ''
-  const iconColor = activeColor ? getNodeHeaderIconColor(activeColor) : undefined
+  const iconColor = activeColor ? getNodeHeaderIconColor(activeColor, isDark) : undefined
   const onlyView = useViewMode() === 'view'
   const {completedNodeIds} = useRoadmapProgress()
   const isCompleted = onlyView && completedNodeIds.has(nodeId)

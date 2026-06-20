@@ -79,3 +79,16 @@
       opacity: 0.85;
    }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .title { color: #e8eaf0; }
+  .label { color: rgba(255,255,255,0.4); }
+  .reset_btn {
+    border-color: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.45);
+    &:hover { background: rgba(255,255,255,0.09); }
+  }
+  .apply_btn { background: rgba(255,255,255,0.12); &:active { opacity: 0.85; } }
+}

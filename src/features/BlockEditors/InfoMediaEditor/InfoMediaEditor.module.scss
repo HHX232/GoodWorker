@@ -221,3 +221,15 @@
 .empty_icon_vid {
   color: #ddd6fe;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .box { background: #1e2030; border-color: rgba(255,255,255,0.07); }
+  .kind_btn { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); &:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.2); } }
+  .or { color: rgba(255,255,255,0.2); }
+  .url_input { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &::placeholder { color: rgba(255,255,255,0.2); } &:focus { border-color: rgba(147,197,253,0.4); background: rgba(255,255,255,0.08); } }
+  .caption_input { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); &::placeholder { color: rgba(255,255,255,0.2); } &:focus { border-color: rgba(147,197,253,0.4); } }
+  .empty_hint { color: rgba(255,255,255,0.15); p { color: rgba(255,255,255,0.25); } }
+  .empty_icon_img { color: rgba(147,197,253,0.4); }
+  .empty_icon_vid { color: rgba(167,139,250,0.4); }
+}

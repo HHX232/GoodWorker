@@ -143,3 +143,21 @@
       box-shadow: 0 0 0 10px rgba(74, 144, 226, 0.08);
    }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .match_item {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.1);
+    &:hover { border-color: rgba(255,255,255,0.2); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    &.connected { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.3); }
+    &.active { border-color: #818cf8; background: rgba(129,140,248,0.12); box-shadow: 0 0 0 4px rgba(129,140,248,0.2); }
+  }
+  .match_item_content { color: #e8eaf0; }
+  .handle { border-color: rgba(255,255,255,0.25); background: #1e2030;
+    &:hover { border-color: #818cf8; box-shadow: 0 0 0 4px rgba(129,140,248,0.2); }
+    &.handle_connected { border-color: #818cf8; background: #818cf8; }
+    &.handle_active { border-color: #818cf8; box-shadow: 0 0 0 6px rgba(129,140,248,0.25); }
+  }
+  .handle_inner { background: rgba(255,255,255,0.3); }
+}

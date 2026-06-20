@@ -92,3 +92,17 @@
    flex-direction: column;
    gap: 15px;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .main_content {
+    background-color: #141620;
+    h1 { color: #e8eaf0; }
+  }
+  .pdf_import_btn {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.6);
+    &:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.2); }
+  }
+}

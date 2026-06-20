@@ -215,3 +215,20 @@
     appearance: textfield;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .newWhite, .superWhite, .dark, .lightBlue, .newGray {
+    .input__inner__box {
+      background-color: #1a1c22;
+      border-color: rgba(255,255,255,0.1);
+      box-shadow: none;
+    }
+    .input {
+      color: #e8eaf0;
+      &::placeholder { color: rgba(255,255,255,0.2); }
+    }
+    .input__title { color: #9ea4b5; }
+    .help__title { color: rgba(255,255,255,0.4); }
+  }
+}

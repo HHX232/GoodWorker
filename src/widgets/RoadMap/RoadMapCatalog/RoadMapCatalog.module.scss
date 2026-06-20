@@ -63,3 +63,10 @@
     grid-template-columns: 1fr;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .skeleton { background: #141620; }
+  .empty { color: rgba(255,255,255,0.3); }
+  .end_message { color: rgba(255,255,255,0.28); }
+}

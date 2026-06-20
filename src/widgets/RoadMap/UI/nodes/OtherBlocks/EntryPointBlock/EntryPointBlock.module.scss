@@ -214,3 +214,31 @@
       background-color: #fff;
    }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .preview { background: linear-gradient(135deg, #1e2030 0%, #252840 100%); }
+  .previewEmpty { color: rgba(255,255,255,0.3); }
+  .fieldLabel { color: rgba(255,255,255,0.3); }
+  .charCount { color: rgba(255,255,255,0.25); }
+  .titleInput {
+    border-color: rgba(255,255,255,0.1);
+    background: #141620;
+    color: #e8eaf0;
+    &::placeholder { color: rgba(255,255,255,0.2); }
+    &:focus { border-color: rgba(255,255,255,0.25); background: #1a1c24; }
+  }
+  .descInput {
+    border-color: rgba(255,255,255,0.1);
+    background: #141620;
+    color: #e8eaf0;
+    &::placeholder { color: rgba(255,255,255,0.2); }
+    &:focus { border-color: rgba(255,255,255,0.25); background: #1a1c24; }
+  }
+  .select {
+    border-color: rgba(255,255,255,0.1);
+    background-color: #141620;
+    color: #e8eaf0;
+    &:focus { border-color: rgba(255,255,255,0.25); background-color: #1a1c24; }
+  }
+}

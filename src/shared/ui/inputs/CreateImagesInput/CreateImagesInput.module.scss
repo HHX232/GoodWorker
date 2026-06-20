@@ -294,6 +294,37 @@
   }
 }
 
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .create__images__input__label {
+    background-color: #1e2030;
+    border-color: rgba(255,255,255,0.12);
+    &:hover {
+      border-color: rgba(255,255,255,0.28);
+      background-color: #252838;
+    }
+  }
+  .dropdown__menu {
+    background-color: #1e2030;
+    border-color: rgba(255,255,255,0.1);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
+  .menu__item {
+    color: #d0d3e0;
+    &:hover { background-color: rgba(255,255,255,0.07); }
+  }
+  .action__btn__add {
+    background-color: rgba(255,255,255,0.1);
+    &:hover { background-color: rgba(255,255,255,0.16); }
+  }
+  .create__images__input__label svg rect {
+    fill: rgba(255,255,255,0.08);
+  }
+  .create__images__input__label svg path {
+    stroke: rgba(255,255,255,0.3);
+  }
+}
+
 .create__images__input__label__big {
   grid-column: span 2;
   grid-row: span 2;

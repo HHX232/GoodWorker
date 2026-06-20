@@ -8,6 +8,7 @@ import { TranscriptsModal } from '@/widgets/Forms/ProfileEditForm/TranscriptsMod
 import { DashboardCenter } from '@/widgets/Dashboard/DashboardCenter/DashboardCenter'
 import { DashboardProfilePanel } from '@/widgets/Dashboard/DashboardProfilePanel/DashboardProfilePanel'
 import { DashboardStudentSidebar } from '@/widgets/Dashboard/DashboardStudentSidebar/DashboardStudentSidebar'
+import { ProfileSubNav } from '@/shared/ui/ProfileSubNav/ProfileSubNav'
 import { useTranslations } from 'next-intl'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useUpdateProfile } from '@/features/hooks/User/useUpdateProfile'
@@ -227,10 +228,12 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
   }
 
   return (
-    <div
-      className={styles.dashboard}
-      style={{ gridTemplateColumns: `${leftWidth}px 1fr ${rightWidth}px` }}
-    >
+    <div className={styles.wrapper}>
+      <ProfileSubNav />
+      <div
+        className={styles.dashboard}
+        style={{ gridTemplateColumns: `${leftWidth}px 1fr ${rightWidth}px` }}
+      >
       <TeacherDashboardTutorial />
       {/* Left resize handle */}
       <div className={styles.resizeHandle} style={{ left: leftWidth - 3 }} onMouseDown={startResize('left')} />
@@ -338,6 +341,7 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
           </div>
         }
       />
+      </div>
       </div>
     </div>
   )

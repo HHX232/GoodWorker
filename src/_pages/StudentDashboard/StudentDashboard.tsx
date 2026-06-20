@@ -8,6 +8,7 @@ import { StudentCenter } from '@/widgets/Dashboard/StudentCenter/StudentCenter'
 import { StudentProfilePanel } from '@/widgets/Dashboard/StudentProfilePanel/StudentProfilePanel'
 import { StudentStatsModal } from '@/widgets/Dashboard/StudentStatsModal/StudentStatsModal'
 import { StudentTeachersSidebar } from '@/widgets/Dashboard/StudentTeachersSidebar/StudentTeachersSidebar'
+import { ProfileSubNav } from '@/shared/ui/ProfileSubNav/ProfileSubNav'
 import { useTranslations } from 'next-intl'
 import { FC, useEffect, useRef, useState } from 'react'
 import { useUpdateProfile } from '@/features/hooks/User/useUpdateProfile'
@@ -215,7 +216,9 @@ export const StudentDashboard: FC<Props> = ({ initialData }) => {
   }
 
   return (
-    <div className={styles.dashboard}>
+    <div className={styles.wrapper}>
+      <ProfileSubNav />
+      <div className={styles.dashboard}>
       <StudentTeachersSidebar
         teachers={profileData?.teachers ?? []}
         loading={profileLoading}
@@ -320,6 +323,7 @@ export const StudentDashboard: FC<Props> = ({ initialData }) => {
           </div>
         }
       />
+      </div>
     </div>
   )
 }

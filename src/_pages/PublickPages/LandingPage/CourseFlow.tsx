@@ -1,6 +1,7 @@
 'use client'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
+import { useThemeCtx } from '@/app/providers/ThemeContext'
 import {
   ReactFlow,
   Background,
@@ -20,38 +21,39 @@ import {
   DownloadIcon,
 } from 'lucide-react'
 
-const CARD: React.CSSProperties = {
-  background: '#fff',
-  border: '1px solid #e2e2e9',
+const cardStyle = (isDark: boolean): React.CSSProperties => ({
+  background: isDark ? '#15161e' : '#fff',
+  border: isDark ? '1px solid rgba(255,255,255,0.12)' : '1px solid #e2e2e9',
   borderRadius: 14,
   minWidth: 220,
   maxWidth: 240,
-  boxShadow: '0 1px 4px rgba(14,14,18,0.06)',
+  boxShadow: isDark ? '0 2px 12px rgba(0,0,0,0.4)' : '0 1px 4px rgba(14,14,18,0.06)',
   overflow: 'hidden',
   fontSize: 13,
-  color: '#0e0e12',
-}
+  color: isDark ? '#d8dae8' : '#0e0e12',
+})
 
-const HANDLE_STYLE: React.CSSProperties = {
+const handleStyle = (isDark: boolean): React.CSSProperties => ({
   width: 10, height: 10, borderRadius: '50%',
-  border: '2px solid #fff',
-  background: '#a0a0aa',
-}
+  border: isDark ? '2px solid #15161e' : '2px solid #fff',
+  background: isDark ? '#5a5a74' : '#a0a0aa',
+})
 
-function NodeHeader({ label, Icon, color }: { label: string; Icon: React.FC<{size?: number; color?: string}>; color?: string }) {
-  const isDark = !color || color === '#141416' || color === '#0e0e12'
+function NodeHeader({ label, Icon, color, themeDark }: { label: string; Icon: React.FC<{size?: number; color?: string}>; color?: string; themeDark?: boolean }) {
+  const isBg = !color || color === '#141416' || color === '#0e0e12' || color === '#ED0606'
+  const lightHeader = color || (themeDark ? '#1e2030' : '#f7f7fa')
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 8,
       padding: '8px 12px',
-      background: color || '#f7f7fa',
-      borderBottom: '1px solid rgba(0,0,0,0.06)',
+      background: lightHeader,
+      borderBottom: themeDark ? '1px solid rgba(255,255,255,0.07)' : '1px solid rgba(0,0,0,0.06)',
     }}>
-      <Icon size={14} color={isDark && color ? '#fff' : '#0e0e12'} />
+      <Icon size={14} color={(isBg && color) ? '#fff' : (themeDark ? '#9ea4b5' : '#0e0e12')} />
       <span style={{
         fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
         textTransform: 'uppercase',
-        color: isDark && color ? '#fff' : '#0e0e12',
+        color: (isBg && color) ? '#fff' : (themeDark ? '#9ea4b5' : '#0e0e12'),
       }}>{label}</span>
     </div>
   )
@@ -63,52 +65,55 @@ function Body({ children }: { children: React.ReactNode }) {
 
 function EntryNode() {
   const t = useTranslations('CourseFlow')
+  const { isDark } = useThemeCtx()
   return (
-    <div style={CARD}>
-      <NodeHeader label={t('entry_label')} Icon={MapIcon} color="#141416" />
+    <div style={cardStyle(isDark)}>
+      <NodeHeader label={t('entry_label')} Icon={MapIcon} color="#141416" themeDark={isDark} />
       <Body>
-        <div style={{ fontSize: 12, color: '#8c8c98', lineHeight: 1.5 }}>
+        <div style={{ fontSize: 12, color: isDark ? 'rgba(200,202,215,0.55)' : '#8c8c98', lineHeight: 1.5 }}>
           {t('entry_desc')}
         </div>
       </Body>
-      <Handle type="source" position={Position.Right} style={HANDLE_STYLE} />
+      <Handle type="source" position={Position.Right} style={handleStyle(isDark)} />
     </div>
   )
 }
 
 function TextNode({ data }: { data: { title: string; preview: string } }) {
   const t = useTranslations('CourseFlow')
+  const { isDark } = useThemeCtx()
   return (
-    <div style={CARD}>
-      <NodeHeader label={t('text_label')} Icon={TextCursorIcon} />
+    <div style={cardStyle(isDark)}>
+      <NodeHeader label={t('text_label')} Icon={TextCursorIcon} themeDark={isDark} />
       <Body>
         <div style={{ fontWeight: 600, marginBottom: 4 }}>{data.title}</div>
-        <div style={{ fontSize: 12, color: '#8c8c98', lineHeight: 1.5 }}>{data.preview}</div>
+        <div style={{ fontSize: 12, color: isDark ? 'rgba(200,202,215,0.55)' : '#8c8c98', lineHeight: 1.5 }}>{data.preview}</div>
       </Body>
-      <Handle type="target" position={Position.Left}  style={HANDLE_STYLE} />
-      <Handle type="source" position={Position.Right} style={HANDLE_STYLE} />
+      <Handle type="target" position={Position.Left}  style={handleStyle(isDark)} />
+      <Handle type="source" position={Position.Right} style={handleStyle(isDark)} />
     </div>
   )
 }
 
 function MediaNode({ data }: { data: { title: string } }) {
   const t = useTranslations('CourseFlow')
+  const { isDark } = useThemeCtx()
   return (
-    <div style={CARD}>
-      <NodeHeader label={t('media_label')} Icon={ImageIcon} color="#f0f9ff" />
+    <div style={cardStyle(isDark)}>
+      <NodeHeader label={t('media_label')} Icon={ImageIcon} color={isDark ? '#1e2436' : '#f0f9ff'} themeDark={isDark} />
       <Body>
         <div style={{
           width: '100%', height: 70, borderRadius: 8,
-          background: 'linear-gradient(135deg, #dbeafe, #e0e7ff)',
+          background: isDark ? 'linear-gradient(135deg, #1e2436, #1e2030)' : 'linear-gradient(135deg, #dbeafe, #e0e7ff)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           marginBottom: 8,
         }}>
-          <ImageIcon size={22} color="#6366f1" />
+          <ImageIcon size={22} color={isDark ? '#6366f1' : '#6366f1'} />
         </div>
         <div style={{ fontWeight: 600, fontSize: 12 }}>{data.title}</div>
       </Body>
-      <Handle type="target" position={Position.Left}  style={HANDLE_STYLE} />
-      <Handle type="source" position={Position.Right} style={HANDLE_STYLE} />
+      <Handle type="target" position={Position.Left}  style={handleStyle(isDark)} />
+      <Handle type="source" position={Position.Right} style={handleStyle(isDark)} />
     </div>
   )
 }
@@ -117,6 +122,7 @@ const TEST_CORRECT = [0, 1]
 
 function TestNode({ data }: { data: { title: string; count: number } }) {
   const t = useTranslations('CourseFlow')
+  const { isDark } = useThemeCtx()
   const TEST_OPTIONS = [t('test_opt1'), t('test_opt2'), t('test_opt3')]
 
   const [checked, setChecked] = useState<number[]>([])
@@ -135,8 +141,8 @@ function TestNode({ data }: { data: { title: string; count: number } }) {
     : null
 
   return (
-    <div style={{ ...CARD, borderColor: '#ED0606' }}>
-      <NodeHeader label={t('test_label')} Icon={NotebookPen} color="#ED0606" />
+    <div style={{ ...cardStyle(isDark), borderColor: isDark ? 'rgba(237,6,6,0.35)' : 'rgba(237,6,6,0.45)' }}>
+      <NodeHeader label={t('test_label')} Icon={NotebookPen} color={isDark ? 'rgba(237,6,6,0.7)' : '#ED0606'} themeDark={isDark} />
       <Body>
         <div style={{ fontWeight: 600, marginBottom: 8, fontSize: 12, lineHeight: 1.4 }}>{data.title}</div>
 
@@ -144,8 +150,8 @@ function TestNode({ data }: { data: { title: string; count: number } }) {
           const on = checked.includes(i)
           const isRight = TEST_CORRECT.includes(i)
           const bg = submitted
-            ? on && isRight ? '#dcfce7' : on && !isRight ? '#fee2e2' : !on && isRight ? '#fef9c3' : '#fff'
-            : on ? '#fdf2f8' : '#fff'
+            ? on && isRight ? '#dcfce7' : on && !isRight ? '#fee2e2' : !on && isRight ? '#fef9c3' : (isDark ? '#1e2030' : '#fff')
+            : on ? (isDark ? '#2a1520' : '#fdf2f8') : (isDark ? '#1e2030' : '#fff')
           const borderColor = submitted
             ? on && isRight ? '#16a34a' : on && !isRight ? '#dc2626' : !on && isRight ? '#ca8a04' : '#d8d8e0'
             : on ? '#ED0606' : '#e2e2e9'
@@ -166,7 +172,7 @@ function TestNode({ data }: { data: { title: string; count: number } }) {
               }}>
                 {on && <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4"><path d="M20 6 9 17l-5-5"/></svg>}
               </span>
-              <span style={{ fontSize: 11, lineHeight: 1.3, color: '#0e0e12' }}>{opt}</span>
+              <span style={{ fontSize: 11, lineHeight: 1.3, color: isDark ? '#c8cad8' : '#0e0e12' }}>{opt}</span>
             </button>
           )
         })}
@@ -184,34 +190,36 @@ function TestNode({ data }: { data: { title: string; count: number } }) {
                 {score ? t('test_correct') : t('test_wrong')}
               </span>
               <button onClick={reset} onPointerDown={e => e.stopPropagation()}
-                style={{ fontSize: 10, padding: '4px 8px', borderRadius: 6, cursor: 'pointer', border: '1px solid #d8d8e0', background: '#fff', color: '#666' }}>↺</button>
+                style={{ fontSize: 10, padding: '4px 8px', borderRadius: 6, cursor: 'pointer', border: `1px solid ${isDark ? 'rgba(255,255,255,0.12)' : '#d8d8e0'}`, background: isDark ? '#1e2030' : '#fff', color: isDark ? '#9ea4b5' : '#666' }}>↺</button>
             </div>
           )}
         </div>
       </Body>
-      <Handle type="target" position={Position.Left}  style={{ ...HANDLE_STYLE, background: '#ED0606' }} />
-      <Handle type="source" position={Position.Right} style={{ ...HANDLE_STYLE, background: '#ED0606' }} />
+      <Handle type="target" position={Position.Left}  style={{ ...handleStyle(isDark), background: '#ED0606' }} />
+      <Handle type="source" position={Position.Right} style={{ ...handleStyle(isDark), background: '#ED0606' }} />
     </div>
   )
 }
 
 function PostNode({ data }: { data: { title: string } }) {
   const t = useTranslations('CourseFlow')
+  const { isDark } = useThemeCtx()
   return (
-    <div style={CARD}>
-      <NodeHeader label={t('post_label')} Icon={LayoutGridIcon} color="#faf5ff" />
+    <div style={cardStyle(isDark)}>
+      <NodeHeader label={t('post_label')} Icon={LayoutGridIcon} color={isDark ? '#1e1a2e' : '#faf5ff'} themeDark={isDark} />
       <Body>
         <div style={{ fontWeight: 600, marginBottom: 4 }}>{data.title}</div>
-        <div style={{ fontSize: 11, color: '#8c8c98' }}>{t('post_desc')}</div>
+        <div style={{ fontSize: 11, color: isDark ? 'rgba(200,202,215,0.55)' : '#8c8c98' }}>{t('post_desc')}</div>
       </Body>
-      <Handle type="target" position={Position.Left}  style={HANDLE_STYLE} />
-      <Handle type="source" position={Position.Right} style={HANDLE_STYLE} />
+      <Handle type="target" position={Position.Left}  style={handleStyle(isDark)} />
+      <Handle type="source" position={Position.Right} style={handleStyle(isDark)} />
     </div>
   )
 }
 
 function FileNode({ data }: { data: { title: string; ext: string } }) {
   const t = useTranslations('CourseFlow')
+  const { isDark } = useThemeCtx()
   const [installing, setInstalling] = useState(false)
   const [done, setDone] = useState(false)
 
@@ -223,14 +231,16 @@ function FileNode({ data }: { data: { title: string; ext: string } }) {
   }
 
   return (
-    <div style={CARD}>
-      <NodeHeader label={t('file_label')} Icon={PaperclipIcon} color="#fffbeb" />
+    <div style={cardStyle(isDark)}>
+      <NodeHeader label={t('file_label')} Icon={PaperclipIcon} color={isDark ? '#1e1c10' : '#fffbeb'} themeDark={isDark} />
       <Body>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0 }}>
             <span style={{
-              padding: '3px 7px', borderRadius: 6, background: '#fef3c7', flexShrink: 0,
-              border: '1px solid #fde68a', fontSize: 10, fontWeight: 700, color: '#92400e',
+              padding: '3px 7px', borderRadius: 6,
+              background: isDark ? '#2a2410' : '#fef3c7', flexShrink: 0,
+              border: `1px solid ${isDark ? '#4a3a10' : '#fde68a'}`,
+              fontSize: 10, fontWeight: 700, color: isDark ? '#d4a017' : '#92400e',
             }}>{data.ext}</span>
             <span style={{ fontSize: 12, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{data.title}</span>
           </div>
@@ -238,8 +248,8 @@ function FileNode({ data }: { data: { title: string; ext: string } }) {
             title={done ? t('file_installed') : t('file_download')}
             style={{
               flexShrink: 0, width: 28, height: 28, borderRadius: 8,
-              border: `1.5px solid ${done ? '#16a34a' : '#e2e2e9'}`,
-              background: done ? '#dcfce7' : '#fff',
+              border: `1.5px solid ${done ? '#16a34a' : (isDark ? 'rgba(255,255,255,0.12)' : '#e2e2e9')}`,
+              background: done ? '#dcfce7' : (isDark ? '#1e2030' : '#fff'),
               cursor: done ? 'default' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s',
             }}>
@@ -254,45 +264,48 @@ function FileNode({ data }: { data: { title: string; ext: string } }) {
                 <path d="M20 6 9 17l-5-5"/>
               </svg>
             ) : (
-              <DownloadIcon size={12} color="#8c8c98" />
+              <DownloadIcon size={12} color={isDark ? '#6a6a84' : '#8c8c98'} />
             )}
           </button>
         </div>
         {installing && (
-          <div style={{ marginTop: 8, height: 3, background: '#e2e2e9', borderRadius: 2, overflow: 'hidden' }}>
+          <div style={{ marginTop: 8, height: 3, background: isDark ? 'rgba(255,255,255,0.1)' : '#e2e2e9', borderRadius: 2, overflow: 'hidden' }}>
             <div style={{ height: '100%', background: '#ca8a04', borderRadius: 2, animation: 'fileProgress 1.4s ease-in-out forwards' }}/>
           </div>
         )}
         <style>{`@keyframes fileProgress { from { width: 0% } to { width: 100% } }`}</style>
       </Body>
-      <Handle type="target" position={Position.Left}  style={HANDLE_STYLE} />
-      <Handle type="source" position={Position.Right} style={HANDLE_STYLE} />
+      <Handle type="target" position={Position.Left}  style={handleStyle(isDark)} />
+      <Handle type="source" position={Position.Right} style={handleStyle(isDark)} />
     </div>
   )
 }
 
 function DoneNode() {
   const t = useTranslations('CourseFlow')
+  const { isDark } = useThemeCtx()
   return (
-    <div style={{ ...CARD, borderColor: '#16a34a' }}>
+    <div style={{ ...cardStyle(isDark), borderColor: '#16a34a' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: '#16a34a' }}>
         <CheckCircle2Icon size={16} color="#fff" />
         <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{t('done_label')}</span>
       </div>
-      <Handle type="target" position={Position.Left} style={{ ...HANDLE_STYLE, background: '#16a34a' }} />
+      <Handle type="target" position={Position.Left} style={{ ...handleStyle(isDark), background: '#16a34a' }} />
     </div>
   )
 }
 
 function AudioNode({ data }: { data: { title: string; duration: string } }) {
   const t = useTranslations('CourseFlow')
+  const { isDark } = useThemeCtx()
   return (
-    <div style={CARD}>
-      <NodeHeader label={t('audio_label')} Icon={Volume2Icon} color="#f0fdf4" />
+    <div style={cardStyle(isDark)}>
+      <NodeHeader label={t('audio_label')} Icon={Volume2Icon} color={isDark ? '#0e1e14' : '#f0fdf4'} themeDark={isDark} />
       <Body>
         <div style={{
           display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px',
-          background: '#f0fdf4', borderRadius: 8, border: '1px solid #bbf7d0',
+          background: isDark ? '#0e1e14' : '#f0fdf4', borderRadius: 8,
+          border: isDark ? '1px solid rgba(22,163,74,0.25)' : '1px solid #bbf7d0',
         }}>
           <button style={{
             width: 28, height: 28, borderRadius: '50%', border: 'none',
@@ -303,12 +316,12 @@ function AudioNode({ data }: { data: { title: string; duration: string } }) {
           </button>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 12, fontWeight: 600 }}>{data.title}</div>
-            <div style={{ fontSize: 10, color: '#8c8c98', fontFamily: 'JetBrains Mono, monospace' }}>{data.duration}</div>
+            <div style={{ fontSize: 10, color: isDark ? 'rgba(200,202,215,0.45)' : '#8c8c98', fontFamily: 'JetBrains Mono, monospace' }}>{data.duration}</div>
           </div>
         </div>
       </Body>
-      <Handle type="target" position={Position.Left}  style={HANDLE_STYLE} />
-      <Handle type="source" position={Position.Right} style={HANDLE_STYLE} />
+      <Handle type="target" position={Position.Left}  style={handleStyle(isDark)} />
+      <Handle type="source" position={Position.Right} style={handleStyle(isDark)} />
     </div>
   )
 }
@@ -324,19 +337,20 @@ const nodeTypes: NodeTypes = {
   done:   DoneNode   as NodeTypes[string],
 }
 
-const E = (id: string, s: string, t: string, animated = false): Edge => ({
-  id, source: s, target: t, type: 'smoothstep', animated,
-  style: { stroke: animated ? '#ED0606' : '#d0d0dc', strokeWidth: animated ? 2 : 1.5 },
-})
-
-const initEdges: Edge[] = [
-  E('e1-2','1','2'), E('e1-3','1','3'), E('e1-4','1','4'),
-  E('e2-5','2','5'), E('e3-6','3','6'), E('e4-7','4','7'),
-  E('e5-8','5','8', true), E('e6-8','6','8', true), E('e7-8','7','8', true),
-]
-
 export default function CourseFlow() {
   const t = useTranslations('CourseFlow')
+  const { isDark } = useThemeCtx()
+
+  const E = (id: string, s: string, target: string, animated = false): Edge => ({
+    id, source: s, target, type: 'smoothstep', animated,
+    style: { stroke: animated ? '#ED0606' : (isDark ? 'rgba(255,255,255,0.15)' : '#d0d0dc'), strokeWidth: animated ? 2 : 1.5 },
+  })
+
+  const initEdges: Edge[] = [
+    E('e1-2','1','2'), E('e1-3','1','3'), E('e1-4','1','4'),
+    E('e2-5','2','5'), E('e3-6','3','6'), E('e4-7','4','7'),
+    E('e5-8','5','8', true), E('e6-8','6','8', true), E('e7-8','7','8', true),
+  ]
 
   const initNodes: Node[] = [
     { id: '1', type: 'entry', position: { x: 0,   y: 160 }, data: {} },
@@ -350,13 +364,18 @@ export default function CourseFlow() {
   ]
 
   const [nodes, , onNodesChange] = useNodesState(initNodes)
-  const [edges, , onEdgesChange] = useEdgesState(initEdges)
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initEdges)
   const onInit = useCallback(() => {}, [])
 
+  useEffect(() => {
+    setEdges(initEdges)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDark])
+
   return (
-    <div style={{ border: '1px solid #ececf2', borderRadius: 18, overflow: 'hidden', background: '#fff', height: 480 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 18px', borderBottom: '1px solid #ececf2' }}>
-        <span style={{ fontSize: 15, fontWeight: 700, color: '#0e0e12' }}>{t('header')}</span>
+    <div style={{ border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #ececf2', borderRadius: 18, overflow: 'hidden', background: isDark ? '#0e0e12' : '#fff', height: 480 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 18px', borderBottom: isDark ? '1px solid rgba(255,255,255,0.07)' : '1px solid #ececf2' }}>
+        <span style={{ fontSize: 15, fontWeight: 700, color: isDark ? '#e0e2ec' : '#0e0e12' }}>{t('header')}</span>
         <span style={{
           fontSize: 10, fontWeight: 700, color: '#ED0606',
           background: 'rgba(237,6,6,0.08)', padding: '3px 7px', borderRadius: 999, letterSpacing: '0.05em',
@@ -372,7 +391,7 @@ export default function CourseFlow() {
           elementsSelectable panOnDrag zoomOnScroll={false}
           proOptions={{ hideAttribution: true }}
         >
-          <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="#e6e6ec" />
+          <Background variant={BackgroundVariant.Dots} gap={22} size={1} color={isDark ? '#252838' : '#e6e6ec'} />
         </ReactFlow>
       </div>
     </div>

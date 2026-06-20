@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { PomodoroCore } from "@/widgets/Pomodoro/PomodoroCore";
 import { usePomodoroCtx } from "@/widgets/Pomodoro/PomodoroContext";
 import styles from "./PomodoroPage.module.scss";
@@ -37,13 +38,6 @@ const TipIcons = {
   ),
 };
 
-const TIPS = [
-  { Icon: TipIcons.Focus,  title: "25 минут фокуса",  desc: "Работай без отвлечений один помодоро" },
-  { Icon: TipIcons.Coffee, title: "5 минут перерыв",   desc: "Короткий отдых после каждой сессии" },
-  { Icon: TipIcons.Leaf,   title: "Длинный перерыв",   desc: "15 минут после каждых 4 сессий" },
-  { Icon: TipIcons.Repeat, title: "Повторяй циклы",    desc: "Отслеживай прогресс по точкам сессий" },
-];
-
 function SunIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -69,31 +63,36 @@ function MoonIcon() {
 }
 
 export function PomodoroPage() {
+  const t = useTranslations("Pomodoro");
   const { isDark, setDark } = usePomodoroCtx();
 
-  // Reset dark theme when leaving the page
   useEffect(() => {
     return () => { setDark(false); };
   }, [setDark]);
+
+  const TIPS = [
+    { Icon: TipIcons.Focus,  titleKey: "tip1_title" as const, descKey: "tip1_desc" as const },
+    { Icon: TipIcons.Coffee, titleKey: "tip2_title" as const, descKey: "tip2_desc" as const },
+    { Icon: TipIcons.Leaf,   titleKey: "tip3_title" as const, descKey: "tip3_desc" as const },
+    { Icon: TipIcons.Repeat, titleKey: "tip4_title" as const, descKey: "tip4_desc" as const },
+  ];
 
   return (
     <div className={styles.page}>
       <div className={styles.container}>
         <div className={styles.header}>
           <div className={styles.titleRow}>
-            <h1 className={styles.title}>Помодоро</h1>
+            <h1 className={styles.title}>{t("title")}</h1>
             <button
               className={styles.themeToggle}
               onClick={() => setDark(!isDark)}
-              title={isDark ? "Светлая тема" : "Тёмная тема"}
-              aria-label="Переключить тему"
+              title={isDark ? t("light_theme") : t("dark_theme")}
+              aria-label={isDark ? t("light_theme") : t("dark_theme")}
             >
               {isDark ? <SunIcon /> : <MoonIcon />}
             </button>
           </div>
-          <p className={styles.subtitle}>
-            Техника управления временем для эффективного обучения
-          </p>
+          <p className={styles.subtitle}>{t("subtitle")}</p>
         </div>
 
         <div className={styles.card}>
@@ -101,14 +100,14 @@ export function PomodoroPage() {
         </div>
 
         <div className={styles.tips}>
-          <h2 className={styles.tipsTitle}>Как работает техника</h2>
+          <h2 className={styles.tipsTitle}>{t("tips_title")}</h2>
           <div className={styles.tipGrid}>
-            {TIPS.map(({ Icon, title, desc }) => (
-              <div key={title} className={styles.tip}>
+            {TIPS.map(({ Icon, titleKey, descKey }) => (
+              <div key={titleKey} className={styles.tip}>
                 <span className={styles.tipIcon}><Icon /></span>
                 <div>
-                  <div className={styles.tipTitle}>{title}</div>
-                  <div className={styles.tipDesc}>{desc}</div>
+                  <div className={styles.tipTitle}>{t(titleKey)}</div>
+                  <div className={styles.tipDesc}>{t(descKey)}</div>
                 </div>
               </div>
             ))}

@@ -133,3 +133,20 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .icon_wrap { background: rgba(83,74,183,0.2); }
+  .roadmap_title { color: #e8eaf0; }
+  .desc { color: rgba(255,255,255,0.4); }
+  .price_row { background: rgba(255,255,255,0.06); }
+  .price_label { color: rgba(255,255,255,0.4); }
+  .price_value { color: #e8eaf0; }
+  .stub_notice { color: #fbbf24; }
+  .cancel_btn {
+    border-color: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.4);
+    &:hover:not(:disabled) { background: rgba(255,255,255,0.06); }
+  }
+  .buy_btn { background: rgba(83,74,183,0.7); &:hover:not(:disabled) { background: rgba(83,74,183,0.9); } }
+}

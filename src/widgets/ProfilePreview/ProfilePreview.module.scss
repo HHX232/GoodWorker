@@ -122,3 +122,33 @@
    font-weight: 400;
    color: #aaa;
 }
+
+// ─── Global dark theme ────────────────────────────────────────────────────────
+:global(html.theme-dark) {
+  .wrapper { &:hover { background: rgba(255,255,255,0.06); } }
+  .name { color: #fff; }
+  .username { color: rgba(255,255,255,0.4); }
+  .initialsGuest { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.4); }
+  .skeletonLine, .skeletonLineSm, .skeletonAvatar { background: rgba(255,255,255,0.08); }
+}
+
+// ─── VIP page dark theme ──────────────────────────────────────────────────────
+:global(html.vip-dark) {
+  .wrapper {
+    &:hover { background: rgba(255,255,255,0.06); }
+  }
+
+  .name { color: #fff; }
+  .username { color: rgba(255,255,255,0.4); }
+
+  .initialsGuest {
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.4);
+  }
+
+  .skeletonLine,
+  .skeletonLineSm,
+  .skeletonAvatar {
+    background: rgba(255,255,255,0.08);
+  }
+}

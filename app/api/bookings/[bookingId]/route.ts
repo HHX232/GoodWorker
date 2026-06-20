@@ -1,5 +1,6 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { tplBookingConfirmed, tplBookingRescheduled, tplBookingCancelled } from '@/shared/lib/notificationTemplates'
+import { enrichNotificationWithAI } from '@/lib/postAI'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
 
@@ -48,6 +49,8 @@ export async function PATCH(
 
   if (action === 'cancel') newStatus = 'CANCELLED'
 
+  let notifIdRef: string | null = null
+
   const updatedBooking = await prisma.$transaction(async (tx) => {
     const updated = await tx.serviceBooking.update({
       where: { id: bookingId },
@@ -60,7 +63,7 @@ export async function PATCH(
       },
     })
 
-    await tx.notification.create({
+    const createdNotif = await tx.notification.create({
       data: {
         type: 'BOOKING_RESPONSE',
         title: notifTpl.title,
@@ -78,6 +81,7 @@ export async function PATCH(
         studentId: booking.studentId,
       },
     })
+    notifIdRef = createdNotif.id
 
     if (action === 'confirm' || action === 'reschedule') {
       // Add/ensure student is in teacher's student list
@@ -127,6 +131,8 @@ export async function PATCH(
 
     return updated
   })
+
+  if (notifIdRef) enrichNotificationWithAI(notifIdRef).catch(() => {})
 
   return NextResponse.json({ booking: updatedBooking })
 }

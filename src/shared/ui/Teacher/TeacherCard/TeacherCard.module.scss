@@ -237,3 +237,44 @@
     color: #15803d;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .card {
+    background: #141620;
+    &:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.35); }
+  }
+  .online_dot { border-color: #141620; }
+  .name { color: #e8eaf0; }
+  .name_transliterated { color: rgba(255,255,255,0.35); }
+  .activity { color: rgba(255,255,255,0.35); }
+  .category_chip {
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.55);
+  }
+  .lang_chip {
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.5);
+  }
+  .stat_value { color: #e8eaf0; }
+  .stat_label { color: rgba(255,255,255,0.3); }
+  .link_btn {
+    border-color: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.45);
+    &:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.18);
+      color: #e8eaf0;
+      svg path { stroke: #e8eaf0; }
+    }
+  }
+  .share_btn {
+    border-color: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.4);
+    &:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.18);
+      color: #e8eaf0;
+    }
+  }
+}

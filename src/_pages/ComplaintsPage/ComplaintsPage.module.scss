@@ -395,3 +395,76 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  // ── Header ────────────────────────────────────────────────
+  .page_title { color: #e8eaf0; }
+  .total_badge { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.35); }
+
+  // ── Tabs ─────────────────────────────────────────────────
+  .tab {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.4);
+    &:hover { border-color: rgba(255,255,255,0.22); color: #e8eaf0; }
+  }
+  .tab_active {
+    background: #818cf8;
+    border-color: #818cf8;
+    color: #fff;
+    &:hover { border-color: #818cf8; color: #fff; }
+  }
+
+  // ── Card ─────────────────────────────────────────────────
+  .card {
+    background: #1a1c24;
+    border-color: rgba(255,255,255,0.08);
+    &:hover { border-color: rgba(255,255,255,0.16); box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+  }
+  .card_expanded {
+    border-color: rgba(255,255,255,0.16);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.35);
+  }
+
+  .target_kind { color: rgba(255,255,255,0.2); }
+  .target_link { color: #e8eaf0; }
+  .target_label { color: #e8eaf0; }
+  .date { color: rgba(255,255,255,0.2); }
+
+  // ── Expanded body ─────────────────────────────────────────
+  .divider { background: rgba(255,255,255,0.07); }
+  .text_preview { color: rgba(255,255,255,0.4); }
+  .section_label { color: rgba(255,255,255,0.2); }
+  .full_text { color: #d0d3e0; }
+  .reporter_meta { color: rgba(255,255,255,0.2); span { color: rgba(255,255,255,0.45); } }
+
+  // ── Reply bubble ─────────────────────────────────────────
+  .reply_bubble { background: rgba(99,102,241,0.1); p { color: #d0d3e0; } }
+  .reply_date { color: rgba(255,255,255,0.2); }
+
+  // ── Reply input ───────────────────────────────────────────
+  .reply_textarea {
+    border-color: rgba(255,255,255,0.1);
+    background: #141620;
+    color: #e8eaf0;
+    &:focus { border-color: #818cf8; background: #1a1c24; }
+  }
+  .reply_btn { background: rgba(255,255,255,0.1); &:hover { background: rgba(255,255,255,0.16); } }
+
+  // ── Status chips ─────────────────────────────────────────
+  .status_chip {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.4);
+    &:hover { border-color: rgba(255,255,255,0.22); }
+  }
+
+  // ── Empty / skeleton / spinner ────────────────────────────
+  .empty { color: rgba(255,255,255,0.15); p { color: rgba(255,255,255,0.12); } }
+  .skeleton {
+    background: linear-gradient(90deg, #1e2028 25%, #242730 50%, #1e2028 75%);
+    background-size: 200% 100%;
+  }
+  .spinner { border-color: rgba(255,255,255,0.08); border-top-color: #818cf8; }
+}

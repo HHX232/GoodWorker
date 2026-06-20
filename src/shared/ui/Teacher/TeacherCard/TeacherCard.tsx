@@ -6,6 +6,7 @@ import {ITeacherListItem} from '@/features/services/TeacherService.service'
 import {TEACHER_LANGUAGES} from '@/shared/ui/inputs/LanguageSelect/LanguageSelect'
 import {FlagIcon} from '@/shared/ui/FlagIcon/FlagIcon'
 import {getAvatarColor} from '@/shared/ui/User/UserHeaderCard/UserHeaderCard'
+import {getDisplayName} from '@/shared/utils/transliterate'
 import {useLocale, useTranslations} from 'next-intl'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -32,6 +33,7 @@ const TeacherCard: FC<Props> = ({teacher}) => {
 
   const showFallback = !teacher.avatarUrl || imgError
   const {bg, text} = getAvatarColor(teacher.name)
+  const displayName = getDisplayName(teacher.name, locale, teacher.nameTransliterated)
 
   const categories = teacher.categories.slice(0, 3).map(({category}) => {
     const translation = category.translations.find((tr) => tr.langCode === locale)
@@ -67,13 +69,10 @@ const TeacherCard: FC<Props> = ({teacher}) => {
         <div className={styles.header_info}>
           <div className={styles.name_row}>
             <Link href={`/users/${teacher.id}`} className={styles.name}>
-              {teacher.name}
+              {displayName}
             </Link>
             {teacher.isVip && <span className={styles.vip_badge}>★ VIP</span>}
           </div>
-          {teacher.nameTransliterated && locale !== 'ru' && (
-            <p className={styles.name_transliterated}>{teacher.nameTransliterated}</p>
-          )}
           <p className={`${styles.activity} ${activity === 'Online' ? styles.activity_online : ''}`}>{activity}</p>
         </div>
       </div>

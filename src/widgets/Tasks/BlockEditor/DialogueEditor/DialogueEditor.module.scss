@@ -513,3 +513,34 @@
   text-underline-offset: 2px;
   &:hover { color: #64748b; }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .box { background: #1e2030; border-color: rgba(255,255,255,0.07); }
+  .mode_bar { background: rgba(255,255,255,0.06); }
+  .mode_btn { color: rgba(255,255,255,0.4); &:not(:disabled):hover { color: #e8eaf0; } }
+  .mode_btn_active { background: rgba(255,255,255,0.08); color: #e8eaf0; box-shadow: 0 1px 4px rgba(0,0,0,0.4); }
+  .label { color: rgba(255,255,255,0.25); }
+  .input { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &::placeholder { color: rgba(255,255,255,0.2); } &:focus { border-color: rgba(147,197,253,0.4); background: rgba(255,255,255,0.08); } }
+  .speaker_field { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+  .speaker_input { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &::placeholder { color: rgba(255,255,255,0.2); } }
+  .add_btn { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); &:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.18); } }
+  .empty_hint { color: rgba(255,255,255,0.2); }
+  .line_row { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); &:hover { box-shadow: 0 1px 4px rgba(0,0,0,0.4); } }
+  .drag_handle { color: rgba(255,255,255,0.15); &:hover { color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.06); } }
+  .speaker_btn { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); &:hover { background: rgba(255,255,255,0.08); } }
+  .line_input { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.08); color: #e8eaf0; &::placeholder { color: rgba(255,255,255,0.2); } &:focus { border-color: rgba(147,197,253,0.4); } }
+  .remove_btn { color: rgba(255,255,255,0.15); &:hover { background: rgba(239,68,68,0.15); color: #f87171; } }
+  .chat_box { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+  .bubble_text { color: #e8eaf0; }
+  .student_wrap { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); }
+  .student_instruction { color: #e8eaf0; }
+  .student_meta { color: rgba(255,255,255,0.25); }
+  .legend_item { color: rgba(255,255,255,0.4); }
+  .student_tile { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); &:not(.tile_disabled):hover { box-shadow: 0 3px 10px rgba(0,0,0,0.4); } }
+  .student_tile_handle { color: rgba(255,255,255,0.2); }
+  .tile_text { color: #e8eaf0; }
+  .badge_ok { background: rgba(34,197,94,0.15); color: #4ade80; border-color: rgba(34,197,94,0.3); }
+  .badge_err { background: rgba(239,68,68,0.15); color: #f87171; border-color: rgba(239,68,68,0.3); }
+  .retry_btn { color: rgba(255,255,255,0.3); &:hover { color: rgba(255,255,255,0.6); } }
+}

@@ -58,3 +58,14 @@
       }
    }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .button {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.45);
+    &:hover { border-color: #141416; color: #e8eaf0; }
+  }
+  .save_button:disabled { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); color: rgba(255,255,255,0.2); &:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); } }
+}

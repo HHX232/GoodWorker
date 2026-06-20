@@ -10,6 +10,7 @@ import {InvalidTestBlocksContext} from '@/shared/ui/Tasks/providers/InvalidBlock
 import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
 import BlockEditor from '@/widgets/Tasks/BlockEditor/BlockEditor'
 import {ClipboardCheckIcon, PencilIcon} from 'lucide-react'
+import {useTranslations} from 'next-intl'
 import {useState} from 'react'
 import {toast} from 'sonner'
 import styles from './PostBlockEditors.module.scss'
@@ -32,6 +33,7 @@ interface Props {
 }
 
 export function PostMiniTestBlockEditor({blockId, payload}: Props) {
+  const t = useTranslations('PostBlockEditor')
   const {updatePostBlockPayload, addBlock, addBlocks, resetConstructor} = useActions()
   const reduxBlocks = useTypedSelector((state) => state.tasks.blocks)
   const [modalOpen, setModalOpen] = useState(false)
@@ -56,7 +58,7 @@ export function PostMiniTestBlockEditor({blockId, payload}: Props) {
 
   const save = () => {
     if (reduxBlocks.length === 0) {
-      toast.error('Добавьте хотя бы один вопрос')
+      toast.error(t('miniTestAtLeastOne'))
       return
     }
 
@@ -64,7 +66,7 @@ export function PostMiniTestBlockEditor({blockId, payload}: Props) {
     if (blockErrors.size > 0) {
       setInvalidBlockIds(new Set(blockErrors.keys()))
       setErrorsMap(blockErrors)
-      toast.error('Заполните все вопросы перед сохранением')
+      toast.error(t('miniTestFillAll'))
       const firstId = blockErrors.keys().next().value
       if (firstId) {
         setTimeout(() => {
@@ -87,12 +89,12 @@ export function PostMiniTestBlockEditor({blockId, payload}: Props) {
       <div className={styles.mini_test_editor}>
         <div className={styles.mini_test_badge}>
           <ClipboardCheckIcon size={13} />
-          <span>Мини-тест</span>
+          <span>{t('miniTestLabel')}</span>
         </div>
 
         <input
           className={styles.mini_test_title_input}
-          placeholder='Название мини-теста'
+          placeholder={t('miniTestTitlePlaceholder')}
           value={payload.title}
           onChange={(e) =>
             updatePostBlockPayload({id: blockId, payload: {...payload, title: e.target.value}})
@@ -115,20 +117,20 @@ export function PostMiniTestBlockEditor({blockId, payload}: Props) {
               )}
             </div>
           ) : (
-            <p className={styles.mini_test_no_blocks}>Вопросы не добавлены</p>
+            <p className={styles.mini_test_no_blocks}>{t('miniTestNoBlocks')}</p>
           )}
         </div>
 
         <button className={styles.mini_test_edit_btn} onClick={openModal}>
           <PencilIcon size={13} />
-          {hasBlocks ? `Редактировать вопросы (${payload.blocks.length})` : 'Добавить вопросы'}
+          {hasBlocks ? t('miniTestEditBtn', {count: payload.blocks.length}) : t('miniTestAddBtn')}
         </button>
       </div>
 
       <ModalWindowDefault
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        additionalTitle={<p className={styles.modal_title}>Вопросы мини-теста</p>}
+        additionalTitle={<p className={styles.modal_title}>{t('miniTestModalTitle')}</p>}
       >
         <InvalidTestBlocksContext.Provider
           value={{ids: invalidBlockIds, errors: errorsMap, clear: clearInvalidBlock}}
@@ -152,9 +154,7 @@ export function PostMiniTestBlockEditor({blockId, payload}: Props) {
 
           <div className={styles.mini_test_block_list}>
             {reduxBlocks.length === 0 ? (
-              <p className={styles.mini_test_empty_hint}>
-                Нажмите на тип вопроса выше, чтобы добавить
-              </p>
+              <p className={styles.mini_test_empty_hint}>{t('miniTestEmptyHint')}</p>
             ) : (
               reduxBlocks.map((block) => (
                 <div key={block.id} className={styles.mini_test_block_item}>
@@ -166,10 +166,10 @@ export function PostMiniTestBlockEditor({blockId, payload}: Props) {
 
           <div className={styles.mini_test_modal_footer}>
             <button className={styles.mini_test_cancel_btn} onClick={() => setModalOpen(false)}>
-              Отмена
+              {t('miniTestCancel')}
             </button>
             <button className={styles.mini_test_save_btn} onClick={save}>
-              Сохранить
+              {t('miniTestSave')}
             </button>
           </div>
         </InvalidTestBlocksContext.Provider>

@@ -257,3 +257,24 @@
 
   &:hover { background: #1e293b; }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .modal { background: #1e2030; box-shadow: 0 16px 56px rgba(0,0,0,0.5); }
+  .header { border-color: rgba(255,255,255,0.07); }
+  .title { color: #e8eaf0; }
+  .closeBtn { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.35); &:hover { background: rgba(255,255,255,0.1); color: #e8eaf0; } }
+  .empty { color: rgba(255,255,255,0.2); }
+  .row { &:hover { background: rgba(255,255,255,0.04); .rowArrow { opacity: 1; } } }
+  .rowText { color: #e8eaf0; }
+  .rowDate { color: rgba(255,255,255,0.2); }
+  .rowArrow { color: rgba(255,255,255,0.2); }
+  .rowBadge { color: #a78bfa; background: rgba(124,58,237,0.12); border-color: rgba(124,58,237,0.25); }
+  .backBtn { color: rgba(255,255,255,0.35); &:hover { color: #e8eaf0; } }
+  .detailBadge { color: #a78bfa; background: rgba(124,58,237,0.12); border-color: rgba(124,58,237,0.25); }
+  .detailNote { background: rgba(124,58,237,0.08); border-left-color: #a78bfa; color: #e8eaf0; }
+  .contextText { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.08); color: rgba(255,255,255,0.45); }
+  .highlight { background: rgba(251,191,36,0.2); color: #e8eaf0; }
+  .ellipsis { color: rgba(255,255,255,0.2); }
+  .goBtn { background: rgba(255,255,255,0.08); color: #e8eaf0; &:hover { background: rgba(255,255,255,0.14); } }
+}

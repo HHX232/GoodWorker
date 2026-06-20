@@ -3,9 +3,9 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { OutlineStep } from '@/shared/lib/roadmapOutline'
+import { useThemeCtx } from '@/app/providers/ThemeContext'
 
-// ─── Brand tokens (matches TaskPlan) ───────────────────────────────────────
-const brand = {
+const lightBrand = {
   bg: '#EEEFF8',
   card: '#ffffff',
   border: 'rgba(20,20,22,0.1)',
@@ -19,11 +19,25 @@ const brand = {
   muted:  { bg: 'rgba(20,20,22,0.07)', text: 'rgba(20,20,22,0.45)' },
 }
 
-function completionColors(pct: number) {
-  if (pct >= 70) return brand.green
-  if (pct >= 40) return brand.blue
-  if (pct > 0)   return brand.yellow
-  return brand.muted
+const darkBrand = {
+  bg: '#1a1c24',
+  card: '#1e2030',
+  border: 'rgba(255,255,255,0.08)',
+  text: '#e8eaf0',
+  textMuted: 'rgba(255,255,255,0.35)',
+  hoverBg: 'rgba(255,255,255,0.04)',
+  green:  { bg: 'rgba(34,197,94,0.12)', text: '#4ade80' },
+  blue:   { bg: 'rgba(99,102,241,0.12)', text: '#818cf8' },
+  yellow: { bg: 'rgba(234,179,8,0.12)', text: '#fbbf24' },
+  red:    { bg: 'rgba(244,63,94,0.12)', text: '#f87171' },
+  muted:  { bg: 'rgba(255,255,255,0.06)', text: 'rgba(255,255,255,0.3)' },
+}
+
+function completionColors(pct: number, b: typeof lightBrand) {
+  if (pct >= 70) return b.green
+  if (pct >= 40) return b.blue
+  if (pct > 0)   return b.yellow
+  return b.muted
 }
 
 interface Section {
@@ -56,6 +70,8 @@ interface Props {
 }
 
 export function RoadmapNodeProgress({ steps, nodeProgress, totalStudents }: Props) {
+  const { isDark } = useThemeCtx()
+  const brand = isDark ? darkBrand : lightBrand
   const { sections, orphans } = buildSections(steps)
   const [expanded, setExpanded] = useState<string[]>(sections.slice(0, 2).map(s => s.step.nodeId))
 
@@ -76,7 +92,7 @@ export function RoadmapNodeProgress({ steps, nodeProgress, totalStudents }: Prop
   const renderNode = (step: OutlineStep) => {
     const count = nodeProgress[step.nodeId] ?? 0
     const pct = totalStudents > 0 ? Math.round((count / totalStudents) * 100) : 0
-    const colors = completionColors(pct)
+    const colors = completionColors(pct, brand)
 
     return (
       <motion.div
@@ -142,7 +158,7 @@ export function RoadmapNodeProgress({ steps, nodeProgress, totalStudents }: Prop
             const sectionCount = section.children.reduce((sum, c) => sum + (nodeProgress[c.nodeId] ?? 0), 0)
             const sectionMaxPossible = section.children.length * totalStudents
             const sectionPct = sectionMaxPossible > 0 ? Math.round((sectionCount / sectionMaxPossible) * 100) : 0
-            const sc = completionColors(sectionPct)
+            const sc = completionColors(sectionPct, brand)
 
             return (
               <motion.li

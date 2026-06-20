@@ -1004,6 +1004,49 @@ $border: #ececf2;
   max-width: 62%;
 }
 
+// ─── Divider ─────────────────────────────────────────
+.divider { height: 1px; background: #ececf2; }
+
+// ─── Stat separator ──────────────────────────────────
+.stat_item_sep { border-left: 1px solid #ececf2; }
+
+// ─── SubNav ──────────────────────────────────────────
+.subnav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0eff4;
+  margin-bottom: -16px;
+}
+
+.subnav_link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: #5a5a64;
+  padding: 7px 13px;
+  border-radius: 999px;
+  transition: background 0.14s, color 0.14s;
+
+  &:hover {
+    background: #f4f3f7;
+    color: $ink;
+  }
+}
+
+.subnav_dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: $red;
+  flex-shrink: 0;
+}
+
 // ─── Keyframes ───────────────────────────────────────
 @keyframes rd_caret {
   0%, 100% { opacity: 1; }
@@ -1013,4 +1056,86 @@ $border: #ececf2;
 @keyframes rd_pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
+}
+
+// ─── Dark mode ───────────────────────────────────────
+:global(html.theme-dark) {
+
+  .page          { background: #0e0e12; }
+  .divider       { background: rgba(255,255,255,0.07); }
+  .stat_item_sep { border-left-color: rgba(255,255,255,0.08); }
+
+  .subnav        { border-bottom-color: rgba(255,255,255,0.07); }
+  .subnav_link   { color: #7a7a90; &:hover { background: #1a1c24; color: #d8dae8; } }
+
+  .hero_greeting_name { color: #e0e2ec; }
+  .hero_greeting_sub  { color: #5a5a74; }
+  .hero_h1            { color: #e8eaf0; span { color: $red; } }
+  .hero_typing        { color: #7a7a90; }
+  .hero_desc          { color: #5a5a74; }
+
+  .stat_n     { color: #e8eaf0; }
+  .stat_label { color: #5a5a74; }
+
+  .btn_outline {
+    background: #1a1c24;
+    border-color: rgba(255,255,255,0.11);
+    color: #d0d3e0;
+    &:hover { background: #20222c; border-color: rgba(255,255,255,0.2); }
+  }
+
+  .section_h2   { color: #e8eaf0; span { color: $red; } }
+  .section_text { color: #6a6a80; }
+  .hl           { background: rgba(237,6,6,0.14); color: #e0e2ec; }
+
+  .check_title { color: #e0e2ec; }
+  .check_sub   { color: #5a5a74; }
+
+  .cycle_icon    { background: transparent; }
+  .cycle_label   { color: #e0e2ec; }
+  .cycle_sub     { color: #5a5a74; }
+  .cycle_caption { color: #3a3a50; }
+  .cycle_h3      { color: #e0e2ec; span { color: $red; } }
+
+  .cal_mockup {
+    background: #131520;
+    border-color: rgba(255,255,255,0.07);
+  }
+  .cal_month { color: #d0d3e0; border-color: rgba(255,255,255,0.1); }
+  .cal_day_col { border-left-color: rgba(255,255,255,0.06); &:last-child { border-right-color: rgba(255,255,255,0.06); } }
+  .cal_day_head { border-bottom-color: rgba(255,255,255,0.06); }
+  .cal_dow  { color: #4a4a60; }
+  .cal_date { color: #b0b3c6; }
+
+  .teachers_sub    { color: #5a5a74; }
+  .podium_name     { color: #e0e2ec; }
+  .podium_spec     { color: #5a5a74; }
+  .podium_stats    { color: #e0e2ec; }
+  .rank_badge      { box-shadow: 0 0 0 2px #0e0e12; }
+
+  .table_head   { border-bottom-color: rgba(255,255,255,0.08); }
+  .table_row    { border-bottom-color: rgba(255,255,255,0.05) !important; }
+  .table_tname  { color: #d8dae8; text-decoration: none; }
+  .table_spec   { color: #5a5a74; }
+  .table_students { color: #d8dae8; }
+
+  .post_card  { background: #131520; border-color: rgba(255,255,255,0.07); }
+  .post_author { color: #d8dae8; }
+  .post_meta   { color: #5a5a74; }
+  .post_title  { color: #d8dae8; }
+  .post_stat   { color: #6a6a80; }
+  .post_rating { color: #d8dae8; }
+  .post_btn    { background: #1a1c24; border-color: rgba(255,255,255,0.09); color: #d0d3e0; &:hover { background: #20222c; } }
+
+  .slider_btn { background: #131520; border-color: rgba(255,255,255,0.1); color: #d0d3e0; &:hover { background: #1a1c24; } }
+
+  .feature_card  { background: #131520; border-color: rgba(255,255,255,0.07); }
+  .feature_title { color: #d8dae8; }
+  .feature_desc  { color: #5a5a74; }
+
+  .tag_chip    { background: #1a1c24; color: #7a7a90; }
+  .tag_row     { }
+
+  .teachers_head { }
+  .podium_base   { }
 }

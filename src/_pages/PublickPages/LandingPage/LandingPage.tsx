@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRef, useState, useCallback, useEffect, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { useTranslations, useLocale } from 'next-intl'
+import { useThemeCtx } from '@/app/providers/ThemeContext'
 import TypingText from './TypingText'
 import s from './LandingPage.module.scss'
 
@@ -94,11 +95,26 @@ function Avatar({ name, size = 36 }: { name: string; size?: number }) {
   )
 }
 
+// ─── Hero stats (real data from DB) ────────────────────────────
+function usePublicStats() {
+  const [stats, setStats] = useState<{ students: number; teachers: number; posts: number; calls: number } | null>(null)
+  useEffect(() => {
+    fetch('/api/public/stats').then(r => r.ok ? r.json() : null).then(d => { if (d) setStats(d) }).catch(() => {})
+  }, [])
+  return stats
+}
+
+function fmtStat(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k`
+  return String(n)
+}
+
 // ─── Hero ───────────────────────────────────────────────────────
 function HeroSection() {
   const t = useTranslations('LandingPage')
   const { data: session } = useSession()
   const user = session?.user as { name?: string; role?: string } | undefined
+  const stats = usePublicStats()
   return (
     <div className={s.hero}>
       <div className={s.hero_left}>
@@ -129,10 +145,10 @@ function HeroSection() {
         <p className={s.hero_desc}>{t('hero_desc')}</p>
 
         <div className={s.hero_stats}>
-          <StatItem n="2.4k" label={t('stat_calls')} first />
-          <StatItem n="380+" label={t('stat_students')} />
-          <StatItem n="42"   label={t('stat_teachers')} />
-          <StatItem n="120"  label={t('stat_courses')} />
+          <StatItem n={stats ? fmtStat(stats.calls) : '…'} label={t('stat_calls')} first />
+          <StatItem n={stats ? fmtStat(stats.students) : '…'} label={t('stat_students')} />
+          <StatItem n={stats ? fmtStat(stats.teachers) : '…'} label={t('stat_teachers')} />
+          <StatItem n={stats ? fmtStat(stats.posts) : '…'} label={t('stat_courses')} />
         </div>
 
         <div className={s.hero_cta}>
@@ -155,7 +171,7 @@ function HeroSection() {
 
 function StatItem({ n, label, first }: { n: string; label: string; first?: boolean }) {
   return (
-    <div className={s.stat_item} style={{ borderLeft: first ? 'none' : '1px solid #ececf2' }}>
+    <div className={`${s.stat_item} ${first ? '' : s.stat_item_sep}`}>
       <div className={s.stat_n}>{n}</div>
       <div className={s.stat_label}>{label}</div>
     </div>
@@ -276,12 +292,14 @@ function TranscriptModal({ onClose }: { onClose: () => void }) {
 function FeedTile({ name, hue, speaking, muted, floating, noLabel, style }: {
   name: string; hue: number; speaking?: boolean; muted?: boolean; floating?: boolean; noLabel?: boolean; style?: React.CSSProperties
 }) {
+  const { isDark } = useThemeCtx()
   const initials = name.split(' ').map(w => w[0]).slice(0, 2).join('')
+  const speakingOutline = isDark ? '1.5px solid rgba(237,6,6,0.5)' : `2.5px solid ${RED}`
   return (
     <div style={{
       position: 'relative', borderRadius: floating ? 14 : 22, overflow: 'hidden',
       background: `linear-gradient(150deg, hsl(${hue} 55% 30%), hsl(${hue + 30} 60% 18%))`,
-      outline: speaking ? `2.5px solid ${RED}` : (floating ? '2px solid rgba(255,255,255,0.9)' : 'none'),
+      outline: speaking ? speakingOutline : (floating ? '2px solid rgba(255,255,255,0.9)' : 'none'),
       ...style,
     }}>
       <div style={{
@@ -1119,7 +1137,28 @@ function PostsSlider() {
 
 // ─── Divider ────────────────────────────────────────────────────
 function Divider() {
-  return <div style={{ height: 1, background: '#ececf2' }} />
+  return <div className={s.divider} />
+}
+
+// ─── SubNav ─────────────────────────────────────────────────────
+function SubNav() {
+  const t = useTranslations('LandingPage')
+  const links = [
+    { label: t('sub_teachers'), href: '/teachers' },
+    { label: t('sub_posts'),    href: '/posts' },
+    { label: t('sub_courses'),  href: '/teachers' },
+    { label: t('sub_support'),  href: '/profile' },
+  ]
+  return (
+    <div className={s.subnav}>
+      {links.map(l => (
+        <Link key={l.label} href={l.href} className={s.subnav_link}>
+          <span className={s.subnav_dot} />
+          {l.label}
+        </Link>
+      ))}
+    </div>
+  )
 }
 
 // ─── Page ───────────────────────────────────────────────────────
@@ -1129,6 +1168,7 @@ export default function LandingPage() {
     <TeacherAppointmentBar />
     <div className={s.page}>
       <div className={s.container}>
+        <SubNav />
         <HeroSection />
         <Divider />
         <VideoSection />

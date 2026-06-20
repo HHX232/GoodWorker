@@ -329,3 +329,26 @@
    border-radius: 50%;
    flex-shrink: 0;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .hero { background: #1a1c24; border-color: rgba(255,255,255,0.07); }
+  .bar_label { color: rgba(255,255,255,0.2); }
+  .bar_track { background: rgba(255,255,255,0.07); }
+  .bar_fill { background: #818cf8; }
+  .bar_val { color: rgba(255,255,255,0.55); }
+  .bar_dot { background: rgba(255,255,255,0.1); }
+  .bar_trend { color: rgba(255,255,255,0.2); }
+  .divider { background: rgba(255,255,255,0.07); }
+  .metric_num { color: #e8eaf0; }
+  .metric_label { color: rgba(255,255,255,0.2); }
+  .metric_sep { background: rgba(255,255,255,0.07); }
+  .more_btn { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.25); &:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); } }
+  .modal { background: #1e2030; border-color: rgba(255,255,255,0.08); }
+  .modal_close { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); &:hover { background: rgba(255,255,255,0.06); } }
+  .modal_title { color: #e8eaf0; }
+  .modal_stat { background: rgba(255,255,255,0.04); &:hover { background: rgba(255,255,255,0.08); } }
+  .modal_stat_n { color: #e8eaf0; }
+  .modal_stat_l { color: rgba(255,255,255,0.2); }
+  .legend_item { color: rgba(255,255,255,0.25); }
+}

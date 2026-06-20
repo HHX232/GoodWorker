@@ -15,7 +15,7 @@ import type { Metadata } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getMessages } from 'next-intl/server'
 import { Roboto } from 'next/font/google'
-import { Toaster } from 'sonner'
+import {ThemedToaster} from '@/app/providers/ThemedToaster'
 
 const robotoSans = Roboto({
   weight: ['300', '400', '500', '600', '700'],
@@ -52,7 +52,7 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <DefaultProvider>
             <Header />
-            <Toaster style={{zIndex:1410000010}} position='top-right' richColors />
+            <ThemedToaster />
             <TutorialProvider>
               <TutorialOverlay />
               <TextSelectionProvider>{children}</TextSelectionProvider>

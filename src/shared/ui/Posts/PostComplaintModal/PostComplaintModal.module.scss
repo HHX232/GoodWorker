@@ -79,3 +79,13 @@
     border-color: #c0c0c0;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .post_info { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.35); }
+  .post_title { color: #e8eaf0; }
+  .section_title { color: rgba(255,255,255,0.35); }
+  .footer { background: #111318; }
+  .submit_btn { background: rgba(255,255,255,0.12); &:disabled { opacity: 0.25; } }
+  .cancel_btn { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); &:hover { border-color: rgba(255,255,255,0.25); } }
+}

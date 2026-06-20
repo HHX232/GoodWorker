@@ -94,3 +94,13 @@
   color: #3A3A4A;
   transition: color 0.15s;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .modal { background: #1e2030; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+  .closeBtn { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.35); &:hover { background: rgba(255,255,255,0.1); color: #e8eaf0; } }
+  .heading { color: #e8eaf0; }
+  .option { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); &:hover { border-color: var(--accent,#818cf8); background: color-mix(in srgb, var(--accent,#818cf8) 10%, transparent); .optionLabel { color: var(--accent,#a5b4fc); } } }
+  .optionIcon { color: rgba(255,255,255,0.25); }
+  .optionLabel { color: rgba(255,255,255,0.55); }
+}

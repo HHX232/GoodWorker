@@ -137,3 +137,16 @@
   color: #9ea3ad;
   text-align: right;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .card { background: #1a1c22; }
+  .name { color: #e8eaf0; }
+  .email { color: rgba(255,255,255,0.35); }
+  .info_block { background: #1a1c22; }
+  .info_row { border-bottom-color: rgba(255,255,255,0.06); }
+  .info_label { color: #e8eaf0; }
+  .info_value { color: rgba(255,255,255,0.35); }
+  .status_circle { background-color: #1a1c22; border-color: rgba(255,255,255,0.2); }
+  .active_circle { background-color: #4ade80; border-color: #1a1c22; }
+}

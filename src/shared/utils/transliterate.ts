@@ -39,14 +39,35 @@ function transliterateDevanagari(s: string): string {
   return result
 }
 
-export function getDisplayName(name: string, locale: string): string {
-  if (locale !== 'en') return name
+export function getDisplayName(name: string, locale: string, nameTransliterated?: string | null): string {
+  if (nameTransliterated) {
+    try {
+      const parsed = JSON.parse(nameTransliterated) as Record<string, string>
+      if (parsed[locale]) return parsed[locale]
+    } catch {
+      // Legacy format: plain Latin string (old Cyrillic romanization)
+      if (locale !== 'ru') return nameTransliterated
+    }
+  }
+  if (locale === 'ru') return name
   if (hasCyrillic(name)) return transliterateCyrillic(name)
-  if (hasDevanagari(name)) return transliterateDevanagari(name)
+  if (locale === 'en' || locale === 'zh') {
+    if (hasDevanagari(name)) return transliterateDevanagari(name)
+  }
   return name
 }
 
-export function needsTranslit(name: string, locale: string): boolean {
-  if (locale !== 'en') return false
-  return hasCyrillic(name) || hasDevanagari(name)
+export function needsTranslit(name: string, locale: string, nameTransliterated?: string | null): boolean {
+  if (nameTransliterated) {
+    try {
+      const parsed = JSON.parse(nameTransliterated) as Record<string, string>
+      return !!(parsed[locale] && parsed[locale] !== name)
+    } catch {
+      return locale !== 'ru'
+    }
+  }
+  if (locale === 'ru') return false
+  if (hasCyrillic(name)) return true
+  if ((locale === 'en' || locale === 'zh') && hasDevanagari(name)) return true
+  return false
 }

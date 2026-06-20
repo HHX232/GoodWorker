@@ -161,3 +161,34 @@
     flex-direction: column;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .card_box { background-color: #141620; }
+  .card_title { color: #e8eaf0; }
+  .card_subtitle { color: #6b7280; }
+  .mini_test_badge {
+    background: rgba(37,99,235,0.15);
+    border-color: rgba(37,99,235,0.3);
+    color: #93c5fd;
+  }
+  .link_button {
+    border-color: rgba(255,255,255,0.1);
+    color: #6b7280;
+    &:hover {
+      background-color: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.18);
+      color: #e8eaf0;
+      svg path { stroke: #e8eaf0; }
+    }
+  }
+  .edit_btn {
+    border-color: rgba(255,255,255,0.1);
+    color: #6b7280;
+    &:hover {
+      background-color: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.18);
+      color: #e8eaf0;
+    }
+  }
+}

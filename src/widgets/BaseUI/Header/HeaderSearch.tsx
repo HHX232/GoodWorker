@@ -54,7 +54,7 @@ function GlobalDropdown({
     }
     setLoading(true)
     const ctrl = new AbortController()
-    fetch(`/api/search?q=${encodeURIComponent(query)}`, {signal: ctrl.signal})
+    fetch(`/api/search?q=${encodeURIComponent(query.toLowerCase())}`, {signal: ctrl.signal})
       .then((r) => r.json())
       .then((d) => setData(d))
       .catch(() => {})
@@ -182,7 +182,7 @@ export function HeaderSearch() {
       if (!isHome && simpleCfg) {
         if (debounceRef.current) clearTimeout(debounceRef.current)
         debounceRef.current = setTimeout(() => {
-          if (v.trim()) router.push(simpleCfg.buildUrl(v.trim()))
+          if (v.trim()) router.push(simpleCfg.buildUrl(v.trim().toLowerCase()))
         }, 400)
       } else {
         setOpen(v.length >= 2)

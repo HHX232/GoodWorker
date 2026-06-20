@@ -527,3 +527,50 @@
 .studentPicker {
   padding-left: 0;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .modal { background: #1e2030; box-shadow: 0 24px 64px rgba(0,0,0,0.5); }
+  .header { border-color: rgba(255,255,255,0.07); }
+  .heading { color: #e8eaf0; }
+  .closeBtn { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.4); &:hover { background: rgba(255,255,255,0.1); color: #e8eaf0; } }
+
+  .form { &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); } }
+  .label { color: rgba(255,255,255,0.3); }
+  .input { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &:focus { border-color: #818cf8; background: rgba(255,255,255,0.07); } &::placeholder { color: rgba(255,255,255,0.2); } }
+  .textarea { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &:focus { border-color: #818cf8; } &::placeholder { color: rgba(255,255,255,0.2); } }
+
+  .durationBtn { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); &:hover { border-color: #818cf8; color: #a5b4fc; } }
+  .durationBtnActive { background: #534AB7; border-color: #534AB7; color: #fff; }
+
+  .timeBtn { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &:hover { border-color: #818cf8; background: rgba(255,255,255,0.07); } svg:first-child { color: rgba(255,255,255,0.3); } }
+  .timeCaret { color: rgba(255,255,255,0.3); }
+  .timeDropdown { background: #1e2030; border-color: rgba(255,255,255,0.1); box-shadow: 0 8px 24px rgba(0,0,0,0.4); &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); } }
+  .timeOption { color: rgba(255,255,255,0.6); &:hover { background: rgba(255,255,255,0.06); } }
+  .timeOptionActive { background: rgba(83,74,183,0.2); color: #a5b4fc; }
+  .timeRowLabel { color: rgba(255,255,255,0.3); }
+
+  .photoArea { border-color: rgba(255,255,255,0.1); &:hover { border-color: #818cf8; background-color: rgba(83,74,183,0.05); } }
+  .photoPlaceholder { color: rgba(255,255,255,0.2); }
+
+  .toggle { border-color: rgba(255,255,255,0.1); }
+  .toggleBtn { background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.4); &:not(:last-child) { border-color: rgba(255,255,255,0.1); } }
+  .toggleActive { background: #534AB7; color: #fff; }
+
+  .priceSuffix { color: #a5b4fc; }
+  .currencySelect { background: rgba(255,255,255,0.07); color: #e8eaf0; }
+
+  .promoToggle { color: #a5b4fc; }
+  .promoFields { background: rgba(255,255,255,0.04); }
+  .genBtn { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #a5b4fc; &:hover { background: rgba(129,140,248,0.1); border-color: #818cf8; } }
+
+  .error { background: rgba(220,38,38,0.1); color: #f87171; }
+
+  .preview { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.07); }
+  .previewLabel { color: rgba(255,255,255,0.2); }
+
+  .footer { border-color: rgba(255,255,255,0.07); }
+  .cancelBtn { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); &:hover { background: rgba(255,255,255,0.08); } }
+
+  .personalToggle { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); } input[type='checkbox'] { accent-color: #818cf8; } }
+}

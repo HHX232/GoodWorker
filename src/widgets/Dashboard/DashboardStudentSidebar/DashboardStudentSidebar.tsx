@@ -9,6 +9,7 @@ import { StudentDetailModal } from '@/widgets/Dashboard/StudentDetailModal/Stude
 interface Student {
   id: string
   name: string
+  nameTransliterated: string | null
   initials: string
   subject: string
   avatarColor: string
@@ -134,6 +135,7 @@ export function DashboardStudentSidebar({ teacherId }: Props) {
         <StudentDetailModal
           studentId={selectedStudent.id}
           studentName={selectedStudent.name}
+          studentNameTransliterated={selectedStudent.nameTransliterated}
           studentInitials={selectedStudent.initials}
           avatarColor={selectedStudent.avatarColor}
           avatarTextColor={selectedStudent.avatarTextColor}

@@ -35,3 +35,11 @@
    color: #9ca3af;
    font-size: 13px;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .wrap { background: #1e2030; border-color: rgba(255,255,255,0.08); }
+  .header { background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.2); color: #a5b4fc; }
+  .title { color: #e8eaf0; }
+  .hint { color: rgba(255,255,255,0.25); }
+}

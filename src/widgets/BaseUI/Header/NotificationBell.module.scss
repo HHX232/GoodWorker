@@ -276,3 +276,89 @@
     &:hover { background: #1f2230; }
   }
 }
+
+// ─── Global dark theme ────────────────────────────────────────────────────────
+:global(html.theme-dark) {
+  .btn {
+    background: rgba(255,255,255,0.06);
+    color: #9ca3af;
+    &:hover { background: rgba(255,255,255,0.1); }
+  }
+
+  .btn_active {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    &:hover { background: rgba(255,255,255,0.16); }
+  }
+
+  .badge { border-color: #111318; }
+
+  .dropdown {
+    background: #1a1c22;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.55);
+  }
+
+  .dropdown_header { border-bottom-color: rgba(255,255,255,0.07); }
+  .dropdown_title { color: #e8eaf0; }
+  .notif_row { &:hover { background: rgba(255,255,255,0.05); } }
+  .notif_row_unread { background: rgba(255,255,255,0.04); &:hover { background: rgba(255,255,255,0.07); } }
+  .notif_title { color: #e8eaf0; }
+  .notif_body, .notif_time { color: #6b7280; }
+  .empty, .loading { color: #6b7280; }
+  .footer_link {
+    border-top-color: rgba(255,255,255,0.07);
+    color: #818cf8;
+    &:hover { background: rgba(255,255,255,0.05); }
+  }
+}
+
+// ─── VIP page dark theme ──────────────────────────────────────────────────────
+:global(html.vip-dark) {
+  .btn {
+    background: rgba(255,255,255,0.06);
+    color: #9ca3af;
+    &:hover { background: rgba(255,255,255,0.1); }
+  }
+
+  .btn_active {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    &:hover { background: rgba(255,255,255,0.16); }
+  }
+
+  .badge {
+    border-color: #0e0f11;
+  }
+
+  .dropdown {
+    background: #1a1c20;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  }
+
+  .dropdown_header {
+    border-bottom-color: rgba(255,255,255,0.07);
+  }
+
+  .dropdown_title { color: #e8eaf0; }
+
+  .notif_row {
+    &:hover { background: rgba(255,255,255,0.05); }
+  }
+
+  .notif_row_unread {
+    background: rgba(255,255,255,0.04);
+    &:hover { background: rgba(255,255,255,0.07); }
+  }
+
+  .notif_title { color: #e8eaf0; }
+  .notif_body,
+  .notif_time  { color: #6b7280; }
+  .empty,
+  .loading     { color: #6b7280; }
+
+  .footer_link {
+    border-top-color: rgba(255,255,255,0.07);
+    color: #818cf8;
+    &:hover { background: rgba(255,255,255,0.05); }
+  }
+}

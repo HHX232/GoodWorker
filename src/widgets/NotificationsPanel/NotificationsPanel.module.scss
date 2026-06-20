@@ -237,3 +237,19 @@
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .panel { background: #1a1c22; border-color: rgba(255,255,255,0.07); }
+  .header { border-bottom-color: rgba(255,255,255,0.07); }
+  .header_title { color: #e8eaf0; }
+  .mark_all_btn { color: #818cf8; }
+  .list { scrollbar-color: rgba(255,255,255,0.1) transparent; }
+  .view_all_footer { border-top-color: rgba(255,255,255,0.07); }
+  .history_footer { border-top-color: rgba(255,255,255,0.07); }
+  .history_btn { color: rgba(255,255,255,0.35); &:hover { color: #e8eaf0; } }
+  .skeleton_icon, .skeleton_title, .skeleton_body {
+    background: linear-gradient(90deg, #1e2028 25%, #242730 50%, #1e2028 75%);
+    background-size: 200% 100%;
+  }
+}

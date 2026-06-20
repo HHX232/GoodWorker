@@ -169,3 +169,13 @@
       transform: translateY(0);
    }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .chart_card { background: #1a1c24; box-shadow: none; }
+  .chart_title { color: #e8eaf0; }
+  .chart_subtitle { color: rgba(255,255,255,0.25); strong { color: #e8eaf0; } }
+  .month_tab { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.3); &:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.65); } }
+  .month_tab_active { background: rgba(255,255,255,0.14); color: #e8eaf0; &:hover { background: rgba(255,255,255,0.14); color: #e8eaf0; } }
+  .chip { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.28); strong { color: #e8eaf0; } }
+}

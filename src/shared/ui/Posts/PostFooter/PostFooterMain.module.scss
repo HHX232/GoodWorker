@@ -84,3 +84,21 @@
     color: #f43f5e;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .post_box { border-bottom-color: rgba(255,255,255,0.06); }
+  .comm_box,
+  .stars_box,
+  .vues_box { color: rgba(255,255,255,0.4); }
+  .img_comm_box { background-color: rgba(255,255,255,0.08); }
+  .stars_box,
+  .vues_box { background-color: rgba(255,255,255,0.08); }
+  .comm_count,
+  .vues_count,
+  .star_count { color: rgba(255,255,255,0.4); }
+  .report_btn {
+    color: rgba(255,255,255,0.25);
+    &:hover { background: rgba(244,63,94,0.15); color: #f87171; }
+  }
+}

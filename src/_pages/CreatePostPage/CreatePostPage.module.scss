@@ -136,3 +136,13 @@
       flex-shrink: 0;
    }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .main_content { background-color: #141620; > h1 { color: #e8eaf0; } }
+  .title_input { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &::placeholder { color: rgba(255,255,255,0.2); } &:focus { border-color: #818cf8; background: rgba(255,255,255,0.08); } }
+  .vis_btn { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
+  .vis_active { border-color: #818cf8; background: rgba(99,102,241,0.15); color: #a5b4fc; }
+  .publish_btn { background: rgba(255,255,255,0.1); &:hover { background: rgba(255,255,255,0.18); } &:disabled { background: rgba(255,255,255,0.06); } }
+  .drag_ghost { background: #1a1c24; border-color: rgba(255,255,255,0.15); color: #e8eaf0; }
+}

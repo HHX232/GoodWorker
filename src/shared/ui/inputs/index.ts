@@ -1,4 +1,5 @@
 export { CheckboxUI } from './Checkbox/Checkbox'
+export { SelectPhotoUI } from './SelectPhotoUI/SelectPhotoUI'
 export { CreateImagesInput } from './CreateImagesInput/CreateImagesInput'
 export { DropInputUI } from './DropInputUI/DropInputUI'
 export { InputOtp } from './inputOTP/inputOTP'

@@ -164,3 +164,19 @@
     opacity: 0.78;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .list { background: transparent; }
+  .item { border-bottom-color: rgba(255,255,255,0.06); }
+  .avatar { background: rgba(255,255,255,0.08); }
+  .avatar_initials { color: rgba(255,255,255,0.4); }
+  .author_name { color: #e8eaf0; }
+  .date { color: rgba(255,255,255,0.3); }
+  .text { color: #d0d3e0; }
+  .thumb { background: rgba(255,255,255,0.08); }
+  .footer { background: transparent; }
+  .leave_btn { background: rgba(255,255,255,0.1); }
+  .spinner { border-color: rgba(255,255,255,0.1); border-top-color: #e8eaf0; }
+  .empty { color: rgba(255,255,255,0.3); }
+}

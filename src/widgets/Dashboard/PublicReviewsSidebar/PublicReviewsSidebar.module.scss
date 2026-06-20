@@ -223,3 +223,24 @@
   line-height: 1.6;
   margin: 0;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .sidebar { background: #1a1c24; border-color: rgba(255,255,255,0.07); }
+  .head { border-color: rgba(255,255,255,0.07); }
+  .title { color: #e8eaf0; }
+  .avgBadge { color: #e8eaf0; }
+  .avgCount { color: rgba(255,255,255,0.3); }
+  .scroll { &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); } }
+  .form { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+  .formLabel { color: #e8eaf0; }
+  .textarea { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &::placeholder { color: rgba(255,255,255,0.2); } &:focus { border-color: #818cf8; } }
+  .submitBtn { background: rgba(255,255,255,0.1); &:hover:not(:disabled) { background: rgba(255,255,255,0.18); } }
+  .loginHint { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.07); color: rgba(255,255,255,0.3); }
+  .divider { background: rgba(255,255,255,0.06); }
+  .empty { color: rgba(255,255,255,0.2); }
+  .reviewCard { background: #1e2030; border-color: rgba(255,255,255,0.08); }
+  .reviewName { color: #e8eaf0; }
+  .reviewDate { color: rgba(255,255,255,0.2); }
+  .reviewText { color: rgba(255,255,255,0.5); }
+}

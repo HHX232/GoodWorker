@@ -186,7 +186,7 @@ function QuestionPreview({ q, idx, total }: { q: PQ; idx: number; total: number 
       {q.type === 'fill' && (
         <div>
           <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 10, lineHeight: 1.4 }}>{q.question}</div>
-          <FillIn answer={q.answer} placeholder="введите ответ…" />
+          <FillIn answer={q.answer} placeholder="введите ответ…" question={q.question} />
         </div>
       )}
       {q.type === 'match' && (
@@ -210,7 +210,7 @@ function DropDemo({ wide = false }: { wide?: boolean }) {
   const { data: session } = useSession()
   const isLoggedIn = !!session?.user
 
-  const [state, setState] = useState<'idle' | 'drag' | 'processing' | 'done' | 'error'>('idle')
+  const [state, setState] = useState<'idle' | 'drag' | 'processing' | 'done' | 'error' | 'vip'>('idle')
   const [fileName, setFileName] = useState('')
   const [progress, setProgress] = useState(0)
   const [log, setLog] = useState<string[]>([])
@@ -275,7 +275,12 @@ function DropDemo({ wide = false }: { wide?: boolean }) {
       fd.append('file', file)
       const res = await fetch('/api/pdf-to-test', { method: 'POST', body: fd })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? `Ошибка ${res.status}`)
+
+      if (!res.ok) {
+        clearAll()
+        if (data.vipRequired) { setState('vip'); return }
+        throw new Error(data.error ?? `Ошибка ${res.status}`)
+      }
 
       clearAll()
       setProgress(100)
@@ -366,6 +371,27 @@ function DropDemo({ wide = false }: { wide?: boolean }) {
     )
   }
 
+  // ── VIP REQUIRED ──────────────────────────────────────────────
+  if (state === 'vip') return (
+    <div style={{ position: 'relative', border: '1.5px solid var(--ink)', background: '#fff', borderRadius: 'var(--radius)', padding: 24 }}>
+      <CornerTicks />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+        <span style={{ width: 24, height: 24, borderRadius: 'var(--radius)', background: 'var(--ink)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--mono)', fontSize: 13 }}>★</span>
+        <span style={{ fontSize: 16, fontWeight: 700 }}>VIP-формат</span>
+      </div>
+      <p style={{ fontSize: 14.5, color: 'var(--ink-2)', lineHeight: 1.6, marginBottom: 8 }}>
+        Загрузка <strong style={{ color: 'var(--ink)' }}>DOCX, TXT и RTF</strong> доступна только VIP пользователям.
+      </p>
+      <p style={{ fontSize: 14, color: 'var(--ink-2)', lineHeight: 1.5, marginBottom: 20 }}>
+        PDF работает для всех. Активируйте VIP — и загружайте документы в любом формате, получайте до 20 вопросов за раз.
+      </p>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <Link href="/profile" style={{ ...btnPrimary, textDecoration: 'none', display: 'inline-block' }}>Получить VIP →</Link>
+        <button type="button" onClick={reset} style={btnGhost}>Загрузить PDF</button>
+      </div>
+    </div>
+  )
+
   // ── ERROR ─────────────────────────────────────────────────────
   if (state === 'error') return (
     <div style={{ position: 'relative', border: '1.5px solid var(--ink)', background: '#fff', borderRadius: 'var(--radius)', padding: 24 }}>
@@ -421,7 +447,11 @@ function DropDemo({ wide = false }: { wide?: boolean }) {
         alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 24,
         transition: 'background .15s, border-color .15s, color .15s', userSelect: 'none',
       }}>
-      <input ref={inputRef} type="file" accept="application/pdf,.pdf" style={{ display: 'none' }}
+      <input ref={inputRef} type="file"
+        accept={isLoggedIn
+          ? 'application/pdf,.pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx,text/plain,.txt,application/rtf,text/rtf,.rtf,application/vnd.oasis.opendocument.text,.odt'
+          : 'application/pdf,.pdf'}
+        style={{ display: 'none' }}
         onChange={e => onFiles(e.target.files)} onClick={e => e.stopPropagation()} />
       <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke={active ? '#fff' : 'var(--ink)'} strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="miter" style={{ transform: active ? 'translateY(-2px)' : 'none', transition: 'transform .15s' }}>
         <path d="M12 15V3" /><path d="M7 8l5-5 5 5" /><path d="M3 14v6a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-6" />
@@ -438,7 +468,9 @@ function DropDemo({ wide = false }: { wide?: boolean }) {
           {' '}— полный документ и сохранение.
         </div>
       )}
-      <div style={{ position: 'absolute', bottom: 12, left: 0, right: 0, fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.1em', color: active ? 'rgba(255,255,255,0.5)' : 'var(--ink-3)', textAlign: 'center' }}>PDF · ДО 50 МБ</div>
+      <div style={{ position: 'absolute', bottom: 12, left: 0, right: 0, fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.1em', color: active ? 'rgba(255,255,255,0.5)' : 'var(--ink-3)', textAlign: 'center' }}>
+        {isLoggedIn ? 'PDF · DOCX · TXT · RTF · ДО 50 МБ · VIP: все форматы' : 'PDF · ДО 50 МБ'}
+      </div>
     </div>
   )
 }
@@ -586,18 +618,54 @@ function MatchPairs({ left, right }: { left: string[]; right: string[] }) {
   )
 }
 
-function FillIn({ answer, placeholder }: { answer: string; placeholder: string }) {
+function FillIn({ answer, placeholder, question }: { answer: string; placeholder: string; question?: string }) {
   const [v, setV] = useState('')
-  const [checked, setChecked] = useState(false)
-  const ok = v.trim().toLowerCase() === answer.toLowerCase()
+  const [status, setStatus] = useState<'idle' | 'loading' | 'ok' | 'wrong'>('idle')
+  const [hint, setHint] = useState<string | null>(null)
+
+  const check = async () => {
+    if (!v.trim()) return
+    setStatus('loading')
+    setHint(null)
+    try {
+      const res = await fetch('/api/check-answer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userAnswer: v, correctAnswer: answer, question }),
+      })
+      const data = await res.json()
+      setStatus(data.ok ? 'ok' : 'wrong')
+      setHint(data.hint ?? null)
+    } catch {
+      // Fallback to local match
+      const ok = v.trim().toLowerCase() === answer.trim().toLowerCase()
+      setStatus(ok ? 'ok' : 'wrong')
+    }
+  }
+
+  const borderColor = status === 'ok' ? 'var(--ink)' : status === 'wrong' ? 'var(--ink-3)' : 'var(--line)'
+  const statusText =
+    status === 'loading' ? '…' :
+    status === 'ok'      ? '✓ верно' :
+    status === 'wrong'   ? `✗ ${hint ?? 'попробуйте ещё'}` :
+    'введите ответ и нажмите OK'
+
   return (
     <div>
       <div style={{ display: 'flex', gap: 8 }}>
-        <input value={v} placeholder={placeholder} onChange={e => { setV(e.target.value); setChecked(false) }} style={{ flex: 1, font: 'inherit', fontSize: 14, padding: '10px 12px', border: `1px solid ${checked ? (ok ? 'var(--ink)' : 'var(--ink-3)') : 'var(--line)'}`, borderRadius: 'var(--radius)', outline: 'none', color: 'var(--ink)' }} />
-        <button type="button" onClick={() => setChecked(true)} style={{ ...btnPrimary, padding: '10px 14px', fontSize: 13 }}>OK</button>
+        <input
+          value={v}
+          placeholder={placeholder}
+          onChange={e => { setV(e.target.value); setStatus('idle'); setHint(null) }}
+          onKeyDown={e => e.key === 'Enter' && check()}
+          style={{ flex: 1, font: 'inherit', fontSize: 14, padding: '10px 12px', border: `1px solid ${borderColor}`, borderRadius: 'var(--radius)', outline: 'none', color: 'var(--ink)', transition: 'border-color .15s' }}
+        />
+        <button type="button" onClick={check} disabled={status === 'loading'} style={{ ...btnPrimary, padding: '10px 14px', fontSize: 13, opacity: status === 'loading' ? 0.6 : 1 }}>
+          {status === 'loading' ? '…' : 'OK'}
+        </button>
       </div>
-      <div style={{ fontFamily: 'var(--mono)', fontSize: 11, marginTop: 9, color: 'var(--ink-2)', minHeight: 14 }}>
-        {checked ? (ok ? '✓ верно' : '✗ попробуйте ещё') : 'введите ответ и нажмите OK'}
+      <div style={{ fontFamily: 'var(--mono)', fontSize: 11, marginTop: 9, color: status === 'ok' ? 'var(--ink)' : status === 'wrong' ? 'var(--ink-3)' : 'var(--ink-2)', minHeight: 14, transition: 'color .15s' }}>
+        {statusText}
       </div>
     </div>
   )
@@ -657,7 +725,7 @@ function QuestionTypes() {
           <MatchPairs left={['HTML', 'CSS', 'JS']} right={['стиль', 'логика', 'разметка']} />
         </QTCard>
         <QTCard tag="INPUT" title="Ввод ответа">
-          <FillIn answer="16" placeholder="число…" />
+          <FillIn answer="16" placeholder="число…" question="2⁴ = ?" />
           <div style={{ fontSize: 12.5, color: 'var(--ink-3)', marginTop: 4 }}>2⁴ = ?</div>
         </QTCard>
         <QTCard tag="ORDER" title="Упорядочивание">

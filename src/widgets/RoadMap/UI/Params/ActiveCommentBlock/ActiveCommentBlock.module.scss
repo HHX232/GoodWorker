@@ -478,3 +478,28 @@
   color: #141416;
   margin: 0;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .editorLabel { color: rgba(255,255,255,0.3); }
+  .emptyHint { color: rgba(255,255,255,0.25); }
+  .navCounter { color: rgba(255,255,255,0.3); }
+  .navBtn { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); &:hover:not(:disabled) { border-color: rgba(255,255,255,0.25); color: #e8eaf0; } }
+  .questionCard { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.09); box-shadow: none; }
+  .questionIndex { color: rgba(255,255,255,0.25); }
+  .typePill { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.35); &:hover { border-color: rgba(255,255,255,0.3); color: #e8eaf0; } }
+  .typePillActive { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.2); color: #e8eaf0; }
+  .removeBtn { color: rgba(255,255,255,0.2); &:hover { color: #f87171; } }
+  .questionTextarea { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &:focus { border-color: rgba(255,255,255,0.3); } }
+  .correctToggle { border-color: rgba(255,255,255,0.12); color: rgba(255,255,255,0.25); }
+  .optionInput { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &:focus { border-color: rgba(255,255,255,0.3); } }
+  .addOptionBtn { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); &:hover { border-color: rgba(255,255,255,0.25); color: #e8eaf0; } }
+  .viewQuestion { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.09); box-shadow: none; }
+  .viewQuestionText { color: rgba(255,255,255,0.75); }
+  .viewIndex { color: rgba(255,255,255,0.25); }
+  .viewOptionLabel { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.65); &:hover { border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.1); } }
+  .viewOptionChecked { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.3); color: #e8eaf0; }
+  .freeTextarea { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &:focus { border-color: rgba(255,255,255,0.3); } }
+  .thankYouIcon { background: rgba(34,197,94,0.12); }
+  .thankYouText { color: #e8eaf0; }
+}

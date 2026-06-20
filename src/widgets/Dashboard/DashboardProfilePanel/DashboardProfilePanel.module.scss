@@ -668,3 +668,65 @@
     border-color: #fca5a5;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .panel { background: #1a1c24; border-color: rgba(255,255,255,0.07); }
+  .scroll { &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); } }
+
+  .rgbRing::after { background: #1a1c24; }
+  .avatarRing { border-color: rgba(255,255,255,0.2); background: #1e2030; }
+  .avatarEditBadge { background: #1e2030; border-color: rgba(255,255,255,0.12); }
+  .heroName { color: #e8eaf0; }
+  .heroRole { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.4); }
+  .getVipBtn { border-color: rgba(255,255,255,0.15); color: rgba(255,255,255,0.5); &:hover { border-color: #a855f7; color: #d8b4fe; background: rgba(168,85,247,0.1); } }
+
+  .sectionLabel { color: rgba(255,255,255,0.2); }
+  .label { color: rgba(255,255,255,0.35); }
+  .input { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &::placeholder { color: rgba(255,255,255,0.2); } &:focus { border-color: #818cf8; background: rgba(255,255,255,0.07); } }
+
+  .saveBtn { background: rgba(255,255,255,0.1); &:hover:not(:disabled) { background: rgba(255,255,255,0.16); } }
+  .removeAvatarBtn { border-color: rgba(239,68,68,0.4); color: #f87171; &:hover { background: rgba(239,68,68,0.1); } }
+
+  .divider { background: rgba(255,255,255,0.06); }
+
+  .securityRow { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+  .securityLabel { color: rgba(255,255,255,0.3); }
+  .securityValue { color: #e8eaf0; }
+  .securityBtn { color: #a5b4fc; }
+
+  .actionBtn { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); color: #e8eaf0; &:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.18); color: #e8eaf0; } }
+  .actionIcon { background: rgba(129,140,248,0.12); color: #a5b4fc; }
+
+  .videoToggle { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); color: #e8eaf0; &:hover { background: rgba(255,255,255,0.08); } }
+  .videoChevron { color: rgba(255,255,255,0.2); }
+
+  .expAddBtn { color: #a5b4fc; }
+  .expTextarea { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; }
+  .expEmpty { color: rgba(255,255,255,0.2); }
+  .expItem { border-color: rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); }
+  .expTitle { color: #e8eaf0; }
+  .expOrg { color: rgba(255,255,255,0.35); }
+  .expYearsLabel { color: rgba(255,255,255,0.25); }
+  .expDesc { color: rgba(255,255,255,0.35); }
+  .expEditBtn { color: rgba(255,255,255,0.2); &:hover { color: #a5b4fc; background: rgba(129,140,248,0.1); } }
+  .expDeleteBtn { color: rgba(255,255,255,0.2); &:hover { color: #f87171; background: rgba(239,68,68,0.1); } }
+
+  .identityPending { color: rgba(255,255,255,0.25); }
+  .identityUploaded { color: #fbbf24; }
+  .identityConfirmed { color: #34d399; }
+
+  .tgRow { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+  .tgIconWrap { background: rgba(36,161,222,0.12); }
+  .tgTitle { color: #e8eaf0; }
+  .tgStatus { color: rgba(255,255,255,0.3); }
+  .tgLinkBtn { color: #38bdf8; }
+  .tgUnlinkBtn { color: #f87171; }
+
+  .tgModal { background: #1e2030; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+  .tgModalClose { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.35); &:hover { background: rgba(255,255,255,0.12); color: #e8eaf0; } }
+  .tgModalTitle { color: #e8eaf0; }
+  .tgModalDesc { color: rgba(255,255,255,0.4); }
+
+  .logoutBtn { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.25); color: #f87171; &:hover { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4); } }
+}

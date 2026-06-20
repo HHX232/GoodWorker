@@ -331,3 +331,27 @@
   color: #868897;
   align-self: flex-start;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .center { &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); } }
+  .statsMerged { background: #1a1c24; border-color: rgba(255,255,255,0.08); }
+  .statsSep { background: rgba(255,255,255,0.08); }
+  .statsItemValue { color: #e8eaf0; }
+  .statsItemLabel { color: rgba(255,255,255,0.3); }
+  .videoCallBlock { background: #1a1c24; border-color: rgba(255,255,255,0.08); }
+  .videoCallTitle { color: #e8eaf0; }
+  .tabs { border-color: rgba(255,255,255,0.08); }
+  .tab { color: rgba(255,255,255,0.3); &:hover { color: #e8eaf0; } }
+  .tabActive { color: #e8eaf0; border-bottom-color: #818cf8; }
+  .empty { color: rgba(255,255,255,0.25); }
+  .loading { color: rgba(255,255,255,0.25); }
+  .createCard { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.08); &:hover { border-color: #818cf8; background: rgba(83,74,183,0.08); .createIcon { color: #818cf8; } .createLabel { color: #818cf8; } } }
+  .createIcon { color: rgba(255,255,255,0.15); }
+  .createLabel { color: rgba(255,255,255,0.25); }
+  .servicesHint { color: rgba(255,255,255,0.2); }
+  .serviceCard { background: #1a1c24; border-color: rgba(255,255,255,0.08); }
+  .serviceTitle { color: #e8eaf0; }
+  .serviceDesc { color: rgba(255,255,255,0.3); }
+  .soonBadge { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.25); }
+}

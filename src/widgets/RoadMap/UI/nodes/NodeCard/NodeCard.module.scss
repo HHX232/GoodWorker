@@ -5,7 +5,6 @@
    border-style: solid;
    border-width: 1px;
    min-width: 350px;
-   max-width: 350px;
    width: fit-content;
    color: var(--sc);
    gap: 0.25rem;
@@ -123,4 +122,20 @@
    width: 26px;
    height: 26px;
    border-radius: 8px;
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .container {
+    background-color: #1a1c24;
+    border-color: rgba(255,255,255,0.1) !important;
+    color: #e8eaf0;
+    &.selected { border-color: rgba(255,255,255,0.35) !important; }
+  }
+  .completed { border-color: #22c55e !important; }
+  .locked { border-color: rgba(252,165,165,0.4) !important; }
+  .hidden:not(.blurred) { border-color: rgba(252,165,165,0.3) !important; }
+  .blurred { border-color: rgba(248,113,113,0.5) !important; }
+  .paywall_placeholder { color: #f87171; }
+  .paywallBadge { background: rgba(239,68,68,0.15); color: #f87171; }
 }

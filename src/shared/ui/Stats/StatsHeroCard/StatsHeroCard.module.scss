@@ -246,3 +246,15 @@
       transform: scale(0.97);
    }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .avatar_img_wrap { background: #1e2030; }
+  .avatar_info { background-color: #1a1c24; & > h2 { color: #e8eaf0; } }
+  .avatar_reviews { color: rgba(255,255,255,0.2); }
+  .receipt_mini { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); &:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.12); } }
+  .rm_date { color: rgba(255,255,255,0.2); }
+  .rm_subj { color: #e8eaf0; }
+  .rm_amt { color: rgba(255,255,255,0.35); }
+  .arrow_btn { border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.25); &:hover { background: rgba(129,140,248,0.15); border-color: #818cf8; color: #a5b4fc; transform: scale(1.05); } }
+}

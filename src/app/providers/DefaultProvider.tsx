@@ -3,6 +3,7 @@
 import {store} from '@/entities/store/store'
 import {useHeartbeat} from '@/features/hooks/User/useHeartbeat'
 import {PomodoroProvider} from '@/widgets/Pomodoro/PomodoroContext'
+import {ThemeProvider} from './ThemeContext'
 import {QueryCache, QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import {AxiosError} from 'axios'
 import {SessionProvider, signOut} from 'next-auth/react'
@@ -70,11 +71,13 @@ export default function DefaultProvider({children}: {children: ReactNode}) {
     <QueryClientProvider client={queryClient}>
       <SessionProvider>
         <ReduxProviderWrapper store={store}>
-          <PomodoroProvider>
-            <HeartbeatRunner />
-            <BfcacheScrollFix />
-            {children}
-          </PomodoroProvider>
+          <ThemeProvider>
+            <PomodoroProvider>
+              <HeartbeatRunner />
+              <BfcacheScrollFix />
+              {children}
+            </PomodoroProvider>
+          </ThemeProvider>
         </ReduxProviderWrapper>
       </SessionProvider>
     </QueryClientProvider>

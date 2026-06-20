@@ -83,8 +83,8 @@ export async function createNotification(input: CreateNotificationInput) {
     },
   })
 
-  // Skip AI translation when static templates already provide all languages
-  if (!input.titleTranslations) {
-    enrichNotificationWithAI(created.id).catch(() => {})
-  }
+  // Always enrich via AI: translates the full composed body (including embedded
+  // dynamic values like post titles and names) so every recipient sees correct text
+  // in their locale. Static template translations serve as immediate fallback.
+  enrichNotificationWithAI(created.id).catch(() => {})
 }

@@ -278,3 +278,73 @@
     opacity: 0.6;
   }
 }
+
+.footer_label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #b0b0c8;
+  padding: 10px 0 6px;
+  border-bottom: 1px solid #f0f0f8;
+  margin-bottom: 4px;
+}
+
+.edit_textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #E5E5E5;
+  background: #fff;
+  font-size: 14px;
+  color: #141416;
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+  font-family: inherit;
+}
+
+.save_btn {
+  height: 32px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: none;
+  background: #141416;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.cancel_btn {
+  height: 32px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid #E5E5E5;
+  background: #F7F7F7;
+  color: #868897;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .modal_title { color: rgba(255,255,255,0.3); }
+  .comment_item { border-bottom-color: rgba(255,255,255,0.05); }
+  .comment_text { color: #d0d3e0; }
+  .comment_input_bar { background: #141620; border-top-color: rgba(255,255,255,0.07); }
+  .footer_label { color: rgba(255,255,255,0.22); border-bottom-color: rgba(255,255,255,0.06); }
+  .comment_input { color: #e8eaf0; &::placeholder { color: rgba(255,255,255,0.2); } }
+  .send_button { color: rgba(255,255,255,0.7); &:hover { opacity: 0.9; } }
+  .edit_textarea {
+    background: #1e2030;
+    border-color: rgba(255,255,255,0.1);
+    color: #e8eaf0;
+  }
+  .save_btn { background: rgba(255,255,255,0.12); color: #e8eaf0; }
+  .cancel_btn { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
+  .action_btn {
+    color: rgba(255,255,255,0.3);
+    &:hover { background: rgba(255,255,255,0.07); color: #e8eaf0; }
+  }
+}

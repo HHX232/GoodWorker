@@ -69,3 +69,21 @@
    flex-shrink: 0;
    border-top: 1px solid #EDEEF3;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .modal__inner {
+    background-color: #141620;
+    color: #e8eaf0;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .modal__header {
+    border-bottom-color: rgba(255,255,255,0.07);
+  }
+  .modal__header__close__button svg path {
+    stroke: #9ea4b5;
+  }
+  .modal__footer {
+    border-top-color: rgba(255,255,255,0.07);
+  }
+}

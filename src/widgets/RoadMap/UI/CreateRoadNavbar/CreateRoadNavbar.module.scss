@@ -199,3 +199,27 @@
       }
    }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .main {
+    &::before { background-color: rgba(255,255,255,0.07); }
+  }
+  .task_btn {
+    border-color: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.65);
+    &:hover { background-color: rgba(255,255,255,0.08); }
+  }
+
+  // Mobile
+  .main {
+    background-color: #1a1c24;
+    box-shadow: 0 -4px 32px rgba(0,0,0,0.5);
+  }
+  .divider { background-color: rgba(255,255,255,0.07); }
+  .expand_btn {
+    color: rgba(255,255,255,0.4);
+    &:hover { background-color: rgba(255,255,255,0.07); color: #e8eaf0; }
+  }
+}

@@ -155,7 +155,7 @@ function sleep(ms: number) {
 }
 
 export function hasAIProvider(): boolean {
-  return !!process.env.DEEPSEEK_API_KEY
+  return !!(process.env.DEEPSEEK_API_KEY || process.env.OPENROUTER_API_KEY)
 }
 
 export function parseJSON<T>(raw: string): T {

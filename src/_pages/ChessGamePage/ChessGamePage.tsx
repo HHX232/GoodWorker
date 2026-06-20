@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Chess, Color, PieceSymbol, Square } from "chess.js";
 import { HexColorPicker } from "react-colorful";
 import styles from "./ChessGamePage.module.scss";
@@ -109,12 +110,12 @@ function getBestMove(chess: Chess, depth: number): string | null {
 
 // ─── Board themes ────────────────────────────────────────────────────────────
 
-const BOARD_THEMES = [
-  { name: "Классик",  light: "#f0d9b5", dark: "#b58863" },
-  { name: "Синий",    light: "#dee3e6", dark: "#8ca2ad" },
-  { name: "Зелёный",  light: "#ffffdd", dark: "#86a666" },
-  { name: "Фиолет",   light: "#f1e9f5", dark: "#9b72cf" },
-  { name: "Серый",    light: "#e8e8e8", dark: "#888888" },
+const BOARD_THEMES_DATA = [
+  { key: "theme_classic" as const, light: "#f0d9b5", dark: "#b58863" },
+  { key: "theme_blue"    as const, light: "#dee3e6", dark: "#8ca2ad" },
+  { key: "theme_green"   as const, light: "#ffffdd", dark: "#86a666" },
+  { key: "theme_purple"  as const, light: "#f1e9f5", dark: "#9b72cf" },
+  { key: "theme_grey"    as const, light: "#e8e8e8", dark: "#888888" },
 ];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -128,6 +129,7 @@ const DIFFICULTY_DEPTH: Record<AiDifficulty, number> = { easy: 1, medium: 2, har
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function ChessGamePage() {
+  const t = useTranslations("Chess");
   const [chess] = useState(() => new Chess());
   const [, forceRender] = useState(0);
   const [selected, setSelected] = useState<Square | null>(null);
@@ -144,8 +146,8 @@ export function ChessGamePage() {
   const [isThinking, setIsThinking] = useState(false);
   const [flipped, setFlipped] = useState(false);
   const [promotionPending, setPromotionPending] = useState<{ from: Square; to: Square } | null>(null);
-  const [lightColor, setLightColor] = useState(BOARD_THEMES[0].light);
-  const [darkColor, setDarkColor] = useState(BOARD_THEMES[0].dark);
+  const [lightColor, setLightColor] = useState(BOARD_THEMES_DATA[0].light);
+  const [darkColor, setDarkColor] = useState(BOARD_THEMES_DATA[0].dark);
   const [pickerTarget, setPickerTarget] = useState<PickerTarget>(null);
   const aiTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
@@ -171,10 +173,10 @@ export function ChessGamePage() {
     });
     setCapturedW(caps.w);
     setCapturedB(caps.b);
-    if (chess.isCheckmate()) setStatus("Мат! Победа " + (chess.turn() === "w" ? "чёрных" : "белых"));
-    else if (chess.isDraw()) setStatus("Ничья");
-    else if (chess.isStalemate()) setStatus("Пат — ничья");
-    else if (chess.isCheck()) setStatus("Шах!");
+    if (chess.isCheckmate()) setStatus("__checkmate__" + (chess.turn() === "w" ? "black" : "white"));
+    else if (chess.isDraw()) setStatus("__draw__");
+    else if (chess.isStalemate()) setStatus("__stalemate__");
+    else if (chess.isCheck()) setStatus("__check__");
     else setStatus("");
     setGameOver(chess.isGameOver());
   }, [chess]);
@@ -280,7 +282,12 @@ export function ChessGamePage() {
     }
   }
 
-  const statusText = isThinking ? "ИИ думает..." : status;
+  const resolvedStatus = status === "__draw__" ? t("draw")
+    : status === "__stalemate__" ? t("stalemate")
+    : status === "__check__" ? t("check")
+    : status.startsWith("__checkmate__") ? t("checkmate_win", { color: status.endsWith("black") ? t("black_color") : t("white_color") })
+    : status;
+  const statusText = isThinking ? t("ai_thinking") : resolvedStatus;
   const statusClass = gameOver
     ? styles.statusGameOver
     : isThinking
@@ -292,13 +299,13 @@ export function ChessGamePage() {
       <div className={styles.container}>
         {/* Header */}
         <div className={styles.header}>
-          <h1 className={styles.title}>♟ Шахматы</h1>
+          <h1 className={styles.title}>♟ {t("title")}</h1>
           <div className={styles.modeButtons}>
             <Button variant={gameMode === "vs-ai" ? "default" : "outline"} size="sm" onClick={() => setGameMode("vs-ai")}>
-              <Brain size={14} /> Против ИИ
+              <Brain size={14} /> {t("vs_ai")}
             </Button>
             <Button variant={gameMode === "vs-player" ? "default" : "outline"} size="sm" onClick={() => setGameMode("vs-player")}>
-              <Users size={14} /> 2 игрока
+              <Users size={14} /> {t("vs_player")}
             </Button>
           </div>
         </div>
@@ -308,22 +315,22 @@ export function ChessGamePage() {
           <div className={styles.sidePanel}>
             {gameMode === "vs-ai" && (
               <div className={styles.card}>
-                <div className={styles.cardTitle}>Настройки ИИ</div>
+                <div className={styles.cardTitle}>{t("ai_settings")}</div>
                 <div className={styles.settingRow}>
-                  <span>Сложность</span>
+                  <span>{t("difficulty")}</span>
                   <div className={styles.segmented}>
                     {(["easy", "medium", "hard"] as AiDifficulty[]).map((d) => (
                       <button key={d} className={`${styles.segBtn} ${difficulty === d ? styles.segBtnActive : ""}`} onClick={() => setDifficulty(d)}>
-                        {d === "easy" ? "Лёгкий" : d === "medium" ? "Средний" : "Сложный"}
+                        {t(d as "easy" | "medium" | "hard")}
                       </button>
                     ))}
                   </div>
                 </div>
                 <div className={styles.settingRow}>
-                  <span>Играть за</span>
+                  <span>{t("play_as")}</span>
                   <div className={styles.segmented}>
-                    <button className={`${styles.segBtn} ${playerColor === "w" ? styles.segBtnActive : ""}`} onClick={() => setPlayerColor("w")}>Белых</button>
-                    <button className={`${styles.segBtn} ${playerColor === "b" ? styles.segBtnActive : ""}`} onClick={() => setPlayerColor("b")}>Чёрных</button>
+                    <button className={`${styles.segBtn} ${playerColor === "w" ? styles.segBtnActive : ""}`} onClick={() => setPlayerColor("w")}>{t("white")}</button>
+                    <button className={`${styles.segBtn} ${playerColor === "b" ? styles.segBtnActive : ""}`} onClick={() => setPlayerColor("b")}>{t("black")}</button>
                   </div>
                 </div>
               </div>
@@ -331,23 +338,23 @@ export function ChessGamePage() {
 
             {/* Board color picker */}
             <div className={styles.card}>
-              <div className={styles.cardTitle}><Palette size={12} style={{ display: "inline", marginRight: 4 }} />Цвет доски</div>
+              <div className={styles.cardTitle}><Palette size={12} style={{ display: "inline", marginRight: 4 }} />{t("board_color")}</div>
               <div className={styles.themeRow}>
-                {BOARD_THEMES.map((t) => (
+                {BOARD_THEMES_DATA.map((th) => (
                   <button
-                    key={t.name}
+                    key={th.key}
                     className={styles.themeBtn}
-                    title={t.name}
-                    onClick={() => { setLightColor(t.light); setDarkColor(t.dark); setPickerTarget(null); }}
+                    title={t(th.key)}
+                    onClick={() => { setLightColor(th.light); setDarkColor(th.dark); setPickerTarget(null); }}
                   >
-                    <span style={{ background: t.light }} className={styles.themeSwatch} />
-                    <span style={{ background: t.dark }} className={styles.themeSwatch} />
+                    <span style={{ background: th.light }} className={styles.themeSwatch} />
+                    <span style={{ background: th.dark }} className={styles.themeSwatch} />
                   </button>
                 ))}
               </div>
               <div className={styles.colorSwatchRow}>
                 <div className={styles.swatchGroup}>
-                  <span className={styles.swatchLabel}>Светлые</span>
+                  <span className={styles.swatchLabel}>{t("light_squares")}</span>
                   <button
                     className={`${styles.swatch} ${pickerTarget === "light" ? styles.swatchActive : ""}`}
                     style={{ background: lightColor }}
@@ -355,7 +362,7 @@ export function ChessGamePage() {
                   />
                 </div>
                 <div className={styles.swatchGroup}>
-                  <span className={styles.swatchLabel}>Тёмные</span>
+                  <span className={styles.swatchLabel}>{t("dark_squares")}</span>
                   <button
                     className={`${styles.swatch} ${pickerTarget === "dark" ? styles.swatchActive : ""}`}
                     style={{ background: darkColor }}
@@ -374,15 +381,15 @@ export function ChessGamePage() {
             </div>
 
             <div className={styles.card}>
-              <div className={styles.cardTitle}>Захваченные фигуры</div>
+              <div className={styles.cardTitle}>{t("captured")}</div>
               <div className={styles.capturedRow}>
-                <span className={styles.capturedLabel}>Белые взяли:</span>
+                <span className={styles.capturedLabel}>{t("white_took")}</span>
                 <div className={styles.capturedPieces}>
                   {capturedW.map((p, i) => <span key={i} className={styles.capturedPiece}>{PIECE_SVG[p]("b")}</span>)}
                 </div>
               </div>
               <div className={styles.capturedRow}>
-                <span className={styles.capturedLabel}>Чёрные взяли:</span>
+                <span className={styles.capturedLabel}>{t("black_took")}</span>
                 <div className={styles.capturedPieces}>
                   {capturedB.map((p, i) => <span key={i} className={styles.capturedPiece}>{PIECE_SVG[p]("w")}</span>)}
                 </div>
@@ -390,10 +397,10 @@ export function ChessGamePage() {
             </div>
 
             <div className={styles.card}>
-              <div className={styles.cardTitle}>История ходов</div>
+              <div className={styles.cardTitle}>{t("move_history")}</div>
               <div className={styles.moveList}>
                 {history.length === 0 ? (
-                  <span className={styles.noMoves}>Ходов пока нет</span>
+                  <span className={styles.noMoves}>{t("no_moves")}</span>
                 ) : (
                   Array.from({ length: Math.ceil(history.length / 2) }).map((_, i) => (
                     <div key={i} className={styles.moveRow}>
@@ -426,7 +433,7 @@ export function ChessGamePage() {
             {/* Turn indicator */}
             <div className={styles.turnIndicator} style={{ visibility: gameOver ? "hidden" : "visible" }}>
               <div className={`${styles.turnDot} ${chess.turn() === "w" ? styles.turnDotWhite : styles.turnDotBlack}`} />
-              <span>{chess.turn() === "w" ? "Ход белых" : "Ход чёрных"}</span>
+              <span>{chess.turn() === "w" ? t("white_turn") : t("black_turn")}</span>
             </div>
 
             <div className={styles.boardWrapper}>
@@ -481,17 +488,17 @@ export function ChessGamePage() {
             {/* Controls */}
             <div className={styles.controls}>
               <Button variant="default" size="sm" onClick={handleNewGame}>
-                <RefreshCw size={14} /> Новая игра
+                <RefreshCw size={14} /> {t("new_game")}
               </Button>
               <Button variant="outline" size="sm" onClick={handleUndo} disabled={chess.history().length < 1 || gameOver}>
-                <RotateCcw size={14} /> Отменить ход
+                <RotateCcw size={14} /> {t("undo")}
               </Button>
               <Button variant="outline" size="sm" onClick={() => setFlipped((f) => !f)}>
-                <FlipVertical2 size={14} /> Повернуть доску
+                <FlipVertical2 size={14} /> {t("flip")}
               </Button>
               {gameMode === "vs-ai" && !gameOver && (
-                <Button variant="destructive" size="sm" onClick={() => { setGameOver(true); setStatus("Вы сдались. Победа ИИ."); }}>
-                  <Flag size={14} /> Сдаться
+                <Button variant="destructive" size="sm" onClick={() => { setGameOver(true); setStatus(t("resigned")); }}>
+                  <Flag size={14} /> {t("resign")}
                 </Button>
               )}
             </div>
@@ -504,7 +511,7 @@ export function ChessGamePage() {
         <div className={styles.overlay}>
           <div className={styles.promoModal}>
             <button className={styles.promoClose} onClick={() => setPromotionPending(null)}><X size={16} /></button>
-            <div className={styles.promoTitle}>Выберите фигуру для превращения</div>
+            <div className={styles.promoTitle}>{t("promotion")}</div>
             <div className={styles.promoOptions}>
               {(["q", "r", "b", "n"] as PieceSymbol[]).map((p) => (
                 <button key={p} className={styles.promoBtn} onClick={() => handlePromotion(p)}>

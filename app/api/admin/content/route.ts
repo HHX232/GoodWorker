@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
         where,
         select: {
           id: true, title: true, moderationStatus: true, createdAt: true, viewCount: true,
-          aiModerated: true, aiModerationOk: true,
+          aiModerated: true, aiModerationOk: true, isVip: true, vipExpiresAt: true,
           teacher: { select: { id: true, name: true } },
           _count: { select: { comments: true, ratings: true } },
         },
@@ -61,13 +61,22 @@ export async function PATCH(req: NextRequest) {
   const session = await auth()
   if (session?.user?.role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { id, type, moderationStatus } = await req.json()
-  if (!id || !type || !['PUBLISHED', 'PENDING', 'BLOCKED'].includes(moderationStatus)) {
+  const { id, type, moderationStatus, isVip, vipExpiresAt } = await req.json()
+
+  // Allow VIP-only update for posts (no moderationStatus required in that case)
+  const isVipUpdate = type === 'posts' && typeof isVip === 'boolean'
+  if (!id || !type || (!isVipUpdate && !['PUBLISHED', 'PENDING', 'BLOCKED'].includes(moderationStatus))) {
     return NextResponse.json({ error: 'Invalid params' }, { status: 400 })
   }
 
   if (type === 'posts') {
-    await (prisma.post.update as (a: unknown) => Promise<unknown>)({ where: { id }, data: { moderationStatus } })
+    const data: Record<string, unknown> = {}
+    if (moderationStatus) data.moderationStatus = moderationStatus
+    if (typeof isVip === 'boolean') {
+      data.isVip = isVip
+      data.vipExpiresAt = isVip && vipExpiresAt ? new Date(vipExpiresAt) : null
+    }
+    await (prisma.post.update as (a: unknown) => Promise<unknown>)({ where: { id }, data })
   } else {
     await (prisma.roadmap.update as (a: unknown) => Promise<unknown>)({ where: { id }, data: { moderationStatus } })
   }

@@ -198,3 +198,19 @@
    font-size: 0.68rem;
    color: #a1a1aa;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .uploadBtn {
+    border-color: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.35);
+    &:hover { border-color: rgba(255,255,255,0.2); color: #e8eaf0; background: rgba(255,255,255,0.04); }
+  }
+  .uploadHint { color: rgba(255,255,255,0.2); }
+  .extracting { color: rgba(255,255,255,0.35); }
+  .bar { background: rgba(255,255,255,0.1); &:hover { background: rgba(255,255,255,0.18); } }
+  .timerTotal { color: rgba(255,255,255,0.25); }
+  .filename { color: rgba(255,255,255,0.35); }
+  .removeBtn { color: rgba(255,255,255,0.25); &:hover { color: #f87171; } }
+  .hint { color: rgba(255,255,255,0.2); }
+}

@@ -248,3 +248,50 @@
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .page_title { color: #e8eaf0; }
+  .history_title { color: #e8eaf0; }
+  .subject { color: #e8eaf0; }
+  .card_text { color: #c0c4d8; }
+  .reply_text { color: #d0d3e0; }
+
+  .form_card,
+  .card {
+    background: #1a1c24;
+    border-color: rgba(255,255,255,0.08);
+    &:hover { border-color: rgba(255,255,255,0.16); }
+  }
+
+  .form_desc { color: rgba(255,255,255,0.4); }
+  .field_label { color: rgba(255,255,255,0.35); }
+  .optional { color: rgba(255,255,255,0.2); }
+  .date { color: rgba(255,255,255,0.25); }
+
+  .input,
+  .textarea {
+    background: #111318;
+    border-color: rgba(255,255,255,0.1);
+    color: #e8eaf0;
+    &::placeholder { color: rgba(255,255,255,0.2); }
+    &:focus { border-color: #818cf8; background: #141620; }
+  }
+
+  .submit_btn {
+    background: rgba(255,255,255,0.12);
+    &:hover:not(:disabled) { background: rgba(255,255,255,0.18); }
+  }
+
+  .reply {
+    background: rgba(99,102,241,0.1);
+    border-left-color: #818cf8;
+  }
+  .reply_label { color: #818cf8; }
+  .reply_date { color: rgba(255,255,255,0.25); }
+
+  .skeleton {
+    background: linear-gradient(90deg, #1e2028 25%, #242730 50%, #1e2028 75%);
+    background-size: 200% 100%;
+  }
+}

@@ -814,13 +814,13 @@ export async function refineNameTransliterationWithAI(
   if (!hasAIProvider()) return
   try {
     const raw = await callAI(
-      'You are a name romanization expert. Return ONLY valid JSON, no markdown.',
-      `Romanize this Russian name to Latin script for international audiences. Use natural English-friendly spelling (e.g. "Юрий"→"Yuri", "Алексей"→"Alexei", "Михаил"→"Mikhail", "Екатерина"→"Ekaterina"). Name: "${name}"\n\nReturn: {"romanized":"..."}`,
+      'You are a multilingual name expert. Return ONLY valid JSON, no markdown, no explanation.',
+      `Adapt this person name for each of these 4 languages. Return a JSON object with exactly these keys: "en" (English-friendly romanization), "ru" (Russian Cyrillic), "zh" (Chinese phonetic characters), "hi" (Hindi Devanagari). If the name is already in a target script keep it as-is. Examples: "Иван Петров"→{"en":"Ivan Petrov","ru":"Иван Петров","zh":"伊万·彼得罗夫","hi":"इवान पेत्रोव"}, "张伟"→{"en":"Zhang Wei","ru":"Чжан Вэй","zh":"张伟","hi":"झांग वेई"}, "John Smith"→{"en":"John Smith","ru":"Джон Смит","zh":"约翰·史密斯","hi":"जॉन स्मिथ"}. Name: "${name}"`,
       { temperature: 0 },
     )
-    const parsed = parseJSON<{ romanized: string }>(raw)
-    if (!parsed?.romanized) return
-    const transliterated = parsed.romanized.trim()
+    const parsed = parseJSON<Record<string, string>>(raw)
+    if (!parsed?.en || !parsed?.ru || !parsed?.zh || !parsed?.hi) return
+    const transliterated = JSON.stringify({ en: parsed.en.trim(), ru: parsed.ru.trim(), zh: parsed.zh.trim(), hi: parsed.hi.trim() })
     if (userType === 'teacher') {
       await prisma.teacher.update({ where: { id: userId }, data: { nameTransliterated: transliterated } })
     } else {

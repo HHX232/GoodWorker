@@ -9,3 +9,8 @@
   background-color: #fff;
 }
 
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .main { background-color: #141620; }
+}
+

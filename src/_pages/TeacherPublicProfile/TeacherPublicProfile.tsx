@@ -3,6 +3,7 @@
 import { DashboardCenter } from '@/widgets/Dashboard/DashboardCenter/DashboardCenter'
 import { PublicReviewsSidebar } from '@/widgets/Dashboard/PublicReviewsSidebar/PublicReviewsSidebar'
 import { PublicTeacherPanel } from '@/widgets/Dashboard/PublicTeacherPanel/PublicTeacherPanel'
+import { ProfileSubNav } from '@/shared/ui/ProfileSubNav/ProfileSubNav'
 import { useEffect } from 'react'
 import styles from './TeacherPublicProfile.module.scss'
 
@@ -49,26 +50,29 @@ export function TeacherPublicProfile({
   }, [])
 
   return (
-    <div className={styles.dashboard}>
-      <PublicReviewsSidebar teacherId={teacherId} />
-      <DashboardCenter statsId={teacherId} studentCount={studentCount} callCount={callCount} />
-      <PublicTeacherPanel
-        name={name}
-        avatarUrl={avatarUrl}
-        isVip={isVip}
-        createdAt={createdAt}
-        studentCount={studentCount}
-        postCount={postCount}
-        callCount={callCount}
-        categories={categories}
-        locale={locale}
-        bio={bio}
-        coverPhotoUrl={coverPhotoUrl}
-        socialLinks={socialLinks}
-        experiences={experiences}
-        serviceLabels={serviceLabels}
-        identityConfirmed={identityConfirmed}
-      />
+    <div className={styles.wrapper}>
+      <ProfileSubNav />
+      <div className={styles.dashboard}>
+        <PublicReviewsSidebar teacherId={teacherId} />
+        <DashboardCenter statsId={teacherId} studentCount={studentCount} callCount={callCount} />
+        <PublicTeacherPanel
+          name={name}
+          avatarUrl={avatarUrl}
+          isVip={isVip}
+          createdAt={createdAt}
+          studentCount={studentCount}
+          postCount={postCount}
+          callCount={callCount}
+          categories={categories}
+          locale={locale}
+          bio={bio}
+          coverPhotoUrl={coverPhotoUrl}
+          socialLinks={socialLinks}
+          experiences={experiences}
+          serviceLabels={serviceLabels}
+          identityConfirmed={identityConfirmed}
+        />
+      </div>
     </div>
   )
 }

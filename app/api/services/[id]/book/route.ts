@@ -1,5 +1,6 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { tplServiceBooking } from '@/shared/lib/notificationTemplates'
+import { enrichNotificationWithAI } from '@/lib/postAI'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../../auth'
 
@@ -63,6 +64,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
   }
 
+  let notifIdRef: string | null = null
+
   const booking = await prisma.$transaction(async (tx) => {
     const booking = await tx.serviceBooking.create({
       data: {
@@ -91,7 +94,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const student = await tx.student.findUnique({ where: { id: studentId }, select: { name: true } })
     const bookingTpl = tplServiceBooking(student?.name ?? 'Студент', service.title, desiredDate, desiredTime)
 
-    await tx.notification.create({
+    const createdNotif = await tx.notification.create({
       data: {
         type: 'SERVICE_BOOKING',
         title: bookingTpl.title,
@@ -111,9 +114,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         teacherId: service.teacherId,
       },
     })
+    notifIdRef = createdNotif.id
 
     return booking
   })
+
+  if (notifIdRef) enrichNotificationWithAI(notifIdRef).catch(() => {})
 
   return NextResponse.json({ booking, finalPrice })
 }

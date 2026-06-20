@@ -11,6 +11,7 @@ import {RoadmapProgressProvider} from '@/shared/ui/RoadMap/context/RoadmapProgre
 import {useLocale, useTranslations} from 'next-intl'
 import {useSession} from 'next-auth/react'
 import Link from 'next/link'
+import {useThemeCtx} from '@/app/providers/ThemeContext'
 import DeletableEdge from '@/widgets/RoadMap/UI/nodes/DeletableEdge/DeletableEdge'
 import NodeComponent from '@/widgets/RoadMap/UI/nodes/NodeComponent/NodeComponent'
 import RoadmapTutorial from '@/widgets/RoadMap/UI/RoadmapTutorial/RoadmapTutorial'
@@ -46,7 +47,7 @@ interface RoadMapViewerProps {
   originalLang?: string | null
 }
 
-function BuyButton({price}: {price: number}) {
+function BuyButton({price, isDark}: {price: number; isDark: boolean}) {
   const {openPurchaseModal} = useRoadmapAccessContext()
   const t = useTranslations('roadmapViewer')
   const label = price > 0 ? `${t('buy')} · ${price} ₽` : t('buyAccess')
@@ -61,13 +62,13 @@ function BuyButton({price}: {price: number}) {
         padding: '9px 16px',
         borderRadius: 10,
         border: 'none',
-        background: '#141416',
+        background: isDark ? 'rgba(255,255,255,0.1)' : '#141416',
         color: '#fff',
         fontSize: 13,
         fontWeight: 600,
         fontFamily: 'Roboto, sans-serif',
         cursor: 'pointer',
-        boxShadow: '0 2px 12px rgba(20,20,22,0.18)',
+        boxShadow: isDark ? 'none' : '0 2px 12px rgba(20,20,22,0.18)',
         whiteSpace: 'nowrap',
       }}
     >
@@ -80,7 +81,7 @@ function BuyButton({price}: {price: number}) {
   )
 }
 
-function StatsButton({onClick}: {onClick: () => void}) {
+function StatsButton({onClick, isDark}: {onClick: () => void; isDark: boolean}) {
   const t = useTranslations('roadmapViewer')
   return (
     <button
@@ -92,13 +93,13 @@ function StatsButton({onClick}: {onClick: () => void}) {
         padding: '9px 16px',
         borderRadius: 10,
         border: 'none',
-        background: '#141416',
+        background: isDark ? 'rgba(255,255,255,0.1)' : '#141416',
         color: '#fff',
         fontSize: 13,
         fontWeight: 600,
         fontFamily: 'Roboto, sans-serif',
         cursor: 'pointer',
-        boxShadow: '0 2px 12px rgba(20,20,22,0.18)',
+        boxShadow: isDark ? 'none' : '0 2px 12px rgba(20,20,22,0.18)',
         whiteSpace: 'nowrap',
       }}
     >
@@ -119,6 +120,7 @@ function InnerFlow({
   initialAvgRating,
   originalLang,
 }: RoadMapViewerProps) {
+  const {isDark} = useThemeCtx()
   const {hasAccess, nodeAccessType, isOwner, roadmapPrice} = useRoadmapAccessContext()
   const {data: session} = useSession()
   const canComplete = !isOwner && session?.user?.role === 'STUDENT'
@@ -155,13 +157,14 @@ function InnerFlow({
   const [nodes, , onNodesChange] = useNodesState(
     initialNodes.map((n) => ({...n, type: 'FlowScrapeNode', dragging: false, selected: false}))
   )
+  const edgeColor = isDark ? 'rgba(255,255,255,0.25)' : '#868897'
   const [edges, , onEdgesChange] = useEdgesState(
     initialEdges.map((e) => ({
       ...e,
       type: 'default',
       animated: true,
       selectable: false,
-      markerEnd: {type: MarkerType.ArrowClosed, width: 22, height: 22, color: '#868897'},
+      markerEnd: {type: MarkerType.ArrowClosed, width: 22, height: 22, color: edgeColor},
     }))
   )
 
@@ -172,20 +175,20 @@ function InnerFlow({
     padding: '9px 16px',
     borderRadius: 10,
     border: 'none',
-    background: '#141416',
+    background: isDark ? 'rgba(255,255,255,0.1)' : '#141416',
     color: '#fff',
     fontSize: 13,
     fontWeight: 600,
     fontFamily: 'Roboto, sans-serif',
     cursor: 'pointer',
-    boxShadow: '0 2px 12px rgba(20,20,22,0.18)',
+    boxShadow: isDark ? 'none' : '0 2px 12px rgba(20,20,22,0.18)',
     whiteSpace: 'nowrap',
     textDecoration: 'none',
   }
 
   return (
     <RoadmapProgressProvider roadmapId={roadmapId} canComplete={canComplete}>
-    <div style={{width: '100%', height: containerH, backgroundColor: '#FFF', position: 'relative'}}>
+    <div style={{width: '100%', height: containerH, backgroundColor: isDark ? '#141620' : '#FFF', position: 'relative'}}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -200,7 +203,7 @@ function InnerFlow({
         minZoom={0.2}
         maxZoom={2}
       >
-        <Background variant={BackgroundVariant.Dots} gap={15} />
+        <Background variant={BackgroundVariant.Dots} gap={15} color={isDark ? 'rgba(255,255,255,0.12)' : '#aaa'} />
         <Controls position='top-left' />
         <RoadmapTutorial canComplete={canComplete} />
 
@@ -210,9 +213,10 @@ function InnerFlow({
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
               padding: '5px 12px', borderRadius: 8,
-              background: 'rgba(83,74,183,0.1)', color: '#534AB7',
+              background: isDark ? 'rgba(83,74,183,0.2)' : 'rgba(83,74,183,0.1)',
+              color: isDark ? '#a5b4fc' : '#534AB7',
               fontSize: 12, fontWeight: 600, fontFamily: 'Roboto, sans-serif',
-              boxShadow: '0 1px 6px rgba(83,74,183,0.12)',
+              boxShadow: isDark ? 'none' : '0 1px 6px rgba(83,74,183,0.12)',
             }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
@@ -244,7 +248,7 @@ function InnerFlow({
         <div style={{display: 'flex', gap: 8, flex: '0 0 auto', pointerEvents: 'auto'}}>
           {isOwner ? (
             <>
-              <StatsButton onClick={() => setStatsOpen(true)} />
+              <StatsButton onClick={() => setStatsOpen(true)} isDark={isDark} />
               <Link href={`/create-road-map?edit=${roadmapId}`} style={btnStyle}>
                 <svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.2' strokeLinecap='round' strokeLinejoin='round'>
                   <path d='M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7' />
@@ -254,7 +258,7 @@ function InnerFlow({
               </Link>
             </>
           ) : (
-            showBuyButton && <BuyButton price={roadmapPrice} />
+            showBuyButton && <BuyButton price={roadmapPrice} isDark={isDark} />
           )}
         </div>
       </div>

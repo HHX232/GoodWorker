@@ -2,10 +2,13 @@
 
 .page {
   min-height: 100vh;
+  overflow-y: auto;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px 16px;
+  position: relative;
+  z-index: 1;
 
   @include sm {
     align-items: flex-start;
@@ -233,5 +236,59 @@
 
   &:hover {
     color: #0a0c12;
+  }
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .card {
+    background: #1a1c24;
+    border-color: rgba(255,255,255,0.08);
+  }
+
+  .title { color: #e8eaf0; }
+  .subtitle {
+    color: rgba(255,255,255,0.4);
+    strong { color: #e8eaf0; }
+  }
+
+  .roleTab {
+    border-color: rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.45);
+    &:hover { background: rgba(255,255,255,0.07); }
+    &.active {
+      border-color: #818cf8;
+      background: #818cf8;
+      color: #fff;
+    }
+  }
+
+  .chip {
+    border-color: rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.45);
+    &:hover { background: rgba(255,255,255,0.07); }
+    &.chipActive {
+      border-color: #818cf8;
+      background: #818cf8;
+      color: #fff;
+    }
+  }
+
+  .categoriesLabel { color: rgba(255,255,255,0.35); }
+
+  .btn {
+    background: rgba(255,255,255,0.12);
+    &:hover { opacity: 0.85; }
+    &:disabled { opacity: 0.3; }
+  }
+
+  .hint { color: rgba(255,255,255,0.35); }
+  .link { color: #818cf8; }
+  .resendHint { color: rgba(255,255,255,0.3); }
+  .resendBtn { color: #818cf8; }
+  .consentText { color: rgba(255,255,255,0.35); }
+  .backBtn {
+    color: rgba(255,255,255,0.35);
+    &:hover { color: #e8eaf0; }
   }
 }

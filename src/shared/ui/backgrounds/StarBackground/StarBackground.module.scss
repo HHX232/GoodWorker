@@ -1,0 +1,56 @@
+.bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  background: #f0eff6;
+}
+
+// Two-axis wrapper: X animation on outer, Y animation on inner
+// Different durations → lissajous-like chaotic wandering
+.starOuter {
+  position: absolute;
+  display: block;
+  animation:
+    wanderX ease-in-out infinite alternate,
+    fadeInOut ease-in-out infinite alternate;
+}
+
+.star {
+  display: block;
+  border-radius: 50%;
+  background: rgba(83, 74, 183, 0.55);
+  animation: wanderY ease-in-out infinite alternate;
+}
+
+@keyframes wanderX {
+  0%   { transform: translateX(0); }
+  33%  { transform: translateX(var(--x1)); }
+  66%  { transform: translateX(var(--x2)); }
+  100% { transform: translateX(var(--x3)); }
+}
+
+@keyframes wanderY {
+  0%   { transform: translateY(0); }
+  33%  { transform: translateY(var(--y1)); }
+  66%  { transform: translateY(var(--y2)); }
+  100% { transform: translateY(var(--y3)); }
+}
+
+@keyframes fadeInOut {
+  0%   { opacity: 0.8; }
+  50%  { opacity: 0.25; }
+  100% { opacity: 0.65; }
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .bg {
+    background: #0c0e17;
+  }
+
+  .star {
+    background: rgba(129, 140, 248, 0.8);
+  }
+}

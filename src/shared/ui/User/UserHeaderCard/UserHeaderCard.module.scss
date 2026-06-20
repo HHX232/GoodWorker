@@ -139,3 +139,20 @@
     font-size: 16px;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .user_name { color: #e8eaf0; }
+  .user_active { color: rgba(255,255,255,0.35); }
+  .user_active_pin { background-color: rgba(255,255,255,0.25); }
+  .dots_image { background-color: rgba(255,255,255,0.07); }
+  .dots_menu {
+    background-color: #1e2030;
+    border-color: rgba(255,255,255,0.1);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
+  .dots_menu_item { color: #e8eaf0; }
+  .dots_item_complaint { color: #f87171; &:hover { background: rgba(239,68,68,0.15); } }
+  .dots_item_share { color: #e8eaf0; &:hover { background: rgba(255,255,255,0.07); } }
+  .dots_item_copied { color: #4ade80; &:hover { background: rgba(22,163,74,0.15); } }
+}

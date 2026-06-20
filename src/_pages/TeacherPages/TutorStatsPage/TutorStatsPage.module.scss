@@ -10,6 +10,11 @@
    color: #dc2626;
 }
 
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .loading { color: rgba(255,255,255,0.2); }
+  .error { color: #f87171; }
+}
+
 .dop_container {
    max-height: calc(100vh - 150px);
    overflow-y: auto;

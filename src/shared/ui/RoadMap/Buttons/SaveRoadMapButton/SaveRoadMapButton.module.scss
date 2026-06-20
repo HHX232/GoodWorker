@@ -65,3 +65,14 @@
       transform: rotate(360deg);
    }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .button {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.45);
+    &:hover { border-color: #2d7a4f; background: #2d7a4f; color: #fff; }
+    &:disabled { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); color: rgba(255,255,255,0.2); &:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); } }
+  }
+}

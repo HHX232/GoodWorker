@@ -398,6 +398,27 @@ function NotificationsTab() {
     }
   }
 
+  // Backfill translations
+  const [backfilling, setBackfilling] = useState(false)
+  const [backfillResult, setBackfillResult] = useState<{ processed: number; remaining: number } | null>(null)
+
+  const handleBackfill = async () => {
+    setBackfilling(true)
+    setBackfillResult(null)
+    try {
+      const res = await fetch('/api/admin/notifications/backfill', { method: 'POST' })
+      if (!res.ok) throw new Error()
+      const data = await res.json()
+      setBackfillResult(data)
+      if (data.processed > 0) toast.success(`Переведено ${data.processed} уведомлений`)
+      else toast.success('Все уведомления уже переведены')
+    } catch {
+      toast.error('Ошибка при переводе уведомлений')
+    } finally {
+      setBackfilling(false)
+    }
+  }
+
   // History
   const [history, setHistory] = useState<NotifHistoryItem[]>([])
   const [historyLoading, setHistoryLoading] = useState(true)
@@ -587,6 +608,24 @@ function NotificationsTab() {
           {lastResult && (
             <span className={styles.send_success}>
               {t('notifSentResult', {count: lastResult.created})}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Backfill translations */}
+      <div className={styles.notif_form}>
+        <p className={styles.notif_section_heading}>Перевод уведомлений (DeepSeek)</p>
+        <p className={styles.notif_desc}>
+          Переводит старые уведомления без переводов через DeepSeek. Запускайте пока &quot;remaining&quot; не станет 0.
+        </p>
+        <div className={styles.notif_actions}>
+          <button className={styles.send_btn} onClick={handleBackfill} disabled={backfilling}>
+            {backfilling ? 'Перевожу...' : 'Перевести уведомления'}
+          </button>
+          {backfillResult && (
+            <span className={styles.send_success}>
+              Обработано: {backfillResult.processed}, осталось: {backfillResult.remaining}
             </span>
           )}
         </div>
@@ -1256,6 +1295,8 @@ interface ContentItem {
   price?: number
   aiModerated?: boolean
   aiModerationOk?: boolean | null
+  isVip?: boolean
+  vipExpiresAt?: string | null
   teacher: { id: string; name: string }
   _count: { comments: number; ratings: number; progress?: number }
 }
@@ -1329,6 +1370,26 @@ function ContentTab() {
       toast.error(t('contentDeleteError'))
     } finally {
       setDeleting(null)
+    }
+  }
+
+  const [vipUpdating, setVipUpdating] = useState<string | null>(null)
+  const handleVipToggle = async (item: ContentItem) => {
+    const newIsVip = !item.isVip
+    setVipUpdating(item.id)
+    try {
+      const res = await fetch('/api/admin/content', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: item.id, type: 'posts', isVip: newIsVip }),
+      })
+      if (!res.ok) throw new Error()
+      setItems(prev => prev.map(i => i.id === item.id ? { ...i, isVip: newIsVip, vipExpiresAt: newIsVip ? i.vipExpiresAt : null } : i))
+      toast.success(newIsVip ? 'Пост помечен как VIP' : 'VIP снят с поста')
+    } catch {
+      toast.error('Не удалось обновить VIP статус')
+    } finally {
+      setVipUpdating(null)
     }
   }
 
@@ -1456,6 +1517,20 @@ function ContentTab() {
                     >
                       {t('aiNotCheckedBadge')}
                     </span>
+                  )}
+                  {contentType === 'posts' && (
+                    <button
+                      className={styles.content_action_btn}
+                      style={item.isVip
+                        ? { borderColor: '#a16207', color: '#a16207', background: '#fefce8' }
+                        : { borderColor: '#d1d5db', color: '#6b7280', background: '#f9fafb' }
+                      }
+                      onClick={() => handleVipToggle(item)}
+                      disabled={vipUpdating === item.id}
+                      title={item.isVip ? 'Снять VIP' : 'Сделать VIP-постом'}
+                    >
+                      {vipUpdating === item.id ? '…' : item.isVip ? '★ VIP' : '☆ VIP'}
+                    </button>
                   )}
                   {statusActions
                     .filter(a => a.status !== item.moderationStatus)

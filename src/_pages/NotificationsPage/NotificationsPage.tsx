@@ -3,6 +3,7 @@ import {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
 import {useLocale, useTranslations} from 'next-intl'
+import {useThemeCtx} from '@/app/providers/ThemeContext'
 import {NavBar} from '@/widgets/BaseUI'
 import {NotificationItem, TYPE_CONFIG, FALLBACK_CONFIG, relativeTime} from '@/widgets/NotificationsPanel/RowNotification'
 import {NotificationDetailModal} from '@/widgets/NotificationsPanel/NotificationDetailModal'
@@ -45,8 +46,8 @@ function addDays(d: Date, n: number) {
   return r
 }
 
-function heatColor(count: number): string {
-  if (count === 0) return '#eaecef'
+function heatColor(count: number, isDark: boolean): string {
+  if (count === 0) return isDark ? 'rgba(255,255,255,0.06)' : '#eaecef'
   if (count <= 2)  return '#c4b5fd'
   if (count <= 5)  return '#8b5cf6'
   if (count <= 9)  return '#6366f1'
@@ -132,6 +133,7 @@ function NotificationSettings({
 function NotificationHeatmap({onDayClick, enabledTypes}: {onDayClick: (date: string) => void; enabledTypes: Set<string> | null}) {
   const t = useTranslations('notifications')
   const locale = useLocale()
+  const {isDark} = useThemeCtx()
   const [days, setDays] = useState<Record<string, number>>({})
   const [tooltip, setTooltip] = useState<{date: string; count: number; x: number; y: number} | null>(null)
   const [monthOffset, setMonthOffset] = useState(0) // 0 = current 4 months
@@ -213,7 +215,7 @@ function NotificationHeatmap({onDayClick, enabledTypes}: {onDayClick: (date: str
                         <div
                           key={di}
                           className={`${styles.heatmap_cell} ${isFuture || isOtherMonth ? styles.heatmap_cell_dim : count > 0 ? styles.heatmap_cell_clickable : ''}`}
-                          style={{background: isFuture || isOtherMonth ? 'transparent' : heatColor(count)}}
+                          style={{background: isFuture || isOtherMonth ? 'transparent' : heatColor(count, isDark)}}
                           onClick={() => !isFuture && !isOtherMonth && count > 0 && onDayClick(iso)}
                           onMouseEnter={(e) => !isFuture && !isOtherMonth && handleMouseEnter(e, iso, count)}
                           onMouseLeave={() => setTooltip(null)}

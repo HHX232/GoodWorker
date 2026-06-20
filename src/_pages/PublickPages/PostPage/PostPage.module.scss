@@ -101,6 +101,190 @@
   }
 }
 
+// ── Pomodoro bar ──────────────────────────────────────────────
+
+.pom_wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.pomodoro_bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px 6px 8px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid rgba(20,20,22,0.08);
+  box-shadow: 0 1px 4px rgba(20,20,22,0.05);
+  color: #141416;
+}
+
+.pom_center {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.pom_time {
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #141416;
+  letter-spacing: 0.03em;
+  line-height: 1;
+}
+
+.pom_phase {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.pom_actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pom_btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(20,20,22,0.06);
+  color: #141416;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+
+  &:hover { background: rgba(20,20,22,0.11); }
+}
+
+.pom_btn_active {
+  background: rgba(20,20,22,0.11) !important;
+}
+
+// ── Settings panel ────────────────────────────────────────────
+
+.pom_settings {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid rgba(20,20,22,0.08);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 4px 12px rgba(20,20,22,0.06);
+}
+
+.pom_setting_row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.pom_setting_label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #868897;
+  width: 58px;
+  flex-shrink: 0;
+}
+
+.pom_range {
+  flex: 1;
+  height: 3px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(20,20,22,0.1);
+  border-radius: 100px;
+  outline: none;
+  cursor: pointer;
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--fill, #6366f1);
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+}
+
+.pom_setting_val {
+  font-size: 12px;
+  font-weight: 600;
+  color: #141416;
+  width: 44px;
+  text-align: right;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.pom_apply {
+  margin-top: 4px;
+  padding: 8px 20px;
+  background: #141416;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  align-self: flex-end;
+  transition: opacity 0.15s;
+
+  &:hover { opacity: 0.82; }
+}
+
+// ── Dark theme ─────────────────────────────────────────────────
+
+@mixin dark-post-page {
+  .extra_content { background: #0f1117; }
+  .extra_full_bot, .mobile_wrapper { background: transparent; }
+  .post_title { color: #e8eaf0; }
+
+  .pomodoro_bar {
+    background: #1a1c22;
+    border-color: rgba(255,255,255,0.08);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    color: #e8eaf0;
+  }
+
+  .pom_time { color: #e8eaf0; }
+
+  .pom_btn {
+    background: rgba(255,255,255,0.07);
+    color: #e8eaf0;
+    &:hover { background: rgba(255,255,255,0.12); }
+  }
+
+  .pom_settings {
+    background: #1a1c22;
+    border-color: rgba(255,255,255,0.07);
+  }
+
+  .pom_setting_label { color: rgba(255,255,255,0.4); }
+  .pom_range { background: rgba(255,255,255,0.1); }
+  .pom_setting_val { color: #e8eaf0; }
+  .pom_apply { background: rgba(255,255,255,0.1); color: #e8eaf0; }
+}
+
+:global(html.theme-dark) { @include dark-post-page; }
+:global(html.pomodoro-dark) { @include dark-post-page; }
+
 .sticky_sidebar {
    position: sticky;
    top: 0;

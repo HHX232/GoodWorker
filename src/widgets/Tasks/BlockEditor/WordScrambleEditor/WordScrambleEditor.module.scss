@@ -366,3 +366,30 @@
   color: #b91c1c !important;
   box-shadow: 0 0 0 2px #fca5a540;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .box { background: #1e2030; border-color: rgba(255,255,255,0.07); }
+  .mode_bar { background: rgba(255,255,255,0.06); }
+  .mode_btn { color: rgba(255,255,255,0.4); &:not(:disabled):hover { color: #e8eaf0; } }
+  .mode_btn_active { background: rgba(255,255,255,0.08); color: #e8eaf0; box-shadow: 0 1px 4px rgba(0,0,0,0.4); }
+  .label { color: rgba(255,255,255,0.25); }
+  .input { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &::placeholder { color: rgba(255,255,255,0.2); } &:focus { border-color: rgba(251,146,60,0.5); background: rgba(255,255,255,0.08); } }
+  .mode_tab { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); &:hover { border-color: rgba(255,255,255,0.2); color: #e8eaf0; } }
+  .mode_tab_active { border-color: rgba(251,146,60,0.5); background: rgba(251,146,60,0.1); color: #fb923c; &:hover { border-color: rgba(234,88,12,0.6); background: rgba(251,146,60,0.15); } }
+  .tile { background: rgba(255,255,255,0.07); border-color: rgba(251,146,60,0.35); color: #fb923c; box-shadow: 0 1px 3px rgba(0,0,0,0.3); &:hover { box-shadow: 0 3px 8px rgba(0,0,0,0.4); } }
+  .current_answer { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+  .current_answer_label { color: rgba(255,255,255,0.25); }
+  .current_answer_value { color: #e8eaf0; }
+  .editor_preview { background: rgba(251,146,60,0.08); border-color: rgba(251,146,60,0.2); }
+  .editor_preview_header { color: #fb923c; }
+  .answer_row { border-color: rgba(251,146,60,0.2); }
+  .answer_label { color: rgba(251,146,60,0.5); }
+  .answer_value { color: #fb923c; }
+  .result_badge_ok { background: rgba(34,197,94,0.15); color: #4ade80; border-color: rgba(34,197,94,0.3); }
+  .result_badge_err { background: rgba(239,68,68,0.15); color: #f87171; border-color: rgba(239,68,68,0.3); }
+  .retry_btn { color: rgba(255,255,255,0.25); &:hover { color: rgba(255,255,255,0.6); } }
+  .student_wrap { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); }
+  .student_instruction { color: #e8eaf0; }
+  .student_hint_text { background: rgba(253,211,77,0.1); border-color: rgba(253,230,138,0.2); color: #fcd34d; }
+}

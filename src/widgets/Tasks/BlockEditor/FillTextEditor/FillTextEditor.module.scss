@@ -101,3 +101,13 @@
     font-size: 13px;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .editor_box { background: #1e2030; border-color: rgba(255,255,255,0.07); }
+  .toolbar_btn { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.35); &:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.2); color: #e8eaf0; } }
+  .editor_content {
+    :global(.tiptap) { color: #e8eaf0; }
+  }
+  .gap_input { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.12); color: #e8eaf0; &:focus { border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.1); } }
+}

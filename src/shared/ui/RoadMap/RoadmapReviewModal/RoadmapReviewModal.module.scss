@@ -87,3 +87,12 @@
     border-color: #c0c0c0;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .section_title { color: rgba(255,255,255,0.35); }
+  .stars_value { color: #e8eaf0; }
+  .footer { background: #111318; }
+  .submit_btn { background: rgba(255,255,255,0.12); &:disabled { opacity: 0.25; } }
+  .cancel_btn { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); &:hover { border-color: rgba(255,255,255,0.25); } }
+}

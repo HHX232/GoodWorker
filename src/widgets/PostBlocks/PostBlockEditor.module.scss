@@ -233,3 +233,25 @@
 .block_body {
    padding: 12px;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .block_header { background: rgba(255,255,255,0.04); }
+  .block_label { color: rgba(255,255,255,0.25); }
+  .delete_btn { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); &:hover { border-color: rgba(229,62,62,0.5); color: #f87171; background: rgba(239,68,68,0.12); } }
+  .upload_btn { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.35); &:hover { border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.07); color: #e8eaf0; } }
+  .upload_hint { color: rgba(255,255,255,0.2); }
+  .extracting { color: rgba(255,255,255,0.3); }
+  .ext_bar { background: rgba(255,255,255,0.4); }
+  .player { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); }
+  .play_btn { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); &:hover { background: rgba(255,255,255,0.18); } }
+  .bar { background: rgba(255,255,255,0.12); }
+  .bar_passed { background: #e8eaf0; }
+  .bar_cursor { background: rgba(255,255,255,0.6); }
+  .timer { color: rgba(255,255,255,0.4); }
+  .timer_sep { color: rgba(255,255,255,0.15); }
+  .timer_total { color: rgba(255,255,255,0.25); }
+  .file_row { border-top-color: rgba(255,255,255,0.07); }
+  .filename { color: rgba(255,255,255,0.4); }
+  .remove_btn { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); &:hover { border-color: rgba(255,255,255,0.25); color: #e8eaf0; background: rgba(255,255,255,0.07); } }
+}

@@ -281,3 +281,29 @@
   color: #555;
   font-weight: 500;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .modal { background: #1e2030; border-color: rgba(255,255,255,0.08); box-shadow: 0 8px 40px rgba(0,0,0,0.4); }
+  .closeBtn { color: rgba(255,255,255,0.3); &:hover { color: #e8eaf0; } }
+  .icon { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5); }
+  .title { color: #e8eaf0; }
+  .subtitle { color: rgba(255,255,255,0.3); }
+  .input { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &::placeholder { color: rgba(255,255,255,0.2); } &:focus { border-color: rgba(255,255,255,0.3); } }
+  .select { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; }
+  .fieldLabel { color: rgba(255,255,255,0.3); }
+  .accessBtn { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); &:hover { border-color: rgba(255,255,255,0.3); color: #e8eaf0; } }
+  .accessBtnActive { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); color: #e8eaf0; }
+  .textarea { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &::placeholder { color: rgba(255,255,255,0.2); } &:focus { border-color: rgba(255,255,255,0.3); } }
+  .error { background: rgba(220,38,38,0.1); border-color: rgba(239,68,68,0.2); color: #f87171; }
+  .submitBtn { background: rgba(255,255,255,0.1); color: #e8eaf0; border: 1px solid rgba(255,255,255,0.15); &:hover:not(:disabled) { background: rgba(255,255,255,0.18); } }
+  .backBtn { color: rgba(255,255,255,0.3); &:hover { color: #e8eaf0; } }
+  .divider { background: rgba(255,255,255,0.07); }
+  .selectedLabel { color: rgba(255,255,255,0.2); }
+  .studentList { border-color: rgba(255,255,255,0.1); }
+  .studentRow { &:hover { background: rgba(255,255,255,0.04); } }
+  .checkbox { accent-color: #818cf8; }
+  .studentRowName { color: #e8eaf0; }
+  .studentRowEmail { color: rgba(255,255,255,0.25); }
+  .selectedCount { color: rgba(255,255,255,0.3); }
+}

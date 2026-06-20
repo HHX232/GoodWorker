@@ -291,3 +291,46 @@
     flex: 1;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .card { background-color: #141620; }
+  .title { color: #e8eaf0; }
+  .image { background-color: #1e2030; }
+  .edit_btn {
+    border-color: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.4);
+    &:hover {
+      background-color: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.18);
+      color: #e8eaf0;
+    }
+  }
+  .stat { color: rgba(255,255,255,0.35); }
+  .price_badge {
+    color: #e8eaf0;
+    background-color: rgba(255,255,255,0.07);
+  }
+  .partial_badge { background-color: rgba(124,58,237,0.2); color: #a78bfa; }
+  .free_badge { background-color: rgba(21,128,61,0.2); color: #4ade80; }
+  .lang_badge { background: rgba(83,74,183,0.18); color: #a5b4fc; }
+  .open_btn {
+    border-color: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.4);
+    &:hover {
+      background-color: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.18);
+      color: #e8eaf0;
+      svg path { stroke: #e8eaf0; }
+    }
+  }
+  .share_btn {
+    border-color: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.4);
+    &:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.18);
+      color: #e8eaf0;
+    }
+  }
+}

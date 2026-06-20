@@ -298,3 +298,23 @@
     opacity: 0.6;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .box { background: #1a1c22; }
+  .header { border-bottom-color: rgba(255,255,255,0.06); }
+  .total_comments { color: rgba(255,255,255,0.35); }
+  .view_all_button { color: #e8eaf0; }
+  .comment_item { border-bottom-color: rgba(255,255,255,0.05); }
+  .comment_text_mini { color: #d0d3e0; }
+  .see_more { color: rgba(255,255,255,0.3); &:hover { color: #e8eaf0; } }
+  .show_all_bottom_button { background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.5); &:hover { background: rgba(255,255,255,0.08); } }
+  .rating_row { border-top-color: rgba(255,255,255,0.06); }
+  .rating_label, .rating_value { color: rgba(255,255,255,0.35); }
+  .comment_input_bar { background: #1a1c22; border-top-color: rgba(255,255,255,0.06); }
+  .comment_input { color: #e8eaf0; &::placeholder { color: rgba(255,255,255,0.2); } }
+  .send_button { color: #e8eaf0; }
+  .content {
+    &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); }
+  }
+}

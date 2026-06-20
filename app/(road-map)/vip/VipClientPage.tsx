@@ -1,89 +1,142 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
+import { motion } from 'framer-motion'
+import {
+  Tag, Video, FileText, FileUp, MessageSquare,
+  Star, ArrowRight, CheckCircle, Zap, Users, BookOpen,
+} from 'lucide-react'
+import Link from 'next/link'
 import styles from './vip.module.scss'
 
-const BENEFITS = [
+// ── Starfield ──────────────────────────────────────────────
+
+const STARS = Array.from({ length: 80 }, (_, i) => ({
+  id: i,
+  top: Math.random() * 100,
+  left: Math.random() * 100,
+  size: 1 + Math.random() * 2,
+  delay: Math.random() * 6,
+  dur: 2.5 + Math.random() * 3,
+}))
+
+function Starfield() {
+  return (
+    <div className={styles.starfield} aria-hidden>
+      {STARS.map(s => (
+        <motion.div
+          key={s.id}
+          style={{
+            position: 'absolute',
+            top: `${s.top}%`,
+            left: `${s.left}%`,
+            width: s.size,
+            height: s.size,
+            borderRadius: '50%',
+            background: '#fff',
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0, 0.7, 0] }}
+          transition={{ duration: s.dur, repeat: Infinity, delay: s.delay, ease: 'easeInOut' }}
+        />
+      ))}
+    </div>
+  )
+}
+
+// ── Features ───────────────────────────────────────────────
+
+const FEATURES = [
   {
-    title: 'Монетизация курсов',
-    desc: 'Устанавливайте цену на свои курсы и получайте оплату напрямую.',
-    bg: '#F5F4FF', stroke: '#534AB7',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
-      </svg>
-    ),
+    icon: <Video size={18} />,
+    bg: '#eff6ff', color: '#2563eb',
+    title: 'Видеозвонки без ограничений',
+    desc: 'Приглашайте любое количество участников. У обычных пользователей — лимит 3 человека.',
+    tag: null,
   },
   {
-    title: 'Приоритет в каталоге',
-    desc: 'Ваши материалы отображаются выше в поиске и рекомендациях.',
-    bg: '#F0FDF4', stroke: '#22C55E',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" />
-      </svg>
-    ),
+    icon: <Tag size={18} />,
+    bg: '#f0fdf4', color: '#16a34a',
+    title: 'Платные курсы и роадмапы',
+    desc: 'Устанавливайте цену и монетизируйте свои материалы напрямую через платформу.',
+    tag: null,
   },
   {
-    title: 'Расширенная аналитика',
-    desc: 'Детальная статистика просмотров, прохождений и оценок студентов.',
-    bg: '#EFF6FF', stroke: '#3B82F6',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
-      </svg>
-    ),
+    icon: <FileText size={18} />,
+    bg: '#fdf4ff', color: '#9333ea',
+    title: 'PDF → тест: до 50 страниц',
+    desc: 'Загружайте объёмные документы. Без VIP — только 5 страниц за раз.',
+    tag: '10× больше',
   },
   {
+    icon: <FileUp size={18} />,
+    bg: '#fff7ed', color: '#ea580c',
+    title: 'DOCX, TXT, RTF, ODT',
+    desc: 'Создавайте тесты из документов Word, текстовых файлов и других форматов.',
+    tag: 'Только VIP',
+  },
+  {
+    icon: <Zap size={18} />,
+    bg: '#fefce8', color: '#ca8a04',
+    title: 'До 20 вопросов в тесте',
+    desc: 'ИИ генерирует полноценный тест. Гости и обычные пользователи получают не больше 5.',
+    tag: '4× больше',
+  },
+  {
+    icon: <Star size={18} />,
+    bg: '#fdf2f8', color: '#db2777',
     title: 'VIP-значок на профиле',
-    desc: 'Заметный знак качества, который выделяет вас среди других авторов.',
-    bg: '#FFFBEB', stroke: '#F59E0B',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-      </svg>
-    ),
+    desc: 'Заметный знак качества, который выделяет вас среди других авторов в каталоге.',
+    tag: null,
   },
   {
-    title: 'Уведомления об отзывах',
-    desc: 'Мгновенные оповещения об оценках и комментариях к вашим курсам.',
-    bg: '#FFF1F2', stroke: '#F43F5E',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 01-3.46 0" />
-      </svg>
-    ),
+    icon: <Users size={18} />,
+    bg: '#f0fdfa', color: '#0d9488',
+    title: 'Приоритет в каталоге',
+    desc: 'Ваши материалы и профиль отображаются выше в поиске и рекомендациях.',
+    tag: null,
   },
   {
-    title: 'Больше форматов контента',
-    desc: 'Расширенный набор блоков — аудио, видео, интерактивные задания.',
-    bg: '#F0FDFA', stroke: '#14B8A6',
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 21V9" />
-      </svg>
-    ),
+    icon: <BookOpen size={18} />,
+    bg: '#f8fafc', color: '#475569',
+    title: 'VIP-посты',
+    desc: 'Доступ к эксклюзивным материалам, доступным только VIP пользователям.',
+    tag: null,
+  },
+  {
+    icon: <MessageSquare size={18} />,
+    bg: '#fff1f2', color: '#e11d48',
+    title: 'Приоритетная поддержка',
+    desc: 'Ваши обращения обрабатываются в первую очередь.',
+    tag: null,
   },
 ]
+
+// ── Errors ─────────────────────────────────────────────────
 
 const PROMO_ERRORS: Record<string, string> = {
   INVALID_PROMO: 'Промокод не найден или неактивен',
   PROMO_EXPIRED: 'Срок действия промокода истёк',
   PROMO_EXHAUSTED: 'Лимит использований исчерпан',
+  ALREADY_USED: 'Вы уже использовали этот промокод',
 }
 
-function CrownIcon() {
-  return (
-    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M2 20h20M4 20L2 8l5 4 5-6 5 6 5-4-2 12" />
-    </svg>
-  )
-}
+// ── Page ───────────────────────────────────────────────────
 
 export default function VipClientPage() {
   const router = useRouter()
+
+  useEffect(() => {
+    document.body.style.setProperty('overflow', 'auto', 'important')
+    document.documentElement.classList.add('vip-dark')
+    return () => {
+      document.body.style.removeProperty('overflow')
+      document.documentElement.classList.remove('vip-dark')
+    }
+  }, [])
+
   const [loading, setLoading] = useState(false)
   const [activated, setActivated] = useState(false)
   const [vipUntil, setVipUntil] = useState<string | null>(null)
@@ -92,12 +145,16 @@ export default function VipClientPage() {
 
   const handleActivate = async () => {
     setPromoError('')
+    if (!promoCode.trim()) {
+      setPromoError('Введите промокод')
+      return
+    }
     setLoading(true)
     try {
       const res = await fetch('/api/teacher/vip/activate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ promoCode: promoCode.trim() || undefined }),
+        body: JSON.stringify({ promoCode: promoCode.trim() }),
       })
       const data = await res.json()
 
@@ -105,7 +162,7 @@ export default function VipClientPage() {
         const promoErr = PROMO_ERRORS[data.error]
         if (promoErr) { setPromoError(promoErr); return }
         if (data.error === 'Unauthorized') {
-          toast.error('Войдите в аккаунт, чтобы получить VIP')
+          toast.error('Войдите в аккаунт, чтобы активировать VIP')
           return
         }
         throw new Error(data.error)
@@ -124,109 +181,165 @@ export default function VipClientPage() {
   return (
     <main className={styles.page}>
 
-      {/* ── Hero card ── */}
-      <div className={styles.heroCard}>
-        <div className={styles.heroBand}>
-          <div className={styles.crownWrap}><CrownIcon /></div>
-          <div className={styles.vipBadge}>VIP</div>
-        </div>
+      {/* ── Hero ── */}
+      <section className={styles.hero}>
+        <Starfield />
 
-        <div className={styles.heroBody}>
-          <h1 className={styles.heroTitle}>Откройте полный доступ</h1>
-          <p className={styles.heroSub}>
-            Монетизируйте курсы, получайте расширенную аналитику и выделяйтесь в каталоге.
-          </p>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className={styles.heroBadge}
+        >
+          <Star size={11} fill="currentColor" />
+          GOODWORKER VIP
+        </motion.div>
 
-          {activated ? (
-            <div className={styles.successBlock}>
-              <div className={styles.successIcon}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </div>
-              <div>
-                <div className={styles.successTitle}>VIP активирован!</div>
-                {vipUntil && <div className={styles.successSub}>Действует до {vipUntil}</div>}
-              </div>
-              <button className={styles.goBtn} onClick={() => router.push('/create-road-map')}>
-                Создать курс
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
-                </svg>
-              </button>
-            </div>
-          ) : (
-            <div className={styles.promoBlock}>
-              <div className={styles.promoRow}>
-                <div className={styles.promoInputWrap}>
-                  <svg className={styles.promoIcon} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" />
-                    <line x1="7" y1="7" x2="7.01" y2="7" />
-                  </svg>
-                  <input
-                    className={`${styles.promoInput} ${promoError ? styles.promoInputError : ''}`}
-                    type="text"
-                    placeholder="Промокод (необязательно)"
-                    value={promoCode}
-                    onChange={e => { setPromoCode(e.target.value.toUpperCase()); setPromoError('') }}
-                    onKeyDown={e => e.key === 'Enter' && handleActivate()}
-                    maxLength={32}
-                  />
-                </div>
-                <button className={styles.activateBtn} onClick={handleActivate} disabled={loading}>
-                  {loading ? <span className={styles.spinner} /> : (
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                      <path d="M4 20L2 8l5 4 5-6 5 6 5-4-2 12" />
-                    </svg>
-                  )}
-                  {loading ? 'Активируем...' : 'Получить VIP'}
-                </button>
-              </div>
-              {promoError && <p className={styles.promoError}>{promoError}</p>}
-              <p className={styles.promoHint}>
-                Введите промокод для бесплатной активации, или нажмите «Получить VIP» для тестового доступа.
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
+        <motion.h1
+          className={styles.heroTitle}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          Раскройте полный<br />потенциал платформы
+        </motion.h1>
 
-      {/* ── Benefits ── */}
-      <section className={styles.benefits}>
-        <div className={styles.benefitsHeader}>
-          <h2 className={styles.benefitsTitle}>Что входит в VIP</h2>
-          <p className={styles.benefitsSub}>Инструменты для профессиональных преподавателей</p>
-        </div>
-        <div className={styles.grid}>
-          {BENEFITS.map(b => (
-            <div key={b.title} className={styles.card}>
-              <div className={styles.cardIcon} style={{ background: b.bg, color: b.stroke }}>
-                {b.icon}
-              </div>
-              <div className={styles.cardText}>
-                <h3 className={styles.cardTitle}>{b.title}</h3>
-                <p className={styles.cardDesc}>{b.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+        <motion.p
+          className={styles.heroSub}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          Больше инструментов, больше контента, больше возможностей для монетизации.
+        </motion.p>
       </section>
 
-      {/* ── Bottom CTA ── */}
-      {!activated && (
-        <div className={styles.bottomCta}>
-          <p className={styles.bottomCtaText}>Готовы начать?</p>
-          <button className={styles.activateBtn} onClick={handleActivate} disabled={loading} style={{ margin: '0 auto' }}>
-            {loading ? <span className={styles.spinner} /> : (
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <path d="M4 20L2 8l5 4 5-6 5 6 5-4-2 12" />
-              </svg>
-            )}
-            {loading ? 'Активируем...' : 'Получить VIP бесплатно'}
-          </button>
-        </div>
-      )}
+      <div className={styles.content}>
 
+        {/* ── Features ── */}
+        <section>
+          <p className={styles.sectionLabel}>Что входит в VIP</p>
+          <div className={styles.grid}>
+            {FEATURES.map((f, i) => (
+              <motion.div
+                key={f.title}
+                className={styles.featureCard}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: i * 0.05 }}
+              >
+                <div className={styles.featureIcon} style={{ background: f.bg, color: f.color }}>
+                  {f.icon}
+                </div>
+                <div>
+                  <h3 className={styles.featureTitle}>{f.title}</h3>
+                  <p className={styles.featureDesc}>{f.desc}</p>
+                  {f.tag && (
+                    <span
+                      className={styles.featureTag}
+                      style={{ background: f.bg, color: f.color }}
+                    >
+                      {f.tag}
+                    </span>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── How to get VIP ── */}
+        <section>
+          <p className={styles.sectionLabel}>Как получить VIP</p>
+          <div className={styles.getSection}>
+
+            {/* Promo code card */}
+            <motion.div
+              className={styles.getCard}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
+            >
+              <div className={styles.getCardHeader}>
+                <div className={styles.getCardNum}>1</div>
+                <div>
+                  <p className={styles.getCardTitle}>Активировать промокод</p>
+                  <p className={styles.getCardSub}>Введите промокод — VIP начнёт работать сразу</p>
+                </div>
+              </div>
+              <div className={styles.getCardBody}>
+                {activated ? (
+                  <div className={styles.successBlock}>
+                    <div className={styles.successIconWrap}>
+                      <CheckCircle size={20} />
+                    </div>
+                    <div>
+                      <div className={styles.successTitle}>VIP активирован!</div>
+                      {vipUntil && <div className={styles.successSub}>Действует до {vipUntil}</div>}
+                    </div>
+                    <Link href="/create-road-map" className={styles.goBtn}>
+                      Создать курс
+                      <ArrowRight size={13} />
+                    </Link>
+                  </div>
+                ) : (
+                  <>
+                    <div className={styles.promoRow}>
+                      <div className={styles.promoInputWrap}>
+                        <span className={styles.promoIconWrap}>
+                          <Tag size={14} />
+                        </span>
+                        <input
+                          className={`${styles.promoInput} ${promoError ? styles.promoInputError : ''}`}
+                          type="text"
+                          placeholder="Введите промокод"
+                          value={promoCode}
+                          onChange={e => { setPromoCode(e.target.value.toUpperCase()); setPromoError('') }}
+                          onKeyDown={e => e.key === 'Enter' && handleActivate()}
+                          maxLength={32}
+                        />
+                      </div>
+                      <button className={styles.activateBtn} onClick={handleActivate} disabled={loading}>
+                        {loading ? <span className={styles.spinner} /> : <Star size={14} />}
+                        {loading ? 'Активируем…' : 'Активировать'}
+                      </button>
+                    </div>
+                    {promoError && <p className={styles.promoError}>{promoError}</p>}
+                    <p className={styles.promoHint}>Промокоды чувствительны к регистру — вводите заглавными буквами.</p>
+                  </>
+                )}
+              </div>
+            </motion.div>
+
+            {/* Free hint: first feedback */}
+            <motion.div
+              className={styles.freeHintCard}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+            >
+              <div className={styles.freeHintIcon}>
+                <MessageSquare size={17} />
+              </div>
+              <div className={styles.freeHintText}>
+                <p>
+                  <strong>Оставьте первый отзыв</strong> о платформе — и получите промокод на&nbsp;
+                  <strong>7 дней VIP автоматически</strong> в уведомлениях.
+                </p>
+                <Link href="/feedback" className={styles.freeHintLink}>
+                  Оставить отзыв
+                  <ArrowRight size={12} />
+                </Link>
+              </div>
+            </motion.div>
+
+          </div>
+        </section>
+
+      </div>
     </main>
   )
 }

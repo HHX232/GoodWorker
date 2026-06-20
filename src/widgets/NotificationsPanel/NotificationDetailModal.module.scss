@@ -139,6 +139,7 @@
   margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -325,4 +326,37 @@
   height: 6px;
   border-radius: 50%;
   flex-shrink: 0;
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .header_title { color: #e8eaf0; }
+  .total_badge { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.35); }
+  .unread_badge { background: rgba(99,102,241,0.15); color: #818cf8; }
+
+  .detail_row {
+    &:hover { background: rgba(255,255,255,0.04); }
+    &.unread {
+      background: rgba(99,102,241,0.06);
+      &:hover { background: rgba(99,102,241,0.1); }
+      .title { color: #e8eaf0; }
+    }
+  }
+  .title { color: rgba(255,255,255,0.5); }
+  .body { color: rgba(255,255,255,0.4); }
+  .time { color: rgba(255,255,255,0.2); }
+
+  .actor_chip { background: rgba(255,255,255,0.06); &:hover { background: rgba(255,255,255,0.1); } }
+  .actor_name { color: #e8eaf0; }
+  .actor_role { color: rgba(255,255,255,0.2); }
+
+  .promo_card {
+    background: linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(124,58,237,0.1) 100%);
+    border-color: rgba(99,102,241,0.25);
+  }
+  .promo_label { color: #a5b4fc; }
+  .promo_days { background: rgba(99,102,241,0.15); color: #818cf8; }
+  .promo_code_row { background: rgba(255,255,255,0.06); border-color: rgba(99,102,241,0.2); }
+  .promo_code_text { color: #e8eaf0; }
+  .promo_copy_btn { color: #818cf8; &:hover { background: rgba(99,102,241,0.12); } }
 }

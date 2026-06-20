@@ -870,3 +870,107 @@
   height: 11px;
   border-radius: 2px;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  // ── Page header ───────────────────────────────────────────
+  .title { color: #e8eaf0; }
+  .mark_all_btn { color: #818cf8; &:disabled { color: rgba(255,255,255,0.15); } }
+
+  // ── Tabs ─────────────────────────────────────────────────
+  .tab {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.4);
+    &:hover { border-color: rgba(255,255,255,0.22); color: #e8eaf0; }
+  }
+  .tab_active {
+    background: #818cf8;
+    border-color: #818cf8;
+    color: #fff;
+    &:hover { border-color: #818cf8; color: #fff; }
+    .tab_badge { background: rgba(255,255,255,0.2); color: #fff; }
+  }
+  .tab_badge { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); }
+
+  // ── Type chips ────────────────────────────────────────────
+  .type_chip {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.35);
+    &:hover { border-color: rgba(255,255,255,0.22); color: #e8eaf0; }
+  }
+
+  // ── List container ────────────────────────────────────────
+  .list {
+    background: #1a1c24;
+    border-color: rgba(255,255,255,0.07);
+  }
+
+  // ── Rows ─────────────────────────────────────────────────
+  .row { border-bottom-color: rgba(255,255,255,0.06); }
+  .row:hover .row_top { background: rgba(255,255,255,0.03); }
+  .row_unread {
+    background: rgba(99,102,241,0.05);
+    &:hover .row_top { background: rgba(99,102,241,0.08); }
+  }
+  .row_expanded .row_top { background: rgba(255,255,255,0.03); }
+
+  // ── Row content ───────────────────────────────────────────
+  .title { color: #e8eaf0; }
+  .body { color: rgba(255,255,255,0.45); }
+  .time { color: rgba(255,255,255,0.2); }
+
+  // ── Actor chip ────────────────────────────────────────────
+  .actor_chip { background: rgba(255,255,255,0.06); &:hover { background: rgba(255,255,255,0.1); } }
+  .actor_name { color: #e8eaf0; }
+  .actor_role { color: rgba(255,255,255,0.2); }
+
+  // ── Reply UI ─────────────────────────────────────────────
+  .replied_badge { background: rgba(34,197,94,0.12); color: #4ade80; }
+  .reply_textarea {
+    border-color: rgba(255,255,255,0.1);
+    background: #141620;
+    color: #e8eaf0;
+    &:focus { border-color: #818cf8; background: #1a1c24; }
+  }
+  .reply_cancel {
+    border-color: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.4);
+    &:hover { border-color: rgba(255,255,255,0.22); }
+  }
+
+  // ── Empty state ───────────────────────────────────────────
+  .empty { color: rgba(255,255,255,0.15); p { color: rgba(255,255,255,0.15); } }
+
+  // ── Skeleton ─────────────────────────────────────────────
+  .skeleton { border-bottom-color: rgba(255,255,255,0.06); }
+  .skeleton_icon, .skeleton_line_a, .skeleton_line_b, .skeleton_line_c {
+    background: linear-gradient(90deg, #1e2028 25%, #242730 50%, #1e2028 75%);
+    background-size: 200% 100%;
+  }
+  .spinner { border-color: rgba(255,255,255,0.08); border-top-color: #818cf8; }
+
+  // ── Settings sidebar ─────────────────────────────────────
+  .settings_wrap { background: #1a1c24; border-color: rgba(255,255,255,0.07); }
+  .settings_title { color: #e8eaf0; }
+  .settings_row { border-bottom-color: rgba(255,255,255,0.06); }
+  .settings_label { color: rgba(255,255,255,0.6); }
+  .settings_toggle { background: rgba(255,255,255,0.12); }
+  .settings_toggle_on { background: #6366f1; }
+  .settings_always_on { background: rgba(99,102,241,0.12); color: #818cf8; }
+
+  // ── Heatmap ──────────────────────────────────────────────
+  .heatmap_wrap { background: #1a1c24; border-color: rgba(255,255,255,0.07); }
+  .heatmap_title { color: #e8eaf0; }
+  .heatmap_nav_btn {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.35);
+    &:hover:not(:disabled) { border-color: rgba(255,255,255,0.22); color: #e8eaf0; }
+  }
+  .heatmap_dow_label { color: rgba(255,255,255,0.2); }
+  .heatmap_month_name { color: rgba(255,255,255,0.2); }
+  .legend_label { color: rgba(255,255,255,0.2); }
+}

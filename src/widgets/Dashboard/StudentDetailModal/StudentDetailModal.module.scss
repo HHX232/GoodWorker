@@ -467,3 +467,47 @@
   &:hover:not(:disabled) { background: #333; }
   &:disabled { opacity: 0.4; cursor: not-allowed; }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .modal { background: #1e2030; border-color: rgba(255,255,255,0.08); box-shadow: 0 8px 40px rgba(0,0,0,0.4); }
+  .header { border-color: rgba(255,255,255,0.07); }
+  .studentName { color: #e8eaf0; }
+  .studentSubject { color: #a5b4fc; }
+  .studentEmail { color: rgba(255,255,255,0.25); }
+  .offerBtn { border-color: rgba(129,140,248,0.4); color: #a5b4fc; &:hover { background: #534AB7; border-color: #534AB7; color: #fff; } }
+  .closeBtn { color: rgba(255,255,255,0.2); &:hover { color: rgba(255,255,255,0.6); } }
+
+  .tabs { border-color: rgba(255,255,255,0.07); }
+  .tab { color: rgba(255,255,255,0.3); &:hover { color: rgba(255,255,255,0.6); } }
+  .tabActive { color: #e8eaf0; border-bottom-color: #818cf8; }
+  .tabBadge { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.35); }
+
+  .loading { color: rgba(255,255,255,0.2); }
+  .empty { color: rgba(255,255,255,0.2); svg { color: rgba(255,255,255,0.1); } }
+
+  .meetingCard { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+  .meetingIcon { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.4); }
+  .meetingTitle { color: #e8eaf0; }
+  .meetingTime { color: rgba(255,255,255,0.25); }
+  .cancelBtn { color: rgba(255,255,255,0.15); &:hover { color: #f87171; } }
+  .scheduleLink { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); &:hover { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.6); } }
+
+  .errorCard { background: rgba(220,38,38,0.08); border-color: rgba(239,68,68,0.2); }
+  .errorCardFixed { background: rgba(22,163,74,0.08); border-color: rgba(34,197,94,0.2); }
+  .errorDate { color: rgba(255,255,255,0.2); }
+  .errorFragment { color: rgba(255,255,255,0.7); }
+  .errorDesc { color: rgba(255,255,255,0.4); }
+  .catTag { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.35); }
+  .deleteErrBtn { color: rgba(255,255,255,0.15); &:hover { color: #f87171; } }
+
+  .formLabel { color: rgba(255,255,255,0.3); }
+  .formInput { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; color-scheme: dark; &::placeholder { color: rgba(255,255,255,0.2); } &:focus { border-color: rgba(255,255,255,0.3); } }
+  .durationBtn { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); &:hover { border-color: rgba(255,255,255,0.25); color: rgba(255,255,255,0.7); } }
+  .durationBtnActive { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); color: #e8eaf0; }
+
+  .conflictBanner { background: rgba(251,191,36,0.08); border-color: rgba(251,191,36,0.2); color: #fbbf24; }
+  .errorBanner { background: rgba(220,38,38,0.1); border-color: rgba(239,68,68,0.2); color: #f87171; }
+  .successBanner { background: rgba(22,163,74,0.1); border-color: rgba(34,197,94,0.2); color: #4ade80; }
+  .submitBtn { background: rgba(255,255,255,0.1); color: #e8eaf0; &:hover:not(:disabled) { background: rgba(255,255,255,0.18); } }
+}

@@ -170,8 +170,8 @@ const sendUserSchema = z
       return NextResponse.json({ error: 'Неверный userType' }, { status: 400 })
     }
 
-    // Refine transliteration via AI in background (non-blocking)
-    if (user && hasCyrillic(name) && hasAIProvider()) {
+    // Build full multi-locale transliteration via AI in background (non-blocking)
+    if (user && hasAIProvider()) {
       const userType = body.userType === 'Teacher' ? 'teacher' : 'student'
       refineNameTransliterationWithAI(name, user.id, userType).catch(() => {})
     }

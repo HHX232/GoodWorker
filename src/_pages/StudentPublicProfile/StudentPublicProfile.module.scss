@@ -256,3 +256,26 @@
   font-size: 12px;
   color: #ef4444;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .card { background: #1a1c24; border-color: rgba(255,255,255,0.08); }
+  .avatarRing { border-color: rgba(255,255,255,0.2); background: #1e2030; }
+  .avatarInitials { color: #818cf8; }
+  .onlineDot { border-color: #1a1c24; }
+  .name { color: #e8eaf0; }
+  .meta { color: rgba(255,255,255,0.3); }
+  .myStudentBadge { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+  .notMyStudentBadge { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.3); }
+  .statsGrid { }
+  .statCard { background: #1a1c24; border-color: rgba(255,255,255,0.08); }
+  .statValue { color: #e8eaf0; }
+  .statLabel { color: rgba(255,255,255,0.3); }
+  .reportBtn { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); &:hover { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.3); color: #f87171; svg { stroke: #f87171; } } }
+  .modal { background: #1e2030; }
+  .modalTitle { color: #e8eaf0; }
+  .textarea { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &:focus { border-color: #818cf8; } &::placeholder { color: rgba(255,255,255,0.2); } }
+  .cancelBtn { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
+  .submitBtn { background: rgba(239,68,68,0.7); &:disabled { opacity: 0.4; } }
+  .errorText { color: #f87171; }
+}

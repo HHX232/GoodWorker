@@ -208,3 +208,26 @@
    background: #e4e4e7;
    flex-shrink: 0;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .blur { background: rgba(20,22,32,0.45); }
+  .fakeLine,
+  .fakePill,
+  .fakeIconBtn,
+  .fakeBar,
+  .fakePlayBtn,
+  .fakeImage,
+  .fakePostThumb,
+  .fakeAvatar { background: rgba(255,255,255,0.08); }
+  .fakePlayBtn { border-color: rgba(255,255,255,0.12); }
+  .fakeSegmented { background: rgba(255,255,255,0.05); }
+  .fakeSegBtn {
+    background: rgba(255,255,255,0.06);
+    &.active { background: rgba(255,255,255,0.12); box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+  }
+  .fakeFileRow { border-color: rgba(255,255,255,0.07); background: rgba(255,255,255,0.03); }
+  .fakePostCard { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.07); }
+  .fakeTestCard { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.07); }
+  .fakeSelect { border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+}

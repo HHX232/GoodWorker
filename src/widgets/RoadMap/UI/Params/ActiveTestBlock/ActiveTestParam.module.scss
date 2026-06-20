@@ -3,7 +3,7 @@
    flex-direction: column;
    gap: 12px;
    padding: 12px;
-   width: 420px;
+   width: 100%;
 }
 
 .add_row {
@@ -161,4 +161,17 @@
       border-color: #fca5a5;
       color: #ef4444;
    }
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .type_select { background: #141620; border-color: rgba(255,255,255,0.1); color: #e8eaf0; &:focus { border-color: rgba(255,255,255,0.25); background: #1a1c24; } }
+  .add_btn { background: rgba(255,255,255,0.12); }
+  .empty { color: rgba(255,255,255,0.2); }
+  .nav_btn { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); &:hover:not(:disabled) { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); } }
+  .pill { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.35); &:hover { background: rgba(255,255,255,0.08); color: #e8eaf0; } }
+  .pill_active { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.2); color: #e8eaf0; &:hover { background: rgba(255,255,255,0.2); } }
+  .block_wrap { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.08); }
+  .block_type { color: rgba(255,255,255,0.25); }
+  .remove_btn { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); &:hover { background: rgba(244,63,94,0.15); border-color: rgba(244,63,94,0.4); color: #f87171; } }
 }

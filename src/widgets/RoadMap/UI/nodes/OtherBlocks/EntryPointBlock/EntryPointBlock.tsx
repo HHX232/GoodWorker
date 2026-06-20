@@ -97,7 +97,7 @@ export default function EntryPointBlock({nodeId}: {nodeId: string}) {
         </div>
       )}
 
-      <div className={styles.fields}>
+      <div className={styles.fields} style={onlyView ? {maxWidth: '350px'} : undefined}>
         {onlyView && data.roadTitle && <p>{data.roadTitle}</p>}
         {onlyView && data.roadDescription && <p>{data.roadDescription}</p>}
         <div className={styles.fieldGroup}>

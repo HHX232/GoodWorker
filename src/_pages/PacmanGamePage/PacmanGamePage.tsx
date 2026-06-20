@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { ChevronLeft, RotateCcw } from "lucide-react";
 import styles from "./PacmanGamePage.module.scss";
@@ -110,6 +111,7 @@ function spawnGhosts():Ghost[] {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export function PacmanGamePage() {
+  const t = useTranslations("Pacman");
   const cvRef      = useRef<HTMLCanvasElement>(null);
   const mapRef     = useRef(cloneMap());
   const pacRef     = useRef<Mover|null>(null);
@@ -486,14 +488,14 @@ export function PacmanGamePage() {
   return (
     <div className={styles.page}>
       <div className={styles.topBar}>
-        <Link href="/game" className={styles.back}><ChevronLeft size={18}/>Игры</Link>
+        <Link href="/game" className={styles.back}><ChevronLeft size={18}/>{t("back")}</Link>
         <h1 className={styles.title}>PAC-MAN</h1>
         <button className={styles.restartBtn} onClick={handleRestart}><RotateCcw size={16}/></button>
       </div>
 
       <div className={styles.hud}>
         <div className={styles.hudItem}>
-          <span className={styles.hudLabel}>Счёт</span>
+          <span className={styles.hudLabel}>{t("score")}</span>
           <span className={styles.hudValue}>{score}</span>
         </div>
         <div className={styles.lives}>
@@ -508,20 +510,20 @@ export function PacmanGamePage() {
             <div className={styles.overlayBox}>
               <div className={styles.overlayTitle}>PAC-MAN</div>
               <p className={styles.overlayHint}>
-                WASD / стрелки — управление<br/>
-                Большие точки — призраки синеют (съедаемы)<br/>
-                Вишня — бонус +100
+                {t("controls")}<br/>
+                {t("power_pellet")}<br/>
+                {t("cherry_bonus")}
               </p>
-              <button className={styles.overlayBtn} onClick={()=>setStarted(true)}>Играть</button>
+              <button className={styles.overlayBtn} onClick={()=>setStarted(true)}>{t("play")}</button>
             </div>
           </div>
         )}
         {(gameOver||won)&&(
           <div className={styles.overlay}>
             <div className={styles.overlayBox}>
-              <div className={styles.overlayTitle}>{won?"Победа! 🎉":"Игра окончена"}</div>
-              <div className={styles.overlayScore}>Счёт: {score}</div>
-              <button className={styles.overlayBtn} onClick={handleRestart}>Ещё раз</button>
+              <div className={styles.overlayTitle}>{won ? t("you_win") : t("game_over")}</div>
+              <div className={styles.overlayScore}>{t("score_label")}{score}</div>
+              <button className={styles.overlayBtn} onClick={handleRestart}>{t("play_again")}</button>
             </div>
           </div>
         )}
@@ -538,7 +540,7 @@ export function PacmanGamePage() {
         <button className={styles.dpadBtn} onClick={()=>setDir({x:0,y:1})}>▼</button>
         <div/>
       </div>
-      <p className={styles.hint}>WASD / стрелки — движение</p>
+      <p className={styles.hint}>{t("hint")}</p>
     </div>
   );
 }

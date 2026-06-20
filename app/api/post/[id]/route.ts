@@ -3,7 +3,8 @@ import {NextRequest, NextResponse} from 'next/server'
 import {auth} from '../../../../auth'
 import {canViewPost} from '@/features/helpers/Post/canViewPost'
 import {PostVisibility} from '@prisma/client'
-import {localizePost} from '@/lib/postAI'
+import {localizePost, enrichPostWithAI} from '@/lib/postAI'
+import {hasAIProvider} from '@/lib/openrouter'
 
 function extractMediaUrls(content: {blocks?: {type: string; payload: {url?: string | null}}[]} | null): string[] {
   if (!content?.blocks) return []
@@ -67,6 +68,12 @@ export async function PATCH(req: NextRequest, {params}: Params) {
         include: {allowedStudents: true}
       })
     })
+
+    if (content && hasAIProvider()) {
+      enrichPostWithAI(updated.id)
+        .then(() => console.log(`[postAI] re-translated post ${updated.id} after edit`))
+        .catch(e => console.error(`[postAI] re-translate failed for post ${updated.id}:`, e?.message ?? e))
+    }
 
     return NextResponse.json(updated)
   } catch (error) {

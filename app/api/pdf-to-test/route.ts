@@ -1,14 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../auth'
 import { callAI, parseJSON } from '@/lib/openrouter'
+import { prisma } from '@/shared/prisma/prisma'
 
 const PDF_SERVICE = process.env.PDF_SERVICE_URL ?? 'http://localhost:3001'
 
 export const maxDuration = 60
 
+// MIME types allowed only for VIP users
+const VIP_MIMES = new Set([
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // DOCX
+  'application/msword',                                                       // DOC (legacy)
+  'text/plain',
+  'text/rtf',
+  'application/rtf',
+  'application/x-rtf',
+  'application/vnd.oasis.opendocument.text',                                  // ODT
+])
+
+const PDF_MIMES = new Set(['application/pdf'])
+
+const EXT_TO_MIME: Record<string, string> = {
+  '.pdf':  'application/pdf',
+  '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  '.doc':  'application/msword',
+  '.txt':  'text/plain',
+  '.rtf':  'application/rtf',
+  '.odt':  'application/vnd.oasis.opendocument.text',
+}
+
+async function resolveVip(email: string): Promise<boolean> {
+  const now = new Date()
+  const teacher = await prisma.teacher.findUnique({ where: { email }, select: { isVip: true, vipExpiresAt: true } })
+  if (teacher) return teacher.isVip && (!teacher.vipExpiresAt || teacher.vipExpiresAt > now)
+  const student = await prisma.student.findUnique({ where: { email }, select: { isVip: true, vipExpiresAt: true } })
+  if (student) return student.isVip && (!student.vipExpiresAt || student.vipExpiresAt > now)
+  return false
+}
+
 export async function POST(req: NextRequest) {
   const session = await auth()
-  const isGuest = !session?.user
+  const isGuest = !session?.user?.email
+  const userEmail = session?.user?.email ?? null
 
   let formData: FormData
   try {
@@ -19,52 +52,77 @@ export async function POST(req: NextRequest) {
 
   const file = formData.get('file')
   if (!file || !(file instanceof Blob)) {
-    return NextResponse.json({ error: 'PDF файл обязателен' }, { status: 400 })
+    return NextResponse.json({ error: 'Файл обязателен' }, { status: 400 })
   }
 
-  const fileName = (file as File).name ?? 'document.pdf'
-  if (!fileName.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf') {
-    return NextResponse.json({ error: 'Поддерживаются только PDF файлы' }, { status: 400 })
+  const fileName = (file as File).name ?? 'document'
+  const ext = ('.' + fileName.split('.').pop()!.toLowerCase()) as string
+  // Prefer explicit MIME, fall back to extension
+  const mimeType = (file.type && file.type !== 'application/octet-stream')
+    ? file.type
+    : (EXT_TO_MIME[ext] ?? 'application/octet-stream')
+
+  const isPdf = PDF_MIMES.has(mimeType)
+  const isVipFormat = VIP_MIMES.has(mimeType)
+
+  if (!isPdf && !isVipFormat) {
+    return NextResponse.json({ error: 'Поддерживаются PDF, DOCX, TXT, RTF, ODT' }, { status: 400 })
   }
 
-  // ── Step 1: extract text via PDF microservice ─────────────
-  const pdfForm = new FormData()
-  pdfForm.append('file', file, fileName)
+  // ── VIP check for non-PDF formats ───────────────────────────
+  if (isVipFormat) {
+    if (isGuest) {
+      return NextResponse.json({ error: 'DOCX, TXT, RTF и ODT доступны только зарегистрированным VIP пользователям', vipRequired: true }, { status: 403 })
+    }
+    const isVip = await resolveVip(userEmail!)
+    if (!isVip) {
+      return NextResponse.json({ error: 'Загрузка DOCX, TXT и RTF доступна только VIP пользователям', vipRequired: true }, { status: 403 })
+    }
+  }
 
-  let pdfText = ''
+  // ── Step 1: extract text via microservice ─────────────────
+  const docForm = new FormData()
+  // Use a proper File object so multer sees the correct MIME
+  const fileBlob = new File([file], fileName, { type: mimeType })
+  docForm.append('file', fileBlob, fileName)
+
+  // PDF → existing endpoint; other formats → new universal endpoint
+  const extractEndpoint = isPdf
+    ? `${PDF_SERVICE}/api/pdf/extract-from-upload`
+    : `${PDF_SERVICE}/api/pdf/extract-document-from-upload`
+
+  let docText = ''
   let pageCount = 1
   let ocr = false
+  let docFormat = isPdf ? 'pdf' : ext.slice(1)
 
   try {
-    const pdfRes = await fetch(`${PDF_SERVICE}/api/pdf/extract-from-upload`, {
-      method: 'POST',
-      body: pdfForm,
-    })
-    if (!pdfRes.ok) {
-      const errText = await pdfRes.text()
+    const svcRes = await fetch(extractEndpoint, { method: 'POST', body: docForm })
+    if (!svcRes.ok) {
+      const errText = await svcRes.text()
       console.error('[pdf-to-test] microservice error:', errText)
-      return NextResponse.json({ error: 'Ошибка извлечения текста из PDF' }, { status: 502 })
+      return NextResponse.json({ error: 'Ошибка извлечения текста из документа' }, { status: 502 })
     }
-    const pdfData = await pdfRes.json()
-    pdfText = pdfData.data?.text ?? ''
-    pageCount = pdfData.data?.pageCount ?? 1
-    ocr = pdfData.data?.ocr ?? false
+    const svcData = await svcRes.json()
+    docText   = svcData.data?.text      ?? ''
+    pageCount = svcData.data?.pageCount ?? 1
+    ocr       = svcData.data?.ocr       ?? false
+    docFormat = svcData.data?.format    ?? docFormat
   } catch (e) {
     console.error('[pdf-to-test] microservice unreachable:', e)
-    return NextResponse.json({ error: 'Сервис обработки PDF недоступен' }, { status: 503 })
+    return NextResponse.json({ error: 'Сервис обработки документов недоступен' }, { status: 503 })
   }
 
-  if (!pdfText.trim()) {
-    return NextResponse.json({ error: 'PDF не содержит текста — попробуйте другой файл' }, { status: 422 })
+  if (!docText.trim()) {
+    return NextResponse.json({ error: 'Документ не содержит текста — попробуйте другой файл' }, { status: 422 })
   }
 
   // ── Step 2: parse questions with AI ──────────────────────
-  // Guest: max 5 questions from ~2 pages; logged-in: up to 20 from full doc
-  const maxQ = isGuest ? 5 : 20
+  const maxQ    = isGuest ? 5 : 20
   const maxChars = isGuest ? 4000 : 14000
-  const truncated = pdfText.slice(0, maxChars)
+  const truncated = docText.slice(0, maxChars)
 
-  const aiPrompt = `Extract up to ${maxQ} quiz questions from the text below (extracted from a PDF).
+  const aiPrompt = `Extract up to ${maxQ} quiz questions from the text below (extracted from a ${docFormat.toUpperCase()} document).
 Automatically detect the language of the text and respond in the same language.
 Return ONLY valid JSON, exactly this shape:
 {
@@ -80,12 +138,12 @@ Return ONLY valid JSON, exactly this shape:
 }
 Rules:
 - "correct" is 0-indexed for single/multi types
-- Detect the type from context; prefer single/multi when multiple answers are given
-- If correct answers are not stated, use your best judgment
-- Output at most ${maxQ} questions, pick the most complete/clear ones
-- Keep question/option text clean (no leading "A)", "1." etc.)
+- Prefer single/multi when multiple answer choices are given
+- If correct answers are not stated, use best judgment
+- Output at most ${maxQ} questions
+- Keep question/option text clean (strip leading "A)", "1." numbering etc.)
 
-PDF text:
+Document text:
 ${truncated}`
 
   let parsed: { title?: string; questions?: unknown[] }
@@ -102,12 +160,13 @@ ${truncated}`
   }
 
   return NextResponse.json({
-    title: parsed.title ?? 'Тест из PDF',
+    title: parsed.title ?? 'Тест из документа',
     questions: (parsed.questions ?? []).slice(0, maxQ),
     pageCount,
     ocr,
+    format: docFormat,
     isGuest,
     guestLimit: isGuest ? maxQ : null,
-    totalChars: pdfText.length,
+    totalChars: docText.length,
   })
 }

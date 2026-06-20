@@ -1,7 +1,14 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 83px);
+}
+
 .dashboard {
   display: grid;
   grid-template-columns: 272px 1fr 296px;
-  height: calc(100vh - 83px);
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
   background: #EEEFF8;
   position: relative;
@@ -46,12 +53,33 @@
     display: flex !important;
     flex-direction: column;
     height: auto;
-    min-height: calc(100vh - 83px);
+    min-height: 0;
     overflow: visible;
     .resizeHandle { display: none; }
 
     .colLeft  { order: 2; height: auto; border-right: none; border-top: 1px solid rgba(0,0,0,0.07); }
     .colCenter { order: 3; height: auto; overflow-y: visible; }
     .colRight { order: 1; height: auto; border-left: none; border-bottom: 1px solid rgba(0,0,0,0.07); }
+  }
+}
+
+@media (max-width: 768px) {
+  .wrapper {
+    height: auto;
+    min-height: calc(100vh - 83px);
+  }
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .dashboard {
+    background: #111318;
+
+    .resizeHandle {
+      &:hover, &:active { background: rgba(129,140,248,0.15); }
+    }
+
+    .colLeft  { border-color: rgba(255,255,255,0.07); }
+    .colRight { border-color: rgba(255,255,255,0.07); }
   }
 }

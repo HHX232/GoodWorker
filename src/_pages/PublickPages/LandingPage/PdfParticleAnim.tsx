@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
+import { useThemeCtx } from '@/app/providers/ThemeContext'
 import * as THREE from 'three'
 
 // ── Particle count & weights ─────────────────────────────────
@@ -195,7 +196,8 @@ const FRAG = `
   }
 `
 
-const STAGE_COLORS = ['#7c3aed', '#a855f7', '#0e0e12', '#ED0606']
+const STAGE_COLORS_LIGHT = ['#7c3aed', '#a855f7', '#0e0e12', '#ED0606']
+const STAGE_COLORS_DARK  = ['#7c3aed', '#a855f7', '#c8cae0', '#ED0606']
 
 const STAGE_ICONS = [
   // Upload — облако + стрелка вверх
@@ -221,6 +223,8 @@ const STAGE_ICONS = [
 ]
 export default function PdfParticleAnim() {
   const t = useTranslations('LandingPage')
+  const { isDark } = useThemeCtx()
+  const isDarkRef = useRef(isDark)
   const wrapRef       = useRef<HTMLDivElement>(null)
   const stageBarRef   = useRef<HTMLDivElement>(null)
   const pinnedRef       = useRef<number>(-1)   // -1 = auto-cycle
@@ -228,6 +232,8 @@ export default function PdfParticleAnim() {
   const burstClickTime  = useRef<number>(-9999)
   const [activeStage, setActiveStage] = useState(0)
   const PIN_MS = 5000
+
+  useEffect(() => { isDarkRef.current = isDark }, [isDark])
 
   useEffect(() => {
     const wrap = wrapRef.current
@@ -273,7 +279,7 @@ export default function PdfParticleAnim() {
 
     const mat = new THREE.ShaderMaterial({
       uniforms: {
-        uColor: { value: new THREE.Color(0x0e0e12) },
+        uColor: { value: new THREE.Color(isDarkRef.current ? STAGE_COLORS_DARK[0] : STAGE_COLORS_LIGHT[0]) },
         uScale: { value: scaleFor(H) },
         uTime:  { value: 0 },
       },
@@ -325,7 +331,7 @@ export default function PdfParticleAnim() {
       const phase = isPinned ? pinned : Math.floor(elapsed/STEP)%4
       const tl    = elapsed%STEP
       const transitioning = !isPinned && tl>HOLD
-      const p     = transitioning ? (tl-HOLD)/TRANS : (isPinned ? 1 : 0)
+      const p     = transitioning ? (tl-HOLD)/TRANS : 0
       const nxt   = (phase+1)%4
       const fromP = stagePos[phase], toP = stagePos[nxt]
       const fromS = stageSize[phase], toS = stageSize[nxt]
@@ -393,7 +399,8 @@ export default function PdfParticleAnim() {
       const active = transitioning && p>0.5 ? nxt : phase
       if (active!==lastStage) {
         lastStage=active
-        mat.uniforms.uColor.value.set(STAGE_COLORS[active])
+        const colors = isDarkRef.current ? STAGE_COLORS_DARK : STAGE_COLORS_LIGHT
+        mat.uniforms.uColor.value.set(colors[active])
       }
       if (active !== lastSetStage) {
         lastSetStage = active
@@ -445,37 +452,42 @@ export default function PdfParticleAnim() {
         fontFamily: 'JetBrains Mono, monospace',
         pointerEvents: 'all', zIndex: 2,
       }}>
-        {STAGE_NAMES.map((name, i) => (
-          <div key={name} style={{ display: 'flex', alignItems: 'center' }}>
-            {i > 0 && (
-              <span style={{
-                color: 'rgba(14,14,18,0.18)', fontSize: 10,
-                margin: '0 3px', alignSelf: 'center',
-              }}>→</span>
-            )}
-            <div
-              data-stage={i}
-              onClick={e => { e.stopPropagation(); handleStageClick(i) }}
-              style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-                padding: '5px 9px', borderRadius: 9,
-                border: `1px solid ${i === activeStage ? `${STAGE_COLORS[i]}55` : 'transparent'}`,
-                color: i === activeStage ? STAGE_COLORS[i] : 'rgba(14,14,18,0.28)',
-                background: i === activeStage ? `${STAGE_COLORS[i]}18` : 'transparent',
-                fontWeight: i === activeStage ? 700 : 400,
-                transition: 'all 0.35s',
-                minWidth: 52, cursor: 'pointer',
-              }}
-            >
-              <span style={{ display: 'flex', lineHeight: 1 }}>
-                {STAGE_ICONS[i]}
-              </span>
-              <span style={{ fontSize: 9, letterSpacing: '0.06em', textTransform: 'uppercase', lineHeight: 1 }}>
-                {name}
-              </span>
+        {STAGE_NAMES.map((name, i) => {
+          const stageColors = isDark ? STAGE_COLORS_DARK : STAGE_COLORS_LIGHT
+          const inactiveColor = isDark ? 'rgba(255,255,255,0.4)' : 'rgba(14,14,18,0.28)'
+          const arrowColor = isDark ? 'rgba(255,255,255,0.25)' : 'rgba(14,14,18,0.18)'
+          return (
+            <div key={name} style={{ display: 'flex', alignItems: 'center' }}>
+              {i > 0 && (
+                <span style={{
+                  color: arrowColor, fontSize: 10,
+                  margin: '0 3px', alignSelf: 'center',
+                }}>→</span>
+              )}
+              <div
+                data-stage={i}
+                onClick={e => { e.stopPropagation(); handleStageClick(i) }}
+                style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                  padding: '5px 9px', borderRadius: 9,
+                  border: `1px solid ${i === activeStage ? `${stageColors[i]}55` : 'transparent'}`,
+                  color: i === activeStage ? stageColors[i] : inactiveColor,
+                  background: i === activeStage ? `${stageColors[i]}18` : 'transparent',
+                  fontWeight: i === activeStage ? 700 : 400,
+                  transition: 'all 0.35s',
+                  minWidth: 52, cursor: 'pointer',
+                }}
+              >
+                <span style={{ display: 'flex', lineHeight: 1 }}>
+                  {STAGE_ICONS[i]}
+                </span>
+                <span style={{ fontSize: 9, letterSpacing: '0.06em', textTransform: 'uppercase', lineHeight: 1 }}>
+                  {name}
+                </span>
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )

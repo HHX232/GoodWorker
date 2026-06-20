@@ -17,8 +17,9 @@
   transition: border-color 0.15s, color 0.15s, background 0.15s;
 
   &:hover {
-    border-color: #bbb;
-    color: #222;
+    background: #141416;
+    border-color: #141416;
+    color: #fff;
   }
 }
 

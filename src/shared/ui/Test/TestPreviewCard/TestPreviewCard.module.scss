@@ -172,3 +172,16 @@
     color: #fff;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .card { background: #1a1c24; border: 1px solid rgba(255,255,255,0.08); }
+  .iconWrap { background: rgba(99,102,241,0.12); }
+  .category { color: #a5b4fc; }
+  .topic { color: rgba(255,255,255,0.3); }
+  .title { color: #e8eaf0; }
+  .desc { color: rgba(255,255,255,0.35); }
+  .questionCount { color: rgba(255,255,255,0.3); }
+  .openBtn { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); &:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #e8eaf0; svg path { stroke: #e8eaf0; } } }
+  .editBtn { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); &:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #e8eaf0; } }
+}

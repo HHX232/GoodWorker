@@ -2,6 +2,8 @@ import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { auth } from '../../../../../auth'
+import { refineNameTransliterationWithAI } from '@/lib/postAI'
+import { hasAIProvider } from '@/lib/openrouter'
 
 const updateStudentSchema = z.object({
   name: z.string().min(1, 'Name is required').optional(),
@@ -56,6 +58,10 @@ export async function PATCH(req: NextRequest) {
       langCode: true,
     },
   })
+
+  if (parsed.data.name && hasAIProvider()) {
+    refineNameTransliterationWithAI(parsed.data.name, student.id, 'student').catch(() => {})
+  }
 
   return NextResponse.json(updated)
 }

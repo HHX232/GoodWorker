@@ -162,3 +162,17 @@
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .block, .success_box { background: #1a1c22; }
+  .heading, .success_text { color: #e8eaf0; }
+  .stars_label { color: rgba(255,255,255,0.4); }
+  .submit_btn { background: rgba(255,255,255,0.1); color: #e8eaf0; }
+  .reset_btn {
+    border-color: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.5);
+    &:hover { border-color: #e8eaf0; color: #e8eaf0; }
+  }
+  .skeleton { background: linear-gradient(90deg, #1e2028 25%, #242730 50%, #1e2028 75%); }
+}

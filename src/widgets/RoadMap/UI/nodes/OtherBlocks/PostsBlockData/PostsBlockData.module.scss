@@ -270,3 +270,31 @@
    background: #141416;
    color: #fff;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .addBtn {
+    border-color: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.3);
+    &:hover { border-color: rgba(255,255,255,0.25); color: #e8eaf0; background: rgba(255,255,255,0.04); }
+  }
+  .addMoreBtn {
+    border-color: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.3);
+    &:hover { border-color: rgba(255,255,255,0.2); color: #e8eaf0; background: rgba(255,255,255,0.05); }
+  }
+  .searchInput {
+    border-color: rgba(255,255,255,0.1);
+    background: #141620;
+    color: #e8eaf0;
+    &:focus { border-color: rgba(255,255,255,0.25); background: #1a1c24; }
+  }
+  .searchIcon { color: rgba(255,255,255,0.25); }
+  .hint { color: rgba(255,255,255,0.25); }
+  .modalTitle { color: #e8eaf0; }
+  .modalCount { background: rgba(255,255,255,0.12); }
+  .modalCard { &:hover { border-color: rgba(255,255,255,0.12); box-shadow: 0 2px 12px rgba(0,0,0,0.3); } }
+  .modalCardSelected { border-color: rgba(255,255,255,0.4) !important; box-shadow: 0 0 0 1px rgba(255,255,255,0.4); }
+  .checkbox { border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); }
+  .checkboxChecked { border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.15); }
+}

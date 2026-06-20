@@ -107,3 +107,15 @@
    letter-spacing: 0.03em;
    pointer-events: none;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .sortable_row { &:first-child { border-top-color: rgba(255,255,255,0.06); } }
+  .drag_handle { color: rgba(255,255,255,0.1); &:hover { color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.05); } &:active { background: rgba(255,255,255,0.08); } }
+  .empty { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.1); }
+  .empty_mark { color: rgba(255,255,255,0.15); }
+  .empty_text { color: rgba(255,255,255,0.25); }
+  .drop_zone { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.1); }
+  .drop_zone_over { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.06); }
+  .drop_zone_text { color: rgba(255,255,255,0.3); }
+}

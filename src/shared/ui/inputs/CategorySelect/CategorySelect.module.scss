@@ -228,3 +228,43 @@
 .child_chip_active {
    color: #fff;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .trigger {
+    background: #1a1c24;
+    border-color: rgba(255,255,255,0.1);
+    &:hover { border-color: rgba(255,255,255,0.2); }
+  }
+  .trigger_open { border-color: rgba(255,255,255,0.25); }
+  .placeholder { color: rgba(255,255,255,0.25); }
+  .arrow { color: rgba(255,255,255,0.25); }
+  .dropdown {
+    background: #1a1c24;
+    border-color: rgba(255,255,255,0.15);
+    &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); }
+  }
+  .empty { color: rgba(255,255,255,0.3); }
+  .group { background-color: #1a1c24; }
+  .row { border-bottom-color: rgba(255,255,255,0.06); }
+  .row_label {
+    color: #e8eaf0;
+    &:hover { background: rgba(255,255,255,0.05); }
+  }
+  .row_label_active { background: rgba(255,255,255,0.05); }
+  .expand_btn {
+    border-left-color: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.25);
+    &:hover { color: #e8eaf0; background: rgba(255,255,255,0.07); }
+  }
+  .children {
+    background: rgba(255,255,255,0.03);
+    border-bottom-color: rgba(255,255,255,0.06);
+  }
+  .child_chip {
+    border-color: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.6);
+    &:hover:not(.child_chip_active) { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); }
+  }
+}

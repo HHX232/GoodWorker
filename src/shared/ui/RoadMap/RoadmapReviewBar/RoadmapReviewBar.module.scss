@@ -84,3 +84,20 @@
     opacity: 0.75;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .bar {
+    background: rgba(26,28,36,0.92);
+    border-color: rgba(255,255,255,0.1);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+  .avg_label { color: #e8eaf0; }
+  .total_label { color: rgba(255,255,255,0.35); }
+  .divider { background: rgba(255,255,255,0.1); }
+  .comments_btn {
+    color: rgba(255,255,255,0.45);
+    &:hover { background: rgba(255,255,255,0.07); color: #e8eaf0; border-color: rgba(255,255,255,0.1); svg { stroke: #e8eaf0; } }
+  }
+  .review_btn { background: rgba(255,255,255,0.12); }
+}

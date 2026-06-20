@@ -325,3 +325,28 @@
     cursor: default;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .modal { background: #1e2030; box-shadow: 0 16px 56px rgba(0,0,0,0.5); }
+  .header { border-color: rgba(255,255,255,0.07); }
+  .title { color: #e8eaf0; }
+  .closeBtn { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.35); &:hover { background: rgba(255,255,255,0.1); color: #e8eaf0; } }
+  .empty { color: rgba(255,255,255,0.2); }
+  .row { &:hover { background: rgba(255,255,255,0.04); .rowArrow { opacity: 1; } } }
+  .rowIcon { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.08); color: rgba(255,255,255,0.35); }
+  .rowName { color: #e8eaf0; }
+  .rowTopic { color: #a78bfa; background: rgba(124,58,237,0.1); border-color: rgba(124,58,237,0.25); }
+  .rowDate { color: rgba(255,255,255,0.22); }
+  .rowArrow { color: rgba(255,255,255,0.2); }
+  .backBtn { color: rgba(255,255,255,0.35); &:hover { color: #e8eaf0; } }
+  .detailMeta { border-color: rgba(255,255,255,0.07); }
+  .detailName { color: #e8eaf0; }
+  .detailTopic { color: #a78bfa; background: rgba(124,58,237,0.1); border-color: rgba(124,58,237,0.25); }
+  .detailDate { color: rgba(255,255,255,0.22); }
+  .chatFeed { background: #141620; }
+  .chatEmpty { background: #141620; color: rgba(255,255,255,0.2); }
+  .bubbleIdentity { color: rgba(255,255,255,0.22); }
+  .bubbleTheirs { background: rgba(255,255,255,0.06); color: #e8eaf0; border-color: rgba(255,255,255,0.08); box-shadow: none; }
+  .exportBtn { border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.4); &:hover:not(:disabled) { border-color: #a78bfa; color: #a78bfa; background: rgba(124,58,237,0.07); } }
+}

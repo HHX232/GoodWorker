@@ -249,3 +249,25 @@
     opacity: 0.6;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .box { background: #1e2030; border-color: rgba(255,255,255,0.07); }
+  .upload_btn {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.35);
+    svg { color: rgba(255,255,255,0.2); }
+    &:hover { border-color: rgba(244,63,94,0.5); background: rgba(244,63,94,0.08); color: #f87171; svg { color: #f87171; } }
+  }
+  .upload_hint { color: rgba(255,255,255,0.2); }
+  .extracting { color: rgba(255,255,255,0.35); }
+  .player { background: rgba(244,63,94,0.08); border-color: rgba(244,63,94,0.2); }
+  .bar { background: rgba(244,63,94,0.25); }
+  .bar_passed { background: #f43f5e; }
+  .timer { color: #f87171; }
+  .timer_total { color: rgba(244,63,94,0.4); }
+  .filename { color: rgba(244,63,94,0.7); }
+  .remove_btn { color: rgba(244,63,94,0.4); &:hover { background: rgba(244,63,94,0.15); color: #f87171; } }
+  .student_hint { color: rgba(255,255,255,0.25); }
+}

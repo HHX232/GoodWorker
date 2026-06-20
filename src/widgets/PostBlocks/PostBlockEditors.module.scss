@@ -527,3 +527,37 @@
    background: #141416;
    color: #fff;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .url_input { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &::placeholder { color: rgba(255,255,255,0.2); } &:focus { border-color: #818cf8; background: rgba(255,255,255,0.08); } }
+  .text_editor { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &:focus-within { border-color: #818cf8; background: rgba(255,255,255,0.06); } :global(.ProseMirror) { color: #e8eaf0; } }
+  .kind_btn { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); &.active { border-color: #818cf8; background: rgba(99,102,241,0.15); color: #a5b4fc; } }
+  .test_link_stub { background: rgba(99,102,241,0.08); border-color: rgba(99,102,241,0.25); &:hover { background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.4); } }
+  .stub_icon { color: #818cf8; }
+  .stub_text { color: #a5b4fc; }
+  .stub_sub { color: rgba(129,140,248,0.6); }
+  .test_link_id { background: rgba(99,102,241,0.1); color: #a5b4fc; }
+  .test_link_clear { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.35); &:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); color: #e8eaf0; } }
+  .mini_test_editor { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.08); }
+  .mini_test_badge { background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.25); color: #a5b4fc; }
+  .mini_test_title_input { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &::placeholder { color: rgba(255,255,255,0.2); } &:focus { border-color: #818cf8; } }
+  .mini_test_block_pill { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.08); color: rgba(255,255,255,0.35); }
+  .mini_test_no_blocks { color: rgba(255,255,255,0.2); }
+  .mini_test_edit_btn { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.15); color: #e8eaf0; &:hover { background: rgba(255,255,255,0.1); } }
+  .mini_test_type_btn { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); &:hover { border-color: #818cf8; background: rgba(99,102,241,0.12); color: #a5b4fc; } }
+  .mini_test_empty_hint { color: rgba(255,255,255,0.2); }
+  .mini_test_cancel_btn { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); &:hover { background: rgba(255,255,255,0.09); } }
+  .mini_test_save_btn { background: rgba(255,255,255,0.1); &:hover { background: rgba(255,255,255,0.18); } }
+  .mini_test_stub { background: rgba(244,63,94,0.08); border-color: rgba(244,63,94,0.25); &:hover { background: rgba(244,63,94,0.12); border-color: rgba(244,63,94,0.4); } }
+  .mini_test_stub_icon { color: #f87171; }
+  .mini_test_hint { color: rgba(255,255,255,0.2); }
+  .modal_title { color: #e8eaf0; }
+  .modal_search_input { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &::placeholder { color: rgba(255,255,255,0.2); } &:focus { border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.08); } }
+  .modal_search_icon { color: rgba(255,255,255,0.25); }
+  .modal_hint { color: rgba(255,255,255,0.25); }
+  .modal_test_card { &:hover { border-color: rgba(255,255,255,0.15); } }
+  .modal_test_card_selected { border-color: #818cf8 !important; box-shadow: 0 0 0 1px #818cf8 !important; }
+  .modal_checkbox { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15); }
+  .modal_checkbox_checked { border-color: #818cf8; background: #818cf8; }
+}

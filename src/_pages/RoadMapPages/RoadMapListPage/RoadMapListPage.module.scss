@@ -234,3 +234,52 @@
     align-items: flex-start;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .header_card { background: #141620; }
+  .title_box h1 { color: #e8eaf0; }
+  .decor_line { background-color: rgba(255,255,255,0.07); }
+  .search_wrap {
+    background: #1a1c24;
+    border-color: rgba(255,255,255,0.08);
+    &:focus-within { border-color: rgba(255,255,255,0.25); }
+  }
+  .search_input {
+    color: #e8eaf0;
+    &::placeholder { color: rgba(255,255,255,0.25); }
+  }
+  .clear_btn {
+    color: rgba(255,255,255,0.3);
+    &:hover { color: #e8eaf0; }
+  }
+  .price_input {
+    background: #1a1c24;
+    border-color: rgba(255,255,255,0.08);
+    color: #e8eaf0;
+    &:focus { border-color: rgba(255,255,255,0.25); }
+    &::placeholder { color: rgba(255,255,255,0.25); }
+  }
+  .price_sep { color: rgba(255,255,255,0.3); }
+  .free_btn {
+    background: #1a1c24;
+    border-color: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.4);
+    &:hover { border-color: #16a34a; color: #4ade80; }
+  }
+  .free_btn_active { background: rgba(21,128,61,0.2); border-color: #15803d; color: #4ade80; }
+  .rating_label { color: rgba(255,255,255,0.35); }
+  .star_btn {
+    background: #1a1c24;
+    border-color: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.4);
+    &:hover { border-color: #f59e0b; color: #fbbf24; }
+  }
+  .star_btn_active { background: rgba(245,158,11,0.15); border-color: #f59e0b; color: #fbbf24; }
+  .reset_btn {
+    background: #1a1c24;
+    border-color: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.3);
+    &:hover { border-color: #ef4444; color: #f87171; }
+  }
+}

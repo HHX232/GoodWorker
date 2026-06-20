@@ -175,3 +175,18 @@
   color: #1f2937;
   line-height: 1.4;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .editor_box { background: #1e2030; }
+  .item_row { background: rgba(255,255,255,0.04); &.dragging { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); } }
+  .drag_handle { color: rgba(255,255,255,0.2); &:hover { color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.06); } }
+  .item_index { color: rgba(255,255,255,0.2); }
+  .item_input { background: rgba(255,255,255,0.05); color: #e8eaf0; &::placeholder { color: rgba(255,255,255,0.2); } &:focus { border-color: rgba(255,255,255,0.2); } }
+  .remove_btn { &:hover { background: rgba(239,68,68,0.15); color: #f87171; } }
+  .add_btn { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.35); &:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.2); color: #e8eaf0; } }
+  .preview_box { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+  .preview_label { color: rgba(255,255,255,0.25); }
+  .preview_item { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); &:hover { border-color: rgba(255,255,255,0.2); } }
+  .preview_item_text { color: #e8eaf0; }
+}

@@ -92,3 +92,22 @@
    pointer-events: none;
    white-space: nowrap;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .paywallBtn {
+    border-color: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.45);
+    &:hover { border-color: rgba(255,255,255,0.25); color: #e8eaf0; }
+  }
+  .paywallBtnActive {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.15);
+    color: #e8eaf0;
+    &:hover { background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.2); }
+  }
+  .skeletonOverlay { background: rgba(20,22,32,0.7); }
+  .skeletonNode { background: linear-gradient(90deg, #1e2030 25%, #252840 50%, #1e2030 75%); }
+  .skeletonLabel { color: rgba(255,255,255,0.3); }
+}

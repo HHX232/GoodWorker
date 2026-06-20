@@ -133,3 +133,32 @@
     box-shadow: 0 1px 3px rgba(20, 20, 22, 0.1);
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .bar {
+    background: #141620;
+    border-color: rgba(255,255,255,0.07);
+    box-shadow: none;
+  }
+  .sep { background: rgba(255,255,255,0.08); }
+  .rating_label { color: rgba(255,255,255,0.4); }
+  .slider_track { background: rgba(255,255,255,0.1); }
+  .slider_range { background: #e8eaf0; }
+  .slider_thumb {
+    background: #1e2030;
+    border-color: #e8eaf0;
+    &:hover { box-shadow: 0 0 0 4px rgba(255,255,255,0.08); }
+    &:focus-visible { box-shadow: 0 0 0 4px rgba(255,255,255,0.14); }
+  }
+  .sort_group { background: rgba(255,255,255,0.05); }
+  .sort_btn {
+    color: rgba(255,255,255,0.4);
+    &:hover { color: #e8eaf0; }
+    &.sort_active {
+      background: rgba(255,255,255,0.1);
+      color: #e8eaf0;
+      box-shadow: none;
+    }
+  }
+}

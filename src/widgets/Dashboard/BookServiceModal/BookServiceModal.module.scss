@@ -307,3 +307,30 @@
     opacity: 1;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .modal { background: #1e2030; border: 1px solid rgba(255,255,255,0.08); }
+  .header { border-color: rgba(255,255,255,0.07); }
+  .heading { color: #e8eaf0; }
+  .closeBtn { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.4); &:hover { background: rgba(255,255,255,0.1); color: #e8eaf0; } }
+  .serviceInfo { background: rgba(255,255,255,0.04); }
+  .serviceTitle { color: #e8eaf0; }
+  .metaBadge { color: rgba(255,255,255,0.35); }
+  .priceBase { color: #e8eaf0; }
+  .priceFinal { color: #34d399; }
+  .priceOld { color: rgba(255,255,255,0.2); }
+  .discountBadge { background: rgba(5,150,105,0.15); color: #34d399; }
+  .label { color: rgba(255,255,255,0.3); }
+  .input { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &:focus { border-color: #818cf8; background: rgba(255,255,255,0.07); } &::placeholder { color: rgba(255,255,255,0.2); } }
+  .applyBtn { background: rgba(255,255,255,0.05); border-color: rgba(129,140,248,0.35); color: #a5b4fc; &:hover { background: rgba(129,140,248,0.1); } }
+  .promoSuccess { color: #34d399; }
+  .error { background: rgba(220,38,38,0.1); border-color: rgba(239,68,68,0.2); color: #f87171; }
+  .footer { background: transparent; }
+  .cancelBtn { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); &:hover { background: rgba(255,255,255,0.08); } }
+  .successWrap { background: transparent; }
+  .successIcon { background: rgba(5,150,105,0.15); color: #34d399; }
+  .successTitle { color: #e8eaf0; }
+  .successDesc { color: rgba(255,255,255,0.3); }
+  .currencyBadge { border-color: rgba(255,255,255,0.2); }
+}

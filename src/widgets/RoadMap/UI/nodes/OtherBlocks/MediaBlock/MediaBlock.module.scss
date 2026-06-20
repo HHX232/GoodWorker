@@ -264,3 +264,21 @@
       color: #fff;
    }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .uploadBtn {
+    border-color: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.35);
+    &:hover { border-color: rgba(255,255,255,0.2); color: #e8eaf0; background: rgba(255,255,255,0.04); }
+  }
+  .uploadHint { color: rgba(255,255,255,0.2); }
+  .sizeControls { background: rgba(255,255,255,0.06); }
+  .sizeBtn { color: rgba(255,255,255,0.3); &:hover { color: #e8eaf0; } }
+  .sizeBtnActive { background: rgba(255,255,255,0.1); color: #e8eaf0; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+  .points { color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.06); }
+  .iconBtn { color: rgba(255,255,255,0.3); &:hover:not(:disabled) { background: rgba(255,255,255,0.07); color: #e8eaf0; } }
+  .slideContent { background: #252840; }
+  .singleWrap { background: #252840; }
+  .arrowIcon { color: #e8eaf0; }
+}

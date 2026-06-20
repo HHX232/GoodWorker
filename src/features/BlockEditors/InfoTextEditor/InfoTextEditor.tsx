@@ -32,7 +32,7 @@ export const InfoTextEditor = ({payload, onChange, viewOnly = false, titleNode}:
 
   if (!editable) {
     return (
-      <div style={{background: '#fff', borderRadius: 12, padding: '12px 16px'}}>
+      <div className={styles.view_wrap}>
         {titleNode}
         <EditorContent editor={editor} className={styles.editor} />
       </div>

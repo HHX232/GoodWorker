@@ -177,3 +177,19 @@
   border-color: #141416;
   color: #141416;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .card { background: #1a1c24; border-color: rgba(255,255,255,0.08); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+  .cardTitle { color: #e8eaf0; }
+  .closeBtn { color: rgba(255,255,255,0.3); &:hover { background: rgba(255,255,255,0.07); color: #e8eaf0; } }
+  .divider { background: rgba(255,255,255,0.07); }
+  .arrow { color: rgba(255,255,255,0.2); }
+  .nodePreview { border-color: rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); }
+  .hintTitle { color: #e8eaf0; }
+  .hintDesc { color: rgba(255,255,255,0.35); }
+  .dismissBtn { background: rgba(255,255,255,0.12); color: #e8eaf0; }
+  .helpBtn { background: #1a1c24; border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+  .helpBtnActive { border-color: rgba(255,255,255,0.3); color: #e8eaf0; }
+  .helpBtn:hover { border-color: rgba(255,255,255,0.3); color: #e8eaf0; }
+}

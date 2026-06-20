@@ -13,3 +13,8 @@
       border-radius: 12px !important;
    }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .divider.selected { border-color: #818cf8; }
+}

@@ -128,7 +128,6 @@
    background: #eeedfe;
    color: #3c3489;
 
-   // Можно циклически менять цвет через nth-child если хочешь разноцветные теги
    &:nth-child(2n) {
       background: #e1f5ee;
       color: #085041;
@@ -138,4 +137,23 @@
       background: #faece7;
       color: #712b13;
    }
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .card {
+    background: #1a1c24;
+    border-color: rgba(255,255,255,0.08);
+  }
+  .avatar { border-color: rgba(255,255,255,0.1); }
+  .authorName { color: rgba(255,255,255,0.35); }
+  .title { color: #e8eaf0; }
+  .date { color: rgba(255,255,255,0.3); }
+  .description { color: rgba(255,255,255,0.4); }
+  .editBtn { border-color: rgba(255,255,255,0.12); color: rgba(255,255,255,0.4); &:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.25); color: #e8eaf0; } }
+  .tag {
+    background: rgba(60,52,137,0.25); color: #a5b4fc;
+    &:nth-child(2n) { background: rgba(8,80,65,0.2); color: #6ee7b7; }
+    &:nth-child(3n) { background: rgba(113,43,19,0.2); color: #fca5a5; }
+  }
 }

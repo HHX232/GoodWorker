@@ -3,6 +3,7 @@
 import { useOnlineStatus } from '@/features/hooks/User/useOnlineStatus'
 import { formatActivity } from '@/shared/helpers/formatActivity'
 import { NavBar } from '@/widgets/BaseUI'
+import { ProfileSubNav } from '@/shared/ui/ProfileSubNav/ProfileSubNav'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import { useState } from 'react'
@@ -112,6 +113,7 @@ export function StudentPublicProfile({ id, name, avatarUrl, createdAt, stats, is
   return (
     <>
       <NavBar />
+      <ProfileSubNav />
       <div className={styles.page}>
 
         {/* ── Hero card ── */}

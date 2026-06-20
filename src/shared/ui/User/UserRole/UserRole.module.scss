@@ -68,3 +68,12 @@
 .defaultText {
   color: #868897;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .teacherBox { background-color: rgba(76,110,245,0.18); }
+  .adminBox { background-color: rgba(255,255,255,0.08); }
+  .teacherText { color: #a5b4fc; }
+  .adminText { color: rgba(255,255,255,0.45); }
+  .defaultText { color: rgba(255,255,255,0.35); }
+}

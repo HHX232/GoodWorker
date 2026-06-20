@@ -87,3 +87,10 @@
     color: #3d4350;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .editor_box { background: #1e2030; }
+  .remove_btn { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.3); &:hover { background: rgba(239,68,68,0.15); color: #f87171; } }
+  .add_btn { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.35); &:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.2); color: #e8eaf0; } }
+}

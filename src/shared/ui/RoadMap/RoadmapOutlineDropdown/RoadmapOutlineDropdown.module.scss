@@ -211,3 +211,36 @@ $green-text: #1a7a45;
   align-items: center;
   margin-left: 4px;
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .wrapper { background: #141620; }
+  .trigger {
+    background: #1a1c24;
+    &:hover { background: #1e2030; }
+    &.trigger_open { border-bottom-color: rgba(255,255,255,0.08); }
+  }
+  .trigger_label { color: rgba(255,255,255,0.4); }
+  .progress_pill { background: rgba(22,163,74,0.2); color: #4ade80; }
+  .chevron { color: rgba(255,255,255,0.3); }
+  .body {
+    background: #1a1c24;
+    border-color: rgba(255,255,255,0.08);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+  .skeleton {
+    background: linear-gradient(90deg, #1e2030 25%, #252840 50%, #1e2030 75%);
+  }
+  .empty { color: rgba(255,255,255,0.3); }
+  .item { color: #d0d3e0; &:hover { background: rgba(255,255,255,0.05); } }
+  .item_section { color: #e8eaf0; }
+  .item_sub { color: rgba(255,255,255,0.45); }
+  .sub_group::before { border-left-color: rgba(255,255,255,0.1); }
+  .number { color: rgba(255,255,255,0.3); }
+  .icon { color: rgba(255,255,255,0.2); }
+  .item_done {
+    .number { color: #4ade80; }
+    .icon { color: #4ade80; }
+    .title { color: #4ade80; }
+  }
+}

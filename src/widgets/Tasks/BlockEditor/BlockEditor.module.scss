@@ -9,6 +9,31 @@
    animation: shake 0.35s ease;
 }
 
+.block_heading {
+   margin-top: 15px;
+   font-weight: 500;
+   font-size: 32px;
+   color: #1a1d23;
+}
+
+.delete_btn {
+   margin-right: auto;
+   padding: 5px 12px;
+   border-radius: 5px;
+   background-color: #f3f3f3;
+   color: #444;
+   font-size: 13px;
+   font-weight: 500;
+   transition: background 0.15s, color 0.15s;
+   &:hover { background-color: #fee2e2; color: #ef4444; }
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+   .block_heading { color: #e8eaf0; }
+   .delete_btn { background-color: rgba(255,255,255,0.07); color: rgba(255,255,255,0.5); &:hover { background-color: rgba(239,68,68,0.15); color: #f87171; } }
+}
+
 @keyframes shake {
    0% {
       transform: translateX(0);

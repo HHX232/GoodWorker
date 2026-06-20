@@ -69,6 +69,40 @@
   }
 }
 
+// ── Theme toggle ─────────────────────────────────────────────
+
+.action_theme_active {
+  color: #a78bfa !important;
+  &:hover {
+    background: rgba(167, 139, 250, 0.12) !important;
+    color: #c4b5fd !important;
+  }
+}
+
+// ── Dark mode ─────────────────────────────────────────────────
+
+.bar_dark {
+  background: #1a1c20;
+  border-color: rgba(255,255,255,0.08);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+
+  .back {
+    color: rgba(255,255,255,0.4);
+    &:hover { background: rgba(255,255,255,0.07); color: #fff; }
+  }
+
+  .action {
+    color: rgba(255,255,255,0.4);
+    &:hover { background: rgba(255,255,255,0.07); color: #fff; }
+    &.action_ok { color: #4ade80; }
+    &.action_active { color: #fff; }
+    &.action_report:hover { background: rgba(239,68,68,0.12); color: #ef4444; }
+  }
+
+  .tip_box { background: #2a2d36; }
+  .tip_box::after { border-bottom-color: #2a2d36; }
+}
+
 // ── Tooltip ──────────────────────────────────────────────────
 
 .tip_wrap {

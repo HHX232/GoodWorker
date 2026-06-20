@@ -8,8 +8,8 @@ const MONTH_NAMES_RU = [
 ]
 
 const SUBJECT_COLORS = [
-  '#1a1a1a', '#3d3d3d', '#606060', '#888888', '#aaaaaa',
-  '#c4c4c4', '#d8d8d8', '#4a6fa5', '#6b8e5e', '#8b6fa5',
+  '#818cf8', '#a78bfa', '#6366f1', '#c4b5fd', '#7c3aed',
+  '#8b5cf6', '#4f46e5', '#a5b4fc', '#d8b4fe', '#5b21b6',
 ]
 
 export async function GET(

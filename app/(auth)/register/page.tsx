@@ -1,5 +1,5 @@
 import RegisterPage from '@/_pages/RegisterPage/RegisterPage'
-import ShaderBackground from '@/shared/ui/backgrounds/Shaderbackground/Shaderbackground'
+import StarBackground from '@/shared/ui/backgrounds/StarBackground/StarBackground'
 
 import { getTranslations } from 'next-intl/server'
 import type { Metadata } from 'next'
@@ -14,7 +14,7 @@ export default function page() {
   return (
     <>
       {' '}
-      <ShaderBackground />
+      <StarBackground />
       <RegisterPage />
     </>
   )
