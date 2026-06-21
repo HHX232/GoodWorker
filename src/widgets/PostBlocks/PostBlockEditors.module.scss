@@ -156,7 +156,32 @@
 .test_link_selected {
    display: flex;
    flex-direction: column;
-   gap: 8px;
+   gap: 12px;
+}
+
+.test_link_row {
+   display: flex;
+   flex-direction: column;
+   gap: 6px;
+   padding-bottom: 12px;
+   border-bottom: 1px solid #F3F3F8;
+
+   &:last-child { border-bottom: none; padding-bottom: 0; }
+}
+
+.test_link_count {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   min-width: 22px;
+   height: 22px;
+   border-radius: 99px;
+   background: #534AB7;
+   color: #fff;
+   font-size: 11px;
+   font-weight: 700;
+   padding: 0 6px;
+   flex-shrink: 0;
 }
 
 .test_link_id {
@@ -476,6 +501,36 @@
    padding: 20px 0;
 }
 
+.modal_selected_hint {
+   font-size: 12px;
+   font-weight: 600;
+   color: #534AB7;
+   margin: 0 0 6px;
+   padding: 6px 10px;
+   background: #EEF2FF;
+   border-radius: 8px;
+}
+
+.modal_done_btn {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   width: 100%;
+   margin-top: 14px;
+   padding: 11px 20px;
+   border-radius: 10px;
+   background: #534AB7;
+   color: #fff;
+   border: none;
+   font-size: 14px;
+   font-weight: 600;
+   font-family: inherit;
+   cursor: pointer;
+   transition: background 0.15s;
+
+   &:hover { background: #4338ca; }
+}
+
 .modal_grid {
    display: grid;
    grid-template-columns: repeat(2, 1fr);
@@ -538,7 +593,10 @@
   .stub_text { color: #a5b4fc; }
   .stub_sub { color: rgba(129,140,248,0.6); }
   .test_link_id { background: rgba(99,102,241,0.1); color: #a5b4fc; }
+  .test_link_row { border-bottom-color: rgba(255,255,255,0.07); }
   .test_link_clear { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.35); &:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); color: #e8eaf0; } }
+  .modal_selected_hint { background: rgba(99,102,241,0.12); color: #a5b4fc; }
+  .modal_done_btn { background: #4338ca; &:hover { background: #3730a3; } }
   .mini_test_editor { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.08); }
   .mini_test_badge { background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.25); color: #a5b4fc; }
   .mini_test_title_input { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &::placeholder { color: rgba(255,255,255,0.2); } &:focus { border-color: #818cf8; } }

@@ -2,10 +2,8 @@ import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
 
-const MONTH_NAMES_RU = [
-  'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-  'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь',
-]
+const isoMonthKey = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
 
 const SUBJECT_COLORS = [
   '#818cf8', '#a78bfa', '#6366f1', '#c4b5fd', '#7c3aed',
@@ -102,7 +100,7 @@ export async function GET(
     // Build 6-month window
     for (let i = 5; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-      const key = `${MONTH_NAMES_RU[d.getMonth()]} ${d.getFullYear()}`
+      const key = isoMonthKey(d)
       const daysInMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()
       monthsData[key] = Array.from({ length: daysInMonth }, (_, idx) => ({
         day: String(idx + 1),
@@ -113,7 +111,7 @@ export async function GET(
     // Fill in actual call hours
     for (const call of callsWithDuration) {
       const d = call.createdAt
-      const key = `${MONTH_NAMES_RU[d.getMonth()]} ${d.getFullYear()}`
+      const key = isoMonthKey(d)
       if (!monthsData[key]) continue
       const dayIdx = d.getDate() - 1
       monthsData[key][dayIdx].hours = +(

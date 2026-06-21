@@ -42,6 +42,19 @@
   min-width: 0;
 }
 
+.statsItemLink {
+  text-decoration: none;
+  color: inherit;
+  border-radius: 8px;
+  transition: background 0.15s;
+  padding: 4px 6px;
+  margin: -4px -6px;
+
+  &:hover {
+    background: rgba(83, 74, 183, 0.06);
+  }
+}
+
 .statsSep {
   width: 1px;
   height: 32px;
@@ -337,6 +350,7 @@
   .center { &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); } }
   .statsMerged { background: #1a1c24; border-color: rgba(255,255,255,0.08); }
   .statsSep { background: rgba(255,255,255,0.08); }
+  .statsItemLink { &:hover { background: rgba(129,140,248,0.1); } }
   .statsItemValue { color: #e8eaf0; }
   .statsItemLabel { color: rgba(255,255,255,0.3); }
   .videoCallBlock { background: #1a1c24; border-color: rgba(255,255,255,0.08); }

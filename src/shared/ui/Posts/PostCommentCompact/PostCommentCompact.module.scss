@@ -78,3 +78,35 @@
     opacity: 0.82;
   }
 }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .box {
+    background: #1a1c24;
+  }
+
+  .title {
+    color: #e8eaf0;
+  }
+
+  .rating_num {
+    color: #e8eaf0;
+  }
+
+  .preview_img {
+    border-color: rgba(255,255,255,0.08);
+  }
+
+  .count {
+    color: rgba(255,255,255,0.35);
+  }
+
+  .view_btn {
+    background: #2e3148;
+    color: #e8eaf0;
+
+    &:hover {
+      background: #353757;
+    }
+  }
+}

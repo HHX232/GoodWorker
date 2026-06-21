@@ -6,7 +6,6 @@ import { useTranslations } from 'next-intl'
 import { RefObject, useCallback, useEffect, useRef, useState } from 'react'
 import styles from './StudentProfilePanel.module.scss'
 import { signOut } from 'next-auth/react'
-import { VideoCallModal } from '@/widgets/Dashboard/VideoCallModal/VideoCallModal'
 import { toast } from 'sonner'
 
 // ─── Telegram icon ────────────────────────────────────────
@@ -256,7 +255,6 @@ export function StudentProfilePanel({
   onTranscripts, onBookmarks, onStats,
 }: Props) {
   const t = useTranslations('dashboard')
-  const [videoOpen, setVideoOpen] = useState(false)
 
   return (
     <aside className={styles.panel}>
@@ -432,20 +430,6 @@ export function StudentProfilePanel({
         </div>
 
         <div className={styles.divider} />
-
-        {/* Video room */}
-        <div className={styles.section}>
-          <button className={styles.videoToggle} onClick={() => setVideoOpen(true)}>
-            <span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ verticalAlign: 'middle', marginRight: 8 }}>
-                <path d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14" />
-                <rect x="1" y="6" width="14" height="12" rx="2" />
-              </svg>
-              {t('videoRoom')}
-            </span>
-          </button>
-        </div>
-        {videoOpen && <VideoCallModal defaultName={name} onClose={() => setVideoOpen(false)} />}
 
         <PromoCodeSection t={t} />
 

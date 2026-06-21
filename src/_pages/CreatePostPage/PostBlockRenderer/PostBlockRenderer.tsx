@@ -4,11 +4,9 @@
 import { InfoAudioEditor } from '@/features/BlockEditors/InfoAudioEditor/InfoAudioEditor'
 import { InfoMediaEditor } from '@/features/BlockEditors/InfoMediaEditor/InfoMediaEditor'
 import { InfoTextEditor } from '@/features/BlockEditors/InfoTextEditor/InfoTextEditor'
-import { PostBlock, PostBlockType, PostMiniTestPayload, PostTestLinkPayload } from '@/shared/types/Post/Post.type'
+import { PostBlock, PostBlockType, PostMiniTestPayload, PostTestLinkPayload, getPostTestLinks } from '@/shared/types/Post/Post.type'
 import { PostMiniTestViewer } from '@/widgets/PostBlocks/PostMiniTestViewer'
-import Link from 'next/link'
-import { useTranslations } from 'next-intl'
-import styles from './PostBlockRenderer.module.scss'
+import { PostTestLinkViewer } from '@/widgets/PostBlocks/PostTestLinkViewer'
 
 interface Props {
   blocks: PostBlock[]
@@ -17,7 +15,6 @@ interface Props {
 }
 
 export const PostBlockRenderer = ({blocks, postId, titleNode}: Props) => {
-  const t = useTranslations('TestPlayer')
   const firstTextIdx = titleNode !== undefined
     ? blocks.findIndex((b) => b.type === PostBlockType.TEXT)
     : -1
@@ -44,18 +41,9 @@ export const PostBlockRenderer = ({blocks, postId, titleNode}: Props) => {
           case PostBlockType.AUDIO:
             return <InfoAudioEditor key={block.id} payload={block.payload as any} viewOnly />
           case PostBlockType.TEST_LINK: {
-            const p = block.payload as PostTestLinkPayload
-            if (!p.testId) return null
-            return (
-              <div key={block.id} className={styles.testLink}>
-                <span className={styles.testLinkTitle}>
-                  {p.title || t('testLinkTitle')}
-                </span>
-                <Link href={`/test/${p.testId}`} className={styles.testLinkBtn}>
-                  {t('testLinkBtn')}
-                </Link>
-              </div>
-            )
+            const tests = getPostTestLinks(block.payload as PostTestLinkPayload)
+            if (!tests.length) return null
+            return <PostTestLinkViewer key={block.id} tests={tests} theme="purple" />
           }
           case PostBlockType.MINI_TEST:
             return (

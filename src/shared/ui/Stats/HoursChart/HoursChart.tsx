@@ -1,6 +1,6 @@
 'use client'
 import {useMemo, useState} from 'react'
-import {useTranslations} from 'next-intl'
+import {useLocale, useTranslations} from 'next-intl'
 import {Bar, BarChart, CartesianGrid, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis} from 'recharts'
 import ModalWindowDefault from '../../Modals/ModalWindowDefault/ModalWindowDefault'
 import {useThemeCtx} from '@/app/providers/ThemeContext'
@@ -26,8 +26,17 @@ function HoursChart({
   monthsData?: Record<string, {day: string; hours: number}[]>
 }) {
   const t = useTranslations('statsPage.hoursChart')
+  const locale = useLocale()
   const MONTHS = monthsData ? Object.keys(monthsData) : []
   const {isDark} = useThemeCtx()
+
+  // Translate ISO key "2026-06" → "June 2026" in user locale
+  const formatMonthKey = (key: string) => {
+    const [year, month] = key.split('-')
+    if (!year || !month) return key
+    return new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' })
+      .format(new Date(+year, +month - 1, 1))
+  }
   const [selectedMonth, setSelectedMonth] = useState<string>('')
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
 
@@ -68,7 +77,7 @@ function HoursChart({
         <div className={styles.chart_header__left}>
           <h3 className={styles.chart_title}>{t('title')}</h3>
           <p className={styles.chart_subtitle}>
-            {t('totalFor', {month: activeMonth})}: <strong>{totalHours} {t('hoursUnit')}</strong>
+            {t('totalFor', {month: formatMonthKey(activeMonth)})}: <strong>{totalHours} {t('hoursUnit')}</strong>
           </p>
         </div>
 
@@ -80,7 +89,7 @@ function HoursChart({
               style={{animationDelay: `${i * 40}ms`}}
               onClick={() => setSelectedMonth(m)}
             >
-              {m}
+              {formatMonthKey(m)}
             </button>
           ))}
         </div>

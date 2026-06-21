@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import PostPage, { EnrichedComment } from '@/_pages/PublickPages/PostPage/PostPage'
-import { localizePost } from '@/lib/postAI'
+import { localizePost, enrichPostWithAI } from '@/lib/postAI'
 import { prisma } from '@/shared/prisma/prisma'
 import { SeoPostContent } from '@/shared/ui/Posts/SeoPostContent/SeoPostContent'
 import { Prisma } from '@prisma/client'
@@ -134,6 +134,11 @@ async function PostServerPage({params}: {params: Promise<{id: string}>}) {
   ])
 
   if (!post) return notFound()
+
+  // Trigger AI enrichment for posts that haven't been translated yet
+  if (!(post as any).contentTranslations) {
+    enrichPostWithAI(post.id).catch(() => {})
+  }
 
   // Record view and optimistically bump viewCount
   if (session?.user?.id && session.user.role) {

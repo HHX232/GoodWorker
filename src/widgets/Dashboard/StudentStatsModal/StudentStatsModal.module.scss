@@ -3,7 +3,7 @@
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(4px);
-  z-index: 1000;
+  z-index: 2100;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -333,4 +333,67 @@
   height: 100%;
   border-radius: 99px;
   transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+// ── Dark theme ─────────────────────────────────────────────
+
+.overlayDark {
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.modalDark {
+  background: #1a1c24;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+
+  .header {
+    background: #1a1c24;
+    border-bottom-color: rgba(255,255,255,0.07);
+  }
+
+  .headerIcon { background: rgba(129,140,248,0.15); color: #818cf8; }
+  .title { color: #e8eaf0; }
+
+  .closeBtn {
+    background: rgba(255,255,255,0.07);
+    color: rgba(255,255,255,0.5);
+    &:hover { background: rgba(255,255,255,0.12); }
+  }
+
+  .body { background: #1a1c24; }
+
+  .sectionTitle { color: rgba(255,255,255,0.3); }
+
+  .summaryCard {
+    background: #23263a;
+    border-color: rgba(255,255,255,0.07);
+  }
+  .summaryValue { color: #e8eaf0; }
+  .summaryLabel { color: rgba(255,255,255,0.35); }
+
+  .chartCard {
+    background: #23263a;
+    border-color: rgba(255,255,255,0.07);
+  }
+  .chartTitle { color: rgba(255,255,255,0.8); }
+  .chartEmpty { color: rgba(255,255,255,0.25); }
+
+  .categoriesCard {
+    background: #23263a;
+    border-color: rgba(255,255,255,0.07);
+  }
+
+  .pieCenterNum { color: #e8eaf0; }
+  .pieCenterSub { color: rgba(255,255,255,0.35); }
+
+  .catName  { color: rgba(255,255,255,0.8); }
+  .catCount { color: #e8eaf0; }
+  .catPct   { color: rgba(255,255,255,0.3); }
+  .catTrack { background: rgba(255,255,255,0.08); }
+
+  .catRow {
+    &:hover { background: rgba(129,140,248,0.08); }
+  }
+  .catRowActive { background: rgba(129,140,248,0.1); }
+
+  .empty { color: rgba(255,255,255,0.25); }
 }

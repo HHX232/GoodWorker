@@ -1,5 +1,13 @@
 @use '../../../shared/scss/config/mixins.scss';
 
+@media(max-width:1040px){
+  .logout_btn{
+  justify-content: center;
+}
+}
+
+
+
 .navbar {
   display: flex;
   flex-direction: column;
@@ -209,6 +217,7 @@
   .logout_btn, .theme_toggle_btn {
     flex: 1;
     flex-direction: column;
+
     justify-content: center;
     align-items: center;
     padding: 10px 4px;
@@ -311,7 +320,7 @@
 }
 
 .create_course_item {
-  border: 1px solid rgba(20, 20, 22, 0.14) !important;
+  border: none !important;
 }
 
 // ─── Pomodoro dark theme ──────────────────────────────────────────────────────

@@ -159,11 +159,14 @@
     "miniTestAtLeastOne": "कम से कम एक प्रश्न जोड़ें",
     "miniTestFillAll": "सहेजने से पहले सभी प्रश्न भरें",
     "testLinkSelectTest": "टेस्ट चुनें",
-    "testLinkChange": "टेस्ट बदलें",
+    "testLinkAddMore": "और टेस्ट जोड़ें",
+    "testLinkChange": "हटाएं",
     "testLinkSearch": "टेस्ट खोजें...",
     "testLinkLoading": "लोड हो रहा है...",
     "testLinkNoTests": "कोई टेस्ट नहीं",
-    "testLinkSelected": "चुना: {title}"
+    "testLinkSelected": "चुना: {title}",
+    "testLinkSelectedCount": "चुने: {count}",
+    "testLinkDone": "हो गया"
   },
   "InfoTextEditor": {
     "placeholder": "सामग्री टेक्स्ट दर्ज करें...",
@@ -641,7 +644,10 @@
     "share": "शेयर करें",
     "copied": "कॉपी हो गया!",
     "bookmark": "बुकमार्क में जोड़ें",
-    "bookmarkRemove": "बुकमार्क हटाएं"
+    "bookmarkRemove": "बुकमार्क हटाएं",
+    "testLinkBadge": "टेस्ट",
+    "testLinkDefaultTitle": "टेस्ट",
+    "testLinkHint": "टेस्ट पर जाएं →"
   },
   "UserPostInfo": {
     "userType": "उपयोगकर्ता प्रकार",
@@ -792,6 +798,7 @@
     "sortByFreq": "बारंबार",
     "sortByTime": "समय के अनुसार",
     "errorsEmpty": "अभी तक कोई त्रुटि नहीं",
+    "recommendedPosts": "अनुशंसित पोस्ट",
     "memberSinceStudent": "सदस्य बने",
     "myStats": "मेरी सांख्यिकी",
     "tabErrors": "त्रुटियाँ",
@@ -1860,6 +1867,7 @@
     "sub_courses": "कोर्स",
     "sub_support": "सहायता",
     "btn_create": "कोर्स बनाएं",
+    "btn_create_post": "पोस्ट बनाएं",
     "btn_find_teacher": "शिक्षक खोजें",
     "btn_how": "वीडियो पाठ में शामिल हों",
     "video_eyebrow": "कॉल का ऑटो-नोट्स",
@@ -1918,7 +1926,7 @@
     "features_h2_hl": "और क्या आ रहा है",
     "f1_badge": "AI · सक्रिय",
     "f1_title": "ऑटो त्रुटि पहचान",
-    "f1_desc": "AI रियल टाइम में छात्र के काम को पढ़ता है और गलतियों को हाइलाइट करता है — सुधार के उदाहरण के साथ।",
+    "f1_desc": "AI रियल टाइम में छात्र के काम को पढ़ता है और गलतियों को हाइलाइट करता है।",
     "f2_badge": "AI · बीटा",
     "f2_title": "सामग्री से परीक्षण",
     "f2_desc": "फ़ाइल अपलोड करें और उत्तर सहित सभी प्रश्न डिजिटल रूप में प्राप्त करें — छात्रों के साथ साझा करें।",

@@ -26,9 +26,22 @@ export interface PostAudioPayload {
   waveform: number[] | null
 }
 
+export interface PostTestLinkEntry {
+  id: string
+  title: string
+}
+
 export interface PostTestLinkPayload {
-  testId: string | null
-  title: string | null
+  tests?: PostTestLinkEntry[]
+  // legacy single-test fields (backwards compat)
+  testId?: string | null
+  title?: string | null
+}
+
+export function getPostTestLinks(payload: PostTestLinkPayload): PostTestLinkEntry[] {
+  if (payload.tests?.length) return payload.tests
+  if (payload.testId) return [{ id: payload.testId, title: payload.title ?? '' }]
+  return []
 }
 
 export interface PostMiniTestPayload {

@@ -153,8 +153,8 @@ function HeroSection() {
 
         <div className={s.hero_cta}>
           {user?.role === 'TEACHER' ? (
-            <Link href="/create-road-map" className={s.btn_dark}>
-              {t('btn_create')} <span>+</span>
+            <Link href="/create-post" className={s.btn_dark}>
+              {t('btn_create_post')} <span>+</span>
             </Link>
           ) : (
             <Link href="/teachers" className={`${s.btn_dark} ${s.btn_dark_bordered}`}>
@@ -1094,7 +1094,7 @@ function PostCard({ post }: { post: RealPost }) {
           </span>
         )}
       </div>
-      <Link href={`/posts/${post.id}`} className={s.post_btn}>{t('posts_read')}</Link>
+      <Link href={`/post/${post.id}`} className={s.post_btn}>{t('posts_read')}</Link>
     </div>
   )
 }
@@ -1162,7 +1162,7 @@ function SubNav() {
     { label: t('sub_teachers'), href: '/teachers' },
     { label: t('sub_posts'),    href: '/posts' },
     { label: t('sub_courses'),  href: '/teachers' },
-    { label: t('sub_support'),  href: '/profile' },
+    { label: t('sub_support'),  href: '/feedback' },
   ]
   return (
     <div className={s.subnav}>
@@ -1189,7 +1189,6 @@ export default function LandingPage() {
         <VideoSection />
         <Divider />
         <CourseSection />
-        <CourseCycle />
         <Divider />
         <FeaturesBlock />
         <Divider />

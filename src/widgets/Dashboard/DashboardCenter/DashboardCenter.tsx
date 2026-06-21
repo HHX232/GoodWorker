@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { ServiceCard } from '@/shared/ui/Service/ServiceCard/ServiceCard'
 import { TestPreviewCard, TestPreviewCardProps } from '@/shared/ui/Test/TestPreviewCard/TestPreviewCard'
 import { CreatePickerModal } from '@/widgets/Dashboard/CreatePickerModal/CreatePickerModal'
@@ -261,14 +262,25 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
       <div className={styles.topRow}>
         <div className={styles.statsMerged}>
           {stats.map((s, i) => (
-            <div key={s.label} className={styles.statsItem}>
-              {i > 0 && <div className={styles.statsSep} />}
-              <div className={styles.statsItemIcon} style={{ background: s.bg }}>{s.icon}</div>
-              <div>
-                <div className={styles.statsItemValue}>{s.value}</div>
-                <div className={styles.statsItemLabel}>{s.label}</div>
+            isOwner ? (
+              <Link key={s.label} href={`/statistics/${statsId}`} className={`${styles.statsItem} ${styles.statsItemLink}`}>
+                {i > 0 && <div className={styles.statsSep} />}
+                <div className={styles.statsItemIcon} style={{ background: s.bg }}>{s.icon}</div>
+                <div>
+                  <div className={styles.statsItemValue}>{s.value}</div>
+                  <div className={styles.statsItemLabel}>{s.label}</div>
+                </div>
+              </Link>
+            ) : (
+              <div key={s.label} className={styles.statsItem}>
+                {i > 0 && <div className={styles.statsSep} />}
+                <div className={styles.statsItemIcon} style={{ background: s.bg }}>{s.icon}</div>
+                <div>
+                  <div className={styles.statsItemValue}>{s.value}</div>
+                  <div className={styles.statsItemLabel}>{s.label}</div>
+                </div>
               </div>
-            </div>
+            )
           ))}
         </div>
 

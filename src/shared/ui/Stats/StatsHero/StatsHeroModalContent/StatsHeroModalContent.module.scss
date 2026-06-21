@@ -1,187 +1,160 @@
-// StatsHeroModalContent.module.scss
-
-// ─── Keyframes ────────────────────────────────────────────────────────────────
-
 @keyframes fadeUp {
-   from {
-      opacity: 0;
-      transform: translateY(10px);
-   }
-
-   to {
-      opacity: 1;
-      transform: translateY(0);
-   }
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
-// ─── Root ─────────────────────────────────────────────────────────────────────
 
 .root {
-   display: flex;
-   flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
-
-// ─── Period ───────────────────────────────────────────────────────────────────
 
 .period {
-   font-size: 11px;
-   color: #bbb;
-   letter-spacing: 0.04em;
-   margin-bottom: 20px;
-   margin-top: -4px;
-   animation: fadeUp 0.35s 0.05s both;
+  font-size: 11px;
+  color: #bbb;
+  letter-spacing: 0.04em;
+  margin-bottom: 20px;
+  margin-top: -4px;
+  animation: fadeUp 0.35s 0.05s both;
 }
 
-// ─── KPI row ──────────────────────────────────────────────────────────────────
+// ── KPI row ────────────────────────────────────────────────
 
 .kpi_row {
-   display: grid;
-   grid-template-columns: repeat(4, 1fr);
-   gap: 10px;
-   margin-bottom: 22px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 22px;
 
-   @media (max-width: 480px) {
-      grid-template-columns: repeat(2, 1fr);
-   }
+  @media (max-width: 480px) { grid-template-columns: repeat(2, 1fr); }
 }
 
 .kpi {
-   background: #f7f7f7;
-   border: 0.5px solid transparent;
-   border-radius: 12px;
-   padding: 12px 14px;
-   display: flex;
-   flex-direction: column;
-   gap: 3px;
-   cursor: default;
-   // entrance
-   opacity: 0;
-   animation: fadeUp 0.4s both;
-   // hover
-   transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  background: #f7f7f7;
+  border: 0.5px solid transparent;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  cursor: default;
+  opacity: 0;
+  animation: fadeUp 0.4s both;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
 
-   &:hover {
-      background: #f0f0f0;
-      border-color: rgba(0, 0, 0, 0.07);
-      transform: translateY(-2px);
-   }
+  &:hover {
+    background: #f0f0f0;
+    border-color: rgba(0,0,0,0.07);
+    transform: translateY(-2px);
+  }
 }
 
 .kpi_n {
-   font-size: 22px;
-   font-weight: 300;
-   color: #1a1a1a;
-   letter-spacing: -0.04em;
-   line-height: 1;
+  font-size: 22px;
+  font-weight: 300;
+  color: #1a1a1a;
+  letter-spacing: -0.04em;
+  line-height: 1;
 }
 
 .kpi_l {
-   font-size: 9px;
-   font-weight: 500;
-   text-transform: uppercase;
-   letter-spacing: 0.1em;
-   color: #bbb;
+  font-size: 9px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #bbb;
 }
 
-.kpi_d {
-   font-size: 10px;
-   margin-top: 2px;
-}
+.kpi_d   { font-size: 10px; margin-top: 2px; }
+.kpi_d_up { color: #4a9e6b; }
+.kpi_d_dn { color: #c0504d; }
 
-.kpi_d_up {
-   color: #4a9e6b;
-}
-
-.kpi_d_dn {
-   color: #c0504d;
-}
-
-// ─── Section ──────────────────────────────────────────────────────────────────
+// ── Sections ────────────────────────────────────────────────
 
 .section {
-   margin-bottom: 20px;
-   opacity: 0;
-   animation: fadeUp 0.4s both;
+  margin-bottom: 20px;
+  opacity: 0;
+  animation: fadeUp 0.4s both;
 
-   &:hover .section_title {
-      color: #aaa;
-   }
+  &:hover .section_title { color: #aaa; }
 }
 
-// no bottom margin variant (used inside two_col)
 .section_flat {
-   opacity: 0;
-   animation: fadeUp 0.4s both;
+  opacity: 0;
+  animation: fadeUp 0.4s both;
 
-   &:hover .section_title {
-      color: #aaa;
-   }
+  &:hover .section_title { color: #aaa; }
 }
 
 .section_title {
-   font-size: 10px;
-   font-weight: 500;
-   text-transform: uppercase;
-   letter-spacing: 0.1em;
-   color: #ccc;
-   margin-bottom: 10px;
-   transition: color 0.2s ease;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #ccc;
+  margin-bottom: 10px;
+  transition: color 0.2s;
 }
 
-// ─── Chart wrap — hover background ───────────────────────────────────────────
+// ── Chart wrap hover ────────────────────────────────────────
 
 .chart_wrap {
-   border-radius: 10px;
-   padding: 2px 0;
-   transition: background 0.2s ease;
+  border-radius: 10px;
+  padding: 2px 0;
+  transition: background 0.2s;
 
-   &:hover {
-      background: #fafafa;
-   }
+  &:hover { background: #fafafa; }
 }
 
-// ─── Two-column layout ────────────────────────────────────────────────────────
+// ── Two-col ─────────────────────────────────────────────────
 
 .two_col {
-   display: grid;
-   grid-template-columns: 3fr 2fr;
-   gap: 16px;
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 16px;
 
-   @media (max-width: 480px) {
-      grid-template-columns: 1fr;
-   }
+  @media (max-width: 480px) { grid-template-columns: 1fr; }
 }
 
-// ─── Tooltip ──────────────────────────────────────────────────────────────────
+// ── Tooltip ─────────────────────────────────────────────────
 
 .tooltip {
-   background: #fff;
-   border: 0.5px solid rgba(0, 0, 0, 0.1);
-   border-radius: 8px;
-   padding: 8px 12px;
-   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background: #fff;
+  border: 0.5px solid rgba(0,0,0,0.1);
+  border-radius: 8px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
-.tooltip_label {
-   font-size: 10px;
-   color: #bbb;
-   margin-bottom: 4px;
-}
+.tooltip_label { font-size: 10px; color: #bbb; margin-bottom: 4px; }
+.tooltip_row   { display: flex; justify-content: space-between; gap: 16px; }
+.tooltip_name  { font-size: 11px; color: #999; }
+.tooltip_val   { font-size: 11px; font-weight: 500; color: #1a1a1a; font-variant-numeric: tabular-nums; }
 
-.tooltip_row {
-   display: flex;
-   justify-content: space-between;
-   gap: 16px;
-}
+// ── Dark theme ──────────────────────────────────────────────
 
-.tooltip_name {
-   font-size: 11px;
-   color: #999;
-}
+.root_dark {
+  .period { color: rgba(255,255,255,0.3); }
 
-.tooltip_val {
-   font-size: 11px;
-   font-weight: 500;
-   color: #1a1a1a;
-   font-variant-numeric: tabular-nums;
+  .kpi {
+    background: rgba(255,255,255,0.05);
+    &:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.08); }
+  }
+  .kpi_n { color: #e8eaf0; }
+  .kpi_l { color: rgba(255,255,255,0.28); }
+
+  .section_title { color: rgba(255,255,255,0.25); }
+  .section:hover .section_title       { color: rgba(255,255,255,0.4); }
+  .section_flat:hover .section_title  { color: rgba(255,255,255,0.4); }
+
+  // No white hover on chart bg in dark mode
+  .chart_wrap:hover { background: transparent; }
+
+  .tooltip_dark {
+    background: #23263a;
+    border-color: rgba(255,255,255,0.07);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
+  .tooltip_label { color: rgba(255,255,255,0.3); }
+  .tooltip_name  { color: rgba(255,255,255,0.45); }
+  .tooltip_val   { color: #e8eaf0; }
 }

@@ -145,11 +145,14 @@
     "miniTestAtLeastOne": "Add at least one question",
     "miniTestFillAll": "Fill in all questions before saving",
     "testLinkSelectTest": "Select Test",
-    "testLinkChange": "Change Test",
+    "testLinkAddMore": "Add another test",
+    "testLinkChange": "Remove",
     "testLinkSearch": "Search tests...",
     "testLinkLoading": "Loading...",
     "testLinkNoTests": "You have no tests yet",
-    "testLinkSelected": "Selected: {title}"
+    "testLinkSelected": "Selected: {title}",
+    "testLinkSelectedCount": "Selected: {count}",
+    "testLinkDone": "Done"
   },
   "InfoTextEditor": {
     "placeholder": "Enter material text...",
@@ -662,7 +665,10 @@
     "share": "Share",
     "copied": "Copied!",
     "bookmark": "Add to bookmarks",
-    "bookmarkRemove": "Remove bookmark"
+    "bookmarkRemove": "Remove bookmark",
+    "testLinkBadge": "Test",
+    "testLinkDefaultTitle": "Test",
+    "testLinkHint": "Go to test →"
   },
   "UserPostInfo": {
     "userType": "User type",
@@ -826,6 +832,7 @@
     "sortByFreq": "Frequent",
     "sortByTime": "By time",
     "errorsEmpty": "No errors yet",
+    "recommendedPosts": "Recommended posts",
     "correctedLabel": "Corrected",
     "memberSinceStudent": "Member since",
     "myStats": "My statistics",
@@ -2018,6 +2025,7 @@
     "sub_courses": "Courses",
     "sub_support": "Support",
     "btn_create": "Create course",
+    "btn_create_post": "Create post",
     "btn_find_teacher": "Find a teacher",
     "btn_how": "Join a video lesson",
     "video_eyebrow": "Auto-transcript of call",
@@ -2076,7 +2084,7 @@
     "features_h2_hl": "and what's coming",
     "f1_badge": "AI · LIVE",
     "f1_title": "Auto error detection",
-    "f1_desc": "AI analyses student work and saves errors to their profile with a correction example.",
+    "f1_desc": "AI analyses student work and saves errors to their profile.",
     "f2_badge": "AI · BETA",
     "f2_title": "Tests from material",
     "f2_desc": "Upload a file and get all questions in digital format with answers — share with your students.",

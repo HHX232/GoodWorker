@@ -11,15 +11,73 @@
   &::-webkit-scrollbar-thumb { background: #D8D8E0; border-radius: 2px; }
 }
 
+.topRow {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  margin-bottom: 20px;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+  }
+}
+
 .statsRow {
   display: flex;
   align-items: stretch;
   flex-wrap: wrap;
-  margin-bottom: 20px;
+  flex: 1;
   background: #ffffff;
   border: 1px solid #DADCEB;
   border-radius: 12px;
   overflow: hidden;
+}
+
+.videoCallBlock {
+  background: #ffffff;
+  border: 1px solid #DADCEB;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 150px;
+  flex-shrink: 0;
+
+  @media (max-width: 600px) {
+    flex-direction: row;
+    align-items: center;
+    min-width: 0;
+  }
+}
+
+.videoCallTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #141416;
+}
+
+.videoCallBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 12px;
+  border-radius: 8px;
+  background: #534AB7;
+  color: #fff;
+  border: none;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background 0.15s;
+
+  &:hover { background: #4338ca; }
 }
 
 .statCard {
@@ -225,6 +283,8 @@
 :global(html.theme-dark), :global(html.pomodoro-dark) {
   .center { background: #12141f; }
   .statsRow { background: #1a1c24; border-color: rgba(255,255,255,0.07); }
+  .videoCallBlock { background: #1a1c24; border-color: rgba(255,255,255,0.07); }
+  .videoCallTitle { color: #e8eaf0; }
   .statCard { border-right-color: rgba(255,255,255,0.07); }
   .statValue { color: #e8eaf0; }
   .statLabel { color: rgba(255,255,255,0.35); }

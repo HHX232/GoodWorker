@@ -159,11 +159,14 @@
     "miniTestAtLeastOne": "请至少添加一个题目",
     "miniTestFillAll": "请在保存前填写所有题目",
     "testLinkSelectTest": "选择测验",
-    "testLinkChange": "更换测验",
+    "testLinkAddMore": "再添加测验",
+    "testLinkChange": "删除",
     "testLinkSearch": "搜索测验...",
     "testLinkLoading": "加载中...",
     "testLinkNoTests": "没有测验",
-    "testLinkSelected": "已选: {title}"
+    "testLinkSelected": "已选: {title}",
+    "testLinkSelectedCount": "已选: {count}",
+    "testLinkDone": "完成"
   },
   "InfoTextEditor": {
     "placeholder": "输入材料文本...",
@@ -641,7 +644,10 @@
     "share": "分享",
     "copied": "已复制！",
     "bookmark": "添加书签",
-    "bookmarkRemove": "移除书签"
+    "bookmarkRemove": "移除书签",
+    "testLinkBadge": "测验",
+    "testLinkDefaultTitle": "测验",
+    "testLinkHint": "前往测验 →"
   },
   "UserPostInfo": {
     "userType": "用户类型",
@@ -792,6 +798,7 @@
     "sortByFreq": "频繁",
     "sortByTime": "按时间",
     "errorsEmpty": "暂无错误",
+    "recommendedPosts": "推荐文章",
     "memberSinceStudent": "加入于",
     "myStats": "我的统计",
     "tabErrors": "错误",
@@ -1861,6 +1868,7 @@
     "sub_courses": "课程",
     "sub_support": "支持",
     "btn_create": "创建课程",
+    "btn_create_post": "创建帖子",
     "btn_find_teacher": "找教师",
     "btn_how": "加入视频课",
     "video_eyebrow": "通话自动记录",
@@ -1919,7 +1927,7 @@
     "features_h2_hl": "即将推出",
     "f1_badge": "AI · 上线",
     "f1_title": "自动错误检测",
-    "f1_desc": "AI 实时阅读学生作业并标出错误——附带纠正示例。",
+    "f1_desc": "AI 实时阅读学生作业并标出错误。",
     "f2_badge": "AI · 测试版",
     "f2_title": "从材料生成测试",
     "f2_desc": "上传文件，获取带答案的完整题目电子版——分享给学生。",

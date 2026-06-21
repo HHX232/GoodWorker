@@ -10,7 +10,7 @@ export function ProfileSubNav() {
     { label: t('sub_teachers'), href: '/teachers' },
     { label: t('sub_posts'),    href: '/posts' },
     { label: t('sub_courses'),  href: '/teachers' },
-    { label: t('sub_support'),  href: '/profile' },
+    { label: t('sub_support'),  href: '/feedback' },
   ]
 
   return (

@@ -1,5 +1,6 @@
 'use client'
 
+import { useThemeCtx } from '@/app/providers/ThemeContext'
 import { useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
 import {
@@ -62,14 +63,23 @@ interface ActivityChartProps {
   data: WeeklyCount[]
   unit: string
   emptyText: string
+  isDark?: boolean
 }
 
-function ActivityChart({ title, data, unit, emptyText }: ActivityChartProps) {
+function ActivityChart({ title, data, unit, emptyText, isDark }: ActivityChartProps) {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
   const hasData = data.some(w => w.count > 0)
   const maxVal = hasData ? Math.max(...data.map(d => d.count)) : 0
 
   function barColor(entry: WeeklyCount, idx: number) {
+    if (isDark) {
+      if (entry.count === 0) return 'rgba(255,255,255,0.06)'
+      if (hoveredIdx !== null) {
+        if (idx === hoveredIdx) return '#818cf8'
+        return entry.count === maxVal ? '#6366f1' : 'rgba(255,255,255,0.12)'
+      }
+      return entry.count === maxVal ? '#818cf8' : 'rgba(255,255,255,0.1)'
+    }
     if (entry.count === 0) return '#EFEFEF'
     if (hoveredIdx !== null) {
       if (idx === hoveredIdx) return '#111118'
@@ -77,6 +87,10 @@ function ActivityChart({ title, data, unit, emptyText }: ActivityChartProps) {
     }
     return entry.count === maxVal ? '#111118' : '#D4D4D4'
   }
+
+  const gridColor = isDark ? 'rgba(255,255,255,0.06)' : '#F5F5F5'
+  const tickColor = isDark ? 'rgba(255,255,255,0.3)' : '#BBBBC8'
+  const cursorColor = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'
 
   return (
     <div className={styles.chartCard}>
@@ -87,9 +101,9 @@ function ActivityChart({ title, data, unit, emptyText }: ActivityChartProps) {
         <div className={styles.chartWrap}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} barCategoryGap="30%" onMouseLeave={() => setHoveredIdx(null)}>
-              <CartesianGrid vertical={false} stroke="#F5F5F5" strokeDasharray="0" />
-              <XAxis dataKey="week" tick={{ fontSize: 9, fill: '#BBBBC8' }} axisLine={false} tickLine={false} interval={2} />
-              <YAxis tick={{ fontSize: 10, fill: '#BBBBC8' }} axisLine={false} tickLine={false} width={22} allowDecimals={false} />
+              <CartesianGrid vertical={false} stroke={gridColor} strokeDasharray="0" />
+              <XAxis dataKey="week" tick={{ fontSize: 9, fill: tickColor }} axisLine={false} tickLine={false} interval={2} />
+              <YAxis tick={{ fontSize: 10, fill: tickColor }} axisLine={false} tickLine={false} width={22} allowDecimals={false} />
               <Tooltip
                 content={({ active, payload, label }) => {
                   if (!active || !payload?.length || payload[0]?.value == null) return null
@@ -100,7 +114,7 @@ function ActivityChart({ title, data, unit, emptyText }: ActivityChartProps) {
                     </div>
                   )
                 }}
-                cursor={{ fill: 'rgba(0,0,0,0.03)' }}
+                cursor={{ fill: cursorColor }}
               />
               <Bar dataKey="count" radius={[4, 4, 0, 0]} isAnimationActive animationDuration={600}
                 onMouseEnter={(_: unknown, idx: number) => setHoveredIdx(idx)}>
@@ -127,6 +141,7 @@ function SummaryCard({ value, label }: { value: string | number; label: string }
 
 export function StudentStatsModal({ isOpen, onClose }: Props) {
   const t = useTranslations('studentStats')
+  const { isDark } = useThemeCtx()
   const [data, setData] = useState<StatsData | null>(null)
   const [loading, setLoading] = useState(false)
   const [activePie, setActivePie] = useState<number | null>(null)
@@ -150,8 +165,8 @@ export function StudentStatsModal({ isOpen, onClose }: Props) {
   const hasScores = (data?.attemptsOverTime ?? []).some(w => w.avgScore != null)
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={e => e.stopPropagation()}>
+    <div className={`${styles.overlay} ${isDark ? styles.overlayDark : ''}`} onClick={onClose}>
+      <div className={`${styles.modal} ${isDark ? styles.modalDark : ''}`} onClick={e => e.stopPropagation()}>
 
         <div className={styles.header}>
           <div className={styles.headerLeft}>
@@ -191,9 +206,9 @@ export function StudentStatsModal({ isOpen, onClose }: Props) {
               {/* Activity charts 2×2 */}
               <div className={styles.sectionTitle}>{t('activityByWeek')}</div>
               <div className={styles.chartsGrid}>
-                <ActivityChart title={t('chartPosts')}    data={data.postsOverTime}    unit={t('unitPosts')}   emptyText={t('emptyPosts')} />
-                <ActivityChart title={t('chartRoadmaps')} data={data.roadmapsOverTime} unit={t('unitRoadmaps')} emptyText={t('emptyRoadmaps')} />
-                <ActivityChart title={t('chartCalls')}    data={data.callsOverTime}    unit={t('unitCalls')}   emptyText={t('emptyCalls')} />
+                <ActivityChart title={t('chartPosts')}    data={data.postsOverTime}    unit={t('unitPosts')}   emptyText={t('emptyPosts')}    isDark={isDark} />
+                <ActivityChart title={t('chartRoadmaps')} data={data.roadmapsOverTime} unit={t('unitRoadmaps')} emptyText={t('emptyRoadmaps')} isDark={isDark} />
+                <ActivityChart title={t('chartCalls')}    data={data.callsOverTime}    unit={t('unitCalls')}   emptyText={t('emptyCalls')}    isDark={isDark} />
 
                 {/* Test scores */}
                 <div className={styles.chartCard}>
@@ -204,9 +219,9 @@ export function StudentStatsModal({ isOpen, onClose }: Props) {
                     <div className={styles.chartWrap}>
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={data.attemptsOverTime} barCategoryGap="30%">
-                          <CartesianGrid vertical={false} stroke="#F5F5F5" strokeDasharray="0" />
-                          <XAxis dataKey="week" tick={{ fontSize: 9, fill: '#BBBBC8' }} axisLine={false} tickLine={false} interval={2} />
-                          <YAxis tick={{ fontSize: 10, fill: '#BBBBC8' }} axisLine={false} tickLine={false} width={28} domain={[0, 100]} tickFormatter={v => `${v}%`} />
+                          <CartesianGrid vertical={false} stroke={isDark ? 'rgba(255,255,255,0.06)' : '#F5F5F5'} strokeDasharray="0" />
+                          <XAxis dataKey="week" tick={{ fontSize: 9, fill: isDark ? 'rgba(255,255,255,0.3)' : '#BBBBC8' }} axisLine={false} tickLine={false} interval={2} />
+                          <YAxis tick={{ fontSize: 10, fill: isDark ? 'rgba(255,255,255,0.3)' : '#BBBBC8' }} axisLine={false} tickLine={false} width={28} domain={[0, 100]} tickFormatter={v => `${v}%`} />
                           <Tooltip
                             content={({ active, payload, label }) => {
                               if (!active || !payload?.length || payload[0]?.value == null) return null
@@ -218,15 +233,18 @@ export function StudentStatsModal({ isOpen, onClose }: Props) {
                                 </div>
                               )
                             }}
-                            cursor={{ fill: 'rgba(0,0,0,0.03)' }}
+                            cursor={{ fill: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)' }}
                           />
                           <Bar dataKey="avgScore" radius={[4, 4, 0, 0]} isAnimationActive animationDuration={600}>
                             {data.attemptsOverTime.map((entry, i) => (
                               <Cell key={i} fill={
-                                entry.avgScore == null ? '#EFEFEF'
-                                  : entry.avgScore >= 75 ? '#111118'
-                                    : entry.avgScore >= 50 ? '#888888'
-                                      : '#CCCCCC'
+                                entry.avgScore == null
+                                  ? (isDark ? 'rgba(255,255,255,0.06)' : '#EFEFEF')
+                                  : entry.avgScore >= 75
+                                    ? (isDark ? '#818cf8' : '#111118')
+                                    : entry.avgScore >= 50
+                                      ? (isDark ? 'rgba(255,255,255,0.25)' : '#888888')
+                                      : (isDark ? 'rgba(255,255,255,0.1)' : '#CCCCCC')
                               } style={{ transition: 'fill 0.12s ease' }} />
                             ))}
                           </Bar>
@@ -239,7 +257,7 @@ export function StudentStatsModal({ isOpen, onClose }: Props) {
 
               {/* Errors over time */}
               <div className={styles.sectionTitle}>{t('errorsByWeek')}</div>
-              <ActivityChart title="" data={data.errorsOverTime} unit={t('unitErrors')} emptyText={t('emptyErrors')} />
+              <ActivityChart title="" data={data.errorsOverTime} unit={t('unitErrors')} emptyText={t('emptyErrors')} isDark={isDark} />
 
               {/* Error categories */}
               {data.errorsByCategory.length > 0 && (

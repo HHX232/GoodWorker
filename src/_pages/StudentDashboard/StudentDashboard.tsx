@@ -303,6 +303,7 @@ export const StudentDashboard: FC<Props> = ({ initialData }) => {
           serviceBookings={profileData?.serviceBookings ?? []}
           personalServices={profileData?.personalServices ?? []}
           loading={profileLoading}
+          userName={name}
         />
       </div>
 

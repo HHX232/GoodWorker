@@ -80,11 +80,14 @@
 .legend {
    display: flex;
    flex-direction: column;
-   gap: 0px;
-   // занимает оставшееся место
+   gap: 2px;
    flex: 1;
-   justify-content: space-evenly;
-   overflow: hidden;
+   min-height: 0;
+   overflow-y: auto;
+
+   &::-webkit-scrollbar { width: 3px; }
+   &::-webkit-scrollbar-track { background: transparent; }
+   &::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 2px; }
 }
 
 .legend__row {
@@ -214,6 +217,7 @@
   .title { color: #e8eaf0; }
   .center_num { color: #e8eaf0; }
   .center_sub { color: rgba(255,255,255,0.2); }
+  .legend { &::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); } }
   .legend__row { &:hover { background: rgba(255,255,255,0.05); } }
   .legend__row_active { background: rgba(255,255,255,0.05); }
   .legend__name { color: rgba(255,255,255,0.4); }

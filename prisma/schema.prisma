@@ -831,6 +831,17 @@ model NotificationSubscription {
   @@index([userId])
 }
 
+model TopicTranslation {
+  id          String   @id @default(uuid())
+  original    String
+  langCode    String
+  translation String
+  createdAt   DateTime @default(now())
+
+  @@unique([original, langCode])
+  @@index([original])
+}
+
 model AdminEmail {
   id        String   @id @default(uuid())
   email     String   @unique

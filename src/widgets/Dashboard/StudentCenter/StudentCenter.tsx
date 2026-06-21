@@ -3,6 +3,7 @@
 import { RoadMapPreview } from '@/shared/ui/RoadMap/RoadMapPreview/RoadMapPreview'
 import { ServiceCard } from '@/shared/ui/Service/ServiceCard/ServiceCard'
 import { StudentErrorsList } from '@/shared/ui/Stats/StudentErrorsWidget/StudentErrorsList'
+import { VideoCallModal } from '@/widgets/Dashboard/VideoCallModal/VideoCallModal'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
 import styles from './StudentCenter.module.scss'
@@ -90,6 +91,7 @@ interface Props {
   serviceBookings: ServiceBooking[]
   personalServices: PersonalService[]
   loading: boolean
+  userName?: string
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -122,9 +124,10 @@ function BookingStatusBadge({ status, t }: { status: string; t: ReturnType<typeo
 
 export function StudentCenter({
   teacherCount, callCount, errorCount,
-  roadmapAccess, serviceBookings, personalServices, loading,
+  roadmapAccess, serviceBookings, personalServices, loading, userName = '',
 }: Props) {
   const [localPersonalServices, setLocalPersonalServices] = useState<PersonalService[]>(personalServices)
+  const [videoOpen, setVideoOpen] = useState(false)
 
   const handlePersonalAccepted = (id: string) => {
     setLocalPersonalServices(prev => prev.filter(s => s.id !== id))
@@ -189,17 +192,34 @@ export function StudentCenter({
 
   return (
     <div className={styles.center}>
-      <div className={styles.statsRow}>
-        {stats.map(s => (
-          <div key={s.label} className={styles.statCard}>
-            <div className={styles.statIcon} style={{ background: s.bg }}>{s.icon}</div>
-            <div className={styles.statText}>
-              <div className={styles.statValue}>{s.value}</div>
-              <div className={styles.statLabel}>{s.label}</div>
+      <div className={styles.topRow}>
+        <div className={styles.statsRow}>
+          {stats.map(s => (
+            <div key={s.label} className={styles.statCard}>
+              <div className={styles.statIcon} style={{ background: s.bg }}>{s.icon}</div>
+              <div className={styles.statText}>
+                <div className={styles.statValue}>{s.value}</div>
+                <div className={styles.statLabel}>{s.label}</div>
+              </div>
             </div>
+          ))}
+        </div>
+
+        <div className={styles.videoCallBlock}>
+          <div className={styles.videoCallTitle}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14" />
+              <rect x="1" y="6" width="14" height="12" rx="2" />
+            </svg>
+            {t('videoRoom')}
           </div>
-        ))}
+          <button className={styles.videoCallBtn} onClick={() => setVideoOpen(true)}>
+            {t('createVideoCallBtn')}
+          </button>
+        </div>
       </div>
+
+      {videoOpen && <VideoCallModal defaultName={userName} onClose={() => setVideoOpen(false)} />}
 
       <div className={styles.tabs}>
         {TABS.map(tt => (

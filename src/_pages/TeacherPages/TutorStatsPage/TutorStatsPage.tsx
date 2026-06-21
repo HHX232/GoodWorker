@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { StudentErrorsWidget, ErrorStat } from '@/shared/ui/Stats/StudentErrorsWidget/StudentErrorsWidget'
 import HoursChart from '@/shared/ui/Stats/HoursChart/HoursChart'
 import { StatsHero } from '@/shared/ui/Stats/StatsHero/StatsHero'
@@ -66,6 +66,7 @@ function calendarEventToLesson(e: CalendarEvent, eventSubject: string): Calendar
 
 export default function TutorStatsPage({ teacherId }: { teacherId: string }) {
   const t = useTranslations('statsPage')
+  const locale = useLocale()
   const [data, setData] = useState<StatsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -73,13 +74,32 @@ export default function TutorStatsPage({ teacherId }: { teacherId: string }) {
   useEffect(() => {
     fetch(`/api/statistics/${teacherId}`)
       .then((r) => r.json())
-      .then((d) => {
+      .then(async (d) => {
         if (d.error) { setError(d.error); return }
+
+        // Translate subject names lazily if not Russian
+        if (locale !== 'ru' && d.subjectData?.length) {
+          try {
+            const topics = d.subjectData.map((s: SubjectItem) => s.name)
+            const res = await fetch('/api/translate-topics', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ topics, langCode: locale }),
+            })
+            if (res.ok) {
+              const { translations } = await res.json()
+              d.subjectData = d.subjectData.map((s: SubjectItem, i: number) => ({
+                ...s, name: translations[i] ?? s.name,
+              }))
+            }
+          } catch {}
+        }
+
         setData(d)
       })
       .catch(() => setError(t('loading')))
       .finally(() => setLoading(false))
-  }, [teacherId, t])
+  }, [teacherId, t, locale])
 
   if (loading) {
     return (

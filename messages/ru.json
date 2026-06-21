@@ -145,11 +145,14 @@
     "miniTestAtLeastOne": "Добавьте хотя бы один вопрос",
     "miniTestFillAll": "Заполните все вопросы перед сохранением",
     "testLinkSelectTest": "Выбрать тест",
-    "testLinkChange": "Изменить тест",
+    "testLinkAddMore": "Добавить ещё тест",
+    "testLinkChange": "Удалить",
     "testLinkSearch": "Поиск теста...",
     "testLinkLoading": "Загрузка...",
     "testLinkNoTests": "У вас нет тестов",
-    "testLinkSelected": "Выбран: {title}"
+    "testLinkSelected": "Выбран: {title}",
+    "testLinkSelectedCount": "Выбрано: {count}",
+    "testLinkDone": "Готово"
   },
   "InfoTextEditor": {
     "placeholder": "Введите текст материала...",
@@ -662,7 +665,10 @@
     "share": "Поделиться",
     "copied": "Скопировано!",
     "bookmark": "Добавить в закладки",
-    "bookmarkRemove": "Убрать из закладок"
+    "bookmarkRemove": "Убрать из закладок",
+    "testLinkBadge": "Тест",
+    "testLinkDefaultTitle": "Тест",
+    "testLinkHint": "Перейти к тесту →"
   },
   "UserPostInfo": {
     "userType": "Тип пользователя",
@@ -826,6 +832,7 @@
     "sortByFreq": "Частые",
     "sortByTime": "По времени",
     "errorsEmpty": "Ошибок пока нет",
+    "recommendedPosts": "Рекомендованные посты",
     "correctedLabel": "Исправлено",
     "memberSinceStudent": "Участник с",
     "myStats": "Моя статистика",
@@ -2018,6 +2025,7 @@
     "sub_courses": "Курсы",
     "sub_support": "Поддержка",
     "btn_create": "Создать курс",
+    "btn_create_post": "Создать пост",
     "btn_find_teacher": "Найти учителя",
     "btn_how": "Присоединиться к видео-уроку",
     "video_eyebrow": "Авто-конспект звонка",
@@ -2076,7 +2084,7 @@
     "features_h2_hl": "и что скоро",
     "f1_badge": "AI · АКТИВНО",
     "f1_title": "Авто-поиск ошибок",
-    "f1_desc": "AI анализирует работу студента и сохраняет ошибки в профиль с примером исправления.",
+    "f1_desc": "AI анализирует работу студента и сохраняет ошибки в профиль.",
     "f2_badge": "AI · BETA",
     "f2_title": "Тесты из материала",
     "f2_desc": "Загрузите файл и получите все вопросы в электронном варианте с ответами — делитесь с учениками.",

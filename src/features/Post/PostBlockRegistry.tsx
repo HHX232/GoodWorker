@@ -30,7 +30,7 @@ export const PostBlockRegistry: PostBlockRegistry = {
     label: 'Тест',
     description: 'Ссылка на тест',
     icon: <LinkIcon className='stroke-violet-400' />,
-    defaultPayload: {testId: null, title: null}
+    defaultPayload: {tests: []}
   },
   [PostBlockType.MINI_TEST]: {
     type: PostBlockType.MINI_TEST,

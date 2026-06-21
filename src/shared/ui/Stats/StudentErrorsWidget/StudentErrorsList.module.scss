@@ -88,6 +88,14 @@
   &:hover { background: #FAFAFA; }
 }
 
+.errorItemClickable {
+  cursor: pointer;
+}
+
+.errorItemOpen {
+  background: #FAFAFE;
+}
+
 .errorMeta {
   display: flex;
   align-items: center;
@@ -134,22 +142,37 @@
 
 .freqItem {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   padding: 10px 20px;
   border-bottom: 1px solid #F3F3F8;
   gap: 12px;
+  cursor: pointer;
 
   &:last-child { border-bottom: none; }
   &:hover { background: #FAFAFA; }
 }
 
+.freqItemClickable { cursor: pointer; }
+
+.freqItemOpen {
+  background: #FAFAFE;
+}
+
 .freqLeft {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   flex: 1;
   min-width: 0;
+}
+
+.freqRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding-top: 2px;
 }
 
 .freqRank {
@@ -202,6 +225,70 @@
   flex-shrink: 0;
 }
 
+// ── Chevron ───────────────────────────────────────────────────────────────────
+
+.chevron {
+  color: #ABABAB;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+  margin-left: auto;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+// ── Post recommendations ──────────────────────────────────────────────────────
+
+.recWrap {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.recLabel {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #ABABAB;
+  margin-bottom: 2px;
+}
+
+.recPost {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: #EEF2FF;
+  text-decoration: none;
+  transition: background 0.15s;
+
+  &:hover { background: #E0E7FF; }
+}
+
+.recIcon {
+  color: #534AB7;
+  flex-shrink: 0;
+}
+
+.recTitle {
+  font-size: 12px;
+  font-weight: 500;
+  color: #534AB7;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recLoading {
+  font-size: 12px;
+  color: #ABABAB;
+  padding: 6px 0;
+}
+
 :global(html.theme-dark), :global(html.pomodoro-dark) {
   .wrap { background: #1a1c24; border-color: rgba(255,255,255,0.07); }
   .header { border-bottom-color: rgba(255,255,255,0.07); }
@@ -217,9 +304,17 @@
   .errorDesc { color: rgba(255,255,255,0.7); }
   .errorFragment { color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.04); border-left-color: rgba(255,255,255,0.12); }
   .freqItem { border-bottom-color: rgba(255,255,255,0.05); &:hover { background: rgba(255,255,255,0.02); } }
+  .freqItemOpen { background: rgba(129,140,248,0.06); }
   .freqRank { color: rgba(255,255,255,0.25); }
   .freqName { color: #e8eaf0; }
   .freqTrack { background: rgba(255,255,255,0.07); }
   .freqCount { color: #818cf8; }
   .freqLast { color: rgba(255,255,255,0.25); }
+  .errorItemOpen { background: rgba(129,140,248,0.06); }
+  .chevron { color: rgba(255,255,255,0.25); }
+  .recPost { background: rgba(129,140,248,0.12); &:hover { background: rgba(129,140,248,0.2); } }
+  .recIcon { color: #818cf8; }
+  .recTitle { color: #a5b4fc; }
+  .recLabel { color: rgba(255,255,255,0.25); }
+  .recLoading { color: rgba(255,255,255,0.25); }
 }

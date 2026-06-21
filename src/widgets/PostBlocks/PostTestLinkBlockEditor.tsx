@@ -2,7 +2,7 @@
 
 import TestService, {ITestItem} from '@/features/services/TestService.service'
 import {useActions} from '@/features/hooks/store/useActions'
-import {PostTestLinkPayload} from '@/shared/types/Post/Post.type'
+import {PostTestLinkPayload, getPostTestLinks} from '@/shared/types/Post/Post.type'
 import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
 import TestPreview from '@/widgets/Tasks/TestPreview/TestPreview'
 import {useQuery} from '@tanstack/react-query'
@@ -22,6 +22,9 @@ export function PostTestLinkBlockEditor({blockId, payload}: Props) {
   const [modalOpen, setModalOpen] = useState(false)
   const [search, setSearch] = useState('')
 
+  const selected = getPostTestLinks(payload)
+  const selectedIds = new Set(selected.map(s => s.id))
+
   const {data: tests = [], isLoading} = useQuery({
     queryKey: ['my-tests'],
     queryFn: () => TestService.getMyTests(),
@@ -37,13 +40,16 @@ export function PostTestLinkBlockEditor({blockId, payload}: Props) {
     )
   }, [tests, search])
 
-  const select = (test: ITestItem) => {
-    updatePostBlockPayload({id: blockId, payload: {testId: test.id, title: test.title}})
-    setModalOpen(false)
+  const toggle = (test: ITestItem) => {
+    const isOn = selectedIds.has(test.id)
+    const next = isOn
+      ? selected.filter(s => s.id !== test.id)
+      : [...selected, {id: test.id, title: test.title}]
+    updatePostBlockPayload({id: blockId, payload: {tests: next}})
   }
 
-  const clear = () => {
-    updatePostBlockPayload({id: blockId, payload: {testId: null, title: null}})
+  const remove = (id: string) => {
+    updatePostBlockPayload({id: blockId, payload: {tests: selected.filter(s => s.id !== id)}})
   }
 
   const getThemes = (test: ITestItem) =>
@@ -51,46 +57,54 @@ export function PostTestLinkBlockEditor({blockId, payload}: Props) {
       ?.map((tc) => tc.category.translations.find((tr) => tr.langCode === 'ru')?.name ?? tc.category.slug)
       .slice(0, 3) ?? []
 
-  const selectedTest = tests.find((t) => t.id === payload.testId)
-
-  if (payload.testId) {
-    return (
-      <div className={styles.test_link_selected}>
-        {selectedTest ? (
-          <TestPreview
-            useLink={false}
-            useBorder={true}
-            testId={selectedTest.id}
-            avatarUrl={selectedTest.teacher?.avatarUrl ?? 'https://i.pravatar.cc/88?img=1'}
-            authorName={selectedTest.teacher?.name ?? ''}
-            title={selectedTest.title}
-            description={(selectedTest.content as Record<string, unknown>)?.description as string ?? ''}
-            themes={getThemes(selectedTest)}
-            createdAt={selectedTest.createdAt}
-          />
-        ) : (
-          <p className={styles.test_link_id}>
-            {t('testLinkSelected', {title: payload.title ?? payload.testId})}
-          </p>
-        )}
-        <button type='button' className={styles.test_link_clear} onClick={clear}>
-          <XIcon size={12} />
-          {t('testLinkChange')}
-        </button>
-      </div>
-    )
-  }
-
   return (
     <>
+      {/* Selected tests list */}
+      {selected.length > 0 && (
+        <div className={styles.test_link_selected}>
+          {selected.map(s => {
+            const full = tests.find(t => t.id === s.id)
+            return (
+              <div key={s.id} className={styles.test_link_row}>
+                {full ? (
+                  <TestPreview
+                    useLink={false}
+                    useBorder={true}
+                    testId={full.id}
+                    avatarUrl={full.teacher?.avatarUrl ?? 'https://i.pravatar.cc/88?img=1'}
+                    authorName={full.teacher?.name ?? ''}
+                    title={full.title}
+                    description={(full.content as Record<string, unknown>)?.description as string ?? ''}
+                    themes={getThemes(full)}
+                    createdAt={full.createdAt}
+                  />
+                ) : (
+                  <p className={styles.test_link_id}>{s.title || s.id}</p>
+                )}
+                <button type='button' className={styles.test_link_clear} onClick={() => remove(s.id)}>
+                  <XIcon size={12} />
+                  {t('testLinkChange')}
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Add / open modal */}
       <button type='button' className={styles.test_link_stub} onClick={() => setModalOpen(true)}>
         <span className={styles.stub_icon}>
           <SearchIcon size={18} />
         </span>
         <div>
-          <p className={styles.stub_text}>{t('testLinkSelectTest')}</p>
+          <p className={styles.stub_text}>
+            {selected.length > 0 ? t('testLinkAddMore') : t('testLinkSelectTest')}
+          </p>
           <p className={styles.stub_sub}>{t('testLinkNoTests')}</p>
         </div>
+        {selected.length > 0 && (
+          <span className={styles.test_link_count}>{selected.length}</span>
+        )}
       </button>
 
       <ModalWindowDefault
@@ -108,17 +122,23 @@ export function PostTestLinkBlockEditor({blockId, payload}: Props) {
           />
         </div>
 
+        {selectedIds.size > 0 && (
+          <p className={styles.modal_selected_hint}>
+            {t('testLinkSelectedCount', {count: selectedIds.size})}
+          </p>
+        )}
+
         {isLoading && <p className={styles.modal_hint}>{t('testLinkLoading')}</p>}
         {!isLoading && filtered.length === 0 && <p className={styles.modal_hint}>{t('testLinkNoTests')}</p>}
 
         <div className={styles.modal_grid}>
           {filtered.map((test) => {
-            const isSelected = test.id === payload.testId
+            const isSelected = selectedIds.has(test.id)
             return (
               <div
                 key={test.id}
                 className={`${styles.modal_test_card} ${isSelected ? styles.modal_test_card_selected : ''}`}
-                onClick={() => select(test)}
+                onClick={() => toggle(test)}
               >
                 <div className={`${styles.modal_checkbox} ${isSelected ? styles.modal_checkbox_checked : ''}`}>
                   {isSelected && <CheckIcon size={10} />}
@@ -139,6 +159,14 @@ export function PostTestLinkBlockEditor({blockId, payload}: Props) {
             )
           })}
         </div>
+
+        <button
+          type='button'
+          className={styles.modal_done_btn}
+          onClick={() => setModalOpen(false)}
+        >
+          {t('testLinkDone')} {selectedIds.size > 0 && `(${selectedIds.size})`}
+        </button>
       </ModalWindowDefault>
     </>
   )
