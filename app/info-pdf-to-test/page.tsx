@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { useSession } from 'next-auth/react'
@@ -11,6 +12,22 @@ const CSS = `
     --ink: #0c0c0d; --ink-2: #5a5a5e; --ink-3: #9d9d9f;
     --line: #e3e2dd; --radius: 0px;
     --mono: "JetBrains Mono", ui-monospace, monospace;
+    --btn-fg: #ffffff; --btn-fg-mid: rgba(255,255,255,0.65); --btn-fg-dim: rgba(255,255,255,0.5);
+  }
+  html.theme-dark, html.pomodoro-dark {
+    --bg: #0e0e10; --paper: #171719; --paper-2: #1d1d20;
+    --ink: #e0e0de; --ink-2: #808079; --ink-3: #4c4c49;
+    --line: #2a2a2e; --btn-fg: #0e0e10; --btn-fg-mid: rgba(14,14,16,0.65); --btn-fg-dim: rgba(14,14,16,0.5);
+  }
+  .tt-cta-wrap { background: #0c0c0d !important; color: #ffffff; }
+  html.theme-dark .tt-cta-wrap, html.pomodoro-dark .tt-cta-wrap { background: #17171a !important; }
+  .tt-grid {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image: linear-gradient(to right, rgba(12,12,13,0.035) 1px, transparent 1px), linear-gradient(to bottom, rgba(12,12,13,0.035) 1px, transparent 1px);
+    background-size: 64px 64px;
+  }
+  html.theme-dark .tt-grid, html.pomodoro-dark .tt-grid {
+    background-image: linear-gradient(to right, rgba(255,255,255,0.028) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.028) 1px, transparent 1px);
   }
   @keyframes tt-caret { 0%,50%{opacity:1}50.01%,100%{opacity:0} }
   @keyframes tt-logIn { from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none} }
@@ -42,17 +59,18 @@ function Eyebrow({ children, style }: { children: React.ReactNode; style?: React
   )
 }
 
-const btnPrimary: React.CSSProperties = { fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer', background: 'var(--ink)', color: '#fff', border: '1.5px solid var(--ink)', padding: '11px 18px', borderRadius: 'var(--radius)' }
+const btnPrimary: React.CSSProperties = { fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer', background: 'var(--ink)', color: 'var(--btn-fg)', border: '1.5px solid var(--ink)', padding: '11px 18px', borderRadius: 'var(--radius)' }
 const btnGhost: React.CSSProperties = { fontFamily: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer', background: 'transparent', color: 'var(--ink)', border: '1.5px solid var(--line)', padding: '11px 18px', borderRadius: 'var(--radius)' }
 
 // ── Nav ───────────────────────────────────────────────────────
 function Nav() {
-  const links = ['Как работает', 'Типы вопросов', 'Демо', 'FAQ']
+  const t = useTranslations('PdfInfoPage')
+  const links = [t('nav_how'), t('nav_types'), t('nav_demo'), t('nav_faq')]
   return (
     <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 0', borderBottom: '1px solid var(--line)' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
         <Link href="/" style={{ textDecoration: 'none', color: 'inherit', fontSize: 19, fontWeight: 800, letterSpacing: '-0.02em' }}>GoodWorker</Link>
-        <span style={{ fontFamily: 'var(--mono)', fontSize: 12, letterSpacing: '0.14em', color: 'var(--ink-2)', textTransform: 'uppercase' }}>/ Тесты</span>
+        <span style={{ fontFamily: 'var(--mono)', fontSize: 12, letterSpacing: '0.14em', color: 'var(--ink-2)', textTransform: 'uppercase' }}>{t('nav_subtitle')}</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
         <div className="tt-navlinks" style={{ display: 'flex', gap: 26 }}>
@@ -60,7 +78,7 @@ function Nav() {
             <span key={l} style={{ fontFamily: 'var(--mono)', fontSize: 12, letterSpacing: '0.04em', color: 'var(--ink-2)', cursor: 'pointer' }}>{l}</span>
           ))}
         </div>
-        <Link href="/profile" style={{ ...btnPrimary, textDecoration: 'none', fontSize: 13, display: 'inline-block' }}>Загрузить PDF</Link>
+        <Link href="/profile" style={{ ...btnPrimary, textDecoration: 'none', fontSize: 13, display: 'inline-block' }}>{t('nav_upload')}</Link>
       </div>
     </nav>
   )
@@ -68,10 +86,11 @@ function Nav() {
 
 // ── TrustRow ──────────────────────────────────────────────────
 function TrustRow() {
-  const items = ['Учителя школ', 'Репетиторы', 'Учебные центры', 'Подготовка к ЦЭ / ЦТ']
+  const t = useTranslations('PdfInfoPage')
+  const items = [t('trust_1'), t('trust_2'), t('trust_3'), t('trust_4')]
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-      <span style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink-3)' }}>Для кого</span>
+      <span style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink-3)' }}>{t('trust_label')}</span>
       {items.map((it, i) => (
         <span key={it} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           {i > 0 && <span style={{ width: 3, height: 3, background: 'var(--ink-3)', borderRadius: '50%', display: 'inline-block' }} />}
@@ -90,7 +109,7 @@ function FauxPage({ progress }: { progress: number }) {
     { w: '46%', q: true }, { w: '90%' }, { w: '64%' }, { w: '30%' },
   ]
   return (
-    <div style={{ position: 'relative', background: '#fff', border: '1px solid var(--line)', padding: '18px 18px 22px', height: '100%', overflow: 'hidden', borderRadius: 'var(--radius)' }}>
+    <div style={{ position: 'relative', background: 'var(--paper)', border: '1px solid var(--line)', padding: '18px 18px 22px', height: '100%', overflow: 'hidden', borderRadius: 'var(--radius)' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
         {rows.map((r, i) => {
           const pos = ((i + 0.5) / rows.length) * 100
@@ -114,6 +133,7 @@ function FauxPage({ progress }: { progress: number }) {
 
 // ── SingleChoice ──────────────────────────────────────────────
 function SingleChoice({ question, options, correct }: { question?: string; options: string[]; correct: number }) {
+  const t = useTranslations('PdfInfoPage')
   const [sel, setSel] = useState<number | null>(null)
   return (
     <div>
@@ -126,15 +146,15 @@ function SingleChoice({ question, options, correct }: { question?: string; optio
           return (
             <button key={i} type="button" onClick={() => setSel(i)} style={{
               display: 'flex', alignItems: 'center', gap: 11, textAlign: 'left', cursor: 'pointer',
-              border: `1px solid ${on ? 'var(--ink)' : 'var(--line)'}`, background: on ? 'var(--ink)' : '#fff',
-              color: on ? '#fff' : 'var(--ink)', padding: '11px 13px', borderRadius: 'var(--radius)',
+              border: `1px solid ${on ? 'var(--ink)' : 'var(--line)'}`, background: on ? 'var(--ink)' : 'var(--paper)',
+              color: on ? 'var(--btn-fg)' : 'var(--ink)', padding: '11px 13px', borderRadius: 'var(--radius)',
               font: 'inherit', fontSize: 14, transition: 'border-color .12s, background .12s',
             }}>
-              <span style={{ width: 18, height: 18, flexShrink: 0, border: `1.5px solid ${on ? '#fff' : 'var(--ink-3)'}`, borderRadius: 'var(--radius)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--mono)', fontSize: 10 }}>
+              <span style={{ width: 18, height: 18, flexShrink: 0, border: `1.5px solid ${on ? 'var(--btn-fg)' : 'var(--ink-3)'}`, borderRadius: 'var(--radius)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--mono)', fontSize: 10 }}>
                 {on ? '✓' : String.fromCharCode(65 + i)}
               </span>
               <span style={{ flex: 1 }}>{o}</span>
-              {showState && <span style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.1em', opacity: 0.8 }}>{isCorrect ? 'ВЕРНО' : (on ? 'НЕВЕРНО' : '')}</span>}
+              {showState && <span style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.1em', opacity: 0.8 }}>{isCorrect ? t('sc_correct') : (on ? t('sc_wrong') : '')}</span>}
             </button>
           )
         })}
@@ -164,10 +184,11 @@ interface TestResult {
 
 // inline preview for question types other than single-choice
 function QuestionPreview({ q, idx, total }: { q: PQ; idx: number; total: number }) {
-  const label = { single: 'ВЫБОР ОДНОГО', multi: 'ВЫБОР НЕСКОЛЬКИХ', match: 'СОПОСТАВЛЕНИЕ', fill: 'ВВОД ОТВЕТА', bool: 'ВЕРНО / НЕВЕРНО', order: 'ПОРЯДОК' }[q.type]
+  const t = useTranslations('PdfInfoPage')
+  const label = { single: t('qtype_single'), multi: t('qtype_multi'), match: t('qtype_match'), fill: t('qtype_fill'), bool: t('qtype_bool'), order: t('qtype_order') }[q.type]
   return (
     <div style={{ border: '1px solid var(--line)', borderRadius: 'var(--radius)', padding: 16, background: 'var(--paper-2)', marginBottom: 0 }}>
-      <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)', letterSpacing: '0.08em', marginBottom: 10 }}>ВОПРОС {idx + 1} / {total} · {label}</div>
+      <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)', letterSpacing: '0.08em', marginBottom: 10 }}>{t('done_q_num', { idx: idx + 1, total, label })}</div>
       {q.type === 'single' && (
         <SingleChoice question={q.question} options={q.options} correct={q.correct} />
       )}
@@ -186,7 +207,7 @@ function QuestionPreview({ q, idx, total }: { q: PQ; idx: number; total: number 
       {q.type === 'fill' && (
         <div>
           <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 10, lineHeight: 1.4 }}>{q.question}</div>
-          <FillIn answer={q.answer} placeholder="введите ответ…" question={q.question} />
+          <FillIn answer={q.answer} placeholder={t('fill_placeholder')} question={q.question} />
         </div>
       )}
       {q.type === 'match' && (
@@ -207,6 +228,7 @@ function QuestionPreview({ q, idx, total }: { q: PQ; idx: number; total: number 
 
 // ── DropDemo ──────────────────────────────────────────────────
 function DropDemo({ wide = false }: { wide?: boolean }) {
+  const t = useTranslations('PdfInfoPage')
   const { data: session } = useSession()
   const isLoggedIn = !!session?.user
 
@@ -257,13 +279,13 @@ function DropDemo({ wide = false }: { wide?: boolean }) {
 
     // Scripted log messages at realistic timings
     const LOG: [number, string][] = [
-      [300,  '→ загрузка файла…'],
-      [900,  '→ открытие документа…'],
-      [2200, `→ парсинг страниц документа`],
-      [4500, '→ распознавание структуры…'],
-      [7000, '→ анализ вопросов ИИ…'],
-      [10000,'→ определение типов заданий…'],
-      [14000,'→ финализация…'],
+      [300,  t('proc_log1')],
+      [900,  t('proc_log2')],
+      [2200, t('proc_log3')],
+      [4500, t('proc_log4')],
+      [7000, t('proc_log5')],
+      [10000, t('proc_log6')],
+      [14000, t('proc_log7')],
     ]
     LOG.forEach(([t, msg]) => {
       timers.current.push(window.setTimeout(() => addLog(msg), t))
@@ -284,7 +306,7 @@ function DropDemo({ wide = false }: { wide?: boolean }) {
 
       clearAll()
       setProgress(100)
-      addLog(`✓ тест собран — ${(data as TestResult).questions.length} вопросов`)
+      addLog(t('proc_done', { count: (data as TestResult).questions.length }))
       setResult(data as TestResult)
       timers.current.push(window.setTimeout(() => setState('done'), 500))
     } catch (e) {
@@ -319,20 +341,20 @@ function DropDemo({ wide = false }: { wide?: boolean }) {
     const q = qs[previewIdx]
     const typeCount: Record<string, number> = {}
     qs.forEach(qq => { typeCount[qq.type] = (typeCount[qq.type] ?? 0) + 1 })
-    const typeTags = Object.entries(typeCount).map(([t, n]) => {
-      const labels: Record<string, string> = { single: 'выбор', multi: 'несколько', match: 'пары', fill: 'ввод', bool: 'да/нет', order: 'порядок' }
-      return `${labels[t] ?? t} ×${n}`
+    const typeTags = Object.entries(typeCount).map(([tp, n]) => {
+      const labels: Record<string, string> = { single: t('type_single'), multi: t('type_multi'), match: t('type_match'), fill: t('type_fill'), bool: t('type_bool'), order: t('type_order') }
+      return `${labels[tp] ?? tp} ×${n}`
     })
     return (
-      <div style={{ position: 'relative', border: '1.5px solid var(--ink)', background: '#fff', borderRadius: 'var(--radius)', padding: 24 }}>
+      <div style={{ position: 'relative', border: '1.5px solid var(--ink)', background: 'var(--paper)', borderRadius: 'var(--radius)', padding: 24 }}>
         <CornerTicks />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ width: 24, height: 24, borderRadius: 'var(--radius)', background: 'var(--ink)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--mono)', fontSize: 13 }}>✓</span>
+            <span style={{ width: 24, height: 24, borderRadius: 'var(--radius)', background: 'var(--ink)', color: 'var(--btn-fg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--mono)', fontSize: 13 }}>✓</span>
             <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.01em' }}>{result.title}</span>
           </div>
           <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-2)', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
-            {qs.length} ВОПРОСОВ · {result.pageCount} СТР{result.ocr ? ' · OCR' : ''}
+            {result.ocr ? t('done_meta_ocr', { count: qs.length, pages: result.pageCount }) : t('done_meta', { count: qs.length, pages: result.pageCount })}
           </span>
         </div>
         <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
@@ -346,7 +368,7 @@ function DropDemo({ wide = false }: { wide?: boolean }) {
         {qs.length > 1 && (
           <div style={{ display: 'flex', gap: 7, marginTop: 10, flexWrap: 'wrap' }}>
             {qs.map((_, i) => (
-              <button key={i} type="button" onClick={() => setPreviewIdx(i)} style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--mono)', fontSize: 11, cursor: 'pointer', border: `1px solid ${i === previewIdx ? 'var(--ink)' : 'var(--line)'}`, background: i === previewIdx ? 'var(--ink)' : '#fff', color: i === previewIdx ? '#fff' : 'var(--ink-3)', borderRadius: 'var(--radius)' }}>{i + 1}</button>
+              <button key={i} type="button" onClick={() => setPreviewIdx(i)} style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--mono)', fontSize: 11, cursor: 'pointer', border: `1px solid ${i === previewIdx ? 'var(--ink)' : 'var(--line)'}`, background: i === previewIdx ? 'var(--ink)' : 'var(--paper)', color: i === previewIdx ? 'var(--btn-fg)' : 'var(--ink-3)', borderRadius: 'var(--radius)' }}>{i + 1}</button>
             ))}
           </div>
         )}
@@ -354,18 +376,18 @@ function DropDemo({ wide = false }: { wide?: boolean }) {
         {/* Guest notice */}
         {result.isGuest && (
           <div style={{ marginTop: 16, padding: '10px 14px', border: '1px dashed var(--line)', borderRadius: 'var(--radius)', fontSize: 13, color: 'var(--ink-2)', lineHeight: 1.5 }}>
-            Бесплатный просмотр: {result.guestLimit} вопросов с одной страницы.{' '}
-            <Link href="/auth/register" style={{ color: 'var(--ink)', fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: 2 }}>Зарегистрируйтесь</Link>{' '}
-            — чтобы обработать весь документ, сохранить и поделиться тестом.
+            {t('done_guest', { n: result.guestLimit ?? 0 })}{' '}
+            <Link href="/auth/register" style={{ color: 'var(--ink)', fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: 2 }}>{t('done_register')}</Link>{' '}
+            {t('done_register_sfx')}
           </div>
         )}
 
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
           {isLoggedIn
-            ? <Link href="/profile" style={{ ...btnPrimary, textDecoration: 'none', display: 'inline-block' }}>Сохранить тест →</Link>
-            : <Link href="/auth/register" style={{ ...btnPrimary, textDecoration: 'none', display: 'inline-block' }}>Войти и сохранить →</Link>
+            ? <Link href="/profile" style={{ ...btnPrimary, textDecoration: 'none', display: 'inline-block' }}>{t('done_save')}</Link>
+            : <Link href="/auth/register" style={{ ...btnPrimary, textDecoration: 'none', display: 'inline-block' }}>{t('done_login_save')}</Link>
           }
-          <button type="button" onClick={reset} style={btnGhost}>Загрузить другой</button>
+          <button type="button" onClick={reset} style={btnGhost}>{t('done_another')}</button>
         </div>
       </div>
     )
@@ -373,41 +395,41 @@ function DropDemo({ wide = false }: { wide?: boolean }) {
 
   // ── VIP REQUIRED ──────────────────────────────────────────────
   if (state === 'vip') return (
-    <div style={{ position: 'relative', border: '1.5px solid var(--ink)', background: '#fff', borderRadius: 'var(--radius)', padding: 24 }}>
+    <div style={{ position: 'relative', border: '1.5px solid var(--ink)', background: 'var(--paper)', borderRadius: 'var(--radius)', padding: 24 }}>
       <CornerTicks />
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-        <span style={{ width: 24, height: 24, borderRadius: 'var(--radius)', background: 'var(--ink)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--mono)', fontSize: 13 }}>★</span>
-        <span style={{ fontSize: 16, fontWeight: 700 }}>VIP-формат</span>
+        <span style={{ width: 24, height: 24, borderRadius: 'var(--radius)', background: 'var(--ink)', color: 'var(--btn-fg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--mono)', fontSize: 13 }}>★</span>
+        <span style={{ fontSize: 16, fontWeight: 700 }}>{t('vip_title')}</span>
       </div>
       <p style={{ fontSize: 14.5, color: 'var(--ink-2)', lineHeight: 1.6, marginBottom: 8 }}>
-        Загрузка <strong style={{ color: 'var(--ink)' }}>DOCX, TXT и RTF</strong> доступна только VIP пользователям.
+        {t('vip_p1a')}<strong style={{ color: 'var(--ink)' }}>{t('vip_p1b')}</strong>{t('vip_p1c')}
       </p>
       <p style={{ fontSize: 14, color: 'var(--ink-2)', lineHeight: 1.5, marginBottom: 20 }}>
-        PDF работает для всех. Активируйте VIP — и загружайте документы в любом формате, получайте до 20 вопросов за раз.
+        {t('vip_p2')}
       </p>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-        <Link href="/profile" style={{ ...btnPrimary, textDecoration: 'none', display: 'inline-block' }}>Получить VIP →</Link>
-        <button type="button" onClick={reset} style={btnGhost}>Загрузить PDF</button>
+        <Link href="/profile" style={{ ...btnPrimary, textDecoration: 'none', display: 'inline-block' }}>{t('vip_btn')}</Link>
+        <button type="button" onClick={reset} style={btnGhost}>{t('vip_btn2')}</button>
       </div>
     </div>
   )
 
   // ── ERROR ─────────────────────────────────────────────────────
   if (state === 'error') return (
-    <div style={{ position: 'relative', border: '1.5px solid var(--ink)', background: '#fff', borderRadius: 'var(--radius)', padding: 24 }}>
+    <div style={{ position: 'relative', border: '1.5px solid var(--ink)', background: 'var(--paper)', borderRadius: 'var(--radius)', padding: 24 }}>
       <CornerTicks />
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-        <span style={{ width: 24, height: 24, borderRadius: 'var(--radius)', background: 'var(--ink)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--mono)', fontSize: 13 }}>✗</span>
-        <span style={{ fontSize: 16, fontWeight: 700 }}>Не удалось обработать файл</span>
+        <span style={{ width: 24, height: 24, borderRadius: 'var(--radius)', background: 'var(--ink)', color: 'var(--btn-fg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--mono)', fontSize: 13 }}>✗</span>
+        <span style={{ fontSize: 16, fontWeight: 700 }}>{t('err_title')}</span>
       </div>
       <p style={{ fontSize: 14, color: 'var(--ink-2)', lineHeight: 1.5, marginBottom: 20 }}>{errorMsg}</p>
-      <button type="button" onClick={reset} style={btnPrimary}>Попробовать снова</button>
+      <button type="button" onClick={reset} style={btnPrimary}>{t('err_retry')}</button>
     </div>
   )
 
   // ── PROCESSING ────────────────────────────────────────────────
   if (state === 'processing') return (
-    <div style={{ position: 'relative', border: '1.5px solid var(--ink)', background: '#fff', borderRadius: 'var(--radius)', padding: 22 }}>
+    <div style={{ position: 'relative', border: '1.5px solid var(--ink)', background: 'var(--paper)', borderRadius: 'var(--radius)', padding: 22 }}>
       <CornerTicks />
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
         <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>📄 {fileName}</span>
@@ -427,7 +449,7 @@ function DropDemo({ wide = false }: { wide?: boolean }) {
       </div>
       {!isLoggedIn && (
         <div style={{ marginTop: 12, fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-3)', letterSpacing: '0.04em' }}>
-          Обработка без регистрации: до 5 вопросов с первой страницы.
+          {t('proc_guest')}
         </div>
       )}
     </div>
@@ -442,7 +464,7 @@ function DropDemo({ wide = false }: { wide?: boolean }) {
         position: 'relative', cursor: 'pointer', height: panelH,
         border: `1.5px dashed ${active ? 'var(--ink)' : 'var(--ink-3)'}`,
         background: active ? 'var(--ink)' : 'var(--paper-2)',
-        color: active ? '#fff' : 'var(--ink)',
+        color: active ? 'var(--btn-fg)' : 'var(--ink)',
         borderRadius: 'var(--radius)', display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 24,
         transition: 'background .15s, border-color .15s, color .15s', userSelect: 'none',
@@ -453,23 +475,23 @@ function DropDemo({ wide = false }: { wide?: boolean }) {
           : 'application/pdf,.pdf'}
         style={{ display: 'none' }}
         onChange={e => onFiles(e.target.files)} onClick={e => e.stopPropagation()} />
-      <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke={active ? '#fff' : 'var(--ink)'} strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="miter" style={{ transform: active ? 'translateY(-2px)' : 'none', transition: 'transform .15s' }}>
+      <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke={active ? 'var(--btn-fg)' : 'var(--ink)'} strokeWidth="1.6" strokeLinecap="square" strokeLinejoin="miter" style={{ transform: active ? 'translateY(-2px)' : 'none', transition: 'transform .15s' }}>
         <path d="M12 15V3" /><path d="M7 8l5-5 5 5" /><path d="M3 14v6a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-6" />
       </svg>
-      <div style={{ fontSize: 20, fontWeight: 700, marginTop: 16, letterSpacing: '-0.01em' }}>{active ? 'Отпустите файл' : 'Перетащите PDF сюда'}</div>
-      <div style={{ fontSize: 14, color: active ? 'rgba(255,255,255,0.7)' : 'var(--ink-2)', marginTop: 6 }}>или нажмите, чтобы выбрать файл</div>
+      <div style={{ fontSize: 20, fontWeight: 700, marginTop: 16, letterSpacing: '-0.01em' }}>{active ? t('drop_drag') : t('drop_title')}</div>
+      <div style={{ fontSize: 14, color: active ? 'rgba(255,255,255,0.7)' : 'var(--ink-2)', marginTop: 6 }}>{t('drop_sub')}</div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 14, marginTop: 20 }} onClick={e => e.stopPropagation()}>
-        <button type="button" onClick={() => inputRef.current?.click()} style={{ ...btnPrimary, ...(active ? { background: '#fff', color: 'var(--ink)' } : {}) }}>Загрузить PDF</button>
+        <button type="button" onClick={() => inputRef.current?.click()} style={{ ...btnPrimary, ...(active ? { background: 'var(--bg)', color: 'var(--ink)' } : {}) }}>{t('drop_btn')}</button>
       </div>
       {!isLoggedIn && (
-        <div style={{ marginTop: 16, fontSize: 12.5, color: active ? 'rgba(255,255,255,0.65)' : 'var(--ink-3)', lineHeight: 1.45, maxWidth: 320 }}>
-          Без регистрации: до 5 вопросов бесплатно.{' '}
-          <Link href="/auth/register" onClick={e => e.stopPropagation()} style={{ color: active ? 'rgba(255,255,255,0.9)' : 'var(--ink-2)', textDecoration: 'underline', textUnderlineOffset: 2 }}>Войти</Link>
-          {' '}— полный документ и сохранение.
+        <div style={{ marginTop: 16, fontSize: 12.5, color: active ? 'var(--btn-fg-mid)' : 'var(--ink-3)', lineHeight: 1.45, maxWidth: 320 }}>
+          {t('drop_guest')}{' '}
+          <Link href="/auth/register" onClick={e => e.stopPropagation()} style={{ color: active ? 'var(--btn-fg)' : 'var(--ink-2)', textDecoration: 'underline', textUnderlineOffset: 2 }}>{t('drop_login')}</Link>
+          {' '}{t('drop_login_sfx')}
         </div>
       )}
-      <div style={{ position: 'absolute', bottom: 12, left: 0, right: 0, fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.1em', color: active ? 'rgba(255,255,255,0.5)' : 'var(--ink-3)', textAlign: 'center' }}>
-        {isLoggedIn ? 'PDF · DOCX · TXT · RTF · ДО 50 МБ · VIP: все форматы' : 'PDF · ДО 50 МБ'}
+      <div style={{ position: 'absolute', bottom: 12, left: 0, right: 0, fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.1em', color: active ? 'var(--btn-fg-dim)' : 'var(--ink-3)', textAlign: 'center' }}>
+        {isLoggedIn ? t('drop_fmt_vip') : t('drop_fmt_guest')}
       </div>
     </div>
   )
@@ -477,14 +499,15 @@ function DropDemo({ wide = false }: { wide?: boolean }) {
 
 // ── Hero (variant B — centred) ────────────────────────────────
 function Hero() {
+  const t = useTranslations('PdfInfoPage')
   return (
     <section style={{ padding: '64px 0 80px', textAlign: 'center' }}>
-      <Eyebrow style={{ justifyContent: 'center', marginBottom: 24 }}>PDF → ЭЛЕКТРОННЫЙ ТЕСТ</Eyebrow>
+      <Eyebrow style={{ justifyContent: 'center', marginBottom: 24 }}>{t('hero_badge')}</Eyebrow>
       <h1 style={{ fontSize: 'clamp(36px, 7vw, 66px)', lineHeight: 1.0, fontWeight: 800, letterSpacing: '-0.035em', margin: '0 auto', maxWidth: 880, color: 'var(--ink)' }}>
-        Из PDF — в готовый тест.<br />Автоматически.
+        {t('hero_h1')}<br />{t('hero_h1b')}
       </h1>
       <p style={{ fontSize: 'clamp(15px, 2.4vw, 18px)', lineHeight: 1.55, color: 'var(--ink-2)', maxWidth: 600, margin: '22px auto 0' }}>
-        Загрузите PDF с вопросами и ответами — получите готовый тест на вашем сайте. Выбор вариантов, сопоставление пар, ввод ответа — структуру распознаём автоматически.
+        {t('hero_desc')}
       </p>
       <div style={{ maxWidth: 720, margin: '40px auto 0', textAlign: 'left' }}>
         <DropDemo wide />
@@ -538,14 +561,14 @@ function StepGlyph({ kind }: { kind: string }) {
 
 // ── HowItWorks ────────────────────────────────────────────────
 function HowItWorks() {
+  const t = useTranslations('PdfInfoPage')
   const steps = [
-    { n: '01', t: 'Загрузка PDF', d: 'Бросьте файл с вопросами и ответами. Подходят экзамены, домашки, варианты ЦЭ/ЦТ — в любом порядке.', glyph: 'doc' },
-    { n: '02', t: 'Распознавание', d: 'Парсим текст, находим вопросы и варианты, определяем тип каждого задания и правильные ответы.', glyph: 'scan' },
-    { n: '03', t: 'Готовый тест', d: 'Получаете интерактивный тест по ссылке. Студенты проходят онлайн, результаты считаются автоматически.', glyph: 'screen' },
+    { n: '01', title: t('how_s1t'), d: t('how_s1d'), glyph: 'doc' },
+    { n: '02', title: t('how_s2t'), d: t('how_s2d'), glyph: 'scan' },
+    { n: '03', title: t('how_s3t'), d: t('how_s3d'), glyph: 'screen' },
   ]
   return (
-    <Section num="01 / 05" label="Как это работает" title="Три шага от файла до теста"
-      desc="Без ручного переноса вопросов. Загрузка занимает секунды, распознавание — около минуты на вариант.">
+    <Section num={t('how_num')} label={t('how_badge')} title={t('how_h2')} desc={t('how_desc')}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: 0, border: '1px solid var(--line)', borderRadius: 'var(--radius)' }}>
         {steps.map((s, i) => (
           <div key={s.n} style={{ padding: 28, borderLeft: i ? '1px solid var(--line)' : 'none', position: 'relative' }}>
@@ -553,12 +576,12 @@ function HowItWorks() {
               <span style={{ fontFamily: 'var(--mono)', fontSize: 13, fontWeight: 600, letterSpacing: '0.08em', color: 'var(--ink)' }}>{s.n}</span>
               <StepGlyph kind={s.glyph} />
             </div>
-            <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.01em' }}>{s.t}</div>
+            <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.01em' }}>{s.title}</div>
             <p style={{ fontSize: 14.5, lineHeight: 1.55, color: 'var(--ink-2)', marginTop: 10, marginBottom: 0 }}>{s.d}</p>
             {i < 2 && (
               <span style={{
                 position: 'absolute', right: -9, top: '50%', transform: 'translateY(-50%)', zIndex: 1,
-                width: 18, height: 18, background: '#fff', border: '1px solid var(--line)', borderRadius: '50%',
+                width: 18, height: 18, background: 'var(--paper)', border: '1px solid var(--line)', borderRadius: '50%',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink)',
               }}>→</span>
             )}
@@ -572,7 +595,7 @@ function HowItWorks() {
 // ── Question type cards ───────────────────────────────────────
 function QTCard({ tag, title, children }: { tag: string; title: string; children: React.ReactNode }) {
   return (
-    <div style={{ border: '1px solid var(--line)', borderRadius: 'var(--radius)', padding: 22, background: '#fff', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ border: '1px solid var(--line)', borderRadius: 'var(--radius)', padding: 22, background: 'var(--paper)', display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.01em' }}>{title}</span>
         <span style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.1em', color: 'var(--ink-3)', border: '1px solid var(--line)', padding: '3px 6px', borderRadius: 'var(--radius)' }}>{tag}</span>
@@ -590,8 +613,8 @@ function MultiChoice({ options }: { options: string[] }) {
       {options.map((o, i) => {
         const on = sel.includes(i)
         return (
-          <button key={i} type="button" onClick={() => toggle(i)} style={{ display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left', cursor: 'pointer', font: 'inherit', fontSize: 13.5, border: `1px solid ${on ? 'var(--ink)' : 'var(--line)'}`, background: '#fff', color: 'var(--ink)', padding: '9px 11px', borderRadius: 'var(--radius)' }}>
-            <span style={{ width: 16, height: 16, flexShrink: 0, border: `1.5px solid ${on ? 'var(--ink)' : 'var(--ink-3)'}`, background: on ? 'var(--ink)' : '#fff', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10 }}>{on ? '✓' : ''}</span>
+          <button key={i} type="button" onClick={() => toggle(i)} style={{ display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left', cursor: 'pointer', font: 'inherit', fontSize: 13.5, border: `1px solid ${on ? 'var(--ink)' : 'var(--line)'}`, background: 'var(--paper)', color: 'var(--ink)', padding: '9px 11px', borderRadius: 'var(--radius)' }}>
+            <span style={{ width: 16, height: 16, flexShrink: 0, border: `1.5px solid ${on ? 'var(--ink)' : 'var(--ink-3)'}`, background: on ? 'var(--ink)' : 'var(--paper)', color: 'var(--btn-fg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10 }}>{on ? '✓' : ''}</span>
             {o}
           </button>
         )
@@ -601,6 +624,7 @@ function MultiChoice({ options }: { options: string[] }) {
 }
 
 function MatchPairs({ left, right }: { left: string[]; right: string[] }) {
+  const t = useTranslations('PdfInfoPage')
   const [val, setVal] = useState(left.map(() => ''))
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -608,8 +632,8 @@ function MatchPairs({ left, right }: { left: string[]; right: string[] }) {
         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 13.5, flex: 1, padding: '8px 10px', border: '1px solid var(--line)', borderRadius: 'var(--radius)', background: 'var(--paper-2)' }}>{l}</span>
           <span style={{ fontFamily: 'var(--mono)', color: 'var(--ink-3)', fontSize: 13 }}>→</span>
-          <select value={val[i]} onChange={e => setVal(v => v.map((x, j) => j === i ? e.target.value : x))} style={{ flex: 1, font: 'inherit', fontSize: 13.5, padding: '8px', border: `1px solid ${val[i] ? 'var(--ink)' : 'var(--line)'}`, borderRadius: 'var(--radius)', background: '#fff', cursor: 'pointer' }}>
-            <option value="">— выбрать —</option>
+          <select value={val[i]} onChange={e => setVal(v => v.map((x, j) => j === i ? e.target.value : x))} style={{ flex: 1, font: 'inherit', fontSize: 13.5, padding: '8px', border: `1px solid ${val[i] ? 'var(--ink)' : 'var(--line)'}`, borderRadius: 'var(--radius)', background: 'var(--paper)', color: 'var(--ink)', cursor: 'pointer' }}>
+            <option value="">{t('match_select')}</option>
             {right.map(r => <option key={r} value={r}>{r}</option>)}
           </select>
         </div>
@@ -619,6 +643,7 @@ function MatchPairs({ left, right }: { left: string[]; right: string[] }) {
 }
 
 function FillIn({ answer, placeholder, question }: { answer: string; placeholder: string; question?: string }) {
+  const t = useTranslations('PdfInfoPage')
   const [v, setV] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'ok' | 'wrong'>('idle')
   const [hint, setHint] = useState<string | null>(null)
@@ -646,9 +671,9 @@ function FillIn({ answer, placeholder, question }: { answer: string; placeholder
   const borderColor = status === 'ok' ? 'var(--ink)' : status === 'wrong' ? 'var(--ink-3)' : 'var(--line)'
   const statusText =
     status === 'loading' ? '…' :
-    status === 'ok'      ? '✓ верно' :
-    status === 'wrong'   ? `✗ ${hint ?? 'попробуйте ещё'}` :
-    'введите ответ и нажмите OK'
+    status === 'ok'      ? t('fill_ok') :
+    status === 'wrong'   ? `✗ ${hint ?? t('fill_try')}` :
+    t('fill_idle')
 
   return (
     <div>
@@ -658,7 +683,7 @@ function FillIn({ answer, placeholder, question }: { answer: string; placeholder
           placeholder={placeholder}
           onChange={e => { setV(e.target.value); setStatus('idle'); setHint(null) }}
           onKeyDown={e => e.key === 'Enter' && check()}
-          style={{ flex: 1, font: 'inherit', fontSize: 14, padding: '10px 12px', border: `1px solid ${borderColor}`, borderRadius: 'var(--radius)', outline: 'none', color: 'var(--ink)', transition: 'border-color .15s' }}
+          style={{ flex: 1, font: 'inherit', fontSize: 14, padding: '10px 12px', border: `1px solid ${borderColor}`, borderRadius: 'var(--radius)', outline: 'none', background: 'var(--paper)', color: 'var(--ink)', transition: 'border-color .15s' }}
         />
         <button type="button" onClick={check} disabled={status === 'loading'} style={{ ...btnPrimary, padding: '10px 14px', fontSize: 13, opacity: status === 'loading' ? 0.6 : 1 }}>
           {status === 'loading' ? '…' : 'OK'}
@@ -681,7 +706,7 @@ function OrderingQ({ items: init }: { items: string[] }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
       {items.map((it, i) => (
-        <div key={it} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', border: '1px solid var(--line)', borderRadius: 'var(--radius)', background: '#fff' }}>
+        <div key={it} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', border: '1px solid var(--line)', borderRadius: 'var(--radius)', background: 'var(--paper)' }}>
           <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--ink-3)', width: 14 }}>{i + 1}</span>
           <span style={{ fontSize: 13.5, flex: 1 }}>{it}</span>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -695,15 +720,16 @@ function OrderingQ({ items: init }: { items: string[] }) {
 }
 
 function TrueFalseQ() {
+  const t = useTranslations('PdfInfoPage')
   const [v, setV] = useState<boolean | null>(null)
   return (
     <div>
-      <div style={{ fontSize: 13.5, lineHeight: 1.45, marginBottom: 14, color: 'var(--ink)' }}>«JSX компилируется в вызовы React.createElement».</div>
+      <div style={{ fontSize: 13.5, lineHeight: 1.45, marginBottom: 14, color: 'var(--ink)' }}>{t('tf_stmt')}</div>
       <div style={{ display: 'flex', gap: 8 }}>
-        {[['Верно', true], ['Неверно', false]].map(([lbl, val]) => {
+        {[[t('tf_true'), true], [t('tf_false'), false]].map(([lbl, val]) => {
           const on = v === val
           return (
-            <button key={String(lbl)} type="button" onClick={() => setV(val as boolean)} style={{ flex: 1, font: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer', padding: '11px 0', border: `1.5px solid ${on ? 'var(--ink)' : 'var(--line)'}`, background: on ? 'var(--ink)' : '#fff', color: on ? '#fff' : 'var(--ink)', borderRadius: 'var(--radius)' }}>{lbl}</button>
+            <button key={String(lbl)} type="button" onClick={() => setV(val as boolean)} style={{ flex: 1, font: 'inherit', fontSize: 14, fontWeight: 600, cursor: 'pointer', padding: '11px 0', border: `1.5px solid ${on ? 'var(--ink)' : 'var(--line)'}`, background: on ? 'var(--ink)' : 'var(--paper)', color: on ? 'var(--btn-fg)' : 'var(--ink)', borderRadius: 'var(--radius)' }}>{lbl}</button>
           )
         })}
       </div>
@@ -712,26 +738,27 @@ function TrueFalseQ() {
 }
 
 function QuestionTypes() {
+  const t = useTranslations('PdfInfoPage')
   return (
-    <Section num="02 / 05" label="Типы вопросов" title="Шесть форматов заданий" desc="Распознаём и собираем все основные типы. Кликайте — карточки ниже рабочие.">
+    <Section num={t('qt_num')} label={t('qt_badge')} title={t('qt_h2')} desc={t('qt_desc')}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 18 }}>
-        <QTCard tag="SINGLE" title="Выбор одного">
-          <SingleChoice options={['8 бит', '16 бит', '32 бита', '64 бита']} correct={0} />
+        <QTCard tag="SINGLE" title={t('qt_c1_title')}>
+          <SingleChoice options={[t('sc_opt1'), t('sc_opt2'), t('sc_opt3'), t('sc_opt4')]} correct={0} />
         </QTCard>
-        <QTCard tag="MULTI" title="Выбор нескольких">
+        <QTCard tag="MULTI" title={t('qt_c2_title')}>
           <MultiChoice options={['HTTP', 'TCP', 'SMTP', 'IP']} />
         </QTCard>
-        <QTCard tag="MATCH" title="Сопоставление пар">
-          <MatchPairs left={['HTML', 'CSS', 'JS']} right={['стиль', 'логика', 'разметка']} />
+        <QTCard tag="MATCH" title={t('qt_c3_title')}>
+          <MatchPairs left={['HTML', 'CSS', 'JS']} right={[t('match_r1'), t('match_r2'), t('match_r3')]} />
         </QTCard>
-        <QTCard tag="INPUT" title="Ввод ответа">
-          <FillIn answer="16" placeholder="число…" question="2⁴ = ?" />
-          <div style={{ fontSize: 12.5, color: 'var(--ink-3)', marginTop: 4 }}>2⁴ = ?</div>
+        <QTCard tag="INPUT" title={t('qt_c4_title')}>
+          <FillIn answer="16" placeholder={t('fill_placeholder')} question="2⁴ = ?" />
+          <div style={{ fontSize: 12.5, color: 'var(--ink-3)', marginTop: 4 }}>{t('qt_c4_hint')}</div>
         </QTCard>
-        <QTCard tag="ORDER" title="Упорядочивание">
-          <OrderingQ items={['Анализ', 'Проектирование', 'Разработка', 'Тестирование']} />
+        <QTCard tag="ORDER" title={t('qt_c5_title')}>
+          <OrderingQ items={[t('order_1'), t('order_2'), t('order_3'), t('order_4')]} />
         </QTCard>
-        <QTCard tag="BOOL" title="Верно / неверно">
+        <QTCard tag="BOOL" title={t('qt_c6_title')}>
           <TrueFalseQ />
         </QTCard>
       </div>
@@ -741,49 +768,50 @@ function QuestionTypes() {
 
 // ── ResultShowcase ────────────────────────────────────────────
 function ResultShowcase() {
+  const t = useTranslations('PdfInfoPage')
   const grid = Array.from({ length: 12 }, (_, i) => i + 1)
   const cur = 3
   return (
-    <Section num="03 / 05" label="Демо результата" title="Так выглядит готовый тест" desc="Чистый интерфейс прохождения: прогресс, навигация по вопросам, мгновенная проверка.">
+    <Section num={t('rs_num')} label={t('rs_badge')} title={t('rs_h2')} desc={t('rs_desc')}>
       <div style={{ border: '1.5px solid var(--ink)', borderRadius: 'var(--radius)', position: 'relative' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '1px solid var(--line)', background: 'var(--paper-2)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ display: 'flex', gap: 5 }}>
               {[0, 1, 2].map(i => <span key={i} style={{ width: 9, height: 9, border: '1px solid var(--ink-3)', borderRadius: 'var(--radius)', display: 'inline-block' }} />)}
             </span>
-            <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--ink-2)', letterSpacing: '0.04em' }}>ЦЭ · Информатика · Вариант 7</span>
+            <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--ink-2)', letterSpacing: '0.04em' }}>{t('rs_test_name')}</span>
           </div>
           <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--ink-2)' }}>⏱ 14:32</span>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))' }}>
           <div style={{ padding: 32, borderRight: '1px solid var(--line)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
-              <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--ink-3)', letterSpacing: '0.08em' }}>ВОПРОС {cur} / 12 · ВЫБОР ОТВЕТА</span>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--ink-3)', letterSpacing: '0.08em' }}>{`${t('done_q_num', { idx: cur, total: 12, label: t('rs_q_type') })}`}</span>
               <div style={{ height: 4, width: 160, background: 'var(--line)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: `${(cur / 12) * 100}%`, background: 'var(--ink)' }} />
               </div>
             </div>
-            <SingleChoice question="Какая структура данных работает по принципу LIFO?" options={['Очередь (queue)', 'Стек (stack)', 'Связный список', 'Хеш-таблица']} correct={1} />
+            <SingleChoice question={t('rs_q')} options={[t('rs_o1'), t('rs_o2'), t('rs_o3'), t('rs_o4')]} correct={1} />
             <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
-              <button type="button" style={{ ...btnGhost, fontSize: 14 }}>← Назад</button>
-              <button type="button" style={{ ...btnPrimary, fontSize: 14 }}>Далее →</button>
+              <button type="button" style={{ ...btnGhost, fontSize: 14 }}>{t('rs_prev')}</button>
+              <button type="button" style={{ ...btnPrimary, fontSize: 14 }}>{t('rs_next')}</button>
             </div>
           </div>
           <div style={{ padding: 24, background: 'var(--paper-2)' }}>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.1em', color: 'var(--ink-3)', marginBottom: 14 }}>ВОПРОСЫ</div>
+            <div style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.1em', color: 'var(--ink-3)', marginBottom: 14 }}>{t('rs_q_list')}</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 7 }}>
               {grid.map(n => {
                 const done = n < cur, active = n === cur
                 return (
-                  <span key={n} style={{ aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--mono)', fontSize: 13, borderRadius: 'var(--radius)', border: `1px solid ${active ? 'var(--ink)' : 'var(--line)'}`, background: active ? 'var(--ink)' : done ? 'var(--ink)' : '#fff', color: (active || done) ? '#fff' : 'var(--ink-3)', opacity: done && !active ? 0.55 : 1 }}>
+                  <span key={n} style={{ aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--mono)', fontSize: 13, borderRadius: 'var(--radius)', border: `1px solid ${active ? 'var(--ink)' : 'var(--line)'}`, background: active ? 'var(--ink)' : done ? 'var(--ink)' : 'var(--paper)', color: (active || done) ? 'var(--btn-fg)' : 'var(--ink-3)', opacity: done && !active ? 0.55 : 1 }}>
                     {done ? '✓' : n}
                   </span>
                 )
               })}
             </div>
             <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid var(--line)', display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5 }}><span style={{ color: 'var(--ink-2)' }}>Отвечено</span><span style={{ fontFamily: 'var(--mono)' }}>2 / 12</span></div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5 }}><span style={{ color: 'var(--ink-2)' }}>Осталось</span><span style={{ fontFamily: 'var(--mono)' }}>10</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5 }}><span style={{ color: 'var(--ink-2)' }}>{t('rs_answered')}</span><span style={{ fontFamily: 'var(--mono)' }}>2 / 12</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5 }}><span style={{ color: 'var(--ink-2)' }}>{t('rs_left')}</span><span style={{ fontFamily: 'var(--mono)' }}>10</span></div>
             </div>
           </div>
         </div>
@@ -797,23 +825,23 @@ const Scene3DClient = dynamic(() => import('./Scene3D'), { ssr: false, loading: 
 
 // ── StructureSection ──────────────────────────────────────────
 function StructureSection() {
-  const facts = [['12', 'вопросов в варианте'], ['4', 'типа заданий'], ['~60', 'секунд на разбор']]
+  const t = useTranslations('PdfInfoPage')
+  const facts = [[t('st_f1n'), t('st_f1l')], [t('st_f2n'), t('st_f2l')], [t('st_f3n'), t('st_f3l')]]
   const stageNames = ['UPLOAD', 'LOADING', 'DOC', 'TEST']
   const [stage, setStage] = useState(0)
   return (
-    <Section num="04 / 05" label="Под капотом" title="От загрузки — до теста с картинками"
-      desc="Стрелка загрузки превращается в обработку, затем — в документ с текстом и фото, а после — в интерактивный тест. Следите за превращением справа.">
+    <Section num={t('st_num')} label={t('st_badge')} title={t('st_h2')} desc={t('st_desc')}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 380px), 1fr))', gap: 40, alignItems: 'center' }}>
         <div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0, border: '1px solid var(--line)', borderRadius: 'var(--radius)' }}>
-            {[['↑', 'Загрузка', 'PDF, скан или фото страницы'], ['◐', 'Распознавание', 'ИИ читает текст и изображения'], ['▦', 'Документ', 'разбираем вопросы и вложения'], ['✓', 'Сборка теста', 'интерактив с картинками внутри']].map(([k, t, d], i) => {
+            {[['↑', t('st_s1'), t('st_s1d')], ['◐', t('st_s2'), t('st_s2d')], ['▦', t('st_s3'), t('st_s3d')], ['✓', t('st_s4'), t('st_s4d')]].map(([k, st, d], i) => {
               const on = stage === i
               return (
-                <div key={t} style={{ padding: '18px 20px', borderTop: i ? '1px solid var(--line)' : 'none', display: 'flex', gap: 14, alignItems: 'baseline', background: on ? 'var(--ink)' : 'transparent', color: on ? '#fff' : 'inherit', transition: 'background .35s, color .35s', cursor: 'pointer' }} onClick={() => setStage(i)}>
-                  <span style={{ fontFamily: 'var(--mono)', fontSize: 13, color: on ? '#fff' : 'var(--ink-3)', width: 24, textAlign: 'center' }}>{k}</span>
+                <div key={st} style={{ padding: '18px 20px', borderTop: i ? '1px solid var(--line)' : 'none', display: 'flex', gap: 14, alignItems: 'baseline', background: on ? 'var(--ink)' : 'transparent', color: on ? 'var(--btn-fg)' : 'inherit', transition: 'background .35s, color .35s', cursor: 'pointer' }} onClick={() => setStage(i)}>
+                  <span style={{ fontFamily: 'var(--mono)', fontSize: 13, color: on ? 'var(--btn-fg)' : 'var(--ink-3)', width: 24, textAlign: 'center' }}>{k}</span>
                   <div>
-                    <div style={{ fontSize: 16, fontWeight: 700 }}>{t}</div>
-                    <div style={{ fontSize: 14, color: on ? 'rgba(255,255,255,0.75)' : 'var(--ink-2)', marginTop: 3 }}>{d}</div>
+                    <div style={{ fontSize: 16, fontWeight: 700 }}>{st}</div>
+                    <div style={{ fontSize: 14, color: on ? 'var(--btn-fg-mid)' : 'var(--ink-2)', marginTop: 3 }}>{d}</div>
                   </div>
                 </div>
               )
@@ -850,18 +878,18 @@ function StructureSection() {
 
 // ── ErrorProfileSection ───────────────────────────────────────
 function ErrorProfileSection() {
+  const t = useTranslations('PdfInfoPage')
   const topics: [string, number, number, boolean][] = [
-    ['Производные', 0.72, 9, true], ['Тригонометрия', 0.45, 6, false],
-    ['Логарифмы', 0.3, 4, false], ['Стереометрия', 0.88, 11, true],
+    [t('ep_topic1'), 0.72, 9, true], [t('ep_topic2'), 0.45, 6, false],
+    [t('ep_topic3'), 0.3, 4, false], [t('ep_topic4'), 0.88, 11, true],
   ]
   const bullets = [
-    ['Автосбор', 'ошибки заносятся в профиль после каждого теста — без ручной тетради'],
-    ['Группировка', 'по темам и типам заданий: видно, где системный пробел'],
-    ['План для репетитора', 'занятие начинается с самого слабого места ученика'],
+    [t('ep_b1t'), t('ep_b1d')],
+    [t('ep_b2t'), t('ep_b2d')],
+    [t('ep_b3t'), t('ep_b3d')],
   ]
   return (
-    <Section num="05 / 05" label="После теста" title="Ошибки сами попадают в профиль ученика"
-      desc="ИИ запоминает каждую ошибку и группирует их по темам. Репетитору не нужно искать слабые места вручную — он сразу видит, что проседает.">
+    <Section num={t('ep_num')} label={t('ep_badge')} title={t('ep_h2')} desc={t('ep_desc')}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 380px), 1fr))', gap: 40, alignItems: 'center' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 0, border: '1px solid var(--line)', borderRadius: 'var(--radius)' }}>
           {bullets.map(([t, d], i) => (
@@ -874,17 +902,17 @@ function ErrorProfileSection() {
             </div>
           ))}
         </div>
-        <div style={{ position: 'relative', border: '1.5px solid var(--ink)', borderRadius: 'var(--radius)', background: '#fff' }}>
+        <div style={{ position: 'relative', border: '1.5px solid var(--ink)', borderRadius: 'var(--radius)', background: 'var(--paper)' }}>
           <CornerTicks />
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid var(--line)', background: 'var(--paper-2)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-              <span style={{ width: 30, height: 30, borderRadius: 'var(--radius)', border: '1.5px solid var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13 }}>АК</span>
+              <span style={{ width: 30, height: 30, borderRadius: 'var(--radius)', border: '1.5px solid var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 13 }}>{t('ep_profile_initials')}</span>
               <div>
-                <div style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.1 }}>Профиль · Анна К.</div>
-                <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-2)', marginTop: 2 }}>11 КЛАСС · ЦЭ МАТЕМАТИКА</div>
+                <div style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.1 }}>{t('ep_profile_name')}</div>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-2)', marginTop: 2 }}>{t('ep_profile_grade')}</div>
               </div>
             </div>
-            <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-2)', textAlign: 'right', lineHeight: 1.4 }}>12 ТЕСТОВ<br />38 ОШИБОК</span>
+            <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--ink-2)', textAlign: 'right', lineHeight: 1.4 }}>{t('ep_profile_tests')}<br />{t('ep_profile_errors')}</span>
           </div>
           <div style={{ padding: '8px 20px 16px' }}>
             {topics.map(([name, frac, cnt, worst], i) => (
@@ -892,8 +920,8 @@ function ErrorProfileSection() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 7 }}>
                   <span style={{ fontSize: 14.5, fontWeight: 600 }}>{name}</span>
                   <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    {worst && <span style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.06em', color: '#fff', background: 'var(--ink)', padding: '3px 7px', borderRadius: 'var(--radius)', whiteSpace: 'nowrap' }}>К РЕПЕТИТОРУ</span>}
-                    <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--ink-2)', minWidth: 56, textAlign: 'right' }}>{cnt} ошиб.</span>
+                    {worst && <span style={{ fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.06em', color: 'var(--btn-fg)', background: 'var(--ink)', padding: '3px 7px', borderRadius: 'var(--radius)', whiteSpace: 'nowrap' }}>{t('ep_tag')}</span>}
+                    <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--ink-2)', minWidth: 56, textAlign: 'right' }}>{cnt}{t('ep_errors_sfx')}</span>
                   </span>
                 </div>
                 <div style={{ height: 6, background: 'var(--line)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
@@ -903,8 +931,8 @@ function ErrorProfileSection() {
             ))}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '14px 20px', borderTop: '1px solid var(--line)', background: 'var(--paper-2)', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 12.5, color: 'var(--ink-2)' }}>Обновлено ИИ после теста №12</span>
-            <Link href="/profile" style={{ ...btnPrimary, textDecoration: 'none', fontSize: 13, padding: '9px 14px', display: 'inline-block' }}>Разобрать с репетитором →</Link>
+            <span style={{ fontSize: 12.5, color: 'var(--ink-2)' }}>{t('ep_updated')}</span>
+            <Link href="/profile" style={{ ...btnPrimary, textDecoration: 'none', fontSize: 13, padding: '9px 14px', display: 'inline-block' }}>{t('ep_btn')}</Link>
           </div>
         </div>
       </div>
@@ -914,18 +942,19 @@ function ErrorProfileSection() {
 
 // ── FAQ ───────────────────────────────────────────────────────
 function FAQSection() {
+  const t = useTranslations('PdfInfoPage')
   const items = [
-    ['Какие форматы файлов поддерживаются?', 'PDF и DOCX до 50 МБ. Документ может содержать несколько вариантов и любые типы вопросов вперемешку — мы разделим их сами.'],
-    ['Нужно ли размечать вопросы вручную?', 'Нет. Сервис сам находит формулировки, варианты ответов и определяет тип задания. Если в файле указаны правильные ответы — подтянем и их.'],
-    ['Распознаёт ли сервис формулы и изображения?', 'Текстовые формулы и таблицы — да. Картинки и схемы подгружаются как вложения к вопросу, их можно поправить в редакторе перед публикацией.'],
-    ['Можно ли отредактировать тест после импорта?', 'Да. После распознавания открывается редактор: правьте формулировки, варианты, баллы и тип любого вопроса перед тем, как дать ссылку студентам.'],
-    ['Как студенты проходят тест?', 'По ссылке — без установки и регистрации. Результаты и статистика по каждому вопросу собираются в вашем кабинете автоматически.'],
-    ['Что происходит с ошибками учеников?', 'После прохождения теста ИИ автоматически заносит ошибки в профиль ученика и группирует их по темам и типам заданий. Репетитор сразу видит слабые места.'],
-    ['Что с безопасностью данных?', 'Файлы обрабатываются и хранятся в вашем аккаунте, доступ — только по вашим ссылкам. Загруженные PDF можно удалить в любой момент.'],
+    [t('faq1_q'), t('faq1_a')],
+    [t('faq2_q'), t('faq2_a')],
+    [t('faq3_q'), t('faq3_a')],
+    [t('faq4_q'), t('faq4_a')],
+    [t('faq5_q'), t('faq5_a')],
+    [t('faq6_q'), t('faq6_a')],
+    [t('faq7_q'), t('faq7_a')],
   ]
   const [open, setOpen] = useState(0)
   return (
-    <Section num="— / —" label="FAQ" title="Частые вопросы">
+    <Section num="— / —" label={t('faq_badge')} title={t('faq_h2')}>
       <div style={{ border: '1px solid var(--line)', borderRadius: 'var(--radius)' }}>
         {items.map(([q, a], i) => {
           const isOpen = open === i
@@ -949,25 +978,26 @@ function FAQSection() {
 
 // ── SEO text ─────────────────────────────────────────────────
 function SeoText() {
-  const tags = ['тесты из PDF', 'конструктор тестов', 'онлайн-тестирование', 'подготовка к ЦЭ', 'подготовка к ЦТ', 'тесты для школы', 'тесты для репетитора', 'импорт вопросов из PDF', 'электронные тесты', 'тест по ссылке', 'автопроверка', 'сопоставление пар']
+  const t = useTranslations('PdfInfoPage')
+  const tags = [t('seo_tag1'), t('seo_tag2'), t('seo_tag3'), t('seo_tag4'), t('seo_tag5'), t('seo_tag6'), t('seo_tag7'), t('seo_tag8'), t('seo_tag9'), t('seo_tag10'), t('seo_tag11'), t('seo_tag12')]
   return (
     <section style={{ padding: '76px 0', borderTop: '1px solid var(--line)' }}>
-      <Eyebrow style={{ marginBottom: 22 }}>О сервисе</Eyebrow>
+      <Eyebrow style={{ marginBottom: 22 }}>{t('seo_badge')}</Eyebrow>
       <h2 style={{ fontSize: 'clamp(26px, 4vw, 34px)', fontWeight: 800, letterSpacing: '-0.025em', lineHeight: 1.1, margin: 0, maxWidth: 820 }}>
-        Электронные тесты из PDF — для любого предмета и формата подготовки
+        {t('seo_h2')}
       </h2>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 44, marginTop: 32 }}>
         <div style={{ fontSize: 15.5, lineHeight: 1.7, color: 'var(--ink-2)' }}>
-          <p style={{ margin: '0 0 16px' }}><strong style={{ color: 'var(--ink)', fontWeight: 600 }}>GoodWorker Тесты</strong> превращает обычный PDF с вопросами и ответами в интерактивный тест. Загрузите вариант ЦЭ или ЦТ, школьную контрольную, домашнее задание или подборку вопросов — сервис распознаёт структуру документа и собирает готовый тест, который ученики проходят онлайн.</p>
-          <p style={{ margin: 0 }}>Поддерживаются все основные типы заданий: выбор одного или нескольких вариантов, сопоставление пар, ввод ответа, упорядочивание и «верно / неверно». Результаты считаются автоматически.</p>
+          <p style={{ margin: '0 0 16px' }}><strong style={{ color: 'var(--ink)', fontWeight: 600 }}>{t('seo_p1a')}</strong>{t('seo_p1b')}</p>
+          <p style={{ margin: 0 }}>{t('seo_p2')}</p>
         </div>
         <div style={{ fontSize: 15.5, lineHeight: 1.7, color: 'var(--ink-2)' }}>
-          <p style={{ margin: '0 0 16px' }}>Сервис создан для <strong style={{ color: 'var(--ink)', fontWeight: 600 }}>учителей школ, репетиторов и учебных центров</strong>, которые готовят учеников к централизованному экзамену. Один загруженный файл — готовый онлайн-тренажёр: его можно отправить ссылкой, встроить в курс или провести как проверочную работу прямо на уроке.</p>
-          <p style={{ margin: 0 }}>Перед публикацией любой тест открывается в редакторе — поправьте формулировки, баллы и тип вопроса, добавьте изображения и таймер.</p>
+          <p style={{ margin: '0 0 16px' }}>{t('seo_p3_intro')}<strong style={{ color: 'var(--ink)', fontWeight: 600 }}>{t('seo_p3a')}</strong>{t('seo_p3b')}</p>
+          <p style={{ margin: 0 }}>{t('seo_p4')}</p>
         </div>
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 32 }}>
-        {tags.map(t => <span key={t} style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--ink-2)', padding: '6px 11px', border: '1px solid var(--line)', borderRadius: 'var(--radius)', background: 'var(--paper-2)' }}>{t}</span>)}
+        {tags.map(tag => <span key={tag} style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--ink-2)', padding: '6px 11px', border: '1px solid var(--line)', borderRadius: 'var(--radius)', background: 'var(--paper-2)' }}>{tag}</span>)}
       </div>
     </section>
   )
@@ -975,20 +1005,21 @@ function SeoText() {
 
 // ── ClosingCTA ────────────────────────────────────────────────
 function ClosingCTA() {
+  const t = useTranslations('PdfInfoPage')
   return (
-    <section style={{ background: 'var(--ink)', color: '#fff', margin: '0 calc(50% - 50vw)', padding: '88px 0' }}>
+    <section className="tt-cta-wrap" style={{ margin: '0 calc(50% - 50vw)', padding: '88px 0' }}>
       <div style={{ maxWidth: MAXW, margin: '0 auto', padding: '0 clamp(20px, 5vw, 32px)', textAlign: 'center' }}>
         <Eyebrow style={{ justifyContent: 'center', color: 'rgba(255,255,255,0.7)' }}>
           <span style={{ width: 22, height: 1, background: '#fff', display: 'inline-block' }} />
-          НАЧНИТЕ СЕЙЧАС
+          {t('cta_badge')}
         </Eyebrow>
         <h2 style={{ fontSize: 'clamp(32px, 5.5vw, 52px)', fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.02, margin: '22px auto 0', maxWidth: 700 }}>
-          Загрузите первый PDF —<br />тест будет готов к перемене.
+          {t('cta_h2')}<br />{t('cta_h2b')}
         </h2>
-        <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.7)', maxWidth: 520, margin: '18px auto 0', lineHeight: 1.55 }}>Бесплатно для первых трёх тестов. Без карты, без установки.</p>
+        <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.7)', maxWidth: 520, margin: '18px auto 0', lineHeight: 1.55 }}>{t('cta_desc')}</p>
         <div style={{ display: 'flex', gap: 14, justifyContent: 'center', marginTop: 36, flexWrap: 'wrap' }}>
-          <Link href="/profile" style={{ fontFamily: 'inherit', fontSize: 15, fontWeight: 700, cursor: 'pointer', background: '#fff', color: 'var(--ink)', border: '1.5px solid #fff', padding: '14px 26px', borderRadius: 'var(--radius)', textDecoration: 'none', display: 'inline-block' }}>Загрузить PDF</Link>
-          <a href="#demo" style={{ fontFamily: 'inherit', fontSize: 15, fontWeight: 600, cursor: 'pointer', background: 'transparent', color: '#fff', border: '1.5px solid rgba(255,255,255,0.4)', padding: '14px 26px', borderRadius: 'var(--radius)', textDecoration: 'none', display: 'inline-block' }}>Посмотреть демо</a>
+          <Link href="/profile" style={{ fontFamily: 'inherit', fontSize: 15, fontWeight: 700, cursor: 'pointer', background: '#fff', color: '#0c0c0d', border: '1.5px solid #fff', padding: '14px 26px', borderRadius: 'var(--radius)', textDecoration: 'none', display: 'inline-block' }}>{t('cta_btn1')}</Link>
+          <a href="#demo" style={{ fontFamily: 'inherit', fontSize: 15, fontWeight: 600, cursor: 'pointer', background: 'transparent', color: '#fff', border: '1.5px solid rgba(255,255,255,0.4)', padding: '14px 26px', borderRadius: 'var(--radius)', textDecoration: 'none', display: 'inline-block' }}>{t('cta_btn2')}</a>
         </div>
       </div>
     </section>
@@ -997,10 +1028,11 @@ function ClosingCTA() {
 
 // ── Footer ────────────────────────────────────────────────────
 function Footer() {
+  const t = useTranslations('PdfInfoPage')
   const cols: [string, string[]][] = [
-    ['Продукт', ['Как работает', 'Типы вопросов', 'Цены', 'Демо']],
-    ['Ресурсы', ['Документация', 'Поддержка', 'Статус', 'API']],
-    ['Компания', ['О GoodWorker', 'Блог', 'Контакты']],
+    [t('footer_col1'), [t('footer_col1_1'), t('footer_col1_2'), t('footer_col1_3'), t('footer_col1_4')]],
+    [t('footer_col2'), [t('footer_col2_1'), t('footer_col2_2'), t('footer_col2_3'), t('footer_col2_4')]],
+    [t('footer_col3'), [t('footer_col3_1'), t('footer_col3_2'), t('footer_col3_3')]],
   ]
   return (
     <footer style={{ paddingTop: 56, paddingBottom: 48, borderTop: '1px solid var(--line)' }}>
@@ -1008,9 +1040,9 @@ function Footer() {
         <div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 9 }}>
             <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.02em' }}>GoodWorker</span>
-            <span style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.14em', color: 'var(--ink-2)' }}>/ ТЕСТЫ</span>
+            <span style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.14em', color: 'var(--ink-2)' }}>{t('footer_brand')}</span>
           </div>
-          <p style={{ fontSize: 13.5, color: 'var(--ink-3)', marginTop: 12, maxWidth: 240, lineHeight: 1.5 }}>PDF в интерактивные тесты для учителей, репетиторов и учебных центров.</p>
+          <p style={{ fontSize: 13.5, color: 'var(--ink-3)', marginTop: 12, maxWidth: 240, lineHeight: 1.5 }}>{t('footer_tagline')}</p>
         </div>
         {cols.map(([h, links]) => (
           <div key={h}>
@@ -1022,10 +1054,10 @@ function Footer() {
         ))}
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 48, paddingTop: 24, borderTop: '1px solid var(--line)', flexWrap: 'wrap', gap: 12 }}>
-        <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--ink-3)' }}>© 2026 GoodWorker</span>
+        <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--ink-3)' }}>{t('footer_copy')}</span>
         <div style={{ display: 'flex', gap: 20 }}>
-          <Link href="/privacy" style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--ink-3)', textDecoration: 'none' }}>Конфиденциальность</Link>
-          <Link href="/terms" style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--ink-3)', textDecoration: 'none' }}>Условия</Link>
+          <Link href="/privacy" style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--ink-3)', textDecoration: 'none' }}>{t('footer_privacy')}</Link>
+          <Link href="/terms" style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--ink-3)', textDecoration: 'none' }}>{t('footer_terms')}</Link>
         </div>
       </div>
     </footer>
@@ -1043,7 +1075,7 @@ export default function PdfInfoPage() {
     <div style={{ background: 'var(--bg)', color: 'var(--ink)', minHeight: '100vh', fontFamily: 'inherit' }}>
       <style>{CSS}</style>
       {/* grid background */}
-      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, backgroundImage: 'linear-gradient(to right, rgba(12,12,13,0.035) 1px, transparent 1px), linear-gradient(to bottom, rgba(12,12,13,0.035) 1px, transparent 1px)', backgroundSize: '64px 64px' }} />
+      <div className="tt-grid" />
       <div style={{ position: 'relative', zIndex: 1, maxWidth: MAXW, margin: '0 auto', padding: '0 clamp(18px, 4vw, 32px)' }}>
         <Nav />
         <Hero />

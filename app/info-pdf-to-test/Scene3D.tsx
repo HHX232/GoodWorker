@@ -198,12 +198,18 @@ export default function Scene3D({ height = 440, onStage }: { height?: number; on
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3))
     geo.setAttribute('aSize', new THREE.BufferAttribute(size, 1))
     geo.setAttribute('aSeed', new THREE.BufferAttribute(seeds, 1))
+    const isDark = () =>
+      document.documentElement.classList.contains('theme-dark') ||
+      document.documentElement.classList.contains('pomodoro-dark')
     const mat = new THREE.ShaderMaterial({
-      uniforms: { uColor: { value: new THREE.Color(0x0c0c0d) }, uScale: { value: scaleFor(h) }, uTime: { value: 0 } },
+      uniforms: { uColor: { value: new THREE.Color(isDark() ? 0xe0e0de : 0x0c0c0d) }, uScale: { value: scaleFor(h) }, uTime: { value: 0 } },
       vertexShader: VERT, fragmentShader: FRAG, transparent: true, depthTest: false, depthWrite: false,
     })
     const points = new THREE.Points(geo, mat)
     const group = new THREE.Group(); group.add(points); scene.add(group)
+    const syncColor = () => mat.uniforms.uColor.value.set(isDark() ? 0xe0e0de : 0x0c0c0d)
+    const mo = new MutationObserver(syncColor)
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
 
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const HOLD = 1800, TRANS = 1900, STEP = HOLD + TRANS
@@ -256,7 +262,7 @@ export default function Scene3D({ height = 440, onStage }: { height?: number; on
     ro.observe(wrap)
 
     return () => {
-      cancelAnimationFrame(raf); ro.disconnect()
+      cancelAnimationFrame(raf); ro.disconnect(); mo.disconnect()
       wrap.removeEventListener('pointermove', onMove); wrap.removeEventListener('pointerleave', onLeave)
       geo.dispose(); mat.dispose(); renderer.dispose()
       renderer.domElement.parentNode?.removeChild(renderer.domElement)
