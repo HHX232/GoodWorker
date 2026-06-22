@@ -1,32 +1,48 @@
 'use client'
 import { useEffect, useRef } from 'react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
+import { useRouter } from 'next/navigation'
 import * as THREE from 'three'
+import type { GlobeDotData } from '@/shared/types/GlobeDot.type'
 
 export default function KnowledgeGlobe() {
-  const t = useTranslations('LandingPage')
+  const t       = useTranslations('LandingPage')
+  const locale  = useLocale()
+  const router  = useRouter()
+
   const containerRef  = useRef<HTMLDivElement>(null)
   const tooltipRef    = useRef<HTMLDivElement>(null)
   const hintRef       = useRef<HTMLDivElement>(null)
-  const labelsRef     = useRef<string[]>([])
+  const labelsRef     = useRef<string[]>([])   // static fallback labels for big dots
   const miniLabelsRef = useRef<string[]>([])
+  const dotsDataRef   = useRef<GlobeDotData[]>([])
+  const routerRef     = useRef(router)
+  routerRef.current   = router
 
-  // Populate translated labels in render phase so they're ready when useEffect reads them
+  // Static big-dot labels — shown when API has no data for that slot
   labelsRef.current = [
     t('globe_l1'), t('globe_l2'), t('globe_l3'), t('globe_l4'),
     t('globe_l5'), t('globe_l6'), t('globe_l7'), t('globe_l8'),
     t('globe_l9'), t('globe_l10'), t('globe_l11'), t('globe_l12'),
   ]
   miniLabelsRef.current = [
-    t('globe_m1'), t('globe_m2'), t('globe_m3'), t('globe_m4'),
-    t('globe_m5'), t('globe_m6'), t('globe_m7'), t('globe_m8'),
-    t('globe_m9'), t('globe_m10'), t('globe_m11'), t('globe_m12'),
+    t('globe_m1'),  t('globe_m2'),  t('globe_m3'),  t('globe_m4'),
+    t('globe_m5'),  t('globe_m6'),  t('globe_m7'),  t('globe_m8'),
+    t('globe_m9'),  t('globe_m10'), t('globe_m11'), t('globe_m12'),
     t('globe_m13'), t('globe_m14'), t('globe_m15'), t('globe_m16'),
     t('globe_m17'), t('globe_m18'), t('globe_m19'), t('globe_m20'),
     t('globe_m21'), t('globe_m22'), t('globe_m23'), t('globe_m24'),
     t('globe_m25'), t('globe_m26'), t('globe_m27'), t('globe_m28'),
     t('globe_m29'), t('globe_m30'), t('globe_m31'), t('globe_m32'),
   ]
+
+  // Prefetch globe data immediately (before useEffect)
+  useEffect(() => {
+    fetch(`/api/landing/globe?locale=${locale}`)
+      .then(r => r.json())
+      .then((data: GlobeDotData[]) => { dotsDataRef.current = data })
+      .catch(() => {})
+  }, [locale])
 
   useEffect(() => {
     const container = containerRef.current
@@ -56,17 +72,17 @@ export default function KnowledgeGlobe() {
       ))
     }
 
-    const labels     = labelsRef.current
     const miniLabels = miniLabelsRef.current
-    const stride   = Math.floor(N / labels.length)
-    const labelMap = new Map<number, string>()
-    labels.forEach((lbl, k) => labelMap.set(k * stride + 1, lbl))
+    // Big labeled dots: up to 12 evenly distributed nodes
+    const MAX_BIG = 12
+    const stride  = Math.floor(N / MAX_BIG)
+    const bigIndices = new Set(Array.from({ length: MAX_BIG }, (_, k) => k * stride + 1))
 
-    // Assign mini-labels to ALL non-big-labeled nodes
+    // Mini-label mapping for remaining nodes
     const miniLabelMap = new Map<number, string>()
     let miniIdx = 0
     for (let i = 0; i < N; i++) {
-      if (!labelMap.has(i) && miniIdx < miniLabels.length) {
+      if (!bigIndices.has(i) && miniIdx < miniLabels.length) {
         miniLabelMap.set(i, miniLabels[miniIdx++])
       }
     }
@@ -81,19 +97,25 @@ export default function KnowledgeGlobe() {
     const geoBig    = new THREE.IcosahedronGeometry(0.16, 1)
 
     const spheres: THREE.Mesh[] = []
+    let bigCount = 0
     nodePositions.forEach((p, i) => {
-      const isLabeled  = labelMap.has(i)
-      const isMini     = !isLabeled && miniLabelMap.has(i)
-      const isInk      = !isLabeled && i % 3 === 0
-      const mat = isLabeled ? accentMat : (isInk ? inkMat : grayMat)
-      const geo = isLabeled ? geoBig   : (isInk ? geoMed  : geoSmall)
+      const isBig  = bigIndices.has(i)
+      const isMini = !isBig && miniLabelMap.has(i)
+      const isInk  = !isBig && i % 3 === 0
+      const mat = isBig ? accentMat : (isInk ? inkMat : grayMat)
+      const geo = isBig ? geoBig   : (isInk ? geoMed  : geoSmall)
       const m   = new THREE.Mesh(geo, mat)
       m.position.copy(p)
+
+      // Big dots get data from API (filled in dynamically)
+      const bigDotIndex = isBig ? bigCount++ : -1
       m.userData = {
         phase: Math.random() * Math.PI * 2,
-        label: labelMap.get(i) ?? miniLabelMap.get(i) ?? null,
-        isLabeled,
+        label: isMini ? miniLabelMap.get(i) : null,   // filled later for big dots
+        isBig,
         isMini,
+        bigDotIndex,
+        href: null as string | null,
       }
       group.add(m)
       spheres.push(m)
@@ -129,11 +151,43 @@ export default function KnowledgeGlobe() {
 
     scene.add(group)
 
-    // Интерактивность — hover на всех нодах
+    // Sync big dot labels/hrefs from API data (can arrive after mount)
+    const syncBigDots = () => {
+      spheres.forEach(m => {
+        const idx = m.userData.bigDotIndex as number
+        if (idx < 0) return
+        const data = dotsDataRef.current
+        if (data.length > 0 && idx < data.length) {
+          // Real data from API — navigable
+          m.userData.label = data[idx].label
+          m.userData.href  = data[idx].href
+        } else {
+          // Fallback to the original static label; no navigation
+          m.userData.label = labelsRef.current[idx] ?? null
+          m.userData.href  = null
+        }
+      })
+    }
+
+    // Poll until data arrives (at most 3s)
+    let syncAttempts = 0
+    const syncInterval = setInterval(() => {
+      syncBigDots()
+      if (dotsDataRef.current.length > 0 || ++syncAttempts > 15) clearInterval(syncInterval)
+    }, 200)
+
+    // Интерактивность
     const raycaster = new THREE.Raycaster()
     raycaster.params.Points = { threshold: 0.1 }
     const mouseVec  = new THREE.Vector2()
-    const state = { dragging: false, lastX: 0, lastY: 0, hovered: null as THREE.Mesh | null, hintHidden: false }
+    const state = {
+      dragging: false,
+      startX: 0, startY: 0,
+      lastX: 0,  lastY: 0,
+      hovered: null as THREE.Mesh | null,
+      clickTarget: null as THREE.Mesh | null,  // saved at pointerdown
+      hintHidden: false
+    }
 
     const showTooltip = () => {
       const tt = tooltipRef.current
@@ -143,10 +197,15 @@ export default function KnowledgeGlobe() {
       if (v.z > 1) { tt.style.display = 'none'; return }
       const x = (v.x * 0.5 + 0.5) * container.clientWidth
       const y = (-v.y * 0.5 + 0.5) * container.clientHeight
-      tt.textContent    = state.hovered.userData.label
+
+      const label = state.hovered.userData.label as string | null
+      const href  = state.hovered.userData.href as string | null
+
+      tt.textContent    = href ? `↗ ${label}` : (label ?? '')
       tt.style.left     = x + 'px'
       tt.style.top      = y + 'px'
       tt.style.display  = 'block'
+      tt.style.color    = href ? '#a78bfa' : '#fff'
       tt.style.transform = x > container.clientWidth * 0.6 ? 'translate(-100%, -50%)' : 'translate(8px, -50%)'
     }
     const hideTooltip = () => { if (tooltipRef.current) tooltipRef.current.style.display = 'none' }
@@ -155,8 +214,13 @@ export default function KnowledgeGlobe() {
     }
 
     const onDown = (e: PointerEvent) => {
-      e.stopPropagation(); state.dragging = true; state.lastX = e.clientX; state.lastY = e.clientY
-      container.style.cursor = 'grabbing'; state.hovered = null; hideTooltip(); hideHint()
+      e.stopPropagation()
+      state.clickTarget = state.hovered   // save before clearing
+      state.dragging = true
+      state.startX = e.clientX; state.startY = e.clientY
+      state.lastX  = e.clientX; state.lastY  = e.clientY
+      container.style.cursor = 'grabbing'
+      state.hovered = null; hideTooltip(); hideHint()
       container.setPointerCapture(e.pointerId)
     }
     const onMove = (e: PointerEvent) => {
@@ -176,8 +240,8 @@ export default function KnowledgeGlobe() {
         const v   = obj.position.clone().applyMatrix4(group.matrixWorld); v.project(camera)
         if (v.z < 1) {
           state.hovered = obj
-          container.style.cursor = 'pointer'
-          if (obj.userData.label) {
+          container.style.cursor = obj.userData.href ? 'pointer' : (obj.userData.label ? 'default' : 'grab')
+          if (obj.userData.label || obj.userData.href) {
             const el = tooltipRef.current
             if (el) {
               el.style.fontSize = obj.userData.isMini ? '10px' : '12px'
@@ -193,11 +257,26 @@ export default function KnowledgeGlobe() {
     }
     const onUp = (e: PointerEvent) => {
       if (state.dragging) {
-        state.dragging = false; container.style.cursor = state.hovered ? 'pointer' : 'grab'
+        const dx = Math.abs(e.clientX - state.startX)
+        const dy = Math.abs(e.clientY - state.startY)
+        const isClick = dx < 5 && dy < 5
+        const target  = state.clickTarget
+
+        state.dragging = false
+        state.clickTarget = null
+        container.style.cursor = 'grab'
         try { container.releasePointerCapture(e.pointerId) } catch {}
+
+        // Navigate on click (not drag) if dot has href
+        if (isClick && target?.userData.href) {
+          routerRef.current.push(target.userData.href as string)
+        }
       }
     }
-    const onLeave = () => { state.dragging = false; state.hovered = null; container.style.cursor = 'grab'; hideTooltip() }
+    const onLeave = () => {
+      state.dragging = false; state.hovered = null
+      container.style.cursor = 'grab'; hideTooltip()
+    }
 
     container.addEventListener('pointerdown',   onDown)
     container.addEventListener('pointermove',   onMove)
@@ -236,6 +315,7 @@ export default function KnowledgeGlobe() {
     ro.observe(container)
 
     return () => {
+      clearInterval(syncInterval)
       cancelAnimationFrame(raf); ro.disconnect()
       container.removeEventListener('pointerdown',   onDown)
       container.removeEventListener('pointermove',   onMove)
@@ -252,7 +332,7 @@ export default function KnowledgeGlobe() {
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', minHeight: 540 }}>
-      {/* фиолетовое свечение */}
+      {/* свечение */}
       <div style={{
         position: 'absolute', inset: '8% 4%', borderRadius: '50%', pointerEvents: 'none',
         background: 'radial-gradient(circle at 50% 45%, rgba(168,85,247,0.26), rgba(124,58,237,0.09) 45%, transparent 70%)',
@@ -279,9 +359,10 @@ export default function KnowledgeGlobe() {
       {/* tooltip */}
       <div ref={tooltipRef} style={{
         position: 'absolute', display: 'none', pointerEvents: 'none', zIndex: 10,
-        background: 'rgba(14,14,18,0.82)', backdropFilter: 'blur(6px)',
-        color: '#fff', fontSize: 12, fontWeight: 500, letterSpacing: '0.01em',
+        background: 'rgba(14,14,18,0.85)', backdropFilter: 'blur(6px)',
+        color: '#fff', fontSize: 12, fontWeight: 600, letterSpacing: '0.01em',
         padding: '5px 10px', borderRadius: 8, whiteSpace: 'nowrap',
+        transition: 'color 0.15s',
       }} />
 
       {/* drag hint */}

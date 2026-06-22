@@ -829,11 +829,15 @@ function TeachersBlock() {
   const t = useTranslations('LandingPage')
   const locale = useLocale()
   const [teachers, setTeachers] = useState<ApiTeacher[]>([])
+  const [teacherTotal, setTeacherTotal] = useState<number | null>(null)
 
   useEffect(() => {
     fetch('/api/teachers?limit=7&page=1')
       .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.teachers?.length) setTeachers(d.teachers) })
+      .then(d => {
+        if (d?.teachers?.length) setTeachers(d.teachers)
+        if (typeof d?.pagination?.total === 'number') setTeacherTotal(d.pagination.total)
+      })
       .catch(() => {})
   }, [])
 
@@ -867,7 +871,9 @@ function TeachersBlock() {
             )}
           </div>
         </div>
-        <Link href="/teachers" className={s.link_red}>{t('teachers_all')}</Link>
+        <Link href="/teachers" className={s.link_red}>
+          {teacherTotal !== null ? t('teachers_all_count', { count: teacherTotal }) : t('teachers_all')}
+        </Link>
       </div>
 
       {teachers.length === 0 ? (
@@ -968,7 +974,7 @@ function PdfTestPromo() {
             <span key={key} className={s.tag_chip}>{t(key)}</span>
           ))}
         </div>
-        <Link href="/profile" className={s.btn_red}>
+        <Link href="/info-pdf-to-test" className={s.btn_red}>
           {t('pdf_btn')}
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="M13 5l7 7-7 7" /></svg>
         </Link>

@@ -2,6 +2,7 @@
 
 import { CategorySelect } from '@/shared/ui/inputs/CategorySelect/CategorySelect'
 import * as Slider from '@radix-ui/react-slider'
+import { SearchIcon, XIcon } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import styles from './PostCatalogFilters.module.scss'
 
@@ -12,6 +13,7 @@ export interface PostFiltersValue {
   sort: PostSortKey
   ratingMin: number
   ratingMax: number
+  search: string
 }
 
 interface Props {
@@ -27,11 +29,31 @@ export function PostCatalogFilters({ value, onChange }: Props) {
   const setCategory = (ids: string[]) => onChange({ ...value, categoryId: ids[0] ?? '' })
   const setSort = (sort: PostSortKey) => onChange({ ...value, sort })
   const setRating = ([min, max]: number[]) => onChange({ ...value, ratingMin: min, ratingMax: max })
+  const setSearch = (s: string) => onChange({ ...value, search: s })
 
   const showRatingLabel = value.ratingMin > 0 || value.ratingMax < 5
 
   return (
     <div className={styles.bar}>
+      {/* Search */}
+      <div className={styles.search_wrap}>
+        <SearchIcon size={14} className={styles.search_icon} />
+        <input
+          type="text"
+          className={styles.search_input}
+          placeholder={t('searchPlaceholder')}
+          value={value.search}
+          onChange={e => setSearch(e.target.value)}
+        />
+        {value.search && (
+          <button className={styles.search_clear} onClick={() => setSearch('')} aria-label={t('clearSearch')}>
+            <XIcon size={12} />
+          </button>
+        )}
+      </div>
+
+      <div className={styles.sep} />
+
       {/* Category */}
       <div className={styles.category_wrap}>
         <CategorySelect

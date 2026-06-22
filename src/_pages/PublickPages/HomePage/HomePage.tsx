@@ -6,7 +6,8 @@ import {PostCatalogFilters, type PostFiltersValue} from '@/widgets/Cards/PostCat
 import {NotificationsPanel} from '@/widgets/NotificationsPanel/NotificationsPanel'
 import {HomeTutorial} from '@/widgets/Tutorial/HomeTutorial'
 import {useTranslations} from 'next-intl'
-import {useCallback, useEffect, useState} from 'react'
+import {useCallback, useEffect, useRef, useState} from 'react'
+
 import styles from './HomePage.module.scss'
 
 interface HomePageProps {
@@ -60,31 +61,40 @@ function HomePage({initialData, initialQuery, vipPosts}: HomePageProps) {
     sort: 'newest',
     ratingMin: 0,
     ratingMax: 5,
+    search: initialQuery.search ?? '',
   })
 
   const [cards, setCards] = useState(initialData.posts.map(mapPost))
   const [hasMore, setHasMore] = useState(initialData.pagination.page < initialData.pagination.totalPages)
   const [currentQuery, setCurrentQuery] = useState<IPostsQuery>({...initialQuery, page: 1})
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const fetchPage = useCallback(async (query: IPostsQuery) => {
     const res = await PostService.getList(query)
     return res
   }, [])
 
-  // Re-fetch when filters change
-  useEffect(() => {
+  const runFetch = useCallback((f: PostFiltersValue) => {
     const query: IPostsQuery = {
       ...initialQuery,
       page: 1,
       limit: initialQuery.limit ?? 12,
-      categoryId: filters.categoryId || undefined,
-      ...sortQueryParam(filters.sort),
+      categoryId: f.categoryId || undefined,
+      search: f.search ? f.search.toLowerCase().trim() : undefined,
+      ...sortQueryParam(f.sort),
     }
     setCurrentQuery(query)
     fetchPage(query).then(res => {
       setCards(res.posts.map(mapPost))
       setHasMore(res.pagination.page < res.pagination.totalPages)
     }).catch(() => {})
+  }, [fetchPage, initialQuery])
+
+  // Re-fetch when filters change; debounce only the search field
+  useEffect(() => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
+    searchDebounceRef.current = setTimeout(() => runFetch(filters), 300)
+    return () => { if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters])
 
