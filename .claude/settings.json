@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(python3 -c ' *)",
-      "Bash(node -e \"require\\('./messages/ru.json'\\); require\\('./messages/en.json'\\); require\\('./messages/zh.json'\\); require\\('./messages/hi.json'\\); console.log\\('All JSON valid'\\)\")"
+      "Bash(node -e \"require\\('./messages/ru.json'\\); require\\('./messages/en.json'\\); require\\('./messages/zh.json'\\); require\\('./messages/hi.json'\\); console.log\\('All JSON valid'\\)\")",
+      "Bash(python3 -c \"import json,sys; p=json.load\\(sys.stdin\\); print\\('scripts:', json.dumps\\(p.get\\('scripts',{}\\), indent=2\\)\\)\")"
     ]
   }
 }
