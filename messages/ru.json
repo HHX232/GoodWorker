@@ -1074,7 +1074,17 @@
     "editItem": "Редактировать",
     "vipUntil": "VIP до {date}",
     "vipInfinite": "VIP ∞",
-    "getVip": "Получить VIP"
+    "getVip": "Получить VIP",
+    "vzDesc": "Начните урок в один клик — ученик войдёт по ссылке, запись включится автоматически.",
+    "vzCreateRoom": "Создать комнату",
+    "vzJoinPlaceholder": "Войти по коду комнаты…",
+    "vzReadyLabel": "Камера и микрофон готовы",
+    "vzTabScheduled": "Запланированные",
+    "vzTabRecent": "Недавние",
+    "vzNoScheduled": "Нет запланированных уроков",
+    "vzNoRecent": "Нет недавних звонков",
+    "vzJoinBtn": "Подключиться",
+    "vzTranscript": "Конспект"
   },
   "SetCommentBlock": {
     "heading": "Оставить отзыв",

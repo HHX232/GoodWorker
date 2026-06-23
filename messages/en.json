@@ -1074,7 +1074,17 @@
     "editItem": "Edit",
     "vipUntil": "VIP until {date}",
     "vipInfinite": "VIP ∞",
-    "getVip": "Get VIP"
+    "getVip": "Get VIP",
+    "vzDesc": "Start a lesson in one click — students join via link, recording starts automatically.",
+    "vzCreateRoom": "Create room",
+    "vzJoinPlaceholder": "Enter room code…",
+    "vzReadyLabel": "Camera and microphone ready",
+    "vzTabScheduled": "Scheduled",
+    "vzTabRecent": "Recent",
+    "vzNoScheduled": "No scheduled lessons",
+    "vzNoRecent": "No recent calls",
+    "vzJoinBtn": "Join",
+    "vzTranscript": "Transcript"
   },
   "SetCommentBlock": {
     "heading": "Leave a review",
