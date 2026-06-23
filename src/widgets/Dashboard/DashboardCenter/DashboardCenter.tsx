@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { ServiceCard } from '@/shared/ui/Service/ServiceCard/ServiceCard'
 import { TestPreviewCard, TestPreviewCardProps } from '@/shared/ui/Test/TestPreviewCard/TestPreviewCard'
 import { CreatePickerModal } from '@/widgets/Dashboard/CreatePickerModal/CreatePickerModal'
@@ -15,21 +14,6 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import styles from './DashboardCenter.module.scss'
-
-interface ScheduledCallItem {
-  id: string
-  title: string
-  startTime: string
-  date: string
-  studentName?: string
-}
-
-interface RecentCallItem {
-  id: string
-  name: string
-  topic: string | null
-  createdAt: string
-}
 
 type Tab = 'all' | 'roadmap' | 'posts' | 'services' | 'tests'
 
@@ -140,40 +124,7 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
   const [bookingService, setBookingService] = useState<ServiceItem | null>(null)
   const [videoOpen, setVideoOpen] = useState(false)
 
-  // Video Zone
-  const router = useRouter()
-  const [vzCode, setVzCode] = useState('')
-  const [vzTab, setVzTab] = useState<'scheduled' | 'recent'>('scheduled')
-  const [scheduledCalls, setScheduledCalls] = useState<ScheduledCallItem[]>([])
-  const [recentCalls, setRecentCalls] = useState<RecentCallItem[]>([])
-  const [vzLoading, setVzLoading] = useState(false)
-
   const canBook = !isOwner && session?.user?.role === 'STUDENT'
-
-  const handleJoinCode = () => {
-    const code = vzCode.trim()
-    if (!code) return
-    router.push(`/call/${encodeURIComponent(code)}`)
-  }
-
-  useEffect(() => {
-    if (!isOwner) return
-    setVzLoading(true)
-    Promise.all([
-      fetch('/api/teacher/calendar').then(r => r.json()),
-      fetch('/api/call/my-transcripts').then(r => r.json()),
-    ]).then(([calData, transcripts]) => {
-      const today = new Date().toISOString().split('T')[0]
-      type CalEvent = { id: string; title: string; startTime?: string; date?: string; studentName?: string }
-      const upcoming: ScheduledCallItem[] = ((calData.events ?? []) as CalEvent[])
-        .filter(e => e.date && e.date >= today && e.startTime)
-        .slice(0, 5)
-        .map(e => ({ id: e.id, title: e.title, startTime: e.startTime!, date: e.date!, studentName: e.studentName }))
-      setScheduledCalls(upcoming)
-      type TranscriptRoom = { id: string; name: string; topic: string | null; createdAt: string }
-      setRecentCalls(Array.isArray(transcripts) ? (transcripts as TranscriptRoom[]).slice(0, 5) : [])
-    }).catch(() => {}).finally(() => setVzLoading(false))
-  }, [isOwner])
 
   async function handleDeletePost(id: string) {
     if (!window.confirm(t('deleteConfirm'))) return
@@ -307,139 +258,47 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
   return (
     <div className={styles.center}>
 
-      {/* Stat strip */}
-      <div className={styles.statsMerged}>
-        {stats.map((s, i) => (
-          isOwner ? (
-            <Link key={s.label} href={`/statistics/${statsId}`} className={`${styles.statsItem} ${styles.statsItemLink}`}>
-              {i > 0 && <div className={styles.statsSep} />}
-              <div className={styles.statsItemIcon} style={{ background: s.bg }}>{s.icon}</div>
-              <div>
-                <div className={styles.statsItemValue}>{s.value}</div>
-                <div className={styles.statsItemLabel}>{s.label}</div>
+      {/* Stats + video call top row */}
+      <div className={styles.topRow}>
+        <div className={styles.statsMerged}>
+          {stats.map((s, i) => (
+            isOwner ? (
+              <Link key={s.label} href={`/statistics/${statsId}`} className={`${styles.statsItem} ${styles.statsItemLink}`}>
+                {i > 0 && <div className={styles.statsSep} />}
+                <div className={styles.statsItemIcon} style={{ background: s.bg }}>{s.icon}</div>
+                <div>
+                  <div className={styles.statsItemValue}>{s.value}</div>
+                  <div className={styles.statsItemLabel}>{s.label}</div>
+                </div>
+              </Link>
+            ) : (
+              <div key={s.label} className={styles.statsItem}>
+                {i > 0 && <div className={styles.statsSep} />}
+                <div className={styles.statsItemIcon} style={{ background: s.bg }}>{s.icon}</div>
+                <div>
+                  <div className={styles.statsItemValue}>{s.value}</div>
+                  <div className={styles.statsItemLabel}>{s.label}</div>
+                </div>
               </div>
-            </Link>
-          ) : (
-            <div key={s.label} className={styles.statsItem}>
-              {i > 0 && <div className={styles.statsSep} />}
-              <div className={styles.statsItemIcon} style={{ background: s.bg }}>{s.icon}</div>
-              <div>
-                <div className={styles.statsItemValue}>{s.value}</div>
-                <div className={styles.statsItemLabel}>{s.label}</div>
-              </div>
+            )
+          ))}
+        </div>
+
+        {isOwner && (
+          <div className={styles.videoCallBlock} id="dashboard-video-room">
+            <div className={styles.videoCallTitle}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14" />
+                <rect x="1" y="6" width="14" height="12" rx="2" />
+              </svg>
+              {t('videoRoom')}
             </div>
-          )
-        ))}
-      </div>
-
-      {/* Video Zone — full-width 2-col card (teacher only) */}
-      {isOwner && (
-        <section className={styles.videoZone} id="dashboard-video-room">
-
-          {/* Left: gradient CTA */}
-          <div className={styles.vzCta}>
-            <span className={styles.vzIcon}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="6" width="14" height="12" rx="2.5"/><path d="m16 10 6-3v10l-6-3z"/>
-              </svg>
-            </span>
-            <h3 className={styles.vzTitle}>{t('videoRoom')}</h3>
-            <p className={styles.vzDesc}>{t('vzDesc')}</p>
-            <button className={styles.vzCreateBtn} onClick={() => setVideoOpen(true)}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="6" width="14" height="12" rx="2.5"/><path d="m16 10 6-3v10l-6-3z"/>
-              </svg>
-              {t('vzCreateRoom')}
+            <button className={styles.videoCallBtn} onClick={() => setVideoOpen(true)}>
+              {t('createVideoCallBtn')}
             </button>
-            <div className={styles.vzJoin}>
-              <input
-                className={styles.vzJoinInput}
-                type="text"
-                placeholder={t('vzJoinPlaceholder')}
-                value={vzCode}
-                onChange={e => setVzCode(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleJoinCode()}
-              />
-              <button className={styles.vzJoinBtn} onClick={handleJoinCode} aria-label="Войти">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12h14"/><path d="m13 5 7 7-7 7"/>
-                </svg>
-              </button>
-            </div>
-            <div className={styles.vzReady}>
-              <span className={styles.vzWave}>
-                <i/><i/><i/><i/><i/>
-              </span>
-              {t('vzReadyLabel')}
-            </div>
           </div>
-
-          {/* Right: scheduled / recent tabs */}
-          <div className={styles.vzPanel}>
-            <div className={styles.vzTabs}>
-              <button
-                className={`${styles.vzTab} ${vzTab === 'scheduled' ? styles.vzTabOn : ''}`}
-                onClick={() => setVzTab('scheduled')}
-              >
-                {t('vzTabScheduled')}
-                <span className={styles.vzPill}>{scheduledCalls.length}</span>
-              </button>
-              <button
-                className={`${styles.vzTab} ${vzTab === 'recent' ? styles.vzTabOn : ''}`}
-                onClick={() => setVzTab('recent')}
-              >
-                {t('vzTabRecent')}
-                <span className={styles.vzPill}>{recentCalls.length}</span>
-              </button>
-            </div>
-
-            <div className={styles.vzList}>
-              {vzLoading ? (
-                <div className={styles.vzEmpty}>…</div>
-              ) : vzTab === 'scheduled' ? (
-                scheduledCalls.length === 0
-                  ? <p className={styles.vzEmpty}>{t('vzNoScheduled')}</p>
-                  : scheduledCalls.map((c, i) => (
-                    <div key={c.id} className={`${styles.vzCall} ${i === 0 ? styles.vzCallNext : ''}`}>
-                      <div className={styles.vzWhen}>
-                        <span className={styles.vzTime}>{c.startTime}</span>
-                        <span className={styles.vzDate}>{c.date}</span>
-                      </div>
-                      <span className={styles.vzCallIc}>
-                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="m16 10 6-3v10l-6-3z"/></svg>
-                      </span>
-                      <div className={styles.vzCallInfo}>
-                        <div className={styles.vzCallTitle}>{c.title}</div>
-                        {c.studentName && <div className={styles.vzCallSub}>{c.studentName}</div>}
-                      </div>
-                      <button className={styles.vzJoinCallBtn} onClick={() => setVideoOpen(true)}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg>
-                        {t('vzJoinBtn')}
-                      </button>
-                    </div>
-                  ))
-              ) : (
-                recentCalls.length === 0
-                  ? <p className={styles.vzEmpty}>{t('vzNoRecent')}</p>
-                  : recentCalls.map(r => (
-                    <div key={r.id} className={styles.vzCall}>
-                      <div className={styles.vzWhen}>
-                        <span className={styles.vzTime}>{new Date(r.createdAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}</span>
-                      </div>
-                      <span className={styles.vzCallIc}>
-                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="m16 10 6-3v10l-6-3z"/></svg>
-                      </span>
-                      <div className={styles.vzCallInfo}>
-                        <div className={styles.vzCallTitle}>{r.topic || r.name}</div>
-                      </div>
-                      <Link href={`/profile/transcripts`} className={styles.vzGhostBtn}>{t('vzTranscript')}</Link>
-                    </div>
-                  ))
-              )}
-            </div>
-          </div>
-        </section>
-      )}
+        )}
+      </div>
 
       {/* Tabs */}
       <div className={styles.tabs} id="dashboard-content-tabs">
