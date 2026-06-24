@@ -3,11 +3,7 @@ import { RoomServiceClient } from 'livekit-server-sdk'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
 
-const svc = new RoomServiceClient(
-  process.env.LIVEKIT_URL!,
-  process.env.LIVEKIT_API_KEY!,
-  process.env.LIVEKIT_API_SECRET!,
-)
+
 
 export async function POST(req: NextRequest) {
   const session = await auth()
@@ -15,7 +11,11 @@ export async function POST(req: NextRequest) {
 
   const { roomName } = await req.json()
   if (!roomName) return NextResponse.json({ error: 'roomName required' }, { status: 400 })
-
+const svc = new RoomServiceClient(
+    process.env.LIVEKIT_URL!,
+    process.env.LIVEKIT_API_KEY!,
+    process.env.LIVEKIT_API_SECRET!,
+  )
   let shouldClose = false
 
   // ── 1. Спрашиваем LiveKit ─────────────────────────────────────────────────
