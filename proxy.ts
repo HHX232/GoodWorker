@@ -30,6 +30,17 @@ export default auth((req) => {
   const isLoggedIn = !!session
   const role = session?.user?.role
 
+  const usersMatch = path.match(/^\/users\/([^/]+)/)
+  if (usersMatch && isLoggedIn) {
+    const urlUserId = usersMatch[1]
+    const sessionUserId = session?.user?.id
+
+    if (urlUserId === sessionUserId) {
+      const profilePath = role === "STUDENT" ? "/student-profile" : "/teacher-profile"
+      return NextResponse.redirect(new URL(profilePath, req.url))
+    }
+  }
+
   const isTeacherOnly = teacherOnlyPaths.some((p) => path.startsWith(p))
   const isStudentOnly = studentOnlyPaths.some((p) => path.startsWith(p))
   const isAuthRequired = authPaths.some((p) => path.startsWith(p))

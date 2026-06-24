@@ -17,12 +17,13 @@ interface MyStudent {
 interface Props {
   defaultName: string
   onClose: () => void
+  isStudent?: boolean
 }
 
 type Step = 'name' | 'details'
 type AccessType = 'ALL' | 'MY_STUDENTS' | 'SELECTED'
 
-export function VideoCallModal({ defaultName, onClose }: Props) {
+export function VideoCallModal({ defaultName, onClose, isStudent = false }: Props) {
   const t = useTranslations('dashboard.videoCallModal')
   const router = useRouter()
 
@@ -31,6 +32,8 @@ export function VideoCallModal({ defaultName, onClose }: Props) {
     MY_STUDENTS: t('accessMyStudents'),
     SELECTED: t('accessSelected'),
   }
+
+  const availableAccessTypes: AccessType[] = isStudent ? ['ALL'] : ['ALL', 'MY_STUDENTS', 'SELECTED']
 
   // Step 1
   const [roomName, setRoomName] = useState(defaultName || '')
@@ -227,7 +230,7 @@ export function VideoCallModal({ defaultName, onClose }: Props) {
 
               <span className={styles.fieldLabel}>Доступ</span>
               <div className={styles.accessRow}>
-                {(Object.keys(ACCESS_LABELS) as AccessType[]).map(type => (
+                {availableAccessTypes.map(type => (
                   <button
                     key={type}
                     type="button"

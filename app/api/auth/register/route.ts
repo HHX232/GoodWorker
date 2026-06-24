@@ -1,11 +1,12 @@
+import { langFromRequest } from '@/features/helpers/langCodeFromHeader'
+import { applyPromoCode } from '@/lib/applyPromoCode'
+import { hasAIProvider } from '@/lib/openrouter'
+import { refineNameTransliterationWithAI } from '@/lib/postAI'
 import { generateOtp, saveOtp, sendOtp, verifyOtp } from '@/shared/api/otp'
 import { getIp, limits } from '@/shared/api/rate-limit'
 import { tooManyRequests } from '@/shared/api/rate-limit-response'
-import { prisma } from '@/shared/prisma/prisma'
-import { applyPromoCode } from '@/lib/applyPromoCode'
 import { hasCyrillic, transliterateCyrillicToLatin } from '@/shared/lib/transliterate'
-import { refineNameTransliterationWithAI } from '@/lib/postAI'
-import { hasAIProvider } from '@/lib/openrouter'
+import { prisma } from '@/shared/prisma/prisma'
 import bcrypt from 'bcryptjs'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -52,6 +53,7 @@ const sendUserSchema = z
 
   export async function POST(req: NextRequest) {
      const ip = getIp(req)
+     const lang = langFromRequest(req)
   const body = await req.json()
   if(body.step === 'send' && body.userType === 'Teacher'){
    const parsed = sendTeacherSchema.safeParse(body)
@@ -77,7 +79,7 @@ const sendUserSchema = z
     }
     const code = generateOtp()
     await saveOtp(email, code)
-    await sendOtp(email, code)
+    await sendOtp(email, code, lang)
 
     return NextResponse.json({ ok: true })
 
@@ -106,7 +108,7 @@ const sendUserSchema = z
     }
     const code = generateOtp()
     await saveOtp(email, code)
-    await sendOtp(email, code)
+    await sendOtp(email, code, lang)
 
     return NextResponse.json({ ok: true })
 

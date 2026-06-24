@@ -207,7 +207,6 @@ export function NavBar({extraClass}: {extraClass?: string}) {
     ]
     bottomGroups = [
       {items: [{href: '/create-post',     label: t('createPost'),   icon: <Icon.CreatePost />}]},
-      {items: [{href: '/call',            label: t('videoCall'),    icon: <Icon.VideoCall />}]},
       {items: [{href: '/create-road-map', label: t('createCourse'), icon: <Icon.CreateRoadmap />, extraClass: styles.create_course_item}]},
       {items: [{href: '/create-test',     label: t('createTest'),   icon: <Icon.CreateTest />}]},
       ...(userId ? [{items: [{href: `/calendar/${userId}`, label: t('calendar'), icon: <Icon.Calendar />}]}] : []),

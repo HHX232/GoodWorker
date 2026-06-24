@@ -472,6 +472,77 @@
   .meetingTeacher { color: rgba(255,255,255,0.4); }
   .saveBtn { background: #818cf8; &:hover:not(:disabled) { background: #6366f1; } }
   .logoutBtn { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.2); }
+
+  @media (max-width: 768px) {
+    .actionsWrapCollapsed::after {
+      background: linear-gradient(to bottom, transparent 0%, #1a1c24 70%);
+    }
+    .actionsWrapCollapsed .showAllBtn {
+      background: rgba(30, 25, 60, 0.88);
+      border-color: rgba(129, 140, 248, 0.4);
+      color: #c4b5fd;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+      &:hover { background: rgba(50, 40, 100, 0.95); }
+    }
+  }
+}
+
+// ── Mobile responsive ────────────────────────────────────────
+.actionsWrap { position: relative; }
+.showAllBtn  { display: none; }
+
+@media (max-width: 768px) {
+
+  .actionsWrap { position: relative; }
+
+  .actionsWrapCollapsed {
+    position: relative;
+    max-height: 200px;
+    overflow: hidden;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 90px;
+      background: linear-gradient(to bottom, transparent 0%, #fff 70%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .showAllBtn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+      white-space: nowrap;
+      padding: 0 20px;
+      height: 34px;
+      border: 1px solid rgba(83, 74, 183, 0.35);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(6px);
+      color: #534AB7;
+      font-size: 12.5px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.13s, box-shadow 0.13s;
+      box-shadow: 0 2px 12px rgba(83, 74, 183, 0.18);
+
+      &:hover {
+        background: #f0eaff;
+        box-shadow: 0 4px 16px rgba(83, 74, 183, 0.28);
+      }
+    }
+  }
 }
 
 // ── Logout ─────────────────────────────────────────────────

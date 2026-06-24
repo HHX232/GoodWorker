@@ -1,121 +1,144 @@
+'use client'
 import Link from 'next/link'
 import styles from './terms.module.css'
 
-import { getTranslations } from 'next-intl/server'
-import type { Metadata } from 'next'
+import { useTranslations } from 'next-intl'
+import { useEffect } from 'react'
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations('PageTitles')
-  return { title: t('terms') }
-}
 
-export default function TermsPage() {
+
+export default  function TermsPage() {
+  const t = useTranslations('TermsPage')
+useEffect(() => {
+    const originalOverflow = document.body.style.overflow
+    document.body.style.setProperty('overflow', 'auto', 'important')
+    
+    return () => {
+      if (originalOverflow) {
+        document.body.style.overflow = originalOverflow
+      } else {
+        document.body.style.removeProperty('overflow')
+      }
+    }
+  }, [])
   return (
     <div className={styles.page}>
       <div className={styles.container}>
-        <Link href="/" className={styles.back}>← На главную</Link>
+        <Link href="/" className={styles.back}>{t('back')}</Link>
 
-        <h1 className={styles.h1}>Условия использования</h1>
-        <p className={styles.updated}>Последнее обновление: 16 мая 2025 г.</p>
+        <h1 className={styles.h1}>{t('title')}</h1>
+        <p className={styles.updated}>{t('updated')}</p>
 
         <section className={styles.section}>
-          <h2 className={styles.h2}>1. Принятие условий</h2>
-          <p>Используя платформу <strong>GoodWorker</strong>, вы подтверждаете, что ознакомились с настоящими Условиями использования и соглашаетесь с ними. Если вы не согласны с какими-либо положениями, просим вас прекратить использование платформы.</p>
+          <h2 className={styles.h2}>{t('section1Title')}</h2>
+          <p dangerouslySetInnerHTML={{ __html: t('section1p1') }} />
         </section>
 
         <section className={styles.section}>
-          <h2 className={styles.h2}>2. Описание сервиса</h2>
-          <p>GoodWorker — образовательная платформа, которая соединяет учеников с репетиторами. Платформа предоставляет инструменты для:</p>
+          <h2 className={styles.h2}>{t('section2Title')}</h2>
+          <p>{t('section2p1')}</p>
           <ul className={styles.list}>
-            <li>Поиска и записи к репетиторам.</li>
-            <li>Проведения онлайн-занятий посредством видеосвязи.</li>
-            <li>Работы с образовательными материалами: тестами, роад-мапами, постами.</li>
-            <li>Отслеживания прогресса обучения.</li>
+            <li>{t('section2item1')}</li>
+            <li>{t('section2item2')}</li>
+            <li>{t('section2item3')}</li>
+            <li>{t('section2item4')}</li>
           </ul>
         </section>
 
         <section className={styles.section}>
-          <h2 className={styles.h2}>3. Регистрация и аккаунт</h2>
-          <p>Для использования платформы необходимо создать аккаунт. Вы обязуетесь:</p>
+          <h2 className={styles.h2}>{t('section3Title')}</h2>
+          <p>{t('section3p1')}</p>
           <ul className={styles.list}>
-            <li>Указывать достоверные данные при регистрации.</li>
-            <li>Не передавать данные для входа третьим лицам.</li>
-            <li>Уведомлять нас о несанкционированном доступе к вашему аккаунту.</li>
-            <li>Быть не моложе 14 лет (для пользователей до 18 лет — с согласия родителей или законных представителей).</li>
+            <li>{t('section3item1')}</li>
+            <li>{t('section3item2')}</li>
+            <li>{t('section3item3')}</li>
+            <li>{t('section3item4')}</li>
           </ul>
         </section>
 
         <section className={styles.section}>
-          <h2 className={styles.h2}>4. Правила использования</h2>
-          <p>При использовании платформы запрещается:</p>
+          <h2 className={styles.h2}>{t('section4Title')}</h2>
+          <p>{t('section4p1')}</p>
           <ul className={styles.list}>
-            <li>Размещать незаконный, оскорбительный или вводящий в заблуждение контент.</li>
-            <li>Нарушать права интеллектуальной собственности.</li>
-            <li>Использовать платформу в коммерческих целях без соответствующего разрешения.</li>
-            <li>Пытаться получить несанкционированный доступ к системам платформы.</li>
-            <li>Создавать фиктивные аккаунты или выдавать себя за других лиц.</li>
+            <li>{t('section4item1')}</li>
+            <li>{t('section4item2')}</li>
+            <li>{t('section4item3')}</li>
+            <li>{t('section4item4')}</li>
+            <li>{t('section4item5')}</li>
           </ul>
         </section>
 
         <section className={styles.section}>
-          <h2 className={styles.h2}>5. Репетиторы</h2>
-          <p>Репетиторы, зарегистрированные на платформе, несут ответственность за:</p>
+          <h2 className={styles.h2}>{t('section5Title')}</h2>
+          <p>{t('section5p1')}</p>
           <ul className={styles.list}>
-            <li>Достоверность информации о своей квалификации и опыте.</li>
-            <li>Качество предоставляемых образовательных услуг.</li>
-            <li>Соблюдение договорённостей с учениками.</li>
+            <li>{t('section5item1')}</li>
+            <li>{t('section5item2')}</li>
+            <li>{t('section5item3')}</li>
           </ul>
-          <p>GoodWorker является посредником и не несёт ответственности за качество конкретных занятий.</p>
+          <p>{t('section5p2')}</p>
         </section>
 
         <section className={styles.section}>
-          <h2 className={styles.h2}>6. Платежи и тарифы</h2>
-          <p>Платформа предоставляет базовый доступ бесплатно. Дополнительные возможности (VIP-статус) доступны на платной основе. Стоимость и условия тарифных планов указаны в соответствующем разделе платформы.</p>
-          <p>Оплата за занятия осуществляется напрямую между учеником и репетитором в соответствии с условиями конкретной услуги.</p>
+          <h2 className={styles.h2}>{t('section6Title')}</h2>
+          <p>{t('section6p1')}</p>
+          <p>{t('section6p2')}</p>
         </section>
 
         <section className={styles.section}>
-          <h2 className={styles.h2}>7. Контент пользователей</h2>
-          <p>Публикуя материалы на платформе (посты, комментарии, роад-мапы, тесты), вы предоставляете GoodWorker неисключительную лицензию на их использование в целях работы сервиса.</p>
-          <p>Вы сохраняете все права на свои материалы и несёте ответственность за их законность.</p>
+          <h2 className={styles.h2}>{t('section7Title')}</h2>
+          <p>{t('section7p1')}</p>
+          <p>{t('section7p2')}</p>
         </section>
 
         <section className={styles.section}>
-          <h2 className={styles.h2}>8. Ограничение ответственности</h2>
-          <p>GoodWorker не несёт ответственности за:</p>
+          <h2 className={styles.h2}>{t('section8Title')}</h2>
+          <p>{t('section8p1')}</p>
           <ul className={styles.list}>
-            <li>Временную недоступность платформы.</li>
-            <li>Качество образовательных услуг, оказываемых репетиторами.</li>
-            <li>Убытки, возникшие вследствие использования платформы.</li>
+            <li>{t('section8item1')}</li>
+            <li>{t('section8item2')}</li>
+            <li>{t('section8item3')}</li>
           </ul>
         </section>
 
         <section className={styles.section}>
-          <h2 className={styles.h2}>9. Интеллектуальная собственность</h2>
-          <p>Платформа GoodWorker, её дизайн, логотип и программный код защищены авторским правом. Воспроизведение или распространение без разрешения запрещено.</p>
+          <h2 className={styles.h2}>{t('section9Title')}</h2>
+          <p>{t('section9p1')}</p>
         </section>
 
         <section className={styles.section}>
-          <h2 className={styles.h2}>10. Прекращение доступа</h2>
-          <p>Мы оставляем за собой право приостановить или удалить аккаунт пользователя в случае нарушения настоящих Условий без предварительного уведомления.</p>
+          <h2 className={styles.h2}>{t('section10Title')}</h2>
+          <p>{t('section10p1')}</p>
         </section>
 
         <section className={styles.section}>
-          <h2 className={styles.h2}>11. Применимое право</h2>
-          <p>Настоящие Условия регулируются законодательством Российской Федерации. Споры разрешаются в судебном порядке по месту нахождения платформы.</p>
+          <h2 className={styles.h2}>{t('section11Title')}</h2>
+          <p>{t('section11p1')}</p>
         </section>
 
         <section className={styles.section}>
-          <h2 className={styles.h2}>12. Изменения условий</h2>
-          <p>Мы оставляем за собой право изменять настоящие Условия. Продолжение использования платформы после публикации изменений означает ваше согласие с новой редакцией.</p>
+          <h2 className={styles.h2}>{t('section12Title')}</h2>
+          <p>{t('section12p1')}</p>
         </section>
 
         <section className={styles.section}>
-          <h2 className={styles.h2}>13. Контакты</h2>
-          <p>По вопросам, связанным с условиями использования:</p>
+          <h2 className={styles.h2}>{t('section13Title')}</h2>
+          <p>{t('section13p1')}</p>
           <ul className={styles.list}>
-            <li><Link href="/feedback" className={styles.inlineLink}>Обратная связь</Link></li>
-            <li>Также ознакомьтесь с нашей <Link href="/privacy" className={styles.inlineLink}>Политикой конфиденциальности</Link>.</li>
+            <li>
+              <Link href="/feedback" className={styles.inlineLink}>
+                {t('section13item1')}
+              </Link>
+            </li>
+            <li>
+              {t.rich('section13item2', {
+                privacyLink: (chunks) => (
+                  <Link href="/privacy" className={styles.inlineLink}>
+                    {chunks}
+                  </Link>
+                ),
+              })}
+            </li>
           </ul>
         </section>
       </div>

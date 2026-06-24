@@ -1,12 +1,13 @@
+/* eslint-disable react-hooks/refs */
 'use client'
+import { useThemeCtx } from '@/app/providers/ThemeContext'
+import { useSession } from 'next-auth/react'
+import { useLocale, useTranslations } from 'next-intl'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { useRef, useState, useCallback, useEffect, useMemo } from 'react'
-import { useSession } from 'next-auth/react'
-import { useTranslations, useLocale } from 'next-intl'
-import { useThemeCtx } from '@/app/providers/ThemeContext'
-import TypingText from './TypingText'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import s from './LandingPage.module.scss'
+import TypingText from './TypingText'
 
 const KnowledgeGlobe    = dynamic(() => import('./KnowledgeGlobe'),    { ssr: false })
 const ThreeShape        = dynamic(() => import('./ThreeShape'),        { ssr: false })
@@ -121,7 +122,8 @@ function HeroSection() {
         {user && (
           <div className={s.hero_greeting}>
             <span className={s.hero_greeting_name}>{t('hero_greeting_prefix')}{user.name}</span>
-            <span className={s.hero_greeting_sub}> {t('hero_today')}</span>
+            {/* TODO сделать реальным кол-вом */}
+            {/* <span className={s.hero_greeting_sub}> {t('hero_today')}</span> */}
           </div>
         )}
 
@@ -358,7 +360,7 @@ function DraggableTile({ name, hue, muted, initRight, initTop, wrapRef }: {
   const onDown = useCallback((e: React.PointerEvent) => {
     e.stopPropagation()
     let startX = pos?.x ?? 0
-    let startY = pos?.y ?? initTop
+    const startY = pos?.y ?? initTop
     if (pos === null && wrapRef.current) {
       startX = wrapRef.current.clientWidth - initRight - W
     }
@@ -1067,6 +1069,7 @@ function PostCard({ post }: { post: RealPost }) {
   const locale = useLocale()
   const cat = post.category?.translations.find(tr => tr.langCode === locale)?.name
     ?? post.category?.translations[0]?.name ?? 'Пост'
+  // eslint-disable-next-line react-hooks/purity
   const d = Math.floor((Date.now() - new Date(post.createdAt).getTime()) / 60000)
   const ago = d < 60
     ? `${d} ${t('posts_ago_min')}`

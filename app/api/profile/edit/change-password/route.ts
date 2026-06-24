@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { auth } from '../../../../../auth'
+import { langFromRequest } from '@/features/helpers/langCodeFromHeader'
 
 const sendSchema = z.object({
   step: z.literal('send'),
@@ -21,6 +22,7 @@ const verifySchema = z.object({
 
 export async function POST(req: NextRequest) {
   const session = await auth()
+const lang = langFromRequest(req)
 
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -41,9 +43,8 @@ export async function POST(req: NextRequest) {
     if (!byIp || !byTarget) return tooManyRequests()
 
     const code = generateOtp()
-    // OTP is keyed by current email (the identity we know)
     await saveOtp(currentEmail, code)
-    await sendOtp(currentEmail, code)
+await sendOtp(currentEmail, code, lang)
 
     return NextResponse.json({ ok: true })
   }

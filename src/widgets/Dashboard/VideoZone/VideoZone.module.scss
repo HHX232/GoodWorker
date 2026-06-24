@@ -1,0 +1,600 @@
+@keyframes pulseRing {
+  0%   { box-shadow: 0 0 0 0 rgba(91, 63, 214, 0.38); }
+  70%  { box-shadow: 0 0 0 10px rgba(91, 63, 214, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(91, 63, 214, 0); }
+}
+
+@keyframes vzWave {
+  from { transform: scaleY(0.3); }
+  to   { transform: scaleY(1); }
+}
+
+@keyframes vzSpin {
+  to { transform: rotate(360deg); }
+}
+
+// ── Outer container ───────────────────────────────────────────
+.vz {
+  display: grid;
+  grid-template-columns: 290px 1fr;
+  background: #fff;
+  border: 1px solid #DADCEB;
+  border-radius: 18px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 32px -18px rgba(45, 28, 120, 0.22);
+  flex-shrink: 0;
+  min-height: 0;
+}
+
+// ── Left: purple CTA panel ────────────────────────────────────
+.vzCta {
+  position: relative;
+  padding: 20px 18px;
+  color: #fff;
+  overflow: hidden;
+  background: linear-gradient(150deg, #6a4ce0 0%, #5b3fd6 48%, #4a2fc4 100%);
+
+  &::after {
+    content: '';
+    position: absolute;
+    right: -48px;
+    top: -48px;
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.10);
+    pointer-events: none;
+    z-index: 0;
+  }
+  &::before {
+    content: '';
+    position: absolute;
+    left: -32px;
+    bottom: -56px;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  > * { position: relative; z-index: 2; }
+}
+
+// Three.js canvas — z-index: 1 puts it above the decorative circles (z-index: 0)
+// but below content children (z-index: 2 via `> *`)
+.vzCanvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+
+  canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+  }
+}
+
+// Gradient / 3D toggle pill
+.vzBgToggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 10px;
+  padding: 2px;
+  gap: 1px;
+  backdrop-filter: blur(6px);
+
+  button {
+    height: 24px;
+    padding: 0 9px;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: inherit;
+    color: rgba(255, 255, 255, 0.6);
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: color 0.13s, background 0.13s;
+
+    &:hover { color: #fff; }
+  }
+}
+
+.vzBgBtnOn {
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: #fff !important;
+}
+
+.vzIcon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.17);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  margin-top: 32px;
+}
+
+.vzTitle {
+  margin: 12px 0 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.vzDesc {
+  margin: 5px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.vzCreate {
+  width: 100%;
+  height: 46px;
+  margin-top: 14px;
+  border: none;
+  border-radius: 13px;
+  background: #fff;
+  color: #5b3fd6;
+  font-size: 13.5px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  animation: pulseRing 2.4s infinite;
+  transition: transform 0.12s, opacity 0.12s;
+
+  &:hover { transform: translateY(-1px); }
+}
+
+.vzJoin {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.vzJoinInput {
+  flex: 1;
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  background: rgba(255, 255, 255, 0.10);
+  border-radius: 10px;
+  padding: 0 11px;
+  color: #fff;
+  font-size: 12.5px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+
+  &::placeholder { color: rgba(255, 255, 255, 0.52); }
+  &:focus { border-color: rgba(255, 255, 255, 0.48); }
+}
+
+.vzJoinBtn {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  background: rgba(255, 255, 255, 0.10);
+  border-radius: 10px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.14s;
+
+  &:hover:not(:disabled) { background: rgba(255, 255, 255, 0.20); }
+  &:disabled { opacity: 0.38; cursor: default; }
+}
+
+.vzJoinError {
+  margin: 5px 0 0;
+  font-size: 11.5px;
+  color: rgba(255, 170, 170, 0.95);
+}
+
+.vzReady {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.vzReadyDenied {
+  color: rgba(255, 160, 160, 0.9);
+}
+
+.vzSpinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: vzSpin 0.7s linear infinite;
+}
+
+.vzWave {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+
+  i {
+    display: block;
+    width: 3px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 2px;
+    animation: vzWave 0.6s ease-in-out infinite alternate;
+
+    &:nth-child(1) { height: 5px;  animation-delay: 0s; }
+    &:nth-child(2) { height: 11px; animation-delay: 0.15s; }
+    &:nth-child(3) { height: 7px;  animation-delay: 0.30s; }
+    &:nth-child(4) { height: 11px; animation-delay: 0.10s; }
+    &:nth-child(5) { height: 5px;  animation-delay: 0.22s; }
+  }
+}
+
+// ── Right: call list panel ─────────────────────────────────────
+.vzPanel {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-left: 1px solid #EBEBF2;
+}
+
+.vzTabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.vzTab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 30px;
+  padding: 0 11px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: #868897;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.13s, color 0.13s;
+
+  &:hover { color: #141416; background: #f4f2fd; }
+}
+
+.vzTabOn {
+  background: #f1edfb;
+  color: #534AB7;
+}
+
+.vzPill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #e9e4f9;
+  color: #534AB7;
+
+  .vzTabOn & {
+    background: #534AB7;
+    color: #fff;
+  }
+}
+
+.vzList {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  overflow-y: auto;
+  min-height: 0;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background: #D8D8E0; border-radius: 2px; }
+}
+
+.vzEmpty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  color: #B0B0BC;
+  font-size: 12.5px;
+  text-align: center;
+  padding: 20px 0;
+  opacity: 0.85;
+}
+
+.vzCall {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 11px;
+  border: 1px solid #EBEBF2;
+  border-radius: 12px;
+  transition: border-color 0.13s;
+
+  &:hover { border-color: #D2CDEF; }
+}
+
+.vzCallNext {
+  border-color: #D9CEFB;
+  background: #faf8ff;
+}
+
+.vzCallIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: #eae5fa;
+  color: #534AB7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.vzCallIconGhost {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: #f3f3f7;
+  color: #ABABC0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.vzCallWhen {
+  width: 46px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.vzCallDate {
+  font-size: 11.5px;
+  color: #868897;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.vzCallInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.vzCallTitle {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #141416;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vzCallSub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.vzCallBadge {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #534AB7;
+  background: #eee9fc;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.vzCallActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.vzBtnJoin {
+  height: 34px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 9px;
+  background: #534AB7;
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  transition: background 0.13s;
+
+  &:hover { background: #4339a8; }
+}
+
+.vzBtnGhost {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid #DADCEB;
+  border-radius: 9px;
+  background: #fff;
+  color: #636375;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.13s;
+
+  &:hover { background: #f7f5fc; }
+}
+
+// Transcript / notes link button
+.vzBtnTranscript {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 32px;
+  padding: 0 11px;
+  border: 1px solid #D4CEFA;
+  border-radius: 9px;
+  background: #f5f2ff;
+  color: #534AB7;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+  text-decoration: none;
+  transition: background 0.13s, border-color 0.13s;
+
+  &:hover { background: #ece7ff; border-color: #b8acf0; }
+}
+
+// ── Responsive ───────────────────────────────────────────────
+
+// Tablet: left panel slightly narrower
+@media (max-width: 900px) {
+  .vz {
+    grid-template-columns: 230px 1fr;
+  }
+  .vzTitle { font-size: 16px; }
+  .vzDesc  { font-size: 11.5px; }
+}
+
+// Mobile: stack panels vertically
+@media (max-width: 768px) {
+  .vz {
+    grid-template-columns: 1fr;
+    border-radius: 14px;
+  }
+
+  .vzIcon {
+    margin-top: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+
+  .vzTitle { font-size: 16px; margin-top: 10px; }
+  .vzDesc  { font-size: 11.5px; }
+
+  .vzCreate { height: 42px; margin-top: 12px; font-size: 13px; }
+
+  .vzReady { margin-top: 8px; }
+
+  .vzPanel {
+    border-left: none;
+    border-top: 1px solid #EBEBF2;
+  }
+
+  // Constrain list height when stacked so it doesn't fill the whole screen
+  .vzList { max-height: 200px; }
+}
+
+// Small mobile: compact everything
+@media (max-width: 480px) {
+  .vz { border-radius: 12px; margin-bottom: 14px; }
+
+  .vzCta { padding: 14px 14px 12px; }
+  .vzTitle { font-size: 15px; }
+  .vzDesc  { display: none; }
+
+  .vzPanel { padding: 12px 14px; }
+
+  .vzTabs { margin-bottom: 8px; }
+  .vzTab  { font-size: 12px; padding: 0 9px; }
+
+  .vzCall  { padding: 8px 10px; gap: 8px; }
+  .vzCallWhen  { width: 38px; }
+  .vzCallTitle { font-size: 12.5px; }
+
+  .vzBtnJoin       { height: 30px; padding: 0 10px; font-size: 11.5px; }
+  .vzBtnGhost      { height: 29px; padding: 0  9px; font-size: 11.5px; }
+  .vzBtnTranscript { height: 29px; padding: 0  9px; font-size: 11.5px; }
+}
+
+// ── Dark theme ────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .vz {
+    background: #1a1c24;
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px -18px rgba(0, 0, 0, 0.5);
+  }
+
+  // Darken the gradient background behind the 3D canvas in dark mode
+  .vzThreed .vzCta {
+    background: linear-gradient(150deg, #3a2890 0%, #2e1f80 48%, #1e1260 100%);
+  }
+
+  .vzPanel { border-left-color: rgba(255, 255, 255, 0.08); }
+
+  .vzBgToggle { background: rgba(0, 0, 0, 0.35); }
+
+  .vzTab {
+    color: rgba(255, 255, 255, 0.32);
+    &:hover { color: #e8eaf0; background: rgba(255, 255, 255, 0.05); }
+  }
+  .vzTabOn { background: rgba(83, 74, 183, 0.22); color: #a89ff5; }
+  .vzPill { background: rgba(83, 74, 183, 0.28); color: #a89ff5; }
+  .vzTabOn .vzPill { background: #534AB7; color: #fff; }
+
+  .vzCall { border-color: rgba(255, 255, 255, 0.08); &:hover { border-color: rgba(255, 255, 255, 0.14); } }
+  .vzCallNext { border-color: rgba(130, 110, 240, 0.35); background: rgba(83, 74, 183, 0.10); }
+
+  .vzCallTitle { color: #e8eaf0; }
+  .vzCallDate { color: rgba(255, 255, 255, 0.38); }
+  .vzCallIconGhost { background: rgba(255, 255, 255, 0.06); color: rgba(255, 255, 255, 0.28); }
+
+  .vzBtnGhost {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.09);
+    color: rgba(255, 255, 255, 0.55);
+    &:hover { background: rgba(255, 255, 255, 0.09); }
+  }
+  .vzBtnTranscript {
+    background: rgba(83, 74, 183, 0.18);
+    border-color: rgba(83, 74, 183, 0.35);
+    color: #a89ff5;
+    &:hover { background: rgba(83, 74, 183, 0.28); }
+  }
+  .vzEmpty { color: rgba(255, 255, 255, 0.2); }
+
+  @media (max-width: 768px) {
+    .vzPanel { border-top-color: rgba(255, 255, 255, 0.08); }
+  }
+}

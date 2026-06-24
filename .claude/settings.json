@@ -3,7 +3,13 @@
     "allow": [
       "Bash(python3 -c ' *)",
       "Bash(node -e \"require\\('./messages/ru.json'\\); require\\('./messages/en.json'\\); require\\('./messages/zh.json'\\); require\\('./messages/hi.json'\\); console.log\\('All JSON valid'\\)\")",
-      "Bash(python3 -c \"import json,sys; p=json.load\\(sys.stdin\\); print\\('scripts:', json.dumps\\(p.get\\('scripts',{}\\), indent=2\\)\\)\")"
+      "Bash(python3 -c \"import json,sys; p=json.load\\(sys.stdin\\); print\\('scripts:', json.dumps\\(p.get\\('scripts',{}\\), indent=2\\)\\)\")",
+      "Bash(python3 -c \"import json; d=json.load\\(open\\('/Users/nikitatisevic/Desktop/GoodWorkerRemaster/messages/ru.json'\\)\\); vz=d.get\\('videoZone',{}\\); print\\(json.dumps\\(vz, ensure_ascii=False, indent=2\\)\\)\")",
+      "Bash(python3 -c \"import json; d=json.load\\(open\\('/Users/nikitatisevic/Desktop/GoodWorkerRemaster/messages/ru.json'\\)\\); print\\(json.dumps\\(d.get\\('dashboard',{}\\).get\\('videoCallModal',{}\\), ensure_ascii=False, indent=2\\)\\)\")",
+      "Bash(python3 -c \"import json; d=json.load\\(open\\('/Users/nikitatisevic/Desktop/GoodWorkerRemaster/messages/ru.json'\\)\\); print\\(list\\(d.keys\\(\\)\\)\\)\")",
+      "Bash(python3 -c \"import json; d=json.load\\(open\\('/Users/nikitatisevic/Desktop/GoodWorkerRemaster/messages/ru.json'\\)\\); print\\(json.dumps\\(d.get\\('dashboard',{}\\), ensure_ascii=False, indent=2\\)\\)\")",
+      "Bash(python3 -c \"import json; d=json.load\\(open\\('/Users/nikitatisevic/Desktop/GoodWorkerRemaster/messages/ru.json'\\)\\); dm=d.get\\('dashboard',{}\\); print\\(json.dumps\\({k:v for k,v in dm.items\\(\\) if 'video' in k.lower\\(\\) or 'room' in k.lower\\(\\) or 'call' in k.lower\\(\\)}, ensure_ascii=False, indent=2\\)\\)\")",
+      "Bash(python3 -c \"import json; d=json.load\\(open\\('/Users/nikitatisevic/Desktop/GoodWorkerRemaster/messages/ru.json'\\)\\); dm=d.get\\('dashboard',{}\\); print\\([k for k in dm.keys\\(\\) if 'show' in k.lower\\(\\) or 'all' in k.lower\\(\\) or 'more' in k.lower\\(\\)]\\)\")"
     ]
   }
 }

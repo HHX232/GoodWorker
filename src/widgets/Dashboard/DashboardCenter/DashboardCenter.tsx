@@ -6,7 +6,7 @@ import { TestPreviewCard, TestPreviewCardProps } from '@/shared/ui/Test/TestPrev
 import { CreatePickerModal } from '@/widgets/Dashboard/CreatePickerModal/CreatePickerModal'
 import { CreateServiceModal } from '@/widgets/Dashboard/CreateServiceModal/CreateServiceModal'
 import { BookServiceModal } from '@/widgets/Dashboard/BookServiceModal/BookServiceModal'
-import { VideoCallModal } from '@/widgets/Dashboard/VideoCallModal/VideoCallModal'
+import { VideoZone } from '@/widgets/Dashboard/VideoZone/VideoZone'
 import Card from '@/shared/ui/Posts/Card/Card'
 import { RoadMapPreview } from '@/shared/ui/RoadMap/RoadMapPreview/RoadMapPreview'
 import { useSession } from 'next-auth/react'
@@ -122,7 +122,6 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
   const [serviceModalOpen, setServiceModalOpen] = useState(false)
   const [editingService, setEditingService] = useState<ServiceItem | null>(null)
   const [bookingService, setBookingService] = useState<ServiceItem | null>(null)
-  const [videoOpen, setVideoOpen] = useState(false)
 
   const canBook = !isOwner && session?.user?.role === 'STUDENT'
 
@@ -258,47 +257,33 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
   return (
     <div className={styles.center}>
 
-      {/* Stats + video call top row */}
-      <div className={styles.topRow}>
-        <div className={styles.statsMerged}>
-          {stats.map((s, i) => (
-            isOwner ? (
-              <Link key={s.label} href={`/statistics/${statsId}`} className={`${styles.statsItem} ${styles.statsItemLink}`}>
-                {i > 0 && <div className={styles.statsSep} />}
-                <div className={styles.statsItemIcon} style={{ background: s.bg }}>{s.icon}</div>
-                <div>
-                  <div className={styles.statsItemValue}>{s.value}</div>
-                  <div className={styles.statsItemLabel}>{s.label}</div>
-                </div>
-              </Link>
-            ) : (
-              <div key={s.label} className={styles.statsItem}>
-                {i > 0 && <div className={styles.statsSep} />}
-                <div className={styles.statsItemIcon} style={{ background: s.bg }}>{s.icon}</div>
-                <div>
-                  <div className={styles.statsItemValue}>{s.value}</div>
-                  <div className={styles.statsItemLabel}>{s.label}</div>
-                </div>
+      {/* Compact stats strip */}
+      <div className={styles.statsMerged}>
+        {stats.map((s, i) => (
+          isOwner ? (
+            <Link key={s.label} href={`/statistics/${statsId}`} className={`${styles.statsItem} ${styles.statsItemLink}`}>
+              {i > 0 && <div className={styles.statsSep} />}
+              <div className={styles.statsItemIcon} style={{ background: s.bg }}>{s.icon}</div>
+              <div>
+                <div className={styles.statsItemValue}>{s.value}</div>
+                <div className={styles.statsItemLabel}>{s.label}</div>
               </div>
-            )
-          ))}
-        </div>
-
-        {isOwner && (
-          <div className={styles.videoCallBlock} id="dashboard-video-room">
-            <div className={styles.videoCallTitle}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <path d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14" />
-                <rect x="1" y="6" width="14" height="12" rx="2" />
-              </svg>
-              {t('videoRoom')}
+            </Link>
+          ) : (
+            <div key={s.label} className={styles.statsItem}>
+              {i > 0 && <div className={styles.statsSep} />}
+              <div className={styles.statsItemIcon} style={{ background: s.bg }}>{s.icon}</div>
+              <div>
+                <div className={styles.statsItemValue}>{s.value}</div>
+                <div className={styles.statsItemLabel}>{s.label}</div>
+              </div>
             </div>
-            <button className={styles.videoCallBtn} onClick={() => setVideoOpen(true)}>
-              {t('createVideoCallBtn')}
-            </button>
-          </div>
-        )}
+          )
+        ))}
       </div>
+
+      {/* Video zone — visible for owner only */}
+      {isOwner && <VideoZone ownerName={ownerName} />}
 
       {/* Tabs */}
       <div className={styles.tabs} id="dashboard-content-tabs">
@@ -433,8 +418,6 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
         onClose={() => setBookingService(null)}
         service={bookingService}
       />
-
-      {videoOpen && <VideoCallModal defaultName={ownerName} onClose={() => setVideoOpen(false)} />}
     </div>
   )
 }

@@ -1,100 +1,142 @@
+'use client'
 import Link from 'next/link'
 import styles from './privacy.module.css'
 
-import { getTranslations } from 'next-intl/server'
-import type { Metadata } from 'next'
+import { useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations('PageTitles')
-  return { title: t('privacy') }
-}
+// export async function generateMetadata(): Promise<Metadata> {
+//   const t = await getTranslations('PageTitles')
+//   return { title: t('privacy') }
+// }
 
-export default function PrivacyPage() {
+export default  function PrivacyPage() {
+  const t =  useTranslations('PrivacyPage')
+
+  useEffect(() => {
+    // Сохраняем исходное значение overflow
+    const originalOverflow = document.body.style.overflow
+    
+    // Устанавливаем overflow: auto !important
+    document.body.style.setProperty('overflow', 'auto', 'important')
+    
+    // Очистка при размонтировании
+    return () => {
+      if (originalOverflow) {
+        document.body.style.overflow = originalOverflow
+      } else {
+        document.body.style.removeProperty('overflow')
+      }
+    }
+  }, [])
+
   return (
     <div className={styles.page}>
       <div className={styles.container}>
-        <Link href="/" className={styles.back}>← На главную</Link>
+        <Link href="/" className={styles.back}>{t('back')}</Link>
 
-        <h1 className={styles.h1}>Политика конфиденциальности</h1>
-        <p className={styles.updated}>Последнее обновление: 16 мая 2025 г.</p>
+        <h1 className={styles.h1}>{t('title')}</h1>
+        <p className={styles.updated}>{t('updated')}</p>
 
+        {/* 1 */}
         <section className={styles.section}>
-          <h2 className={styles.h2}>1. Общие положения</h2>
-          <p>Настоящая Политика конфиденциальности описывает, каким образом платформа <strong>GoodWorker</strong> собирает, использует и защищает персональные данные пользователей при использовании нашего сервиса.</p>
-          <p>Используя платформу, вы соглашаетесь с условиями настоящей Политики. Если вы не согласны с её положениями, просим вас прекратить использование сервиса.</p>
+          <h2 className={styles.h2}>{t('section1Title')}</h2>
+          <p dangerouslySetInnerHTML={{ __html: t('section1p1') }} />
+          <p>{t('section1p2')}</p>
         </section>
 
+        {/* 2 */}
         <section className={styles.section}>
-          <h2 className={styles.h2}>2. Какие данные мы собираем</h2>
+          <h2 className={styles.h2}>{t('section2Title')}</h2>
           <ul className={styles.list}>
-            <li><strong>Регистрационные данные:</strong> имя, адрес электронной почты, номер телефона, пароль (хранится в зашифрованном виде).</li>
-            <li><strong>Данные профиля:</strong> фотография профиля, биография, специализация (для репетиторов), документы об опыте работы, скан паспорта (при добровольном предоставлении).</li>
-            <li><strong>Данные об активности:</strong> записи о занятиях, транскрипции видеозвонков, отзывы, закладки, результаты тестов.</li>
-            <li><strong>Технические данные:</strong> IP-адрес, тип браузера, данные о сессии, время входа.</li>
-            <li><strong>Платёжные данные:</strong> транзакции по тарифным планам — платёжные реквизиты обрабатываются платёжным провайдером и не хранятся на наших серверах.</li>
+            <li dangerouslySetInnerHTML={{ __html: t('section2item1') }} />
+            <li dangerouslySetInnerHTML={{ __html: t('section2item2') }} />
+            <li dangerouslySetInnerHTML={{ __html: t('section2item3') }} />
+            <li dangerouslySetInnerHTML={{ __html: t('section2item4') }} />
+            <li dangerouslySetInnerHTML={{ __html: t('section2item5') }} />
           </ul>
         </section>
 
+        {/* 3 */}
         <section className={styles.section}>
-          <h2 className={styles.h2}>3. Цели обработки данных</h2>
+          <h2 className={styles.h2}>{t('section3Title')}</h2>
           <ul className={styles.list}>
-            <li>Предоставление функциональности платформы: запись на занятия, видеозвонки, обмен материалами.</li>
-            <li>Верификация личности репетиторов и подтверждение их квалификации.</li>
-            <li>Отправка уведомлений, связанных с работой платформы.</li>
-            <li>Улучшение качества сервиса и борьба с мошенничеством.</li>
-            <li>Соблюдение требований законодательства Российской Федерации.</li>
+            <li>{t('section3item1')}</li>
+            <li>{t('section3item2')}</li>
+            <li>{t('section3item3')}</li>
+            <li>{t('section3item4')}</li>
+            <li>{t('section3item5')}</li>
           </ul>
         </section>
 
+        {/* 4 */}
         <section className={styles.section}>
-          <h2 className={styles.h2}>4. Передача данных третьим лицам</h2>
-          <p>Мы не продаём и не передаём ваши персональные данные третьим лицам, за исключением следующих случаев:</p>
+          <h2 className={styles.h2}>{t('section4Title')}</h2>
+          <p>{t('section4p1')}</p>
           <ul className={styles.list}>
-            <li>Сервисы обработки платежей (в объёме, необходимом для проведения транзакций).</li>
-            <li>Сервисы видеосвязи (LiveKit) — для организации онлайн-занятий.</li>
-            <li>Требования органов государственной власти в случаях, предусмотренных законодательством.</li>
+            <li>{t('section4item1')}</li>
+            <li>{t('section4item2')}</li>
+            <li>{t('section4item3')}</li>
           </ul>
         </section>
 
+        {/* 5 */}
         <section className={styles.section}>
-          <h2 className={styles.h2}>5. Хранение и защита данных</h2>
-          <p>Ваши данные хранятся на защищённых серверах. Пароли хранятся в зашифрованном виде с использованием криптографических хэш-функций. Доступ к персональным данным ограничен и предоставляется только уполномоченным сотрудникам.</p>
-          <p>Мы применяем технические и организационные меры для защиты данных от несанкционированного доступа, изменения, раскрытия или уничтожения.</p>
+          <h2 className={styles.h2}>{t('section5Title')}</h2>
+          <p>{t('section5p1')}</p>
+          <p>{t('section5p2')}</p>
         </section>
 
+        {/* 6 */}
         <section className={styles.section}>
-          <h2 className={styles.h2}>6. Срок хранения данных</h2>
-          <p>Мы храним ваши данные в течение всего периода использования вами платформы. После удаления аккаунта персональные данные удаляются в течение 30 дней, за исключением данных, которые мы обязаны хранить согласно законодательству.</p>
+          <h2 className={styles.h2}>{t('section6Title')}</h2>
+          <p>{t('section6p1')}</p>
         </section>
 
+        {/* 7 */}
         <section className={styles.section}>
-          <h2 className={styles.h2}>7. Ваши права</h2>
-          <p>В соответствии с Федеральным законом № 152-ФЗ «О персональных данных» вы имеете право:</p>
+          <h2 className={styles.h2}>{t('section7Title')}</h2>
+          <p>{t('section7p1')}</p>
           <ul className={styles.list}>
-            <li>Получить информацию о составе и целях обработки ваших персональных данных.</li>
-            <li>Потребовать исправления неточных данных.</li>
-            <li>Потребовать удаления данных (отозвать согласие на обработку).</li>
-            <li>Обратиться в Роскомнадзор в случае нарушения ваших прав.</li>
+            <li>{t('section7item1')}</li>
+            <li>{t('section7item2')}</li>
+            <li>{t('section7item3')}</li>
+            <li>{t('section7item4')}</li>
           </ul>
-          <p>Для реализации своих прав обратитесь к нам по контактным данным, указанным ниже.</p>
+          <p>{t('section7p2')}</p>
         </section>
 
+        {/* 8 */}
         <section className={styles.section}>
-          <h2 className={styles.h2}>8. Файлы cookie</h2>
-          <p>Платформа использует файлы cookie для поддержания сессии авторизации и улучшения работы сервиса. Вы можете отключить cookie в настройках браузера, однако это может повлиять на функциональность платформы.</p>
+          <h2 className={styles.h2}>{t('section8Title')}</h2>
+          <p>{t('section8p1')}</p>
         </section>
 
+        {/* 9 */}
         <section className={styles.section}>
-          <h2 className={styles.h2}>9. Изменения политики</h2>
-          <p>Мы оставляем за собой право вносить изменения в настоящую Политику. Актуальная версия всегда доступна на этой странице. При существенных изменениях мы уведомим пользователей через платформу.</p>
+          <h2 className={styles.h2}>{t('section9Title')}</h2>
+          <p>{t('section9p1')}</p>
         </section>
 
+        {/* 10 */}
         <section className={styles.section}>
-          <h2 className={styles.h2}>10. Контакты</h2>
-          <p>По вопросам, связанным с обработкой персональных данных, вы можете связаться с нами:</p>
+          <h2 className={styles.h2}>{t('section10Title')}</h2>
+          <p>{t('section10p1')}</p>
           <ul className={styles.list}>
-            <li>Через раздел <Link href="/feedback" className={styles.inlineLink}>Обратная связь</Link> на платформе.</li>
-            <li>Через раздел <Link href="/complaints" className={styles.inlineLink}>Жалобы</Link>.</li>
+            <li>
+              {t.rich('section10item1', {
+                feedbackLink: (chunks) => (
+                  <Link href="/feedback" className={styles.inlineLink}>{chunks}</Link>
+                ),
+              })}
+            </li>
+            <li>
+              {t.rich('section10item2', {
+                complaintsLink: (chunks) => (
+                  <Link href="/complaints" className={styles.inlineLink}>{chunks}</Link>
+                ),
+              })}
+            </li>
           </ul>
         </section>
       </div>

@@ -41,28 +41,75 @@ export async function verifyOtp(target: string, code: string): Promise<boolean> 
   return true
 }
 
-export async function sendOtp(target: string, code: string) {
+export async function sendOtp(target: string, code: string, langCode: string = 'ru') {
   console.log(`[OTP] ${target} → ${code}`)
 
-  const serviceUrl = process.env.PDF_SERVICE_URL
-  const serviceKey = process.env.PDF_SERVICE_KEY
+  const apiKey = process.env.SENDCOREX_API_KEY
 
-  if (!serviceUrl || !serviceKey) {
-    console.warn('[OTP] PDF_SERVICE_URL / PDF_SERVICE_KEY not set — email not sent')
+  if (!apiKey) {
+    console.warn('[OTP] SENDCOREX_API_KEY not set — email not sent')
     return
   }
 
+  const translations: Record<string, { subject: string; title: string; label: string; note: string }> = {
+    ru: {
+      subject: 'Ваш код подтверждения',
+      title: 'Код подтверждения',
+      label: 'Ваш одноразовый код:',
+      note: 'Код действителен 15 минут. Никому не сообщайте его.',
+    },
+    en: {
+      subject: 'Your verification code',
+      title: 'Verification Code',
+      label: 'Your one-time code:',
+      note: 'The code is valid for 15 minutes. Do not share it with anyone.',
+    },
+    zh: {
+      subject: '您的验证码',
+      title: '验证码',
+      label: '您的一次性验证码：',
+      note: '验证码有效期为15分钟，请勿告知他人。',
+    },
+    hi: {
+      subject: 'आपका सत्यापन कोड',
+      title: 'सत्यापन कोड',
+      label: 'आपका एकल-उपयोग कोड:',
+      note: 'कोड 15 मिनट के लिए वैध है। इसे किसी के साथ साझा न करें।',
+    },
+  }
+
+  const lang = translations[langCode] ?? translations['ru']
+
   try {
-    const res = await fetch(`${serviceUrl.replace(/\/$/, '')}/api/email/send-otp`, {
+    const res = await fetch('https://graph.sendcorex.com/v3.0/mail/send', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': serviceKey },
-      body: JSON.stringify({ to: target, code, appName: 'GoodWorker' }),
+      headers: {
+        'Authorization': apiKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        to: target,
+        subject: lang.subject,
+        body: `
+          <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+            <h2>${lang.title}</h2>
+            <p>${lang.label}</p>
+            <div style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #2563eb;">
+              ${code}
+            </div>
+            <p style="color: #6b7280; font-size: 14px;">${lang.note}</p>
+          </div>
+        `,
+        from: 'hello.user@sendcorex.com',
+        senderName: 'GoodWorker',
+      }),
     })
+
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
-      console.error('[OTP] Email service error:', err)
+      console.error('[OTP] Sendcorex error:', err)
     }
   } catch (e) {
-    console.error('[OTP] Failed to reach email service:', e)
+    console.error('[OTP] Failed to reach Sendcorex:', e)
   }
 }
