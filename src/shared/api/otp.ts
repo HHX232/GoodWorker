@@ -152,7 +152,7 @@ export async function sendOtp(
               </p>
           </div>
           `,
-          from: 'hello.user@sendcorex.com',
+          from: 'tisevichnikita82@gmail.com',
           senderName: 'GoodWorker',
         }),
       }
