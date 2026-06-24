@@ -17,12 +17,10 @@ function forceLog(...args: any[]) {
   const timestamp = new Date().toISOString();
   const output = `[${timestamp}] ${message}`;
   
-  // Тройное логирование для гарантии
   console.log(output);
   console.error(output);
   process.stdout.write(output + '\n');
   
-  // Принудительный сброс буфера
   if (process.stdout._handle) {
     process.stdout._handle.setBlocking(true);
   }
@@ -152,7 +150,7 @@ export async function sendOtp(
               </p>
           </div>
           `,
-          from: 'tisevichnikita82@gmail.com',
+          from: 'noreply@goodworker.online',
           senderName: 'GoodWorker',
         }),
       }
