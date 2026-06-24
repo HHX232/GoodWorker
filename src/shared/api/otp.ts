@@ -17,7 +17,7 @@ export function generateOtp(): string {
 export async function saveOtp(target: string, code: string) {
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000)
   const finalCode = isE2E ? '000000' : code
-
+console.log('we save new OTP')
   await prisma.otpCode.upsert({
     where: { target },
     update: { code: finalCode, expiresAt },

@@ -1,14 +1,14 @@
 'use client'
 
-import {InputOtp, TextInputUI} from '@/shared/ui/inputs'
-import {CategorySelect} from '@/shared/ui/inputs/CategorySelect/CategorySelect'
+import { InputOtp, TextInputUI } from '@/shared/ui/inputs'
+import { CategorySelect } from '@/shared/ui/inputs/CategorySelect/CategorySelect'
 import LanguageSelect from '@/shared/ui/inputs/LanguageSelect/LanguageSelect'
-import {signIn} from 'next-auth/react'
-import {useTranslations} from 'next-intl'
+import { signIn } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 import Link from 'next/link'
-import {useRouter} from 'next/navigation'
-import {useEffect, useState} from 'react'
-import {toast} from 'sonner'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import styles from './RegisterPage.module.scss'
 
 type Role = 'User' | 'Teacher'
@@ -79,8 +79,8 @@ export default function RegisterPage() {
       if (role === 'Teacher') {
         body.categoryIds = selectedCategories
         body.languages = selectedLanguages
-      }
-
+      } 
+      console.log('send OTP ifelse')
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -104,6 +104,7 @@ export default function RegisterPage() {
 
   async function handleVerify(otp: string) {
     setLoading(true)
+    console.log('send OTP ifelse2')
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
