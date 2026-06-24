@@ -64,6 +64,7 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
   }, [])
 
   const widthsRef = useRef({ left: leftWidth, right: rightWidth })
+  // eslint-disable-next-line react-hooks/refs
   widthsRef.current = { left: leftWidth, right: rightWidth }
 
   const startResize = useCallback((side: 'left' | 'right') => (e: React.MouseEvent) => {

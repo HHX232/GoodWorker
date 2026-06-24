@@ -19,6 +19,7 @@ interface TranscriptRoom {
 }
 
 interface Props {
+   initialRoom?: TranscriptRoom
   isOpen: boolean
   onClose: () => void
 }
@@ -141,7 +142,7 @@ function ChatView({ room }: { room: TranscriptRoom }) {
   )
 }
 
-export function TranscriptsModal({ isOpen, onClose }: Props) {
+export function TranscriptsModal({ isOpen, onClose, initialRoom }: Props) {
   const [rooms, setRooms] = useState<TranscriptRoom[]>([])
   const [loading, setLoading] = useState(false)
   const [selected, setSelected] = useState<TranscriptRoom | null>(null)
@@ -155,7 +156,9 @@ export function TranscriptsModal({ isOpen, onClose }: Props) {
       .catch(() => setRooms([]))
       .finally(() => setLoading(false))
   }, [isOpen])
-
+useEffect(() => {
+    if (isOpen) setSelected(initialRoom ?? null)
+  }, [isOpen, initialRoom])
   if (!isOpen) return null
 
   const fmt = (iso: string) =>

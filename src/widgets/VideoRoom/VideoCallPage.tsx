@@ -1,31 +1,43 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import styles from './VideoCallPage.module.scss'
-import {
-  IconCrown, IconMicOff, IconMicOn, IconStar, IconVolumeOff, IconVolumeOn,
-  IconNotes, IconCam, IconCamOff, IconLink, IconCheck, IconKick, IconCopy, IconPhone, IconVideo,
-  IconScreenShare, IconScreenShareOff, IconClipboard, IconPalette,
-} from './icons'
-import { LAYOUTS, LAYOUT_LABELS, type Layout, type Participant } from './types'
-import { useVideoRoom } from './hooks/useVideoRoom'
-import { useTranscription } from './hooks/useTranscription'
-import Image from 'next/image'
-import { useTranslations } from 'next-intl'
 import { TestBlock } from '@/entities/store/slices/tasksSlice.slice'
+import { StudentAnswer } from '@/features/Tasks/TaskResult/scoreBlock'
+import TestService from '@/features/services/TestService.service'
+import { useTranslations } from 'next-intl'
+import Image from 'next/image'
+import { useRouter } from 'next/navigation'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
+  AnswerRecord,
   CallTestStudentView,
   CallTestTeacherView,
   StudentProgress,
-  AnswerRecord,
   serializeAnswer,
 } from './CallTestPanel/CallTestPanel'
-import { StudentAnswer } from '@/features/Tasks/TaskResult/scoreBlock'
-import { QuickTestBuilder } from './QuickTestBuilder/QuickTestBuilder'
 import { CallWhiteboard } from './CallWhiteboard/CallWhiteboard'
-import TestService from '@/features/services/TestService.service'
+import { QuickTestBuilder } from './QuickTestBuilder/QuickTestBuilder'
+import styles from './VideoCallPage.module.scss'
+import { useTranscription } from './hooks/useTranscription'
+import { useVideoRoom } from './hooks/useVideoRoom'
+import {
+  IconCam, IconCamOff,
+  IconCheck,
+  IconClipboard,
+  IconCopy,
+  IconCrown,
+  IconKick,
+  IconLink,
+  IconMicOff, IconMicOn,
+  IconNotes,
+  IconPalette,
+  IconPhone,
+  IconScreenShare, IconScreenShareOff,
+  IconStar,
+  IconVideo,
+  IconVolumeOff, IconVolumeOn,
+} from './icons'
+import { LAYOUTS, LAYOUT_LABELS, type Layout, type Participant } from './types'
 
 // ── Layout icons (JSX — can't go in .ts) ──────────────────────────────────────
 const LAYOUT_ICONS: Record<Layout, React.ReactNode> = {
@@ -134,7 +146,13 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   const [debugChunks, setDebugChunks] = useState(0)
   const [debugMsgs, setDebugMsgs] = useState<string[]>([])
   const [showLogs, setShowLogs] = useState(false)
-
+const endRoom = useCallback(() => {
+  navigator.sendBeacon('/api/call/end', JSON.stringify({ roomName }))
+}, [roomName])
+useEffect(() => {
+  window.addEventListener('beforeunload', endRoom)
+  return () => window.removeEventListener('beforeunload', endRoom)
+}, [endRoom])
   // Teacher-only: post-call error confirmation
   const [showAnalyzing, setShowAnalyzing] = useState(false)
   const [analyzedErrors, setAnalyzedErrors] = useState<AnalyzedError[]>([])
@@ -463,10 +481,11 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
     }
 
     await disconnect()
+    endRoom()  
     router.push('/profile')
   }, [isOwner, disconnect, router, roomName, transcription, room.participants,
       setShowAnalyzing, setAnalyzedErrors, setRemovedErrorIds, setErrorEditMode,
-      setExpandedErrorId, setShowErrorConfirm])
+      setExpandedErrorId, setShowErrorConfirm,endRoom])
 
   const confirmErrors = useCallback(async () => {
     if (removedErrorIds.size > 0) {
@@ -478,8 +497,9 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
     }
     setShowErrorConfirm(false)
     await disconnect()
+    endRoom()
     router.push('/profile')
-  }, [removedErrorIds, disconnect, router])
+  }, [removedErrorIds, disconnect, router,endRoom])
 
   // ── Sync video quality when main speaker or active speakers change ──────────
   useEffect(() => {

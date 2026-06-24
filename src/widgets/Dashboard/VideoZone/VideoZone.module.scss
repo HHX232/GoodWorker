@@ -316,7 +316,7 @@
   gap: 7px;
   overflow-y: auto;
   min-height: 0;
-
+ max-height: 250px; 
   &::-webkit-scrollbar { width: 4px; }
   &::-webkit-scrollbar-thumb { background: #D8D8E0; border-radius: 2px; }
 }

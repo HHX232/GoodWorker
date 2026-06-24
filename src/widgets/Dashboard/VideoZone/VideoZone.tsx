@@ -1,9 +1,10 @@
 'use client'
 
+import { VideoCallModal } from '@/widgets/Dashboard/VideoCallModal/VideoCallModal'
+import { TranscriptsModal } from '@/widgets/Forms/ProfileEditForm/TranscriptsModal'
+import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
-import { useTranslations, useLocale } from 'next-intl'
-import { VideoCallModal } from '@/widgets/Dashboard/VideoCallModal/VideoCallModal'
 import styles from './VideoZone.module.scss'
 
 interface Room {
@@ -29,10 +30,10 @@ function formatDate(dateStr: string, locale: string, today: string, yesterday: s
   const days = Math.floor((now.getTime() - date.getTime()) / 86400000)
   if (days === 0) return today
   if (days === 1) return yesterday
-  return date.toLocaleDateString(locale, { day: 'numeric', month: 'short' })
+  return date.toLocaleDateString(locale, {day: 'numeric', month: 'short'})
 }
 
-export function VideoZone({ ownerName = '', isStudent = false }: Props) {
+export function VideoZone({ownerName = '', isStudent = false}: Props) {
   const t = useTranslations('videoZone')
   const locale = useLocale()
   const router = useRouter()
@@ -46,16 +47,20 @@ export function VideoZone({ ownerName = '', isStudent = false }: Props) {
   const [rooms, setRooms] = useState<Room[]>([])
   const [bgMode, setBgMode] = useState<BgMode>('gradient')
   const [cameraStatus, setCameraStatus] = useState<CameraStatus>('checking')
+  const [transcriptRoom, setTranscriptRoom] = useState<Room | null>(null)
 
   const canvasRef = useRef<HTMLDivElement>(null)
   const animRef = useRef<number | null>(null)
-  const threeRef = useRef<{ renderer: any; scene: any; cam: any } | null>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const threeRef = useRef<{renderer: any; scene: any; cam: any} | null>(null)
 
   // Load rooms
   useEffect(() => {
     fetch('/api/call/my-rooms')
-      .then(r => r.json())
-      .then(d => { if (Array.isArray(d)) setRooms(d) })
+      .then((r) => r.json())
+      .then((d) => {
+        if (Array.isArray(d)) setRooms(d)
+      })
       .catch(() => {})
   }, [])
 
@@ -65,8 +70,8 @@ export function VideoZone({ ownerName = '', isStudent = false }: Props) {
     async function check() {
       try {
         const [camPerm, micPerm] = await Promise.all([
-          navigator.permissions.query({ name: 'camera' as PermissionName }),
-          navigator.permissions.query({ name: 'microphone' as PermissionName }),
+          navigator.permissions.query({name: 'camera' as PermissionName}),
+          navigator.permissions.query({name: 'microphone' as PermissionName})
         ])
         if (cancelled) return
         if (camPerm.state === 'denied' || micPerm.state === 'denied') {
@@ -76,8 +81,8 @@ export function VideoZone({ ownerName = '', isStudent = false }: Props) {
         } else {
           // 'prompt' state — try to get actual stream to verify
           try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-            stream.getTracks().forEach(t => t.stop())
+            const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true})
+            stream.getTracks().forEach((t) => t.stop())
             if (!cancelled) setCameraStatus('ready')
           } catch {
             if (!cancelled) setCameraStatus('denied')
@@ -86,8 +91,8 @@ export function VideoZone({ ownerName = '', isStudent = false }: Props) {
       } catch {
         // Permissions API not supported — try getUserMedia directly
         try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-          stream.getTracks().forEach(t => t.stop())
+          const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true})
+          stream.getTracks().forEach((t) => t.stop())
           if (!cancelled) setCameraStatus('ready')
         } catch {
           if (!cancelled) setCameraStatus('denied')
@@ -95,7 +100,9 @@ export function VideoZone({ ownerName = '', isStudent = false }: Props) {
       }
     }
     check()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   // 3D Three.js effect
@@ -103,7 +110,7 @@ export function VideoZone({ ownerName = '', isStudent = false }: Props) {
     if (bgMode !== '3d' || !canvasRef.current) return
     let disposed = false
 
-    import('three').then(THREE => {
+    import('three').then((THREE) => {
       if (disposed || !canvasRef.current) return
 
       const container = canvasRef.current
@@ -114,7 +121,7 @@ export function VideoZone({ ownerName = '', isStudent = false }: Props) {
       const cam = new THREE.PerspectiveCamera(50, w / h, 0.1, 100)
       cam.position.z = 4.4
 
-      const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true })
+      const renderer = new THREE.WebGLRenderer({alpha: true, antialias: true})
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
       renderer.setSize(w, h)
       container.appendChild(renderer.domElement)
@@ -123,14 +130,18 @@ export function VideoZone({ ownerName = '', isStudent = false }: Props) {
       group.position.set(0.6, 0.3, 0)
       scene.add(group)
 
-      group.add(new THREE.Mesh(
-        new THREE.IcosahedronGeometry(1.6, 1),
-        new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 0.28 })
-      ))
-      group.add(new THREE.Mesh(
-        new THREE.IcosahedronGeometry(1.05, 0),
-        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.06 })
-      ))
+      group.add(
+        new THREE.Mesh(
+          new THREE.IcosahedronGeometry(1.6, 1),
+          new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: true, transparent: true, opacity: 0.28})
+        )
+      )
+      group.add(
+        new THREE.Mesh(
+          new THREE.IcosahedronGeometry(1.05, 0),
+          new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.06})
+        )
+      )
 
       const pts: number[] = []
       for (let i = 0; i < 70; i++) {
@@ -138,9 +149,11 @@ export function VideoZone({ ownerName = '', isStudent = false }: Props) {
       }
       const geo = new THREE.BufferGeometry()
       geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3))
-      scene.add(new THREE.Points(geo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.04, transparent: true, opacity: 0.45 })))
+      scene.add(
+        new THREE.Points(geo, new THREE.PointsMaterial({color: 0xffffff, size: 0.04, transparent: true, opacity: 0.45}))
+      )
 
-      threeRef.current = { renderer, scene, cam }
+      threeRef.current = {renderer, scene, cam}
 
       const onResize = () => {
         if (!container) return
@@ -177,8 +190,8 @@ export function VideoZone({ ownerName = '', isStudent = false }: Props) {
     }
   }, [bgMode])
 
-  const activeRooms = rooms.filter(r => !r.endedAt)
-  const recentRooms = rooms.filter(r => r.endedAt)
+  const activeRooms = rooms.filter((r) => !r.endedAt)
+  const recentRooms = rooms.filter((r) => r.endedAt)
 
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -211,7 +224,6 @@ export function VideoZone({ ownerName = '', isStudent = false }: Props) {
   return (
     <>
       <section className={`${styles.vz} ${bgMode === '3d' ? styles.vzThreed : ''}`}>
-
         {/* ── Left: purple CTA ── */}
         <div className={styles.vzCta}>
           {/* 3D canvas overlay */}
@@ -219,72 +231,109 @@ export function VideoZone({ ownerName = '', isStudent = false }: Props) {
 
           {/* Gradient / 3D toggle */}
           <div className={styles.vzBgToggle}>
-            <button
-              className={bgMode === 'gradient' ? styles.vzBgBtnOn : ''}
-              onClick={() => setBgMode('gradient')}
-            >
+            <button className={bgMode === 'gradient' ? styles.vzBgBtnOn : ''} onClick={() => setBgMode('gradient')}>
               {t('gradientBg')}
             </button>
-            <button
-              className={bgMode === '3d' ? styles.vzBgBtnOn : ''}
-              onClick={() => setBgMode('3d')}
-            >
+            <button className={bgMode === '3d' ? styles.vzBgBtnOn : ''} onClick={() => setBgMode('3d')}>
               {t('threeDBg')}
             </button>
           </div>
 
           <span className={styles.vzIcon}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="2" y="6" width="14" height="12" rx="2.5"/>
-              <path d="m16 10 6-3v10l-6-3z"/>
+            <svg
+              width='22'
+              height='22'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='#fff'
+              strokeWidth='2'
+              strokeLinecap='round'
+              strokeLinejoin='round'
+            >
+              <rect x='2' y='6' width='14' height='12' rx='2.5' />
+              <path d='m16 10 6-3v10l-6-3z' />
             </svg>
           </span>
 
           <h3 className={styles.vzTitle}>{t('title')}</h3>
           <p className={styles.vzDesc}>{t('desc')}</p>
 
-          <button className={styles.vzCreate} onClick={() => { setModalDefault(ownerName); setModalOpen(true) }}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="2" y="6" width="14" height="12" rx="2.5"/>
-              <path d="m16 10 6-3v10l-6-3z"/>
+          <button
+            className={styles.vzCreate}
+            onClick={() => {
+              setModalDefault(ownerName)
+              setModalOpen(true)
+            }}
+          >
+            <svg
+              width='17'
+              height='17'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2.2'
+              strokeLinecap='round'
+              strokeLinejoin='round'
+            >
+              <rect x='2' y='6' width='14' height='12' rx='2.5' />
+              <path d='m16 10 6-3v10l-6-3z' />
             </svg>
             {t('createBtn')}
           </button>
 
           <form className={styles.vzJoin} onSubmit={handleJoin}>
             <input
-              type="text"
+              type='text'
               className={styles.vzJoinInput}
               placeholder={t('joinPlaceholder')}
               value={joinCode}
-              onChange={e => { setJoinCode(e.target.value); setJoinError('') }}
+              onChange={(e) => {
+                setJoinCode(e.target.value)
+                setJoinError('')
+              }}
               disabled={joining}
             />
-            <button
-              type="submit"
-              className={styles.vzJoinBtn}
-              disabled={joining || !joinCode.trim()}
-              aria-label="Join"
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 12h14"/><path d="m13 5 7 7-7 7"/>
+            <button type='submit' className={styles.vzJoinBtn} disabled={joining || !joinCode.trim()} aria-label='Join'>
+              <svg
+                width='15'
+                height='15'
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth='2.3'
+                strokeLinecap='round'
+                strokeLinejoin='round'
+              >
+                <path d='M5 12h14' />
+                <path d='m13 5 7 7-7 7' />
               </svg>
             </button>
           </form>
           {joinError && <p className={styles.vzJoinError}>{joinError}</p>}
 
           <div className={`${styles.vzReady} ${cameraStatus === 'denied' ? styles.vzReadyDenied : ''}`}>
-            {cameraStatus === 'checking' && (
-              <span className={styles.vzSpinner} />
-            )}
+            {cameraStatus === 'checking' && <span className={styles.vzSpinner} />}
             {cameraStatus === 'ready' && (
               <span className={styles.vzWave}>
-                <i/><i/><i/><i/><i/>
+                <i />
+                <i />
+                <i />
+                <i />
+                <i />
               </span>
             )}
             {cameraStatus === 'denied' && (
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                <circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/>
+              <svg
+                width='13'
+                height='13'
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth='2.2'
+                strokeLinecap='round'
+              >
+                <circle cx='12' cy='12' r='10' />
+                <path d='m15 9-6 6M9 9l6 6' />
               </svg>
             )}
             {cameraStatus === 'checking' && t('cameraChecking')}
@@ -316,48 +365,81 @@ export function VideoZone({ ownerName = '', isStudent = false }: Props) {
             {activeTab === 'active' ? (
               activeRooms.length === 0 ? (
                 <div className={styles.vzEmpty}>
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                    <rect x="2" y="6" width="14" height="12" rx="2.5"/><path d="m16 10 6-3v10l-6-3z"/>
+                  <svg
+                    width='26'
+                    height='26'
+                    viewBox='0 0 24 24'
+                    fill='none'
+                    stroke='currentColor'
+                    strokeWidth='1.5'
+                    strokeLinecap='round'
+                  >
+                    <rect x='2' y='6' width='14' height='12' rx='2.5' />
+                    <path d='m16 10 6-3v10l-6-3z' />
                   </svg>
                   {t('noActive')}
                 </div>
-              ) : activeRooms.map(room => (
-                <div key={room.id} className={`${styles.vzCall} ${styles.vzCallNext}`}>
-                  <span className={styles.vzCallIcon}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="2" y="6" width="14" height="12" rx="2"/><path d="m16 10 6-3v10l-6-3z"/>
-                    </svg>
-                  </span>
-                  <div className={styles.vzCallInfo}>
-                    <div className={styles.vzCallTitle}>{room.topic ?? room.name}</div>
-                    <div className={styles.vzCallSub}>
-                      <span className={styles.vzCallBadge}>{t('badgeActive')}</span>
+              ) : (
+                activeRooms.map((room) => (
+                  <div key={room.id} className={`${styles.vzCall} ${styles.vzCallNext}`}>
+                    <span className={styles.vzCallIcon}>
+                      <svg width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'>
+                        <rect x='2' y='6' width='14' height='12' rx='2' />
+                        <path d='m16 10 6-3v10l-6-3z' />
+                      </svg>
+                    </span>
+                    <div className={styles.vzCallInfo}>
+                      <div className={styles.vzCallTitle}>{room.topic ?? room.name}</div>
+                      <div className={styles.vzCallSub}>
+                        <span className={styles.vzCallBadge}>{t('badgeActive')}</span>
+                      </div>
                     </div>
+                    <button className={styles.vzBtnJoin} onClick={() => router.push(`/call/${room.id}`)}>
+                      <svg
+                        width='13'
+                        height='13'
+                        viewBox='0 0 24 24'
+                        fill='none'
+                        stroke='currentColor'
+                        strokeWidth='2.5'
+                        strokeLinecap='round'
+                      >
+                        <path d='M5 12h14' />
+                        <path d='m13 5 7 7-7 7' />
+                      </svg>
+                      {t('joinBtn')}
+                    </button>
                   </div>
-                  <button className={styles.vzBtnJoin} onClick={() => router.push(`/call/${room.id}`)}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                      <path d="M5 12h14"/><path d="m13 5 7 7-7 7"/>
-                    </svg>
-                    {t('joinBtn')}
-                  </button>
-                </div>
-              ))
+                ))
+              )
+            ) : recentRooms.length === 0 ? (
+              <div className={styles.vzEmpty}>
+                <svg
+                  width='26'
+                  height='26'
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeWidth='1.5'
+                  strokeLinecap='round'
+                >
+                  <rect x='2' y='6' width='14' height='12' rx='2.5' />
+                  <path d='m16 10 6-3v10l-6-3z' />
+                </svg>
+                {t('noRecent')}
+              </div>
             ) : (
-              recentRooms.length === 0 ? (
-                <div className={styles.vzEmpty}>
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                    <rect x="2" y="6" width="14" height="12" rx="2.5"/><path d="m16 10 6-3v10l-6-3z"/>
-                  </svg>
-                  {t('noRecent')}
-                </div>
-              ) : recentRooms.slice(0, 5).map(room => (
+              recentRooms.map((room) => (
                 <div key={room.id} className={styles.vzCall}>
                   <div className={styles.vzCallWhen}>
-                    <div className={styles.vzCallDate}>{formatDate(room.createdAt, locale, t('today'), t('yesterday'))}</div>
+                    <div className={styles.vzCallDate}>
+                      {formatDate(room.createdAt, locale, t('today'), t('yesterday'))}
+                    </div>
                   </div>
                   <span className={styles.vzCallIconGhost}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="2" y="6" width="14" height="12" rx="2"/><path d="m16 10 6-3v10l-6-3z"/>
+                    <svg width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2'>
+                      <rect x='2' y='6' width='14' height='12' rx='2' />
+                      <path d='m16 10 6-3v10l-6-3z' />
                     </svg>
                   </span>
                   <div className={styles.vzCallInfo}>
@@ -365,16 +447,24 @@ export function VideoZone({ ownerName = '', isStudent = false }: Props) {
                   </div>
                   <div className={styles.vzCallActions}>
                     {room.hasTranscript && (
-                      <a
-                        href={`/call/${room.id}/transcript`}
+                      <button
                         className={styles.vzBtnTranscript}
                         title={t('transcriptBtn')}
+                        onClick={() => setTranscriptRoom(room)}
                       >
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                          <path d="M4 6h16M4 10h16M4 14h10"/>
+                        <svg
+                          width='13'
+                          height='13'
+                          viewBox='0 0 24 24'
+                          fill='none'
+                          stroke='currentColor'
+                          strokeWidth='2'
+                          strokeLinecap='round'
+                        >
+                          <path d='M4 6h16M4 10h16M4 14h10' />
                         </svg>
                         {t('transcriptBtn')}
-                      </a>
+                      </button>
                     )}
                     <button className={styles.vzBtnGhost} onClick={() => handleRepeat(room)}>
                       {t('repeatBtn')}
@@ -386,13 +476,16 @@ export function VideoZone({ ownerName = '', isStudent = false }: Props) {
           </div>
         </div>
       </section>
-
+{transcriptRoom && (
+  <TranscriptsModal
+    isOpen={true}
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    initialRoom={transcriptRoom as any}
+    onClose={() => setTranscriptRoom(null)}
+  />
+)}
       {modalOpen && (
-        <VideoCallModal
-          defaultName={modalDefault}
-          isStudent={isStudent}
-          onClose={() => setModalOpen(false)}
-        />
+        <VideoCallModal defaultName={modalDefault} isStudent={isStudent} onClose={() => setModalOpen(false)} />
       )}
     </>
   )
