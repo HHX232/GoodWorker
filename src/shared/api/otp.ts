@@ -8,6 +8,25 @@ function generateRandomInt(min: number, max: number): number {
   crypto.getRandomValues(randomBytes)
   return min + (randomBytes[0] % range)
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function forceLog(...args: any[]) {
+  const message = args.map(arg => 
+    typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+  ).join(' ');
+  
+  const timestamp = new Date().toISOString();
+  const output = `[${timestamp}] ${message}`;
+  
+  // Тройное логирование для гарантии
+  console.log(output);
+  console.error(output);
+  process.stdout.write(output + '\n');
+  
+  // Принудительный сброс буфера
+  if (process.stdout._handle) {
+    process.stdout._handle.setBlocking(true);
+  }
+}
 
 export function generateOtp(): string {
   if (isE2E) return '000000'
@@ -15,17 +34,21 @@ export function generateOtp(): string {
 }
 
 export async function saveOtp(target: string, code: string) {
+   forceLog('=== SAVE OTP START ===', { target, code, isE2E });
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000)
   const finalCode = isE2E ? '000000' : code
-console.log('we save new OTP')
+  forceLog('we save new OTP', { target, finalCode, expiresAt: expiresAt.toISOString() })
+
   await prisma.otpCode.upsert({
     where: { target },
     update: { code: finalCode, expiresAt },
     create: { target, code: finalCode, expiresAt },
   })
+  
 }
 
 export async function verifyOtp(target: string, code: string): Promise<boolean> {
+   forceLog('=== VERIFY OTP START ===', { target, code, isE2E });
   if (isE2E) return true
 
   const otp = await prisma.otpCode.findUnique({ where: { target } })
@@ -42,6 +65,7 @@ export async function verifyOtp(target: string, code: string): Promise<boolean> 
 }
 
 export async function sendOtp(target: string, code: string, langCode: string = 'ru') {
+    forceLog('=== SEND OTP START ===', { target, code, langCode });
   console.log(`[OTP] ${target} → ${code}`)
 
   const apiKey = process.env.SENDCOREX_API_KEY
@@ -104,9 +128,10 @@ export async function sendOtp(target: string, code: string, langCode: string = '
         senderName: 'GoodWorker',
       }),
     })
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}))
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const { id, success } = (res as any).data;
+    if (!success) {
+      const err = await res?.json()?.catch(() => ({}))
       console.error('[OTP] Sendcorex error:', err)
     }
   } catch (e) {
