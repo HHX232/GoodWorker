@@ -65,7 +65,7 @@ export async function verifyOtp(target: string, code: string): Promise<boolean> 
 }
 
 export async function sendOtp(target: string, code: string, langCode: string = 'ru') {
-    forceLog('=== SEND OTP START ===', { target, code, langCode });
+    forceLog('=== SEND OTP START 222===', { target, code, langCode });
   console.log(`[OTP] ${target} → ${code}`)
 
   const apiKey = process.env.SENDCOREX_API_KEY
