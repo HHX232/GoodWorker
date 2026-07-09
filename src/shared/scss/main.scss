@@ -147,17 +147,10 @@ html.theme-dark, html.pomodoro-dark {
 body {
   position: relative !important;
   max-width: 100vw !important;
-  max-height: 100vh;
-  height: 100% !important;
+  height: auto !important;
   font-family: var(--font-main) !important;
   line-height: 1.35;
-  overflow: hidden hidden !important;
-  // @include mixins.md{
-  //   padding-bottom: 100px !important;
-  //   max-height: calc(100vh + 100px) !important;
-  //   overflow: auto !important;
-  //   height: calc(100vh + 100px) !important;
-  // }
+  overflow-x: hidden !important;
 }
 
 #telegram-login-exporterubot {

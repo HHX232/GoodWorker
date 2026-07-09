@@ -3,7 +3,7 @@
 import { signIn } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import styles from './LoginPage.module.scss'
 import { TextInputUI } from '@/shared/ui/inputs'
@@ -13,13 +13,6 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    document.body.style.overflow = 'auto'
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [])
 
   async function handleSubmit() {
     if (!email.trim()) {
