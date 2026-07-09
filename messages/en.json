@@ -2229,7 +2229,8 @@
     "n_file_title": "Hooks cheatsheet",
     "n_post_title": "React Flow in practice",
     "n_audio_title": "Code walkthrough",
-    "n_test_title": "Test: React basics"
+    "n_test_title": "Test: React basics",
+    "center_btn": "Center view"
   },
   "PdfInfoPage": {
     "nav_subtitle": "/ Tests",

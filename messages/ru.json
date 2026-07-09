@@ -2228,7 +2228,8 @@
     "n_file_title": "Шпаргалка по хукам",
     "n_post_title": "React Flow на практике",
     "n_audio_title": "Разбор кода урока",
-    "n_test_title": "Тест: Основы React"
+    "n_test_title": "Тест: Основы React",
+    "center_btn": "Центрировать"
   },
   "PdfInfoPage": {
     "nav_subtitle": "/ Тесты",

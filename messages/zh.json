@@ -2071,7 +2071,8 @@
     "n_file_title": "Hooks速查表",
     "n_post_title": "React Flow实践",
     "n_audio_title": "代码讲解",
-    "n_test_title": "测试：React基础"
+    "n_test_title": "测试：React基础",
+    "center_btn": "居中视图"
   },
   "PdfInfoPage": {
     "nav_subtitle": "/ 测试",

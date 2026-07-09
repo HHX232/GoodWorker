@@ -1,5 +1,5 @@
 'use client'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { useThemeCtx } from '@/app/providers/ThemeContext'
 import {
@@ -10,6 +10,7 @@ import {
   type NodeTypes,
   type Node,
   type Edge,
+  type ReactFlowInstance,
   useNodesState,
   useEdgesState,
   BackgroundVariant,
@@ -340,6 +341,7 @@ const nodeTypes: NodeTypes = {
 export default function CourseFlow() {
   const t = useTranslations('CourseFlow')
   const { isDark } = useThemeCtx()
+  const rfRef = useRef<ReactFlowInstance | null>(null)
 
   const E = (id: string, s: string, target: string, animated = false): Edge => ({
     id, source: s, target, type: 'smoothstep', animated,
@@ -365,7 +367,7 @@ export default function CourseFlow() {
 
   const [nodes, , onNodesChange] = useNodesState(initNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initEdges)
-  const onInit = useCallback(() => {}, [])
+  const onInit = useCallback((instance: ReactFlowInstance) => { rfRef.current = instance }, [])
 
   useEffect(() => {
     setEdges(initEdges)
@@ -373,13 +375,9 @@ export default function CourseFlow() {
   }, [isDark])
 
   return (
-    <div style={{ border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #ececf2', borderRadius: 18, overflow: 'hidden', background: isDark ? '#0e0e12' : '#fff', height: 480 }}>
+    <div style={{ border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #ececf2', borderRadius: 18, overflow: 'hidden', background: isDark ? '#0e0e12' : '#fff', height: 480, position: 'relative' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 18px', borderBottom: isDark ? '1px solid rgba(255,255,255,0.07)' : '1px solid #ececf2' }}>
         <span style={{ fontSize: 15, fontWeight: 700, color: isDark ? '#e0e2ec' : '#0e0e12' }}>{t('header')}</span>
-        <span style={{
-          fontSize: 10, fontWeight: 700, color: '#ED0606',
-          background: 'rgba(237,6,6,0.08)', padding: '3px 7px', borderRadius: 999, letterSpacing: '0.05em',
-        }}>REACT FLOW</span>
       </div>
       <div style={{ height: 432 }}>
         <ReactFlow
@@ -394,6 +392,26 @@ export default function CourseFlow() {
           <Background variant={BackgroundVariant.Dots} gap={22} size={1} color={isDark ? '#252838' : '#e6e6ec'} />
         </ReactFlow>
       </div>
+      <button
+        onClick={() => rfRef.current?.fitView({ padding: 0.15, duration: 300 })}
+        title={t('center_btn')}
+        style={{
+          position: 'absolute', bottom: 14, right: 14,
+          width: 34, height: 34, borderRadius: 10,
+          border: isDark ? '1px solid rgba(255,255,255,0.12)' : '1px solid #e2e2e9',
+          background: isDark ? 'rgba(30,32,48,0.9)' : 'rgba(255,255,255,0.92)',
+          backdropFilter: 'blur(6px)',
+          cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+          zIndex: 10,
+        }}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="3" width="18" height="18" rx="3" stroke={isDark ? '#9ea4b5' : '#8c8c98'} strokeWidth="1.8"/>
+          <circle cx="12" cy="12" r="4" fill={isDark ? '#9ea4b5' : '#8c8c98'}/>
+        </svg>
+      </button>
     </div>
   )
 }

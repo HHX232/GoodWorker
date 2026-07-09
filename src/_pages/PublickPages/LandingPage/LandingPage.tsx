@@ -1122,7 +1122,7 @@ function PostsSlider() {
   }, [])
 
   return (
-    <div>
+    <div style={{ paddingBottom: 50 }}>
       <div className={s.posts_head}>
         <div>
           <div className={s.eyebrow}>{t('posts_eyebrow')}</div>
@@ -1170,7 +1170,7 @@ function SubNav() {
   const links = [
     { label: t('sub_teachers'), href: '/teachers' },
     { label: t('sub_posts'),    href: '/posts' },
-    { label: t('sub_courses'),  href: '/teachers' },
+    { label: t('sub_courses'),  href: '/workflows-list' },
     { label: t('sub_support'),  href: '/feedback' },
   ]
   return (
