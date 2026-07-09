@@ -55,6 +55,7 @@ export async function GET(req: NextRequest) {
     const teacherId = searchParams.get('teacherId') ?? undefined
     const search = searchParams.get('search') ?? undefined
     const onlyVip = searchParams.get('onlyVip') === 'true'
+    const sortBy = searchParams.get('sortBy') === 'viewCount' ? 'viewCount' : 'createdAt'
     const skip = (page - 1) * limit
     const now = new Date()
 
@@ -73,7 +74,7 @@ export async function GET(req: NextRequest) {
     const postQueryConfig = {
       skip,
       take: limit,
-      orderBy: {createdAt: 'desc'} as const,
+      orderBy: {[sortBy]: 'desc'} as const,
       include: {
         teacher: {select: {id: true, name: true, avatarUrl: true}},
         _count: {select: {comments: true}}

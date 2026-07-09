@@ -7,7 +7,7 @@ import { Prisma } from '@prisma/client'
 import { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
-import { auth } from '../../../../auth'
+import { auth } from '../../../../../auth'
 
 function parseBlocks(content: Prisma.JsonValue): any[] {
   if (!content || typeof content !== 'object' || Array.isArray(content)) return []
@@ -87,8 +87,8 @@ async function recordView(postId: string, userId: string, role: string): Promise
   return false
 }
 
-export async function generateMetadata({params}: {params: Promise<{id: string}>}): Promise<Metadata> {
-  const {id} = await params
+export async function generateMetadata({params}: {params: Promise<{slug: string; id: string}>}): Promise<Metadata> {
+  const {slug, id} = await params
   const post = await prisma.post.findUnique({
     where: {id},
     select: {
@@ -107,6 +107,9 @@ export async function generateMetadata({params}: {params: Promise<{id: string}>}
   return {
     title: post.title,
     description: description || undefined,
+    alternates: {
+      canonical: `/post/${slug}/${id}`,
+    },
     openGraph: {
       title: post.title,
       description: description || undefined,
@@ -117,7 +120,7 @@ export async function generateMetadata({params}: {params: Promise<{id: string}>}
   }
 }
 
-async function PostServerPage({params}: {params: Promise<{id: string}>}) {
+async function PostServerPage({params}: {params: Promise<{slug: string; id: string}>}) {
   const {id} = await params
   const locale = (await cookies()).get('NEXT_LOCALE')?.value ?? 'ru'
 
@@ -135,12 +138,10 @@ async function PostServerPage({params}: {params: Promise<{id: string}>}) {
 
   if (!post) return notFound()
 
-  // Trigger AI enrichment for posts that haven't been translated yet
   if (!(post as any).contentTranslations) {
     enrichPostWithAI(post.id).catch(() => {})
   }
 
-  // Record view and optimistically bump viewCount
   if (session?.user?.id && session.user.role) {
     const incremented = await recordView(id, session.user.id, session.user.role)
     if (incremented) post.viewCount += 1

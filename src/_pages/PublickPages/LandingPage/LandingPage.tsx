@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { slugify } from '@/shared/lib/slugify'
 import s from './LandingPage.module.scss'
 import TypingText from './TypingText'
 
@@ -1103,7 +1104,7 @@ function PostCard({ post }: { post: RealPost }) {
           </span>
         )}
       </div>
-      <Link href={`/post/${post.id}`} className={s.post_btn}>{t('posts_read')}</Link>
+      <Link href={`/post/${slugify(post.title)}/${post.id}`} className={s.post_btn}>{t('posts_read')}</Link>
     </div>
   )
 }
@@ -1115,9 +1116,16 @@ function PostsSlider() {
   const scroll = (dir: number) => ref.current?.scrollBy({ left: dir * 380, behavior: 'smooth' })
 
   useEffect(() => {
-    fetch('/api/posts?limit=6&visibility=PUBLIC')
+    fetch('/api/posts?onlyVip=true&limit=6')
       .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.posts?.length) setPosts(d.posts) })
+      .then(async (d) => {
+        if (d?.posts?.length >= 2) {
+          setPosts(d.posts)
+        } else {
+          const fallback = await fetch('/api/posts?sortBy=viewCount&limit=4').then(r => r.ok ? r.json() : null)
+          if (fallback?.posts?.length) setPosts(fallback.posts)
+        }
+      })
       .catch(() => {})
   }, [])
 

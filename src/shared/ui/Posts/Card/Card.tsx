@@ -2,6 +2,7 @@
 
 import {ICard} from '@/shared/types'
 import {CardOwnerMenu} from '@/shared/ui/CardOwnerMenu/CardOwnerMenu'
+import {slugify} from '@/shared/lib/slugify'
 import {useTranslations} from 'next-intl'
 import Link from 'next/link'
 import {FC} from 'react'
@@ -42,7 +43,7 @@ const Card: FC<ICard & {isOwner?: boolean; onDelete?: () => void}> = ({
       />
 
       {useLink ? (
-        <Link href={`/post/${cardId}`} className={style.card_text_box}>
+        <Link href={`/post/${slugify(title)}/${cardId}`} className={style.card_text_box}>
           <h5 className={style.card_title}>{title}</h5>
           {subTitle && <p className={style.card_subtitle}>{subTitle}</p>}
           {hasMiniTest && (
@@ -82,7 +83,7 @@ const Card: FC<ICard & {isOwner?: boolean; onDelete?: () => void}> = ({
               className={`${index % 2 ? style.hidden_image : ''} ${style.card_images_item}`}
             >
               {useLink ? (
-                <Link href={`/post/${cardId}`} className={style.image_link}>
+                <Link href={`/post/${slugify(title)}/${cardId}`} className={style.image_link}>
                   <div style={{backgroundImage: `url(${image})`}} className={style.card_image} />
                 </Link>
               ) : (
@@ -99,7 +100,7 @@ const Card: FC<ICard & {isOwner?: boolean; onDelete?: () => void}> = ({
 
       <div className={style.bottom_row}>
         {useLink ? (
-          <Link href={`/post/${cardId}`} className={style.link_button}>
+          <Link href={`/post/${slugify(title)}/${cardId}`} className={style.link_button}>
             <p className={style.link_text}>{t('readFullPost')}</p>
             <svg width='16' height='16' viewBox='0 0 16 16' fill='none'>
               <path

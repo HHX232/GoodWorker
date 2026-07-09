@@ -301,11 +301,18 @@
 }
 
 // ── MINI TEST MODAL (builder) ──────────────────────────────────
+.mini_test_modal_layout {
+   display: flex;
+   flex-direction: column;
+   gap: 0;
+}
+
 .mini_test_type_picker {
    display: flex;
    flex-wrap: wrap;
    gap: 6px;
    margin-bottom: 14px;
+   flex-shrink: 0;
 }
 
 .mini_test_type_btn {
@@ -345,9 +352,7 @@
 .mini_test_block_list {
    display: flex;
    flex-direction: column;
-   max-height: 55vh;
-   overflow-y: auto;
-   margin-bottom: 16px;
+   padding-bottom: 8px;
 
    :global(h3) {
       font-size: 15px !important;
@@ -415,6 +420,11 @@
    transition: background 0.12s;
 
    &:hover { background: #374151; }
+}
+
+// Фиксирует высоту mini-test модала, чтобы не двигался при перемонтировании блоков
+.mini_test_backdrop > div {
+   height: 90vh;
 }
 
 // ── legacy (TEST_LINK editor) ─────────────────────────────────

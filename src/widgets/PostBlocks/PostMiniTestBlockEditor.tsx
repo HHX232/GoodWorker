@@ -130,40 +130,9 @@ export function PostMiniTestBlockEditor({blockId, payload}: Props) {
       <ModalWindowDefault
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
+        extraClass={styles.mini_test_backdrop}
         additionalTitle={<p className={styles.modal_title}>{t('miniTestModalTitle')}</p>}
-      >
-        <InvalidTestBlocksContext.Provider
-          value={{ids: invalidBlockIds, errors: errorsMap, clear: clearInvalidBlock}}
-        >
-          <div className={styles.mini_test_type_picker}>
-            {BLOCK_TYPES.map((type) => {
-              const meta = TaskBlockRegistry[type]
-              return (
-                <button
-                  key={type}
-                  className={styles.mini_test_type_btn}
-                  onClick={() => addBlock(type)}
-                  title={meta.description}
-                >
-                  <span className={styles.mini_test_type_icon}>{meta.icon}</span>
-                  <span className={styles.mini_test_type_label}>{meta.label}</span>
-                </button>
-              )
-            })}
-          </div>
-
-          <div className={styles.mini_test_block_list}>
-            {reduxBlocks.length === 0 ? (
-              <p className={styles.mini_test_empty_hint}>{t('miniTestEmptyHint')}</p>
-            ) : (
-              reduxBlocks.map((block) => (
-                <div key={block.id} className={styles.mini_test_block_item}>
-                  <BlockEditor block={block} />
-                </div>
-              ))
-            )}
-          </div>
-
+        modalFooter={
           <div className={styles.mini_test_modal_footer}>
             <button className={styles.mini_test_cancel_btn} onClick={() => setModalOpen(false)}>
               {t('miniTestCancel')}
@@ -171,6 +140,46 @@ export function PostMiniTestBlockEditor({blockId, payload}: Props) {
             <button className={styles.mini_test_save_btn} onClick={save}>
               {t('miniTestSave')}
             </button>
+          </div>
+        }
+      >
+        <InvalidTestBlocksContext.Provider
+          value={{ids: invalidBlockIds, errors: errorsMap, clear: clearInvalidBlock}}
+        >
+          <div className={styles.mini_test_modal_layout}>
+            <div className={styles.mini_test_type_picker}>
+              {BLOCK_TYPES.map((type) => {
+                const meta = TaskBlockRegistry[type]
+                return (
+                  <button
+                    key={type}
+                    className={styles.mini_test_type_btn}
+                    onClick={() => addBlock(type)}
+                    title={meta.description}
+                  >
+                    <span className={styles.mini_test_type_icon}>{meta.icon}</span>
+                    <span className={styles.mini_test_type_label}>{meta.label}</span>
+                  </button>
+                )
+              })}
+            </div>
+
+            <div className={styles.mini_test_block_list}>
+              {reduxBlocks.length === 0 ? (
+                <p className={styles.mini_test_empty_hint}>{t('miniTestEmptyHint')}</p>
+              ) : (
+                reduxBlocks.map((block) => {
+                  const blockKey = block.type === TaskBlockType.CHOOSE_OPTION
+                    ? `${block.id}:${Array.isArray((block.payload as {correctId: string | string[]}).correctId) ? 'm' : 's'}`
+                    : block.id
+                  return (
+                    <div key={blockKey} className={styles.mini_test_block_item}>
+                      <BlockEditor block={block} />
+                    </div>
+                  )
+                })
+              )}
+            </div>
           </div>
         </InvalidTestBlocksContext.Provider>
       </ModalWindowDefault>

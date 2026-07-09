@@ -62,12 +62,14 @@
    overflow-y: auto;
    min-height: 0;
    padding: 25px;
+   overflow-anchor: none;
 }
 
 
 .modal__footer {
    flex-shrink: 0;
    border-top: 1px solid #EDEEF3;
+   padding: 14px 25px;
 }
 
 // ─── Dark theme ───────────────────────────────────────────────────────────────

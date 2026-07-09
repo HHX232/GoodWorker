@@ -1,4 +1,5 @@
 import { prisma } from '@/shared/prisma/prisma'
+import { RoomServiceClient } from 'livekit-server-sdk'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
 
@@ -95,6 +96,20 @@ export async function POST(req: NextRequest) {
         allowedEmails,
       },
     })
+
+    // Pre-create LiveKit room with 3-minute empty timeout
+    const apiKey = process.env.LIVEKIT_API_KEY
+    const apiSecret = process.env.LIVEKIT_API_SECRET
+    const lkUrl = process.env.LIVEKIT_URL ?? 'wss://goodworker-livekit.up.railway.app'
+    if (apiKey && apiSecret) {
+      try {
+        const svc = new RoomServiceClient(lkUrl.replace(/^wss?:\/\//, 'https://'), apiKey, apiSecret)
+        await svc.createRoom({ name: internalName, emptyTimeout: 180 })
+      } catch {
+        // Non-fatal — LiveKit will still auto-create when first participant joins
+      }
+    }
+
     return NextResponse.json({ id: room.id, ownerIdentity: room.ownerIdentity, isNew: true })
   } catch (e: any) {
     return NextResponse.json({ error: e.message ?? 'Internal error' }, { status: 500 })

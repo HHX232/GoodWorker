@@ -1,5 +1,6 @@
 'use client'
 import { IUserDefault } from '@/shared/types'
+import { slugify } from '@/shared/lib/slugify'
 import Link from 'next/link'
 import { FC } from 'react'
 import UserHeaderCard from '../../User/UserHeaderCard/UserHeaderCard'
@@ -24,7 +25,7 @@ const HighlightedPost: FC<IHighlightedPost> = ({
 }) => {
   return (
     <Link
-      href={`/post/${cardId}`}
+      href={`/post/${slugify(defaultTitle)}/${cardId}`}
       style={{
         background: `
           linear-gradient(0.00deg, rgba(0,0,0,0.5) 0%, rgba(38,38,38,0.54) 34.434%, rgba(58,58,58,0.15) 88.003%, rgba(58,58,58,0) 92.611%),
