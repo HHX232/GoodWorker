@@ -2430,6 +2430,7 @@
     "errorNoAccess": "इस रूम तक पहुंच नहीं",
     "errorNotFound": "रूम नहीं मिला या समाप्त हो गया",
     "errorConnection": "कनेक्शन त्रुटि",
+    "errorPermission": "कृपया कैमरा और माइक्रोफोन एक्सेस दें और पुनः प्रयास करें",
     "today": "आज",
     "yesterday": "कल"
   },

@@ -2431,6 +2431,7 @@
     "errorNoAccess": "无法访问此房间",
     "errorNotFound": "房间未找到或已结束",
     "errorConnection": "连接错误",
+    "errorPermission": "请允许访问摄像头和麦克风后重试",
     "today": "今天",
     "yesterday": "昨天"
   },

@@ -2584,6 +2584,7 @@
     "errorNoAccess": "No access to this room",
     "errorNotFound": "Room not found or ended",
     "errorConnection": "Connection error",
+    "errorPermission": "Please allow camera and microphone access and try again",
     "today": "Today",
     "yesterday": "Yesterday"
   },

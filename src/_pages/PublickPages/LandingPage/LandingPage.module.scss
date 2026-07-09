@@ -17,13 +17,7 @@ $border: #ececf2;
 .page {
   background: #fff;
   margin-top: -4px;
-  overflow-y: scroll;
   overflow-x: clip;
-  height: calc(100vh - 85px);
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-
-  &::-webkit-scrollbar { display: none; }
 }
 
 .container {

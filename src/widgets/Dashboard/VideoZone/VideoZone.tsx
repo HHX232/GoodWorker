@@ -16,9 +16,6 @@ interface Room {
   hasTranscript: boolean
 }
 
-type BgMode = 'gradient' | '3d'
-type CameraStatus = 'checking' | 'ready' | 'denied'
-
 interface Props {
   ownerName?: string
   isStudent?: boolean
@@ -33,20 +30,29 @@ function formatDate(dateStr: string, locale: string, today: string, yesterday: s
   return date.toLocaleDateString(locale, {day: 'numeric', month: 'short'})
 }
 
-export function VideoZone({ownerName = '', isStudent = false}: Props) {
+async function requestMediaPermission(): Promise<boolean> {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true})
+    stream.getTracks().forEach((t) => t.stop())
+    return true
+  } catch {
+    return false
+  }
+}
+
+export function VideoZone({isStudent = false}: Props) {
   const t = useTranslations('videoZone')
   const locale = useLocale()
   const router = useRouter()
 
   const [modalOpen, setModalOpen] = useState(false)
-  const [modalDefault, setModalDefault] = useState(ownerName)
+  const [modalDefault, setModalDefault] = useState('')
   const [joinCode, setJoinCode] = useState('')
   const [joining, setJoining] = useState(false)
   const [joinError, setJoinError] = useState('')
+  const [createPermError, setCreatePermError] = useState('')
   const [activeTab, setActiveTab] = useState<'active' | 'recent'>('active')
   const [rooms, setRooms] = useState<Room[]>([])
-  const [bgMode, setBgMode] = useState<BgMode>('gradient')
-  const [cameraStatus, setCameraStatus] = useState<CameraStatus>('checking')
   const [transcriptRoom, setTranscriptRoom] = useState<Room | null>(null)
 
   const canvasRef = useRef<HTMLDivElement>(null)
@@ -64,56 +70,15 @@ export function VideoZone({ownerName = '', isStudent = false}: Props) {
       .catch(() => {})
   }, [])
 
-  // Check camera/mic permissions
+  // 3D Three.js effect — always active
   useEffect(() => {
-    let cancelled = false
-    async function check() {
-      try {
-        const [camPerm, micPerm] = await Promise.all([
-          navigator.permissions.query({name: 'camera' as PermissionName}),
-          navigator.permissions.query({name: 'microphone' as PermissionName})
-        ])
-        if (cancelled) return
-        if (camPerm.state === 'denied' || micPerm.state === 'denied') {
-          setCameraStatus('denied')
-        } else if (camPerm.state === 'granted' && micPerm.state === 'granted') {
-          setCameraStatus('ready')
-        } else {
-          // 'prompt' state — try to get actual stream to verify
-          try {
-            const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true})
-            stream.getTracks().forEach((t) => t.stop())
-            if (!cancelled) setCameraStatus('ready')
-          } catch {
-            if (!cancelled) setCameraStatus('denied')
-          }
-        }
-      } catch {
-        // Permissions API not supported — try getUserMedia directly
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true})
-          stream.getTracks().forEach((t) => t.stop())
-          if (!cancelled) setCameraStatus('ready')
-        } catch {
-          if (!cancelled) setCameraStatus('denied')
-        }
-      }
-    }
-    check()
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  // 3D Three.js effect
-  useEffect(() => {
-    if (bgMode !== '3d' || !canvasRef.current) return
+    if (!canvasRef.current) return
+    const container = canvasRef.current
     let disposed = false
 
     import('three').then((THREE) => {
-      if (disposed || !canvasRef.current) return
+      if (disposed || !container) return
 
-      const container = canvasRef.current
       const w = container.clientWidth || 290
       const h = container.clientHeight || 300
 
@@ -156,7 +121,6 @@ export function VideoZone({ownerName = '', isStudent = false}: Props) {
       threeRef.current = {renderer, scene, cam}
 
       const onResize = () => {
-        if (!container) return
         const ww = container.clientWidth || 290
         const hh = container.clientHeight || 300
         renderer.setSize(ww, hh)
@@ -184,11 +148,11 @@ export function VideoZone({ownerName = '', isStudent = false}: Props) {
       if (animRef.current) cancelAnimationFrame(animRef.current)
       if (threeRef.current) {
         threeRef.current.renderer.dispose()
-        if (canvasRef.current) canvasRef.current.innerHTML = ''
+        container.innerHTML = ''
       }
       threeRef.current = null
     }
-  }, [bgMode])
+  }, [])
 
   const activeRooms = rooms.filter((r) => !r.endedAt)
   const recentRooms = rooms.filter((r) => r.endedAt)
@@ -199,6 +163,14 @@ export function VideoZone({ownerName = '', isStudent = false}: Props) {
     if (!code) return
     setJoining(true)
     setJoinError('')
+
+    const granted = await requestMediaPermission()
+    if (!granted) {
+      setJoinError(t('errorPermission'))
+      setJoining(false)
+      return
+    }
+
     try {
       const res = await fetch(`/api/call/rooms?name=${encodeURIComponent(code)}`)
       const data = await res.json()
@@ -216,6 +188,17 @@ export function VideoZone({ownerName = '', isStudent = false}: Props) {
     }
   }
 
+  const handleCreateClick = async () => {
+    setCreatePermError('')
+    const granted = await requestMediaPermission()
+    if (!granted) {
+      setCreatePermError(t('errorPermission'))
+      return
+    }
+    setModalDefault('')
+    setModalOpen(true)
+  }
+
   const handleRepeat = (room: Room) => {
     setModalDefault(room.topic ?? room.name)
     setModalOpen(true)
@@ -223,21 +206,11 @@ export function VideoZone({ownerName = '', isStudent = false}: Props) {
 
   return (
     <>
-      <section className={`${styles.vz} ${bgMode === '3d' ? styles.vzThreed : ''}`}>
+      <section className={`${styles.vz} ${styles.vzThreed}`}>
         {/* ── Left: purple CTA ── */}
         <div className={styles.vzCta}>
           {/* 3D canvas overlay */}
           <div ref={canvasRef} className={styles.vzCanvas} />
-
-          {/* Gradient / 3D toggle */}
-          <div className={styles.vzBgToggle}>
-            <button className={bgMode === 'gradient' ? styles.vzBgBtnOn : ''} onClick={() => setBgMode('gradient')}>
-              {t('gradientBg')}
-            </button>
-            <button className={bgMode === '3d' ? styles.vzBgBtnOn : ''} onClick={() => setBgMode('3d')}>
-              {t('threeDBg')}
-            </button>
-          </div>
 
           <span className={styles.vzIcon}>
             <svg
@@ -258,13 +231,7 @@ export function VideoZone({ownerName = '', isStudent = false}: Props) {
           <h3 className={styles.vzTitle}>{t('title')}</h3>
           <p className={styles.vzDesc}>{t('desc')}</p>
 
-          <button
-            className={styles.vzCreate}
-            onClick={() => {
-              setModalDefault(ownerName)
-              setModalOpen(true)
-            }}
-          >
+          <button className={styles.vzCreate} onClick={handleCreateClick}>
             <svg
               width='17'
               height='17'
@@ -280,6 +247,7 @@ export function VideoZone({ownerName = '', isStudent = false}: Props) {
             </svg>
             {t('createBtn')}
           </button>
+          {createPermError && <p className={styles.vzJoinError}>{createPermError}</p>}
 
           <form className={styles.vzJoin} onSubmit={handleJoin}>
             <input
@@ -310,36 +278,6 @@ export function VideoZone({ownerName = '', isStudent = false}: Props) {
             </button>
           </form>
           {joinError && <p className={styles.vzJoinError}>{joinError}</p>}
-
-          <div className={`${styles.vzReady} ${cameraStatus === 'denied' ? styles.vzReadyDenied : ''}`}>
-            {cameraStatus === 'checking' && <span className={styles.vzSpinner} />}
-            {cameraStatus === 'ready' && (
-              <span className={styles.vzWave}>
-                <i />
-                <i />
-                <i />
-                <i />
-                <i />
-              </span>
-            )}
-            {cameraStatus === 'denied' && (
-              <svg
-                width='13'
-                height='13'
-                viewBox='0 0 24 24'
-                fill='none'
-                stroke='currentColor'
-                strokeWidth='2.2'
-                strokeLinecap='round'
-              >
-                <circle cx='12' cy='12' r='10' />
-                <path d='m15 9-6 6M9 9l6 6' />
-              </svg>
-            )}
-            {cameraStatus === 'checking' && t('cameraChecking')}
-            {cameraStatus === 'ready' && t('cameraReady')}
-            {cameraStatus === 'denied' && t('cameraNoAccess')}
-          </div>
         </div>
 
         {/* ── Right: call list ── */}
@@ -476,14 +414,15 @@ export function VideoZone({ownerName = '', isStudent = false}: Props) {
           </div>
         </div>
       </section>
-{transcriptRoom && (
-  <TranscriptsModal
-    isOpen={true}
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    initialRoom={transcriptRoom as any}
-    onClose={() => setTranscriptRoom(null)}
-  />
-)}
+
+      {transcriptRoom && (
+        <TranscriptsModal
+          isOpen={true}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          initialRoom={transcriptRoom as any}
+          onClose={() => setTranscriptRoom(null)}
+        />
+      )}
       {modalOpen && (
         <VideoCallModal defaultName={modalDefault} isStudent={isStudent} onClose={() => setModalOpen(false)} />
       )}
