@@ -218,6 +218,22 @@
   margin-top: 12px;
   font-size: 11.5px;
   color: rgba(255, 255, 255, 0.78);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+
+  &:hover:not(:disabled) {
+    color: rgba(255, 255, 255, 1);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  &:disabled {
+    cursor: default;
+  }
 }
 
 .vzReadyDenied {

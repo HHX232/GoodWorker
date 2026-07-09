@@ -51,6 +51,7 @@ export function VideoZone({isStudent = false}: Props) {
   const [joining, setJoining] = useState(false)
   const [joinError, setJoinError] = useState('')
   const [createPermError, setCreatePermError] = useState('')
+  const [mediaStatus, setMediaStatus] = useState<'idle' | 'checking' | 'ready' | 'denied'>('idle')
   const [activeTab, setActiveTab] = useState<'active' | 'recent'>('active')
   const [rooms, setRooms] = useState<Room[]>([])
   const [transcriptRoom, setTranscriptRoom] = useState<Room | null>(null)
@@ -188,12 +189,21 @@ export function VideoZone({isStudent = false}: Props) {
     }
   }
 
+  const handleCheckMedia = async () => {
+    setMediaStatus('checking')
+    const granted = await requestMediaPermission()
+    setMediaStatus(granted ? 'ready' : 'denied')
+  }
+
   const handleCreateClick = async () => {
     setCreatePermError('')
-    const granted = await requestMediaPermission()
-    if (!granted) {
-      setCreatePermError(t('errorPermission'))
-      return
+    if (mediaStatus !== 'ready') {
+      const granted = await requestMediaPermission()
+      setMediaStatus(granted ? 'ready' : 'denied')
+      if (!granted) {
+        setCreatePermError(t('errorPermission'))
+        return
+      }
     }
     setModalDefault('')
     setModalOpen(true)
@@ -248,6 +258,32 @@ export function VideoZone({isStudent = false}: Props) {
             {t('createBtn')}
           </button>
           {createPermError && <p className={styles.vzJoinError}>{createPermError}</p>}
+
+          <button
+            type='button'
+            className={`${styles.vzReady} ${mediaStatus === 'denied' ? styles.vzReadyDenied : ''}`}
+            onClick={handleCheckMedia}
+            disabled={mediaStatus === 'checking'}
+          >
+            {mediaStatus === 'checking' && <span className={styles.vzSpinner} />}
+            {mediaStatus === 'ready' && (
+              <span className={styles.vzWave}><i /><i /><i /><i /><i /></span>
+            )}
+            {mediaStatus === 'denied' && (
+              <svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.2' strokeLinecap='round'>
+                <circle cx='12' cy='12' r='10' /><path d='m15 9-6 6M9 9l6 6' />
+              </svg>
+            )}
+            {mediaStatus === 'idle' && (
+              <svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.2' strokeLinecap='round' strokeLinejoin='round'>
+                <path d='M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14' /><rect x='1' y='6' width='14' height='12' rx='2' />
+              </svg>
+            )}
+            {mediaStatus === 'idle' && t('cameraCheck')}
+            {mediaStatus === 'checking' && t('cameraChecking')}
+            {mediaStatus === 'ready' && t('cameraReady')}
+            {mediaStatus === 'denied' && t('cameraNoAccess')}
+          </button>
 
           <form className={styles.vzJoin} onSubmit={handleJoin}>
             <input
