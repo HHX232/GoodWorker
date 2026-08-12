@@ -179,3 +179,20 @@ reduce)')` — сразу ставит `.is-in` всем и не анимиру�
   `<script src="shared/reveal-core.js" defer>`. Доп. data-атрибуты — на усмотрение мира.
 - `index.html` — входная витрина: 3 ссылки-карточки (V1/V2/V3) + `<nav data-switcher>`,
   Ч/Б, Archivo. Оба shared-скрипта подключены defer.
+
+### Тикет 02 — Вариант A / Swiss (готово)
+- `variant-a-swiss.html` — self-contained. Подключены оба shared-скрипта + `<nav data-switcher>`.
+- Reveal-атрибуты: `data-reveal` (mask-заголовки `.ml>span`), `data-reveal="rise"` (+`--d` стаггер),
+  `data-reveal` на `.rule` (hairline-draw) и `[data-count-to]` (счётчики 0→N через MutationObserver на `.is-in`).
+  Свой hero-скраб: `--scan/--recog/--build` + `.on` на callouts. Скраб активен ≥900px; ниже и при reduced-motion — статичный финал.
+
+### Тикет 03 — Вариант B / Terminal (готово)
+- `variant-b-terminal.html` — self-contained. Подключены оба shared-скрипта + `<nav data-switcher>`.
+- Reveal: `[data-reveal]→.is-in` (база), `.draw` (line-draw stroke-dashoffset), `.wipe>.wipe-veil` (scan-wipe),
+  свой IO для `data-decode` (typewriter) и `data-card`/`data-callout` (hero scroll-scrub).
+- `--ink-2` поднят до `#8b8b85` (контраст ≥4.5:1 на `#0d0d0f`). Сигнальный `#d8ff3e` — только тонкие линии/курсор.
+
+### Тикет 04 — Вариант C / Cinematic (готово)
+- `variant-c-cinematic.html` — self-contained. Подключены оба shared-скрипта + `<nav data-switcher>`.
+- Reveal: `[data-reveal]` (база), `data-reveal="rise"` (scale 0.92→1+fade), `="parallax"`, `="fade"`; задержки inline `--rd`.
+- Hero — единственный запиненный (sticky) морф PDF→тест, 4 фазы, киноподписи. Все планы/иконки — inline-SVG/CSS, офлайн. В SVG-атрибутах литерал `#f3f0ea` вместо var() (Safari).

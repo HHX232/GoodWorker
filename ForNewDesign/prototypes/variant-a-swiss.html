@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF → Тест — Swiss / Kinetic Type (V1)</title>
+
+  <!-- Единственная внешняя зависимость: шрифт через Google Fonts + web-safe fallback. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800;900&family=Archivo+Expanded:wght@600;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #ffffff;
+      --ink: #0a0a0a;
+      --ink-2: #6b6b6b;
+      --line: #e5e5e5;
+      --pad: clamp(1.25rem, 5vw, 4.5rem);
+      --maxw: 84rem;
+      --ease: cubic-bezier(.19, 1, .22, 1);
+    }
+
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Archivo", "Helvetica Neue", Arial, sans-serif;
+      font-weight: 400;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      overflow-x: hidden;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+
+    a { color: inherit; text-decoration: none; }
+    svg { display: block; }
+
+    .wrap {
+      width: 100%;
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: 0 var(--pad);
+    }
+
+    /* ===================================================================
+       Switcher (общий контракт) — мир V1: волосяная рамка, чёрная плашка
+       =================================================================== */
+    nav[data-switcher] {
+      position: fixed;
+      top: 0.9rem;
+      right: 0.9rem;
+      z-index: 200;
+      display: flex;
+      gap: 0;
+      background: var(--bg);
+      border: 1px solid var(--ink);
+    }
+    nav[data-switcher] a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2.15rem;
+      height: 1.9rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--ink-2);
+      border-left: 1px solid var(--line);
+    }
+    nav[data-switcher] a:first-child { border-left: 0; }
+    nav[data-switcher] a:hover { color: var(--ink); }
+    nav[data-switcher] a[aria-current="page"] { background: var(--ink); color: var(--bg); }
+
+    /* ===================================================================
+       Top bar
+       =================================================================== */
+    .topbar {
+      position: relative;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-top: 1.4rem;
+      padding-bottom: 1.4rem;
+    }
+    .brand {
+      font-weight: 800;
+      font-size: 0.95rem;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+    .brand .arw { font-weight: 500; color: var(--ink-2); }
+    .topnav {
+      display: flex;
+      align-items: center;
+      gap: clamp(1rem, 2.4vw, 2.2rem);
+    }
+    .topnav a.navlink {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--ink-2);
+      letter-spacing: 0.01em;
+    }
+    .topnav a.navlink:hover { color: var(--ink); }
+    @media (max-width: 780px) { .topnav .navlink { display: none; } }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      letter-spacing: 0.01em;
+      line-height: 1;
+      padding: 0.85rem 1.35rem;
+      border: 1px solid var(--ink);
+      background: var(--ink);
+      color: var(--bg);
+      transition: background 160ms var(--ease), color 160ms var(--ease);
+      cursor: pointer;
+    }
+    .btn:hover { background: var(--bg); color: var(--ink); }
+    .btn--sm { padding: 0.6rem 1rem; font-size: 0.82rem; }
+    .btn--ghost {
+      background: transparent;
+      color: var(--ink);
+    }
+    .btn--ghost:hover { background: var(--ink); color: var(--bg); }
+    .btn svg { transition: transform 220ms var(--ease); }
+    .btn:hover svg { transform: translateX(3px); }
+
+    /* ===================================================================
+       Reveal vocabulary — контент виден по умолчанию только при JS-фейле мал.
+       техники: mask-развёртка строк · счётчики · отрисовка hairline
+       =================================================================== */
+    /* mask: строки раскрываются из-под маски снизу вверх */
+    .ml { display: block; overflow: hidden; }
+    .ml > span {
+      display: block;
+      transform: translateY(112%);
+      transition: transform 780ms var(--ease);
+    }
+    .ml:nth-child(2) > span { transition-delay: 90ms; }
+    .ml:nth-child(3) > span { transition-delay: 180ms; }
+    [data-reveal].is-in .ml > span { transform: translateY(0); }
+
+    /* rise: блок проявляется и приподнимается */
+    [data-reveal="rise"] {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 640ms var(--ease), transform 640ms var(--ease);
+      transition-delay: var(--d, 0ms);
+    }
+    [data-reveal="rise"].is-in { opacity: 1; transform: none; }
+
+    /* rule: отрисовка волосяной линии слева-направо */
+    .rule {
+      height: 1px;
+      background: var(--ink);
+      transform: scaleX(0);
+      transform-origin: left center;
+      transition: transform 900ms var(--ease);
+    }
+    .rule[data-reveal].is-in { transform: scaleX(1); }
+    .rule--soft { background: var(--line); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ml > span { transform: none !important; transition: none !important; }
+      [data-reveal="rise"] { opacity: 1 !important; transform: none !important; transition: none !important; }
+      .rule { transform: none !important; transition: none !important; }
+    }
+
+    /* ===================================================================
+       HERO — filmstrip PDF → тест, скраб по скроллу
+       =================================================================== */
+    .hero { position: relative; }
+    .hero.hero--scrub { height: 320vh; }   /* высота даёт «дорожку» для скраба */
+
+    .hero__pin {
+      position: relative;
+      padding-bottom: clamp(2rem, 6vh, 4rem);
+    }
+    .hero--scrub .hero__pin {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .hero__grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: clamp(2rem, 5vw, 4rem);
+      align-items: center;
+    }
+    @media (min-width: 900px) {
+      .hero__grid { grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr); }
+    }
+
+    .hero__lede { max-width: 40ch; }
+    .hero h1 {
+      margin: 0;
+      font-family: "Archivo Expanded", "Archivo", "Helvetica Neue", Arial, sans-serif;
+      font-weight: 800;
+      font-size: clamp(2.6rem, 7.4vw, 5.6rem);
+      line-height: 0.98;
+      letter-spacing: -0.035em;
+    }
+    .hero__sub {
+      margin: 1.5rem 0 0;
+      max-width: 42ch;
+      font-size: clamp(1rem, 1.5vw, 1.15rem);
+      color: var(--ink-2);
+      line-height: 1.45;
+    }
+    .hero__cta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.9rem 1.4rem;
+      margin-top: 2rem;
+    }
+    .hero__cta .link-inline {
+      font-weight: 600;
+      font-size: 0.9rem;
+      border-bottom: 1px solid var(--ink);
+      padding-bottom: 2px;
+    }
+    .hero__cta .link-inline:hover { color: var(--ink-2); border-color: var(--ink-2); }
+
+    /* Стадии процесса PDF → Скан → Распознавание → Тест */
+    .stages {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.4rem 0.55rem;
+      margin-top: 2.1rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .stages__i { color: var(--ink-2); transition: color 260ms var(--ease); }
+    .stages__i.is-active { color: var(--ink); }
+    .stages__sep { color: var(--line); }
+
+    .scrollhint {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 2.1rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink-2);
+    }
+    .scrollhint svg { animation: hintbob 1.8s ease-in-out infinite; }
+    @keyframes hintbob { 0%,100% { transform: translateY(0);} 50% { transform: translateY(4px);} }
+    @media (prefers-reduced-motion: reduce) { .scrollhint svg { animation: none; } }
+    .hero--scrub .scrollhint { display: none; } /* при скрабе хинт лишний */
+
+    /* ---- Stage: анимированный макет (плейсхолдер будущего видео) ---- */
+    .hero__stage {
+      --scan: 1; --recog: 1; --build: 1;   /* дефолт = финальное собранное состояние */
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 11;
+      border: 1px solid var(--line);
+      background:
+        repeating-linear-gradient(0deg, transparent 0 calc(100% / 6 - 1px), var(--line) calc(100% / 6 - 1px) calc(100% / 6)),
+        repeating-linear-gradient(90deg, transparent 0 calc(100% / 8 - 1px), var(--line) calc(100% / 8 - 1px) calc(100% / 8));
+      overflow: hidden;
+    }
+    .stage__tag {
+      position: absolute;
+      top: 0; left: 0;
+      z-index: 6;
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--bg);
+      background: var(--ink);
+      padding: 0.3rem 0.5rem;
+    }
+
+    /* PDF-панель слева */
+    .doc {
+      position: absolute;
+      left: 6%;
+      top: 12%;
+      width: 34%;
+      height: 76%;
+      background: var(--bg);
+      border: 1px solid var(--ink);
+      padding: 8% 7%;
+      display: flex;
+      flex-direction: column;
+      gap: 6%;
+    }
+    .doc__ln { height: 3px; background: var(--ink-2); opacity: 0.55; }
+    .doc__ln.s { width: 62%; }
+    .doc__ln.m { width: 85%; }
+    .doc__ln.l { width: 100%; }
+    /* блоки распознавания поверх строк */
+    .doc__hit {
+      position: absolute;
+      left: 7%;
+      height: 9%;
+      border: 1px solid var(--ink);
+      opacity: var(--recog);
+      transition: opacity 200ms linear;
+    }
+    .doc__hit.h1 { top: 30%; width: 86%; }
+    .doc__hit.h2 { top: 52%; width: 74%; }
+    .doc__hit.h3 { top: 74%; width: 80%; }
+    /* скан-полоса */
+    .doc__scan {
+      position: absolute;
+      left: -1px; right: -1px;
+      top: calc(var(--scan) * 100%);
+      height: 2px;
+      background: var(--ink);
+      box-shadow: 0 0 0 1px var(--bg);
+      opacity: calc(1 - var(--scan));
+    }
+
+    /* Стрелка в центре */
+    .stage__arrow {
+      position: absolute;
+      left: 44.5%;
+      top: 50%;
+      width: 9%;
+      transform: translateY(-50%);
+      color: var(--ink);
+      opacity: calc(0.25 + var(--build) * 0.75);
+    }
+
+    /* Карточки теста справа (собираются) */
+    .qcards { position: absolute; right: 5%; top: 12%; width: 40%; height: 76%; }
+    .qcard {
+      position: absolute;
+      left: 0; right: 0;
+      background: var(--bg);
+      border: 1px solid var(--ink);
+      padding: 5% 6%;
+      opacity: var(--build);
+    }
+    .qcard .qc__tag {
+      font-size: 0.52rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-2);
+    }
+    .qcard .qc__ln { height: 3px; background: var(--ink-2); opacity: 0.5; margin-top: 8%; }
+    .qcard .qc__row { display: flex; align-items: center; gap: 6%; margin-top: 9%; }
+    .qc__mark { width: 9px; height: 9px; border: 1px solid var(--ink); flex: none; }
+    .qc__mark.dot { border-radius: 50%; }
+    .qc__mark.on { background: var(--ink); }
+    .qc__rowln { height: 3px; background: var(--ink-2); opacity: 0.5; flex: 1; }
+    .qcard.c1 { top: 0;    height: 27%; transform: translate(calc((1 - var(--build)) * 26px), 0); transition: transform 200ms linear; }
+    .qcard.c2 { top: 36.5%; height: 27%; transform: translate(calc((1 - var(--build)) * 40px), 0); transition: transform 200ms linear; }
+    .qcard.c3 { top: 73%;  height: 27%; transform: translate(calc((1 - var(--build)) * 54px), 0); transition: transform 200ms linear; }
+
+    /* Callouts — пронумерованные выносные подписи на hairline-линиях */
+    .hero__callouts { position: absolute; inset: 0; z-index: 8; pointer-events: none; }
+    .callout {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 420ms var(--ease), transform 420ms var(--ease);
+    }
+    .callout.on { opacity: 1; transform: none; }
+    .callout__num {
+      flex: none;
+      width: 1.35rem; height: 1.35rem;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 0.68rem; font-weight: 800;
+      background: var(--ink); color: var(--bg);
+    }
+    .callout__stub { width: clamp(0.9rem, 2vw, 1.8rem); height: 1px; background: var(--ink); flex: none; }
+    .callout__lbl {
+      font-size: clamp(0.62rem, 1vw, 0.76rem);
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      background: var(--bg);
+      padding: 0.15rem 0.35rem;
+      white-space: nowrap;
+    }
+    .callout.right { flex-direction: row-reverse; }
+    .callout.right .callout__lbl { text-align: right; }
+    /* позиции (desktop) */
+    .c-1 { top: 6%;  left: 4%; }
+    .c-2 { top: 41%; left: 2%; }
+    .c-3 { top: 84%; left: 34%; }
+    .c-4 { top: 30%; right: 3%; }
+    .c-5 { top: 84%; right: 3%; }
+
+    /* Мобильный: скраб выключен → callouts как легенда-список под макетом */
+    .hero__legend { display: none; }
+    @media (max-width: 899.98px) {
+      .hero__callouts { display: none; }
+      .hero__legend {
+        display: grid;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+        counter-reset: lg;
+      }
+      .hero__legend li {
+        display: flex; align-items: baseline; gap: 0.7rem;
+        font-size: 0.85rem; color: var(--ink);
+        list-style: none;
+      }
+      .hero__legend li::before {
+        counter-increment: lg;
+        content: counter(lg);
+        flex: none;
+        width: 1.35rem; height: 1.35rem;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: 0.68rem; font-weight: 800;
+        background: var(--ink); color: var(--bg);
+      }
+      .hero__legend ol, .hero__legend { padding: 0; margin-top: 1.5rem; }
+      .hero__legend ol { list-style: none; }
+    }
+
+    /* ===================================================================
+       Секции — базовый ритм. Каждая ниже переопределяет плотность/сетку.
+       =================================================================== */
+    section { position: relative; }
+    .sec { padding: clamp(4.5rem, 12vh, 9rem) 0; border-top: 1px solid var(--line); }
+    .sec__head { margin-bottom: clamp(2.5rem, 6vh, 4.5rem); }
+    .sec__eyebrow-slot { display: none; } /* нет eyebrow по craft-floor */
+
+    .h2 {
+      margin: 0;
+      font-family: "Archivo Expanded", "Archivo", "Helvetica Neue", Arial, sans-serif;
+      font-weight: 800;
+      font-size: clamp(2rem, 5.5vw, 4rem);
+      line-height: 1.0;
+      letter-spacing: -0.03em;
+    }
+    .sub {
+      margin: 1.1rem 0 0;
+      max-width: 52ch;
+      color: var(--ink-2);
+      font-size: clamp(0.95rem, 1.4vw, 1.1rem);
+    }
+
+    /* ---- 2 · Три шага : крупные пронумерованные ряды со счётчиком ---- */
+    .steps { display: grid; gap: 0; }
+    .step {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: clamp(1rem, 4vw, 3.5rem);
+      align-items: start;
+      padding: clamp(2rem, 5vh, 3.4rem) 0;
+      border-top: 1px solid var(--line);
+    }
+    .step:last-child { border-bottom: 1px solid var(--line); }
+    .step__n {
+      font-family: "Archivo Expanded", "Archivo", sans-serif;
+      font-weight: 800;
+      font-size: clamp(2.4rem, 8vw, 5.5rem);
+      line-height: 0.85;
+      letter-spacing: -0.04em;
+      font-variant-numeric: tabular-nums;
+    }
+    .step__body { display: grid; grid-template-columns: 1fr; gap: 0.6rem; max-width: 60ch; }
+    @media (min-width: 720px) {
+      .step { grid-template-columns: 5.5rem 1fr auto; align-items: center; }
+      .step__body { grid-template-columns: minmax(0, 15rem) minmax(0, 1fr); align-items: center; gap: clamp(1rem,3vw,2.5rem); }
+    }
+    .step__title { font-weight: 800; font-size: clamp(1.35rem, 2.6vw, 1.9rem); letter-spacing: -0.02em; }
+    .step__desc { color: var(--ink-2); font-size: 0.98rem; }
+    .step__icon { color: var(--ink); flex: none; }
+    @media (max-width: 719.98px) { .step__icon { display: none; } }
+
+    /* ---- 3 · Шесть типов : асимметричная 12-кол сетка, разный ритм ---- */
+    .types {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      border-left: 1px solid var(--line);
+      border-top: 1px solid var(--line);
+    }
+    .type {
+      grid-column: span 12;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: clamp(1.5rem, 3vw, 2.4rem);
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      min-height: 12rem;
+    }
+    @media (min-width: 600px) {
+      .type { grid-column: span 6; }
+    }
+    @media (min-width: 960px) {
+      .type.t1 { grid-column: span 5; }
+      .type.t2 { grid-column: span 4; }
+      .type.t3 { grid-column: span 3; }
+      .type.t4 { grid-column: span 3; }
+      .type.t5 { grid-column: span 4; }
+      .type.t6 { grid-column: span 5; }
+    }
+    .type__viz { height: 3.4rem; color: var(--ink); }
+    .type__meta { margin-top: auto; }
+    .type__row { display: flex; align-items: baseline; gap: 0.7rem; flex-wrap: wrap; }
+    .type__title { font-weight: 700; font-size: 1.15rem; letter-spacing: -0.01em; }
+    .type__tag {
+      font-family: "Archivo", monospace;
+      font-size: 0.68rem; font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--bg); background: var(--ink);
+      padding: 0.15rem 0.45rem;
+    }
+    .type__desc { margin-top: 0.5rem; color: var(--ink-2); font-size: 0.9rem; }
+
+    /* ---- 4 · Готовый тест : один крупный макет по центру ---- */
+    .demo { display: grid; grid-template-columns: 1fr; gap: 0; max-width: 60rem; margin: 0 auto; border: 1px solid var(--ink); }
+    .demo__bar {
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      padding: 1rem 1.4rem; border-bottom: 1px solid var(--ink);
+    }
+    .demo__progress { font-weight: 700; font-size: 0.85rem; letter-spacing: 0.02em; }
+    .demo__track { flex: 1; height: 3px; background: var(--line); margin: 0 1.2rem; max-width: 22rem; }
+    .demo__fill { height: 100%; width: 25%; background: var(--ink); }
+    .demo__nav {
+      display: flex; flex-wrap: wrap; gap: 4px;
+      padding: 1.1rem 1.4rem; border-bottom: 1px solid var(--line);
+    }
+    .demo__nav b {
+      width: 2rem; height: 2rem; display: inline-flex; align-items: center; justify-content: center;
+      font-size: 0.78rem; font-weight: 600; border: 1px solid var(--line); color: var(--ink-2);
+    }
+    .demo__nav b.done { border-color: var(--ink); color: var(--ink); }
+    .demo__nav b.cur { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+    .demo__q { padding: clamp(1.6rem, 4vw, 2.6rem) 1.4rem; }
+    .demo__qtext { font-weight: 800; font-size: clamp(1.2rem, 2.6vw, 1.7rem); letter-spacing: -0.02em; max-width: 34ch; }
+    .demo__opts { display: grid; grid-template-columns: 1fr; gap: 0; margin-top: 1.6rem; border-top: 1px solid var(--line); }
+    @media (min-width: 620px) { .demo__opts { grid-template-columns: 1fr 1fr; } }
+    .opt {
+      display: flex; align-items: center; gap: 0.85rem;
+      padding: 1rem 1.2rem; border-bottom: 1px solid var(--line);
+      font-size: 0.98rem;
+    }
+    @media (min-width: 620px) { .opt:nth-child(odd) { border-right: 1px solid var(--line); } }
+    .opt__box { width: 1.05rem; height: 1.05rem; border: 1px solid var(--ink-2); border-radius: 50%; flex: none; }
+    .opt.correct { font-weight: 700; }
+    .opt.correct .opt__box { border-color: var(--ink); background: var(--ink); position: relative; }
+    .opt.correct .opt__box::after {
+      content: ""; position: absolute; left: 3px; top: 4px; width: 5px; height: 2.5px;
+      border-left: 1.5px solid var(--bg); border-bottom: 1.5px solid var(--bg); transform: rotate(-45deg);
+    }
+    .demo__foot { display: flex; align-items: center; gap: 0.6rem; padding: 1rem 1.4rem; border-top: 1px solid var(--ink); color: var(--ink-2); font-size: 0.82rem; }
+
+    /* ---- 5 · Профиль ошибок : демо-карточка ученика ---- */
+    .profile { display: grid; grid-template-columns: 1fr; gap: clamp(1.5rem, 4vw, 3rem); align-items: start; }
+    @media (min-width: 820px) { .profile { grid-template-columns: minmax(0, 20rem) 1fr; } }
+    .pcard { border: 1px solid var(--ink); padding: clamp(1.5rem, 3vw, 2.2rem); position: relative; }
+    .pcard__flag {
+      position: absolute; top: -1px; right: -1px;
+      font-size: 0.6rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+      background: var(--ink); color: var(--bg); padding: 0.25rem 0.5rem;
+    }
+    .pcard__name { font-weight: 800; font-size: 1.35rem; letter-spacing: -0.02em; }
+    .pcard__stats { display: flex; gap: 2.2rem; margin-top: 1.6rem; }
+    .stat__num { display: block; font-weight: 800; font-size: clamp(2rem, 5vw, 3rem); line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+    .stat__lbl { display: block; margin-top: 0.4rem; font-size: 0.8rem; color: var(--ink-2); }
+    .weak { display: grid; gap: 0; }
+    .weak__row {
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      padding: 1.1rem 0; border-top: 1px solid var(--line);
+    }
+    .weak__row:last-child { border-bottom: 1px solid var(--line); }
+    .weak__topic { font-weight: 700; font-size: 1.05rem; }
+    .weak__meter { flex: 1; height: 1px; background: var(--line); margin: 0 1.2rem; max-width: 16rem; position: relative; }
+    .weak__meter i { position: absolute; left: 0; top: -1px; height: 3px; background: var(--ink); }
+    .weak__type { color: var(--ink-2); font-size: 0.82rem; white-space: nowrap; }
+
+    /* ---- 6 · Честные лимиты : полоса-сравнение ---- */
+    .limits { display: grid; grid-template-columns: 1fr; border: 1px solid var(--ink); }
+    @media (min-width: 720px) { .limits { grid-template-columns: 1fr 1fr; } }
+    .limit { padding: clamp(1.8rem, 4vw, 3rem); }
+    .limit + .limit { border-top: 1px solid var(--ink); }
+    @media (min-width: 720px) { .limit + .limit { border-top: 0; border-left: 1px solid var(--ink); } }
+    .limit__tier { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-2); }
+    .limit__val { margin-top: 1rem; font-weight: 700; font-size: clamp(1.1rem, 2.2vw, 1.5rem); letter-spacing: -0.01em; max-width: 22ch; }
+    .limit.vip { background: var(--ink); color: var(--bg); }
+    .limit.vip .limit__tier { color: rgba(255,255,255,0.6); }
+
+    /* ---- 7 · FAQ : нативный аккордеон ---- */
+    .faq { max-width: 60rem; }
+    .faq__item { border-top: 1px solid var(--line); }
+    .faq__item:last-child { border-bottom: 1px solid var(--line); }
+    .faq__item summary {
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      padding: clamp(1.3rem, 3vw, 1.9rem) 0;
+      cursor: pointer; list-style: none;
+      font-weight: 700; font-size: clamp(1.05rem, 2.2vw, 1.5rem); letter-spacing: -0.01em;
+    }
+    .faq__item summary::-webkit-details-marker { display: none; }
+    .faq__sign { position: relative; width: 1.1rem; height: 1.1rem; flex: none; }
+    .faq__sign::before, .faq__sign::after { content: ""; position: absolute; background: var(--ink); transition: transform 240ms var(--ease); }
+    .faq__sign::before { left: 0; top: 50%; width: 100%; height: 1.5px; transform: translateY(-50%); }
+    .faq__sign::after { top: 0; left: 50%; width: 1.5px; height: 100%; transform: translateX(-50%); }
+    .faq__item[open] .faq__sign::after { transform: translateX(-50%) scaleY(0); }
+    .faq__a { padding: 0 0 clamp(1.3rem, 3vw, 1.9rem); color: var(--ink-2); max-width: 62ch; font-size: 1rem; }
+    @media (prefers-reduced-motion: reduce) { .faq__sign::before, .faq__sign::after { transition: none; } }
+
+    /* ---- 8 · Финальный CTA + футер ---- */
+    .final { padding: clamp(6rem, 16vh, 12rem) 0; border-top: 1px solid var(--ink); text-align: left; }
+    .final__phrase {
+      margin: 0;
+      font-family: "Archivo Expanded", "Archivo", sans-serif;
+      font-weight: 800;
+      font-size: clamp(2.6rem, 9vw, 6.5rem);
+      line-height: 0.95; letter-spacing: -0.04em;
+      max-width: 16ch;
+    }
+    .final__cta { margin-top: 2.5rem; }
+    footer.site {
+      display: flex; flex-wrap: wrap; gap: 1rem 2rem; align-items: center; justify-content: space-between;
+      padding: 2.2rem 0 3rem; border-top: 1px solid var(--line);
+      color: var(--ink-2); font-size: 0.84rem;
+    }
+    footer.site nav { display: flex; gap: 1.4rem; flex-wrap: wrap; }
+    footer.site a:hover { color: var(--ink); }
+
+    /* Утилита: скрыть визуально, оставить для скринридеров */
+    .vh { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  </style>
+</head>
+<body>
+
+  <nav data-switcher aria-label="Версии лендинга">
+    <a data-variant="a" href="variant-a-swiss.html">V1</a>
+    <a data-variant="b" href="variant-b-terminal.html">V2</a>
+    <a data-variant="c" href="variant-c-cinematic.html">V3</a>
+  </nav>
+
+  <!-- ============================ TOP BAR ============================ -->
+  <div class="wrap topbar">
+    <a class="brand" href="#top">PDF <span class="arw">→</span> Тест</a>
+    <div class="topnav">
+      <a class="navlink" href="#how">Как работает</a>
+      <a class="navlink" href="#types">Типы вопросов</a>
+      <a class="navlink" href="#demo">Тест</a>
+      <a class="btn btn--sm" href="#">
+        Загрузить PDF
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M8 11V2M4.5 5.5 8 2l3.5 3.5M3 13.5h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+
+  <!-- ============================== HERO ============================= -->
+  <header class="hero" id="top">
+    <div class="hero__pin">
+      <div class="hero__grid wrap">
+
+        <div class="hero__lede">
+          <h1 data-reveal>
+            <span class="ml"><span>Из PDF —</span></span>
+            <span class="ml"><span>в готовый тест.</span></span>
+            <span class="ml"><span>Автоматически.</span></span>
+          </h1>
+          <p class="hero__sub">Загрузи документ с вопросами — получи интерактивный тест по ссылке. Типы заданий и ответы распознаются сами.</p>
+
+          <div class="hero__cta">
+            <a class="btn" href="#">
+              Загрузить PDF
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/>
+              </svg>
+            </a>
+            <a class="link-inline" href="#how">Как это работает</a>
+          </div>
+
+          <div class="stages" aria-hidden="true">
+            <span class="stages__i" data-stage="0">PDF</span>
+            <span class="stages__sep">/</span>
+            <span class="stages__i" data-stage="1">Скан</span>
+            <span class="stages__sep">/</span>
+            <span class="stages__i" data-stage="2">Распознавание</span>
+            <span class="stages__sep">/</span>
+            <span class="stages__i" data-stage="3">Тест</span>
+          </div>
+
+          <span class="scrollhint">Листай
+            <svg width="12" height="14" viewBox="0 0 12 14" fill="none" aria-hidden="true">
+              <path d="M6 1v11M2 8l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+            </svg>
+          </span>
+
+          <!-- Мобильная легенда указателей (desktop показывает выносные callouts) -->
+          <ol class="hero__legend" aria-label="Что происходит в макете">
+            <li>Читаем страницы</li>
+            <li>Находим вопросы и варианты</li>
+            <li>Определяем тип задания</li>
+            <li>Проставляем правильные ответы</li>
+            <li>Тест собран — 12 вопросов</li>
+          </ol>
+        </div>
+
+        <!-- Анимированный макет = плейсхолдер будущего видео -->
+        <div class="hero__stage" data-placeholder aria-label="Схема процесса: PDF сканируется и превращается в тест. Временный анимированный макет.">
+          <span class="stage__tag">Макет процесса</span>
+
+          <!-- PDF документ -->
+          <div class="doc">
+            <span class="doc__ln l"></span>
+            <span class="doc__ln m"></span>
+            <span class="doc__ln l"></span>
+            <span class="doc__ln s"></span>
+            <span class="doc__ln m"></span>
+            <span class="doc__ln l"></span>
+            <span class="doc__hit h1"></span>
+            <span class="doc__hit h2"></span>
+            <span class="doc__hit h3"></span>
+            <span class="doc__scan"></span>
+          </div>
+
+          <!-- Стрелка -->
+          <svg class="stage__arrow" viewBox="0 0 40 24" fill="none" aria-hidden="true">
+            <path d="M2 12h34M28 4l8 8-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="square"/>
+          </svg>
+
+          <!-- Карточки теста -->
+          <div class="qcards">
+            <div class="qcard c1">
+              <span class="qc__tag">single</span>
+              <span class="qc__ln"></span>
+              <span class="qc__row"><span class="qc__mark dot on"></span><span class="qc__rowln"></span></span>
+            </div>
+            <div class="qcard c2">
+              <span class="qc__tag">multi</span>
+              <span class="qc__ln"></span>
+              <span class="qc__row"><span class="qc__mark on"></span><span class="qc__rowln"></span></span>
+            </div>
+            <div class="qcard c3">
+              <span class="qc__tag">match</span>
+              <span class="qc__ln"></span>
+              <span class="qc__row"><span class="qc__mark dot"></span><span class="qc__rowln"></span><span class="qc__mark dot on"></span></span>
+            </div>
+          </div>
+
+          <!-- Выносные указатели -->
+          <div class="hero__callouts" aria-hidden="true">
+            <div class="callout c-1"><span class="callout__num">1</span><span class="callout__stub"></span><span class="callout__lbl">Читаем страницы</span></div>
+            <div class="callout c-2"><span class="callout__num">2</span><span class="callout__stub"></span><span class="callout__lbl">Находим вопросы и варианты</span></div>
+            <div class="callout c-3"><span class="callout__num">3</span><span class="callout__stub"></span><span class="callout__lbl">Определяем тип задания</span></div>
+            <div class="callout right c-4"><span class="callout__num">4</span><span class="callout__stub"></span><span class="callout__lbl">Проставляем правильные ответы</span></div>
+            <div class="callout right c-5"><span class="callout__num">5</span><span class="callout__stub"></span><span class="callout__lbl">Тест собран — 12 вопросов</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ===================== 2 · КАК ЭТО РАБОТАЕТ ==================== -->
+    <section class="sec" id="how">
+      <div class="wrap">
+        <div class="sec__head">
+          <h2 class="h2" data-reveal>
+            <span class="ml"><span>Три шага</span></span>
+          </h2>
+        </div>
+
+        <div class="steps">
+          <div class="step" data-reveal="rise">
+            <span class="step__n">1</span>
+            <div class="step__body">
+              <span class="step__title">Загрузка</span>
+              <span class="step__desc">Перетащи файл с вопросами и ответами. Экзамен, ДЗ, контрольная — в любом порядке.</span>
+            </div>
+            <svg class="step__icon" width="34" height="34" viewBox="0 0 34 34" fill="none" aria-hidden="true">
+              <rect x="7" y="4" width="20" height="26" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M17 22V11M13 15l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+            </svg>
+          </div>
+
+          <div class="step" data-reveal="rise" style="--d:80ms">
+            <span class="step__n">2</span>
+            <div class="step__body">
+              <span class="step__title">Распознавание</span>
+              <span class="step__desc">Парсим текст, находим вопросы, типы заданий и правильные ответы.</span>
+            </div>
+            <svg class="step__icon" width="34" height="34" viewBox="0 0 34 34" fill="none" aria-hidden="true">
+              <rect x="6" y="6" width="22" height="22" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M6 17h22" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M11 11h9M11 23h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+            </svg>
+          </div>
+
+          <div class="step" data-reveal="rise" style="--d:160ms">
+            <span class="step__n">3</span>
+            <div class="step__body">
+              <span class="step__title">Готовый тест</span>
+              <span class="step__desc">Интерактивный тест по ссылке. Ученики проходят, результат считается сам.</span>
+            </div>
+            <svg class="step__icon" width="34" height="34" viewBox="0 0 34 34" fill="none" aria-hidden="true">
+              <path d="M13 10H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9M21 24h5a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-9" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M13 17l3 3 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 3 · ТИПЫ ВОПРОСОВ ====================== -->
+    <section class="sec" id="types">
+      <div class="wrap">
+        <div class="sec__head">
+          <h2 class="h2" data-reveal>
+            <span class="ml"><span>Шесть типов</span></span>
+            <span class="ml"><span>заданий</span></span>
+          </h2>
+          <p class="sub">Распознаются и собираются автоматически.</p>
+        </div>
+
+        <div class="types">
+          <div class="type t1" data-reveal="rise">
+            <svg class="type__viz" viewBox="0 0 120 40" fill="none" aria-hidden="true">
+              <circle cx="10" cy="10" r="6" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="2.6" fill="currentColor"/>
+              <path d="M24 10h60" stroke="currentColor" stroke-width="1.5"/>
+              <circle cx="10" cy="30" r="6" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M24 30h44" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+            <div class="type__meta">
+              <div class="type__row"><span class="type__title">Один вариант</span><span class="type__tag">single</span></div>
+              <p class="type__desc">выбор одного ответа</p>
+            </div>
+          </div>
+
+          <div class="type t2" data-reveal="rise" style="--d:60ms">
+            <svg class="type__viz" viewBox="0 0 120 40" fill="none" aria-hidden="true">
+              <rect x="4" y="4" width="12" height="12" stroke="currentColor" stroke-width="1.5"/><path d="M7 10l2.5 2.5L14 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+              <path d="M24 10h50" stroke="currentColor" stroke-width="1.5"/>
+              <rect x="4" y="24" width="12" height="12" stroke="currentColor" stroke-width="1.5"/><path d="M7 30l2.5 2.5L14 28" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+              <path d="M24 30h38" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+            <div class="type__meta">
+              <div class="type__row"><span class="type__title">Несколько вариантов</span><span class="type__tag">multi</span></div>
+              <p class="type__desc">выбор нескольких</p>
+            </div>
+          </div>
+
+          <div class="type t3" data-reveal="rise" style="--d:120ms">
+            <svg class="type__viz" viewBox="0 0 120 40" fill="none" aria-hidden="true">
+              <circle cx="8" cy="10" r="3.5" fill="currentColor"/><circle cx="8" cy="30" r="3.5" fill="currentColor"/>
+              <circle cx="72" cy="10" r="3.5" stroke="currentColor" stroke-width="1.5"/><circle cx="72" cy="30" r="3.5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M8 10c30 0 34 20 64 20M8 30c30 0 34-20 64-20" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+            <div class="type__meta">
+              <div class="type__row"><span class="type__title">Сопоставление пар</span><span class="type__tag">match</span></div>
+              <p class="type__desc">связать левое с правым</p>
+            </div>
+          </div>
+
+          <div class="type t4" data-reveal="rise" style="--d:180ms">
+            <svg class="type__viz" viewBox="0 0 120 40" fill="none" aria-hidden="true">
+              <rect x="4" y="8" width="90" height="24" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M14 20h34" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M52 13v14" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+            <div class="type__meta">
+              <div class="type__row"><span class="type__title">Ввод текста</span><span class="type__tag">fill</span></div>
+              <p class="type__desc">ответ вводится, проверяет ИИ</p>
+            </div>
+          </div>
+
+          <div class="type t5" data-reveal="rise" style="--d:240ms">
+            <svg class="type__viz" viewBox="0 0 120 40" fill="none" aria-hidden="true">
+              <path d="M6 8h6v6H6zM6 26h6v6H6z" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M22 11h56M22 29h40" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M96 6v28M90 28l6 6 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+            </svg>
+            <div class="type__meta">
+              <div class="type__row"><span class="type__title">Упорядочивание</span><span class="type__tag">order</span></div>
+              <p class="type__desc">расставить по порядку</p>
+            </div>
+          </div>
+
+          <div class="type t6" data-reveal="rise" style="--d:300ms">
+            <svg class="type__viz" viewBox="0 0 120 40" fill="none" aria-hidden="true">
+              <rect x="4" y="12" width="34" height="16" rx="8" stroke="currentColor" stroke-width="1.5"/><circle cx="30" cy="20" r="5" fill="currentColor"/>
+              <path d="M52 20l4 4 8-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+              <path d="M78 15l10 10M88 15l-10 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+            </svg>
+            <div class="type__meta">
+              <div class="type__row"><span class="type__title">Верно / неверно</span><span class="type__tag">bool</span></div>
+              <p class="type__desc">утверждение true / false</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 4 · ГОТОВЫЙ ТЕСТ ======================= -->
+    <section class="sec" id="demo">
+      <div class="wrap">
+        <div class="sec__head">
+          <h2 class="h2" data-reveal>
+            <span class="ml"><span>Как выглядит</span></span>
+            <span class="ml"><span>готовый тест</span></span>
+          </h2>
+          <p class="sub">Прогресс, навигация по вопросам, автоматическая проверка.</p>
+        </div>
+
+        <div class="demo" data-reveal="rise">
+          <div class="demo__bar">
+            <span class="demo__progress">Вопрос 3 из 12</span>
+            <span class="demo__track"><span class="demo__fill"></span></span>
+          </div>
+          <div class="demo__nav" aria-hidden="true">
+            <b class="done">1</b><b class="done">2</b><b class="cur">3</b><b>4</b><b>5</b><b>6</b><b>7</b><b>8</b><b>9</b><b>10</b><b>11</b><b>12</b>
+          </div>
+          <div class="demo__q">
+            <p class="demo__qtext">Какая структура данных работает по принципу LIFO?</p>
+            <div class="demo__opts">
+              <div class="opt"><span class="opt__box"></span>Очередь</div>
+              <div class="opt correct"><span class="opt__box"></span>Стек</div>
+              <div class="opt"><span class="opt__box"></span>Связный список</div>
+              <div class="opt"><span class="opt__box"></span>Хеш-таблица</div>
+            </div>
+          </div>
+          <div class="demo__foot">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <circle cx="8" cy="8" r="6.4" stroke="currentColor" stroke-width="1.4"/>
+              <path d="M5.4 8.2l1.8 1.8 3.4-3.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"/>
+            </svg>
+            Автоматическая проверка
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 5 · ПРОФИЛЬ ОШИБОК ==================== -->
+    <section class="sec" id="profile">
+      <div class="wrap">
+        <div class="sec__head">
+          <h2 class="h2" data-reveal>
+            <span class="ml"><span>Ошибки — сразу</span></span>
+            <span class="ml"><span>в профиль ученика</span></span>
+          </h2>
+          <p class="sub">После теста ИИ группирует ошибки по темам и типам заданий. Видно, с чего начать урок.</p>
+        </div>
+
+        <div class="profile">
+          <div class="pcard" data-reveal="rise">
+            <span class="pcard__flag">Пример</span>
+            <span class="pcard__name">Анна К., 11 класс</span>
+            <div class="pcard__stats">
+              <span class="stat"><span class="stat__num" data-reveal data-count-to="12">12</span><span class="stat__lbl">тестов</span></span>
+              <span class="stat"><span class="stat__num" data-reveal data-count-to="38">38</span><span class="stat__lbl">ошибок</span></span>
+            </div>
+          </div>
+
+          <div class="weak" data-reveal="rise" style="--d:80ms">
+            <div class="weak__row">
+              <span class="weak__topic">Производные</span>
+              <span class="weak__meter"><i style="width:78%"></i></span>
+              <span class="weak__type">single · fill</span>
+            </div>
+            <div class="weak__row">
+              <span class="weak__topic">Стереометрия</span>
+              <span class="weak__meter"><i style="width:52%"></i></span>
+              <span class="weak__type">match · order</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 6 · ЧЕСТНЫЕ ЛИМИТЫ ==================== -->
+    <section class="sec" id="limits">
+      <div class="wrap">
+        <div class="sec__head">
+          <h2 class="h2" data-reveal>
+            <span class="ml"><span>Честно про лимиты</span></span>
+          </h2>
+        </div>
+
+        <div class="limits" data-reveal="rise">
+          <div class="limit">
+            <span class="limit__tier">Гость</span>
+            <p class="limit__val">5 вопросов с одной страницы · только PDF</p>
+          </div>
+          <div class="limit vip">
+            <span class="limit__tier">Авторизованный</span>
+            <p class="limit__val">до 20 вопросов · PDF + DOCX, TXT, RTF, ODT (VIP)</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 7 · FAQ ============================== -->
+    <section class="sec" id="faq">
+      <div class="wrap">
+        <div class="sec__head">
+          <h2 class="h2" data-reveal>
+            <span class="ml"><span>Коротко</span></span>
+            <span class="ml"><span>о главном</span></span>
+          </h2>
+        </div>
+
+        <div class="faq" data-reveal="rise">
+          <details class="faq__item">
+            <summary>А картинки и формулы?<span class="faq__sign" aria-hidden="true"></span></summary>
+            <p class="faq__a">Текстовые формулы распознаём; картинки прикрепляем к вопросу — поправишь в редакторе.</p>
+          </details>
+          <details class="faq__item">
+            <summary>Насколько точно?<span class="faq__sign" aria-hidden="true"></span></summary>
+            <p class="faq__a">Если в файле есть правильные ответы — точно. Если нет — ИИ проставит по смыслу, стоит проверить.</p>
+          </details>
+          <details class="faq__item">
+            <summary>Нужен аккаунт?<span class="faq__sign" aria-hidden="true"></span></summary>
+            <p class="faq__a">Попробовать можно гостем. Сохранить и поделиться — после входа.</p>
+          </details>
+          <details class="faq__item">
+            <summary>Сколько ждать?<span class="faq__sign" aria-hidden="true"></span></summary>
+            <p class="faq__a">Около минуты на документ.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 8 · ФИНАЛЬНЫЙ CTA + ФУТЕР ============= -->
+    <section class="final">
+      <div class="wrap">
+        <h2 class="final__phrase" data-reveal>
+          <span class="ml"><span>Загрузи первый</span></span>
+          <span class="ml"><span>документ.</span></span>
+        </h2>
+        <div class="final__cta">
+          <a class="btn" href="#">
+            Загрузить PDF
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <footer class="site wrap">
+      <span>PDF → Тест — часть GoodWorker</span>
+      <nav aria-label="Служебные ссылки">
+        <a href="#">Приватность</a>
+        <a href="#">Условия</a>
+        <a href="#">Контакты</a>
+      </nav>
+    </footer>
+  </main>
+
+  <!-- Общие контракты из тикета 01 -->
+  <script src="shared/switcher.js" defer></script>
+  <script src="shared/reveal-core.js" defer></script>
+
+  <!-- Мир V1: hero-скраб (единственный авторский моушен-момент) + счётчики -->
+  <script>
+    (function () {
+      'use strict';
+      var clamp = function (x) { return x < 0 ? 0 : x > 1 ? 1 : x; };
+      var reduced = window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var canScrub = window.matchMedia &&
+        window.matchMedia('(min-width: 900px)').matches;
+
+      function initHero() {
+        var hero = document.getElementById('top');
+        if (!hero) return;
+        var stage = hero.querySelector('.hero__stage');
+        var callouts = [].slice.call(hero.querySelectorAll('.callout'));
+        var stageEls = [].slice.call(hero.querySelectorAll('.stages__i'));
+        var TH = [0.06, 0.24, 0.42, 0.60, 0.82];
+
+        // Статичный (reduced-motion / нет IO / узкий экран): финальное собранное
+        // состояние, все указатели видимы, без дорожки скраба.
+        if (reduced || typeof window.IntersectionObserver === 'undefined' || !canScrub) {
+          callouts.forEach(function (c) { c.classList.add('on'); });
+          return;
+        }
+
+        hero.classList.add('hero--scrub');
+        var ticking = false;
+
+        function update() {
+          ticking = false;
+          var rect = hero.getBoundingClientRect();
+          var total = hero.offsetHeight - window.innerHeight;
+          var p = total > 0 ? clamp(-rect.top / total) : 0;
+
+          var scan = clamp(p / 0.30);
+          var recog = clamp((p - 0.18) / 0.30);
+          var build = clamp((p - 0.45) / 0.40);
+          if (stage) {
+            stage.style.setProperty('--scan', scan.toFixed(3));
+            stage.style.setProperty('--recog', recog.toFixed(3));
+            stage.style.setProperty('--build', build.toFixed(3));
+          }
+          for (var i = 0; i < callouts.length; i++) {
+            if (p >= TH[i]) callouts[i].classList.add('on');
+            else callouts[i].classList.remove('on');
+          }
+          var idx = p < 0.22 ? 0 : p < 0.48 ? 1 : p < 0.78 ? 2 : 3;
+          for (var j = 0; j < stageEls.length; j++) {
+            stageEls[j].classList.toggle('is-active', j <= idx);
+          }
+        }
+
+        function onScroll() {
+          if (!ticking) { ticking = true; window.requestAnimationFrame(update); }
+        }
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll);
+        update();
+      }
+
+      // Счётчики 0→N — стартуют, когда reveal-core повесит .is-in.
+      function animateCount(el, target) {
+        if (reduced) { el.textContent = String(target); return; }
+        var start = null, dur = 900;
+        function tick(ts) {
+          if (start === null) start = ts;
+          var t = clamp((ts - start) / dur);
+          var eased = 1 - Math.pow(1 - t, 3);
+          el.textContent = String(Math.round(eased * target));
+          if (t < 1) window.requestAnimationFrame(tick);
+          else el.textContent = String(target);
+        }
+        el.textContent = '0';
+        window.requestAnimationFrame(tick);
+      }
+
+      function initCounters() {
+        var nodes = [].slice.call(document.querySelectorAll('[data-count-to]'));
+        nodes.forEach(function (el) {
+          var target = parseInt(el.getAttribute('data-count-to'), 10) || 0;
+          if (el.classList.contains('is-in')) { animateCount(el, target); return; }
+          if (typeof window.MutationObserver === 'undefined') { el.textContent = String(target); return; }
+          var mo = new window.MutationObserver(function () {
+            if (el.classList.contains('is-in')) { mo.disconnect(); animateCount(el, target); }
+          });
+          mo.observe(el, { attributes: true, attributeFilter: ['class'] });
+        });
+      }
+
+      function boot() { initHero(); initCounters(); }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot);
+      } else { boot(); }
+    })();
+  </script>
+</body>
+</html>
