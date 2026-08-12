@@ -1,10 +1,19 @@
+// ── Dark palette ──────────────────────────────────────────────────────────────
+$bg-dark: #0d0c14;
+$surface-dark: #16141f;
+$tile-grad: linear-gradient(150deg, #26233a, #1b1928);
+$main-tile-grad: linear-gradient(150deg, #2a2550, #1c1830);
+$border-dark: rgba(255, 255, 255, 0.07);
+$accent: #5b3fd6;
+$accent-2: #7c5cf0;
+$danger: #e0374f;
+$success: #16a34a;
+
+// Light palette (used for overlapping modals, lobby)
 $bg: #f1f5f9;
 $bg-card: #ffffff;
 $bg-tile: #e2e8f0;
 $border: rgba(0, 0, 0, 0.08);
-$accent: #7c3aed;
-$danger: #dc2626;
-$success: #16a34a;
 $text: #0f172a;
 $text-dim: #475569;
 $text-muted: #94a3b8;
@@ -12,12 +21,13 @@ $text-muted: #94a3b8;
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 .page {
-  height: 100dvh;
-  background: $bg;
+  flex: 1;
+  min-height: 0;
+  background: $bg-dark;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  color: $text;
+  color: #fff;
 }
 
 // ── Lobby ─────────────────────────────────────────────────────────────────────
@@ -28,6 +38,7 @@ $text-muted: #94a3b8;
   align-items: center;
   justify-content: center;
   padding: 24px;
+  background: $bg;
 }
 
 .lobbyCard {
@@ -114,6 +125,24 @@ $text-muted: #94a3b8;
   &:hover { opacity: 0.85; }
 }
 
+.limitBlockedIcon { font-size: 40px; text-align: center; margin-bottom: 12px; }
+.limitBlockedTitle { font-size: 20px; font-weight: 700; color: $text; text-align: center; margin-bottom: 8px; }
+.limitBlockedDesc { font-size: 14px; color: $text-dim; text-align: center; line-height: 1.5; margin-bottom: 24px; }
+.lobbyBackBtn {
+  margin: 0 auto;
+  display: block;
+  padding: 10px 28px;
+  background: $text;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  &:hover { opacity: 0.8; }
+}
+
 // ── Call layout ───────────────────────────────────────────────────────────────
 
 .call {
@@ -122,19 +151,20 @@ $text-muted: #94a3b8;
   flex-direction: column;
   overflow: hidden;
   position: relative;
+  background: $bg-dark;
 }
 
-// ── Top bar ───────────────────────────────────────────────────────────────────
+// ── Top bar (dark themed) ─────────────────────────────────────────────────────
 
 .topBar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 24px;
-  border-bottom: 1px solid $border;
+  padding: 10px 20px;
+  background: rgba(13, 12, 20, 0.96);
+  border-bottom: 1px solid $border-dark;
   flex-shrink: 0;
-  background: $bg-card;
-  box-shadow: 0 1px 0 $border;
+  z-index: 10;
 }
 
 .topBarLeft {
@@ -154,21 +184,21 @@ $text-muted: #94a3b8;
   height: 8px;
   border-radius: 50%;
   background: $success;
-  box-shadow: 0 0 6px rgba(22, 163, 74, 0.5);
+  box-shadow: 0 0 6px rgba(22, 163, 74, 0.6);
   flex-shrink: 0;
 }
 
 .topRoom {
   font-size: 14px;
   font-weight: 600;
-  color: $text;
+  color: rgba(255,255,255,0.9);
 }
 
 .topTopic {
   font-size: 12px;
-  color: $accent;
-  background: rgba(124, 58, 237, 0.08);
-  border: 1px solid rgba(124, 58, 237, 0.2);
+  color: #b9a6ff;
+  background: rgba(91, 63, 214, 0.2);
+  border: 1px solid rgba(91, 63, 214, 0.35);
   padding: 2px 10px;
   border-radius: 999px;
   max-width: 260px;
@@ -179,17 +209,17 @@ $text-muted: #94a3b8;
 
 .topStatus {
   font-size: 12px;
-  color: $text-dim;
-  background: rgba(0, 0, 0, 0.04);
-  border: 1px solid $border;
+  color: rgba(255,255,255,0.45);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid $border-dark;
   padding: 2px 10px;
   border-radius: 999px;
 }
 
 .topUser {
-  background: rgba(124, 58, 237, 0.08);
-  border: 1px solid rgba(124, 58, 237, 0.2);
-  color: $accent;
+  background: rgba(91, 63, 214, 0.2);
+  border: 1px solid rgba(91, 63, 214, 0.35);
+  color: #b9a6ff;
   padding: 4px 12px;
   border-radius: 999px;
   font-size: 12px;
@@ -202,7 +232,7 @@ $text-muted: #94a3b8;
   gap: 5px;
   background: rgba(251, 191, 36, 0.12);
   border: 1px solid rgba(251, 191, 36, 0.3);
-  color: #b45309;
+  color: #fbbf24;
   padding: 4px 10px;
   border-radius: 999px;
   font-size: 11px;
@@ -213,26 +243,362 @@ $text-muted: #94a3b8;
   display: flex;
   align-items: center;
   gap: 5px;
-  background: rgba(22, 163, 74, 0.08);
-  border: 1px solid rgba(22, 163, 74, 0.25);
-  color: $success;
+  background: rgba(22, 163, 74, 0.12);
+  border: 1px solid rgba(22, 163, 74, 0.3);
+  color: #4ade80;
   padding: 4px 10px;
   border-radius: 999px;
   font-size: 11px;
   font-weight: 600;
 }
 
-// ── Video area ────────────────────────────────────────────────────────────────
+// ── Call room (replaces videoArea) ────────────────────────────────────────────
 
+.callroom {
+  flex: 1;
+  position: relative;
+  background: $bg-dark;
+  overflow: hidden;
+
+  &.gridMode {
+    .stage {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      grid-auto-rows: 1fr;
+      gap: 14px;
+      padding: 20px;
+    }
+    .rail { display: contents; }
+    .mainTile { flex: none; width: auto; height: 100%; min-height: 160px; }
+    .railTileWrap { height: 100%; min-height: 160px; }
+    .selfCluster { display: none; }
+  }
+}
+
+// legacy alias — kept so split/grid mode VideoLayout still works
 .videoArea {
   flex: 1;
   overflow: hidden;
   position: relative;
-  background: $bg;
+  background: $bg-dark;
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
+// ── Stage layout (pip / new design) ──────────────────────────────────────────
+
+.stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  gap: 14px;
+  padding: 20px 20px 108px;
+}
+
+.mainTile {
+  flex: 1;
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  background: $main-tile-grad;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Self preview + captions cluster in bottom-left of main tile
+.selfCluster {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  z-index: 3;
+}
+
+.selfPip {
+  width: 150px;
+  height: 104px;
+  border-radius: 13px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.4);
+  flex-shrink: 0;
+  position: relative;
+  background: linear-gradient(150deg, #3a2a8f, #5b3fd6);
+}
+
+// Right rail of participant thumbnails
+.rail {
+  width: 158px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  padding-right: 2px;
+
+  &::-webkit-scrollbar { width: 3px; }
+  &::-webkit-scrollbar-thumb { background: #3a3750; border-radius: 4px; }
+}
+
+.railTileWrap {
+  height: 108px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  position: relative;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.15s;
+
+  &:hover { border-color: rgba(124, 92, 240, 0.7); }
+  &.speaking { border-color: #8a6cf2; box-shadow: 0 0 0 3px rgba(138, 108, 242, 0.25); }
+
+  // Better background for no-video tiles
+  .tile { background: linear-gradient(160deg, #211e35, #191728); }
+
+  // Proper avatar size inside rail tile
+  .avatar {
+    width: 52px;
+    height: 52px;
+    font-size: 18px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  }
+}
+
+// ── Tablet / small desktop (641–1150px): icon-only buttons ───────────────────
+
+@media (max-width: 1150px) and (min-width: 641px) {
+  .cbTool {
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    gap: 0;
+    border-radius: 50%;
+    font-size: 0;
+    justify-content: center;
+    svg { width: 18px; height: 18px; flex-shrink: 0; }
+  }
+  .cbNotes {
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    gap: 0;
+    border-radius: 50%;
+    font-size: 0;
+    justify-content: center;
+    svg { margin: 0; }
+  }
+  .cbEnd {
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    gap: 0;
+    border-radius: 50%;
+    font-size: 0;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 900px) and (min-width: 641px) {
+  .cbGroupLeft { display: none; }
+}
+
+// ── Mobile responsive (≤640px) ───────────────────────────────────────────────
+
+@media (max-width: 640px) {
+  .topBar {
+    padding: 10px 14px;
+  }
+  .topTopic { display: none; }
+  .topOwner { display: none; }
+
+  .callroom {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  // On mobile stage is a flex column: main tile fills space, rail is a horizontal strip below
+  .stage {
+    position: static;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 10px 10px 0;
+    gap: 8px;
+  }
+
+  .mainTile {
+    flex: 1;
+    min-height: 0;
+    border-radius: 16px;
+  }
+
+  .selfCluster {
+    left: 8px;
+    bottom: 8px;
+  }
+
+  .selfPip {
+    width: 60px;
+    height: 44px;
+    border-radius: 10px;
+  }
+
+  // Rail becomes a horizontal scroll strip on mobile
+  .rail {
+    width: auto;
+    height: 86px;
+    min-height: 86px;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 8px;
+    padding: 0 4px 4px;
+    flex-shrink: 0;
+    &::-webkit-scrollbar { height: 3px; width: auto; }
+  }
+
+  .railTileWrap {
+    width: 68px;
+    height: 80px;
+    min-height: 80px;
+    border-radius: 12px;
+    flex-shrink: 0;
+
+    // Properly sized avatar in mobile rail
+    .avatar {
+      width: 34px;
+      height: 34px;
+      font-size: 12px;
+    }
+  }
+
+  // Mobile controlbar: position static (part of flex column), compact round buttons
+  .controlbar {
+    position: static;
+    height: auto;
+    padding: 12px 20px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    background: rgba(13, 12, 20, 0.98);
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    justify-content: space-around;
+    gap: 0;
+
+    // Hide tooltip pseudo-elements on mobile (no hover)
+    [data-tip]::after { display: none; }
+  }
+
+  // Desktop groups hidden on mobile
+  .cbGroupLeft { display: none; }
+
+  .cbGroupRight {
+    flex: 0;
+    gap: 0;
+    // Hide notes and invite on mobile — moved to bottom sheet
+    .cbNotes,
+    .cbTool { display: none; }
+  }
+
+  .cbEnd {
+    // Round button on mobile — hide text
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    padding: 0;
+    gap: 0;
+    font-size: 0;
+    justify-content: center;
+    svg { width: 20px; height: 20px; }
+  }
+
+  .cbRound {
+    width: 50px;
+    height: 50px;
+  }
+
+  // "More" button (⋯) — only on mobile
+  .cbMore {
+    display: flex;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s;
+    &:hover { background: rgba(255, 255, 255, 0.18); }
+  }
+
+  // Bottom sheet ("more" actions on mobile)
+  .moreSheetBackdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(6, 5, 12, 0.55);
+    z-index: 30;
+    display: flex;
+    align-items: flex-end;
+  }
+
+  .moreSheet {
+    background: #16141f;
+    border-radius: 22px 22px 0 0;
+    padding: 6px 0 calc(20px + env(safe-area-inset-bottom, 0px));
+    width: 100%;
+    max-height: 70%;
+  }
+
+  .moreGrip {
+    width: 36px;
+    height: 4px;
+    background: #3a3750;
+    border-radius: 3px;
+    margin: 8px auto 16px;
+  }
+
+  .moreSheetTitle {
+    font-size: 15px;
+    font-weight: 800;
+    color: #fff;
+    padding: 0 18px 10px;
+  }
+
+  .moreItem {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 14px 18px;
+    border-bottom: 1px solid #241f34;
+    color: #fff;
+    font-size: 14.5px;
+    font-weight: 600;
+    background: none;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    svg { width: 19px; height: 19px; color: #b9a6ff; flex-shrink: 0; }
+    &:last-child { border-bottom: none; }
+    &.moreDanger { color: #ff7a7a; svg { color: #ff7a7a; } }
+  }
+}
+
+// cbMore hidden on desktop
+.cbMore { display: none; }
+.moreSheetBackdrop { display: none; }
 
 // ── Waiting ───────────────────────────────────────────────────────────────────
 
@@ -241,7 +607,7 @@ $text-muted: #94a3b8;
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  color: $text-muted;
+  color: rgba(255,255,255,0.4);
   font-size: 14px;
 
   p { margin: 0; }
@@ -251,7 +617,7 @@ $text-muted: #94a3b8;
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  border: 2px solid rgba(124, 58, 237, 0.25);
+  border: 2px solid rgba(91, 63, 214, 0.4);
   position: relative;
 
   &::after {
@@ -259,7 +625,7 @@ $text-muted: #94a3b8;
     position: absolute;
     inset: 6px;
     border-radius: 50%;
-    background: rgba(124, 58, 237, 0.15);
+    background: rgba(91, 63, 214, 0.25);
     animation: pulse 2s ease-in-out infinite;
   }
 }
@@ -269,7 +635,7 @@ $text-muted: #94a3b8;
   50% { transform: scale(1.3); opacity: 0.4; }
 }
 
-// ── PiP layout ────────────────────────────────────────────────────────────────
+// ── Old pip area (kept for reference / split-mode fallback) ───────────────────
 
 .pipArea {
   position: relative;
@@ -293,13 +659,13 @@ $text-muted: #94a3b8;
   border-radius: 12px;
   overflow: hidden;
   z-index: 10;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   cursor: grab;
   touch-action: none;
   user-select: none;
   transition: box-shadow 0.15s;
 
-  &:active { cursor: grabbing; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28); }
+  &:active { cursor: grabbing; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); }
 
   .tile {
     width: 100%;
@@ -326,9 +692,7 @@ $text-muted: #94a3b8;
     aspect-ratio: unset;
   }
 
-  @media (max-width: 640px) {
-    flex-direction: column;
-  }
+  @media (max-width: 640px) { flex-direction: column; }
 }
 
 // ── Grid layout ───────────────────────────────────────────────────────────────
@@ -342,14 +706,8 @@ $text-muted: #94a3b8;
   grid-template-columns: repeat(2, 1fr);
   grid-auto-rows: 1fr;
 
-  &[data-count='1'] {
-    grid-template-columns: 1fr;
-  }
-
-  &[data-count='3'],
-  &[data-count='4'] {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  &[data-count='1'] { grid-template-columns: 1fr; }
+  &[data-count='3'], &[data-count='4'] { grid-template-columns: repeat(2, 1fr); }
 
   .tile {
     width: 100%;
@@ -363,21 +721,15 @@ $text-muted: #94a3b8;
 
 .tile {
   position: relative;
-  background: $bg-tile;
-  border: 1px solid $border;
-  border-radius: 12px;
+  background: $tile-grad;
   overflow: hidden;
-  aspect-ratio: 16 / 9;
-  flex: 1 1 calc(50% - 4px);
-  min-width: 280px;
+  width: 100%;
+  height: 100%;
 }
 
-.tileLocal {
-  border-color: rgba(124, 58, 237, 0.35);
-}
+.tileLocal {}
 
 .tileLarge {
-  flex: none !important;
   width: 100% !important;
   height: 100% !important;
   aspect-ratio: unset !important;
@@ -400,7 +752,6 @@ $text-muted: #94a3b8;
   height: 100%;
   object-fit: cover;
   display: block;
-  background: $bg-tile;
 }
 
 .noVideo {
@@ -409,21 +760,30 @@ $text-muted: #94a3b8;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: $bg-tile;
 }
 
+// Small avatar (rail / self-pip)
 .avatar {
-  width: 64px;
-  height: 64px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 26px;
+  font-size: 17px;
   font-weight: 700;
   color: #fff;
   letter-spacing: -0.5px;
   flex-shrink: 0;
+}
+
+// Large avatar in main tile
+.tileLarge .avatar {
+  width: 150px;
+  height: 150px;
+  font-size: 52px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #6d5bd0, #9b6cf0, #f0975a) !important;
 }
 
 .avatarImg {
@@ -432,36 +792,40 @@ $text-muted: #94a3b8;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
-  border: 2px solid rgba(0, 0, 0, 0.08);
+}
+
+.tileLarge .avatarImg {
+  width: 150px;
+  height: 150px;
 }
 
 // ── Tile meta ─────────────────────────────────────────────────────────────────
 
 .tileMeta {
   position: absolute;
-  bottom: 10px;
-  left: 10px;
-  right: 10px;
+  bottom: 0;
+  left: 0;
+  right: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 6px;
+  padding: 5px 7px;
   pointer-events: none;
+  z-index: 2;
 }
 
 .tileName {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(6px);
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-size: 11px;
+  background: rgba(0, 0, 0, 0.38);
+  padding: 4px 7px;
+  border-radius: 7px;
+  font-size: 12px;
   font-weight: 600;
-  color: $text;
-  max-width: 60%;
+  color: #fff;
+  max-width: 70%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
 }
 
 .tileBadges {
@@ -472,67 +836,61 @@ $text-muted: #94a3b8;
 }
 
 .badgeYou {
-  background: rgba(124, 58, 237, 0.15);
-  border: 1px solid rgba(124, 58, 237, 0.3);
-  color: $accent;
-  padding: 2px 8px;
-  border-radius: 999px;
+  background: rgba(91, 63, 214, 0.4);
+  border: 1px solid rgba(91, 63, 214, 0.5);
+  color: #d4c8ff;
+  padding: 2px 6px;
+  border-radius: 6px;
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.4px;
 }
 
 .badgeOwner {
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(4px);
-  padding: 3px 7px;
-  border-radius: 999px;
-  color: #b45309;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  background: rgba(0, 0, 0, 0.4);
+  padding: 3px 6px;
+  border-radius: 6px;
+  color: #fbbf24;
 }
 
 .badgeSpeaker {
   display: flex;
   align-items: center;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(4px);
-  padding: 3px 7px;
-  border-radius: 999px;
-  color: $success;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  background: rgba(0, 0, 0, 0.4);
+  padding: 3px 6px;
+  border-radius: 6px;
+  color: #4ade80;
 }
 
 .mutedIcon {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  bottom: 7px;
+  right: 7px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: rgba(220, 38, 38, 0.85);
-  backdrop-filter: blur(4px);
+  background: #ff5b5b;
   color: #fff;
   pointer-events: none;
+  z-index: 3;
 }
 
-// Local audio off (only affects your own hearing, not the stream)
 .localMutedIcon {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 7px;
+  left: 7px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: rgba(71, 85, 105, 0.8);
-  backdrop-filter: blur(4px);
+  background: rgba(71, 85, 105, 0.85);
   color: #fff;
   pointer-events: none;
 }
@@ -541,13 +899,14 @@ $text-muted: #94a3b8;
 
 .tileActions {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 8px;
+  right: 8px;
   display: flex;
   flex-direction: column;
   gap: 4px;
   opacity: 0;
   transition: opacity 0.18s;
+  z-index: 4;
 
   .tile:hover & { opacity: 1; }
 }
@@ -556,35 +915,182 @@ $text-muted: #94a3b8;
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 5px 10px;
-  border-radius: 8px;
+  padding: 4px 8px;
+  border-radius: 7px;
   border: none;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.72);
   backdrop-filter: blur(6px);
-  color: $text;
+  color: #fff;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  transition: background 0.15s, box-shadow 0.15s;
+  transition: background 0.15s;
 
-  &:hover {
-    background: #fff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  }
+  &:hover { background: rgba(0, 0, 0, 0.9); }
 }
 
 .actionBtnDanger {
-  color: $danger;
+  color: #ff8080;
+  &:hover { background: #e0374f; color: #fff; }
+}
 
-  &:hover {
-    background: $danger;
-    color: #fff;
+// ── Control bar (new design) ──────────────────────────────────────────────────
+
+.controlbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 88px;
+  padding: 0 22px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(0deg, rgba(6,5,12,.82), rgba(6,5,12,.52) 72%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 5;
+
+  // CSS tooltips for data-tip buttons
+  [data-tip] {
+    position: relative;
+    &::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 9px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1c1a26;
+      border: 1px solid #2c2942;
+      color: #d0c8ff;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+      padding: 5px 11px;
+      border-radius: 7px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.14s;
+      z-index: 50;
+    }
+    &:hover::after { opacity: 1; }
   }
 }
 
-// ── Controls bar ──────────────────────────────────────────────────────────────
+.cbGroupLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.cbGroupCenter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cbGroupRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.cbTool {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+
+  &:hover { background: rgba(255, 255, 255, 0.16); }
+}
+
+.cbToolActive {
+  background: rgba(91, 63, 214, 0.35);
+  border-color: rgba(91, 63, 214, 0.5);
+
+  &:hover { background: rgba(91, 63, 214, 0.45); }
+}
+
+.cbRound {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+
+  &:hover { background: rgba(255, 255, 255, 0.18); }
+}
+
+.cbRoundOff {
+  background: #ff5b5b;
+  &:hover { background: #ff4747; }
+}
+
+.cbEnd {
+  height: 52px;
+  padding: 0 20px;
+  border: none;
+  border-radius: 16px;
+  background: $danger;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  transition: background 0.15s;
+
+  &:hover { background: #c92a41; }
+}
+
+.cbNotes {
+  height: 52px;
+  padding: 0 18px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  transition: background 0.15s;
+
+  &:hover { background: rgba(255, 255, 255, 0.15); }
+}
+
+.cbNotesActive {
+  background: rgba(91, 63, 214, 0.3);
+  border-color: rgba(91, 63, 214, 0.5);
+}
+
+// ── Legacy controls (kept for split/grid fallback) ────────────────────────────
 
 .controls {
   display: flex;
@@ -593,8 +1099,8 @@ $text-muted: #94a3b8;
   flex-wrap: wrap;
   gap: 8px;
   padding: 8px 20px;
-  border-top: 1px solid $border;
-  background: $bg-card;
+  border-top: 1px solid $border-dark;
+  background: rgba(13, 12, 20, 0.9);
   flex-shrink: 0;
 
   @media (max-width: 680px) {
@@ -609,14 +1115,12 @@ $text-muted: #94a3b8;
   left: 0;
   right: 0;
   z-index: 20;
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid rgba(0, 0, 0, 0.07);
+  background: rgba(6, 5, 12, 0.7);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid $border-dark;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.22s ease;
-  // Pip thumbnails sit at right:16px (200px wide) — keep buttons on the left
   justify-content: flex-start;
   padding-right: 230px;
 }
@@ -646,8 +1150,6 @@ $text-muted: #94a3b8;
   align-items: center;
 }
 
-// display:contents passes children directly into the parent flex — kept for desktop,
-// on mobile just becomes a normal flex row that also wraps.
 .ctrlBottomRow {
   display: contents;
 
@@ -660,41 +1162,36 @@ $text-muted: #94a3b8;
   }
 }
 
-// ── Pill buttons ──────────────────────────────────────────────────────────────
-
 .pill {
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
   border-radius: 999px;
-  border: 1px solid $border;
-  background: rgba(0, 0, 0, 0.04);
-  color: $text-dim;
+  border: 1px solid $border-dark;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255,255,255,0.7);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.18s;
 
   &:hover {
-    background: rgba(0, 0, 0, 0.08);
-    color: $text;
-    border-color: rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
   }
 }
 
 .pillActive {
-  background: rgba(22, 163, 74, 0.08);
-  border-color: rgba(22, 163, 74, 0.3);
-  color: $success;
+  background: rgba(22, 163, 74, 0.15);
+  border-color: rgba(22, 163, 74, 0.4);
+  color: #4ade80;
 
   &:hover {
-    background: rgba(22, 163, 74, 0.14);
-    color: $success;
+    background: rgba(22, 163, 74, 0.22);
+    color: #4ade80;
   }
 }
-
-// ── Round buttons ─────────────────────────────────────────────────────────────
 
 .roundBtn {
   display: flex;
@@ -718,38 +1215,35 @@ $text-muted: #94a3b8;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.06);
-  border: 1.5px solid rgba(0, 0, 0, 0.1);
-  color: $text-dim;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255,255,255,0.85);
   transition: all 0.2s;
-
-  @media (max-width: 600px) { width: 40px; height: 40px; }
 }
 
 .roundLabel {
   font-size: 11px;
   font-weight: 500;
-  color: $text-muted;
+  color: rgba(255,255,255,0.5);
   white-space: nowrap;
-  letter-spacing: 0.2px;
 }
 
 .roundOn {
   .roundIcon {
-    background: rgba(22, 163, 74, 0.1);
-    border-color: rgba(22, 163, 74, 0.4);
-    color: $success;
+    background: rgba(22, 163, 74, 0.15);
+    border-color: rgba(22, 163, 74, 0.5);
+    color: #4ade80;
   }
-  .roundLabel { color: $success; }
+  .roundLabel { color: #4ade80; }
 }
 
 .roundOff {
   .roundIcon {
-    background: rgba(220, 38, 38, 0.08);
-    border-color: rgba(220, 38, 38, 0.3);
-    color: $danger;
+    background: rgba(224, 55, 79, 0.2);
+    border-color: rgba(224, 55, 79, 0.45);
+    color: #ff8080;
   }
-  .roundLabel { color: $danger; }
+  .roundLabel { color: #ff8080; }
 }
 
 .roundLeave {
@@ -757,18 +1251,16 @@ $text-muted: #94a3b8;
     background: $danger;
     border-color: $danger;
     color: #fff;
-    width: 44px;
-    height: 44px;
   }
-  .roundLabel { color: $danger; }
+  .roundLabel { color: #ff8080; }
 
   &:hover .roundIcon {
-    background: #b91c1c;
-    border-color: #b91c1c;
+    background: #c92a41;
+    border-color: #c92a41;
   }
 }
 
-// ── Live caption overlay (main speaker tile) ──────────────────────────────────
+// ── Live caption overlay ──────────────────────────────────────────────────────
 
 .liveCaption {
   position: absolute;
@@ -794,13 +1286,7 @@ $text-muted: #94a3b8;
   transition: opacity 0.18s ease;
 }
 
-.liveCaptionCollapsed {
-  opacity: 0.5;
-
-  &:hover {
-    opacity: 1;
-  }
-}
+.liveCaptionCollapsed { opacity: 0.5; &:hover { opacity: 1; } }
 
 .liveCaptionHeader {
   display: flex;
@@ -821,9 +1307,7 @@ $text-muted: #94a3b8;
   border-radius: 10px 10px 0 0;
   transition: background 0.15s ease;
 
-  &:hover {
-    background: rgba(255, 255, 255, 0.06);
-  }
+  &:hover { background: rgba(255, 255, 255, 0.06); }
 }
 
 .liveCaptionBody {
@@ -853,10 +1337,7 @@ $text-muted: #94a3b8;
   font-size: 12px;
 }
 
-// On the pip large tile, push caption above the controls overlay (~80px) + 25px gap
-.tileLarge .liveCaption {
-  bottom: 110px;
-}
+.tileLarge .liveCaption { bottom: 110px; }
 
 // ── Screen share panel ────────────────────────────────────────────────────────
 
@@ -864,7 +1345,7 @@ $text-muted: #94a3b8;
   position: absolute;
   inset: 0;
   z-index: 18;
-  background: #111;
+  background: #0a0810;
   display: flex;
   flex-direction: column;
   animation: captionFadeIn 0.18s ease;
@@ -875,7 +1356,7 @@ $text-muted: #94a3b8;
   align-items: center;
   justify-content: space-between;
   padding: 8px 16px;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.7);
   color: rgba(255, 255, 255, 0.9);
   font-size: 13px;
   font-weight: 500;
@@ -894,8 +1375,7 @@ $text-muted: #94a3b8;
   cursor: pointer;
   flex-shrink: 0;
   transition: background 0.15s ease;
-
-  &:hover { background: #b91c1c; }
+  &:hover { background: #c92a41; }
 }
 
 .screenShareVideo {
@@ -910,7 +1390,7 @@ $text-muted: #94a3b8;
 
 .toast {
   position: fixed;
-  bottom: 80px;
+  bottom: 100px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 200;
@@ -928,7 +1408,7 @@ $text-muted: #94a3b8;
 }
 
 .toastLoading {
-  background: rgba(15, 23, 42, 0.88);
+  background: rgba(22, 20, 31, 0.92);
   color: rgba(255, 255, 255, 0.92);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -954,9 +1434,7 @@ $text-muted: #94a3b8;
   to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 @keyframes captionFadeIn {
   from { opacity: 0; transform: translateY(3px); }
@@ -968,90 +1446,91 @@ $text-muted: #94a3b8;
   50%       { opacity: 0.25; }
 }
 
-// ── Notes panel (live transcript sidebar) ─────────────────────────────────────
+// ── Notes panel — dark modal overlay ─────────────────────────────────────────
 
 .notesPanel {
   position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 272px;
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-left: 1px solid $border;
-  z-index: 25;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 40;
+  background: rgba(8, 6, 16, 0.6);
+  animation: captionFadeIn 0.18s ease;
+}
+
+.notesPanelInner {
+  width: 520px;
+  max-height: 78%;
+  background: #16141f;
+  border: 1px solid #2c2942;
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: slideInRight 0.2s ease;
-}
-
-@keyframes slideInRight {
-  from { transform: translateX(100%); }
-  to   { transform: translateX(0); }
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
 }
 
 .notesPanelHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
-  border-bottom: 1px solid $border;
-  font-size: 13px;
-  font-weight: 600;
-  color: $text;
+  padding: 18px 20px;
+  border-bottom: 1px solid #262338;
+  font-size: 17px;
+  font-weight: 800;
+  color: #fff;
   flex-shrink: 0;
 }
 
 .notesSrWarning {
   font-size: 10px;
   font-weight: 600;
-  color: #b45309;
+  color: #fbbf24;
   background: rgba(251, 191, 36, 0.12);
   border: 1px solid rgba(251, 191, 36, 0.3);
   padding: 2px 7px;
   border-radius: 999px;
-  letter-spacing: 0.3px;
 }
 
 .notesPanelClose {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
   border: none;
-  background: rgba(0, 0, 0, 0.06);
-  color: $text-dim;
+  background: #221f30;
+  color: #c9c6d8;
   cursor: pointer;
+  font-size: 15px;
   transition: background 0.15s;
 
-  &:hover { background: rgba(0, 0, 0, 0.12); color: $text; }
+  &:hover { background: #2b2740; }
 }
 
 .notesList {
   flex: 1;
   overflow-y: auto;
-  padding: 12px 14px;
+  padding: 16px 20px 22px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 14px;
 }
 
 .notesEmpty {
-  font-size: 12px;
-  color: $text-muted;
+  font-size: 13px;
+  color: rgba(255,255,255,0.35);
   margin: 0;
   text-align: center;
-  padding-top: 16px;
+  padding-top: 20px;
 }
 
 .notesSrError {
   font-size: 11px;
   font-weight: 600;
-  color: #b45309;
+  color: #fbbf24;
   background: rgba(251, 191, 36, 0.1);
   border: 1px solid rgba(251, 191, 36, 0.3);
   border-radius: 8px;
@@ -1059,13 +1538,39 @@ $text-muted: #94a3b8;
   margin: 0 0 8px;
 }
 
-// Mobile debug — floating button
+.noteEntry {
+  display: flex;
+  gap: 12px;
+}
+
+.noteAuthor {
+  flex-shrink: 0;
+  width: 70px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 0;
+  text-align: center;
+  border-radius: 7px;
+  height: 22px;
+  line-height: 22px;
+  background: #2c2550;
+  color: #b9a6ff;
+}
+
+.noteText {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #d8d4ea;
+}
+
+// ── Mobile debug panel ────────────────────────────────────────────────────────
+
 .mobileLogBtn {
   position: absolute;
   top: 52px;
   left: 0;
   z-index: 60;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.75);
   color: #fbbf24;
   font-size: 11px;
   font-family: monospace;
@@ -1076,7 +1581,6 @@ $text-muted: #94a3b8;
   pointer-events: auto;
 }
 
-// Mobile debug — full log panel
 .mobileLogPanel {
   position: absolute;
   top: 48px;
@@ -1104,16 +1608,8 @@ $text-muted: #94a3b8;
   margin-bottom: 4px;
 }
 
-.mobileLogDivider {
-  color: #475569;
-  margin: 4px 0 2px;
-}
-
-.mobileLogEmpty {
-  color: #475569;
-  font-style: italic;
-}
-
+.mobileLogDivider { color: #475569; margin: 4px 0 2px; }
+.mobileLogEmpty { color: #475569; font-style: italic; }
 .mobileLogLine {
   color: #cbd5e1;
   word-break: break-all;
@@ -1121,34 +1617,15 @@ $text-muted: #94a3b8;
   padding: 1px 0;
   &:first-of-type { color: #a5f3fc; }
 }
-
 .mobileLogErr { color: #f87171 !important; }
 .mobileLogWrn { color: #fbbf24 !important; }
-
-.noteEntry {
-  font-size: 12px;
-  line-height: 1.5;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.noteAuthor {
-  font-weight: 700;
-  color: $text;
-  font-size: 11px;
-}
-
-.noteText {
-  color: $text-dim;
-}
 
 // ── End-of-call summary modal ─────────────────────────────────────────────────
 
 .summaryOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.55);
+  background: rgba(0, 0, 0, 0.65);
   z-index: 200;
   display: flex;
   align-items: center;
@@ -1157,10 +1634,7 @@ $text-muted: #94a3b8;
   animation: overlayFadeIn 0.2s ease;
 }
 
-@keyframes overlayFadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
+@keyframes overlayFadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 .summaryModal {
   background: $bg-card;
@@ -1172,7 +1646,7 @@ $text-muted: #94a3b8;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
   animation: modalSlideUp 0.22s ease;
 }
 
@@ -1193,7 +1667,6 @@ $text-muted: #94a3b8;
   font-weight: 700;
   color: $text;
   margin: 0;
-  letter-spacing: -0.3px;
 }
 
 .closeBtn {
@@ -1210,10 +1683,7 @@ $text-muted: #94a3b8;
   transition: background 0.15s, color 0.15s;
   flex-shrink: 0;
 
-  &:hover {
-    background: $border;
-    color: $text;
-  }
+  &:hover { background: $border; color: $text; }
 }
 
 .summaryBody {
@@ -1253,340 +1723,7 @@ $text-muted: #94a3b8;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s;
-
-  &:hover { background: #b91c1c; }
-}
-
-// ── Mobile adaptations ────────────────────────────────────────────────────────
-
-@media (max-width: 640px) {
-  // ── Top bar ────────────────────────────────────────────────────────────────
-  .topBar {
-    padding: 8px 12px;
-  }
-
-  .topOwner,
-  .topSpeaker {
-    display: none;
-  }
-
-  // ── PiP layout ─────────────────────────────────────────────────────────────
-  .pipTile {
-    width: 120px;
-    right: 8px;
-    top: calc(8px + var(--pip-index, 0) * 90px);
-  }
-
-  // Controls overlay: always visible on touch devices (no hover)
-  .controlsOverlay {
-    opacity: 1;
-    background: linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 100%);
-    border-top: none;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    padding-bottom: 8px;
-  }
-
-  // ── Grid layout ────────────────────────────────────────────────────────────
-  .gridArea {
-    &[data-count='3'],
-    &[data-count='4'] {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    &[data-count='1'],
-    &[data-count='2'] {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  // ── Notes panel: full-width slide from bottom on mobile ───────────────────
-  .notesPanel {
-    top: auto;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    height: 60dvh;
-    border-left: none;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 16px 16px 0 0;
-    animation: slideInUp 0.22s ease;
-  }
-
-  @keyframes slideInUp {
-    from { transform: translateY(100%); }
-    to   { transform: translateY(0); }
-  }
-
-  // Light backgrounds so buttons are readable on dark gradient overlay
-  .pill {
-    padding: 6px 12px;
-    font-size: 12px;
-    background: rgba(255, 255, 255, 0.9);
-    border-color: rgba(0, 0, 0, 0.1);
-    color: $text;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-
-    &:hover {
-      background: #fff;
-    }
-  }
-
-  .pillActive {
-    background: rgba(22, 163, 74, 0.12);
-    border-color: rgba(22, 163, 74, 0.35);
-    color: $success;
-
-    &:hover {
-      background: rgba(22, 163, 74, 0.2);
-      color: $success;
-    }
-  }
-
-  .roundIcon {
-    width: 42px;
-    height: 42px;
-    background: rgba(255, 255, 255, 0.9);
-    border-color: rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-  }
-
-  .roundLabel {
-    color: $text;
-    text-shadow: none;
-  }
-
-  .roundOn .roundIcon {
-    background: rgba(22, 163, 74, 0.12);
-    border-color: rgba(22, 163, 74, 0.4);
-    color: $success;
-  }
-
-  .roundOff .roundIcon {
-    background: rgba(220, 38, 38, 0.1);
-    border-color: rgba(220, 38, 38, 0.35);
-    color: $danger;
-  }
-
-  .roundLeave .roundIcon {
-    background: $danger;
-    border-color: $danger;
-    color: #fff;
-  }
-
-  // ── Summary modal ──────────────────────────────────────────────────────────
-  .summaryModal {
-    padding: 20px 16px 16px;
-    border-radius: 16px;
-    max-height: 85dvh;
-  }
-}
-
-// ── Error confirmation modal ───────────────────────────────────────────────
-
-.errorConfirmModal {
-  background: $bg-card;
-  border-radius: 16px;
-  padding: 28px 24px 24px;
-  width: 100%;
-  max-width: 480px;
-  max-height: 85vh;
-  overflow-y: auto;
-  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.22);
-  animation: modalSlideUp 0.22s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.errorConfirmDesc {
-  font-size: 13px;
-  color: $text-dim;
-  text-align: center;
-  margin: 0;
-}
-
-.errorConfirmCounts {
-  display: flex;
-  justify-content: center;
-  gap: 40px;
-  padding: 8px 0;
-}
-
-.errorConfirmCount {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.errorConfirmCountNum {
-  font-size: 32px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.errorConfirmCountLabel {
-  font-size: 12px;
-  color: $text-dim;
-}
-
-.errorPreviewList {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.errorPreviewItem {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 7px 10px;
-  border-radius: 8px;
-  font-size: 12px;
-  line-height: 1.4;
-}
-
-.errorPreviewError {
-  background: rgba(220, 38, 38, 0.07);
-  border: 1px solid rgba(220, 38, 38, 0.18);
-}
-
-.errorPreviewCorrection {
-  background: rgba(34, 197, 94, 0.07);
-  border: 1px solid rgba(34, 197, 94, 0.18);
-}
-
-.errorPreviewBadge {
-  flex-shrink: 0;
-  font-weight: 700;
-  font-size: 12px;
-  margin-top: 1px;
-}
-
-.errorPreviewText {
-  color: $text;
-}
-
-.errorPreviewMore {
-  font-size: 11px;
-  color: $text-dim;
-  text-align: center;
-  margin: 2px 0 0;
-}
-
-.errorEditList {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 320px;
-  overflow-y: auto;
-}
-
-.errorEditItem {
-  border-radius: 10px;
-  padding: 10px 12px;
-  border: 1px solid rgba(255,255,255,0.08);
-}
-
-.errorEditError {
-  border-color: rgba(220, 38, 38, 0.25);
-  background: rgba(220, 38, 38, 0.04);
-}
-
-.errorEditCorrection {
-  border-color: rgba(34, 197, 94, 0.25);
-  background: rgba(34, 197, 94, 0.04);
-}
-
-.errorEditTop {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 5px;
-}
-
-.errorTypeBadge {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-
-.errorTypeBadgeBad {
-  background: rgba(220, 38, 38, 0.15);
-  color: #f87171;
-}
-
-.errorTypeBadgeOk {
-  background: rgba(34, 197, 94, 0.15);
-  color: #4ade80;
-}
-
-.errorWho {
-  font-size: 11px;
-  color: $text-dim;
-}
-
-.errorExpandBtn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: $text-dim;
-  padding: 2px;
-  display: flex;
-  align-items: center;
-  border-radius: 4px;
-
-  &:hover { color: $text; }
-}
-
-.errorRemoveBtn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: $text-dim;
-  font-size: 18px;
-  line-height: 1;
-  padding: 0 2px;
-
-  &:hover { color: #f87171; }
-}
-
-.errorEditDesc {
-  font-size: 12px;
-  color: $text;
-  line-height: 1.45;
-  margin: 0;
-}
-
-.errorFragment {
-  margin-top: 7px;
-  padding: 7px 9px;
-  background: rgba(255,255,255,0.05);
-  border-radius: 6px;
-  border-left: 2px solid rgba(255,255,255,0.12);
-}
-
-.errorFragmentLabel {
-  display: block;
-  font-size: 10px;
-  color: $text-dim;
-  margin-bottom: 3px;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-}
-
-.errorFragmentText {
-  font-size: 12px;
-  color: $text;
-  font-style: italic;
-  margin: 0;
-  line-height: 1.45;
+  &:hover { background: #c92a41; }
 }
 
 .analyzingSpinner {
@@ -1599,21 +1736,63 @@ $text-muted: #94a3b8;
   animation: spin 0.8s linear infinite;
 }
 
+// ── Error confirmation modal ───────────────────────────────────────────────────
+
+.errorConfirmModal {
+  background: $bg-card;
+  border-radius: 16px;
+  padding: 28px 24px 24px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+  animation: modalSlideUp 0.22s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.errorConfirmDesc { font-size: 13px; color: $text-dim; text-align: center; margin: 0; }
+.errorConfirmCounts { display: flex; justify-content: center; gap: 40px; padding: 8px 0; }
+.errorConfirmCount { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.errorConfirmCountNum { font-size: 32px; font-weight: 700; line-height: 1; }
+.errorConfirmCountLabel { font-size: 12px; color: $text-dim; }
+.errorPreviewList { display: flex; flex-direction: column; gap: 6px; }
+.errorPreviewItem { display: flex; align-items: flex-start; gap: 8px; padding: 7px 10px; border-radius: 8px; font-size: 12px; line-height: 1.4; }
+.errorPreviewError { background: rgba(220, 38, 38, 0.07); border: 1px solid rgba(220, 38, 38, 0.18); }
+.errorPreviewCorrection { background: rgba(34, 197, 94, 0.07); border: 1px solid rgba(34, 197, 94, 0.18); }
+.errorPreviewBadge { flex-shrink: 0; font-weight: 700; font-size: 12px; margin-top: 1px; }
+.errorPreviewText { color: $text; }
+.errorPreviewMore { font-size: 11px; color: $text-dim; text-align: center; margin: 2px 0 0; }
+.errorEditList { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; }
+.errorEditItem { border-radius: 10px; padding: 10px 12px; border: 1px solid rgba(0,0,0,0.08); }
+.errorEditError { border-color: rgba(220, 38, 38, 0.25); background: rgba(220, 38, 38, 0.04); }
+.errorEditCorrection { border-color: rgba(34, 197, 94, 0.25); background: rgba(34, 197, 94, 0.04); }
+.errorEditTop { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
+.errorTypeBadge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; flex-shrink: 0; }
+.errorTypeBadgeBad { background: rgba(220, 38, 38, 0.15); color: #dc2626; }
+.errorTypeBadgeOk { background: rgba(34, 197, 94, 0.15); color: #16a34a; }
+.errorWho { font-size: 11px; color: $text-dim; }
+.errorExpandBtn { background: none; border: none; cursor: pointer; color: $text-dim; padding: 2px; display: flex; align-items: center; border-radius: 4px; &:hover { color: $text; } }
+.errorRemoveBtn { background: none; border: none; cursor: pointer; color: $text-dim; font-size: 18px; line-height: 1; padding: 0 2px; &:hover { color: #f87171; } }
+.errorEditDesc { font-size: 12px; color: $text; line-height: 1.45; margin: 0; }
+.errorFragment { margin-top: 7px; padding: 7px 9px; background: rgba(0,0,0,0.03); border-radius: 6px; border-left: 2px solid rgba(0,0,0,0.1); }
+.errorFragmentLabel { display: block; font-size: 10px; color: $text-dim; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.4px; }
+.errorFragmentText { font-size: 12px; color: $text; font-style: italic; margin: 0; line-height: 1.45; }
+
 // ── Call test: virtual tile ───────────────────────────────────────────────────
 
 .testTileSmall {
   cursor: pointer;
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%) !important;
-  border: 2px solid #94a3b8 !important;
+  background: linear-gradient(135deg, #2a2550 0%, #1c1830 100%) !important;
+  border: 2px solid #4a3fa0 !important;
   position: relative;
 
-  &:hover { border-color: #334155 !important; }
+  &:hover { border-color: #7c5cf0 !important; }
 }
 
-.testTileIcon {
-  font-size: 28px;
-  line-height: 1;
-}
+.testTileIcon { font-size: 28px; line-height: 1; }
 
 .testTilePreviewMeta {
   position: absolute;
@@ -1630,7 +1809,7 @@ $text-muted: #94a3b8;
 .testTilePreviewTitle {
   font-size: 11px;
   font-weight: 700;
-  color: #0f172a;
+  color: #e8e0ff;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -1641,8 +1820,8 @@ $text-muted: #94a3b8;
 .testTilePreviewProgress {
   font-size: 10px;
   font-weight: 600;
-  color: #334155;
-  background: rgba(255,255,255,0.7);
+  color: #c4b5fd;
+  background: rgba(91, 63, 214, 0.3);
   border-radius: 20px;
   padding: 1px 6px;
 }
@@ -1667,7 +1846,7 @@ $text-muted: #94a3b8;
 .testPickerOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.55);
+  background: rgba(0,0,0,0.65);
   backdrop-filter: blur(4px);
   z-index: 200;
   display: flex;
@@ -1684,366 +1863,49 @@ $text-muted: #94a3b8;
   max-height: 80vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
   overflow: hidden;
 }
 
-.testPickerHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 24px 0;
-  flex-shrink: 0;
-}
-
-.testPickerTitle {
-  font-size: 17px;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0;
-}
-
-.testPickerClose {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
-  color: #64748b;
-  font-size: 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &:hover { background: #f1f5f9; }
-}
-
-.testPickerTabs {
-  display: flex;
-  gap: 0;
-  padding: 16px 24px 0;
-  border-bottom: 1px solid #e2e8f0;
-  flex-shrink: 0;
-}
-
-.testPickerTab {
-  padding: 8px 16px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #64748b;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  cursor: pointer;
-  margin-bottom: -1px;
-  transition: all 0.15s;
-
-  &:hover { color: #0f172a; }
-}
-
-.testPickerTabActive {
-  color: #0f172a;
-  border-bottom-color: #0f172a;
-}
-
-.testPickerBody {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px 24px 20px;
-  min-height: 0;
-}
-
-// List of existing tests
-.testList {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.testListItem {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  background: #f8fafc;
-  cursor: pointer;
-  transition: all 0.15s;
-
-  &:hover {
-    border-color: #94a3b8;
-    background: #f1f5f9;
-  }
-}
-
-.testListName {
-  font-size: 14px;
-  font-weight: 600;
-  color: #0f172a;
-}
-
-.testListMeta {
-  font-size: 11px;
-  color: #94a3b8;
-  margin-top: 2px;
-}
-
-.testLaunchBtn {
-  font-size: 12px;
-  font-weight: 600;
-  color: #fff;
-  background: #0f172a;
-  border: none;
-  border-radius: 8px;
-  padding: 6px 12px;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background 0.15s;
-
-  &:hover { background: #1e293b; }
-}
-
-.testListEmpty {
-  text-align: center;
-  color: #94a3b8;
-  font-size: 13px;
-  padding: 32px 0;
-}
-
-// Board launch tab
-.boardLaunchTab {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  padding: 32px 16px;
-}
-
-.boardLaunchIcon {
-  font-size: 48px;
-  line-height: 1;
-}
-
-.boardLaunchDesc {
-  font-size: 13px;
-  color: #475569;
-  text-align: center;
-  margin: 0;
-  max-width: 280px;
-  line-height: 1.5;
-}
-
-// Quick test creator
-.quickCreator {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.quickQuestion {
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 14px 16px;
-  background: #f8fafc;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.quickQuestionHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.quickQuestionNum {
-  font-size: 11px;
-  font-weight: 700;
-  color: #475569;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.quickRemoveBtn {
-  font-size: 14px;
-  color: #ef4444;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  line-height: 1;
-
-  &:hover { color: #dc2626; }
-}
-
-.quickInput {
-  width: 100%;
-  padding: 9px 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 13px;
-  font-family: inherit;
-  color: #0f172a;
-  background: #fff;
-  box-sizing: border-box;
-
-  &:focus {
-    outline: none;
-    border-color: #64748b;
-    box-shadow: 0 0 0 2px rgba(100,116,139,0.12);
-  }
-
-  &::placeholder { color: #94a3b8; }
-}
-
-.quickOptions {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.quickOptionRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.quickOptionRadio {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  accent-color: #0f172a;
-  cursor: pointer;
-}
-
-.quickOptionInput {
-  flex: 1;
-  padding: 7px 10px;
-  border: 1px solid #e2e8f0;
-  border-radius: 7px;
-  font-size: 13px;
-  font-family: inherit;
-  color: #0f172a;
-  background: #fff;
-
-  &:focus {
-    outline: none;
-    border-color: #64748b;
-  }
-
-  &::placeholder { color: #94a3b8; }
-}
-
-.quickOptionCorrect {
-  border-color: #22c55e;
-  background: #f0fdf4;
-}
-
-.quickAddOptionBtn {
-  align-self: flex-start;
-  font-size: 11px;
-  font-weight: 600;
-  color: #475569;
-  background: none;
-  border: 1px dashed #94a3b8;
-  border-radius: 6px;
-  padding: 4px 10px;
-  cursor: pointer;
-  margin-top: 2px;
-
-  &:hover { background: #f1f5f9; }
-}
-
-.quickCorrectHint {
-  font-size: 10px;
-  color: #94a3b8;
-  margin-top: 2px;
-}
-
-.quickCreatorActions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.quickAddQuestionBtn {
-  font-size: 13px;
-  font-weight: 600;
-  color: #475569;
-  background: #f8fafc;
-  border: 1.5px dashed #94a3b8;
-  border-radius: 10px;
-  padding: 10px 16px;
-  cursor: pointer;
-  transition: all 0.15s;
-  flex: 1;
-
-  &:hover { background: #f1f5f9; }
-}
-
-.quickStartBtn {
-  font-size: 13px;
-  font-weight: 600;
-  color: #fff;
-  background: #0f172a;
-  border: none;
-  border-radius: 10px;
-  padding: 10px 20px;
-  cursor: pointer;
-  flex: 1;
-  transition: background 0.15s;
-
-  &:hover { background: #1e293b; }
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
-}
-
-// ── Limit blocked lobby ───────────────────────────────────────────────────────
-
-.limitBlockedIcon {
-  font-size: 40px;
-  text-align: center;
-  margin-bottom: 12px;
-}
-
-.limitBlockedTitle {
-  font-size: 20px;
-  font-weight: 700;
-  color: $text;
-  text-align: center;
-  margin-bottom: 8px;
-}
-
-.limitBlockedDesc {
-  font-size: 14px;
-  color: $text-dim;
-  text-align: center;
-  line-height: 1.5;
-  margin-bottom: 24px;
-}
-
-.lobbyBackBtn {
-  margin: 0 auto;
-  display: block;
-  padding: 10px 28px;
-  background: $text;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity 0.15s;
-  &:hover { opacity: 0.8; }
-}
+.testPickerHeader { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px 0; flex-shrink: 0; }
+.testPickerTitle { font-size: 17px; font-weight: 700; color: #0f172a; margin: 0; }
+.testPickerClose { width: 32px; height: 32px; border-radius: 8px; border: 1px solid #e2e8f0; background: #f8fafc; color: #64748b; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; &:hover { background: #f1f5f9; } }
+.testPickerTabs { display: flex; padding: 16px 24px 0; border-bottom: 1px solid #e2e8f0; flex-shrink: 0; }
+.testPickerTab { padding: 8px 16px; font-size: 13px; font-weight: 600; color: #64748b; background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; margin-bottom: -1px; transition: all 0.15s; &:hover { color: #0f172a; } }
+.testPickerTabActive { color: #0f172a; border-bottom-color: #0f172a; }
+.testPickerBody { flex: 1; overflow-y: auto; padding: 16px 24px 20px; min-height: 0; }
+.testList { display: flex; flex-direction: column; gap: 8px; }
+.testListItem { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; cursor: pointer; transition: all 0.15s; &:hover { border-color: #94a3b8; background: #f1f5f9; } }
+.testListName { font-size: 14px; font-weight: 600; color: #0f172a; }
+.testListMeta { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+.testLaunchBtn { font-size: 12px; font-weight: 600; color: #fff; background: #0f172a; border: none; border-radius: 8px; padding: 6px 12px; cursor: pointer; flex-shrink: 0; transition: background 0.15s; &:hover { background: #1e293b; } }
+.testListEmpty { text-align: center; color: #94a3b8; font-size: 13px; padding: 32px 0; }
+.boardLaunchTab { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 32px 16px; }
+.boardLaunchIcon { font-size: 48px; line-height: 1; }
+.boardLaunchDesc { font-size: 13px; color: #475569; text-align: center; margin: 0; max-width: 280px; line-height: 1.5; }
+.quickCreator { display: flex; flex-direction: column; gap: 16px; }
+.quickQuestion { border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; background: #f8fafc; display: flex; flex-direction: column; gap: 10px; }
+.quickQuestionHeader { display: flex; align-items: center; justify-content: space-between; }
+.quickQuestionNum { font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
+.quickRemoveBtn { font-size: 14px; color: #ef4444; background: none; border: none; cursor: pointer; padding: 0; line-height: 1; &:hover { color: #dc2626; } }
+.quickInput { width: 100%; padding: 9px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-family: inherit; color: #0f172a; background: #fff; box-sizing: border-box; &:focus { outline: none; border-color: #64748b; } &::placeholder { color: #94a3b8; } }
+.quickOptions { display: flex; flex-direction: column; gap: 6px; }
+.quickOptionRow { display: flex; align-items: center; gap: 8px; }
+.quickOptionRadio { width: 16px; height: 16px; flex-shrink: 0; accent-color: #0f172a; cursor: pointer; }
+.quickOptionInput { flex: 1; padding: 7px 10px; border: 1px solid #e2e8f0; border-radius: 7px; font-size: 13px; font-family: inherit; color: #0f172a; background: #fff; &:focus { outline: none; border-color: #64748b; } &::placeholder { color: #94a3b8; } }
+.quickOptionCorrect { border-color: #22c55e; background: #f0fdf4; }
+.quickAddOptionBtn { align-self: flex-start; font-size: 11px; font-weight: 600; color: #475569; background: none; border: 1px dashed #94a3b8; border-radius: 6px; padding: 4px 10px; cursor: pointer; margin-top: 2px; &:hover { background: #f1f5f9; } }
+.quickCorrectHint { font-size: 10px; color: #94a3b8; margin-top: 2px; }
+.quickCreatorActions { display: flex; gap: 8px; flex-wrap: wrap; }
+.quickAddQuestionBtn { font-size: 13px; font-weight: 600; color: #475569; background: #f8fafc; border: 1.5px dashed #94a3b8; border-radius: 10px; padding: 10px 16px; cursor: pointer; transition: all 0.15s; flex: 1; &:hover { background: #f1f5f9; } }
+.quickStartBtn { font-size: 13px; font-weight: 600; color: #fff; background: #0f172a; border: none; border-radius: 10px; padding: 10px 20px; cursor: pointer; flex: 1; transition: background 0.15s; &:hover { background: #1e293b; } &:disabled { opacity: 0.5; cursor: not-allowed; } }
 
 // ── Invite modal ──────────────────────────────────────────────────────────────
 
 .inviteOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.65);
   z-index: 9999;
   display: flex;
   align-items: center;
@@ -2051,149 +1913,108 @@ $text-muted: #94a3b8;
   padding: 16px;
 }
 
-.inviteCard {
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.2);
-  padding: 28px 24px 24px;
-  width: 100%;
-  max-width: 400px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  max-height: 80vh;
-  overflow-y: auto;
-}
+.inviteCard { background: #fff; border-radius: 18px; box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3); padding: 28px 24px 24px; width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 16px; max-height: 80vh; overflow-y: auto; }
+.inviteHeader { display: flex; align-items: center; justify-content: space-between; }
+.inviteTitle { font-size: 17px; font-weight: 700; color: $text; }
+.inviteCloseBtn { background: none; border: none; cursor: pointer; color: $text-dim; padding: 4px; display: flex; align-items: center; border-radius: 6px; transition: background 0.12s; &:hover { background: #f1f5f9; } }
+.inviteEmailInput { width: 100%; padding: 11px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px; color: $text; outline: none; transition: border-color 0.15s; box-sizing: border-box; &:focus { border-color: $accent; } &::placeholder { color: $text-muted; } }
+.inviteStudentsSectionTitle { font-size: 11px; font-weight: 600; color: $text-muted; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+.inviteStudentsList { display: flex; flex-direction: column; gap: 2px; max-height: 200px; overflow-y: auto; }
+.inviteStudentRow { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; cursor: pointer; transition: background 0.12s; &:hover { background: #f8fafc; } }
+.inviteStudentAvatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; background: #e2e8f0; }
+.inviteStudentAvatarFallback { width: 32px; height: 32px; border-radius: 50%; background: $accent; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+.inviteStudentName { font-size: 14px; font-weight: 500; color: $text; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.inviteStudentEmail { font-size: 12px; color: $text-muted; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+.inviteSendBtn { width: 100%; padding: 11px; background: $accent; color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; &:hover { opacity: 0.88; } &:disabled { opacity: 0.5; cursor: not-allowed; } }
+.inviteFeedback { font-size: 13px; text-align: center; padding: 4px 0; }
+.inviteFeedbackOk { color: $success; }
+.inviteFeedbackErr { color: $danger; }
 
-.inviteHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.inviteTitle {
-  font-size: 17px;
-  font-weight: 700;
-  color: $text;
-}
-
-.inviteCloseBtn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: $text-dim;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  border-radius: 6px;
-  transition: background 0.12s;
-  &:hover { background: #f1f5f9; }
-}
-
-.inviteEmailInput {
-  width: 100%;
-  padding: 11px 14px;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 10px;
-  font-size: 14px;
-  color: $text;
-  outline: none;
-  transition: border-color 0.15s;
-  box-sizing: border-box;
-  &:focus { border-color: $accent; }
-  &::placeholder { color: $text-muted; }
-}
-
-.inviteStudentsSectionTitle {
-  font-size: 11px;
-  font-weight: 600;
-  color: $text-muted;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 4px;
-}
-
-.inviteStudentsList {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  max-height: 200px;
-  overflow-y: auto;
-}
-
-.inviteStudentRow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.12s;
-  &:hover { background: #f8fafc; }
-}
-
-.inviteStudentAvatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
-  background: #e2e8f0;
-}
-
-.inviteStudentAvatarFallback {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: $accent;
-  color: #fff;
+// ── Link-copy invite modal (dark) ──────────────────────────────────────────────
+.inviteLinkOverlay {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  background: rgba(0,0,0,.6);
+  backdrop-filter: blur(4px);
+  z-index: 20;
+}
+
+.inviteLinkCard {
+  background: #16141f;
+  border: 1px solid #2c2942;
+  border-radius: 18px;
+  width: 440px;
+  max-width: calc(100vw - 32px);
+  padding: 28px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.inviteLinkHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 16px;
   font-weight: 700;
-  flex-shrink: 0;
-}
-
-.inviteStudentName {
-  font-size: 14px;
-  font-weight: 500;
-  color: $text;
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.inviteStudentEmail {
-  font-size: 12px;
-  color: $text-muted;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 130px;
-}
-
-.inviteSendBtn {
-  width: 100%;
-  padding: 11px;
-  background: $accent;
   color: #fff;
+}
+
+.inviteLinkClose {
+  background: none;
+  border: none;
+  color: #8882aa;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: color 0.12s;
+  &:hover { color: #fff; }
+}
+
+.inviteLinkHint {
+  font-size: 13px;
+  color: #8882aa;
+  margin: 0;
+}
+
+.inviteLinkRow {
+  display: flex;
+  gap: 10px;
+}
+
+.inviteLinkInput {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 14px;
+  background: rgba(255,255,255,.07);
+  border: 1.5px solid #2c2942;
+  border-radius: 10px;
+  color: #d0c8ff;
+  font-size: 13px;
+  outline: none;
+  &:focus { border-color: $accent; }
+}
+
+.inviteLinkCopy {
+  padding: 0 18px;
+  height: 42px;
+  background: $accent;
   border: none;
   border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 700;
   cursor: pointer;
+  white-space: nowrap;
   transition: opacity 0.15s;
   &:hover { opacity: 0.88; }
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
-.inviteFeedback {
-  font-size: 13px;
-  text-align: center;
-  padding: 4px 0;
+.inviteLinkCopied {
+  color: #8dffa8;
 }
-
-.inviteFeedbackOk { color: $success; }
-.inviteFeedbackErr { color: $danger; }
