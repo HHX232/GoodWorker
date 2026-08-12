@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF → Тест — выбор направления дизайна</title>
+
+  <!-- Единственная внешняя зависимость: шрифт через Google Fonts + web-safe fallback. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #ffffff;
+      --ink: #0a0a0a;
+      --ink-2: #6b6b6b;
+      --line: #e5e5e5;
+      --pad: clamp(1.25rem, 5vw, 4rem);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Archivo", "Helvetica Neue", Arial, sans-serif;
+      font-weight: 400;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; }
+
+    /* ---- Switcher (общий контракт, стиль нейтральной витрины) ---- */
+    nav[data-switcher] {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 100;
+      display: flex;
+      gap: 2px;
+      padding: 3px;
+      background: var(--bg);
+      border: 1px solid var(--line);
+    }
+    nav[data-switcher] a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2.25rem;
+      height: 2rem;
+      padding: 0 0.5rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-decoration: none;
+      color: var(--ink-2);
+    }
+    nav[data-switcher] a:hover { color: var(--ink); }
+    nav[data-switcher] a[aria-current="page"] {
+      background: var(--ink);
+      color: var(--bg);
+    }
+
+    /* ---- Layout ---- */
+    .wrap {
+      max-width: 78rem;
+      margin: 0 auto;
+      padding: 0 var(--pad);
+    }
+
+    header.hero {
+      padding: clamp(5rem, 16vh, 11rem) 0 clamp(3rem, 8vh, 5rem);
+      border-bottom: 1px solid var(--line);
+    }
+    .eyebrow {
+      margin: 0 0 1.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-2);
+    }
+    h1 {
+      margin: 0;
+      font-weight: 800;
+      font-size: clamp(2.25rem, 7vw, 5rem);
+      line-height: 1.02;
+      letter-spacing: -0.03em;
+      max-width: 20ch;
+    }
+    .lead {
+      margin: 1.75rem 0 0;
+      font-size: clamp(1rem, 2.2vw, 1.25rem);
+      color: var(--ink-2);
+      max-width: 58ch;
+    }
+
+    /* ---- Cards ---- */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+      margin: clamp(3rem, 8vh, 5rem) 0;
+    }
+    .card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      background: var(--bg);
+      padding: clamp(1.5rem, 3vw, 2.5rem);
+      min-height: 15rem;
+      text-decoration: none;
+      color: var(--ink);
+      transition: background 160ms ease-out, color 160ms ease-out;
+    }
+    /* reveal: контент виден по умолчанию; .is-in только сдвигает/проявляет */
+    .card[data-reveal] {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 520ms ease-out, transform 520ms ease-out,
+                  background 160ms ease-out, color 160ms ease-out;
+    }
+    .card[data-reveal].is-in { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .card[data-reveal] { opacity: 1; transform: none; transition: none; }
+    }
+    .card:hover { background: var(--ink); color: var(--bg); }
+    .card:hover .card__num,
+    .card:hover .card__desc { color: inherit; }
+
+    .card__num {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      color: var(--ink-2);
+    }
+    .card__title {
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.05;
+    }
+    .card__desc {
+      margin-top: auto;
+      font-size: 0.9375rem;
+      color: var(--ink-2);
+    }
+    .card__go {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 1rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    .card__go svg { display: block; }
+
+    /* ---- Footer note ---- */
+    footer {
+      padding: 2.5rem 0 4rem;
+      border-top: 1px solid var(--line);
+      color: var(--ink-2);
+      font-size: 0.875rem;
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 720px) {
+      .cards { grid-template-columns: 1fr; }
+      .card { min-height: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav data-switcher aria-label="Версии лендинга">
+    <a data-variant="a" href="variant-a-swiss.html">V1</a>
+    <a data-variant="b" href="variant-b-terminal.html">V2</a>
+    <a data-variant="c" href="variant-c-cinematic.html">V3</a>
+  </nav>
+
+  <header class="hero">
+    <div class="wrap">
+      <p class="eyebrow">PDF → Тест · дизайн-разведка</p>
+      <h1>Три направления одного лендинга.</h1>
+      <p class="lead">
+        Один и тот же продукт — три принципиально разных мира. Открой любой,
+        переключайся между ними одним кликом, место прокрутки сохраняется.
+        Выбери сильнейшую версию.
+      </p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="cards">
+
+      <a class="card" data-reveal href="variant-a-swiss.html">
+        <span class="card__num">V1</span>
+        <span class="card__title">Swiss / Kinetic Type</span>
+        <span class="card__desc">
+          Строгая 12-колоночная сетка, hairline-линии, крупная типографика.
+          Холодный белый, чёрные плашки, кинетический текст.
+        </span>
+        <span class="card__go">
+          Открыть
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+          </svg>
+        </span>
+      </a>
+
+      <a class="card" data-reveal href="variant-b-terminal.html">
+        <span class="card__num">V2</span>
+        <span class="card__title">Terminal / Blueprint</span>
+        <span class="card__desc">
+          Тёмная консоль, моноширинный шрифт, точечная сетка и скан-линия.
+          Один фосфорный сигнал точечно. Лог обработки как герой.
+        </span>
+        <span class="card__go">
+          Открыть
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+          </svg>
+        </span>
+      </a>
+
+      <a class="card" data-reveal href="variant-c-cinematic.html">
+        <span class="card__num">V3</span>
+        <span class="card__title">Cinematic / Gallery</span>
+        <span class="card__desc">
+          Тёплая светлая галерея, Didone-дисплей, большие планы и воздух.
+          Медленная киношная моторика, sticky-морфинг документа в тест.
+        </span>
+        <span class="card__go">
+          Открыть
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+          </svg>
+        </span>
+      </a>
+
+    </div>
+  </main>
+
+  <footer class="wrap">
+    <span>PDF → Тест — часть GoodWorker</span>
+    <span>Прототипы · выбор направления</span>
+  </footer>
+
+  <script src="shared/switcher.js" defer></script>
+  <script src="shared/reveal-core.js" defer></script>
+</body>
+</html>
