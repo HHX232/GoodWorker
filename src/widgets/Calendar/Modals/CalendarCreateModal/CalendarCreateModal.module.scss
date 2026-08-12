@@ -148,6 +148,71 @@
   }
 }
 
+// ── Tab switcher ──────────────────────────────────────
+.tabRow {
+  display: flex;
+  gap: 4px;
+  padding: 0 20px 12px;
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.07);
+  margin-bottom: 4px;
+}
+
+.tabBtn {
+  padding: 5px 14px;
+  border-radius: 8px;
+  border: 1.5px solid transparent;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: #888;
+  cursor: pointer;
+  transition: all 0.12s;
+
+  &:hover { background: #f4f4f7; color: #444; }
+}
+
+.tabBtnActive {
+  border-color: #534AB7;
+  background: #eeedfd;
+  color: #534AB7;
+}
+
+// ── Homework panel ────────────────────────────────────
+.hwPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+}
+
+.hwPanelTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #141416;
+  margin: 0;
+}
+
+.hwPanelSub {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.hwPanelBtn {
+  align-self: flex-start;
+  padding: 8px 16px;
+  border-radius: 9px;
+  background: #7C3AED;
+  color: #fff;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s;
+
+  &:hover { background: #6d28d9; }
+}
+
 // ── Footer ────────────────────────────────────────────
 
 .footer {
@@ -200,4 +265,10 @@
   .textarea { background: #23263a; border-color: rgba(255,255,255,0.08); color: #e8eaf0; &:focus { border-color: #818cf8; background: #1f2130; } }
   .footer { border-top-color: rgba(255,255,255,0.07); }
   .btnSecondary { color: rgba(255,255,255,0.4); border-color: rgba(255,255,255,0.1); &:hover { background: #23263a; } }
+  .tabRow { border-bottom-color: rgba(255,255,255,0.07); }
+  .tabBtn { color: rgba(255,255,255,0.3); &:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.6); } }
+  .tabBtnActive { border-color: #818cf8; background: rgba(129,140,248,0.12); color: #a5b4fc; }
+  .hwPanelTitle { color: #e8eaf0; }
+  .hwPanelSub { color: rgba(255,255,255,0.35); }
+  .hwPanelBtn { background: #6d28d9; &:hover { background: #5b21b6; } }
 }

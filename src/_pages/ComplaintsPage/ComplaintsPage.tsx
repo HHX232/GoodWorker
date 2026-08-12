@@ -50,7 +50,7 @@ function fmt(iso: string) {
 
 function targetLabel(c: ComplaintItem) {
   if (c.post) return {label: c.post.title || 'Пост', href: `/post/${c.post.id}`, kind: 'Пост'}
-  if (c.roadmap) return {label: c.roadmap.title || 'Роадмап', href: `/road-map/${c.roadmap.id}`, kind: 'Роадмап'}
+  if (c.roadmap) return {label: c.roadmap.title || 'Курс', href: `/road-map/${c.roadmap.id}`, kind: 'Курс'}
   return {label: c.targetType, href: null, kind: c.targetType}
 }
 

@@ -20,15 +20,17 @@ import {CalendarSidebar} from '@/widgets/Calendar/CalendarSidebar/CalendarSideba
 import {DayCalendar} from '@/widgets/Calendar/DayCalendar/DayCalendar'
 import {CalendarCreateModal} from '@/widgets/Calendar/Modals/CalendarCreateModal/CalendarCreateModal'
 import {CalendarEventModal} from '@/widgets/Calendar/Modals/CalendarEventModal/CalendarEventModal'
+import {GoogleCalendarImportModal} from '@/widgets/Calendar/Modals/GoogleCalendarImportModal/GoogleCalendarImportModal'
 import {CalendarTaskCreateModal} from '@/widgets/Calendar/Modals/CalendarTaskCreateModal/CalendarTaskCreateModal'
 import {CalendarTaskModal} from '@/widgets/Calendar/Modals/CalendarTaskModal/CalendarTaskModal'
 import {MonthCalendar} from '@/widgets/Calendar/MonthCalendar/MonthCalendar'
 import {WeekCalendar} from '@/widgets/Calendar/WeekCalendar/WeekCalendar'
-import {useLocale} from 'next-intl'
+import {useLocale, useTranslations} from 'next-intl'
+import {toast} from 'sonner'
 import {useEffect, useRef, useState} from 'react'
 import styles from './CalendarPage.module.scss'
 
-export function CalendarPage({ teacherId }: { teacherId: string }) {
+export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; isVip?: boolean }) {
 
   const {
     addEvent,
@@ -60,6 +62,16 @@ export function CalendarPage({ teacherId }: { teacherId: string }) {
   const [teacherServices, setTeacherServices] = useState<{id: string; title: string; price: number; duration: number}[]>([])
   const [teacherSubjects, setTeacherSubjects] = useState<string[]>([])
 
+  interface HomeworkCalendarItem {
+    id: string
+    title: string
+    dueAt: string | null
+    sendAt: string | null
+    href?: string
+    assignmentCount: number
+  }
+  const [homeworks, setHomeworks] = useState<HomeworkCalendarItem[]>([])
+
   const loaded = useRef(false)
   useEffect(() => {
     if (loaded.current) return
@@ -87,6 +99,22 @@ export function CalendarPage({ teacherId }: { teacherId: string }) {
         if (Array.isArray(d.services)) {
           setTeacherServices(d.services.map((s: {id: string; title: string; price: number; duration: number}) => ({
             id: s.id, title: s.title, price: s.price, duration: s.duration,
+          })))
+        }
+      })
+      .catch(() => {})
+
+    fetch('/api/homework')
+      .then(r => r.json())
+      .then(d => {
+        if (Array.isArray(d.homeworks)) {
+          setHomeworks(d.homeworks.map((h: { id: string; title: string; dueAt?: string; sendAt?: string; assignments?: { id: string }[] }) => ({
+            id: h.id,
+            title: h.title,
+            dueAt: h.dueAt ?? null,
+            sendAt: h.sendAt ?? null,
+            href: `/homework/results/${h.id}`,
+            assignmentCount: h.assignments?.length ?? 0,
           })))
         }
       })
@@ -120,6 +148,17 @@ export function CalendarPage({ teacherId }: { teacherId: string }) {
   const locale = useLocale()
   const intlLocale = locale === 'ru' ? 'ru-RU' : 'en-US'
   const [exporting, setExporting] = useState(false)
+  const [importModalOpen, setImportModalOpen] = useState(false)
+
+  const tGoogleImport = useTranslations('calendar.googleImport')
+
+  const handleImportGoogleClick = () => {
+    if (!isVip) {
+      toast.error(tGoogleImport('vipToast'))
+      return
+    }
+    setImportModalOpen(true)
+  }
 
   const currentDate = weekDays[0] ?? new Date()
   const currentDateRaw = useTypedSelector((state) => state.calendar.currentDate)
@@ -227,6 +266,8 @@ export function CalendarPage({ teacherId }: { teacherId: string }) {
           onAdd={() => openCreateModal({})}
           onExportPDF={handleExportPDF}
           exporting={exporting}
+          onImportGoogle={handleImportGoogleClick}
+          isVip={isVip}
         />
         {view === 'week' && (
           <WeekCalendar
@@ -254,6 +295,7 @@ export function CalendarPage({ teacherId }: { teacherId: string }) {
             currentDate={currentDate}
             events={events}
             tasks={tasks}
+            homeworks={homeworks}
             onEventClick={(event: any) => selectEvent(event.id)}
             onDayClick={(date: any) => openCreateModal({date})}
             onTaskToggle={(id) => toggleCalendarTask(id)}
@@ -266,6 +308,20 @@ export function CalendarPage({ teacherId }: { teacherId: string }) {
         onClose={closeEvent}
         onEdit={handleEditEvent}
         onDelete={handleDeleteEvent}
+        onConfirm={(id) => {
+          updateEvent({ ...selectedEvent!, id, warning: false })
+          selectEvent(null)
+        }}
+      />
+
+      <GoogleCalendarImportModal
+        isOpen={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        teacherId={teacherId}
+        students={students.map(s => ({ id: s.id, name: s.name }))}
+        onImported={(newEvents) => {
+          newEvents.forEach(e => addEvent(e))
+        }}
       />
 
       <CalendarTaskCreateModal

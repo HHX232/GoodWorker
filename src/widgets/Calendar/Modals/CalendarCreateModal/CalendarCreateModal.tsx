@@ -1,11 +1,14 @@
 'use client'
 
 import {useState, useEffect} from 'react'
+import {useRouter} from 'next/navigation'
 import {CalendarEvent, CalendarEventColor} from '@/shared/types/Calendar/calendar.types'
 import {EVENT_COLORS, formatDateKey} from '@/shared/helpers/calendar/calendar.helpers'
 import {useTranslations} from 'next-intl'
 import styles from './CalendarCreateModal.module.scss'
 import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
+
+type Tab = 'event' | 'note' | 'homework'
 
 interface ServiceOption {
   id: string
@@ -59,11 +62,13 @@ export function CalendarCreateModal({
   teacherSubjects = [],
 }: CalendarCreateModalProps) {
   const t = useTranslations('calendar.createModal')
+  const router = useRouter()
+  const [tab, setTab] = useState<Tab>('event')
   const [form, setForm] = useState(EMPTY_FORM)
   const [selectedServiceId, setSelectedServiceId] = useState('')
 
   useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen) { setTab('event'); return }
     if (editingEvent) {
       setForm({
         title: editingEvent.title,
@@ -110,6 +115,7 @@ export function CalendarCreateModal({
       studentName: form.studentName.trim() || undefined,
       subject: form.subject.trim() || undefined,
       description: form.description.trim() || undefined,
+      noteType: tab === 'note' ? 'note' : undefined,
       ...(svc ? {
         serviceId: svc.id,
         serviceTitle: svc.title,
@@ -135,6 +141,68 @@ export function CalendarCreateModal({
         </button>
       </div>
 
+      {/* Tab switcher */}
+      <div className={styles.tabRow}>
+        <button
+          type='button'
+          className={`${styles.tabBtn} ${tab === 'event' ? styles.tabBtnActive : ''}`}
+          onClick={() => setTab('event')}
+        >
+          Событие
+        </button>
+        <button type='button' className={`${styles.tabBtn} ${tab === 'note' ? styles.tabBtnActive : ''}`} onClick={() => setTab('note')}>
+          Заметка
+        </button>
+        <button
+          type='button'
+          className={`${styles.tabBtn} ${tab === 'homework' ? styles.tabBtnActive : ''}`}
+          onClick={() => setTab('homework')}
+        >
+          Д/З
+        </button>
+      </div>
+
+      {tab === 'homework' ? (
+        <div className={styles.hwPanel}>
+          <p className={styles.hwPanelTitle}>Создать домашнее задание</p>
+          <p className={styles.hwPanelSub}>Перейдите в конструктор, чтобы добавить блоки и назначить студентам.</p>
+          <button
+            type='button'
+            className={styles.hwPanelBtn}
+            onClick={() => {
+              router.push(`/homework/create${form.date ? `?sendAt=${form.date}&dueAt=${form.date}T23:59` : ''}`)
+              onClose()
+            }}
+          >
+            Перейти в конструктор →
+          </button>
+        </div>
+      ) : tab === 'note' ? (
+        <>
+          <div className={styles.body}>
+            <div className={styles.field}>
+              <label className={styles.label}>Заголовок</label>
+              <input id='ce-title' className={styles.input} type='text' placeholder='Название заметки...' value={form.title} onChange={set('title')} autoFocus />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label}>Дата</label>
+              <input className={styles.input} type='date' value={form.date} onChange={set('date')} />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label}>Текст заметки</label>
+              <textarea className={styles.textarea} placeholder='Напишите заметку...' value={form.description} onChange={set('description')} rows={5} />
+            </div>
+          </div>
+          <div className={styles.footer}>
+            <button className={styles.btnSecondary} onClick={onClose}>
+              {t('cancel')}
+            </button>
+            <button className={styles.btnPrimary} onClick={handleSave}>
+              {isEditing ? t('save') : t('create')}
+            </button>
+          </div>
+        </>
+      ) : (<>
       <div className={styles.body}>
         <div className={styles.field}>
           <label className={styles.label}>{t('titleLabel')}</label>
@@ -278,6 +346,7 @@ export function CalendarCreateModal({
           {isEditing ? t('save') : t('create')}
         </button>
       </div>
+      </>)}
     </ModalWindowDefault>
   )
 }

@@ -33,6 +33,7 @@ export interface IPostsResponse {
 
 export interface IPostResponse {
   id: string
+  slug?: string | null
   title: string
   additionalTitle?: string | null
   visibility: 'PUBLIC' | 'PRIVATE'

@@ -24,6 +24,8 @@ export interface CalendarEvent {
   servicePrice?: number
   serviceDurationMinutes?: number
   durationMinutes?: number
+  warning?: boolean
+  noteType?: 'event' | 'note'
 }
 
 export interface CalendarTask {

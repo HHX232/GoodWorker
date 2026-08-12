@@ -2,6 +2,7 @@
 'use client'
 
 import { InfoAudioEditor } from '@/features/BlockEditors/InfoAudioEditor/InfoAudioEditor'
+import { InfoFileListEditor } from '@/features/BlockEditors/InfoFileListEditor/InfoFileListEditor'
 import { InfoMediaEditor } from '@/features/BlockEditors/InfoMediaEditor/InfoMediaEditor'
 import { InfoTextEditor } from '@/features/BlockEditors/InfoTextEditor/InfoTextEditor'
 import { PostBlock, PostBlockType, PostMiniTestPayload, PostTestLinkPayload, getPostTestLinks } from '@/shared/types/Post/Post.type'
@@ -40,6 +41,8 @@ export const PostBlockRenderer = ({blocks, postId, titleNode}: Props) => {
             return <InfoMediaEditor key={block.id} payload={block.payload as any} viewOnly />
           case PostBlockType.AUDIO:
             return <InfoAudioEditor key={block.id} payload={block.payload as any} viewOnly />
+          case PostBlockType.FILE_LIST:
+            return <InfoFileListEditor key={block.id} payload={block.payload as any} viewOnly />
           case PostBlockType.TEST_LINK: {
             const tests = getPostTestLinks(block.payload as PostTestLinkPayload)
             if (!tests.length) return null

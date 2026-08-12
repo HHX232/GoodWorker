@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
+import { DateTimePickerField } from '@/shared/ui/Calendar/DateTimePickerField'
 import styles from './BookingResponseModal.module.scss'
 
 export interface BookingInfo {
@@ -160,24 +161,14 @@ export function BookingResponseModal({ open, onClose, booking }: Props) {
                 <div className={styles.rescheduleSection}>
                   <div className={styles.field}>
                     <label className={styles.label}>{t('newDateLabel')}</label>
-                    <input
-                      className={styles.input}
-                      type="date"
-                      value={confirmedDate}
-                      min={new Date().toISOString().split('T')[0]}
-                      onChange={e => { setConfirmedDate(e.target.value); setDateError('') }}
+                    <DateTimePickerField
+                      date={confirmedDate}
+                      time={confirmedTime}
+                      onDateChange={d => { setConfirmedDate(d); setDateError('') }}
+                      onTimeChange={t => { setConfirmedTime(t); setTimeError('') }}
+                      minDate={new Date().toISOString().split('T')[0]}
                     />
-                    {dateError && <div className={styles.error}>{dateError}</div>}
-                  </div>
-                  <div className={styles.field}>
-                    <label className={styles.label}>{t('newTimeLabel')}</label>
-                    <input
-                      className={styles.input}
-                      type="time"
-                      value={confirmedTime}
-                      onChange={e => { setConfirmedTime(e.target.value); setTimeError('') }}
-                    />
-                    {timeError && <div className={styles.error}>{timeError}</div>}
+                    {(dateError || timeError) && <div className={styles.error}>{dateError || timeError}</div>}
                   </div>
                 </div>
               )}

@@ -120,6 +120,8 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
 
   const [transcriptsOpen, setTranscriptsOpen] = useState(false)
   const [bookmarksOpen, setBookmarksOpen] = useState(false)
+  const [studentsExpanded, setStudentsExpanded] = useState(false)
+  const [tabletProfileOpen, setTabletProfileOpen] = useState(false)
 
   useEffect(() => {
     const header = document.querySelector('header') as HTMLElement | null
@@ -240,7 +242,20 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
       <div className={styles.resizeHandle} style={{ left: leftWidth - 3 }} onMouseDown={startResize('left')} />
       {/* Right resize handle */}
       <div className={styles.resizeHandle} style={{ right: rightWidth - 3 }} onMouseDown={startResize('right')} />
-      <div className={styles.colLeft}><DashboardStudentSidebar teacherId={statsId} /></div>
+      <div className={styles.colLeft}>
+        <div className={`${styles.mobileStudentsWrap} ${studentsExpanded ? styles.expanded : ''}`}>
+          <DashboardStudentSidebar teacherId={statsId} />
+        </div>
+        <button
+          className={`${styles.mobileStudentsToggle} ${studentsExpanded ? styles.expanded : ''}`}
+          onClick={() => setStudentsExpanded(v => !v)}
+        >
+          {studentsExpanded ? 'Свернуть' : 'Показать учеников полностью'}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+      </div>
 
       <div className={styles.colCenter}><DashboardCenter
         statsId={statsId}
@@ -250,7 +265,20 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
         ownerName={name}
       /></div>
 
-      <div className={styles.colRight}><DashboardProfilePanel
+      <button
+        className={`${styles.tabletProfileToggle} ${tabletProfileOpen ? styles.expanded : ''}`}
+        onClick={() => setTabletProfileOpen(v => !v)}
+        aria-label={tabletProfileOpen ? 'Свернуть профиль' : 'Показать профиль'}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+          <polyline points="15 6 9 12 15 18" />
+        </svg>
+      </button>
+      {tabletProfileOpen && (
+        <div className={styles.tabletProfileBackdrop} onClick={() => setTabletProfileOpen(false)} />
+      )}
+
+      <div className={`${styles.colRight} ${tabletProfileOpen ? styles.tabletOpen : ''}`}><DashboardProfilePanel
         name={name}
         email={initialData.email}
         phone={phone}

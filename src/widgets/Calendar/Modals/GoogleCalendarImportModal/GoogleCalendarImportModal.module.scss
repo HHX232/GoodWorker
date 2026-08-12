@@ -1,0 +1,265 @@
+// Title rendered inside ModalWindowDefault's additionalTitle slot
+.modalTitle {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #534AB7;
+}
+
+.titleText {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111;
+}
+
+// ── Body ──────────────────────────────────────────────────────
+
+.body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 240px;
+}
+
+// ── Idle screen ───────────────────────────────────────────────
+
+.gcalLogoWrap {
+  margin: 0 0 14px;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.08));
+}
+
+.desc {
+  font-size: 13.5px;
+  color: #4B5563;
+  line-height: 1.6;
+  text-align: center;
+  max-width: 360px;
+  margin: 0 0 18px;
+}
+
+.featureList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 340px;
+  margin-bottom: 22px;
+}
+
+.feature {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  color: #374151;
+}
+
+.featureIconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: #F3F4F6;
+  flex-shrink: 0;
+  color: #534AB7;
+}
+
+.connectBtn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 22px;
+  background: #534AB7;
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  margin-top: auto;
+
+  &:hover { background: #4338CA; }
+  &:active { transform: scale(0.98); }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+// ── Loading screen ─────────────────────────────────────────────
+
+.loadingWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 14px;
+  padding: 24px 0;
+  min-height: 220px;
+}
+
+.spinner {
+  animation: spin 0.9s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loadingLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+  text-align: center;
+}
+
+.stepsList {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  width: 100%;
+  max-width: 220px;
+}
+
+.stepItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #9CA3AF;
+  transition: color 0.2s;
+}
+
+.stepDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #E5E7EB;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.stepActive {
+  color: #534AB7;
+  font-weight: 600;
+
+  .stepDot { background: #534AB7; }
+}
+
+.stepDone {
+  color: #10B981;
+
+  .stepDot { background: #10B981; }
+}
+
+// ── Done screen ────────────────────────────────────────────────
+
+.doneWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  flex: 1;
+  min-height: 220px;
+  justify-content: center;
+}
+
+.doneCheck { }
+
+.doneTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111;
+  margin: 0;
+}
+
+.summaryBox {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.summaryLabel {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #059669;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.summaryText {
+  font-size: 13px;
+  color: #065F46;
+  line-height: 1.55;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+// ── Error screen ───────────────────────────────────────────────
+
+.errorWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  flex: 1;
+  justify-content: center;
+  min-height: 220px;
+}
+
+.errorText {
+  font-size: 13.5px;
+  color: #991B1B;
+  text-align: center;
+  max-width: 320px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+// ── Dark theme ─────────────────────────────────────────────────
+
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .eyebrow { color: #818CF8; }
+  .titleText { color: #F1F5F9; }
+
+  .desc { color: #9CA3AF; }
+  .feature { color: #D1D5DB; }
+  .featureIconWrap { background: rgba(255,255,255,0.07); color: #818CF8; }
+
+  .loadingLabel { color: #D1D5DB; }
+  .stepItem { color: #6B7280; }
+  .stepDot { background: #374151; }
+  .stepActive { color: #818CF8; .stepDot { background: #818CF8; } }
+  .stepDone { color: #34D399; .stepDot { background: #34D399; } }
+
+  .doneTitle { color: #F1F5F9; }
+
+  .summaryBox {
+    background: rgba(5,150,105,0.1);
+    border-color: rgba(5,150,105,0.25);
+  }
+  .summaryText { color: #A7F3D0; }
+  .summaryLabel { color: #34D399; }
+
+  .errorText { color: #FCA5A5; }
+}

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
+import { DateTimePickerField } from '@/shared/ui/Calendar/DateTimePickerField'
 import styles from './BookServiceModal.module.scss'
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
@@ -233,24 +234,14 @@ export function BookServiceModal({ open, onClose, service }: Props) {
               {/* Date/Time */}
               <div className={styles.field}>
                 <label className={styles.label}>{t('desiredDateLabel')}</label>
-                <input
-                  className={styles.input}
-                  type="date"
-                  value={desiredDate}
-                  min={new Date().toISOString().split('T')[0]}
-                  onChange={e => { setDesiredDate(e.target.value); setDateError('') }}
+                <DateTimePickerField
+                  date={desiredDate}
+                  time={desiredTime}
+                  onDateChange={d => { setDesiredDate(d); setDateError('') }}
+                  onTimeChange={t => { setDesiredTime(t); setTimeError('') }}
+                  minDate={new Date().toISOString().split('T')[0]}
                 />
-                {dateError && <div className={styles.error}>{dateError}</div>}
-              </div>
-              <div className={styles.field}>
-                <label className={styles.label}>{t('desiredTimeLabel')}</label>
-                <input
-                  className={styles.input}
-                  type="time"
-                  value={desiredTime}
-                  onChange={e => { setDesiredTime(e.target.value); setTimeError('') }}
-                />
-                {timeError && <div className={styles.error}>{timeError}</div>}
+                {(dateError || timeError) && <div className={styles.error}>{dateError || timeError}</div>}
               </div>
 
               {/* Promo code */}

@@ -8,7 +8,6 @@
   justify-content: center;
   padding: 24px 16px;
   position: relative;
-  z-index: 1;
 
   @include sm {
     align-items: flex-start;
@@ -19,6 +18,8 @@
   flex-wrap: wrap;
 }
 .card {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: 420px;
   background: #fff;

@@ -7,7 +7,6 @@ import {validateBlocks} from '@/features/hooks/Test/useSaveTest'
 import {PostMiniTestPayload} from '@/shared/types/Post/Post.type'
 import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
 import {InvalidTestBlocksContext} from '@/shared/ui/Tasks/providers/InvalidBlocksContext/InvalidBlocksContext'
-import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
 import BlockEditor from '@/widgets/Tasks/BlockEditor/BlockEditor'
 import {ClipboardCheckIcon, PencilIcon} from 'lucide-react'
 import {useTranslations} from 'next-intl'
@@ -36,16 +35,21 @@ export function PostMiniTestBlockEditor({blockId, payload}: Props) {
   const t = useTranslations('PostBlockEditor')
   const {updatePostBlockPayload, addBlock, addBlocks, resetConstructor} = useActions()
   const reduxBlocks = useTypedSelector((state) => state.tasks.blocks)
-  const [modalOpen, setModalOpen] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
   const [invalidBlockIds, setInvalidBlockIds] = useState<Set<string>>(new Set())
   const [errorsMap, setErrorsMap] = useState<Map<string, string>>(new Map())
 
-  const openModal = () => {
+  const openEditor = () => {
     resetConstructor()
     if (payload.blocks.length > 0) addBlocks(payload.blocks)
     setInvalidBlockIds(new Set())
     setErrorsMap(new Map())
-    setModalOpen(true)
+    setIsEditing(true)
+  }
+
+  const closeEditor = () => {
+    setIsEditing(false)
+    resetConstructor()
   }
 
   const clearInvalidBlock = (id: string) => {
@@ -79,74 +83,61 @@ export function PostMiniTestBlockEditor({blockId, payload}: Props) {
     setErrorsMap(new Map())
     setInvalidBlockIds(new Set())
     updatePostBlockPayload({id: blockId, payload: {...payload, blocks: [...reduxBlocks]}})
-    setModalOpen(false)
+    setIsEditing(false)
   }
 
   const hasBlocks = payload.blocks.length > 0
 
   return (
-    <>
-      <div className={styles.mini_test_editor}>
-        <div className={styles.mini_test_badge}>
-          <ClipboardCheckIcon size={13} />
-          <span>{t('miniTestLabel')}</span>
-        </div>
-
-        <input
-          className={styles.mini_test_title_input}
-          placeholder={t('miniTestTitlePlaceholder')}
-          value={payload.title}
-          onChange={(e) =>
-            updatePostBlockPayload({id: blockId, payload: {...payload, title: e.target.value}})
-          }
-        />
-
-        <div className={styles.mini_test_summary}>
-          {hasBlocks ? (
-            <div className={styles.mini_test_block_pills}>
-              {payload.blocks.slice(0, 5).map((b) => {
-                const meta = TaskBlockRegistry[b.type as TaskBlockType]
-                return (
-                  <span key={b.id} className={styles.mini_test_block_pill}>
-                    {meta?.label}
-                  </span>
-                )
-              })}
-              {payload.blocks.length > 5 && (
-                <span className={styles.mini_test_block_pill}>+{payload.blocks.length - 5}</span>
-              )}
-            </div>
-          ) : (
-            <p className={styles.mini_test_no_blocks}>{t('miniTestNoBlocks')}</p>
-          )}
-        </div>
-
-        <button className={styles.mini_test_edit_btn} onClick={openModal}>
-          <PencilIcon size={13} />
-          {hasBlocks ? t('miniTestEditBtn', {count: payload.blocks.length}) : t('miniTestAddBtn')}
-        </button>
+    <div className={styles.mini_test_editor}>
+      <div className={styles.mini_test_badge}>
+        <ClipboardCheckIcon size={13} />
+        <span>{t('miniTestLabel')}</span>
       </div>
 
-      <ModalWindowDefault
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        extraClass={styles.mini_test_backdrop}
-        additionalTitle={<p className={styles.modal_title}>{t('miniTestModalTitle')}</p>}
-        modalFooter={
-          <div className={styles.mini_test_modal_footer}>
-            <button className={styles.mini_test_cancel_btn} onClick={() => setModalOpen(false)}>
-              {t('miniTestCancel')}
-            </button>
-            <button className={styles.mini_test_save_btn} onClick={save}>
-              {t('miniTestSave')}
-            </button>
-          </div>
+      <input
+        className={styles.mini_test_title_input}
+        placeholder={t('miniTestTitlePlaceholder')}
+        value={payload.title}
+        onChange={(e) =>
+          updatePostBlockPayload({id: blockId, payload: {...payload, title: e.target.value}})
         }
-      >
+      />
+
+      {!isEditing && (
+        <>
+          <div className={styles.mini_test_summary}>
+            {hasBlocks ? (
+              <div className={styles.mini_test_block_pills}>
+                {payload.blocks.slice(0, 5).map((b) => {
+                  const meta = TaskBlockRegistry[b.type as TaskBlockType]
+                  return (
+                    <span key={b.id} className={styles.mini_test_block_pill}>
+                      {meta?.label}
+                    </span>
+                  )
+                })}
+                {payload.blocks.length > 5 && (
+                  <span className={styles.mini_test_block_pill}>+{payload.blocks.length - 5}</span>
+                )}
+              </div>
+            ) : (
+              <p className={styles.mini_test_no_blocks}>{t('miniTestNoBlocks')}</p>
+            )}
+          </div>
+
+          <button className={styles.mini_test_edit_btn} onClick={openEditor}>
+            <PencilIcon size={13} />
+            {hasBlocks ? t('miniTestEditBtn', {count: payload.blocks.length}) : t('miniTestAddBtn')}
+          </button>
+        </>
+      )}
+
+      {isEditing && (
         <InvalidTestBlocksContext.Provider
           value={{ids: invalidBlockIds, errors: errorsMap, clear: clearInvalidBlock}}
         >
-          <div className={styles.mini_test_modal_layout}>
+          <div className={styles.mini_test_inline_editor}>
             <div className={styles.mini_test_type_picker}>
               {BLOCK_TYPES.map((type) => {
                 const meta = TaskBlockRegistry[type]
@@ -180,9 +171,18 @@ export function PostMiniTestBlockEditor({blockId, payload}: Props) {
                 })
               )}
             </div>
+
+            <div className={styles.mini_test_inline_footer}>
+              <button className={styles.mini_test_cancel_btn} onClick={closeEditor}>
+                {t('miniTestCancel')}
+              </button>
+              <button className={styles.mini_test_save_btn} onClick={save}>
+                {t('miniTestSave')}
+              </button>
+            </div>
           </div>
         </InvalidTestBlocksContext.Provider>
-      </ModalWindowDefault>
-    </>
+      )}
+    </div>
   )
 }

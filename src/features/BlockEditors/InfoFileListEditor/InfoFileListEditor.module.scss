@@ -1,0 +1,243 @@
+.block {
+   display: flex;
+   flex-direction: column;
+   gap: 8px;
+   padding: 12px 14px;
+   width: 100%;
+}
+
+.hidden {
+   display: none;
+}
+
+// ── Upload button ─────────────────────────────────────────────────────────────
+
+.uploadBtn {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   flex-direction: column;
+   gap: 8px;
+   width: 100%;
+   padding: 26px 20px;
+   border-radius: 12px;
+   border: 2px dashed #e4e4e7;
+   background: transparent;
+   color: #868897;
+   cursor: pointer;
+   transition: border-color 0.2s, background 0.2s, color 0.2s;
+
+   &:hover {
+      border-color: #a1a1aa;
+      background: rgba(0, 0, 0, 0.02);
+      color: #141416;
+   }
+
+   // Компактный вид когда файлы уже есть
+   &.uploadBtnCompact {
+      flex-direction: row;
+      padding: 10px 14px;
+      justify-content: flex-start;
+      gap: 10px;
+      font-size: 0.85rem;
+      border-style: dashed;
+      border-width: 1px;
+   }
+}
+
+.uploadText {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   gap: 4px;
+   font-size: 0.92rem;
+
+   .uploadBtnCompact & {
+      align-items: flex-start;
+   }
+}
+
+.uploadHint {
+   font-size: 0.72rem;
+   color: #a1a1aa;
+}
+
+.uploadCounter {
+   margin-left: auto;
+   font-size: 0.7rem;
+   font-weight: 600;
+   color: #a1a1aa;
+   background: rgba(0, 0, 0, 0.05);
+   padding: 3px 8px;
+   border-radius: 999px;
+}
+
+// ── File list ─────────────────────────────────────────────────────────────────
+
+.fileList {
+   display: flex;
+   flex-direction: column;
+   gap: 6px;
+}
+
+// ── File row ──────────────────────────────────────────────────────────────────
+
+.fileRow {
+   display: flex;
+   align-items: center;
+   gap: 12px;
+   padding: 12px 14px;
+   border-radius: 10px;
+   border: 1px solid #f4f4f5;
+   background: #fafafa;
+   transition: border-color 0.15s, background 0.15s;
+
+   &:hover {
+      border-color: #e4e4e7;
+      background: #fff;
+   }
+
+   // Если есть превью — вертикальная раскладка
+   &:has(.imagePreviewWrap) {
+      flex-wrap: wrap;
+   }
+}
+
+// ── File icon ─────────────────────────────────────────────────────────────────
+
+.fileIcon {
+   position: relative;
+   flex-shrink: 0;
+   width: 46px;
+   height: 46px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   border-radius: 10px;
+
+   &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 10px;
+      background: currentColor;
+      opacity: 0.08;
+   }
+}
+
+.fileExt {
+   position: absolute;
+   bottom: -4px;
+   right: -4px;
+   font-size: 0.5rem;
+   font-weight: 700;
+   color: #fff;
+   padding: 2px 4px;
+   border-radius: 4px;
+   line-height: 1;
+   letter-spacing: 0.02em;
+}
+
+// ── File info ─────────────────────────────────────────────────────────────────
+
+.fileInfo {
+   flex: 1;
+   min-width: 0;
+   display: flex;
+   flex-direction: column;
+   gap: 3px;
+}
+
+.fileName {
+   font-size: 0.9rem;
+   font-weight: 500;
+   color: #141416;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+}
+
+.fileSize {
+   font-size: 0.72rem;
+   color: #a1a1aa;
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+
+.fileActions {
+   display: flex;
+   gap: 4px;
+   flex-shrink: 0;
+}
+
+.actionBtn {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   width: 32px;
+   height: 32px;
+   border-radius: 8px;
+   border: none;
+   background: transparent;
+   color: #868897;
+   cursor: pointer;
+   transition: background 0.15s, color 0.15s;
+
+   &:hover {
+      background: rgba(0, 0, 0, 0.06);
+      color: #141416;
+   }
+}
+
+.actionBtnDanger {
+   &:hover {
+      background: rgba(239, 68, 68, 0.08);
+      color: #ef4444;
+   }
+}
+
+// ── Image preview ─────────────────────────────────────────────────────────────
+
+.imagePreviewWrap {
+   width: 100%;
+   border-radius: 8px;
+   overflow: hidden;
+   margin-top: 6px;
+}
+
+.imagePreview {
+   display: block;
+   width: 100%;
+   max-height: 220px;
+   object-fit: cover;
+   border-radius: 8px;
+}
+
+// ── Limit message ─────────────────────────────────────────────────────────────
+
+.limitMsg {
+   font-size: 0.75rem;
+   color: #a1a1aa;
+   text-align: center;
+   padding: 6px;
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .uploadBtn {
+    border-color: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.35);
+    &:hover { border-color: rgba(255,255,255,0.2); color: #e8eaf0; background: rgba(255,255,255,0.04); }
+  }
+  .uploadHint { color: rgba(255,255,255,0.2); }
+  .uploadCounter { color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.06); }
+  .fileRow {
+    border-color: rgba(255,255,255,0.07);
+    background: rgba(255,255,255,0.03);
+    &:hover { border-color: rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); }
+  }
+  .fileName { color: #e8eaf0; }
+  .fileSize { color: rgba(255,255,255,0.25); }
+  .actionBtn { color: rgba(255,255,255,0.3); &:hover { background: rgba(255,255,255,0.07); color: #e8eaf0; } }
+  .limitMsg { color: rgba(255,255,255,0.2); }
+}

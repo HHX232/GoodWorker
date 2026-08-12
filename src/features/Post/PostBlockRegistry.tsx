@@ -1,5 +1,5 @@
 import {PostBlockMeta, PostBlockType} from '@/shared/types/Post/Post.type'
-import {ClipboardCheckIcon, ImageIcon, LinkIcon, MicIcon, TypeIcon} from 'lucide-react'
+import {ClipboardCheckIcon, FileTextIcon, ImageIcon, LinkIcon, MapIcon, MicIcon, PaperclipIcon, TypeIcon} from 'lucide-react'
 
 type PostBlockRegistry = {[K in PostBlockType]: PostBlockMeta & {type: K}}
 
@@ -38,5 +38,26 @@ export const PostBlockRegistry: PostBlockRegistry = {
     description: 'Встроенный тест с результатом',
     icon: <ClipboardCheckIcon className='stroke-rose-400' />,
     defaultPayload: {title: '', blocks: []}
+  },
+  [PostBlockType.POST_LINK]: {
+    type: PostBlockType.POST_LINK,
+    label: 'Ссылка на пост',
+    description: 'Студент читает пост и отмечает как выполненный',
+    icon: <FileTextIcon className='stroke-sky-400' />,
+    defaultPayload: {postId: '', postTitle: ''}
+  },
+  [PostBlockType.ROAD_MAP_LINK]: {
+    type: PostBlockType.ROAD_MAP_LINK,
+    label: 'Курс',
+    description: 'Прогресс студента по курсу',
+    icon: <MapIcon className='stroke-emerald-500' />,
+    defaultPayload: {roadmapId: '', roadmapTitle: ''}
+  },
+  [PostBlockType.FILE_LIST]: {
+    type: PostBlockType.FILE_LIST,
+    label: 'Файлы',
+    description: 'Список прикреплённых файлов',
+    icon: <PaperclipIcon className='stroke-orange-400' />,
+    defaultPayload: {files: []}
   }
 }

@@ -1058,7 +1058,7 @@ function CourseCycle() {
 
 // ─── Posts Slider ───────────────────────────────────────────────
 interface RealPost {
-  id: string; title: string; createdAt: string
+  id: string; title: string; createdAt: string; slug?: string | null
   teacher: { name: string; avatarUrl: string | null }
   category: { translations: { langCode: string; name: string }[] } | null
   viewCount: number; avgRating: number
@@ -1104,7 +1104,7 @@ function PostCard({ post }: { post: RealPost }) {
           </span>
         )}
       </div>
-      <Link href={`/post/${slugify(post.title)}/${post.id}`} className={s.post_btn}>{t('posts_read')}</Link>
+      <Link href={post.slug ? `/post/${post.slug}` : `/post/${slugify(post.title)}/${post.id}`} className={s.post_btn}>{t('posts_read')}</Link>
     </div>
   )
 }

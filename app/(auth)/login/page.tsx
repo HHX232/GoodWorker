@@ -1,5 +1,5 @@
-import LoginPage from '@/_pages/LoginPage/LoginPage';
-import StarBackground from '@/shared/ui/backgrounds/StarBackground/StarBackground';
+import LoginPage from '@/_pages/LoginPage/LoginPage'
+import {DottedSurface} from '@/shared/ui/DottedSurface/DottedSurface'
 
 import { getTranslations } from 'next-intl/server'
 import type { Metadata } from 'next'
@@ -9,11 +9,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('login') }
 }
 
-
 export default function page() {
-  return <>
-  <StarBackground />
-  
-    <LoginPage />
-  </>
+  return (
+    <>
+      <DottedSurface />
+      <LoginPage />
+    </>
+  )
 }

@@ -261,3 +261,20 @@ export function tplBookingCancelled(serviceName: string): NotifContent {
     },
   )
 }
+
+export function tplHomeworkAssigned(hwTitle: string, dueAt?: string | null): NotifContent {
+  const due = dueAt
+    ? new Date(dueAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+    : null
+  const dueSuffix = due ? ` (до ${due})` : ''
+  const dueEn = dueAt ? ` (due ${new Date(dueAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })})` : ''
+  return mk(
+    { ru: 'Новое домашнее задание', en: 'New Homework Assignment', hi: 'नया होमवर्क', zh: '新家庭作业' },
+    {
+      ru: `«${hwTitle}»${dueSuffix}`,
+      en: `«${hwTitle}»${dueEn}`,
+      hi: `«${hwTitle}»`,
+      zh: `«${hwTitle}»`,
+    },
+  )
+}

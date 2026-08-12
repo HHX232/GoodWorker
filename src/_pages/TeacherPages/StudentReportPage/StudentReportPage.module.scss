@@ -221,6 +221,94 @@
   margin-bottom: 16px;
 }
 
+// ── Dark theme ────────────────────────────────────────────────
+
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .wrapper {
+    background: #0e1017;
+  }
+
+  .loadingState {
+    color: rgba(255,255,255,0.3);
+  }
+
+  .errorState {
+    color: #f87171;
+  }
+
+  .report {
+    background: #141620;
+    box-shadow: 0 2px 24px rgba(0,0,0,0.4);
+  }
+
+  .header {
+    border-bottom-color: rgba(255,255,255,0.07);
+  }
+
+  .reportTitle,
+  .studentName {
+    color: #e8eaf0;
+  }
+
+  .meta {
+    color: rgba(255,255,255,0.4);
+  }
+
+  .period {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.3);
+  }
+
+  .card {
+    background: #1e2030;
+    border-color: rgba(255,255,255,0.07);
+  }
+
+  .cardValue {
+    color: #e8eaf0;
+  }
+
+  .cardLabel {
+    color: rgba(255,255,255,0.3);
+  }
+
+  .chartBlock {
+    background: #1e2030;
+    border-color: rgba(255,255,255,0.07);
+  }
+
+  .chartTitle {
+    color: #e8eaf0;
+  }
+
+  .langTabs {
+    background: rgba(255,255,255,0.07);
+  }
+
+  .langTab {
+    color: rgba(255,255,255,0.35);
+
+    &:hover {
+      color: #e8eaf0;
+    }
+  }
+
+  .langTabActive {
+    background: rgba(255,255,255,0.1);
+    color: #e8eaf0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+
+  .printBtn {
+    background: rgba(255,255,255,0.1);
+
+    &:hover {
+      background: rgba(255,255,255,0.18);
+    }
+  }
+}
+
 // ── Print styles ──────────────────────────────────────────────
 
 @media print {

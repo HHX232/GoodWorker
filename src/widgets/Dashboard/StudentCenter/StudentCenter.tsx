@@ -4,8 +4,9 @@ import { RoadMapPreview } from '@/shared/ui/RoadMap/RoadMapPreview/RoadMapPrevie
 import { ServiceCard } from '@/shared/ui/Service/ServiceCard/ServiceCard'
 import { StudentErrorsList } from '@/shared/ui/Stats/StudentErrorsWidget/StudentErrorsList'
 import { VideoZone } from '@/widgets/Dashboard/VideoZone/VideoZone'
+import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import styles from './StudentCenter.module.scss'
 
 interface PersonalService {
@@ -51,7 +52,16 @@ function PersonalServiceCard({
   )
 }
 
-type Tab = 'all' | 'roadmaps' | 'services' | 'errors'
+type Tab = 'all' | 'roadmaps' | 'services' | 'errors' | 'homework'
+
+interface HomeworkItem {
+  id: string
+  title: string
+  dueAt: string | null
+  status: string
+  grade: number | null
+  href: string
+}
 
 interface RoadmapAccess {
   roadmapId: string
@@ -122,6 +132,13 @@ function BookingStatusBadge({ status, t }: { status: string; t: ReturnType<typeo
   )
 }
 
+const HW_STATUS_COLORS: Record<string, { bg: string; color: string }> = {
+  PENDING:     { bg: '#FEF3E2', color: '#9A5A00' },
+  IN_PROGRESS: { bg: '#E3F0FF', color: '#1A5FAB' },
+  SUBMITTED:   { bg: '#E1F5EE', color: '#0F6E56' },
+  REVIEWED:    { bg: '#EEEDFE', color: '#534AB7' },
+}
+
 export function StudentCenter({
   teacherCount, callCount, errorCount,
   roadmapAccess, serviceBookings, personalServices, loading, userName = '',
@@ -132,14 +149,28 @@ export function StudentCenter({
     setLocalPersonalServices(prev => prev.filter(s => s.id !== id))
   }
   const t = useTranslations('dashboard')
+  const tHw = useTranslations('homework')
   const locale = useLocale()
   const [tab, setTab] = useState<Tab>('all')
+  const [homeworks, setHomeworks] = useState<HomeworkItem[]>([])
+  const [hwLoading, setHwLoading] = useState(false)
+
+  useEffect(() => {
+    if (tab !== 'homework') return
+    setHwLoading(true)
+    fetch('/api/homework/mine')
+      .then(r => r.json())
+      .then(d => { if (Array.isArray(d.homeworks)) setHomeworks(d.homeworks) })
+      .catch(() => {})
+      .finally(() => setHwLoading(false))
+  }, [tab])
 
   const TABS: { key: Tab; label: string }[] = [
     { key: 'all',      label: t('tabAll') },
     { key: 'roadmaps', label: t('tabRoadmaps') },
     { key: 'services', label: t('tabServices') },
     { key: 'errors',   label: t('tabErrors') },
+    { key: 'homework', label: t('tabHomework') },
   ]
 
   const stats = [
@@ -183,11 +214,12 @@ export function StudentCenter({
   const showRoadmaps = tab === 'all' || tab === 'roadmaps'
   const showServices = tab === 'all' || tab === 'services'
   const showErrors   = tab === 'all' || tab === 'errors'
+  const showHomework = tab === 'homework'
 
   const visibleRoadmaps = showRoadmaps ? (tab === 'all' ? roadmapAccess.slice(0, 3) : roadmapAccess) : []
   const visibleServices = showServices ? (tab === 'all' ? serviceBookings.slice(0, 2) : serviceBookings) : []
 
-  const isEmpty = !loading && visibleRoadmaps.length === 0 && visibleServices.length === 0 && !showErrors
+  const isEmpty = !loading && !showHomework && visibleRoadmaps.length === 0 && visibleServices.length === 0 && !showErrors
 
   return (
     <div className={styles.center}>
@@ -286,6 +318,52 @@ export function StudentCenter({
             <div className={styles.errorsSection}>
               <StudentErrorsList />
             </div>
+          )}
+
+          {showHomework && (
+            hwLoading ? (
+              <div className={styles.loading}>{t('loading')}</div>
+            ) : homeworks.length === 0 ? (
+              <div className={styles.empty}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ABABAB" strokeWidth="1.5" strokeLinecap="round">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                {tHw('empty')}
+              </div>
+            ) : (
+              <div className={styles.hwList}>
+                {homeworks.map(hw => {
+                  const sc = HW_STATUS_COLORS[hw.status] ?? { bg: '#F0F0F8', color: '#6a6a7a' }
+                  const statusLabel: Record<string, string> = {
+                    PENDING: tHw('statusPending'),
+                    IN_PROGRESS: tHw('statusInProgress'),
+                    SUBMITTED: tHw('statusSubmitted'),
+                    REVIEWED: tHw('statusReviewed'),
+                  }
+                  return (
+                    <Link key={hw.id} href={hw.href} className={styles.hwItem}>
+                      <div className={styles.hwItemMain}>
+                        <span className={styles.hwItemTitle}>{hw.title}</span>
+                        {hw.dueAt && (
+                          <span className={styles.hwItemDue}>
+                            {tHw('dueLabel')}: {new Date(hw.dueAt).toLocaleDateString(locale, { day: 'numeric', month: 'short' })}
+                          </span>
+                        )}
+                      </div>
+                      <div className={styles.hwItemRight}>
+                        {hw.grade !== null && (
+                          <span className={styles.hwItemGrade}>{hw.grade}/10</span>
+                        )}
+                        <span className={styles.hwItemStatus} style={{ background: sc.bg, color: sc.color }}>
+                          {statusLabel[hw.status] ?? hw.status}
+                        </span>
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
+            )
           )}
         </>
       )}

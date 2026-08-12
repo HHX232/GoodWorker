@@ -54,6 +54,7 @@ model Student {
   personalServices       Service[]        @relation("PersonalServices")
   supportRequests        SupportRequest[]
   feedbackPromoGiven     Boolean          @default(false)
+  homeworkAssignments    HomeworkAssignment[]
 }
 
 model Teacher {
@@ -94,6 +95,7 @@ model Teacher {
   reviews            TeacherReview[]
   services           Service[]
   passportDocumentUrl String?
+  homeworks          Homework[]
   experiences         TeacherExperience[]
   supportRequests     SupportRequest[]
   serviceLabels       String[]            @default([])
@@ -274,6 +276,7 @@ model Post {
 
   hasMiniTest      Boolean   @default(false)
   originalLang     String?
+  slug             String?   @unique
 
   allowedStudents  PostAllowedStudent[]
   miniTestAttempts PostTestAttempt[]
@@ -762,6 +765,58 @@ enum RoomAccessType {
   NOBODY
   MY_STUDENTS
   SELECTED
+}
+
+enum HomeworkStatus {
+  PENDING
+  IN_PROGRESS
+  SUBMITTED
+  REVIEWED
+}
+
+model Homework {
+  id          String               @id @default(uuid())
+  teacherId   String
+  title       String
+  content     Json
+  sendAt      DateTime?
+  dueAt       DateTime?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  teacher     Teacher              @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  assignments HomeworkAssignment[]
+}
+
+model HomeworkAssignment {
+  id            String                  @id @default(uuid())
+  homeworkId    String
+  studentId     String
+  status        HomeworkStatus          @default(PENDING)
+  startedAt     DateTime?
+  submittedAt   DateTime?
+  grade         Int?
+  gradeComment  String?
+  gradePhotos   String[]
+  reviewedAt    DateTime?
+  createdAt     DateTime                @default(now())
+  homework      Homework                @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+  student       Student                 @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  blockProgress HomeworkBlockProgress[]
+
+  @@unique([homeworkId, studentId])
+  @@index([studentId])
+  @@index([homeworkId])
+}
+
+model HomeworkBlockProgress {
+  id           String             @id @default(uuid())
+  assignmentId String
+  blockIndex   Int
+  completedAt  DateTime           @default(now())
+  assignment   HomeworkAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  @@unique([assignmentId, blockIndex])
+  @@index([assignmentId])
 }
 
 // ─── Notifications ────────────────────────────────────────

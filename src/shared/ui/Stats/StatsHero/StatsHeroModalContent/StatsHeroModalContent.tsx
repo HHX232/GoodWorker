@@ -35,7 +35,7 @@ interface StatsHeroModalContentProps {
 
 const DEFAULT_KPIS: KpiItem[] = [
   { value: '78',   label: 'Учеников',  delta: '+12 за месяц',  up: true  },
-  { value: '56',   label: 'Road-map',  delta: '+8 активных',   up: true  },
+  { value: '56',   label: 'Курсы',  delta: '+8 активных',   up: true  },
   { value: '4.8',  label: 'Рейтинг',   delta: '+0.2',          up: true  },
   { value: '₽142к', label: 'Выручка', delta: '−3%',            up: false },
 ]
@@ -123,7 +123,7 @@ export function StatsHeroModalContent({
 
       {/* ── Students + road-map ───────────────────────────────────────────── */}
       <section className={styles.section} style={{ animationDelay: '0.28s' }}>
-        <h3 className={styles.section_title}>Ученики и road-map по месяцам</h3>
+        <h3 className={styles.section_title}>Ученики и курсы по месяцам</h3>
         <div className={styles.chart_wrap}>
           <ResponsiveContainer width="100%" height={150}>
             <BarChart data={mainData} barGap={2} margin={{ top: 4, right: 0, left: -28, bottom: 0 }}>
@@ -132,7 +132,7 @@ export function StatsHeroModalContent({
               <YAxis tick={{ fontSize: 10, fill: tick }} axisLine={false} tickLine={false} />
               <Tooltip content={<ChartTooltip isDark={isDark} />} cursor={{ fill: cursor }} />
               <Bar dataKey="students" name="Ученики"  fill={P.purple} radius={[3,3,0,0]} maxBarSize={20} />
-              <Bar dataKey="rm"       name="Road-map" fill={P.orange}  radius={[3,3,0,0]} maxBarSize={20} />
+              <Bar dataKey="rm"       name="Курсы" fill={P.orange}  radius={[3,3,0,0]} maxBarSize={20} />
             </BarChart>
           </ResponsiveContainer>
         </div>

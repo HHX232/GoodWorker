@@ -1,0 +1,39 @@
+.bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 0;
+  border-radius: 0 2px 2px 0;
+  pointer-events: none;
+  z-index: 10;
+  background: linear-gradient(90deg, #dc2626 0%, #ef4444 60%, #fca5a5 100%);
+  box-shadow: 0 0 10px rgba(220, 38, 38, 0.5), 0 0 3px rgba(220, 38, 38, 0.3);
+  animation: nav-fill 4s cubic-bezier(0.08, 0.04, 0.04, 1) forwards;
+  opacity: 1;
+  transition: width 0.18s ease, opacity 0.28s ease 0.1s;
+}
+
+.done {
+  animation: none;
+  opacity: 0;
+}
+
+@keyframes nav-fill {
+  0%   { width: 0%; }
+  12%  { width: 30%; }
+  30%  { width: 54%; }
+  50%  { width: 68%; }
+  70%  { width: 78%; }
+  90%  { width: 84%; }
+  100% { width: 87%; }
+}
+
+// ── Dark themes ───────────────────────────────────────────────────────────────
+:global(html.theme-dark),
+:global(html.pomodoro-dark) {
+  .bar {
+    background: linear-gradient(90deg, #ef4444 0%, #f87171 60%, #fecaca 100%);
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.55), 0 0 4px rgba(239, 68, 68, 0.3);
+  }
+}

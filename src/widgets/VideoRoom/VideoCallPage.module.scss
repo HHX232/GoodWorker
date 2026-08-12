@@ -9,10 +9,16 @@ $text: #0f172a;
 $text-dim: #475569;
 $text-muted: #94a3b8;
 
+// ── Dark palette (video room chrome: top bar, control bar, notes modal) ────────
+$bg-dark: #0d0c14;
+$surface-dark: #16141f;
+$border-dark: rgba(255, 255, 255, 0.07);
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 .page {
-  height: 100dvh;
+  // full viewport minus the global site header (82px tall + 4px margin-bottom)
+  height: calc(100dvh - 86px);
   background: $bg;
   display: flex;
   flex-direction: column;
@@ -130,11 +136,12 @@ $text-muted: #94a3b8;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 24px;
-  border-bottom: 1px solid $border;
-  flex-shrink: 0;
+  padding: 10px 20px;
   background: $bg-card;
+  border-bottom: 1px solid $border;
   box-shadow: 0 1px 0 $border;
+  flex-shrink: 0;
+  z-index: 10;
 }
 
 .topBarLeft {
@@ -220,6 +227,42 @@ $text-muted: #94a3b8;
   border-radius: 999px;
   font-size: 11px;
   font-weight: 600;
+}
+
+// ── Whiteboard controls (moved into the main top bar) ─────────────────────────
+.topWbControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 6px;
+  padding-left: 10px;
+  border-left: 1px solid $border;
+}
+.topWbLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: $text-dim;
+}
+.topWbBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: $text-dim;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid $border;
+  border-radius: 8px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  &:hover { background: rgba(0, 0, 0, 0.08); color: $text; }
+}
+.topWbStop {
+  color: $danger;
+  border-color: rgba(220, 38, 38, 0.3);
+  background: rgba(220, 38, 38, 0.06);
+  &:hover { background: $danger; color: #fff; border-color: $danger; }
 }
 
 // ── Video area ────────────────────────────────────────────────────────────────
@@ -768,6 +811,173 @@ $text-muted: #94a3b8;
   }
 }
 
+// ── Control bar (opaque, full-width, normal flow — dark redesign) ─────────────
+
+.controlbar {
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+  min-height: 76px;
+  padding: 10px 22px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: $bg-card;
+  border-top: 1px solid $border;
+  z-index: 5;
+
+  [data-tip] {
+    position: relative;
+    &::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 9px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1c1a26;
+      border: 1px solid #2c2942;
+      color: #d0c8ff;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+      padding: 5px 11px;
+      border-radius: 7px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.14s;
+      z-index: 50;
+    }
+    &:hover::after { opacity: 1; }
+  }
+}
+
+.cbGroupLeft { display: flex; align-items: center; gap: 10px; flex: 1; flex-wrap: wrap; }
+.cbGroupCenter { display: flex; align-items: center; gap: 12px; }
+.cbGroupRight { display: flex; align-items: center; gap: 10px; flex: 1; justify-content: flex-end; flex-wrap: wrap; }
+
+.cbTool {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 48px; padding: 0 16px;
+  border-radius: 14px;
+  border: 1px solid $border;
+  background: rgba(0, 0, 0, 0.04);
+  color: $text-dim; font-size: 13.5px; font-weight: 600;
+  cursor: pointer; transition: background 0.15s, color 0.15s; white-space: nowrap;
+  &:hover { background: rgba(0, 0, 0, 0.08); color: $text; }
+}
+.cbToolActive {
+  background: rgba(124, 58, 237, 0.1); border-color: rgba(124, 58, 237, 0.35); color: $accent;
+  &:hover { background: rgba(124, 58, 237, 0.16); color: $accent; }
+}
+.cbRound {
+  width: 52px; height: 52px; border-radius: 50%; border: none;
+  background: rgba(0, 0, 0, 0.06); color: $text-dim; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+  &:hover { background: rgba(0, 0, 0, 0.1); color: $text; }
+}
+.cbRoundOff { background: #ef4444; color: #fff; &:hover { background: #dc2626; color: #fff; } }
+.cbRoundActive { background: rgba(124, 58, 237, 0.14); color: $accent; &:hover { background: rgba(124, 58, 237, 0.2); color: $accent; } }
+.cbEnd {
+  height: 52px; padding: 0 20px; border: none; border-radius: 16px;
+  background: $danger; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; transition: background 0.15s;
+  &:hover { background: #b91c1c; }
+}
+.cbNotes {
+  height: 52px; padding: 0 18px;
+  border: 1px solid $border; border-radius: 16px;
+  background: rgba(0, 0, 0, 0.04); color: $text-dim; font-size: 13.5px; font-weight: 600; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; transition: background 0.15s, color 0.15s;
+  &:hover { background: rgba(0, 0, 0, 0.08); color: $text; }
+}
+.cbNotesActive { background: rgba(124, 58, 237, 0.12); border-color: rgba(124, 58, 237, 0.35); color: $accent; }
+
+.cbMore { display: none; }
+.moreSheetBackdrop { display: none; }
+
+// tablet / small desktop: icon-only tool buttons
+@media (max-width: 1150px) and (min-width: 641px) {
+  .cbTool, .cbNotes {
+    width: 48px; padding: 0; gap: 0; border-radius: 50%; font-size: 0; justify-content: center;
+    svg { width: 18px; height: 18px; }
+  }
+  .cbEnd { width: 52px; padding: 0; gap: 0; border-radius: 50%; font-size: 0; justify-content: center; }
+}
+@media (max-width: 900px) and (min-width: 641px) {
+  .cbGroupLeft { display: none; }
+}
+
+// mobile: compact bar + "more" bottom sheet
+@media (max-width: 640px) {
+  .controlbar {
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+    justify-content: space-around;
+    gap: 0;
+    [data-tip]::after { display: none; }
+  }
+  .cbGroupLeft { display: none; }
+  .cbGroupRight { flex: 0; gap: 0; .cbNotes, .cbTool { display: none; } }
+  .cbEnd {
+    width: 50px; height: 50px; border-radius: 50%; padding: 0; gap: 0; font-size: 0; justify-content: center;
+    svg { width: 20px; height: 20px; }
+  }
+  .cbRound { width: 50px; height: 50px; }
+  .cbMore {
+    display: flex; width: 50px; height: 50px; border-radius: 50%; border: none;
+    background: rgba(0, 0, 0, 0.06); color: $text-dim; cursor: pointer;
+    align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.15s;
+    &:hover { background: rgba(0, 0, 0, 0.1); }
+  }
+  .moreSheetBackdrop {
+    position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); z-index: 300;
+    display: flex; align-items: flex-end;
+  }
+  .moreSheet {
+    background: $bg-card; border-radius: 22px 22px 0 0;
+    padding: 6px 0 calc(20px + env(safe-area-inset-bottom, 0px)); width: 100%; max-height: 70%;
+  }
+  .moreGrip { width: 36px; height: 4px; background: rgba(0, 0, 0, 0.15); border-radius: 3px; margin: 8px auto 16px; }
+  .moreSheetTitle { font-size: 15px; font-weight: 800; color: $text; padding: 0 18px 10px; }
+  .moreItem {
+    display: flex; align-items: center; gap: 13px; padding: 14px 18px;
+    border-bottom: 1px solid $border; color: $text; font-size: 14.5px; font-weight: 600;
+    background: none; border-left: none; border-right: none; border-top: none; width: 100%; text-align: left; cursor: pointer;
+    svg { width: 19px; height: 19px; color: $accent; flex-shrink: 0; }
+    &:last-child { border-bottom: none; }
+    &.moreDanger { color: $danger; svg { color: $danger; } }
+  }
+}
+
+// ── Bottom bar show/hide toggle ───────────────────────────────────────────────
+
+.barToggle {
+  position: absolute;
+  right: 16px;
+  bottom: 90px;
+  z-index: 8;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid $border;
+  background: $bg-card;
+  color: $text-dim;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  transition: bottom 0.28s ease, background 0.15s, color 0.15s;
+
+  &:hover { background: rgba(0, 0, 0, 0.04); color: $text; }
+  svg { transition: transform 0.28s ease; }
+}
+
+.barToggleCollapsed {
+  bottom: 16px;
+  svg { transform: rotate(180deg); }
+}
+
 // ── Live caption overlay (main speaker tile) ──────────────────────────────────
 
 .liveCaption {
@@ -972,34 +1182,37 @@ $text-muted: #94a3b8;
 
 .notesPanel {
   position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 272px;
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-left: 1px solid $border;
-  z-index: 25;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 40;
+  background: rgba(15, 23, 42, 0.5);
+  animation: captionFadeIn 0.18s ease;
+}
+
+.notesPanelInner {
+  width: 520px;
+  max-width: calc(100% - 32px);
+  max-height: 78%;
+  background: $bg-card;
+  border: 1px solid $border;
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: slideInRight 0.2s ease;
-}
-
-@keyframes slideInRight {
-  from { transform: translateX(100%); }
-  to   { transform: translateX(0); }
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.25);
 }
 
 .notesPanelHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
+  gap: 10px;
+  padding: 18px 20px;
   border-bottom: 1px solid $border;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 800;
   color: $text;
   flex-shrink: 0;
 }
@@ -1019,33 +1232,33 @@ $text-muted: #94a3b8;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
   border: none;
   background: rgba(0, 0, 0, 0.06);
   color: $text-dim;
   cursor: pointer;
   transition: background 0.15s;
 
-  &:hover { background: rgba(0, 0, 0, 0.12); color: $text; }
+  &:hover { background: rgba(0, 0, 0, 0.12); }
 }
 
 .notesList {
   flex: 1;
   overflow-y: auto;
-  padding: 12px 14px;
+  padding: 16px 20px 22px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .notesEmpty {
-  font-size: 12px;
+  font-size: 13px;
   color: $text-muted;
   margin: 0;
   text-align: center;
-  padding-top: 16px;
+  padding-top: 20px;
 }
 
 .notesSrError {
@@ -1125,22 +1338,55 @@ $text-muted: #94a3b8;
 .mobileLogErr { color: #f87171 !important; }
 .mobileLogWrn { color: #fbbf24 !important; }
 
-.noteEntry {
-  font-size: 12px;
-  line-height: 1.5;
+// ── Notes: messenger-style bubbles ────────────────────────────────────────────
+
+.noteMsg {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  max-width: 78%;
 }
-
-.noteAuthor {
-  font-weight: 700;
-  color: $text;
+.noteMsgMine {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+.noteMsgOther {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+.noteMsgAuthor {
   font-size: 11px;
+  font-weight: 700;
+  color: $accent;
+  margin: 0 0 3px 12px;
+}
+.noteMsgBubble {
+  padding: 8px 13px;
+  border-radius: 15px;
+  font-size: 14px;
+  line-height: 1.45;
+  word-break: break-word;
+}
+.noteMsgMine .noteMsgBubble {
+  background: $accent;
+  color: #fff;
+  border-bottom-right-radius: 5px;
+}
+.noteMsgOther .noteMsgBubble {
+  background: rgba(0, 0, 0, 0.05);
+  color: $text;
+  border-bottom-left-radius: 5px;
 }
 
-.noteText {
-  color: $text-dim;
+// ── Notes dark theme ──────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .notesPanel { background: rgba(8, 6, 16, 0.6); }
+  .notesPanelInner { background: #16141f; border-color: #2c2942; box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5); }
+  .notesPanelHeader { color: #fff; border-bottom-color: #262338; }
+  .notesPanelClose { background: #221f30; color: #c9c6d8; &:hover { background: #2b2740; } }
+  .notesEmpty { color: rgba(255, 255, 255, 0.35); }
+  .notesSrWarning, .notesSrError { color: #fbbf24; }
+  .noteMsgAuthor { color: #b9a6ff; }
+  .noteMsgOther .noteMsgBubble { background: #221f30; color: #d8d4ea; }
 }
 
 // ── End-of-call summary modal ─────────────────────────────────────────────────
@@ -2197,3 +2443,104 @@ $text-muted: #94a3b8;
 
 .inviteFeedbackOk { color: $success; }
 .inviteFeedbackErr { color: $danger; }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── Video room DARK theme (chrome: page, top bar, control bar, toggle) ─────────
+// ══════════════════════════════════════════════════════════════════════════════
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .page { background: $bg-dark; }
+  .videoArea { background: $bg-dark; }
+
+  // top bar
+  .topBar { background: rgba(13, 12, 20, 0.96); border-bottom-color: $border-dark; box-shadow: none; }
+  .topRoom { color: rgba(255, 255, 255, 0.9); }
+  .topTopic { color: #b9a6ff; background: rgba(91, 63, 214, 0.2); border-color: rgba(91, 63, 214, 0.35); }
+  .topStatus { color: rgba(255, 255, 255, 0.45); background: rgba(255, 255, 255, 0.06); border-color: $border-dark; }
+  .topUser { color: #b9a6ff; background: rgba(91, 63, 214, 0.2); border-color: rgba(91, 63, 214, 0.35); }
+  .topOwner { color: #fbbf24; }
+  .topSpeaker { color: #4ade80; background: rgba(22, 163, 74, 0.12); border-color: rgba(22, 163, 74, 0.3); }
+  .topWbControls { border-left-color: $border-dark; }
+  .topWbLabel { color: rgba(255, 255, 255, 0.6); }
+  .topWbBtn {
+    color: rgba(255, 255, 255, 0.7); background: rgba(255, 255, 255, 0.08); border-color: $border-dark;
+    &:hover { background: rgba(255, 255, 255, 0.14); color: #fff; }
+  }
+  .topWbStop {
+    color: #fca5a5; border-color: rgba(224, 55, 79, 0.4); background: rgba(224, 55, 79, 0.12);
+    &:hover { background: $danger; color: #fff; border-color: $danger; }
+  }
+
+  // control bar
+  .controlbar { background: #0d0c14; border-top-color: $border-dark; }
+  .cbTool {
+    border-color: rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.08); color: #fff;
+    &:hover { background: rgba(255, 255, 255, 0.16); color: #fff; }
+  }
+  .cbToolActive {
+    background: rgba(91, 63, 214, 0.35); border-color: rgba(91, 63, 214, 0.5); color: #fff;
+    &:hover { background: rgba(91, 63, 214, 0.45); color: #fff; }
+  }
+  .cbRound {
+    background: rgba(255, 255, 255, 0.1); color: #fff;
+    &:hover { background: rgba(255, 255, 255, 0.18); color: #fff; }
+  }
+  .cbRoundOff { background: #ff5b5b; &:hover { background: #ff4747; } }
+  .cbRoundActive { background: rgba(91, 63, 214, 0.4); color: #fff; &:hover { background: rgba(91, 63, 214, 0.5); color: #fff; } }
+  .cbNotes {
+    border-color: rgba(255, 255, 255, 0.16); background: rgba(255, 255, 255, 0.08); color: #fff;
+    &:hover { background: rgba(255, 255, 255, 0.15); color: #fff; }
+  }
+  .cbNotesActive { background: rgba(91, 63, 214, 0.3); border-color: rgba(91, 63, 214, 0.5); }
+  .cbMore { background: rgba(255, 255, 255, 0.1); color: #fff; &:hover { background: rgba(255, 255, 255, 0.18); } }
+
+  // mobile "more" sheet
+  .moreSheetBackdrop { background: rgba(6, 5, 12, 0.55); }
+  .moreSheet { background: #16141f; }
+  .moreGrip { background: #3a3750; }
+  .moreSheetTitle { color: #fff; }
+  .moreItem {
+    color: #fff; border-bottom-color: #241f34;
+    svg { color: #b9a6ff; }
+    &.moreDanger { color: #ff7a7a; svg { color: #ff7a7a; } }
+  }
+
+  // bottom-bar toggle
+  .barToggle {
+    background: #16141f; border-color: $border-dark; color: #c9c6d8;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    &:hover { background: #221f30; color: #fff; }
+  }
+}
+
+// ── Test-picker modal DARK theme ──────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .testPickerModal { background: #16141f; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5); }
+  .testPickerTitle { color: #fff; }
+  .testPickerClose { background: #221f30; border-color: #2c2942; color: #c9c6d8; &:hover { background: #2b2740; } }
+  .testPickerTabs { border-bottom-color: #262338; }
+  .testPickerTab { color: rgba(255, 255, 255, 0.55); &:hover { color: #fff; } }
+  .testPickerTabActive { color: #fff; border-bottom-color: #b9a6ff; }
+
+  .testListItem {
+    background: #1d1a29; border-color: #2c2942;
+    &:hover { border-color: #4a4570; background: #221f30; }
+  }
+  .testListName { color: #fff; }
+  .testListMeta { color: rgba(255, 255, 255, 0.4); }
+  .testLaunchBtn { background: $accent; &:hover { background: #6d28d9; } }
+  .testListEmpty { color: rgba(255, 255, 255, 0.4); }
+
+  .boardLaunchDesc { color: rgba(255, 255, 255, 0.6); }
+  .quickQuestion { background: #1d1a29; border-color: #2c2942; }
+  .quickQuestionNum { color: rgba(255, 255, 255, 0.55); }
+
+  // generic form controls inside the modal
+  .testPickerModal {
+    input, textarea, select {
+      background: #0f0e17;
+      border: 1px solid #2c2942;
+      color: #e8e6f0;
+      &::placeholder { color: rgba(255, 255, 255, 0.35); }
+    }
+  }
+}

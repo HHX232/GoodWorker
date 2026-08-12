@@ -1,7 +1,9 @@
 'use client'
 
 import { CreateServiceModal } from '@/widgets/Dashboard/CreateServiceModal/CreateServiceModal'
+import { HomeworkTab } from './HomeworkTab'
 import {getDisplayName} from '@/shared/utils/transliterate'
+import { DateTimePickerField } from '@/shared/ui/Calendar/DateTimePickerField'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -49,7 +51,7 @@ interface Props {
   onClose: () => void
 }
 
-type Tab = 'meetings' | 'errors' | 'schedule'
+type Tab = 'meetings' | 'errors' | 'schedule' | 'homework'
 
 function formatDate(iso: string) {
   const d = new Date(iso)
@@ -65,14 +67,8 @@ function localDatetimeToISO(value: string): string {
   return new Date(value).toISOString()
 }
 
-function toLocalDatetime(iso: string): string {
-  const d = new Date(iso)
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
-}
-
-function minDatetime() {
-  return toLocalDatetime(new Date().toISOString())
+function todayYMD(): string {
+  return new Date().toISOString().split('T')[0]
 }
 
 export function StudentDetailModal({
@@ -90,7 +86,9 @@ export function StudentDetailModal({
   const [services, setServices] = useState<ServiceOption[]>([])
 
   const [schedTitle, setSchedTitle] = useState(t('sdmDefaultTitle', { name: displayName }))
-  const [schedAt, setSchedAt] = useState('')
+  const [schedDate, setSchedDate] = useState('')
+  const [schedTime, setSchedTime] = useState('')
+  const schedAt = schedDate && schedTime ? `${schedDate}T${schedTime}` : ''
   const [schedDuration, setSchedDuration] = useState(60)
   const [schedServiceId, setSchedServiceId] = useState('')
   const [schedLoading, setSchedLoading] = useState(false)
@@ -165,7 +163,7 @@ export function StudentDetailModal({
           { id: data.id, title: schedTitle, scheduledAt: localDatetimeToISO(schedAt), roomName: data.roomName },
         ].sort((a, b) => new Date(a.scheduledAt ?? 0).getTime() - new Date(b.scheduledAt ?? 0).getTime()))
         setSchedTitle(t('sdmDefaultTitle', { name: displayName }))
-        setSchedAt('')
+        setSchedDate(''); setSchedTime('')
         setTimeout(() => setSchedSuccess(false), 3000)
       }
     } catch {
@@ -240,6 +238,14 @@ export function StudentDetailModal({
               <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
             </svg>
             {t('sdmTabSchedule')}
+          </button>
+          <button className={`${styles.tab} ${tab === 'homework' ? styles.tabActive : ''}`} onClick={() => setTab('homework')}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" />
+            </svg>
+            {t('sdmTabHomework')}
           </button>
         </div>
 
@@ -330,6 +336,13 @@ export function StudentDetailModal({
             </div>
           )}
 
+          {/* Homework tab */}
+          {tab === 'homework' && (
+            <div className={styles.section}>
+              <HomeworkTab studentId={studentId} teacherId={teacherId} />
+            </div>
+          )}
+
           {/* Schedule tab */}
           {!loading && tab === 'schedule' && (
             <div className={styles.section}>
@@ -355,14 +368,13 @@ export function StudentDetailModal({
                 </div>
                 <div className={styles.formField}>
                   <label className={styles.formLabel}>{t('sdmFormDateLabel')}</label>
-                  <input
-                    className={styles.formInput}
-                    type="datetime-local"
-                    value={schedAt}
-                    min={minDatetime()}
-                    onChange={e => { setSchedAt(e.target.value); setSchedConflict(null); setSchedError(null) }}
-                    required
-                    disabled={schedLoading}
+                  <DateTimePickerField
+                    date={schedDate}
+                    time={schedTime}
+                    onDateChange={d => { setSchedDate(d); setSchedConflict(null); setSchedError(null) }}
+                    onTimeChange={t => { setSchedTime(t); setSchedConflict(null); setSchedError(null) }}
+                    minDate={todayYMD()}
+                    placeholder={t('sdmFormDateLabel')}
                   />
                 </div>
                 <div className={styles.formField}>

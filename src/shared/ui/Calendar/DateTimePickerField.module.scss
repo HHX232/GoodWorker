@@ -1,0 +1,266 @@
+// ── Trigger ───────────────────────────────────────────────────────────────────
+.wrap {
+  position: relative;
+  width: 100%;
+}
+
+.trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1.5px solid #E0E0EA;
+  border-radius: 10px;
+  background: #fafafa;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+  font-size: 14px;
+  font-family: inherit;
+
+  &:hover { border-color: #534AB7; background: #fff; }
+}
+
+.triggerOpen {
+  border-color: #534AB7;
+  background: #fff;
+}
+
+.triggerIcon {
+  flex-shrink: 0;
+  color: #ABABAB;
+}
+
+.triggerValue {
+  flex: 1;
+  color: #141416;
+  font-size: 14px;
+}
+
+.triggerPlaceholder {
+  flex: 1;
+  color: #ABABAB;
+  font-size: 14px;
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: #ABABAB;
+  transition: transform 0.15s;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+// ── Popover ───────────────────────────────────────────────────────────────────
+.popover {
+  position: fixed;
+  z-index: 1310000020;
+  display: flex;
+  background: #fff;
+  border: 1.5px solid #E0E0EA;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.14);
+  overflow: hidden;
+  animation: fadeIn 0.12s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ── Calendar ──────────────────────────────────────────────────────────────────
+.cal {
+  width: 232px;
+  flex-shrink: 0;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-bottom: 1px solid #F0F0F6;
+}
+
+.navBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #534AB7;
+  transition: background 0.12s;
+
+  &:hover { background: #EEF2FF; }
+  &:disabled { color: #CCC; cursor: default; &:hover { background: none; } }
+}
+
+.monthLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #141416;
+  text-transform: capitalize;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  padding: 6px 7px;
+}
+
+.dowHdr {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 0 5px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #ABABAB;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.day {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  color: #141416;
+  transition: background 0.1s, color 0.1s;
+
+  &:hover:not(:disabled) { background: #EEF2FF; color: #534AB7; }
+}
+
+.daySel {
+  background: #534AB7 !important;
+  color: #fff !important;
+  font-weight: 600;
+}
+
+.dayToday {
+  font-weight: 700;
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: #534AB7;
+  }
+}
+
+.dayDis {
+  color: #CCC;
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+// ── Time columns ──────────────────────────────────────────────────────────────
+.timeCols {
+  display: flex;
+  border-left: 1px solid #F0F0F6;
+}
+
+.timeColsOnly {
+  border-left: none;
+}
+
+.timeCol {
+  width: 48px;
+  height: 228px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+  padding: 4px 0;
+
+  &::-webkit-scrollbar { width: 3px; }
+  &::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 99px; }
+}
+
+.timeColDivider {
+  width: 1px;
+  background: #F0F0F6;
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
+.timeItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 32px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+  color: #3A3A4A;
+  transition: background 0.1s, color 0.1s;
+  border-radius: 0;
+
+  &:hover { background: #EEF2FF; color: #534AB7; }
+}
+
+.timeItemSel {
+  background: #534AB7 !important;
+  color: #fff !important;
+  font-weight: 600;
+}
+
+// ── Dark theme ─────────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .trigger {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.1);
+    &:hover { border-color: #818cf8; background: rgba(255,255,255,0.07); }
+  }
+  .triggerOpen { border-color: #818cf8; background: rgba(255,255,255,0.07); }
+  .triggerValue { color: #e8eaf0; }
+  .triggerPlaceholder { color: rgba(255,255,255,0.25); }
+  .triggerIcon { color: rgba(255,255,255,0.25); }
+  .chevron { color: rgba(255,255,255,0.25); }
+
+  .popover {
+    background: #1e2030;
+    border-color: rgba(255,255,255,0.08);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  }
+
+  .nav { border-color: rgba(255,255,255,0.07); }
+  .navBtn { color: #a5b4fc; &:hover { background: rgba(129,140,248,0.1); } &:disabled { color: rgba(255,255,255,0.15); } }
+  .monthLabel { color: #e8eaf0; }
+  .dowHdr { color: rgba(255,255,255,0.22); }
+
+  .day { color: #e8eaf0; &:hover:not(:disabled) { background: rgba(129,140,248,0.12); color: #a5b4fc; } }
+  .daySel { background: #818cf8 !important; }
+  .dayToday::after { background: #818cf8; }
+  .dayDis { color: rgba(255,255,255,0.15); }
+
+  .timeCols { border-color: rgba(255,255,255,0.07); }
+  .timeCol { scrollbar-color: rgba(255,255,255,0.08) transparent; }
+  .timeColDivider { background: rgba(255,255,255,0.07); }
+  .timeItem { color: rgba(255,255,255,0.65); &:hover { background: rgba(129,140,248,0.12); color: #a5b4fc; } }
+  .timeItemSel { background: #818cf8 !important; color: #fff !important; }
+}

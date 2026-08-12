@@ -180,3 +180,61 @@
    text-align: center;
    color: #E24B4A;
 }
+
+// ── Dark theme ─────────────────────────────────────────────────────────────────
+
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+   .main_content {
+      background-color: #1a1c27;
+      color: #e8eaf0;
+
+      > h1 { color: #e8eaf0; }
+   }
+
+   .title { color: #e8eaf0; }
+   .theme { color: #6b7280; }
+   .desc  { color: #9ca3af; }
+
+   .block_card { background: #1a1c27; }
+   .block_label { color: #6b7280; }
+
+   .block {
+      background: #1e2130;
+      border-color: rgba(255,255,255,0.08);
+   }
+
+   .footer {
+      background: #141620;
+      border-top-color: rgba(255,255,255,0.07);
+   }
+
+   .submit_btn {
+      background: #534AB7;
+      &:hover { opacity: 1; background: #4338CA; }
+   }
+
+   .question { color: #e8eaf0; }
+
+   .option {
+      background: #1e2130;
+      border-color: rgba(255,255,255,0.09);
+      color: #d1d5db;
+      &:hover { border-color: rgba(255,255,255,0.22); }
+      &.option_selected {
+         border-color: #818cf8;
+         background: rgba(129,140,248,0.12);
+         color: #e8eaf0;
+      }
+   }
+
+   .free_input {
+      background: #1e2130;
+      border-color: rgba(255,255,255,0.09);
+      color: #e8eaf0;
+      &:focus { border-color: #818cf8; }
+      &::placeholder { color: #4b5576; }
+   }
+
+   .info_text { color: #d1d5db; }
+   .loading { color: #6b7280; }
+}

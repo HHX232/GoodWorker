@@ -1414,7 +1414,7 @@ function ContentTab() {
             className={`${styles.content_sub_tab} ${contentType === 'roadmaps' ? styles.content_sub_tab_active : ''}`}
             onClick={() => setContentType('roadmaps')}
           >
-            Road-maps
+            Курсы
           </button>
         </div>
       </div>
@@ -2015,7 +2015,7 @@ function StatsTab() {
             </div>
           </div>
           <div className={styles.stats_content_block}>
-            <span className={styles.stats_content_label}>Road-maps</span>
+            <span className={styles.stats_content_label}>Курсы</span>
             <div className={styles.stats_content_pills}>
               <span className={styles.stats_pill} style={{ background: '#F0FDF4', color: '#15803D' }}>{t('statsPublished', {n: content.publishedRoadmaps})}</span>
               <span className={styles.stats_pill} style={{ background: '#FFFBEB', color: '#B45309' }}>{t('statsPending', {n: content.pendingRoadmaps})}</span>

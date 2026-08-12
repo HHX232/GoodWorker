@@ -124,7 +124,13 @@
     "TEST_LINK_label": "Test",
     "TEST_LINK_desc": "Link to a test",
     "MINI_TEST_label": "Mini-test",
-    "MINI_TEST_desc": "Embedded test with result"
+    "MINI_TEST_desc": "Embedded test with result",
+    "POST_LINK_label": "Post link",
+    "POST_LINK_desc": "Student reads a post and marks it as done",
+    "ROAD_MAP_LINK_label": "Course",
+    "ROAD_MAP_LINK_desc": "Student's progress on a course",
+    "FILE_LIST_label": "Files",
+    "FILE_LIST_desc": "List of attached files"
   },
   "PostBlockEditor": {
     "textLabel": "Text",
@@ -134,6 +140,9 @@
     "blockDeleted": "Block \"{label}\" deleted",
     "deleteBlock": "Delete block",
     "miniTestLabel": "Mini-Test",
+    "POST_LINKLabel": "Post link",
+    "ROAD_MAP_LINKLabel": "Course",
+    "FILE_LISTLabel": "Files",
     "miniTestTitlePlaceholder": "Mini-test title",
     "miniTestNoBlocks": "No questions added",
     "miniTestEditBtn": "Edit questions ({count})",
@@ -175,6 +184,14 @@
     "audioFormats": "MP3, WAV, OGG, M4A",
     "analyzing": "Analyzing audio...",
     "studentHint": "The student will see this player during the lesson"
+  },
+  "InfoFileListEditor": {
+    "downloadFile": "Download",
+    "removeFile": "Remove",
+    "uploadFiles": "Upload files",
+    "addFiles": "Add files",
+    "anyFormatMaxSize": "Any format · up to {maxSize} MB · max {maxFiles} files",
+    "maxFilesLimit": "Maximum {maxFiles} files"
   },
   "BlockEditor": {
     "fillText": "Fill in the text",
@@ -1075,7 +1092,9 @@
     "vipUntil": "VIP until {date}",
     "vipInfinite": "VIP ∞",
     "getVip": "Get VIP",
-    "showAll": "Show all"
+    "showAll": "Show all",
+    "sdmTabHomework": "Homework",
+    "tabHomework": "HW"
   },
   "SetCommentBlock": {
     "heading": "Leave a review",
@@ -1384,6 +1403,28 @@
       "priorityLow": "Low",
       "priorityMedium": "Medium",
       "priorityHigh": "High"
+    },
+    "googleImport": {
+      "eyebrow": "Import",
+      "title": "Google Calendar",
+      "desc": "Connect Google Calendar — AI will automatically sort events into lessons and notes. All imported entries will be marked as «pending confirmation».",
+      "feat1": "Import events from the last 30 days",
+      "feat2": "AI determines type: lesson / note",
+      "feat3": "Automatically links to students",
+      "feat4": "Yellow badge on all imported events",
+      "connectBtn": "Connect Google Calendar",
+      "stepFetch": "Fetching events",
+      "stepAI": "AI analysis",
+      "stepSave": "Saving",
+      "labelFetch": "Fetching events from Google Calendar...",
+      "labelClassify": "AI is analyzing events...",
+      "labelSave": "Saving to your calendar...",
+      "labelConnect": "Connecting to Google Calendar...",
+      "doneTitle": "Imported {count} events",
+      "summaryLabel": "What to review",
+      "closeBtn": "Close",
+      "retryBtn": "Try again",
+      "vipToast": "Google Calendar import is available for VIP teachers only"
     }
   },
   "roadmapViewer": {
@@ -1461,7 +1502,6 @@
   },
   "PageTitles": {
     "home": "Home",
-       
     "login": "Log In",
     "register": "Sign Up",
     "createPost": "Create Post",
@@ -2229,8 +2269,7 @@
     "n_file_title": "Hooks cheatsheet",
     "n_post_title": "React Flow in practice",
     "n_audio_title": "Code walkthrough",
-    "n_test_title": "Test: React basics",
-    "center_btn": "Center view"
+    "n_test_title": "Test: React basics"
   },
   "PdfInfoPage": {
     "nav_subtitle": "/ Tests",
@@ -2568,9 +2607,8 @@
     "desc": "Start a lesson in one click — the student joins by link, recording and notes start automatically.",
     "createBtn": "Create room",
     "joinPlaceholder": "Join by code…",
-    "cameraCheck": "Check camera & microphone",
     "cameraReady": "Camera and microphone ready",
-    "cameraNoAccess": "No access — click to retry",
+    "cameraNoAccess": "No access to camera or microphone",
     "cameraChecking": "Checking access…",
     "tabActive": "Active",
     "tabRecent": "Recent",
@@ -2585,47 +2623,38 @@
     "errorNoAccess": "No access to this room",
     "errorNotFound": "Room not found or ended",
     "errorConnection": "Connection error",
-    "errorPermission": "Please allow camera and microphone access and try again",
     "today": "Today",
     "yesterday": "Yesterday"
   },
-
   "PrivacyPage": {
     "back": "← Back to Home",
     "title": "Privacy Policy",
     "updated": "Last updated: May 16, 2025",
-
     "section1Title": "1. General Provisions",
     "section1p1": "This Privacy Policy describes how the GoodWorker platform collects, uses, and protects the personal data of users when they use our service.",
     "section1p2": "By using the platform, you agree to the terms of this Policy. If you do not agree with its provisions, please discontinue using the service.",
-
     "section2Title": "2. What Data We Collect",
     "section2item1": "Registration data: name, email address, phone number, password (stored in encrypted form).",
     "section2item2": "Profile data: profile photo, biography, specialization (for tutors), work experience documents, passport scan (if voluntarily provided).",
     "section2item3": "Activity data: lesson records, video call transcriptions, reviews, bookmarks, test results.",
     "section2item4": "Technical data: IP address, browser type, session data, login time.",
     "section2item5": "Payment data: subscription plan transactions — payment details are processed by a payment provider and are not stored on our servers.",
-
     "section3Title": "3. Purposes of Data Processing",
     "section3item1": "Providing platform functionality: lesson booking, video calls, material sharing.",
     "section3item2": "Verifying tutor identity and confirming their qualifications.",
     "section3item3": "Sending notifications related to platform operations.",
     "section3item4": "Improving service quality and combating fraud.",
     "section3item5": "Compliance with the legislation of the Russian Federation.",
-
     "section4Title": "4. Sharing Data with Third Parties",
     "section4p1": "We do not sell or transfer your personal data to third parties, except in the following cases:",
     "section4item1": "Payment processing services (to the extent necessary for processing transactions).",
     "section4item2": "Video communication services (LiveKit) — for organizing online lessons.",
     "section4item3": "Requirements of government authorities in cases provided for by law.",
-
     "section5Title": "5. Data Storage and Protection",
     "section5p1": "Your data is stored on secure servers. Passwords are stored in encrypted form using cryptographic hash functions. Access to personal data is restricted and granted only to authorized personnel.",
     "section5p2": "We apply technical and organizational measures to protect data from unauthorized access, modification, disclosure, or destruction.",
-
     "section6Title": "6. Data Retention Period",
     "section6p1": "We retain your data for the entire period of your use of the platform. After account deletion, personal data is deleted within 30 days, except for data that we are required to retain by law.",
-
     "section7Title": "7. Your Rights",
     "section7p1": "In accordance with Federal Law No. 152-FZ \"On Personal Data\", you have the right to:",
     "section7item1": "Obtain information about the composition and purposes of processing your personal data.",
@@ -2633,13 +2662,10 @@
     "section7item3": "Request deletion of data (withdraw consent to processing).",
     "section7item4": "Contact Roskomnadzor in case of violation of your rights.",
     "section7p2": "To exercise your rights, please contact us using the contact details provided below.",
-
     "section8Title": "8. Cookies",
     "section8p1": "The platform uses cookies to maintain the authorization session and improve service performance. You may disable cookies in your browser settings, however this may affect platform functionality.",
-
     "section9Title": "9. Policy Changes",
     "section9p1": "We reserve the right to make changes to this Policy. The current version is always available on this page. In case of significant changes, we will notify users through the platform.",
-
     "section10Title": "10. Contact",
     "section10p1": "For questions related to personal data processing, you can contact us:",
     "section10item1": "Through the <feedbackLink>Feedback</feedbackLink> section on the platform.",
@@ -2655,7 +2681,7 @@
     "section2p1": "GoodWorker is an educational platform that connects students with tutors. The platform provides tools for:",
     "section2item1": "Searching and booking tutors.",
     "section2item2": "Conducting online classes via video conferencing.",
-    "section2item3": "Working with educational materials: tests, roadmaps, posts.",
+    "section2item3": "Working with educational materials: tests, courses, posts.",
     "section2item4": "Tracking learning progress.",
     "section3Title": "3. Registration and Account",
     "section3p1": "To use the platform, you must create an account. You agree to:",
@@ -2680,7 +2706,7 @@
     "section6p1": "The platform provides basic access for free. Additional features (VIP status) are available on a paid basis. The cost and terms of tariff plans are specified in the relevant section of the platform.",
     "section6p2": "Payment for sessions is made directly between the student and tutor in accordance with the terms of the specific service.",
     "section7Title": "7. User Content",
-    "section7p1": "By publishing materials on the platform (posts, comments, roadmaps, tests), you grant GoodWorker a non-exclusive license to use them for the purpose of operating the service.",
+    "section7p1": "By publishing materials on the platform (posts, comments, courses, tests), you grant GoodWorker a non-exclusive license to use them for the purpose of operating the service.",
     "section7p2": "You retain all rights to your materials and are responsible for their legality.",
     "section8Title": "8. Limitation of Liability",
     "section8p1": "GoodWorker is not responsible for:",
@@ -2699,5 +2725,46 @@
     "section13p1": "For questions regarding the terms of use:",
     "section13item1": "Feedback",
     "section13item2": "Also check out our Privacy Policy."
+  },
+  "homework": {
+    "statusPending": "Not started",
+    "statusInProgress": "In progress",
+    "statusSubmitted": "Submitted",
+    "statusReviewed": "Reviewed",
+    "dueLabel": "Due",
+    "blocksProgress": "{done} of {total} blocks",
+    "submitted": "All done!",
+    "blockMarkDone": "Mark as done",
+    "blockUnmark": "Unmark",
+    "miniTestHint": "Complete the test to mark this block",
+    "testLinkHint": "Complete the linked test to mark this block",
+    "back": "Back",
+    "createTitle": "New homework assignment",
+    "titleLabel": "Title",
+    "titlePlaceholder": "Enter title",
+    "studentsLabel": "Students",
+    "noStudentsAvailable": "No students available",
+    "sendAtLabel": "Send date",
+    "dueAtLabel": "Due date",
+    "creating": "Creating...",
+    "createBtn": "Create assignment",
+    "errorTitle": "Enter an assignment title",
+    "errorStudents": "Select at least one student",
+    "errorBlocks": "Add at least one block",
+    "createdSuccess": "Assignment created",
+    "gradeLabel": "Grade",
+    "gradeComment": "Comment (optional)",
+    "gradePhotos": "Attach photo",
+    "gradeSave": "Save grade",
+    "gradeCancel": "Cancel",
+    "gradeEdit": "Edit",
+    "gradeSaving": "Saving...",
+    "gradeSelectError": "Select a grade from 1 to 10",
+    "reviewTitle": "Teacher's grade",
+    "reviewedAt": "Reviewed",
+    "viewBtn": "Open",
+    "assignBtn": "Assign homework",
+    "empty": "No homework assignments",
+    "gradeSaved": "Grade saved"
   }
 }

@@ -102,6 +102,98 @@ export function DetailRow({item, onClick}: {item: NotificationItem; onClick?: ()
   const href = cfg.getHref?.(payload) ?? null
   const [bookingOpen, setBookingOpen] = useState(false)
 
+  // Typed payload shorthand
+  const p = payload as Record<string, string | number | undefined>
+
+  // ── Rich type-specific section ──
+  const richSection = (() => {
+    switch (item.type) {
+      case 'ROADMAP_PURCHASE': return (
+        <div className={styles.rich_card}>
+          {p.amount !== undefined && (
+            <div className={styles.rich_purchase_row}>
+              <span className={styles.rich_amount}>{p.amount}</span>
+              <span className={styles.rich_currency}>{p.currency ?? 'BYN'}</span>
+            </div>
+          )}
+          {p.roadmapTitle && (
+            <div className={styles.rich_meta}>
+              Курс: <strong>{p.roadmapTitle}</strong>
+            </div>
+          )}
+          {actorName && actorId && (
+            <div className={styles.rich_meta}>
+              Покупатель: <Link href={`/users/${actorId}`} className={styles.rich_link}>{actorName}</Link>
+            </div>
+          )}
+        </div>
+      )
+
+      case 'NEW_STUDENT': return (
+        <div className={styles.rich_card}>
+          {p.roadmapTitle && (
+            <div className={styles.rich_meta}>
+              Записался на курс: <strong>{p.roadmapTitle}</strong>
+            </div>
+          )}
+          <div className={styles.rich_meta}>
+            {new Date(item.createdAt).toLocaleDateString(locale === 'en' ? 'en-GB' : 'ru-RU', {
+              day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit',
+            })}
+          </div>
+        </div>
+      )
+
+      case 'NEW_COMMENT_ON_POST': return (
+        <div className={styles.rich_card}>
+          {p.textPreview && (
+            <blockquote className={styles.rich_quote}>«{p.textPreview}{String(p.textPreview).length >= 150 ? '…' : ''}»</blockquote>
+          )}
+          {p.postTitle && (
+            <div className={styles.rich_meta}>
+              В посте: <strong>{p.postTitle}</strong>
+            </div>
+          )}
+        </div>
+      )
+
+      case 'NEW_COMPLAINT': return (
+        <div className={`${styles.rich_card} ${styles.rich_card_danger}`}>
+          {actorName && actorId && (
+            <div className={styles.rich_actor_row}>
+              <span className={styles.rich_initials} style={{background: cfg.color + '22', color: cfg.color}}>
+                {actorName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
+              </span>
+              <Link href={`/users/${actorId}`} className={styles.rich_link}>{actorName}</Link>
+              {actorRole === 'STUDENT' && <span className={styles.rich_role}>{t('roleStudent')}</span>}
+            </div>
+          )}
+          {p.textPreview && (
+            <blockquote className={styles.rich_quote}>{p.textPreview}{String(p.textPreview).length >= 120 ? '…' : ''}</blockquote>
+          )}
+          {(p.postTitle || p.roadmapTitle) && (
+            <div className={styles.rich_meta}>
+              {p.roadmapTitle ? `Курс: ${p.roadmapTitle}` : `Пост: ${p.postTitle}`}
+            </div>
+          )}
+        </div>
+      )
+
+      case 'HOMEWORK_ASSIGNED': return (
+        <div className={styles.rich_card}>
+          <div className={styles.rich_meta}>Вам назначено домашнее задание</div>
+          {p.assignmentId && (
+            <Link href={`/homework/${p.assignmentId}`} className={styles.rich_action_link} style={{color: cfg.color}}>
+              Приступить к выполнению →
+            </Link>
+          )}
+        </div>
+      )
+
+      default: return null
+    }
+  })()
+
   const personalServiceInfo = item.type === 'PERSONAL_SERVICE' && payload.serviceId
     ? {
         id: payload.serviceId as string,
@@ -147,7 +239,9 @@ export function DetailRow({item, onClick}: {item: NotificationItem; onClick?: ()
             : item.body && <p className={styles.body}>{item.body}</p>
           }
 
-          {!cfg.hideActor && actorId && actorName && (
+          {richSection}
+
+          {!cfg.hideActor && actorId && actorName && !richSection && (
             <ActorChip actorId={actorId} actorName={actorName} actorRole={actorRole} color={cfg.color} />
           )}
 

@@ -1,0 +1,144 @@
+.calendar {
+  border: 1.5px solid #E0E0EA;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-bottom: 1px solid #E0E0EA;
+}
+
+.navBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #534AB7;
+  transition: background 0.12s, color 0.12s;
+
+  &:hover { background: #EEF2FF; }
+  &:disabled { color: #CCCCCC; cursor: default; &:hover { background: none; } }
+}
+
+.monthLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: #141416;
+  text-transform: capitalize;
+  letter-spacing: -0.01em;
+}
+
+// ── Grid ──────────────────────────────────────────────────────────────────────
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  padding: 8px;
+}
+
+.dowHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 0 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #ABABAB;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+// ── Day cells ─────────────────────────────────────────────────────────────────
+.day {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  color: #141416;
+  transition: background 0.1s, color 0.1s;
+
+  &:hover:not(:disabled) {
+    background: #EEF2FF;
+    color: #534AB7;
+  }
+}
+
+.selected {
+  background: #534AB7 !important;
+  color: #fff !important;
+  font-weight: 600;
+}
+
+.today {
+  font-weight: 700;
+}
+
+.todayDot {
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #534AB7;
+  pointer-events: none;
+}
+
+.disabled {
+  color: #CCCCCC;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+// ── Dark theme ─────────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .calendar {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .nav { border-color: rgba(255, 255, 255, 0.07); }
+
+  .navBtn {
+    color: #a5b4fc;
+    &:hover { background: rgba(129, 140, 248, 0.1); }
+    &:disabled { color: rgba(255, 255, 255, 0.15); &:hover { background: none; } }
+  }
+
+  .monthLabel { color: #e8eaf0; }
+
+  .dowHeader { color: rgba(255, 255, 255, 0.25); }
+
+  .day {
+    color: #e8eaf0;
+    &:hover:not(:disabled) {
+      background: rgba(129, 140, 248, 0.12);
+      color: #a5b4fc;
+    }
+  }
+
+  .selected { background: #818cf8 !important; color: #fff !important; }
+
+  .todayDot { background: #818cf8; }
+
+  .disabled { color: rgba(255, 255, 255, 0.15); }
+}

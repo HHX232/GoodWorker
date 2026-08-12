@@ -29,7 +29,6 @@ import {
   IconKick,
   IconLink,
   IconMicOff, IconMicOn,
-  IconNotes,
   IconPalette,
   IconPhone,
   IconScreenShare, IconScreenShareOff,
@@ -140,6 +139,8 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   const [copied, setCopied] = useState(false)
   const [showSummary, setShowSummary] = useState(false)
   const [showNotes, setShowNotes] = useState(false)
+  const [showMore, setShowMore] = useState(false)
+  const [barCollapsed, setBarCollapsed] = useState(false)
   const isMobile = typeof navigator !== 'undefined' && /Android|iP(hone|ad|od)/i.test(navigator.userAgent)
   const isDev = process.env.NODE_ENV === 'development'
 
@@ -177,10 +178,6 @@ useEffect(() => {
   // Toast state
   const [toast, setToast] = useState<{ message: string; loading: boolean } | null>(null)
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  // Controls auto-hide state
-  const [controlsActive, setControlsActive] = useState(true)
-  const controlsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Room limit / invite state
   const [limitBlocked, setLimitBlocked] = useState(false)
@@ -409,18 +406,6 @@ useEffect(() => {
     await toggleScreenShare()
     setToast(null)
   }, [screenShareEnabled, toggleScreenShare, showToast])
-
-  // ── Controls auto-hide ─────────────────────────────────────────────────────
-  const resetControlsTimer = useCallback(() => {
-    setControlsActive(true)
-    if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current)
-    controlsTimerRef.current = setTimeout(() => setControlsActive(false), 3000)
-  }, [])
-
-  const hideControlsNow = useCallback(() => {
-    if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current)
-    setControlsActive(false)
-  }, [])
 
   // ── Leave ──────────────────────────────────────────────────────────────────
   const { callNotes } = transcription
@@ -657,6 +642,16 @@ useEffect(() => {
   })()
   const sideParts = room.participants.filter(p => p !== mainPart)
 
+  // Dev-only stub participant to preview the multi-person layout without a 2nd real client
+  const fakeParticipant: Participant = {
+    identity: 'Гость (демо)',
+    isLocal: false,
+    audioMuted: true,
+    videoMuted: true,
+    localAudioMuted: false,
+  }
+  const showFake = isDev
+
   const renderVideo = () => {
     if (room.participants.length === 0) return (
       <div className={styles.waiting}><div className={styles.waitingPulse} /><p>Ожидаем участников...</p></div>
@@ -668,8 +663,8 @@ useEffect(() => {
             ? renderTestTile(true)
             : mainPart && renderTile(mainPart, true)
           }
-          {/* side pips: real participants */}
-          {(testIsMain ? room.participants : sideParts).map((p, i) => (
+          {/* side pips: real participants (+ dev stub) */}
+          {(testIsMain ? room.participants : [...sideParts, ...(showFake ? [fakeParticipant] : [])]).map((p, i) => (
             <DraggablePip key={p.identity} index={i}>{renderTile(p, false, true)}</DraggablePip>
           ))}
           {/* test as small pip when not main */}
@@ -691,14 +686,16 @@ useEffect(() => {
     if (layout === 'split') return (
       <div className={styles.splitArea}>
         {room.participants.map(p => renderTile(p))}
+        {showFake && renderTile(fakeParticipant)}
         {callTest && callTest.mode !== 'whiteboard' && renderTestTile(false)}
         {whiteboardPip}
       </div>
     )
-    const totalCount = room.participants.length + (callTest && callTest.mode !== 'whiteboard' ? 1 : 0)
+    const totalCount = room.participants.length + (showFake ? 1 : 0) + (callTest && callTest.mode !== 'whiteboard' ? 1 : 0)
     return (
       <div className={styles.gridArea} data-count={totalCount}>
         {room.participants.map(p => renderTile(p))}
+        {showFake && renderTile(fakeParticipant)}
         {callTest && callTest.mode !== 'whiteboard' && renderTestTile(false)}
         {whiteboardPip}
       </div>
@@ -710,38 +707,43 @@ useEffect(() => {
     const locallyMuted = new Set(room.participants.filter(p => p.localAudioMuted).map(p => p.identity))
     const visibleNotes = callNotes.filter(n => !locallyMuted.has(n.identity))
     return (
-      <div className={styles.notesPanel}>
-        <div className={styles.notesPanelHeader}>
-          <span>Конспект</span>
-          {!transcription.browserHasSpeech && callNotes.length === 0 && (
-            <span className={styles.notesSrWarning}>Нужен агент или Chrome</span>
-          )}
-          <button className={styles.notesPanelClose} onClick={() => setShowNotes(false)}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
-          </button>
-        </div>
-        <div className={styles.notesList}>
-          {transcription.srError && (
-            <p className={styles.notesSrError}>{transcription.srError}</p>
-          )}
-          {visibleNotes.length === 0 ? (
-            <p className={styles.notesEmpty}>
-              {!transcription.browserHasSpeech
-                ? 'Браузер не поддерживает Speech Recognition. Используйте Chrome.'
-                : transcription.srError
-                ? 'Транскрипция недоступна — текст появится если подключён агент.'
-                : 'Говорите — текст появится здесь...'}
-            </p>
-          ) : (
-            visibleNotes.map((n, i) => (
-              <div key={i} className={styles.noteEntry}>
-                <span className={styles.noteAuthor}>{n.identity}</span>
-                <span className={styles.noteText}>{n.text}</span>
-              </div>
-            ))
-          )}
+      <div className={styles.notesPanel} onClick={e => { if (e.target === e.currentTarget) setShowNotes(false) }}>
+        <div className={styles.notesPanelInner}>
+          <div className={styles.notesPanelHeader}>
+            <span>Конспект урока</span>
+            {!transcription.browserHasSpeech && callNotes.length === 0 && (
+              <span className={styles.notesSrWarning}>Нужен агент или Chrome</span>
+            )}
+            <button className={styles.notesPanelClose} onClick={() => setShowNotes(false)}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </button>
+          </div>
+          <div className={styles.notesList}>
+            {transcription.srError && (
+              <p className={styles.notesSrError}>{transcription.srError}</p>
+            )}
+            {visibleNotes.length === 0 ? (
+              <p className={styles.notesEmpty}>
+                {!transcription.browserHasSpeech
+                  ? 'Браузер не поддерживает Speech Recognition. Используйте Chrome.'
+                  : transcription.srError
+                  ? 'Транскрипция недоступна — текст появится если подключён агент.'
+                  : 'Говорите — текст появится здесь...'}
+              </p>
+            ) : (
+              visibleNotes.map((n, i) => {
+                const mine = n.identity === userName
+                return (
+                  <div key={i} className={`${styles.noteMsg} ${mine ? styles.noteMsgMine : styles.noteMsgOther}`}>
+                    {!mine && <span className={styles.noteMsgAuthor}>{n.identity}</span>}
+                    <span className={styles.noteMsgBubble}>{n.text}</span>
+                  </div>
+                )
+              })
+            )}
+          </div>
         </div>
       </div>
     )
@@ -950,12 +952,9 @@ useEffect(() => {
           <div key="__test__" className={`${styles.tile} ${styles.tileLarge} ${styles.testTileLarge}`}>
             <div className={styles.testTileContent}>
               <CallWhiteboard
-                isOwner={isOwner}
                 remoteElements={whiteboardElements}
                 remoteFiles={whiteboardFiles}
                 onBroadcast={broadcastWhiteboard}
-                onStop={stopTest}
-                onHide={isOwner ? hideTest : localHideWhiteboard}
               />
             </div>
           </div>
@@ -1092,118 +1091,156 @@ useEffect(() => {
     )
   }
 
-  // ── Controls bar ──────────────────────────────────────────────────────────
-  const renderControls = (overlay: boolean) => (
-    <div className={`${styles.controls} ${overlay ? styles.controlsOverlay : ''} ${overlay && controlsActive ? styles.controlsOverlayActive : ''}`}>
-      <div className={styles.ctrlLeft}>
-        <button className={`${styles.pill} ${copied ? styles.pillActive : ''}`} onClick={shareLink} title={t('linkTooltip')}>
-          {copied ? <IconCheck /> : <IconLink />}
-          {copied ? t('linkCopied') : t('link')}
-        </button>
-        {isMainSpeaker && (
-          <button className={styles.pill} onClick={() => changeLayout(LAYOUTS[(LAYOUTS.indexOf(layout) + 1) % LAYOUTS.length])}>
-            {LAYOUT_ICONS[layout]}
-            {LAYOUT_LABELS[layout]}
+  // ── Controls bar (opaque, full-width, normal flow) ──────────────────────────
+  const renderControls = () => (
+    <>
+      <div className={styles.controlbar}>
+        {/* Left: layout + teacher tools + share */}
+        <div className={styles.cbGroupLeft}>
+          {isMainSpeaker && (
+            <button
+              className={styles.cbTool}
+              onClick={() => changeLayout(LAYOUTS[(LAYOUTS.indexOf(layout) + 1) % LAYOUTS.length])}
+              data-tip={t('layoutTooltip') ?? 'Сменить расположение камер'}
+            >
+              {LAYOUT_ICONS[layout]}
+              {LAYOUT_LABELS[layout]}
+            </button>
+          )}
+          <button
+            className={`${styles.cbTool} ${copied ? styles.cbToolActive : ''}`}
+            onClick={shareLink}
+            data-tip={t('linkTooltip')}
+          >
+            {copied ? <IconCheck /> : <IconLink />}
+            {copied ? t('linkCopied') : t('link')}
           </button>
-        )}
-        <button
-          className={`${styles.pill} ${showNotes ? styles.pillActive : ''}`}
-          onClick={() => setShowNotes(n => !n)}
-          title={!transcription.browserHasSpeech ? t('notesChrome') : t('notesTooltip')}
-        >
-          <IconNotes /> {t('notes')}
-        </button>
-        {isOwner && !callTest && (
-          <>
-            <button className={styles.pill} onClick={openTestPicker} title={t('test')}>
-              <IconClipboard /> {t('test')}
+          {isOwner && !callTest && (
+            <>
+              <button className={styles.cbTool} onClick={openTestPicker} data-tip={t('test')}>
+                <IconClipboard /> {t('test')}
+              </button>
+              <button className={styles.cbTool} onClick={launchWhiteboard} data-tip={t('whiteboard')}>
+                <IconPalette /> {t('whiteboard')}
+              </button>
+            </>
+          )}
+          {callTest && (
+            <button
+              className={`${styles.cbTool} ${mainSpeaker === '__test__' ? styles.cbToolActive : ''}`}
+              onClick={() => { setMainSpeaker('__test__'); broadcast({ type: 'speaker', identity: '__test__' }) }}
+            >
+              {callTest.mode === 'whiteboard' ? <IconPalette /> : <IconClipboard />}
+              {callTest.title}
             </button>
-            <button className={styles.pill} onClick={launchWhiteboard} title={t('whiteboard')}>
-              <IconPalette /> {t('whiteboard')}
+          )}
+        </div>
+
+        {/* Center: media controls */}
+        <div className={styles.cbGroupCenter}>
+          {room.videoDevices.length > 1 && (
+            <button className={styles.cbRound} onClick={handleSwitchCamera} data-tip={t('switchCamTooltip')}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+                <path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+              </svg>
             </button>
-            <button className={styles.pill} onClick={() => { setShowInviteModal(true); setInviteFeedback(null) }} title={t('invite')}>
+          )}
+          <button
+            className={`${styles.cbRound} ${!room.micEnabled ? styles.cbRoundOff : ''}`}
+            onClick={toggleMic}
+            data-tip={room.micEnabled ? t('micTooltipOn') : t('micTooltipOff')}
+          >
+            {room.micEnabled ? <IconMicOn /> : <IconMicOff />}
+          </button>
+          <button
+            className={`${styles.cbRound} ${!room.camEnabled ? styles.cbRoundOff : ''}`}
+            onClick={toggleCam}
+            data-tip={room.camEnabled ? t('camTooltipOn') : t('camTooltipOff')}
+          >
+            {room.camEnabled ? <IconCam /> : <IconCamOff />}
+          </button>
+          <button className={styles.cbRound} onClick={handleReloadCamera} data-tip={t('reloadCamTooltip')}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/>
+            </svg>
+          </button>
+          <button
+            className={`${styles.cbRound} ${screenShareEnabled ? styles.cbRoundActive : ''}`}
+            onClick={handleToggleScreenShare}
+            data-tip={screenShareEnabled ? t('screenShareStopTooltip') : t('screenShareTooltip')}
+          >
+            {screenShareEnabled ? <IconScreenShareOff /> : <IconScreenShare />}
+          </button>
+          <button className={styles.cbMore} onClick={() => setShowMore(true)} aria-label="Ещё">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round">
+              <circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>
+            </svg>
+          </button>
+        </div>
+
+        {/* Right: invite + notes + leave */}
+        <div className={styles.cbGroupRight}>
+          {isOwner && !callTest && (
+            <button className={styles.cbTool} onClick={() => { setShowInviteModal(true); setInviteFeedback(null) }} data-tip={t('invite')}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <line x1="19" y1="8" x2="19" y2="14"/>
-                <line x1="22" y1="11" x2="16" y2="11"/>
+                <circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/>
               </svg>
               {t('invite')}
             </button>
-          </>
-        )}
-        {callTest && (
-          <button
-            className={`${styles.pill} ${mainSpeaker === '__test__' ? styles.pillActive : ''}`}
-            onClick={() => {
-              setMainSpeaker('__test__')
-              broadcast({ type: 'speaker', identity: '__test__' })
-            }}
-          >
-            {callTest.mode === 'whiteboard' ? <IconPalette /> : <IconClipboard />}
-            {callTest.title}
-          </button>
-        )}
-      </div>
-
-      <div className={styles.ctrlBottomRow}>
-        <div className={styles.ctrlCenter}>
-          <button
-            className={`${styles.roundBtn} ${room.micEnabled ? styles.roundOn : styles.roundOff}`}
-            onClick={toggleMic}
-            title={room.micEnabled ? t('micTooltipOn') : t('micTooltipOff')}
-          >
-            <div className={styles.roundIcon}>{room.micEnabled ? <IconMicOn /> : <IconMicOff />}</div>
-            <span className={styles.roundLabel}>{room.micEnabled ? t('micOn') : t('micOff')}</span>
-          </button>
-          <button
-            className={`${styles.roundBtn} ${room.camEnabled ? styles.roundOn : styles.roundOff}`}
-            onClick={toggleCam}
-            title={room.camEnabled ? t('camTooltipOn') : t('camTooltipOff')}
-          >
-            <div className={styles.roundIcon}>{room.camEnabled ? <IconCam /> : <IconCamOff />}</div>
-            <span className={styles.roundLabel}>{room.camEnabled ? t('camOn') : t('camOff')}</span>
-          </button>
-          {room.videoDevices.length > 1 && (
-            <button className={styles.roundBtn} onClick={handleSwitchCamera} title={t('switchCamTooltip')}>
-              <div className={styles.roundIcon}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                  <path d="M12 17v-6M9 14l3-3 3 3"/>
-                </svg>
-              </div>
-              <span className={styles.roundLabel}>{t('switchCam')}</span>
-            </button>
           )}
-          <button className={styles.roundBtn} onClick={handleReloadCamera} title={t('reloadCamTooltip')}>
-            <div className={styles.roundIcon}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="1 4 1 10 7 10"/>
-                <path d="M3.51 15a9 9 0 1 0 .49-4.95"/>
-              </svg>
-            </div>
-            <span className={styles.roundLabel}>{t('reloadCam')}</span>
-          </button>
           <button
-            className={`${styles.roundBtn} ${screenShareEnabled ? styles.roundOn : ''}`}
-            onClick={handleToggleScreenShare}
-            title={screenShareEnabled ? t('screenShareStopTooltip') : t('screenShareTooltip')}
+            className={`${styles.cbNotes} ${showNotes ? styles.cbNotesActive : ''}`}
+            onClick={() => setShowNotes(n => !n)}
+            data-tip={!transcription.browserHasSpeech ? t('notesChrome') : t('notesTooltip')}
           >
-            <div className={styles.roundIcon}>
-              {screenShareEnabled ? <IconScreenShareOff /> : <IconScreenShare />}
-            </div>
-            <span className={styles.roundLabel}>{screenShareEnabled ? t('screenShareStop') : t('screenShare')}</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/>
+            </svg>
+            {t('notes')}
           </button>
-        </div>
-
-        <div className={styles.ctrlRight}>
-          <button className={`${styles.roundBtn} ${styles.roundLeave}`} onClick={leaveRoom} title={t('leaveTooltip')}>
-            <div className={styles.roundIcon}><IconPhone /></div>
-            <span className={styles.roundLabel}>{t('leave')}</span>
+          <button className={styles.cbEnd} onClick={leaveRoom} data-tip={t('leaveTooltip')}>
+            <IconPhone />
+            {t('leave')}
           </button>
         </div>
       </div>
-    </div>
+
+      {/* Mobile "more" bottom sheet */}
+      {showMore && (
+        <div className={styles.moreSheetBackdrop} onClick={e => { if (e.target === e.currentTarget) setShowMore(false) }}>
+          <div className={styles.moreSheet}>
+            <div className={styles.moreGrip} />
+            <div className={styles.moreSheetTitle}>Ещё действия</div>
+            {isOwner && !callTest && (
+              <>
+                <button className={styles.moreItem} onClick={() => { setShowMore(false); openTestPicker() }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                  {t('test')}
+                </button>
+                <button className={styles.moreItem} onClick={() => { setShowMore(false); launchWhiteboard() }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+                  {t('whiteboard')}
+                </button>
+                <button className={styles.moreItem} onClick={() => { setShowMore(false); setShowInviteModal(true); setInviteFeedback(null) }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>
+                  {t('invite')}
+                </button>
+              </>
+            )}
+            <button className={styles.moreItem} onClick={() => { setShowMore(false); setShowNotes(n => !n) }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/></svg>
+              {t('notes')}
+            </button>
+            <button className={`${styles.moreItem} ${styles.moreDanger}`} onClick={() => { setShowMore(false); leaveRoom() }}>
+              <IconPhone />
+              {t('leave')}
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   )
 
   // ── Screen share panel ────────────────────────────────────────────────────
@@ -1300,6 +1337,34 @@ useEffect(() => {
               <span className={styles.topRoom}>{roomName}</span>
               {topic && <span className={styles.topTopic}>{topic}</span>}
               {room.status && !room.status.startsWith('Ошибка') && <span className={styles.topStatus}>{room.status}</span>}
+              {callTest?.mode === 'whiteboard' && mainSpeaker === '__test__' && (
+                <div className={styles.topWbControls}>
+                  <span className={styles.topWbLabel}>🎨 Доска</span>
+                  <button
+                    className={styles.topWbBtn}
+                    onClick={isOwner ? hideTest : localHideWhiteboard}
+                    title="Свернуть доску"
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="4 14 10 14 10 20" /><polyline points="20 10 14 10 14 4" />
+                      <line x1="14" y1="10" x2="21" y2="3" /><line x1="3" y1="21" x2="10" y2="14" />
+                    </svg>
+                    Свернуть
+                  </button>
+                  {isOwner && (
+                    <button
+                      className={`${styles.topWbBtn} ${styles.topWbStop}`}
+                      onClick={stopTest}
+                      title="Завершить доску"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                      Завершить
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
             <div className={styles.topBarRight}>
               <span className={styles.topUser}>{userName}</span>
@@ -1308,17 +1373,22 @@ useEffect(() => {
             </div>
           </div>
 
-          <div
-            className={styles.videoArea}
-            onMouseMove={resetControlsTimer}
-            onMouseLeave={hideControlsNow}
-          >
+          <div className={styles.videoArea}>
             {renderVideo()}
             {renderScreenSharePanel()}
-            {layout === 'pip' && renderControls(true)}
             {showNotes && renderNotesPanel()}
           </div>
-          {layout !== 'pip' && renderControls(false)}
+          {!barCollapsed && renderControls()}
+          <button
+            className={`${styles.barToggle} ${barCollapsed ? styles.barToggleCollapsed : ''}`}
+            onClick={() => setBarCollapsed(v => !v)}
+            aria-label={barCollapsed ? 'Показать меню' : 'Скрыть меню'}
+            title={barCollapsed ? 'Показать меню' : 'Скрыть меню'}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
         </div>
       )}
 

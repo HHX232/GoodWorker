@@ -18,6 +18,8 @@ interface CalendarHeaderProps {
   onDateSelect?: (date: Date) => void
   onExportPDF?: () => void
   exporting?: boolean
+  onImportGoogle?: () => void
+  isVip?: boolean
 }
 
 export function CalendarHeader({
@@ -31,6 +33,8 @@ export function CalendarHeader({
   onDateSelect,
   onExportPDF,
   exporting,
+  onImportGoogle,
+  isVip = false,
 }: CalendarHeaderProps) {
   const t = useTranslations('calendar')
   const locale = useLocale()
@@ -110,6 +114,28 @@ export function CalendarHeader({
           </svg>
           {t('add')}
         </button>
+        {onImportGoogle && (
+          <button
+            className={`${styles.share} ${!isVip ? styles.shareVipLocked : ''}`}
+            onClick={onImportGoogle}
+            title={isVip ? 'Импорт Google Calendar' : 'Только для VIP'}
+          >
+            <svg width='13' height='13' viewBox='0 0 24 24' fill='none'>
+              <path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z' stroke='#fff' strokeWidth='1.6'/>
+              <path d='M8 12l4-4 4 4M12 8v8' stroke='#fff' strokeWidth='1.6' strokeLinecap='round' strokeLinejoin='round'/>
+            </svg>
+            Google Calendar
+            {!isVip && (
+              <span className={styles.vipBadge}>
+                <svg width='9' height='9' viewBox='0 0 20 16' fill='#FFD23C'>
+                  <path d='M10 0L13 6L20 3L17 12H3L0 3L7 6L10 0Z' />
+                  <rect x='3' y='13' width='14' height='3' rx='1' />
+                </svg>
+                VIP
+              </span>
+            )}
+          </button>
+        )}
         <button className={styles.share} onClick={onExportPDF} disabled={exporting}>
           <svg width='13' height='13' viewBox='0 0 24 24' fill='none'>
             <path d='M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z' stroke='#ffffff' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round' />

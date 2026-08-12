@@ -53,17 +53,29 @@ function IconChecklist() {
   )
 }
 
-type OptionKey = 'service' | 'post' | 'roadmap' | 'test'
+function IconDocument() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+      <rect x="9" y="3" width="6" height="4" rx="1"/>
+      <line x1="9" y1="12" x2="15" y2="12"/>
+      <line x1="9" y1="16" x2="12" y2="16"/>
+    </svg>
+  )
+}
+
+type OptionKey = 'service' | 'post' | 'roadmap' | 'test' | 'homework'
 
 export function CreatePickerModal({ open, onClose, onService }: Props) {
   const router = useRouter()
   const t = useTranslations('dashboard.createPicker')
 
   const OPTIONS: { key: OptionKey; label: string; icon: React.ReactNode; color: string }[] = [
-    { key: 'service', label: t('service'), icon: <IconBriefcase />, color: '#534AB7' },
-    { key: 'post',    label: t('post'),    icon: <IconFile />,      color: '#0369A1' },
-    { key: 'roadmap', label: 'Road Map',   icon: <IconMap />,       color: '#059669' },
-    { key: 'test',    label: t('test'),    icon: <IconChecklist />, color: '#B45309' },
+    { key: 'service',  label: t('service'),             icon: <IconBriefcase />, color: '#534AB7' },
+    { key: 'post',     label: t('post'),                icon: <IconFile />,      color: '#0369A1' },
+    { key: 'roadmap',  label: 'Курс',               icon: <IconMap />,       color: '#059669' },
+    { key: 'test',     label: t('test'),                icon: <IconChecklist />, color: '#B45309' },
+    { key: 'homework', label: 'Домашнее задание',       icon: <IconDocument />,  color: '#7C3AED' },
   ]
 
   useEffect(() => {
@@ -92,6 +104,10 @@ export function CreatePickerModal({ open, onClose, onService }: Props) {
       case 'test':
         onClose()
         router.push('/create-test')
+        break
+      case 'homework':
+        onClose()
+        router.push('/homework/create')
         break
     }
   }

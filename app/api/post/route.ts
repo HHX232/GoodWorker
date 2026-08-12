@@ -6,6 +6,7 @@ import {auth} from '../../../auth'
 import {enrichPostWithAI} from '@/lib/postAI'
 import {hasAIProvider} from '@/lib/openrouter'
 import {cookies} from 'next/headers'
+import {generatePostSlug} from '@/shared/lib/slugify'
 
 type ContentBlock = {type: string; payload: {url?: string | null}}
 type PostContent = {blocks?: ContentBlock[]} | null
@@ -61,6 +62,11 @@ export async function POST(req: NextRequest) {
 
     const aiEnabled = hasAIProvider()
 
+    const slug = await generatePostSlug(title.trim(), async (candidate) => {
+      const existing = await prisma.post.findUnique({where: {slug: candidate}, select: {id: true}})
+      return !!existing
+    })
+
     const post = await prisma.post.create({
       data: {
         teacherId: session.user.id,
@@ -75,6 +81,7 @@ export async function POST(req: NextRequest) {
         isVip,
         vipExpiresAt: isVip && vipExpiresAt ? new Date(vipExpiresAt) : null,
         originalLang,
+        slug,
         // hold in PENDING until AI moderation completes; publish immediately if no AI
         moderationStatus: aiEnabled ? 'PENDING' : 'PUBLISHED',
         allowedStudents:

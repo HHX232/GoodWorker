@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import '@excalidraw/excalidraw/index.css'
 import type { ExcalidrawElement } from '@excalidraw/excalidraw/element/types'
 import type { AppState, BinaryFiles, ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types'
-import { IconMinimize, IconXSmall } from '../icons'
+import { useThemeCtx } from '@/app/providers/ThemeContext'
 import styles from './CallWhiteboard.module.scss'
 
 const Excalidraw = dynamic(
@@ -14,15 +14,12 @@ const Excalidraw = dynamic(
 )
 
 interface Props {
-  isOwner: boolean
   remoteElements: readonly ExcalidrawElement[] | null
   remoteFiles: BinaryFiles | null
   onBroadcast: (elements: readonly ExcalidrawElement[], files: BinaryFiles) => void
-  onStop: () => void
-  onHide?: () => void
 }
 
-export function CallWhiteboard({ isOwner, remoteElements, remoteFiles, onBroadcast, onStop, onHide }: Props) {
+export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast }: Props) {
   const apiRef = useRef<ExcalidrawImperativeAPI | null>(null)
   const broadcastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastBroadcast = useRef<readonly ExcalidrawElement[]>([])
@@ -31,6 +28,7 @@ export function CallWhiteboard({ isOwner, remoteElements, remoteFiles, onBroadca
   // Prevents re-broadcasting when a remote update triggers onChange
   const isApplyingRemoteRef = useRef(false)
   const [ready, setReady] = useState(false)
+  const { isDark } = useThemeCtx()
 
   // Apply remote elements when they arrive
   useEffect(() => {
@@ -78,27 +76,16 @@ export function CallWhiteboard({ isOwner, remoteElements, remoteFiles, onBroadca
         }
       }, 400)
     },
-    [isOwner, onBroadcast],
+    [onBroadcast],
   )
 
   return (
     <div className={styles.root}>
-      <div className={styles.header}>
-        <span className={styles.title}>🎨 Доска</span>
-        <div className={styles.headerActions}>
-          {onHide && (
-            <button className={styles.hideBtn} onClick={onHide} title="Свернуть"><IconMinimize /></button>
-          )}
-          {isOwner && (
-            <button className={styles.stopBtn} onClick={onStop}><IconXSmall /> Завершить</button>
-          )}
-        </div>
-      </div>
-
       <div className={styles.canvas}>
         <Excalidraw
           excalidrawAPI={api => { apiRef.current = api; setReady(true) }}
           onChange={handleChange}
+          theme={isDark ? 'dark' : 'light'}
           viewModeEnabled={false}
           isCollaborating={false}
           UIOptions={{

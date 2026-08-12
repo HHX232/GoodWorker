@@ -25,10 +25,19 @@ function getColorForEvent(id: string): string {
   return EVENT_COLORS[Math.abs(hash) % EVENT_COLORS.length]
 }
 
+interface HomeworkCalItem {
+  id: string
+  title: string
+  dueAt: string | null
+  sendAt: string | null
+  href?: string
+}
+
 interface MonthCalendarProps {
   currentDate: Date
   events: any[]
   tasks?: CalendarTask[]
+  homeworks?: HomeworkCalItem[]
   onEventClick: (event: any) => void
   onDayClick: (date: string) => void
   onTaskToggle?: (id: string) => void
@@ -38,6 +47,7 @@ export function MonthCalendar({
   currentDate,
   events,
   tasks = [],
+  homeworks = [],
   onEventClick,
   onDayClick,
   onTaskToggle
@@ -70,6 +80,12 @@ export function MonthCalendar({
         const dateKey = formatDateKey(day)
         const dayEvents = getEventsForDay(events, dateKey)
         const dayTasks = tasks.filter((t) => t.dueDate && formatDateKey(new Date(t.dueDate)) === dateKey)
+        const dayHw = homeworks.filter(h => {
+          const dateStr = h.dueAt ?? h.sendAt
+          if (!dateStr) return false
+          // Use string slice to avoid timezone conversion issues
+          return dateStr.slice(0, 10) === dateKey
+        })
 
         const isWeekend = day.getDay() === 0 || day.getDay() === 6
 
@@ -96,6 +112,13 @@ export function MonthCalendar({
                     <path d='M10 0L13 6L20 3L17 12H3L0 3L7 6L10 0Z' />
                     <rect x='3' y='13' width='14' height='3' rx='1' />
                   </svg>
+                )}
+                {e.warning && (
+                  <span style={{
+                    width: 12, height: 12, borderRadius: '50%', background: '#F59E0B',
+                    color: '#fff', fontSize: 8, fontWeight: 800, display: 'inline-flex',
+                    alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 1,
+                  }}>!</span>
                 )}
                 {e.title}
               </div>
@@ -125,8 +148,20 @@ export function MonthCalendar({
               </div>
             ))}
 
-            {dayEvents.length + dayTasks.length > 4 && (
-              <span className={styles.monthMore}>+{dayEvents.length + dayTasks.length - 4}</span>
+            {dayHw.slice(0, 2).map(hw => (
+              <a
+                key={hw.id}
+                href={hw.href ?? `/homework/results/${hw.id}`}
+                className={styles.monthHw}
+                onClick={ev => ev.stopPropagation()}
+              >
+                <span className={styles.monthHwDot} />
+                {hw.title}
+              </a>
+            ))}
+
+            {dayEvents.length + dayTasks.length + dayHw.length > 4 && (
+              <span className={styles.monthMore}>+{dayEvents.length + dayTasks.length + dayHw.length - 4}</span>
             )}
           </div>
         )

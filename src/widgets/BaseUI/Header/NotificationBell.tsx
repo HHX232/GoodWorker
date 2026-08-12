@@ -13,6 +13,7 @@ function getNotifHref(type: string, payload?: Record<string, unknown>): string {
   if (type === 'NEW_STUDENT' || type === 'NEW_REVIEW') return payload?.roadmapId ? `/road-map/${payload.roadmapId}` : '/notifications'
   if (type === 'ROADMAP_PURCHASE') return payload?.roadmapId ? `/road-map/${payload.roadmapId}` : '/notifications'
   if (type === 'NEW_COMMENT_ON_POST' || type === 'NEW_POST') return payload?.postId ? `/post/${payload.postId}` : '/notifications'
+  if (type === 'HOMEWORK_ASSIGNED') return payload?.assignmentId ? `/homework/${payload.assignmentId}` : '/notifications'
   return '/notifications'
 }
 
@@ -202,7 +203,7 @@ export function NotificationBell() {
                     })
                     return
                   }
-                  router.push(getNotifHref(n.type))
+                  router.push(getNotifHref(n.type, n.payload))
                 }}
               >
                 <span className={`${styles.notif_dot} ${n.isRead ? styles.notif_dot_read : ''}`} />

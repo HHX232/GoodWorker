@@ -10,13 +10,14 @@ import {useRoadmapAccessContext} from '@/shared/ui/RoadMap/context/RoadmapAccess
 import {useViewMode} from '@/shared/ui/RoadMap/context/ViewModeContext'
 import {useRoadmapProgress} from '@/shared/ui/RoadMap/context/RoadmapProgressContext'
 import {NodeComplaintModal} from '@/shared/ui/RoadMap/NodeComplaintModal/NodeComplaintModal'
-import {useReactFlow} from '@xyflow/react'
+import {MarkerType, useReactFlow} from '@xyflow/react'
 import {CopyIcon, GripVerticalIcon, PaletteIcon, TrashIcon} from 'lucide-react'
 import {useTranslations} from 'next-intl'
 import {useEffect, useRef, useState} from 'react'
 import {HexColorPicker} from 'react-colorful'
 import styles from './NodeHeader.module.scss'
 import {getNodeHeaderIconColor} from '@/shared/helpers/Node/getNodeHeaderIconColor'
+import {edgeColorFromNode} from '@/shared/helpers/Node/edgeColor'
 import {useThemeCtx} from '@/app/providers/ThemeContext'
 
 
@@ -33,7 +34,7 @@ export default function NodeHeader({
 }) {
   const task = RoadMapBlockRegistry[taskType]
   const t = useTranslations('roadMap')
-  const {deleteElements, getNode, addNodes, updateNodeData} = useReactFlow()
+  const {deleteElements, getNode, addNodes, updateNodeData, setEdges} = useReactFlow()
 
   const node = getNode(nodeId) as RoadNode | undefined
   const savedColor: string = (node?.data as any)?.headerColor ?? task?.headerColor ?? ''
@@ -58,6 +59,17 @@ export default function NodeHeader({
   const handleColorChange = (newColor: string) => {
     setColor(newColor)
     updateNodeData(nodeId, {headerColor: newColor} as any)
+    setEdges((eds) =>
+      eds.map((e) => {
+        if (e.source !== nodeId) return e
+        const c = edgeColorFromNode(newColor, e.sourceHandle, nodeId)
+        return {
+          ...e,
+          markerEnd: {type: MarkerType.ArrowClosed, width: 22, height: 22, color: c},
+          style: {...(e.style ?? {}), stroke: c},
+        }
+      })
+    )
   }
   const {isDark} = useThemeCtx()
   const activeColor = color || ''

@@ -13,6 +13,7 @@ interface CalendarEventModalProps {
   onClose: () => void
   onEdit: (event: CalendarEvent) => void
   onDelete: (id: string) => void
+  onConfirm?: (id: string) => void
 }
 
 function timeToMins(t: string): number {
@@ -20,7 +21,7 @@ function timeToMins(t: string): number {
   return h * 60 + (m || 0)
 }
 
-export function CalendarEventModal({event, onClose, onEdit, onDelete}: CalendarEventModalProps) {
+export function CalendarEventModal({event, onClose, onEdit, onDelete, onConfirm}: CalendarEventModalProps) {
   const t = useTranslations('calendar.eventModal')
   const locale = useLocale()
   const intlLocale = locale === 'ru' ? 'ru-RU' : 'en-US'
@@ -62,6 +63,22 @@ export function CalendarEventModal({event, onClose, onEdit, onDelete}: CalendarE
       </div>
 
       <div className={styles.body}>
+        {event.warning && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px',
+            background: '#FEF3C7', borderRadius: 10, marginBottom: 12,
+            border: '1px solid #FDE68A',
+          }}>
+            <span style={{
+              width: 22, height: 22, borderRadius: '50%', background: '#F59E0B',
+              color: '#fff', fontWeight: 800, fontSize: 13, display: 'flex',
+              alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>!</span>
+            <span style={{fontSize: 12, color: '#92400E', lineHeight: 1.4}}>
+              Импортировано из Google Calendar. Проверьте и подтвердите запись.
+            </span>
+          </div>
+        )}
         {event.studentName && (
           <InfoRow icon={<PersonIcon />} label={t('studentLabel')}>
             {event.studentName}
@@ -136,6 +153,15 @@ export function CalendarEventModal({event, onClose, onEdit, onDelete}: CalendarE
       </div>
 
       <div className={styles.footer}>
+        {event.warning && onConfirm && (
+          <button
+            className={styles.btnSecondary}
+            style={{background: '#10B981', color: '#fff', borderColor: '#10B981'}}
+            onClick={() => { onConfirm(event.id); onClose() }}
+          >
+            ✓ Подтвердить
+          </button>
+        )}
         <button className={styles.btnSecondary} onClick={() => onEdit(event)}>
           {t('edit')}
         </button>

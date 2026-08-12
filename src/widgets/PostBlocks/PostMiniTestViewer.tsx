@@ -12,9 +12,10 @@ interface Props {
   payload: PostMiniTestPayload
   postId: string
   blockId: string
+  onComplete?: () => void
 }
 
-export function PostMiniTestViewer({payload, postId, blockId}: Props) {
+export function PostMiniTestViewer({payload, postId, blockId, onComplete}: Props) {
   const t = useTranslations('TestPlayer')
   const {blocks, title} = payload
 
@@ -30,6 +31,7 @@ export function PostMiniTestViewer({payload, postId, blockId}: Props) {
         percent: result.percent
       })
     } catch {}
+    onComplete?.()
   }
 
   return (

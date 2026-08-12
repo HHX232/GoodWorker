@@ -1,0 +1,760 @@
+.page {
+  padding-top: 28px;
+  padding-bottom: 64px;
+  max-width: 780px;
+}
+
+// ── Header card ───────────────────────────────────────────────
+.headerCard {
+  background: #fff;
+  border: 1.5px solid #E8E8F0;
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.studentRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatarFallback {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #EEEDFE;
+  color: #534AB7;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.studentName {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6a6a7a;
+}
+
+.hwTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: #141416;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #F0F0F8;
+  color: #6a6a7a;
+}
+
+.status_pending   { background: #FEF3E2; color: #9A5A00; }
+.status_in_progress { background: #E3F0FF; color: #1A5FAB; }
+.status_submitted { background: #E1F5EE; color: #0F6E56; }
+.status_reviewed  { background: #EEEDFE; color: #534AB7; }
+
+.dueTag {
+  font-size: 12px;
+  color: #6a6a7a;
+}
+
+.dueOverdue {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+// ── Progress ──────────────────────────────────────────────────
+.progressWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progressBar {
+  flex: 1;
+  height: 6px;
+  background: #F0F0F8;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #534AB7, #818cf8);
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+.progressLabel {
+  font-size: 12px;
+  color: #6a6a7a;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.allDoneBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #E1F5EE;
+  color: #0F6E56;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+// ── Blocks ────────────────────────────────────────────────────
+.blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.blockWrap {
+  position: relative;
+  border: 1.5px solid #E8E8F0;
+  border-radius: 14px;
+  background: #fff;
+  padding: 18px 48px 18px 18px;
+  cursor: default;
+  transition: border-color 0.2s, background 0.2s;
+  user-select: none;
+
+  &:hover { border-color: #C8C8E0; }
+}
+
+.blockDone {
+  border-color: #5BBF8A !important;
+  background: rgba(91, 191, 138, 0.03);
+}
+
+.blockLoading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.doneBadge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 22px;
+  height: 22px;
+  background: #5BBF8A;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  z-index: 2;
+}
+
+.blockDone .blockContent {
+  padding-left: 32px;
+}
+
+// ── Three-dot menu ────────────────────────────────────────────
+.menuWrap {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+}
+
+.menuBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #ABABAB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s, color 0.12s;
+
+  &:hover { background: #F0F0F8; color: #534AB7; }
+}
+
+.menu {
+  position: absolute;
+  top: 36px;
+  right: 0;
+  background: #fff;
+  border: 1.5px solid #E0E0EA;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  min-width: 180px;
+  overflow: hidden;
+  animation: menuIn 0.1s ease;
+  z-index: 100;
+}
+
+@keyframes menuIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: #141416;
+  text-align: left;
+  font-family: inherit;
+  transition: background 0.1s;
+
+  &:hover { background: #F5F4FF; color: #534AB7; }
+}
+
+.menuHint {
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #ABABAB;
+  line-height: 1.4;
+}
+
+// ── Block content ─────────────────────────────────────────────
+.blockContent {
+  user-select: text;
+}
+
+.miniTestHint {
+  font-size: 12px;
+  color: #ABABAB;
+  margin-top: 8px;
+  padding: 0;
+}
+
+// ── Post / RoadMap link blocks ────────────────────────────────
+.postLinkBlock {
+  display: flex;
+  gap: 14px;
+  padding: 16px;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  align-items: flex-start;
+}
+
+.postLinkIcon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eff6ff;
+  border-radius: 10px;
+  flex-shrink: 0;
+  color: #0369a1;
+}
+
+.postLinkIconGreen {
+  background: #f0fdf4;
+  color: #059669;
+}
+
+.postLinkContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.postLinkTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.postLinkBtn {
+  display: inline-block;
+  padding: 6px 14px;
+  background: #3b82f6;
+  color: #fff;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  width: fit-content;
+
+  &:hover { background: #2563eb; }
+}
+
+.postLinkDone {
+  font-size: 12px;
+  color: #16a34a;
+  font-weight: 500;
+}
+
+.rmProgress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rmProgressBar {
+  flex: 1;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.rmProgressFill {
+  height: 100%;
+  background: #059669;
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+.rmProgressLabel {
+  font-size: 12px;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+// ── Reading progress bar (top of viewport) ───────────────────
+.readingProgressWrap {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(83, 74, 183, 0.15);
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.readingProgressFill {
+  height: 100%;
+  background: #534AB7;
+  transition: width 0.12s linear;
+}
+
+// ── Teacher review card ───────────────────────────────────────
+.reviewCard {
+  background: linear-gradient(135deg, #fafafe 0%, #f5f3ff 100%);
+  border: 1.5px solid #c4b5fd;
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reviewHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.reviewTeacherRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.reviewAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.reviewAvatarFallback {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #ede9fe;
+  color: #7c3aed;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.reviewTeacherName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 2px;
+}
+
+.reviewTeacherLabel {
+  font-size: 11px;
+  color: #7c3aed;
+  font-weight: 500;
+  margin: 0;
+}
+
+.reviewScore {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.reviewScoreNum {
+  font-size: 40px;
+  font-weight: 800;
+  color: #6366f1;
+  line-height: 1;
+}
+
+.reviewScoreDenom {
+  font-size: 18px;
+  font-weight: 500;
+  color: #a5b4fc;
+}
+
+.reviewComment {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.6;
+  margin: 0;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.7);
+  border-radius: 10px;
+  border-left: 3px solid #a78bfa;
+}
+
+.reviewPhotos {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.reviewPhotoThumb {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1.5px solid #ddd6fe;
+  cursor: pointer;
+  transition: border-color 0.15s;
+
+  &:hover { border-color: #8b5cf6; }
+}
+
+.reviewDate {
+  font-size: 11px;
+  color: #a5b4fc;
+  margin: 0;
+}
+
+// ── Teacher grade panel (viewer page) ────────────────────────
+.teacherGradeCard {
+  background: #fff;
+  border: 1.5px solid #e8e8f0;
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.teacherGradeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.teacherGradeTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #6a6a7a;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.teacherGradeEditBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  background: none;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 7px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+
+  &:hover { border-color: #6366f1; color: #6366f1; }
+}
+
+.teacherGradeScoreRow {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.teacherGradeScore {
+  font-size: 40px;
+  font-weight: 800;
+  color: #6366f1;
+  line-height: 1;
+}
+
+.teacherGradeScoreDenom {
+  font-size: 18px;
+  font-weight: 500;
+  color: #a5b4fc;
+}
+
+.teacherGradeDate {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-left: auto;
+}
+
+.teacherGradeComment {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.6;
+  margin: 0;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border-radius: 10px;
+  border-left: 3px solid #a78bfa;
+}
+
+.teacherGradePhotos {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.teacherGradePhotoThumb {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1.5px solid #ddd6fe;
+  cursor: pointer;
+  transition: border-color 0.15s;
+
+  &:hover { border-color: #8b5cf6; }
+}
+
+.gradeButtons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.gradeBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+
+  &:hover { border-color: #6366f1; color: #6366f1; }
+}
+
+.gradeBtnActive {
+  background: #6366f1 !important;
+  border-color: #6366f1 !important;
+  color: #fff !important;
+}
+
+.gradeBtnLow.gradeBtnActive { background: #ef4444 !important; border-color: #ef4444 !important; }
+.gradeBtnMid.gradeBtnActive { background: #f59e0b !important; border-color: #f59e0b !important; }
+.gradeBtnHigh.gradeBtnActive { background: #10b981 !important; border-color: #10b981 !important; }
+
+.gradeTextarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #1e293b;
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+  line-height: 1.5;
+  background: #fff;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+
+  &:focus { border-color: #6366f1; }
+  &::placeholder { color: #94a3b8; }
+}
+
+.gradePhotoUpload {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gradePhotoBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  background: none;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+
+  &:hover { border-color: #6366f1; color: #6366f1; }
+}
+
+.photoCount {
+  font-size: 12px;
+  color: #6366f1;
+  font-weight: 500;
+}
+
+.hiddenInput { display: none; }
+
+.gradeFormActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.gradeCancelBtn {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+  background: none;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+
+  &:hover { border-color: #94a3b8; }
+}
+
+.gradeSaveBtn {
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: #6366f1;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+
+  &:hover:not(:disabled) { background: #4f46e5; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+// ── Dark theme ────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .headerCard {
+    background: #1a1c27;
+    border-color: rgba(255,255,255,0.08);
+  }
+  .hwTitle { color: #e8eaf0; }
+  .studentName { color: rgba(255,255,255,0.4); }
+  .progressBar { background: rgba(255,255,255,0.08); }
+  .dueTag { color: rgba(255,255,255,0.4); }
+
+  .blockWrap {
+    background: #1a1c27;
+    border-color: rgba(255,255,255,0.08);
+    &:hover { border-color: rgba(255,255,255,0.16); }
+  }
+  .blockDone { border-color: #3d8f68 !important; background: rgba(61,143,104,0.04); }
+
+  .menuBtn { color: rgba(255,255,255,0.2); &:hover { background: rgba(255,255,255,0.06); color: #a5b4fc; } }
+  .menu {
+    background: #1e2030;
+    border-color: rgba(255,255,255,0.1);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .menuItem { color: #e8eaf0; &:hover { background: rgba(129,140,248,0.1); color: #a5b4fc; } }
+  .menuHint { color: rgba(255,255,255,0.25); }
+  .miniTestHint { color: rgba(255,255,255,0.25); }
+
+  .status_pending   { background: rgba(154,90,0,0.15); color: #fbbf24; }
+  .status_in_progress { background: rgba(26,95,171,0.15); color: #60a5fa; }
+  .status_submitted { background: rgba(15,110,86,0.15); color: #34d399; }
+  .status_reviewed  { background: rgba(83,74,183,0.15); color: #a5b4fc; }
+
+  .allDoneBanner { background: rgba(15,110,86,0.15); color: #34d399; }
+
+  .reviewCard { background: linear-gradient(135deg, rgba(83,74,183,0.12) 0%, rgba(124,58,237,0.08) 100%); border-color: rgba(139,92,246,0.3); }
+  .reviewTeacherName { color: #e8eaf0; }
+  .reviewComment { background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.6); }
+  .reviewDate { color: rgba(165,180,252,0.5); }
+
+  .postLinkBlock { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.08); }
+  .postLinkIcon { background: rgba(3,105,161,0.15); color: #38bdf8; }
+  .postLinkIconGreen { background: rgba(5,150,105,0.15); color: #34d399; }
+  .postLinkTitle { color: #e8eaf0; }
+  .postLinkBtn { background: #2563eb; &:hover { background: #1d4ed8; } }
+  .postLinkDone { color: #34d399; }
+  .rmProgressBar { background: rgba(255,255,255,0.1); }
+  .rmProgressLabel { color: rgba(255,255,255,0.35); }
+
+  .teacherGradeCard { background: #1a1c27; border-color: rgba(255,255,255,0.08); }
+  .teacherGradeTitle { color: rgba(255,255,255,0.35); }
+  .teacherGradeComment { background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.6); }
+  .gradeTextarea { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &:focus { border-color: #818cf8; } }
+  .gradeBtn { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
+
+  .readingProgressWrap { background: rgba(255,255,255,0.06); }
+}

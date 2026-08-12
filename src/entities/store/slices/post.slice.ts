@@ -20,7 +20,10 @@ const defaultPayloads: Record<PostBlockType, unknown> = {
   [PostBlockType.MEDIA]: {kind: null, url: null, caption: null},
   [PostBlockType.AUDIO]: {url: null, filename: null},
   [PostBlockType.TEST_LINK]: {testId: null, title: null},
-  [PostBlockType.MINI_TEST]: {title: '', blocks: []}
+  [PostBlockType.MINI_TEST]: {title: '', blocks: []},
+  [PostBlockType.POST_LINK]: {postId: '', postTitle: ''},
+  [PostBlockType.ROAD_MAP_LINK]: {roadmapId: '', roadmapTitle: ''},
+  [PostBlockType.FILE_LIST]: {files: []},
 }
 
 const initialState: PostConstructorState = {
@@ -74,6 +77,10 @@ const postSlice = createSlice({
 
     initPostConstructor(_state, action: PayloadAction<Partial<PostConstructorState>>) {
       return {...initialState, ...action.payload}
+    },
+
+    loadBlocks(state, action: PayloadAction<PostBlock[]>) {
+      state.blocks = action.payload
     },
 
     resetPostConstructor() {

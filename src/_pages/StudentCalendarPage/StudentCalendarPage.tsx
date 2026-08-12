@@ -60,7 +60,12 @@ export function StudentCalendarPage() {
   const locale = useLocale()
   void locale
 
+  interface HomeworkCalItem {
+    id: string; title: string; dueAt: string | null; sendAt: string | null; href?: string; status?: string
+  }
+
   const [teachers, setTeachers] = useState<CalendarStudent[]>([])
+  const [homeworks, setHomeworks] = useState<HomeworkCalItem[]>([])
 
   const loaded = useRef(false)
   useEffect(() => {
@@ -74,6 +79,11 @@ export function StudentCalendarPage() {
         if (Array.isArray(d.tasks) && d.tasks.length > 0) setTasks(d.tasks)
         if (Array.isArray(d.teachers)) setTeachers(d.teachers)
       })
+      .catch(() => {})
+
+    fetch('/api/homework/mine')
+      .then(r => r.json())
+      .then(d => { if (Array.isArray(d.homeworks)) setHomeworks(d.homeworks) })
       .catch(() => {})
   }, [setEvents, setTasks])
 
@@ -137,6 +147,7 @@ export function StudentCalendarPage() {
             currentDate={weekDays[0] ?? new Date()}
             events={events}
             tasks={tasks}
+            homeworks={homeworks}
             onEventClick={(event: any) => selectEvent(event.id)}
             onDayClick={() => setCreateTaskModalStatus(true)}
             onTaskToggle={(id) => toggleCalendarTask(id)}

@@ -243,3 +243,107 @@
    margin: 0;
    color: #333;
 }
+
+// ── Dark theme ─────────────────────────────────────────────────────────────────
+
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+   .question { color: #e8eaf0; }
+
+   .instruction { color: #9ca3af; }
+
+   .hint { color: #6b7280; }
+
+   // ChooseOption
+   .option {
+      background: #1e2130;
+      border-color: rgba(255,255,255,0.09);
+      color: #d1d5db;
+
+      &:hover {
+         border-color: rgba(255,255,255,0.22);
+      }
+
+      &.selected {
+         border-color: #818cf8;
+         background: rgba(129,140,248,0.12);
+         color: #e8eaf0;
+      }
+   }
+
+   // FreeAnswer
+   .textarea {
+      background: #1e2130;
+      border-color: rgba(255,255,255,0.09);
+      color: #e8eaf0;
+
+      &:focus {
+         border-color: #818cf8;
+      }
+
+      &::placeholder { color: #4b5576; }
+   }
+
+   // Sequence
+   .seq_item {
+      background: #1e2130;
+      border-color: rgba(255,255,255,0.09);
+      color: #d1d5db;
+   }
+
+   .drag_handle {
+      color: #4b5576;
+   }
+
+   // MatchPairs
+   .match_item {
+      background: #1e2130;
+      border-color: rgba(255,255,255,0.09);
+      color: #d1d5db;
+
+      &.connected {
+         border-color: #818cf8;
+         background: rgba(129,140,248,0.1);
+      }
+   }
+
+   .handle {
+      background: #4b5576;
+
+      &:hover {
+         background: #818cf8;
+      }
+   }
+
+   // HighlightText
+   .token {
+      color: #d1d5db;
+
+      &:hover {
+         background: rgba(255,255,255,0.07);
+      }
+
+      &.token_selected {
+         background: rgba(245,158,11,0.2);
+         border-color: #f59e0b;
+      }
+   }
+
+   .punct { color: #9ca3af; }
+
+   // WordScramble
+   .tile {
+      background: #1e2130;
+      border-color: rgba(255,255,255,0.09);
+      color: #d1d5db;
+   }
+
+   // Dialogue
+   .dialogue_tile {
+      background: #1e2130;
+      border-color: rgba(255,255,255,0.09);
+   }
+
+   .tile_author { color: #9ca3af; }
+
+   .tile_text { color: #d1d5db; }
+}

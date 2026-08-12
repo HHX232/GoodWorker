@@ -13,6 +13,7 @@ interface IHighlightedPost {
   backgroundImage?: string
   user: IUserDefault
   cardId: string
+  slug?: string | null
 }
 
 const HighlightedPost: FC<IHighlightedPost> = ({
@@ -21,11 +22,13 @@ const HighlightedPost: FC<IHighlightedPost> = ({
   defaultTitle,
   subtitle,
   backgroundImage,
-  user
+  user,
+  slug,
 }) => {
+  const postHref = slug ? `/post/${slug}` : `/post/${slugify(defaultTitle)}/${cardId}`
   return (
     <Link
-      href={`/post/${slugify(defaultTitle)}/${cardId}`}
+      href={postHref}
       style={{
         background: `
           linear-gradient(0.00deg, rgba(0,0,0,0.5) 0%, rgba(38,38,38,0.54) 34.434%, rgba(58,58,58,0.15) 88.003%, rgba(58,58,58,0) 92.611%),

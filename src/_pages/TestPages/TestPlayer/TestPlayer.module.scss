@@ -301,3 +301,133 @@
       border-color: #ccc;
    }
 }
+
+// ── Dark theme ─────────────────────────────────────────────────────────────────
+
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+   .single_block_wrap {
+      background: #1a1c27;
+      border-color: rgba(255,255,255,0.08);
+   }
+
+   .single_block_wrap_error {
+      border-color: #ef4444;
+      background: rgba(239,68,68,0.08);
+   }
+
+   .block {
+      background: #1a1c27;
+      border-color: rgba(255,255,255,0.08);
+   }
+
+   .block_error {
+      border-color: #ef4444;
+      background: rgba(239,68,68,0.08);
+   }
+
+   .block_card_error {
+      outline-color: #ef4444;
+   }
+
+   .block_label {
+      color: #4b5576;
+   }
+
+   .nav_btn {
+      background: #1e2130;
+      border-color: rgba(255,255,255,0.1);
+      color: #9ca3af;
+
+      &:hover:not(:disabled) {
+         background: #252838;
+      }
+   }
+
+   .pill {
+      background: #1e2130;
+      border-color: rgba(255,255,255,0.1);
+      color: #6b7280;
+
+      &:hover {
+         background: #252838;
+         color: #d1d5db;
+      }
+   }
+
+   .pill_active {
+      background: #e8e6ff;
+      border-color: #e8e6ff;
+      color: #1a1c27;
+   }
+
+   .pill_error {
+      border-color: #ef4444;
+      color: #ef4444;
+
+      &.pill_active {
+         background: #ef4444;
+         border-color: #ef4444;
+         color: #fff;
+      }
+   }
+
+   .submit_btn {
+      background: #534AB7;
+      color: #fff;
+
+      &:hover {
+         background: #4338CA;
+         opacity: 1;
+      }
+   }
+
+   // Result screen
+   .ring_svg circle:first-child {
+      stroke: rgba(255,255,255,0.08);
+   }
+
+   .grade_message {
+      color: #9ca3af;
+   }
+
+   .score {
+      color: #6b7280;
+   }
+
+   .result_row {
+      &.ok {
+         background: rgba(16,185,129,0.1);
+         border-color: rgba(16,185,129,0.25);
+      }
+
+      &.err {
+         background: rgba(239,68,68,0.08);
+         border-color: rgba(239,68,68,0.2);
+      }
+   }
+
+   .num, .pts {
+      color: #6b7280;
+   }
+
+   .badge_ok {
+      background: rgba(16,185,129,0.2);
+      color: #34d399;
+   }
+
+   .badge_err {
+      background: rgba(239,68,68,0.15);
+      color: #f87171;
+   }
+
+   .retry_btn {
+      background: #1e2130;
+      border-color: rgba(255,255,255,0.1);
+      color: #d1d5db;
+
+      &:hover {
+         background: #252838;
+         border-color: rgba(255,255,255,0.18);
+      }
+   }
+}

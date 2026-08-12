@@ -301,18 +301,11 @@
 }
 
 // ── MINI TEST MODAL (builder) ──────────────────────────────────
-.mini_test_modal_layout {
-   display: flex;
-   flex-direction: column;
-   gap: 0;
-}
-
 .mini_test_type_picker {
    display: flex;
    flex-wrap: wrap;
    gap: 6px;
    margin-bottom: 14px;
-   flex-shrink: 0;
 }
 
 .mini_test_type_btn {
@@ -352,7 +345,9 @@
 .mini_test_block_list {
    display: flex;
    flex-direction: column;
-   padding-bottom: 8px;
+   max-height: 55vh;
+   overflow-y: auto;
+   margin-bottom: 16px;
 
    :global(h3) {
       font-size: 15px !important;
@@ -420,11 +415,6 @@
    transition: background 0.12s;
 
    &:hover { background: #374151; }
-}
-
-// Фиксирует высоту mini-test модала, чтобы не двигался при перемонтировании блоков
-.mini_test_backdrop > div {
-   height: 90vh;
 }
 
 // ── legacy (TEST_LINK editor) ─────────────────────────────────
@@ -593,6 +583,64 @@
    color: #fff;
 }
 
+// ── POST_LINK and ROAD_MAP_LINK ───────────────────────────────────────────────
+.post_link_card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #f0f9ff;
+  border: 1.5px solid #bae6fd;
+  border-radius: 10px;
+  flex: 1;
+}
+
+.post_link_icon {
+  flex-shrink: 0;
+  color: #0369a1;
+}
+
+.post_link_title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #0c4a6e;
+}
+
+.post_link_list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.post_link_list_item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.15s;
+
+  &:hover {
+    background: #eff6ff;
+    border-color: #93c5fd;
+  }
+
+  span {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
 // ─── Dark theme ───────────────────────────────────────────────────────────────
 :global(html.theme-dark), :global(html.pomodoro-dark) {
   .url_input { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &::placeholder { color: rgba(255,255,255,0.2); } &:focus { border-color: #818cf8; background: rgba(255,255,255,0.08); } }
@@ -628,4 +676,8 @@
   .modal_test_card_selected { border-color: #818cf8 !important; box-shadow: 0 0 0 1px #818cf8 !important; }
   .modal_checkbox { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15); }
   .modal_checkbox_checked { border-color: #818cf8; background: #818cf8; }
+  .post_link_card { background: rgba(3,105,161,0.1); border-color: rgba(3,105,161,0.25); }
+  .post_link_icon { color: #38bdf8; }
+  .post_link_title { color: #7dd3fc; }
+  .post_link_list_item { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); color: #e8eaf0; &:hover { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); } }
 }

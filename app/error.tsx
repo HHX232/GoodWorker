@@ -1,5 +1,6 @@
 'use client'
-import { useLocale } from 'next-intl';
+import { useLocale } from 'next-intl'
+import { useThemeCtx } from '@/app/providers/ThemeContext'
 
 const translations = {
   ru: {
@@ -27,25 +28,32 @@ const translations = {
 export default function ErrorPage({error, reset}: {error: Error; reset: () => void}) {
   const locale = useLocale() as keyof typeof translations
   const t = translations[locale] || translations.en
+  const { isDark } = useThemeCtx()
 
   const telephone = process.env.NEXT_PUBLIC_TELEPHONE
   const email = process.env.NEXT_PUBLIC_EMAIL
 
+  // Theme tokens
+  const bg      = isDark ? '#0f1117' : '#ffffff'
+  const border  = isDark ? '#2a2d3a' : '#080b13'
+  const text    = isDark ? '#e8eaf0' : '#080b13'
+  const muted   = isDark ? 'rgba(255,255,255,0.4)' : '#707070'
+  const iconBg  = isDark ? 'rgba(255,255,255,0.07)' : '#f5f5f5'
+  const detailBg= isDark ? 'rgba(255,255,255,0.04)' : '#f5f5f5'
+  const detailBd= isDark ? 'rgba(255,255,255,0.08)' : '#e0e0e0'
+  const codeBg  = isDark ? '#1a1c24' : '#ffffff'
+
   const handleReset = () => {
     try {
       reset()
-      if (typeof window !== 'undefined') {
-        window?.location.reload()
-      }
+      if (typeof window !== 'undefined') window?.location.reload()
     } catch (err) {
       console.error('Reset failed:', err)
     }
   }
 
   const handleGoBack = () => {
-    if (typeof window !== 'undefined') {
-      window.history.back()
-    }
+    if (typeof window !== 'undefined') window.history.back()
   }
 
   console.log(error)
@@ -58,16 +66,16 @@ export default function ErrorPage({error, reset}: {error: Error; reset: () => vo
           display: flex;
           align-items: center;
           justify-content: center;
-          background: #ffffff;
+          background: ${bg};
           padding: 20px;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          transition: background 0.2s;
         }
 
         .error-card {
-          background: white;
-          border: 2px solid #080b13;
+          background: ${bg};
+          border: 2px solid ${border};
           border-radius: 0;
-          box-shadow: none;
           padding: 60px 40px;
           text-align: center;
           max-width: 600px;
@@ -80,21 +88,20 @@ export default function ErrorPage({error, reset}: {error: Error; reset: () => vo
           height: 100px;
           margin: 0 auto 40px;
           border-radius: 50%;
-          background: #f5f5f5;
+          background: ${iconBg};
           display: flex;
           align-items: center;
           justify-content: center;
-          animation: none;
         }
 
         .error-icon svg {
           width: 50px;
           height: 50px;
-          color: #080b13;
+          color: ${text};
         }
 
         .error-title {
-          color: #080b13;
+          color: ${text};
           font-size: 48px;
           font-weight: 600;
           margin: 0 0 24px;
@@ -102,7 +109,7 @@ export default function ErrorPage({error, reset}: {error: Error; reset: () => vo
         }
 
         .error-description {
-          color: #707070;
+          color: ${muted};
           font-size: 24px;
           line-height: 1.5;
           margin-bottom: 48px;
@@ -119,40 +126,31 @@ export default function ErrorPage({error, reset}: {error: Error; reset: () => vo
         .retry-button,
         .back-button {
           background: transparent;
-          color: #080b13;
-          border: 2px solid #080b13;
+          color: ${text};
+          border: 2px solid ${border};
           border-radius: 0;
           padding: 16px 32px;
           font-size: 20px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.3s ease;
-          box-shadow: none;
+          transition: background 0.2s, color 0.2s;
         }
 
         .retry-button:hover,
         .back-button:hover {
-          background: #080b13;
-          color: #ffffff;
-          transform: none;
-          box-shadow: none;
-        }
-
-        .retry-button:active,
-        .back-button:active {
-          transform: none;
+          background: ${isDark ? 'rgba(255,255,255,0.1)' : '#080b13'};
+          color: ${isDark ? '#e8eaf0' : '#ffffff'};
         }
 
         .technical-details {
           margin-top: 40px;
           padding: 24px;
-          background: #f5f5f5;
-          border-radius: 0;
-          border: 1px solid #e0e0e0;
+          background: ${detailBg};
+          border: 1px solid ${detailBd};
         }
 
         .technical-title {
-          color: #080b13;
+          color: ${text};
           font-size: 16px;
           font-weight: 600;
           margin-bottom: 16px;
@@ -163,18 +161,17 @@ export default function ErrorPage({error, reset}: {error: Error; reset: () => vo
         .error-message {
           font-family: 'Courier New', monospace;
           font-size: 14px;
-          color: #080b13;
+          color: ${text};
           word-break: break-all;
           padding: 16px;
-          background: white;
-          border-radius: 0;
-          border: 1px solid #e0e0e0;
+          background: ${codeBg};
+          border: 1px solid ${detailBd};
           text-align: left;
         }
 
         .contact-info {
           margin-top: 40px;
-          color: #707070;
+          color: ${muted};
           font-size: 18px;
         }
 
@@ -192,103 +189,44 @@ export default function ErrorPage({error, reset}: {error: Error; reset: () => vo
 
         .contact-label {
           font-weight: 600;
-          color: #080b13;
+          color: ${text};
         }
 
         .contact-link {
-          color: #080b13;
+          color: ${text};
           text-decoration: none;
           font-weight: 500;
-          transition: all 0.2s ease;
           border-bottom: 2px solid transparent;
+          transition: border-color 0.2s;
         }
 
         .contact-link:hover {
-          border-bottom: 2px solid #080b13;
+          border-bottom-color: ${text};
         }
 
         @media (max-width: 768px) {
-          .error-card {
-            padding: 50px 30px;
-          }
-
-          .error-title {
-            font-size: 36px;
-          }
-
-          .error-description {
-            font-size: 20px;
-            margin-bottom: 40px;
-          }
-
-          .retry-button,
-          .back-button {
-            font-size: 18px;
-            padding: 14px 28px;
-          }
-
-          .contact-info {
-            font-size: 16px;
-          }
+          .error-card { padding: 50px 30px; }
+          .error-title { font-size: 36px; }
+          .error-description { font-size: 20px; margin-bottom: 40px; }
+          .retry-button, .back-button { font-size: 18px; padding: 14px 28px; }
+          .contact-info { font-size: 16px; }
         }
 
         @media (max-width: 640px) {
-          .error-card {
-            padding: 40px 20px;
-          }
-
-          .error-title {
-            font-size: 28px;
-          }
-
-          .error-description {
-            font-size: 18px;
-            margin-bottom: 32px;
-          }
-
-          .error-icon {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 32px;
-          }
-
-          .error-icon svg {
-            width: 40px;
-            height: 40px;
-          }
-
-          .button-group {
-            flex-direction: column;
-            gap: 16px;
-          }
-
-          .retry-button,
-          .back-button {
-            width: 100%;
-            font-size: 16px;
-            padding: 12px 24px;
-          }
-
-          .contact-info {
-            font-size: 15px;
-          }
+          .error-card { padding: 40px 20px; }
+          .error-title { font-size: 28px; }
+          .error-description { font-size: 18px; margin-bottom: 32px; }
+          .error-icon { width: 80px; height: 80px; margin-bottom: 32px; }
+          .error-icon svg { width: 40px; height: 40px; }
+          .button-group { flex-direction: column; gap: 16px; }
+          .retry-button, .back-button { width: 100%; font-size: 16px; padding: 12px 24px; }
+          .contact-info { font-size: 15px; }
         }
 
         @media (max-width: 480px) {
-          .error-title {
-            font-size: 24px;
-          }
-
-          .error-description {
-            font-size: 16px;
-            margin-bottom: 24px;
-          }
-
-          .retry-button,
-          .back-button {
-            font-size: 14px;
-            padding: 10px 20px;
-          }
+          .error-title { font-size: 24px; }
+          .error-description { font-size: 16px; margin-bottom: 24px; }
+          .retry-button, .back-button { font-size: 14px; padding: 10px 20px; }
         }
       `}</style>
 
@@ -321,17 +259,13 @@ export default function ErrorPage({error, reset}: {error: Error; reset: () => vo
             {telephone && (
               <div className='contact-item'>
                 <span className='contact-label'>{t.phone}</span>
-                <a href={`tel:${telephone}`} className='contact-link'>
-                  {telephone}
-                </a>
+                <a href={`tel:${telephone}`} className='contact-link'>{telephone}</a>
               </div>
             )}
             {email && (
               <div className='contact-item'>
                 <span className='contact-label'>{t.email}</span>
-                <a href={`mailto:${email}`} className='contact-link'>
-                  {email}
-                </a>
+                <a href={`mailto:${email}`} className='contact-link'>{email}</a>
               </div>
             )}
           </div>

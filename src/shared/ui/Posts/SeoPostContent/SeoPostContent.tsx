@@ -88,6 +88,16 @@ export function SeoPostContent({blocks, title, authorName, authorId, publishedAt
             )
           }
 
+          case PostBlockType.FILE_LIST: {
+            const payload = block.payload as {files: {name: string}[]}
+            if (!payload.files?.length) return null
+            return (
+              <ul key={block.id}>
+                {payload.files.map((file, i) => <li key={i}>{file.name}</li>)}
+              </ul>
+            )
+          }
+
           case PostBlockType.TEST_LINK: {
             const payload = block.payload as {testId: string | null; title: string | null}
             if (!payload.title) return null

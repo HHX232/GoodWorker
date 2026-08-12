@@ -6,7 +6,7 @@ import { SeoPostContent } from '@/shared/ui/Posts/SeoPostContent/SeoPostContent'
 import { Prisma } from '@prisma/client'
 import { Metadata } from 'next'
 import { cookies } from 'next/headers'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { auth } from '../../../../../auth'
 
 function parseBlocks(content: Prisma.JsonValue): any[] {
@@ -137,6 +137,9 @@ async function PostServerPage({params}: {params: Promise<{slug: string; id: stri
   ])
 
   if (!post) return notFound()
+
+  // Redirect old /post/slug/uuid URLs to new /post/slug-1213 format
+  if (post.slug) redirect(`/post/${post.slug}`)
 
   if (!(post as any).contentTranslations) {
     enrichPostWithAI(post.id).catch(() => {})

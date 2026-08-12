@@ -5,7 +5,10 @@ export enum PostBlockType {
   MEDIA = 'MEDIA',
   AUDIO = 'AUDIO',
   TEST_LINK = 'TEST_LINK',
-  MINI_TEST = 'MINI_TEST'
+  MINI_TEST = 'MINI_TEST',
+  POST_LINK = 'POST_LINK',
+  ROAD_MAP_LINK = 'ROAD_MAP_LINK',
+  FILE_LIST = 'FILE_LIST'
 }
 
 export interface PostTextPayload {
@@ -49,7 +52,29 @@ export interface PostMiniTestPayload {
   blocks: import('@/entities/store/slices/tasksSlice.slice').TestBlock[]
 }
 
-export type PostBlockPayload = PostTextPayload | PostMediaPayload | PostAudioPayload | PostTestLinkPayload | PostMiniTestPayload
+export interface PostPostLinkPayload {
+  postId: string
+  postTitle: string
+  postSlug?: string | null
+}
+
+export interface PostRoadMapLinkPayload {
+  roadmapId: string
+  roadmapTitle: string
+}
+
+export interface PostFileEntry {
+  name: string
+  size: number
+  mimeType: string
+  url: string
+}
+
+export interface PostFileListPayload {
+  files: PostFileEntry[]
+}
+
+export type PostBlockPayload = PostTextPayload | PostMediaPayload | PostAudioPayload | PostTestLinkPayload | PostMiniTestPayload | PostPostLinkPayload | PostRoadMapLinkPayload | PostFileListPayload
 
 export interface PostBlockMeta {
   type: PostBlockType

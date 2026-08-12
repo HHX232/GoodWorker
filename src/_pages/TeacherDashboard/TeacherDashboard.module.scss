@@ -41,14 +41,35 @@
     }
   }
 
-  // ── Tablet: hide left sidebar ─────────────────────────────
-  @media (max-width: 1100px) {
-    grid-template-columns: 1fr 296px !important;
+  // ── Tablet: compact 2-column (students narrow, profile becomes a drawer) ──
+  @media (min-width: 769px) and (max-width: 1100px) {
+    grid-template-columns: 220px 1fr !important;
     .resizeHandle { display: none; }
-    .colLeft { display: none; }
+    .colLeft { display: flex; min-width: 0; }
+
+    .colRight {
+      display: flex;
+      position: fixed;
+      top: 83px; // sits below the fixed site header, see .wrapper height above
+      right: 0;
+      bottom: 0;
+      width: 340px;
+      max-width: 85vw;
+      height: auto;
+      z-index: 60;
+      background: #fff;
+      box-shadow: -12px 0 32px rgba(0, 0, 0, 0.15);
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      overflow-y: auto;
+
+      &.tabletOpen {
+        transform: translateX(0);
+      }
+    }
   }
 
-  // ── Mobile: right panel on top, left sidebar in middle, catalog at bottom ─
+  // ── Mobile: stack as column ────────────────────────────────────────────────
   @media (max-width: 768px) {
     display: flex !important;
     flex-direction: column;
@@ -57,9 +78,9 @@
     overflow: visible;
     .resizeHandle { display: none; }
 
-    .colLeft  { order: 2; height: auto; border-right: none; border-top: 1px solid rgba(0,0,0,0.07); }
+    .colRight  { display: flex; order: 1; height: auto; border-left: none; border-bottom: 1px solid rgba(0,0,0,0.07); }
+    .colLeft   { order: 2; height: auto; border-right: none; border-top: 1px solid rgba(0,0,0,0.07); overflow: hidden; }
     .colCenter { order: 3; height: auto; overflow-y: visible; }
-    .colRight { order: 1; height: auto; border-left: none; border-bottom: 1px solid rgba(0,0,0,0.07); }
   }
 }
 
@@ -67,6 +88,121 @@
   .wrapper {
     height: auto;
     min-height: calc(100vh - 83px);
+  }
+}
+
+// ── Mobile students collapse ──────────────────────────────────────────────────
+.mobileStudentsWrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  @media (max-width: 768px) {
+    display: block;
+    flex: none;
+    position: relative;
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+    max-height: 230px;
+
+    // sidebar uses height:100% internally — give it an explicit height to render
+    > * { height: 230px; }
+
+    &.expanded {
+      max-height: 2000px;
+      > * { height: auto; }
+    }
+
+    &:not(.expanded)::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: linear-gradient(to bottom, transparent, #fff);
+      pointer-events: none;
+    }
+  }
+}
+
+// ── Tablet profile drawer (769–1100px) ────────────────────────────────────────
+.tabletProfileToggle {
+  display: none;
+
+  @media (min-width: 769px) and (max-width: 1100px) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 56px;
+    border: none;
+    border-radius: 10px 0 0 10px;
+    background: #534AB7;
+    color: #fff;
+    cursor: pointer;
+    z-index: 61;
+    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+
+    svg { transition: transform 0.25s ease; }
+
+    &.expanded {
+      // matches the drawer's own `width: 340px; max-width: 85vw;`
+      right: min(340px, 85vw);
+      svg { transform: rotate(180deg); }
+    }
+  }
+}
+
+.tabletProfileBackdrop {
+  display: none;
+
+  @media (min-width: 769px) and (max-width: 1100px) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.25);
+    z-index: 59;
+  }
+}
+
+.mobileStudentsToggle {
+  display: none;
+
+  @media (max-width: 768px) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 10px 16px;
+    border: none;
+    background: #EEEFF8;
+    color: #534AB7;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    border-top: 1px solid rgba(83,74,183,0.12);
+
+    svg { transition: transform 0.25s ease; }
+    &.expanded svg { transform: rotate(180deg); }
+  }
+}
+
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .mobileStudentsWrap:not(.expanded)::after {
+    background: linear-gradient(to bottom, transparent, #111318);
+  }
+  .mobileStudentsToggle {
+    background: #1a1c27;
+    color: #a5b4fc;
+    border-top-color: rgba(255,255,255,0.07);
   }
 }
 
@@ -81,5 +217,13 @@
 
     .colLeft  { border-color: rgba(255,255,255,0.07); }
     .colRight { border-color: rgba(255,255,255,0.07); }
+
+    @media (min-width: 769px) and (max-width: 1100px) {
+      .colRight { background: #1a1c27; }
+    }
+  }
+
+  .tabletProfileBackdrop {
+    background: rgba(0, 0, 0, 0.5);
   }
 }

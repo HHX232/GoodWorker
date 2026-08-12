@@ -1,5 +1,5 @@
 import RegisterPage from '@/_pages/RegisterPage/RegisterPage'
-import StarBackground from '@/shared/ui/backgrounds/StarBackground/StarBackground'
+import {DottedSurface} from '@/shared/ui/DottedSurface/DottedSurface'
 
 import { getTranslations } from 'next-intl/server'
 import type { Metadata } from 'next'
@@ -9,12 +9,10 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('register') }
 }
 
-
 export default function page() {
   return (
     <>
-      {' '}
-      <StarBackground />
+      <DottedSurface />
       <RegisterPage />
     </>
   )

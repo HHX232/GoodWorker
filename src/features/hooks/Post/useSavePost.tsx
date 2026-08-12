@@ -33,7 +33,7 @@ export function useSavePost(existingId?: string) {
         queryClient.setQueryData(['post', data.id], data)
       }
       resetPostConstructor()
-      router.push(`/post/${data.id || existingId}`)
+      router.push(`/post/${data.slug || data.id || existingId}`)
       toast.success(existingId ? t('successUpdated') : t('successPublished'))
     },
     onError: () => {

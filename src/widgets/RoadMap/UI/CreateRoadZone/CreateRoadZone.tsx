@@ -4,6 +4,7 @@
 import {useActions} from '@/features/hooks/store/useActions'
 import {useTypedSelector} from '@/features/hooks/store/useTypedSelector'
 import {createRoadNode} from '@/shared/helpers/Node/CreateFlowNode'
+import {edgeColorFromNode} from '@/shared/helpers/Node/edgeColor'
 import {RoadMapBlockType, RoadNode, RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
 import {ViewModeContext} from '@/shared/ui/RoadMap/context/ViewModeContext'
 import {useDroppable} from '@dnd-kit/core'
@@ -121,24 +122,23 @@ function CreateRoadZoneInner({ editId }: { editId?: string }) {
 
   const onConnect = useCallback(
     (connection: Connection) => {
+      const sourceNode = nodes.find((n) => n.id === connection.source)
+      const headerColor = (sourceNode?.data as RoadNodeData)?.headerColor
+      const c = edgeColorFromNode(headerColor, connection.sourceHandle, connection.source ?? '')
       setEdges((eds) =>
         addEdge(
           {
             ...connection,
             type: 'default',
             animated: true,
-            markerEnd: {
-              type: MarkerType.ArrowClosed,
-              width: 22,
-              height: 22,
-              color: '#868897'
-            }
+            markerEnd: {type: MarkerType.ArrowClosed, width: 22, height: 22, color: c},
+            style: {stroke: c},
           },
           eds
         )
       )
     },
-    [setEdges]
+    [setEdges, nodes]
   )
 
   const isValidConnection = useCallback(

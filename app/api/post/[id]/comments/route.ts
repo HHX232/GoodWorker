@@ -143,6 +143,7 @@ export async function POST(req: NextRequest, {params}: RouteParams) {
           actorRole: session.user.role,
           postId,
           postTitle: post.title ?? '',
+          textPreview: text.trim().slice(0, 150),
         },
         teacherId: post.teacherId,
       })

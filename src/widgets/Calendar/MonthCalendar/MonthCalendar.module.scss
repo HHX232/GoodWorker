@@ -128,6 +128,35 @@
    padding-left: 4px;
 }
 
+/* Homework chip in month view */
+.monthHw {
+   display: flex;
+   align-items: center;
+   gap: 4px;
+   padding: 2px 5px;
+   border-radius: 4px;
+   background: rgba(124, 58, 237, 0.08);
+   border: 0.5px solid rgba(124, 58, 237, 0.2);
+   font-size: 10px;
+   color: #7C3AED;
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   text-decoration: none;
+   cursor: pointer;
+   transition: background 0.12s;
+
+   &:hover { background: rgba(124, 58, 237, 0.14); }
+}
+
+.monthHwDot {
+   width: 5px;
+   height: 5px;
+   border-radius: 50%;
+   background: #7C3AED;
+   flex-shrink: 0;
+}
+
 :global(html.theme-dark), :global(html.pomodoro-dark) {
   .monthGrid { background: #12141f; }
   .monthDayName { background: #1a1c24; color: rgba(255,255,255,0.25); border-bottom-color: rgba(255,255,255,0.07); }
@@ -137,4 +166,6 @@
   .monthTaskCheck { background: #1a1c24; }
   .monthTaskTitle { color: #818cf8; }
   .monthMore { color: rgba(255,255,255,0.25); }
+  .monthHw { background: rgba(124,58,237,0.12); border-color: rgba(124,58,237,0.25); color: #c4b5fd; &:hover { background: rgba(124,58,237,0.18); } }
+  .monthHwDot { background: #c4b5fd; }
 }

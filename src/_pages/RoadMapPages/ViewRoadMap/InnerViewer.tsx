@@ -13,6 +13,7 @@ import {useSession} from 'next-auth/react'
 import Link from 'next/link'
 import {useThemeCtx} from '@/app/providers/ThemeContext'
 import DeletableEdge from '@/widgets/RoadMap/UI/nodes/DeletableEdge/DeletableEdge'
+import {edgeColorFromNode} from '@/shared/helpers/Node/edgeColor'
 import NodeComponent from '@/widgets/RoadMap/UI/nodes/NodeComponent/NodeComponent'
 import RoadmapTutorial from '@/widgets/RoadMap/UI/RoadmapTutorial/RoadmapTutorial'
 import {
@@ -157,15 +158,22 @@ function InnerFlow({
   const [nodes, , onNodesChange] = useNodesState(
     initialNodes.map((n) => ({...n, type: 'FlowScrapeNode', dragging: false, selected: false}))
   )
-  const edgeColor = isDark ? 'rgba(255,255,255,0.25)' : '#868897'
+  const defaultEdgeColor = isDark ? 'rgba(255,255,255,0.25)' : '#868897'
   const [edges, , onEdgesChange] = useEdgesState(
-    initialEdges.map((e) => ({
-      ...e,
-      type: 'default',
-      animated: true,
-      selectable: false,
-      markerEnd: {type: MarkerType.ArrowClosed, width: 22, height: 22, color: edgeColor},
-    }))
+    initialEdges.map((e) => {
+      const sourceNode = initialNodes.find((n) => n.id === e.source)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const headerColor = (sourceNode?.data as any)?.headerColor
+      const c = edgeColorFromNode(headerColor, e.sourceHandle, e.source, defaultEdgeColor)
+      return {
+        ...e,
+        type: 'default',
+        animated: true,
+        selectable: false,
+        markerEnd: {type: MarkerType.ArrowClosed, width: 22, height: 22, color: c},
+        style: {...(e.style ?? {}), stroke: c},
+      }
+    })
   )
 
   const btnStyle: React.CSSProperties = {

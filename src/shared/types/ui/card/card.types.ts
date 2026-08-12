@@ -20,4 +20,5 @@ export interface ICard {
   userId?: string
   useLink?: boolean
   hasMiniTest?: boolean
+  slug?: string | null
 }

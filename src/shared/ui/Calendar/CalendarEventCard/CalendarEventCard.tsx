@@ -102,6 +102,9 @@ export function CalendarEventCard({
           </svg>
         </div>
       )}
+      {event.warning && (
+        <div className={styles.warningBadge}>!</div>
+      )}
       {event.status === 'completed' && (
         <div className={styles.statusDot} style={{background: '#22c55e'}} />
       )}
