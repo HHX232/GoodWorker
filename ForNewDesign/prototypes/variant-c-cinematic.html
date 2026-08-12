@@ -371,6 +371,21 @@ nav[data-switcher] a[aria-current="page"]{
 .hero--static .hero__rail{ display:none; }
 .hero--static .hero__hint{ display:none; }
 
+@media (max-width:480px){
+  /* 360–480px: крупный Didone-заголовок уменьшаем и разрешаем безопасный перенос,
+     чтобы длинные слова («готовый», «Автоматически.») помещались целиком.
+     Селектор .hero__title.display + !important — чтобы мобильный размер гарантированно
+     выигрывал каскад (h1 несёт оба класса). */
+  .hero__title.display{
+    font-size:clamp(1.75rem, .8rem + 5vw, 2.4rem) !important;
+    letter-spacing:-0.015em;
+    line-height:1.04;
+    overflow-wrap:anywhere;
+    word-break:break-word;
+    hyphens:auto;
+  }
+  .hero__title.display em{ letter-spacing:-0.01em; }
+}
 @media (max-width:900px){
   /* На узком экране запиненный морф деградирует в раскадровку */
   .hero{ height:auto; }
