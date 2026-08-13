@@ -221,6 +221,128 @@ html[data-active-steps="3"] [data-steps="3"]{ display:block; }
 .steps-ph__note{ color:var(--ink-2); margin-top:1rem; }
 
 /* ============================================================
+   BLUEPRINT HERO (H1 изометрия / H2 фронтальный разлёт)
+   Тёмная чертёжная подложка --draft-bg; линии/выноски --accent-soft.
+   Scroll-driven: цельное ↔ разобранное (прогресс ведёт JS через transform).
+   ============================================================ */
+.bp{
+  background:var(--draft-bg);
+  color:#e7e3d8;
+  height:300vh;                 /* высота для scroll-driven — только когда секция активна */
+}
+.bp__stage{
+  position:sticky; top:0;
+  height:100vh; min-height:600px;
+  display:grid;
+  grid-template-columns:minmax(0,40%) minmax(0,60%);
+  align-items:center;
+  gap:clamp(1rem,4vw,3.5rem);
+  padding:0 var(--pad);
+  overflow:hidden;
+}
+.bp__intro{ position:relative; z-index:4; max-width:34rem; }
+.bp__eyebrow{
+  font-size:.72rem; letter-spacing:.24em; text-transform:uppercase;
+  color:var(--accent-soft); font-weight:600; margin:0 0 1.1rem;
+}
+.bp__title{
+  font-family:var(--serif); font-weight:700;
+  font-size:min(var(--fs-hero),12vw); line-height:1.02;
+  letter-spacing:var(--tracking-display);
+  margin:0; color:#f4f0e6; overflow-wrap:anywhere;
+}
+.bp__title em{ display:block; font-style:italic; font-weight:400; color:var(--accent-soft); }
+.bp__lede{
+  margin:1.6rem 0 0; max-width:40ch;
+  font-size:var(--fs-lead); line-height:1.55; color:#b8b2a6;
+}
+.bp__cta{ display:flex; flex-wrap:wrap; gap:.8rem; margin-top:2.2rem; }
+.bp__line-btn{
+  background:transparent; color:var(--accent-soft); border-color:var(--accent-soft);
+}
+.bp__line-btn:hover{ background:var(--accent-soft); color:var(--draft-bg); border-color:var(--accent-soft); }
+.bp__hint{
+  margin-top:2.6rem; display:inline-flex; align-items:center; gap:.6rem;
+  font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:#8f897d;
+}
+.bp__hint svg{ width:14px; height:20px; }
+
+.bp__art{ position:relative; z-index:2; display:flex; flex-direction:column; gap:1.3rem; min-width:0; }
+.bp__svg{ width:100%; height:auto; max-height:60vh; display:block; overflow:visible; }
+.bp__svg [data-bp-layer]{ transform-box:view-box; transform-origin:340px 250px; }
+
+/* чертёжные примитивы SVG (на тёмном красим --accent-soft) */
+.bp__svg .bp-axis{ stroke:var(--accent-soft); stroke-width:1; opacity:.26; stroke-dasharray:2 8; }
+.bp__svg .bp-grid{ stroke:var(--accent-soft); stroke-width:.7; opacity:.16; }
+.bp__svg .bp-face{ fill:rgba(231,227,216,.03); stroke:var(--accent-soft); stroke-width:1.4; stroke-linejoin:round; }
+.bp__svg .bp-side{ fill:rgba(0,0,0,.30); stroke:var(--accent-soft); stroke-width:1; opacity:.5; stroke-linejoin:round; }
+.bp__svg .bp-ink{ stroke:var(--accent-soft); stroke-width:1.8; fill:none; opacity:.92; stroke-linecap:round; stroke-linejoin:round; }
+.bp__svg .bp-row{ stroke:var(--accent-soft); stroke-width:2; opacity:.38; stroke-linecap:round; }
+.bp__svg .bp-dim{ stroke:var(--accent-soft); stroke-width:1; opacity:.5; fill:none; }
+.bp__svg .bp-fill{ fill:var(--accent-soft); opacity:.85; }
+.bp__pnum{ fill:var(--accent-soft); font-family:var(--sans); font-weight:700; font-size:26px; opacity:.92; }
+
+/* выноски — статичные верхнеуровневые, проявляются на разобранном кадре */
+.bp__cal{ opacity:0; transition:opacity .5s var(--ease); }
+.bp[data-open="1"] .bp__cal{ opacity:1; }
+.bp__cal .bp-lead{ stroke:var(--accent-soft); stroke-width:1; opacity:.8; }
+.bp__cal .bp-dot{ fill:var(--accent-soft); }
+.bp__cal text{
+  fill:var(--accent-soft); font-family:var(--sans);
+  font-size:14px; font-weight:600; letter-spacing:.01em;
+}
+
+/* группы слоёв — трансформ ставит JS */
+[data-bp-layer]{ transition:transform .14s linear; }
+.bp--static [data-bp-layer]{ transition:none; }
+
+/* Список состава — привязан к скроллу (активный слой подсвечивается) */
+.bp__list{
+  list-style:none; margin:0; padding:0;
+  border-top:1px solid rgba(231,227,216,.16);
+  font-family:var(--sans);
+}
+.bp__list li{
+  display:flex; align-items:baseline; gap:.7rem;
+  padding:.55rem .15rem; border-bottom:1px solid rgba(231,227,216,.10);
+  color:#8f897d; transition:color .4s var(--ease), border-color .4s var(--ease);
+}
+.bp__list .idx{ font-variant-numeric:tabular-nums; font-weight:700; font-size:.76rem; color:#6f6a5f; letter-spacing:.06em; }
+.bp__list .nm{ font-size:.88rem; white-space:nowrap; }
+.bp__list .dots{ flex:1; height:1px; align-self:center; min-width:12px; background:repeating-linear-gradient(90deg, rgba(231,227,216,.24) 0 2px, transparent 2px 6px); }
+.bp__list .val{ font-family:var(--serif); font-style:italic; font-size:.94rem; color:#b8b2a6; white-space:nowrap; }
+.bp__list li.on{ color:#f4f0e6; border-color:var(--accent-soft); }
+.bp__list li.on .idx{ color:var(--accent-soft); }
+.bp__list li.on .val{ color:var(--accent-soft); }
+
+/* Статичный кадр (reduced-motion / мобайл): разобранный, всё читаемо */
+.bp--static{ height:auto; }
+.bp--static .bp__stage{
+  position:static; height:auto; min-height:0;
+  grid-template-columns:1fr;
+  padding-top:calc(var(--step) * .7); padding-bottom:var(--step);
+  gap:2.6rem; overflow:visible;
+}
+.bp--static .bp__svg{ max-height:none; }
+.bp--static .bp__cal{ opacity:1; }
+
+@media (max-width:900px){
+  .bp{ height:auto; }
+  .bp__stage{
+    position:static; height:auto; min-height:0;
+    grid-template-columns:1fr;
+    padding-top:calc(var(--step) * .7); padding-bottom:var(--step);
+    gap:2.4rem; overflow:visible;
+  }
+  .bp__svg{ max-height:none; }
+  .bp__cal{ opacity:1; }
+  .bp__hint{ display:none; }
+}
+@media (max-width:520px){
+  .bp__list .nm{ white-space:normal; }
+}
+
+/* ============================================================
    HERO H4 — запиненный документ морфит в тест (база V3)
    ============================================================ */
 .hero{ height:340vh; }
@@ -864,23 +986,233 @@ html[data-lab="open"] .lab{ transform:none; }
 
 <main id="top">
 
-  <!-- ============ HERO H1 (плейсхолдер — blueprint exploded) ============ -->
-  <section class="hero-ph hero-ph--dark" data-hero="1" aria-label="Hero H1 — blueprint exploded (в разработке)">
-    <div class="hero-ph__inner">
-      <p class="hero-ph__tag">Hero H1 · Blueprint Exploded</p>
-      <h2 class="hero-ph__title">Изометрический разрез PDF → тест</h2>
-      <p class="hero-ph__note">Слои разъезжаются по скроллу: страницы, вопросы, типы, собранный тест. Анимацию добавит следующий тикет.</p>
-      <div class="hero-ph__grid" aria-hidden="true"></div>
+  <!-- ============ HERO H1 — Blueprint Exploded (изометрия) ============ -->
+  <section class="bp bp--iso" data-hero="1" data-open="0" aria-label="Из PDF — в готовый тест: изометрический разрез процесса">
+    <div class="bp__stage">
+
+      <div class="bp__intro">
+        <p class="bp__eyebrow">Чертёж процесса · разрез</p>
+        <h1 class="bp__title">Из PDF —<em>в готовый тест.</em></h1>
+        <p class="bp__lede">Листай — документ разбирается на слои: страницы, распознанные вопросы, типы ответов, и снова собирается в интерактивный тест.</p>
+        <div class="bp__cta">
+          <a class="btn btn--solid" href="#">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 15V3m0 0L8 7m4-4 4 4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>
+            Загрузить PDF
+          </a>
+          <a class="btn bp__line-btn" href="#how">Как это работает</a>
+        </div>
+        <div class="bp__hint">
+          Листай — слои разъедутся
+          <svg viewBox="0 0 14 20" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><line x1="7" y1="2" x2="7" y2="14"/><path d="M2 10l5 5 5-5"/></svg>
+        </div>
+      </div>
+
+      <div class="bp__art">
+        <svg class="bp__svg" viewBox="0 0 680 520" role="img"
+             aria-label="Изометрический разобранный вид: четыре слоя — страницы PDF, распознанные вопросы, типы ответов и собранный тест из 12 вопросов">
+          <!-- ось сборки -->
+          <line class="bp-axis" x1="340" y1="18" x2="340" y2="502"/>
+
+          <!-- Слой 04 — Собранный тест (верхний) -->
+          <g data-bp-layer="3">
+            <path class="bp-side" d="M220 250 L340 310 L340 326 L220 266 Z"/>
+            <path class="bp-side" d="M340 310 L460 250 L460 266 L340 326 Z"/>
+            <path class="bp-face" d="M340 190 L460 250 L340 310 L220 250 Z"/>
+            <line class="bp-grid" x1="260" y1="270" x2="380" y2="210"/>
+            <line class="bp-grid" x1="299" y1="290" x2="419" y2="230"/>
+            <line class="bp-grid" x1="260" y1="230" x2="380" y2="290"/>
+            <line class="bp-grid" x1="299" y1="210" x2="419" y2="270"/>
+            <path class="bp-ink" d="M330 215 l6 6 l12 -13"/>
+            <text class="bp__pnum" x="340" y="262" text-anchor="middle">04</text>
+          </g>
+
+          <!-- Слой 03 — Типы ответов -->
+          <g data-bp-layer="2">
+            <path class="bp-side" d="M220 250 L340 310 L340 326 L220 266 Z"/>
+            <path class="bp-side" d="M340 310 L460 250 L460 266 L340 326 Z"/>
+            <path class="bp-face" d="M340 190 L460 250 L340 310 L220 250 Z"/>
+            <line class="bp-grid" x1="260" y1="270" x2="380" y2="210"/>
+            <line class="bp-grid" x1="299" y1="290" x2="419" y2="230"/>
+            <line class="bp-grid" x1="260" y1="230" x2="380" y2="290"/>
+            <line class="bp-grid" x1="299" y1="210" x2="419" y2="270"/>
+            <circle class="bp-fill" cx="326" cy="216" r="3"/>
+            <circle class="bp-fill" cx="340" cy="216" r="3"/>
+            <circle class="bp-fill" cx="354" cy="216" r="3"/>
+            <text class="bp__pnum" x="340" y="262" text-anchor="middle">03</text>
+          </g>
+
+          <!-- Слой 02 — Распознанные вопросы -->
+          <g data-bp-layer="1">
+            <path class="bp-side" d="M220 250 L340 310 L340 326 L220 266 Z"/>
+            <path class="bp-side" d="M340 310 L460 250 L460 266 L340 326 Z"/>
+            <path class="bp-face" d="M340 190 L460 250 L340 310 L220 250 Z"/>
+            <line class="bp-grid" x1="260" y1="270" x2="380" y2="210"/>
+            <line class="bp-grid" x1="299" y1="290" x2="419" y2="230"/>
+            <line class="bp-grid" x1="260" y1="230" x2="380" y2="290"/>
+            <line class="bp-grid" x1="299" y1="210" x2="419" y2="270"/>
+            <path class="bp-ink" d="M340 208 L356 216 L340 224 L324 216 Z"/>
+            <text class="bp__pnum" x="340" y="262" text-anchor="middle">02</text>
+          </g>
+
+          <!-- Слой 01 — Страницы PDF (нижний) -->
+          <g data-bp-layer="0">
+            <path class="bp-side" d="M220 250 L340 310 L340 326 L220 266 Z"/>
+            <path class="bp-side" d="M340 310 L460 250 L460 266 L340 326 Z"/>
+            <path class="bp-face" d="M340 190 L460 250 L340 310 L220 250 Z"/>
+            <line class="bp-grid" x1="260" y1="270" x2="380" y2="210"/>
+            <line class="bp-grid" x1="299" y1="290" x2="419" y2="230"/>
+            <line class="bp-grid" x1="260" y1="230" x2="380" y2="290"/>
+            <line class="bp-grid" x1="299" y1="210" x2="419" y2="270"/>
+            <path class="bp-ink" d="M320 220 L360 200"/>
+            <path class="bp-ink" d="M324 228 L364 208" opacity=".6"/>
+            <text class="bp__pnum" x="340" y="262" text-anchor="middle">01</text>
+          </g>
+
+          <!-- Выноски-подписи (акцент) -->
+          <g class="bp__cal" aria-hidden="true">
+            <line class="bp-lead" x1="460" y1="433" x2="596" y2="433"/>
+            <circle class="bp-dot" cx="460" cy="433" r="3"/>
+            <text x="602" y="437" text-anchor="start">OCR</text>
+
+            <line class="bp-lead" x1="220" y1="311" x2="96" y2="311"/>
+            <circle class="bp-dot" cx="220" cy="311" r="3"/>
+            <text x="90" y="315" text-anchor="end">12 вопросов</text>
+
+            <line class="bp-lead" x1="460" y1="189" x2="596" y2="189"/>
+            <circle class="bp-dot" cx="460" cy="189" r="3"/>
+            <text x="602" y="193" text-anchor="start">6 типов</text>
+
+            <line class="bp-lead" x1="220" y1="67" x2="96" y2="67"/>
+            <circle class="bp-dot" cx="220" cy="67" r="3"/>
+            <text x="90" y="71" text-anchor="end">автопроверка</text>
+          </g>
+        </svg>
+
+        <ol class="bp__list" data-bp-list aria-label="Состав чертежа">
+          <li><span class="idx">01</span><span class="nm">Страницы PDF</span><span class="dots"></span><span class="val">exam.pdf</span></li>
+          <li><span class="idx">02</span><span class="nm">Распознанные вопросы</span><span class="dots"></span><span class="val">12</span></li>
+          <li><span class="idx">03</span><span class="nm">Типы ответов</span><span class="dots"></span><span class="val">6</span></li>
+          <li><span class="idx">04</span><span class="nm">Собранный тест</span><span class="dots"></span><span class="val">готов</span></li>
+        </ol>
+      </div>
+
     </div>
   </section>
 
-  <!-- ============ HERO H2 (плейсхолдер — иная композиция) ============ -->
-  <section class="hero-ph hero-ph--dark" data-hero="2" aria-label="Hero H2 — blueprint, другая композиция (в разработке)">
-    <div class="hero-ph__inner">
-      <p class="hero-ph__tag">Hero H2 · Blueprint · фронтальный разлёт</p>
-      <h2 class="hero-ph__title">Стопка документа разлетается в тест</h2>
-      <p class="hero-ph__note">Другой ракурс blueprint-разбора — реальный вариант, не копия H1. Наполнение — следующий тикет.</p>
-      <div class="hero-ph__grid" aria-hidden="true"></div>
+  <!-- ============ HERO H2 — Blueprint Exploded (фронтальный разлёт) ============ -->
+  <section class="bp bp--front" data-hero="2" data-open="0" aria-label="Стопка документа разлетается в тест: фронтальный разбор">
+    <div class="bp__stage">
+
+      <div class="bp__intro">
+        <p class="bp__eyebrow">Чертёж процесса · разлёт</p>
+        <h1 class="bp__title">Стопка<em>разлетается в тест.</em></h1>
+        <p class="bp__lede">Тот же разбор — с другого ракурса. По скроллу листы стопки разлетаются: страницы, вопросы, типы ответов и собранный тест.</p>
+        <div class="bp__cta">
+          <a class="btn btn--solid" href="#">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 15V3m0 0L8 7m4-4 4 4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>
+            Загрузить PDF
+          </a>
+          <a class="btn bp__line-btn" href="#how">Как это работает</a>
+        </div>
+        <div class="bp__hint">
+          Листай — стопка разлетится
+          <svg viewBox="0 0 14 20" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><line x1="7" y1="2" x2="7" y2="14"/><path d="M2 10l5 5 5-5"/></svg>
+        </div>
+      </div>
+
+      <div class="bp__art">
+        <svg class="bp__svg" viewBox="0 0 680 520" role="img"
+             aria-label="Фронтальный разобранный вид: стопка из четырёх листов — страницы, распознанные вопросы, типы ответов и собранный тест из 12 вопросов">
+
+          <!-- Лист 01 — Страницы PDF -->
+          <g data-bp-layer="0">
+            <rect class="bp-side" x="248" y="133" width="200" height="250" rx="2"/>
+            <rect class="bp-face" x="240" y="125" width="200" height="250" rx="2"/>
+            <path class="bp-dim" d="M414 125 v22 h22"/>
+            <line class="bp-row" x1="264" y1="172" x2="416" y2="172"/>
+            <line class="bp-row" x1="264" y1="200" x2="416" y2="200"/>
+            <line class="bp-row" x1="264" y1="228" x2="416" y2="228"/>
+            <line class="bp-row" x1="264" y1="256" x2="416" y2="256"/>
+            <line class="bp-row" x1="264" y1="284" x2="386" y2="284"/>
+            <line class="bp-row" x1="264" y1="312" x2="416" y2="312"/>
+            <line class="bp-row" x1="264" y1="340" x2="360" y2="340"/>
+            <text class="bp__pnum" x="264" y="158" text-anchor="start">01</text>
+          </g>
+
+          <!-- Лист 02 — Распознанные вопросы -->
+          <g data-bp-layer="1">
+            <rect class="bp-side" x="248" y="133" width="200" height="250" rx="2"/>
+            <rect class="bp-face" x="240" y="125" width="200" height="250" rx="2"/>
+            <line class="bp-row" x1="264" y1="182" x2="416" y2="182"/>
+            <rect class="bp-ink" x="258" y="200" width="164" height="40" rx="2"/>
+            <line class="bp-dim" x1="272" y1="216" x2="404" y2="216"/>
+            <line class="bp-dim" x1="272" y1="228" x2="360" y2="228"/>
+            <line class="bp-row" x1="264" y1="266" x2="416" y2="266"/>
+            <line class="bp-row" x1="264" y1="294" x2="392" y2="294"/>
+            <line class="bp-row" x1="264" y1="322" x2="416" y2="322"/>
+            <text class="bp__pnum" x="264" y="158" text-anchor="start">02</text>
+          </g>
+
+          <!-- Лист 03 — Типы ответов (6 модулей) -->
+          <g data-bp-layer="2">
+            <rect class="bp-side" x="248" y="133" width="200" height="250" rx="2"/>
+            <rect class="bp-face" x="240" y="125" width="200" height="250" rx="2"/>
+            <circle class="bp-ink" cx="290" cy="192" r="12"/>
+            <rect class="bp-ink" x="322" y="180" width="24" height="24" rx="2"/>
+            <path class="bp-ink" d="M372 180 h24 M372 192 h24 M372 204 h16"/>
+            <circle class="bp-ink" cx="290" cy="250" r="12"/><circle class="bp-fill" cx="290" cy="250" r="4"/>
+            <path class="bp-ink" d="M320 250 l7 7 l13 -14"/>
+            <path class="bp-ink" d="M372 240 h24 M372 252 h24 M372 264 h16"/>
+            <path class="bp-ink" d="M280 300 h20 M284 308 h16 M288 316 h12"/>
+            <rect class="bp-ink" x="322" y="298" width="24" height="20" rx="2"/>
+            <path class="bp-ink" d="M372 302 l8 8 l-8 8 M400 302 l-8 8 l8 8" opacity=".7"/>
+            <text class="bp__pnum" x="264" y="158" text-anchor="start">03</text>
+          </g>
+
+          <!-- Лист 04 — Собранный тест -->
+          <g data-bp-layer="3">
+            <rect class="bp-side" x="248" y="133" width="200" height="250" rx="2"/>
+            <rect class="bp-face" x="240" y="125" width="200" height="250" rx="2"/>
+            <line class="bp-row" x1="264" y1="170" x2="392" y2="170"/>
+            <line class="bp-row" x1="264" y1="186" x2="344" y2="186"/>
+            <circle class="bp-ink" cx="276" cy="228" r="9"/><circle class="bp-fill" cx="276" cy="228" r="3.5"/>
+            <line class="bp-dim" x1="296" y1="228" x2="404" y2="228"/>
+            <circle class="bp-dim" cx="276" cy="262" r="9"/>
+            <line class="bp-dim" x1="296" y1="262" x2="380" y2="262"/>
+            <circle class="bp-dim" cx="276" cy="296" r="9"/>
+            <line class="bp-dim" x1="296" y1="296" x2="396" y2="296"/>
+            <path class="bp-ink" d="M356 330 l7 7 l13 -14"/>
+            <text class="bp__pnum" x="264" y="158" text-anchor="start">04</text>
+          </g>
+
+          <!-- Выноски-подписи (акцент) -->
+          <g class="bp__cal" aria-hidden="true">
+            <line class="bp-lead" x1="120" y1="176" x2="74" y2="150"/>
+            <circle class="bp-dot" cx="120" cy="176" r="3"/>
+            <text x="68" y="154" text-anchor="end">OCR</text>
+
+            <line class="bp-lead" x1="276" y1="420" x2="258" y2="452"/>
+            <circle class="bp-dot" cx="276" cy="420" r="3"/>
+            <text x="230" y="470" text-anchor="start">12 вопросов</text>
+
+            <line class="bp-lead" x1="430" y1="150" x2="452" y2="104"/>
+            <circle class="bp-dot" cx="430" cy="150" r="3"/>
+            <text x="452" y="92" text-anchor="start">6 типов</text>
+
+            <line class="bp-lead" x1="540" y1="360" x2="512" y2="452"/>
+            <circle class="bp-dot" cx="540" cy="360" r="3"/>
+            <text x="470" y="472" text-anchor="start">автопроверка</text>
+          </g>
+        </svg>
+
+        <ol class="bp__list" data-bp-list aria-label="Состав чертежа">
+          <li><span class="idx">01</span><span class="nm">Страницы PDF</span><span class="dots"></span><span class="val">exam.pdf</span></li>
+          <li><span class="idx">02</span><span class="nm">Распознанные вопросы</span><span class="dots"></span><span class="val">12</span></li>
+          <li><span class="idx">03</span><span class="nm">Типы ответов</span><span class="dots"></span><span class="val">6</span></li>
+          <li><span class="idx">04</span><span class="nm">Собранный тест</span><span class="dots"></span><span class="val">готов</span></li>
+        </ol>
+      </div>
+
     </div>
   </section>
 
@@ -1642,6 +1974,91 @@ html[data-lab="open"] .lab{ transform:none; }
     }
   }, { passive:true });
   update();
+})();
+</script>
+
+<!-- ============ Blueprint-hero H1/H2: scroll-driven разбор/сборка ============ -->
+<script>
+(function(){
+  'use strict';
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function isSmall(){ return window.matchMedia && window.matchMedia('(max-width: 900px)').matches; }
+  function easeIO(t){ return t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2; }
+
+  // Изометрия H1: слои разъезжаются по вертикали.
+  function isoPlace(i, s){
+    var dy = -(i - 1.5) * (12 + 110 * s);
+    return 'translate(0px,' + dy.toFixed(1) + 'px)';
+  }
+  // Фронтальный разлёт H2: листы стопки разлетаются со смещением и поворотом.
+  var TX = [-172, -64, 86, 176], TY = [-34, 56, -50, 32], ROT = [-13, -5, 8, 13];
+  function frontPlace(i, s){
+    return 'translate(' + (TX[i]*s).toFixed(1) + 'px,' + (TY[i]*s).toFixed(1) + 'px) rotate(' + (ROT[i]*s).toFixed(2) + 'deg)';
+  }
+
+  function makeHero(sel, place){
+    var sec = document.querySelector(sel);
+    if(!sec) return null;
+    var layers = Array.prototype.slice.call(sec.querySelectorAll('[data-bp-layer]'));
+    var items  = Array.prototype.slice.call(sec.querySelectorAll('[data-bp-list] li'));
+
+    function apply(p){
+      var raw = p / 0.62; if(raw > 1) raw = 1; if(raw < 0) raw = 0;
+      var s = easeIO(raw);
+      layers.forEach(function(g, i){ g.style.transform = place(i, s); });
+      sec.setAttribute('data-open', s > 0.34 ? '1' : '0');
+      var active = Math.floor(p * 4); if(active > 3) active = 3; if(active < 0) active = 0;
+      items.forEach(function(li, i){ li.classList.toggle('on', i === active); });
+    }
+    function staticFrame(){
+      sec.classList.add('bp--static');
+      layers.forEach(function(g, i){ g.style.transform = place(i, 1); });
+      sec.setAttribute('data-open', '1');
+      items.forEach(function(li){ li.classList.add('on'); });
+    }
+    return {
+      sec: sec,
+      isVisible: function(){ return sec.offsetHeight > 0; },
+      isStatic:  function(){ return sec.classList.contains('bp--static'); },
+      unstatic:  function(){ sec.classList.remove('bp--static'); },
+      apply: apply,
+      staticFrame: staticFrame
+    };
+  }
+
+  function bind(hero){
+    if(!hero) return;
+    if(reduce){ hero.staticFrame(); return; }
+
+    var ticking = false;
+    function update(){
+      ticking = false;
+      if(!hero.isVisible()) return;          // неактивная секция (display:none)
+      if(hero.isStatic()) return;
+      var rect  = hero.sec.getBoundingClientRect();
+      var total = hero.sec.offsetHeight - window.innerHeight;
+      if(total <= 0){ hero.apply(0); return; }
+      var p = -rect.top / total; if(p < 0) p = 0; if(p > 1) p = 1;
+      hero.apply(p);
+    }
+    function onScroll(){ if(!ticking){ ticking = true; window.requestAnimationFrame(update); } }
+    function setup(){
+      if(isSmall()){ if(!hero.isStatic()) hero.staticFrame(); }
+      else { if(hero.isStatic()) hero.unstatic(); update(); }
+    }
+
+    window.addEventListener('scroll', onScroll, { passive:true });
+    window.addEventListener('resize', setup, { passive:true });
+    // Переинициализация при переключении hero кнопками панели.
+    if(window.MutationObserver){
+      new MutationObserver(setup).observe(document.documentElement,
+        { attributes:true, attributeFilter:['data-active-hero'] });
+    }
+    setup();
+  }
+
+  bind(makeHero('[data-hero="1"]', isoPlace));
+  bind(makeHero('[data-hero="2"]', frontPlace));
 })();
 </script>
 
