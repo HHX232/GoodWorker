@@ -864,20 +864,20 @@ html[data-active-steps="3"] [data-steps="3"]{ display:block; }
 .types__sub{ color:var(--ink-2); max-width:34ch; font-size:var(--fs-lead); }
 .type-grid{ display:grid; grid-template-columns:repeat(6,1fr); gap:1px; background:var(--line); border:1px solid var(--line); }
 .tcell{
-  background:var(--bg); padding:clamp(1.6rem,3vw,2.6rem);
-  display:flex; flex-direction:column; gap:1.4rem; min-height:260px;
+  background:var(--bg); padding:clamp(1.05rem,2.1vw,1.6rem);
+  display:flex; flex-direction:column; gap:.85rem; min-height:150px;
   transition:background .5s var(--ease);
 }
 .tcell:hover{ background:var(--paper); }
 .tcell.big{ grid-column:span 4; }
 .tcell.mid{ grid-column:span 3; }
 .tcell.sm{  grid-column:span 2; }
-.tcell.tall{ min-height:320px; }
-.tcell__vis{ flex:1; display:flex; align-items:center; }
-.tcell__vis svg{ width:100%; max-width:200px; height:auto; }
-.tcell__name{ font-family:var(--serif); font-weight:700; font-size:1.3rem; letter-spacing:-0.01em; display:flex; align-items:baseline; gap:.7rem; }
-.tcell__tag{ font-family:var(--sans); font-size:.66rem; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-2); border:1px solid var(--line); padding:.15rem .45rem; }
-.tcell__d{ margin:.6rem 0 0; color:var(--ink-2); font-size:.92rem; }
+.tcell.tall{ min-height:178px; }
+.tcell__vis{ flex:1; display:flex; align-items:center; min-height:64px; }
+.tcell__vis svg{ width:100%; max-width:220px; height:auto; }
+.tcell__name{ font-family:var(--serif); font-weight:700; font-size:1.1rem; letter-spacing:-0.01em; display:flex; align-items:baseline; gap:.6rem; }
+.tcell__tag{ font-family:var(--sans); font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-2); border:1px solid var(--line); padding:.12rem .42rem; }
+.tcell__d{ margin:.35rem 0 0; color:var(--ink-2); font-size:.84rem; }
 @media (max-width:1000px){
   .type-grid{ grid-template-columns:repeat(2,1fr); }
   .tcell.big,.tcell.mid,.tcell.sm{ grid-column:span 1; }
@@ -885,6 +885,79 @@ html[data-active-steps="3"] [data-steps="3"]{ display:block; }
 @media (max-width:520px){
   .type-grid{ grid-template-columns:1fr; }
   .tcell{ min-height:0; }
+}
+
+/* --- Мини-визуалы типов: свой финальный кадр + reveal-анимация механики --- */
+.tv{ width:100%; display:flex; flex-direction:column; gap:.5rem; color:var(--ink); }
+.tv-row{ display:flex; align-items:center; gap:.55rem; }
+.tv-bar{ height:3px; border-radius:3px; background:currentColor; opacity:.3; flex:0 0 auto; }
+
+/* single — радио выбирается на правильном варианте */
+.tv-radio{ width:15px; height:15px; border:1.5px solid var(--ink-2); border-radius:50%; position:relative; flex:0 0 auto; }
+.tv-radio.is-correct{ border-color:var(--accent); }
+.tv-radio.is-correct::after{ content:""; position:absolute; inset:3px; border-radius:50%; background:var(--accent); transform:scale(1); }
+.tv-row.is-correct .tv-bar{ opacity:.55; color:var(--accent-ink); }
+.tcell.is-in .tv--single .tv-radio.is-correct::after{ animation:tvDot .38s var(--ease) both; animation-delay:calc(var(--rd,0s) + .18s); }
+@keyframes tvDot{ 0%{ transform:scale(0);} 62%{ transform:scale(1.18);} 100%{ transform:scale(1);} }
+
+/* multi — несколько галочек проставляются по очереди */
+.tv-check{ width:15px; height:15px; border:1.5px solid var(--ink-2); border-radius:3px; position:relative; flex:0 0 auto; }
+.tv-check.is-on{ background:var(--accent); border-color:var(--accent); }
+.tv-check svg{ position:absolute; inset:0; width:100%; height:100%; }
+.tv-mk{ stroke:var(--paper); stroke-width:2; fill:none; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:14; stroke-dashoffset:0; }
+.tcell.is-in .tv--multi .tv-check.is-on{ animation:tvBox .3s var(--ease) both; }
+.tcell.is-in .tv--multi .tv-check.is-on .tv-mk{ animation:tvDraw .34s var(--ease) both; }
+.tcell.is-in .tv--multi .tv-row:nth-child(1) .tv-check.is-on,
+.tcell.is-in .tv--multi .tv-row:nth-child(1) .tv-mk{ animation-delay:calc(var(--rd,0s) + .16s); }
+.tcell.is-in .tv--multi .tv-row:nth-child(3) .tv-check.is-on,
+.tcell.is-in .tv--multi .tv-row:nth-child(3) .tv-mk{ animation-delay:calc(var(--rd,0s) + .34s); }
+@keyframes tvBox{ 0%{ background:transparent; border-color:var(--ink-2);} 100%{ background:var(--accent); border-color:var(--accent);} }
+@keyframes tvDraw{ 0%{ stroke-dashoffset:14;} 100%{ stroke-dashoffset:0;} }
+
+/* match — пары соединяются линиями */
+.tv--match svg{ width:100%; max-width:230px; height:auto; }
+.tv-node{ fill:none; stroke:var(--ink-2); stroke-width:1.4; }
+.tv-wire{ fill:none; stroke:var(--accent); stroke-width:1.7; stroke-dasharray:100; stroke-dashoffset:0; }
+.tcell.is-in .tv--match .tv-wire{ animation:tvWire .5s var(--ease) both; }
+.tcell.is-in .tv--match .tv-wire:nth-of-type(1){ animation-delay:calc(var(--rd,0s) + .16s); }
+.tcell.is-in .tv--match .tv-wire:nth-of-type(2){ animation-delay:calc(var(--rd,0s) + .30s); }
+.tcell.is-in .tv--match .tv-wire:nth-of-type(3){ animation-delay:calc(var(--rd,0s) + .44s); }
+@keyframes tvWire{ 0%{ stroke-dashoffset:100;} 100%{ stroke-dashoffset:0;} }
+
+/* fill — печать текста в поле (typewriter) */
+.tv-field{ display:inline-flex; align-items:center; border:1.5px solid var(--line); border-radius:4px; padding:.5rem .7rem; min-width:0; max-width:100%; }
+.tv-typed{ display:inline-flex; align-items:center; font-family:var(--serif); font-size:1.05rem; white-space:nowrap; clip-path:inset(0 0 0 0); }
+.tv-caret{ display:inline-block; width:2px; height:1.05em; margin-left:2px; background:var(--accent); animation:tvBlink 1s steps(1,end) infinite; }
+.tcell.is-in .tv--fill .tv-typed{ animation:tvType .72s steps(7) both; animation-delay:calc(var(--rd,0s) + .16s); }
+@keyframes tvType{ 0%{ clip-path:inset(0 100% 0 0);} 100%{ clip-path:inset(0 0 0 0);} }
+@keyframes tvBlink{ 0%,49%{ opacity:1;} 50%,100%{ opacity:0;} }
+
+/* order — шаги встают по порядку */
+.tv-num{ font-family:var(--serif); font-weight:700; font-size:.95rem; color:var(--accent-ink); width:1.1em; flex:0 0 auto; }
+.tcell.is-in .tv--order .tv-row{ animation:tvSlot .44s var(--ease) both; }
+.tcell.is-in .tv--order .tv-row:nth-child(1){ animation-delay:calc(var(--rd,0s) + .14s); }
+.tcell.is-in .tv--order .tv-row:nth-child(2){ animation-delay:calc(var(--rd,0s) + .26s); }
+.tcell.is-in .tv--order .tv-row:nth-child(3){ animation-delay:calc(var(--rd,0s) + .38s); }
+@keyframes tvSlot{ 0%{ transform:translateX(16px); opacity:0;} 100%{ transform:none; opacity:1;} }
+
+/* bool — тумблер щёлкает в «Верно» */
+.tv-toggle{ display:inline-flex; align-items:center; gap:.6rem; flex-wrap:wrap; }
+.tv-toggle__lab{ font-family:var(--serif); font-size:1rem; color:var(--ink-2); }
+.tv-toggle__lab--t{ color:var(--accent-ink); font-weight:600; }
+.tv-toggle__track{ width:48px; height:25px; border-radius:25px; background:var(--accent); position:relative; flex:0 0 auto; }
+.tv-toggle__knob{ position:absolute; top:3px; left:3px; width:19px; height:19px; border-radius:50%; background:var(--paper); box-shadow:0 1px 3px rgba(12,10,8,.25); transform:translateX(23px); }
+.tcell.is-in .tv--bool .tv-toggle__knob{ animation:tvKnob .5s var(--ease) both; animation-delay:calc(var(--rd,0s) + .2s); }
+.tcell.is-in .tv--bool .tv-toggle__track{ animation:tvTrack .5s var(--ease) both; animation-delay:calc(var(--rd,0s) + .2s); }
+.tcell.is-in .tv--bool .tv-toggle__lab--t{ animation:tvOn .5s var(--ease) both; animation-delay:calc(var(--rd,0s) + .2s); }
+@keyframes tvKnob{ 0%{ transform:translateX(0);} 60%{ transform:translateX(26px);} 100%{ transform:translateX(23px);} }
+@keyframes tvTrack{ 0%{ background:var(--line);} 100%{ background:var(--accent);} }
+@keyframes tvOn{ 0%{ color:var(--ink-2);} 100%{ color:var(--accent-ink);} }
+
+/* ≤900px — финальный статичный кадр без движения механики */
+@media (max-width:900px){
+  .tcell .tv,
+  .tcell .tv *{ animation:none !important; }
+  .tv-caret{ opacity:1; }
 }
 
 /* ============================================================
@@ -1930,11 +2003,11 @@ html[data-lab="open"] .lab{ transform:none; }
         <!-- 1 single (big) -->
         <div class="tcell big tall" data-reveal="rise">
           <div class="tcell__vis">
-            <svg viewBox="0 0 200 90" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-              <circle cx="14" cy="18" r="7" fill="currentColor"/><circle cx="14" cy="18" r="2.6" fill="#f3f0ea" stroke="none"/><line x1="30" y1="18" x2="150" y2="18"/>
-              <circle cx="14" cy="45" r="7"/><line x1="30" y1="45" x2="120" y2="45"/>
-              <circle cx="14" cy="72" r="7"/><line x1="30" y1="72" x2="140" y2="72"/>
-            </svg>
+            <div class="tv tv--single" aria-hidden="true">
+              <span class="tv-row is-correct"><span class="tv-radio is-correct"></span><span class="tv-bar" style="width:62%"></span></span>
+              <span class="tv-row"><span class="tv-radio"></span><span class="tv-bar" style="width:46%"></span></span>
+              <span class="tv-row"><span class="tv-radio"></span><span class="tv-bar" style="width:54%"></span></span>
+            </div>
           </div>
           <div class="tcell__foot">
             <div class="tcell__name">Один вариант <span class="tcell__tag">single</span></div>
@@ -1944,11 +2017,11 @@ html[data-lab="open"] .lab{ transform:none; }
         <!-- 2 multi (sm) -->
         <div class="tcell sm tall" data-reveal="rise" style="--rd:.06s">
           <div class="tcell__vis">
-            <svg viewBox="0 0 120 90" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-              <rect x="8" y="12" width="13" height="13" fill="currentColor"/><path d="M11 18.5l2 2 4-4.5" stroke="#f3f0ea"/><line x1="30" y1="18" x2="100" y2="18"/>
-              <rect x="8" y="39" width="13" height="13"/><line x1="30" y1="45" x2="82" y2="45"/>
-              <rect x="8" y="66" width="13" height="13" fill="currentColor"/><path d="M11 72.5l2 2 4-4.5" stroke="#f3f0ea"/><line x1="30" y1="72" x2="94" y2="72"/>
-            </svg>
+            <div class="tv tv--multi" aria-hidden="true">
+              <span class="tv-row"><span class="tv-check is-on"><svg viewBox="0 0 15 15"><path class="tv-mk" d="M4 8l2.5 2.5L11 5"/></svg></span><span class="tv-bar" style="width:70%"></span></span>
+              <span class="tv-row"><span class="tv-check"></span><span class="tv-bar" style="width:52%"></span></span>
+              <span class="tv-row"><span class="tv-check is-on"><svg viewBox="0 0 15 15"><path class="tv-mk" d="M4 8l2.5 2.5L11 5"/></svg></span><span class="tv-bar" style="width:60%"></span></span>
+            </div>
           </div>
           <div class="tcell__foot">
             <div class="tcell__name">Несколько <span class="tcell__tag">multi</span></div>
@@ -1958,11 +2031,19 @@ html[data-lab="open"] .lab{ transform:none; }
         <!-- 3 match (mid) -->
         <div class="tcell mid" data-reveal="rise" style="--rd:.04s">
           <div class="tcell__vis">
-            <svg viewBox="0 0 200 80" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-              <rect x="6" y="10" width="52" height="16"/><rect x="6" y="34" width="52" height="16"/><rect x="6" y="58" width="52" height="16"/>
-              <rect x="142" y="10" width="52" height="16"/><rect x="142" y="34" width="52" height="16"/><rect x="142" y="58" width="52" height="16"/>
-              <path d="M58 18C100 18 100 66 142 66"/><path d="M58 42C100 42 100 18 142 18"/><path d="M58 66C100 66 100 42 142 42"/>
-            </svg>
+            <div class="tv tv--match" aria-hidden="true">
+              <svg viewBox="0 0 180 70" fill="none">
+                <rect class="tv-node" x="4"   y="6"  width="46" height="14" rx="2"/>
+                <rect class="tv-node" x="4"   y="28" width="46" height="14" rx="2"/>
+                <rect class="tv-node" x="4"   y="50" width="46" height="14" rx="2"/>
+                <rect class="tv-node" x="130" y="6"  width="46" height="14" rx="2"/>
+                <rect class="tv-node" x="130" y="28" width="46" height="14" rx="2"/>
+                <rect class="tv-node" x="130" y="50" width="46" height="14" rx="2"/>
+                <path class="tv-wire" pathLength="100" d="M50 13 C90 13 90 35 130 35"/>
+                <path class="tv-wire" pathLength="100" d="M50 35 C90 35 90 13 130 13"/>
+                <path class="tv-wire" pathLength="100" d="M50 57 C90 57 90 57 130 57"/>
+              </svg>
+            </div>
           </div>
           <div class="tcell__foot">
             <div class="tcell__name">Сопоставление пар <span class="tcell__tag">match</span></div>
@@ -1972,10 +2053,9 @@ html[data-lab="open"] .lab{ transform:none; }
         <!-- 4 fill (mid) -->
         <div class="tcell mid" data-reveal="rise" style="--rd:.1s">
           <div class="tcell__vis">
-            <svg viewBox="0 0 200 80" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-              <rect x="10" y="26" width="180" height="30"/>
-              <line x1="24" y1="34" x2="24" y2="48"/><line x1="30" y1="41" x2="120" y2="41" stroke-dasharray="3 4"/>
-            </svg>
+            <div class="tv tv--fill" aria-hidden="true">
+              <span class="tv-field"><span class="tv-typed">Париж<i class="tv-caret"></i></span></span>
+            </div>
           </div>
           <div class="tcell__foot">
             <div class="tcell__name">Ввод текста <span class="tcell__tag">fill</span></div>
@@ -1985,11 +2065,11 @@ html[data-lab="open"] .lab{ transform:none; }
         <!-- 5 order (sm) -->
         <div class="tcell sm" data-reveal="rise" style="--rd:.14s">
           <div class="tcell__vis">
-            <svg viewBox="0 0 120 90" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-              <text x="6" y="22" font-family="Georgia,serif" font-size="16" fill="currentColor" stroke="none">1</text><line x1="24" y1="17" x2="96" y2="17"/><line x1="104" y1="12" x2="112" y2="12"/><line x1="104" y1="17" x2="112" y2="17"/><line x1="104" y1="22" x2="112" y2="22"/>
-              <text x="6" y="52" font-family="Georgia,serif" font-size="16" fill="currentColor" stroke="none">2</text><line x1="24" y1="47" x2="84" y2="47"/><line x1="104" y1="42" x2="112" y2="42"/><line x1="104" y1="47" x2="112" y2="47"/><line x1="104" y1="52" x2="112" y2="52"/>
-              <text x="6" y="82" font-family="Georgia,serif" font-size="16" fill="currentColor" stroke="none">3</text><line x1="24" y1="77" x2="92" y2="77"/><line x1="104" y1="72" x2="112" y2="72"/><line x1="104" y1="77" x2="112" y2="77"/><line x1="104" y1="82" x2="112" y2="82"/>
-            </svg>
+            <div class="tv tv--order" aria-hidden="true">
+              <span class="tv-row"><b class="tv-num">1</b><span class="tv-bar" style="width:66%"></span></span>
+              <span class="tv-row"><b class="tv-num">2</b><span class="tv-bar" style="width:52%"></span></span>
+              <span class="tv-row"><b class="tv-num">3</b><span class="tv-bar" style="width:60%"></span></span>
+            </div>
           </div>
           <div class="tcell__foot">
             <div class="tcell__name">Упорядочивание <span class="tcell__tag">order</span></div>
@@ -1999,10 +2079,13 @@ html[data-lab="open"] .lab{ transform:none; }
         <!-- 6 bool (big) -->
         <div class="tcell big" data-reveal="rise" style="--rd:.08s">
           <div class="tcell__vis">
-            <svg viewBox="0 0 200 70" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-              <rect x="6" y="20" width="88" height="30" fill="currentColor"/><path d="M28 35l6 6 12-12" stroke="#f3f0ea"/><text x="54" y="40" font-family="Georgia,serif" font-size="14" fill="#f3f0ea" stroke="none">Верно</text>
-              <rect x="106" y="20" width="88" height="30"/><line x1="126" y1="30" x2="136" y2="40"/><line x1="136" y1="30" x2="126" y2="40"/><text x="146" y="40" font-family="Georgia,serif" font-size="14" fill="currentColor" stroke="none">Неверно</text>
-            </svg>
+            <div class="tv tv--bool" aria-hidden="true">
+              <span class="tv-toggle">
+                <span class="tv-toggle__lab tv-toggle__lab--f">Неверно</span>
+                <span class="tv-toggle__track"><span class="tv-toggle__knob"></span></span>
+                <span class="tv-toggle__lab tv-toggle__lab--t">Верно</span>
+              </span>
+            </div>
           </div>
           <div class="tcell__foot">
             <div class="tcell__name">Верно / неверно <span class="tcell__tag">bool</span></div>
