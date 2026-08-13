@@ -421,6 +421,18 @@ html[data-active-steps="3"] [data-steps="3"]{ display:block; }
   transition:border-color var(--slow) var(--ease), background var(--slow) var(--ease);
   display:flex; flex-direction:column; gap:.6rem;
 }
+/* Выноски-пояснения к распознанным элементам бланка (H4) */
+.doc__field{ display:flex; align-items:center; gap:.65rem; }
+.doc__field .ln{ flex:0 0 auto; }
+.doc__ann{
+  display:inline-flex; align-items:center; gap:.35rem;
+  font-size:.56rem; letter-spacing:.09em; text-transform:uppercase;
+  font-weight:600; color:var(--accent-ink); white-space:nowrap;
+  opacity:0; transform:translateX(-5px);
+  transition:opacity .6s var(--ease), transform .6s var(--ease);
+}
+.doc__ann::before{ content:""; width:14px; height:1px; background:var(--accent); flex:0 0 auto; }
+.ln.correct{ transition:background var(--slow) var(--ease); }
 /* Скан-полоса */
 .scan{
   position:absolute; left:-2%; right:-2%;
@@ -526,6 +538,10 @@ html[data-active-steps="3"] [data-steps="3"]{ display:block; }
 }
 .hero:not(.hero--static) .hero__art[data-phase="2"] .doc__typetag,
 .hero:not(.hero--static) .hero__art[data-phase="3"] .doc__typetag{ opacity:1; transform:translateY(0); }
+.hero:not(.hero--static) .hero__art[data-phase="2"] .doc__ann,
+.hero:not(.hero--static) .hero__art[data-phase="3"] .doc__ann{ opacity:1; transform:none; }
+.hero:not(.hero--static) .hero__art[data-phase="2"] .ln.correct,
+.hero:not(.hero--static) .hero__art[data-phase="3"] .ln.correct{ background:var(--accent); }
 
 .hero:not(.hero--static) .hero__art[data-phase="3"] .doc{ opacity:.1; transform:scale(.965); }
 .hero:not(.hero--static) .hero__art[data-phase="3"] .cards{ opacity:1; transform:translateY(0) scale(1); }
@@ -553,6 +569,8 @@ html[data-active-steps="3"] [data-steps="3"]{ display:block; }
 .hero--static .doc{ position:relative; opacity:1; transform:none; box-shadow:0 24px 70px rgba(12,10,8,.14); }
 .hero--static .doc__group{ border-color:var(--accent); background:rgba(200,151,46,.06); }
 .hero--static .doc__typetag{ opacity:1; transform:none; }
+.hero--static .doc__ann{ opacity:1; transform:none; }
+.hero--static .ln.correct{ background:var(--accent); }
 .hero--static .scan{ display:none; }
 .hero--static .cards{ position:relative; opacity:1; transform:none; margin-top:1.4rem; }
 .hero--static .hero__done{ position:relative; bottom:auto; opacity:1; transform:none; margin-top:1.6rem; }
@@ -580,6 +598,104 @@ html[data-active-steps="3"] [data-steps="3"]{ display:block; }
   .scan{ display:none; }
   .callout, .hero__rail, .hero__hint{ display:none; }
   .hero__done{ position:relative; bottom:auto; margin-top:1.4rem; }
+}
+
+/* ============================================================
+   HERO H3 — вопросы слетают с бланка в собранный тест ниже
+   Мир V3 (светлая бумага); scroll-driven; reduced-motion → финал.
+   ============================================================ */
+.fly{ height:320vh; }
+.fly__stage{
+  position:sticky; top:0;
+  height:100vh; min-height:640px;
+  overflow:hidden;
+  display:grid;
+  grid-template-columns:minmax(0,38%) minmax(0,62%);
+  align-items:center;
+  gap:clamp(1rem,4vw,4rem);
+  padding:0 var(--pad);
+}
+.fly__intro{ position:relative; z-index:5; max-width:34rem; }
+.fly__title{ font-size:min(var(--fs-hero),13vw); overflow-wrap:anywhere; }
+.fly__title em{ display:block; }
+.fly__sub{ margin:1.8rem 0 0; max-width:42ch; color:var(--ink-2); font-size:var(--fs-lead); line-height:1.55; }
+.fly__cta{ display:flex; flex-wrap:wrap; gap:.9rem; margin-top:2.4rem; }
+.fly__hint{
+  margin-top:3rem; display:inline-flex; align-items:center; gap:.6rem;
+  font-size:.78rem; letter-spacing:.24em; text-transform:uppercase; color:var(--ink-2);
+}
+.fly__hint svg{ width:14px; height:22px; }
+.fly__hint svg line{ animation:hintdrop 1.8s var(--ease) infinite; }
+
+.fly__scene{
+  position:relative; z-index:2;
+  display:flex; flex-direction:column; gap:1rem;
+  height:min(80vh,600px); overflow:hidden;
+  width:min(100%,460px); margin:0 auto;
+}
+
+/* Бланк-источник */
+.fly__form{
+  flex:0 0 auto; background:var(--paper); border:1px solid var(--line);
+  box-shadow:0 20px 55px rgba(12,10,8,.12); padding:1rem 1.1rem;
+}
+.fly__form-tag{
+  font-size:.64rem; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-2);
+  display:flex; align-items:center; gap:.5rem; margin-bottom:.9rem;
+}
+.fly__form-tag svg{ width:13px; height:13px; }
+.fly__srcs{ display:flex; flex-direction:column; gap:.55rem; }
+.fly__srcrow{
+  display:flex; align-items:center; gap:.6rem; padding:.5rem .6rem;
+  border:1px solid var(--line); border-radius:3px;
+  transition:opacity .5s var(--ease), border-color .5s var(--ease), background .5s var(--ease);
+}
+.fly__srcrow .idx{ font-family:var(--serif); font-style:italic; font-size:.9rem; color:var(--accent-ink); flex:0 0 auto; }
+.fly__srcrow .bar{ height:8px; background:#26222036; border-radius:2px; flex:1; }
+.fly__srcrow.gone{ opacity:.3; border-style:dashed; background:transparent; }
+
+/* Собранный тест — цель приземления */
+.fly__test{ flex:1 1 auto; min-height:0; display:flex; flex-direction:column; }
+.fly__test-h{
+  display:flex; align-items:baseline; justify-content:space-between;
+  font-size:.66rem; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-2);
+  margin-bottom:.7rem;
+}
+.fly__test-h b{ font-family:var(--serif); font-style:italic; font-weight:500; font-size:.95rem; letter-spacing:0; text-transform:none; color:var(--accent-ink); }
+.fly__slots{ display:flex; flex-direction:column; gap:.6rem; }
+
+/* Карточка-вопрос (летит с бланка) */
+.fly__card{
+  background:var(--paper); border:1px solid var(--line);
+  box-shadow:0 14px 40px rgba(12,10,8,.12);
+  padding:.7rem .8rem; will-change:transform,opacity;
+}
+.fly__card .m{ display:flex; align-items:center; justify-content:space-between; font-size:.58rem; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-2); margin-bottom:.5rem; }
+.fly__card .chip{ border:1px solid var(--line); padding:.1rem .4rem; }
+.fly__card .q{ font-family:var(--serif); font-weight:500; font-size:.9rem; line-height:1.2; margin:0 0 .5rem; }
+.fly__card .row{ display:flex; align-items:center; gap:.5rem; font-size:.76rem; color:var(--ink-2); padding:.12rem 0; }
+.fly__card .rdot{ width:11px; height:11px; border:1.4px solid var(--ink-2); border-radius:50%; flex:0 0 auto; position:relative; }
+.fly__card .row.ok{ color:var(--ink); }
+.fly__card .row.ok .rdot{ border-color:var(--accent); }
+.fly__card .row.ok .rdot::after{ content:""; position:absolute; inset:2.5px; background:var(--accent); border-radius:50%; }
+
+/* Прочие вопросы, уже в тесте */
+.fly__other{ display:flex; align-items:center; gap:.6rem; padding:.5rem .6rem; border:1px dashed var(--line); border-radius:3px; color:var(--ink-2); }
+.fly__other .idx{ font-family:var(--serif); font-style:italic; font-size:.85rem; color:var(--ink-2); flex:0 0 auto; }
+.fly__other .bar{ height:8px; background:#26222024; border-radius:2px; flex:1; }
+.fly__other .tag{ font-size:.56rem; letter-spacing:.12em; text-transform:uppercase; flex:0 0 auto; }
+
+/* Статичный финал (mobile / reduced-motion): всё приземлилось */
+.fly--static{ height:auto; }
+.fly--static .fly__stage{ position:static; height:auto; min-height:0; grid-template-columns:1fr; padding-top:calc(var(--step) * .8); padding-bottom:var(--step); gap:2.6rem; overflow:visible; }
+.fly--static .fly__scene{ height:auto; overflow:visible; }
+.fly--static .fly__hint{ display:none; }
+
+@media (max-width:900px){
+  .fly{ height:auto; }
+  .fly__stage{ position:static; height:auto; min-height:0; grid-template-columns:1fr; padding-top:calc(var(--step) * .8); padding-bottom:var(--step); gap:2.4rem; overflow:visible; }
+  .fly__scene{ height:auto; overflow:visible; }
+  .fly__hint{ display:none; }
 }
 
 /* ============================================================
@@ -1216,13 +1332,69 @@ html[data-lab="open"] .lab{ transform:none; }
     </div>
   </section>
 
-  <!-- ============ HERO H3 (плейсхолдер — вопросы перелетают вниз) ============ -->
-  <section class="hero-ph" data-hero="3" aria-label="Hero H3 — вопросы из бланка в блок ниже (в разработке)">
-    <div class="hero-ph__inner">
-      <p class="hero-ph__tag">Hero H3 · Вопросы из бланка</p>
-      <h2 class="hero-ph__title">Карточки-вопросы перелетают в секцию ниже</h2>
-      <p class="hero-ph__note">По скроллу вопросы отделяются от бланка и встраиваются в блок вопросов. Наполнение — следующий тикет.</p>
-      <div class="hero-ph__grid" aria-hidden="true"></div>
+  <!-- ============ HERO H3 — вопросы слетают с бланка в собранный тест ============ -->
+  <section class="fly" data-hero="3" aria-label="Вопросы слетают с бланка и встраиваются в собранный тест ниже">
+    <div class="fly__stage">
+
+      <div class="fly__intro">
+        <h1 class="fly__title display">Вопросы <em>слетают с бланка</em> в тест.</h1>
+        <p class="fly__sub">Листай — распознанные вопросы отделяются от бланка и по одному встают в собранный тест ниже, к остальным.</p>
+        <div class="fly__cta">
+          <a class="btn btn--solid" href="#">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 15V3m0 0L8 7m4-4 4 4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>
+            Загрузить PDF
+          </a>
+          <a class="btn btn--ghost" href="#how">Как это работает</a>
+        </div>
+        <div class="fly__hint">
+          Листай — вопросы полетят
+          <svg viewBox="0 0 14 22" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><line x1="7" y1="2" x2="7" y2="16"/><path d="M2 12l5 5 5-5"/></svg>
+        </div>
+      </div>
+
+      <div class="fly__scene" role="img" aria-label="Вопросы с бланка перелетают вниз и собираются в готовый тест из пяти вопросов">
+
+        <!-- Бланк-источник -->
+        <div class="fly__form" aria-hidden="true">
+          <div class="fly__form-tag">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>
+            exam.pdf · бланк
+          </div>
+          <div class="fly__srcs">
+            <div class="fly__srcrow" data-fly-src="0"><span class="idx">1</span><span class="bar"></span></div>
+            <div class="fly__srcrow" data-fly-src="1"><span class="idx">2</span><span class="bar"></span></div>
+            <div class="fly__srcrow" data-fly-src="2"><span class="idx">3</span><span class="bar"></span></div>
+          </div>
+        </div>
+
+        <!-- Собранный тест — цель приземления -->
+        <div class="fly__test">
+          <div class="fly__test-h"><span>Собранный тест</span><b><span data-fly-count>2</span> вопросов</b></div>
+          <div class="fly__slots">
+            <div class="fly__card" data-fly-card="0">
+              <div class="m"><span>Вопрос 1</span><span class="chip">single</span></div>
+              <p class="q">Что распознаётся из бланка?</p>
+              <div class="row ok"><span class="rdot"></span>Вопросы и варианты</div>
+              <div class="row"><span class="rdot"></span>Только номера страниц</div>
+            </div>
+            <div class="fly__card" data-fly-card="1">
+              <div class="m"><span>Вопрос 2</span><span class="chip">bool</span></div>
+              <p class="q">Ответы проставляются автоматически.</p>
+              <div class="row ok"><span class="rdot"></span>Верно</div>
+              <div class="row"><span class="rdot"></span>Неверно</div>
+            </div>
+            <div class="fly__card" data-fly-card="2">
+              <div class="m"><span>Вопрос 3</span><span class="chip">multi</span></div>
+              <p class="q">Что попадает в готовый тест?</p>
+              <div class="row ok"><span class="rdot"></span>Вопрос и тип задания</div>
+              <div class="row ok"><span class="rdot"></span>Правильные ответы</div>
+            </div>
+            <div class="fly__other" aria-hidden="true"><span class="idx">4</span><span class="bar"></span><span class="tag">готово</span></div>
+            <div class="fly__other" aria-hidden="true"><span class="idx">5</span><span class="bar"></span><span class="tag">готово</span></div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -1265,12 +1437,21 @@ html[data-lab="open"] .lab{ transform:none; }
               <path d="M112 20h58M112 34h58M112 48h40" stroke="#26222040" stroke-width="2" stroke-linecap="round"/>
             </svg>
             <div class="doc__lines">
-              <div class="ln q w70"></div>
+              <div class="doc__field">
+                <div class="ln q w55"></div>
+                <span class="doc__ann">вопрос</span>
+              </div>
               <div class="doc__group">
-                <div class="ln w85"></div>
-                <div class="ln w55"></div>
+                <div class="doc__field">
+                  <div class="ln w40"></div>
+                  <span class="doc__ann">варианты</span>
+                </div>
                 <div class="ln w70"></div>
-                <div class="ln w40"></div>
+                <div class="ln w55"></div>
+                <div class="doc__field">
+                  <div class="ln correct w40"></div>
+                  <span class="doc__ann doc__ann--ok">правильный ответ</span>
+                </div>
               </div>
               <div class="ln q w55"></div>
               <div class="ln w100"></div>
@@ -2059,6 +2240,101 @@ html[data-lab="open"] .lab{ transform:none; }
 
   bind(makeHero('[data-hero="1"]', isoPlace));
   bind(makeHero('[data-hero="2"]', frontPlace));
+})();
+</script>
+
+<!-- ============ Hero H3: карточки слетают с бланка в собранный тест ============ -->
+<script>
+(function(){
+  'use strict';
+  var sec = document.querySelector('[data-hero="3"]');
+  if(!sec) return;
+  var cards = Array.prototype.slice.call(sec.querySelectorAll('[data-fly-card]'));
+  var srcs  = Array.prototype.slice.call(sec.querySelectorAll('[data-fly-src]'));
+  var counter = sec.querySelector('[data-fly-count]');
+  if(!cards.length) return;
+
+  var OTHERS = sec.querySelectorAll('.fly__other').length;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function isSmall(){ return window.matchMedia && window.matchMedia('(max-width: 900px)').matches; }
+  function easeIO(t){ return t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2; }
+  function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+
+  // Геометрия: смещение от «домашней» позиции карточки (в тесте) к её строке-источнику на бланке.
+  var geom = [];
+  function measure(){
+    geom = [];
+    cards.forEach(function(c){ c.style.transform='none'; c.style.opacity='1'; });
+    cards.forEach(function(c,i){
+      var cr = c.getBoundingClientRect();
+      var s = srcs[i] || srcs[srcs.length-1];
+      var g = { dx:0, dy:0 };
+      if(s){
+        var sr = s.getBoundingClientRect();
+        g.dx = (sr.left + sr.width/2) - (cr.left + cr.width/2);
+        g.dy = (sr.top  + sr.height/2) - (cr.top  + cr.height/2);
+      }
+      geom.push(g);
+    });
+  }
+
+  var BASE = 0.10, STAG = 0.16, LEN = 0.52;
+  function apply(p){
+    var landed = 0;
+    cards.forEach(function(c,i){
+      var lp = clamp((p - BASE - i*STAG) / LEN, 0, 1);
+      var e = easeIO(lp);
+      var g = geom[i] || { dx:0, dy:0 };
+      var tx = g.dx * (1 - e), ty = g.dy * (1 - e);
+      var sc = 0.82 + 0.18 * e;
+      c.style.transform = 'translate(' + tx.toFixed(1) + 'px,' + ty.toFixed(1) + 'px) scale(' + sc.toFixed(3) + ')';
+      c.style.opacity = (lp <= 0 ? 0 : (lp < 0.18 ? lp/0.18 : 1)).toFixed(3);
+      if(srcs[i]) srcs[i].classList.toggle('gone', e > 0.25);
+      if(e >= 0.999) landed++;
+    });
+    if(counter) counter.textContent = String(landed + OTHERS);
+  }
+
+  function staticFrame(){
+    sec.classList.add('fly--static');
+    cards.forEach(function(c){ c.style.transform='none'; c.style.opacity='1'; });
+    srcs.forEach(function(s){ s.classList.add('gone'); });
+    if(counter) counter.textContent = String(cards.length + OTHERS);
+  }
+  function unstatic(){ sec.classList.remove('fly--static'); }
+
+  var ticking = false;
+  function update(){
+    ticking = false;
+    if(sec.offsetHeight <= 0) return;                        // неактивная секция (display:none)
+    if(sec.classList.contains('fly--static')) return;
+    var rect = sec.getBoundingClientRect();
+    var total = sec.offsetHeight - window.innerHeight;
+    if(total <= 0){ apply(0); return; }
+    var p = clamp(-rect.top / total, 0, 1);
+    apply(p);
+  }
+  function onScroll(){ if(!ticking){ ticking = true; window.requestAnimationFrame(update); } }
+
+  function setup(){
+    if(reduce || isSmall()){ staticFrame(); return; }
+    unstatic();
+    if(sec.offsetHeight <= 0) return;                        // неактивна — измерим при активации
+    window.requestAnimationFrame(function(){
+      if(sec.offsetHeight <= 0) return;
+      measure();
+      update();
+    });
+  }
+
+  window.addEventListener('scroll', onScroll, { passive:true });
+  window.addEventListener('resize', setup, { passive:true });
+  // Переинициализация при переключении hero кнопками панели.
+  if(window.MutationObserver){
+    new MutationObserver(setup).observe(document.documentElement,
+      { attributes:true, attributeFilter:['data-active-hero'] });
+  }
+  setup();
 })();
 </script>
 
