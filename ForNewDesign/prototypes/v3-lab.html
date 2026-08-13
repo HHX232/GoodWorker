@@ -963,8 +963,15 @@ html[data-active-steps="3"] [data-steps="3"]{ display:block; }
 /* ============================================================
    ГОТОВЫЙ ТЕСТ — драматичная тёмная плоскость
    ============================================================ */
-.demo{ background:var(--ink); color:var(--bg); }
-.demo__head{ margin-bottom:clamp(2.5rem,6vh,5rem); max-width:52ch; }
+/* Запиненная секвенция: трек ~300vh + sticky-кадр, 3 вопроса по фазам */
+.demo{ background:var(--ink); color:var(--bg); position:relative; min-height:300vh; }
+.demo__pin{
+  position:sticky; top:0; min-height:100vh;
+  display:flex; align-items:center; overflow:hidden;
+  padding:6vh 0;
+}
+.demo__pin > .wrap{ width:100%; }
+.demo__head{ margin-bottom:clamp(1.6rem,4vh,3rem); max-width:52ch; }
 .demo__title{ font-size:min(var(--fs-h2), 9vw); color:var(--bg); }
 .demo__sub{ color:#b8b2a6; margin-top:1.2rem; }
 .demo__frame{
@@ -973,37 +980,89 @@ html[data-active-steps="3"] [data-steps="3"]{ display:block; }
   border:1px solid #35312b; padding:clamp(1.6rem,4vw,3rem);
 }
 .demo__left{ display:flex; flex-direction:column; gap:2rem; }
-.demo__prog-label{ font-size:.78rem; letter-spacing:.14em; text-transform:uppercase; color:#b8b2a6; margin-bottom:.8rem; }
-.demo__bar{ height:2px; background:#35312b; position:relative; }
-.demo__bar i{ position:absolute; left:0; top:0; height:2px; width:25%; background:var(--accent-soft); }
+.demo__prog-label{ font-size:.78rem; letter-spacing:.14em; text-transform:uppercase; color:#b8b2a6; margin-bottom:.8rem; font-variant-numeric:tabular-nums; }
+.demo__bar{ height:2px; background:#35312b; position:relative; overflow:hidden; }
+.demo__bar i{ position:absolute; left:0; top:0; height:2px; width:100%; background:var(--accent-soft); transform-origin:left center; transform:scaleX(.083); }
 .demo__nav{ display:grid; grid-template-columns:repeat(6,1fr); gap:.5rem; }
 .demo__nav span{
   aspect-ratio:1; display:flex; align-items:center; justify-content:center;
   border:1px solid #35312b; font-size:.85rem; color:#b8b2a6;
+  transition:color .4s var(--ease), border-color .4s var(--ease), background-color .4s var(--ease);
 }
 .demo__nav span.done{ border-color:#6a655c; color:var(--bg); }
 .demo__nav span.now{ background:var(--accent-soft); color:var(--ink); border-color:var(--accent-soft); font-weight:700; }
-.demo__q{ align-self:center; }
+
+/* Сцена, в которой стопкой лежат 3 вопроса, кросс-фейд по фазам */
+.demo__stage{ position:relative; min-height:clamp(300px,44vh,440px); }
+.demo__q{
+  position:absolute; inset:0; margin:auto 0; align-self:center;
+  display:flex; flex-direction:column; justify-content:center;
+  will-change:transform,opacity; opacity:0;
+}
 .demo__q-num{ font-size:.78rem; letter-spacing:.14em; text-transform:uppercase; color:#b8b2a6; margin-bottom:1.2rem; }
 .demo__q-text{ font-family:var(--serif); font-weight:500; font-size:clamp(1.3rem,1.1rem + 1.3vw,2rem); line-height:1.2; margin:0 0 2rem; letter-spacing:-0.01em; }
+
+/* Q1 — сопоставление пар */
+.match{ display:grid; grid-template-columns:minmax(0,1fr) minmax(64px,1.1fr) minmax(0,1fr); align-items:stretch; }
+.match__col{ display:grid; grid-template-rows:repeat(3,1fr); }
+.match__item{ display:flex; align-items:center; min-height:54px; font-size:1.05rem; color:#b8b2a6; transition:color .4s var(--ease); }
+.match__col--l .match__item{ justify-content:flex-start; font-weight:600; font-family:var(--sans); letter-spacing:.02em; }
+.match__col--r .match__item{ justify-content:flex-end; text-align:right; font-family:var(--serif); }
+.match__item.on{ color:var(--accent-soft); }
+.match__wires{ width:100%; height:100%; display:block; overflow:visible; }
+.match__wires .match__track{ stroke:#35312b; stroke-width:1.5; fill:none; vector-effect:non-scaling-stroke; }
+.match__wires .match__draw{ stroke:var(--accent-soft); stroke-width:2; fill:none; stroke-linecap:round; vector-effect:non-scaling-stroke; }
+
+/* Q2 — ввод текста в три поля (typewriter) */
+.fill{ display:flex; flex-direction:column; gap:clamp(1rem,3vh,1.6rem); }
+.fill__q{ font-size:.9rem; color:#b8b2a6; margin-bottom:.5rem; }
+.fill__field{
+  display:flex; align-items:center; min-height:54px;
+  border:1px solid #35312b; padding:.7rem 1rem;
+  font-family:var(--serif); font-size:clamp(1.1rem,.9rem + 1vw,1.5rem); color:var(--bg);
+  transition:border-color .4s var(--ease);
+}
+.fill__field.is-typing{ border-color:var(--accent-soft); }
+.fill__field.done{ border-color:#6a655c; }
+.fill__text{ white-space:pre; }
+.fill__caret{ display:inline-block; width:2px; height:1.15em; background:var(--accent-soft); margin-left:2px; opacity:0; }
+.fill__field.is-typing .fill__caret{ opacity:1; animation:demoCaret 1s steps(1) infinite; }
+@keyframes demoCaret{ 50%{ opacity:0; } }
+
+/* Q3 — выбор одного */
 .demo__opts{ display:flex; flex-direction:column; }
 .demo__opt{
   display:flex; align-items:center; gap:1rem;
   padding:1rem 0; border-top:1px solid #35312b;
   font-size:1.05rem; color:#b8b2a6;
+  transition:color .4s var(--ease);
 }
 .demo__opt:last-child{ border-bottom:1px solid #35312b; }
-.demo__opt .dot{ width:18px; height:18px; border:1.5px solid #6a655c; border-radius:50%; flex:0 0 auto; position:relative; }
+.demo__opt .dot{ width:18px; height:18px; border:1.5px solid #6a655c; border-radius:50%; flex:0 0 auto; position:relative; transition:border-color .4s var(--ease); }
+.demo__opt.is-scan{ color:var(--bg); }
+.demo__opt.is-scan .dot{ border-color:var(--bg); }
 /* активный/правильный на тёмной подложке — акцент через --accent-soft (контраст) */
 .demo__opt.correct{ color:var(--accent-soft); }
 .demo__opt.correct .dot{ border-color:var(--accent-soft); }
 .demo__opt.correct .dot::after{ content:""; position:absolute; inset:4px; background:var(--accent-soft); border-radius:50%; }
-.demo__opt .chk{ margin-left:auto; width:18px; height:18px; opacity:0; color:var(--accent-soft); }
+.demo__opt .chk{ margin-left:auto; width:18px; height:18px; opacity:0; color:var(--accent-soft); transition:opacity .35s var(--ease); }
 .demo__opt.correct .chk{ opacity:1; }
 .demo__autocheck{ margin-top:1.6rem; display:inline-flex; align-items:center; gap:.6rem; font-size:.82rem; letter-spacing:.1em; text-transform:uppercase; color:#b8b2a6; }
 .demo__autocheck svg{ width:15px; height:15px; }
+
+/* Статичный/фолбэк-кадр: снимаем pin, показываем все 3 вопроса стопкой в финале */
+.demo--static{ min-height:0; }
+.demo--static .demo__pin{ position:static; min-height:0; overflow:visible; padding:0; }
+.demo--static .demo__stage{ min-height:0; display:flex; flex-direction:column; gap:2.5rem; }
+.demo--static .demo__q{ position:static; inset:auto; margin:0; opacity:1 !important; transform:none !important; }
+.demo--static .demo__q + .demo__q{ border-top:1px solid #35312b; padding-top:2.5rem; }
+
 @media (max-width:820px){ .demo__frame{ grid-template-columns:1fr; } .demo__nav{ grid-template-columns:repeat(12,1fr); } }
 @media (max-width:520px){ .demo__nav{ grid-template-columns:repeat(6,1fr); } }
+@media (max-width:900px){
+  .demo{ min-height:0; padding-top:var(--section-rhythm); padding-bottom:var(--section-rhythm); }
+  .demo__pin{ position:static; min-height:0; overflow:visible; padding:0; }
+}
 
 /* ============================================================
    ПРОФИЛЬ ОШИБОК — редакторский сплит + демо-карточка
@@ -2097,39 +2156,90 @@ html[data-lab="open"] .lab{ transform:none; }
   </section>
 
   <!-- ============ ГОТОВЫЙ ТЕСТ ============ -->
-  <section class="demo section-pad" id="demo" aria-label="Как выглядит готовый тест">
-    <div class="wrap">
-      <div class="demo__head" data-reveal>
-        <h2 class="demo__title display">Как выглядит готовый тест</h2>
-        <p class="demo__sub lede">Прогресс, навигация по вопросам, автоматическая проверка.</p>
-      </div>
-
-      <div class="demo__frame" data-reveal="rise">
-        <div class="demo__left">
-          <div class="demo__prog">
-            <div class="demo__prog-label">Вопрос 3 из 12</div>
-            <div class="demo__bar"><i></i></div>
-          </div>
-          <div class="demo__nav" aria-hidden="true">
-            <span class="done">1</span><span class="done">2</span><span class="now">3</span><span>4</span><span>5</span><span>6</span>
-            <span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span>
-          </div>
+  <section class="demo" id="demo" data-demo aria-label="Как выглядит готовый тест">
+    <div class="demo__pin">
+      <div class="wrap">
+        <div class="demo__head" data-reveal>
+          <h2 class="demo__title display">Как выглядит готовый тест</h2>
+          <p class="demo__sub lede">Прогресс, навигация по вопросам, автоматическая проверка — пример на трёх вопросах.</p>
         </div>
 
-        <div class="demo__q">
-          <div class="demo__q-num">Вопрос 3</div>
-          <p class="demo__q-text">Какая структура данных работает по принципу LIFO?</p>
-          <div class="demo__opts">
-            <div class="demo__opt"><span class="dot"></span>Очередь</div>
-            <div class="demo__opt correct"><span class="dot"></span>Стек
-              <svg class="chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>
+        <div class="demo__frame">
+          <div class="demo__left">
+            <div class="demo__prog">
+              <div class="demo__prog-label" data-demo-label>Вопрос 1 из 12</div>
+              <div class="demo__bar"><i data-demo-bar></i></div>
             </div>
-            <div class="demo__opt"><span class="dot"></span>Связный список</div>
-            <div class="demo__opt"><span class="dot"></span>Хеш-таблица</div>
+            <div class="demo__nav" data-demo-nav aria-hidden="true">
+              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span>
+              <span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span>
+            </div>
           </div>
-          <div class="demo__autocheck">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
-            Проверка автоматически
+
+          <div class="demo__stage">
+            <!-- Q1 — сопоставление пар -->
+            <div class="demo__q demo__q--match" data-demo-q="0">
+              <div class="demo__q-num">Вопрос 1 · сопоставление</div>
+              <p class="demo__q-text">Соотнесите технологию с её ролью</p>
+              <div class="match" aria-hidden="true">
+                <div class="match__col match__col--l">
+                  <div class="match__item" data-match-item="0"><b>HTML</b></div>
+                  <div class="match__item" data-match-item="1"><b>CSS</b></div>
+                  <div class="match__item" data-match-item="2"><b>JS</b></div>
+                </div>
+                <svg class="match__wires" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  <path class="match__track" d="M3 16.67 H97"/>
+                  <path class="match__track" d="M3 50 H97"/>
+                  <path class="match__track" d="M3 83.33 H97"/>
+                  <path class="match__draw" data-match-draw="0" d="M3 16.67 H97"/>
+                  <path class="match__draw" data-match-draw="1" d="M3 50 H97"/>
+                  <path class="match__draw" data-match-draw="2" d="M3 83.33 H97"/>
+                </svg>
+                <div class="match__col match__col--r">
+                  <div class="match__item" data-match-item="0">разметка</div>
+                  <div class="match__item" data-match-item="1">стиль</div>
+                  <div class="match__item" data-match-item="2">логика</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Q2 — ввод текста в три поля -->
+            <div class="demo__q demo__q--fill" data-demo-q="1">
+              <div class="demo__q-num">Вопрос 2 · ввод ответа</div>
+              <p class="demo__q-text">Впишите короткий ответ</p>
+              <div class="fill">
+                <div class="fill__row">
+                  <div class="fill__q">Столица Франции?</div>
+                  <div class="fill__field" data-fill-field><span class="fill__text" data-fill-text data-full="Париж">Париж</span><span class="fill__caret"></span></div>
+                </div>
+                <div class="fill__row">
+                  <div class="fill__q">2⁴ = ?</div>
+                  <div class="fill__field" data-fill-field><span class="fill__text" data-fill-text data-full="16">16</span><span class="fill__caret"></span></div>
+                </div>
+                <div class="fill__row">
+                  <div class="fill__q">Химический символ воды?</div>
+                  <div class="fill__field" data-fill-field><span class="fill__text" data-fill-text data-full="H₂O">H₂O</span><span class="fill__caret"></span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Q3 — выбор одного -->
+            <div class="demo__q demo__q--single" data-demo-q="2">
+              <div class="demo__q-num">Вопрос 3 · выбор ответа</div>
+              <p class="demo__q-text">Какая структура данных работает по принципу LIFO?</p>
+              <div class="demo__opts">
+                <div class="demo__opt" data-demo-opt><span class="dot"></span>Очередь</div>
+                <div class="demo__opt" data-demo-opt data-demo-correct><span class="dot"></span>Стек
+                  <svg class="chk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>
+                </div>
+                <div class="demo__opt" data-demo-opt><span class="dot"></span>Связный список</div>
+                <div class="demo__opt" data-demo-opt><span class="dot"></span>Хеш-таблица</div>
+              </div>
+              <div class="demo__autocheck">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
+                Проверка автоматически
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -2866,6 +2976,136 @@ html[data-lab="open"] .lab{ transform:none; }
   }
   function onScroll(){ if(!ticking){ ticking=true; window.requestAnimationFrame(update); } }
   function setup(){ if(reduce || isSmall()){ staticFrame(); return; } live(); update(); }
+
+  window.addEventListener('scroll', onScroll, { passive:true });
+  window.addEventListener('resize', setup, { passive:true });
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(setup);
+  setup();
+})();
+</script>
+
+<script>
+/* Demo — запиненная скролл-секвенция из 3 вопросов: Q1 match → Q2 fill → Q3 single */
+(function(){
+  'use strict';
+  var sec = document.querySelector('[data-demo]');
+  if(!sec) return;
+  var qs      = Array.prototype.slice.call(sec.querySelectorAll('[data-demo-q]'));
+  var labelEl = sec.querySelector('[data-demo-label]');
+  var barEl   = sec.querySelector('[data-demo-bar]');
+  var navEls  = Array.prototype.slice.call(sec.querySelectorAll('[data-demo-nav] span'));
+  var draws   = Array.prototype.slice.call(sec.querySelectorAll('[data-match-draw]'));
+  var mItems  = Array.prototype.slice.call(sec.querySelectorAll('[data-match-item]'));
+  var fFields = Array.prototype.slice.call(sec.querySelectorAll('[data-fill-field]'));
+  var fTexts  = Array.prototype.slice.call(sec.querySelectorAll('[data-fill-text]'));
+  var opts    = Array.prototype.slice.call(sec.querySelectorAll('[data-demo-opt]'));
+  var correct = sec.querySelector('[data-demo-correct]');
+  var W = 0.05; // ширина зоны кросс-фейда между вопросами
+
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function isSmall(){ return window.matchMedia && window.matchMedia('(max-width: 900px)').matches; }
+  function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+  function easeOut(t){ return 1 - Math.pow(1 - t, 3); }
+  function easeIO(t){ return t<0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2; }
+  function seg(p,a,b){ return b<=a ? (p>=b?1:0) : clamp((p-a)/(b-a),0,1); }
+
+  // stroke-длины линий сопоставления
+  function measure(){ draws.forEach(function(d){ var L=d.getTotalLength(); d.style.strokeDasharray=String(L); d.style.strokeDashoffset=String(L); }); }
+
+  // ── отрисовщики по локальному прогрессу фазы (cp: 0..1) ──
+  function drawMatch(cp){
+    for(var i=0;i<draws.length;i++){
+      var sub = clamp((cp - i/3)/(1/3), 0, 1);
+      var e = easeOut(sub);
+      var L = parseFloat(draws[i].style.strokeDasharray) || 0;
+      draws[i].style.strokeDashoffset = (L*(1-e)).toFixed(2);
+      var on = sub > 0.12;
+      mItems.forEach(function(it){ if(it.getAttribute('data-match-item')==String(i)) it.classList.toggle('on', on); });
+    }
+  }
+  function typeFill(cp){
+    for(var i=0;i<fTexts.length;i++){
+      var full = fTexts[i].getAttribute('data-full') || '';
+      var sub = clamp((cp - i/3)/(1/3), 0, 1);
+      var n = Math.round(easeOut(sub) * full.length);
+      fTexts[i].textContent = full.slice(0, n);
+      var typing = sub > 0 && sub < 1;
+      fFields[i].classList.toggle('is-typing', typing);
+      fFields[i].classList.toggle('done', sub >= 1);
+    }
+  }
+  function pickSingle(cp){
+    if(cp < 0.62){
+      var scan = clamp(Math.floor(cp/0.62 * opts.length), 0, opts.length-1);
+      for(var i=0;i<opts.length;i++){ opts[i].classList.toggle('is-scan', i===scan); opts[i].classList.remove('correct'); }
+    } else {
+      opts.forEach(function(o){ o.classList.remove('is-scan'); });
+      if(correct) correct.classList.add('correct');
+    }
+  }
+
+  // ── финальный кадр (static / fallback) ──
+  function full(){
+    draws.forEach(function(d){ d.style.strokeDasharray='none'; d.style.strokeDashoffset='0'; });
+    mItems.forEach(function(it){ it.classList.add('on'); });
+    fTexts.forEach(function(t){ t.textContent = t.getAttribute('data-full') || ''; });
+    fFields.forEach(function(f){ f.classList.remove('is-typing'); f.classList.add('done'); });
+    opts.forEach(function(o){ o.classList.remove('is-scan'); o.classList.remove('correct'); });
+    if(correct) correct.classList.add('correct');
+    if(labelEl) labelEl.textContent = 'Вопросы 1–3 из 12';
+    for(var i=0;i<navEls.length;i++){ navEls[i].classList.toggle('done', i<3); navEls[i].classList.remove('now'); }
+    if(barEl) barEl.style.transform = 'scaleX('+(3/12)+')';
+  }
+  function clearLive(){
+    measure();
+    mItems.forEach(function(it){ it.classList.remove('on'); });
+    fTexts.forEach(function(t){ t.textContent=''; });
+    fFields.forEach(function(f){ f.classList.remove('is-typing','done'); });
+    opts.forEach(function(o){ o.classList.remove('is-scan','correct'); });
+  }
+
+  function staticFrame(){ sec.classList.add('demo--static'); qs.forEach(function(q){ q.style.opacity=''; q.style.transform=''; }); full(); }
+  function live(){ sec.classList.remove('demo--static'); clearLive(); }
+
+  var ticking=false;
+  function update(){
+    ticking=false;
+    if(sec.classList.contains('demo--static')) return;
+    var total = sec.offsetHeight - window.innerHeight;
+    if(total<=0){ full(); return; }
+    var rect = sec.getBoundingClientRect();
+    var p = clamp(-rect.top/total, 0, 1);
+    var phase = p < 1/3 ? 0 : (p < 2/3 ? 1 : 2);
+    var local = clamp((p - phase/3) * 3, 0, 1);
+    var cp = easeOut(clamp((local - 0.08)/0.74, 0, 1));
+
+    // кросс-фейд трёх вопросов
+    for(var i=0;i<qs.length;i++){
+      var fin  = i===0 ? 1 : easeIO(seg(p, i/3 - W, i/3 + W));
+      var fout = i===qs.length-1 ? 0 : easeIO(seg(p, (i+1)/3 - W, (i+1)/3 + W));
+      var op = fin*(1-fout);
+      var ty = (1-fin)*22 + fout*(-22);
+      qs[i].style.opacity = op.toFixed(3);
+      qs[i].style.transform = 'translateY('+ty.toFixed(1)+'px)';
+      qs[i].style.pointerEvents = op>0.5 ? 'auto' : 'none';
+    }
+
+    if(phase===0) drawMatch(cp);
+    else if(phase===1) typeFill(cp);
+    else pickSingle(cp);
+
+    // прогресс + навигация
+    var activeNum = phase + 1;
+    if(labelEl) labelEl.textContent = 'Вопрос '+activeNum+' из 12';
+    if(barEl) barEl.style.transform = 'scaleX('+((1 + p*2)/12).toFixed(4)+')';
+    for(var j=0;j<navEls.length;j++){ navEls[j].classList.toggle('done', j+1 < activeNum); navEls[j].classList.toggle('now', j+1 === activeNum); }
+  }
+  function onScroll(){ if(!ticking){ ticking=true; window.requestAnimationFrame(update); } }
+  function setup(){
+    if(reduce || isSmall()){ staticFrame(); return; }
+    live();
+    window.requestAnimationFrame(function(){ measure(); update(); });
+  }
 
   window.addEventListener('scroll', onScroll, { passive:true });
   window.addEventListener('resize', setup, { passive:true });
