@@ -1188,9 +1188,11 @@ html[data-lab="open"] .lab{ transform:none; }
   position:absolute; left:0; top:0; width:100%;
   height:100%; /* фолбэк без JS — линия полна */
   background:linear-gradient(var(--accent-soft), var(--accent));
-  transition:height .12s linear;
+  transform-origin:top; transform:scaleY(1); /* фолбэк — полна */
+  transition:transform .12s linear;
+  will-change:transform;
 }
-.prog--live .prog__fill{ height:calc(var(--pfill,0) * 100%); }
+.prog--live .prog__fill{ transform:scaleY(var(--pfill,0)); }
 .prog__list{ list-style:none; margin:0; padding:0; position:relative; }
 .prog__step{
   position:relative; display:grid;
