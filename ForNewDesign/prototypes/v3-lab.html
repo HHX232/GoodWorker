@@ -1113,7 +1113,7 @@ html[data-lab="open"] .lab{ transform:none; }
    отрисовка пути по скроллу). Тёмная плоскость, запиненный кадр.
    Прогрессивное улучшение: без JS/при reduced/≤900px виден финал.
    ============================================================ */
-.scrub{ position:relative; background:var(--ink); color:var(--bg); }
+.scrub{ position:relative; background:var(--ink); color:var(--bg); min-height:240vh; }
 .scrub__sticky{
   position:sticky; top:0; min-height:100vh;
   display:flex; align-items:center;
@@ -1157,11 +1157,12 @@ html[data-lab="open"] .lab{ transform:none; }
   font-size:var(--fs-lead); letter-spacing:.02em;
 }
 .scrub__time b{ color:var(--bg); font-weight:600; font-variant-numeric:tabular-nums; }
-/* Статичный/фолбэк-кадр (нет JS-скраба, reduced, ≤900px): sticky не пиним */
+/* Статичный/фолбэк-кадр (нет JS-скраба, reduced, ≤900px): sticky не пиним, трек схлопываем */
+.scrub--static{ min-height:0; }
 .scrub--static .scrub__sticky{ position:static; min-height:0; }
 @media (max-width:900px){
+  .scrub{ min-height:0; padding-top:var(--section-rhythm); padding-bottom:var(--section-rhythm); }
   .scrub__sticky{ position:static; min-height:0; }
-  .scrub{ padding-top:var(--section-rhythm); padding-bottom:var(--section-rhythm); }
 }
 
 /* ============================================================
@@ -2734,6 +2735,105 @@ html[data-lab="open"] .lab{ transform:none; }
     new MutationObserver(setup).observe(document.documentElement,
       { attributes:true, attributeFilter:['data-active-hero'] });
   }
+  setup();
+})();
+</script>
+
+<script>
+/* Блок B — scrub «Один файл → тест»: прочерчивание пути + узлы + счётчик по скроллу */
+(function(){
+  'use strict';
+  var sec = document.querySelector('[data-scrub]');
+  if(!sec) return;
+  var path  = sec.querySelector('[data-scrub-path]');
+  var wps   = Array.prototype.slice.call(sec.querySelectorAll('[data-scrub-wp]'));
+  var numEl = sec.querySelector('[data-scrub-num]');
+  var NUM   = numEl ? (parseInt(numEl.textContent,10) || 12) : 12;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function isSmall(){ return window.matchMedia && window.matchMedia('(max-width: 900px)').matches; }
+  function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+  function easeOut(t){ return 1 - Math.pow(1 - t, 3); }
+
+  var LEN = 0;
+  function measurePath(){ if(path){ LEN = path.getTotalLength(); path.style.strokeDasharray = String(LEN); } }
+  function draw(dp){
+    if(path) path.style.strokeDashoffset = (LEN * (1 - dp)).toFixed(1);
+    for(var i=0;i<wps.length;i++){
+      var th = parseFloat(wps[i].getAttribute('data-scrub-wp')) || 0;
+      wps[i].classList.toggle('on', dp >= th - 0.001);
+    }
+  }
+  function full(){ if(path){ path.style.strokeDasharray='none'; path.style.strokeDashoffset='0'; }
+    for(var i=0;i<wps.length;i++) wps[i].classList.add('on');
+    if(numEl) numEl.textContent = String(NUM); }
+
+  function staticFrame(){ sec.classList.add('scrub--static'); full(); }
+  function live(){ sec.classList.remove('scrub--static'); measurePath(); }
+
+  var ticking=false;
+  function update(){
+    ticking=false;
+    if(sec.classList.contains('scrub--static')) return;
+    var total = sec.offsetHeight - window.innerHeight;
+    if(total<=0){ full(); return; }
+    var rect = sec.getBoundingClientRect();
+    var p = clamp(-rect.top/total, 0, 1);
+    draw(easeOut(clamp(p/0.60,0,1)));                    // путь рисуется в первые 60%
+    if(numEl) numEl.textContent = String(Math.round(NUM * easeOut(clamp((p-0.38)/0.42,0,1)))); // «12» набегает в 38–80%
+  }
+  function onScroll(){ if(!ticking){ ticking=true; window.requestAnimationFrame(update); } }
+  function setup(){ if(reduce || isSmall()){ staticFrame(); return; } live(); update(); }
+
+  window.addEventListener('scroll', onScroll, { passive:true });
+  window.addEventListener('resize', setup, { passive:true });
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(setup);
+  setup();
+})();
+</script>
+
+<script>
+/* Блок A — prog «Прогресс учёбы»: заполнение линии (scaleY) + загорание этапов по скроллу */
+(function(){
+  'use strict';
+  var sec = document.querySelector('[data-prog]');
+  if(!sec) return;
+  var track = sec.querySelector('[data-prog-track]');
+  var steps = Array.prototype.slice.call(sec.querySelectorAll('[data-prog-step]'));
+  if(!track || !steps.length) return;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function isSmall(){ return window.matchMedia && window.matchMedia('(max-width: 900px)').matches; }
+  function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+
+  var nodeYs = [];
+  function measure(){
+    var tr = track.getBoundingClientRect();
+    nodeYs = steps.map(function(s){
+      var n = s.querySelector('.prog__node') || s;
+      var r = n.getBoundingClientRect();
+      return tr.height ? (r.top + r.height/2 - tr.top) / tr.height : 0;   // доля внутри трека
+    });
+  }
+  function staticFrame(){ sec.classList.remove('prog--live'); sec.style.removeProperty('--pfill');
+    steps.forEach(function(s){ s.classList.remove('is-active'); }); }
+
+  var ticking=false;
+  function update(){
+    ticking=false;
+    if(!sec.classList.contains('prog--live')) return;
+    var tr = track.getBoundingClientRect(), vh = window.innerHeight;
+    var p = clamp((vh*0.82 - tr.top) / (tr.height + vh*0.40), 0, 1);   // растёт, пока трек проходит экран
+    sec.style.setProperty('--pfill', p.toFixed(4));
+    for(var i=0;i<steps.length;i++) steps[i].classList.toggle('is-active', p >= (nodeYs[i]||0) - 0.001);
+  }
+  function onScroll(){ if(!ticking){ ticking=true; window.requestAnimationFrame(update); } }
+  function setup(){
+    if(reduce || isSmall()){ staticFrame(); return; }
+    sec.classList.add('prog--live');
+    window.requestAnimationFrame(function(){ measure(); update(); });
+  }
+  window.addEventListener('scroll', onScroll, { passive:true });
+  window.addEventListener('resize', setup, { passive:true });
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(setup);
   setup();
 })();
 </script>
