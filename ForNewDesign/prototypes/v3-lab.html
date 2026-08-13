@@ -992,7 +992,12 @@ html[data-active-steps="3"] [data-steps="3"]{ display:block; }
 .final__inner{ padding-top:clamp(6rem,16vh,14rem); padding-bottom:clamp(6rem,16vh,14rem); }
 .final__phrase{ font-family:var(--serif); font-weight:900; font-size:min(var(--fs-hero), 13vw); line-height:.95; letter-spacing:var(--tracking-display); color:var(--bg); margin:0 auto; max-width:14ch; }
 .final__phrase em{ font-style:italic; font-weight:400; color:var(--accent-soft); }
-.final__cta{ margin-top:3rem; }
+.final__cta{ margin-top:3rem; display:flex; flex-wrap:wrap; gap:.9rem; justify-content:center; }
+/* Вторичная VIP-кнопка на тёмной подложке — акцент через --accent-soft (контраст на var(--ink)) */
+.btn--vip{ background:transparent; color:var(--accent-soft); border-color:var(--accent-soft); }
+.btn--vip:hover{ background:var(--accent-soft); color:var(--ink); border-color:var(--accent-soft); }
+.final__note{ margin:1.4rem 0 0; font-size:.82rem; letter-spacing:.02em; color:#b8b2a6; }
+.final__note b{ color:var(--accent-soft); font-weight:600; }
 .foot{ border-top:1px solid #35312b; }
 .foot__inner{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:1.2rem; padding:2rem var(--pad); }
 .foot__brand{ font-family:var(--serif); font-size:.98rem; color:#b8b2a6; }
@@ -1985,7 +1990,12 @@ html[data-lab="open"] .lab{ transform:none; }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 15V3m0 0L8 7m4-4 4 4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>
           Загрузить PDF
         </a>
+        <a class="btn btn--vip" href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 8l4 3 5-6 5 6 4-3-2 11H5z"/></svg>
+          Купить VIP
+        </a>
       </div>
+      <p class="final__note" data-reveal style="--rd:.18s">VIP — <b>[ЦЕНА VIP — впиши]</b> · без лимита, все форматы</p>
     </div>
     <footer class="foot">
       <div class="foot__inner">

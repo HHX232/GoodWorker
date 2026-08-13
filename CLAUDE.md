@@ -83,6 +83,22 @@ Nav — fixed в углу экрана, компактный, не перекр�
 - V2 Terminal (`variant-b-terminal.html`): JetBrains Mono; тёмная палитра (`--bg:#0d0d0f; --ink:#e6e6e3`); точечная сетка, скан-линия, один фосфорный сигнал `#d8ff3e` только на 1–2px; hero — «консоль обработки» с живым логом.
 - V3 Cinematic (`variant-c-cinematic.html`): Bodoni Moda (Didone) + Archivo/Manrope; тёплая светлая галерея (`--bg:#f3f0ea; --ink:#0c0a08`); большие планы, максимум воздуха; hero — sticky-морфинг PDF→тест.
 
+## V3-лаборатория — `v3-lab.html` (итерация 2)
+
+`ForNewDesign/prototypes/v3-lab.html` — эволюция мира V3 (Cinematic) в один автономный файл с интерактивной панелью-лабораторией для подбора типографики, акцента и hero/шагов вживую. База — мир `variant-c-cinematic.html` (тёплая галерея: `--bg:#f3f0ea; --ink:#0c0a08`; Bodoni Moda + Archivo/Manrope; секции hero → Три шага → Шесть типов → Готовый тест → Профиль ошибок → Лимиты → FAQ → финал). Использует общий `shared/reveal-core.js`.
+
+Токены на `:root` (всё через переменные, без хардкода): типографика `--fs-hero` (дефолт `3.4rem`, заметно меньше прежнего V3 до `6.4rem`), `--fs-h2`, `--fs-lead`, `--fs-body`, `--tracking-display` (em), `--leading` (unitless), `--section-rhythm`; акцент `--accent`/`--accent-soft`/`--accent-ink`; тёмная чертёжная подложка `--draft-bg` (`#12140f`).
+
+Каркас переключения: `<html data-active-hero="1..4" data-active-steps="1..3">`; каждый hero — `<section data-hero="N">`, каждая вариация шагов — `<section data-steps="N">`; CSS показывает только активный (`html[data-active-hero="N"] [data-hero="N"]{display:block}`, прочие скрыты) — scroll-логика живёт только у активного.
+
+Четыре hero: H1 Blueprint Exploded (изометрический разрез PDF→тест, слои разъезжаются по скроллу, список состава `01..04` подсвечивается) и H2 (фронтальный «разлёт» стопки) — оба на тёмной подложке `--draft-bg`, линии/выноски красятся `--accent-soft`; H3 — карточки-вопросы вылетают из бланка и встраиваются в блок ниже; H4 — уточнённый sticky-морф V3 с детальным бланком (дефолт). Три вариации «Три шага» (та же тройка Загрузка→Распознавание→Готовый тест): S1 вертикальные serif-ряды, S2 три колонки со связками, S3 иная раскладка/ритм.
+
+Пять акцентных гамм (красят только акценты — линии/выноски/CTA/актив, блоки не заливают): `bordo`, `book` (дефолт), `teal`, `forest`, `terra`.
+
+Панель `<aside class="lab">` (фиксированная, сворачиваемая): секции `Типографика` (ползунки → `--fs-*`/`--tracking-display`/`--leading`/`--section-rhythm`), `Гамма` (свотчи `[data-gamut]` → `--accent*`), `Hero` (4 кнопки → `data-active-hero`), `Три шага` (3 кнопки → `data-active-steps`), `Экспорт`/`Сбросить`. Persistence: `localStorage['pdfland:v3lab']` = JSON `{fs:{hero,h2,lead,body}, tracking, leading, rhythm, gamut, hero, steps}`, восстановление на загрузке (валидируется по типам; всё в try/catch — без localStorage панель работает). Экспорт собирает `:root{…}` из текущих токенов + строку «hero N · steps N · гамма id», кладёт в буфер через `navigator.clipboard.writeText` с fallback (textarea/prompt — на `file://` clipboard может быть закрыт). «Сбросить» возвращает `DEFAULTS`.
+
+Копирайт-дельта: секция называется «Лимиты», три уровня Гость / Авторизованный / VIP (у VIP кнопка `Купить VIP`, цена-заглушка `[ЦЕНА VIP — впиши]`, `href="#"`). Остальной копирайт V3 — дословно из `variant-c-cinematic.html`.
+
 ## Соглашения
 
 Язык копирайта — русский; канон текста — копирайт-дек в `.autopilot/pdf-test-landing/interfaces.md`, строки берутся дословно.
@@ -107,6 +123,8 @@ Headless-Chrome не рендерит окно уже ~500px — снимай de
 `switcher.js`/`reveal-core.js` подключаются относительным путём `shared/...` — работает только при открытии из папки `prototypes/`.
 В inline-SVG некоторые движки (Safari) не резолвят CSS-переменные в атрибутах — V3 использует литерал `#f3f0ea` вместо `var()`.
 Восстановление скролла ждёт полный layout (шрифты/reveal меняют высоту): применяется после `load` + двойного rAF — мгновенного скачка при переключении не будет.
+В `v3-lab.html` активные hero/steps ставит JS из `DEFAULTS` + `localStorage['pdfland:v3lab']` (дефолт `data-active-hero="4"`, `data-active-steps="1"`) — чтобы снять скриншот конкретного hero/шага, форсить `data-active-*` скриптом ПОСЛЕ `load` (иначе увидишь сохранённый/дефолтный вариант, а не нужный).
+Blueprint-hero H1/H2 в `v3-lab.html` — на тёмной подложке `--draft-bg`: все линии/выноски/подписи красятся `--accent-soft` (тёмный `--accent` на тёмном фоне не читается) — новый акцент проверять и в этом контрасте.
 
 ## Как здесь работает Autopilot
 
