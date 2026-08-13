@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" data-active-hero="4" data-active-steps="1">
+<html lang="ru" data-active-hero="4" data-active-steps="3">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -36,11 +36,11 @@
 
   /* ---- ТОКЕНЫ ТИПОГРАФИКИ (ползунки панели) ----
      Дефолты ЗАМЕТНО меньше нынешнего V3 (жалоба «текст перебор»). */
-  --fs-hero:3.4rem;          /* дисплей hero (V3 было до 6.4rem) */
-  --fs-h2:2.3rem;            /* заголовки секций (было до 5rem) */
-  --fs-lead:1.15rem;         /* ведущий абзац */
+  --fs-hero:3.7rem;          /* дисплей hero (V3 было до 6.4rem) */
+  --fs-h2:2.2rem;            /* заголовки секций (было до 5rem) */
+  --fs-lead:1.05rem;         /* ведущий абзац */
   --fs-body:1rem;            /* основной текст */
-  --tracking-display:-0.03em;/* межбуквенное дисплея */
+  --tracking-display:-0.04em;/* межбуквенное дисплея */
   --leading:1.6;             /* интерлиньяж текста */
   --section-rhythm:6rem;     /* вертикальный ритм секций */
 
@@ -492,22 +492,28 @@ html[data-active-steps="3"] [data-steps="3"]{ display:block; }
 }
 .callout.on{ opacity:1; transform:translateY(0); }
 .callout b{ font-weight:600; color:var(--accent-ink); }
+/* Лидер — короткий акцентный штрих у края подписи (не проходит по чужому тексту) */
 .callout .lead{
-  display:block; height:1px; background:var(--accent);
-  transform:scaleX(0); transition:transform .8s var(--ease);
-  margin-bottom:.5rem;
+  display:block; height:1px; width:24px; background:var(--accent);
+  transform:scaleX(0); transition:transform .7s var(--ease);
+  margin-bottom:.4rem;
 }
 .callout.on .lead{ transform:scaleX(1); }
 .callout--r{ text-align:right; }
-.callout--r .lead{ transform-origin:right; }
-.callout--l .lead{ transform-origin:left; }
+.callout--r .lead{ margin-left:auto; transform-origin:right; }
+.callout--l{ text-align:left; }
+.callout--l .lead{ margin-right:auto; transform-origin:left; }
 
-.c1{ top:8%;  left:-6%;  width:150px; }
-.c2{ top:34%; right:-8%; width:180px; }
-.c3{ top:60%; left:-8%;  width:170px; }
-.c4{ top:80%; right:-7%; width:180px; }
-.c5{ bottom:-3.6rem; left:50%; transform:translate(-50%,6px); text-align:center; }
-.c5.on{ transform:translate(-50%,0); }
+/* Выноски бланка (фаза распознавания) — разнесены по вертикали, стороны чередуются */
+.c1{ top:4%;  left:-6%;  width:150px; }
+.c2{ top:30%; right:-7%; width:175px; }
+.c3{ top:57%; left:-7%;  width:165px; }
+.c4{ top:82%; right:-6%; width:180px; }
+
+/* Выноски готового теста (фаза сборки) — своя сетка, чтобы не совпадать с бланком */
+.t1{ top:9%;  right:-6%; width:160px; }
+.t2{ top:43%; left:-6%;  width:180px; }
+.t3{ top:73%; right:-6%; width:160px; }
 
 /* Прогресс-рельса стадий */
 .hero__rail{
@@ -1570,7 +1576,7 @@ html[data-lab="open"] .lab{ transform:none; }
             </div>
             <div class="doc__typetag">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M9 12l2 2 4-4"/></svg>
-              single · один вариант
+              распознано · single
             </div>
           </div>
 
@@ -1595,12 +1601,15 @@ html[data-lab="open"] .lab{ transform:none; }
 
           <div class="hero__done">Тест собран — 12 вопросов</div>
 
-          <!-- Указатели -->
-          <div class="callout callout--r c1"><span class="lead"></span><b>Читаем</b> страницы</div>
-          <div class="callout callout--l c2"><span class="lead"></span>Находим <b>вопросы и варианты</b></div>
-          <div class="callout callout--r c3"><span class="lead"></span>Определяем <b>тип задания</b></div>
-          <div class="callout callout--l c4"><span class="lead"></span>Проставляем <b>правильные ответы</b></div>
-          <div class="callout c5"><span class="lead"></span><b>Тест собран</b> — 12 вопросов</div>
+          <!-- Указатели бланка (видны, пока виден PDF) -->
+          <div class="callout callout--l c1"><span class="lead"></span><b>Читаем</b> страницы</div>
+          <div class="callout callout--r c2"><span class="lead"></span>Находим <b>вопросы и варианты</b></div>
+          <div class="callout callout--l c3"><span class="lead"></span>Определяем <b>тип задания</b></div>
+          <div class="callout callout--r c4"><span class="lead"></span>Проставляем <b>правильные ответы</b></div>
+          <!-- Указатели готового теста (видны, когда собраны карточки) -->
+          <div class="callout callout--r t1"><span class="lead"></span><b>Прогресс</b> прохождения</div>
+          <div class="callout callout--l t2"><span class="lead"></span><b>Навигация</b> по вопросам</div>
+          <div class="callout callout--r t3"><span class="lead"></span><b>Автопроверка</b> ответов</div>
         </div>
       </div>
 
@@ -2034,9 +2043,9 @@ html[data-lab="open"] .lab{ transform:none; }
   var GAMUT_ORDER = ['bordo','book','teal','forest','terra'];
 
   var DEFAULTS = {
-    fs:{ hero:3.4, h2:2.3, lead:1.15, body:1 },
-    tracking:-0.03, leading:1.6, rhythm:6,
-    gamut:'book', hero:4, steps:1
+    fs:{ hero:3.7, h2:2.2, lead:1.05, body:1 },
+    tracking:-0.04, leading:1.6, rhythm:6,
+    gamut:'book', hero:4, steps:3
   };
 
   function clone(o){ return JSON.parse(JSON.stringify(o)); }
@@ -2284,12 +2293,18 @@ html[data-lab="open"] .lab{ transform:none; }
   var art = hero.querySelector('[data-hero-art]');
   var stage = hero.querySelector('.hero__stage');
   var rail = hero.querySelectorAll('.hero__rail .st');
-  var callouts = [
-    { el: hero.querySelector('.c1'), at: 0.06 },
-    { el: hero.querySelector('.c2'), at: 0.32 },
-    { el: hero.querySelector('.c3'), at: 0.56 },
-    { el: hero.querySelector('.c4'), at: 0.80 },
-    { el: hero.querySelector('.c5'), at: 0.92 }
+  // Выноски бланка — накапливаются по мере распознавания (фазы 0–2)
+  var blankCal = [
+    { el: hero.querySelector('.c1'), at: 0.05 },
+    { el: hero.querySelector('.c2'), at: 0.26 },
+    { el: hero.querySelector('.c3'), at: 0.46 },
+    { el: hero.querySelector('.c4'), at: 0.64 }
+  ];
+  // Выноски готового теста — появляются только в фазе сборки (фаза 3)
+  var testCal = [
+    { el: hero.querySelector('.t1'), at: 0.82 },
+    { el: hero.querySelector('.t2'), at: 0.87 },
+    { el: hero.querySelector('.t3'), at: 0.92 }
   ];
 
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2302,8 +2317,14 @@ html[data-lab="open"] .lab{ transform:none; }
     else if(p >= 0.28) ph = 1;
     if(art) art.setAttribute('data-phase', String(ph));
     for(var i=0;i<rail.length;i++){ rail[i].classList.toggle('on', i <= ph); }
-    for(var j=0;j<callouts.length;j++){
-      if(callouts[j].el) callouts[j].el.classList.toggle('on', p >= callouts[j].at);
+    // Пока виден бланк — выноски бланка; как только собраны карточки (фаза 3) —
+    // бланочные плавно гаснут, включаются выноски теста. Одновременно не показываются.
+    var testMode = ph >= 3;
+    for(var j=0;j<blankCal.length;j++){
+      if(blankCal[j].el) blankCal[j].el.classList.toggle('on', !testMode && p >= blankCal[j].at);
+    }
+    for(var k=0;k<testCal.length;k++){
+      if(testCal[k].el) testCal[k].el.classList.toggle('on', testMode && p >= testCal[k].at);
     }
   }
 
@@ -2312,7 +2333,8 @@ html[data-lab="open"] .lab{ transform:none; }
     if(art) art.setAttribute('data-phase','3');
     if(stage) stage.style.setProperty('--p', 1);
     for(var i=0;i<rail.length;i++) rail[i].classList.add('on');
-    for(var j=0;j<callouts.length;j++){ if(callouts[j].el) callouts[j].el.classList.add('on'); }
+    // Статичный кадр: выноски скрыты через CSS (.hero--static .callout),
+    // финальный кадр — карточки + одна подпись «Тест собран», без наложений.
     return;
   }
 
