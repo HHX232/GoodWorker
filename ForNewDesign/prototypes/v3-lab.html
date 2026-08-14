@@ -1273,7 +1273,8 @@ html[data-lab="open"] .lab{ transform:none; }
 .scrub__wire .draw{ stroke:var(--accent-soft); stroke-width:2; fill:none; stroke-linecap:round; }
 .scrub__wire .wp{ fill:var(--ink); stroke:#35312b; stroke-width:1.5; transition:fill .4s var(--ease), stroke .4s var(--ease); }
 .scrub__wire .wp.on{ fill:var(--accent-soft); stroke:var(--accent-soft); }
-/* Крупная скрабящаяся статистика */
+/* Крупная скрабящаяся статистика — payoff фазы 3 (в фазах 1–2 скрыта, JS правит opacity/transform по seg3) */
+.scrub__payoff{ opacity:1; will-change:opacity, transform; }
 .scrub__stat{ display:flex; align-items:baseline; justify-content:center; gap:clamp(.6rem,2vw,1.4rem); flex-wrap:wrap; }
 .scrub__num{
   font-family:var(--serif); font-weight:900; line-height:.9;
@@ -1289,6 +1290,79 @@ html[data-lab="open"] .lab{ transform:none; }
   font-size:var(--fs-lead); letter-spacing:.02em;
 }
 .scrub__time b{ color:var(--bg); font-weight:600; font-variant-numeric:tabular-nums; }
+/* Фазовый индикатор: 3 сегмента пути (Загрузка → Распознавание → Готово), кросс-фейд */
+.scrub__phase{
+  position:relative; max-width:520px; margin:0 auto clamp(1.4rem,5vh,2.6rem);
+  height:clamp(104px,17vh,148px);
+}
+.scrub__ph{
+  position:absolute; inset:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:clamp(.6rem,1.6vh,1rem);
+  opacity:0; transform:translateY(10px);
+  transition:opacity .45s var(--ease), transform .45s var(--ease);
+  pointer-events:none;
+}
+.scrub__ph.on{ opacity:1; transform:none; }
+.scrub__ph-label{
+  font-family:var(--sans); font-size:.78rem; font-weight:600;
+  letter-spacing:.2em; text-transform:uppercase; color:var(--accent-soft);
+}
+/* Фаза 1 — загрузка файла: полоска scaleX + счётчик % */
+.scrub__bar{
+  width:min(300px,62vw); height:5px; border-radius:99px;
+  background:#35312b; overflow:hidden;
+}
+.scrub__bar-fill{
+  display:block; height:100%; width:100%; border-radius:99px;
+  background:var(--accent-soft);
+  transform:scaleX(0); transform-origin:left center; will-change:transform;
+}
+.scrub__pct{
+  font-family:var(--serif); font-weight:700; font-size:clamp(1.3rem,1rem + 1.6vw,1.9rem);
+  color:var(--bg); font-variant-numeric:tabular-nums; letter-spacing:.01em;
+}
+/* Фаза 2 — распознавание: спиннер + бегущее «сканирование» строк */
+.scrub__spin{
+  width:36px; height:36px; border-radius:50%;
+  border:3px solid #35312b; border-top-color:var(--accent-soft);
+}
+.scrub__ph--scan.on .scrub__spin{ animation:scrubSpin .82s linear infinite; }
+@keyframes scrubSpin{ to{ transform:rotate(360deg); } }
+.scrub__scan{ width:min(240px,54vw); display:flex; flex-direction:column; gap:7px; }
+.scrub__scan i{
+  height:4px; border-radius:99px; background:#35312b;
+  position:relative; overflow:hidden;
+}
+.scrub__scan i::after{
+  content:""; position:absolute; inset:0;
+  border-radius:99px; background:var(--accent-soft);
+  transform-origin:center; transform:scaleX(.28); opacity:.18;
+}
+/* НЕ-маркиз: подсветка распознаваемых участков пульсирует на месте (opacity + scaleX из центра), со стаггером */
+.scrub__ph--scan.on .scrub__scan i::after{ animation:scrubShimmer 1.5s var(--ease) infinite; }
+.scrub__ph--scan.on .scrub__scan i:nth-child(2)::after{ animation-delay:.22s; }
+.scrub__ph--scan.on .scrub__scan i:nth-child(3)::after{ animation-delay:.44s; }
+@keyframes scrubShimmer{
+  0%,100%{ transform:scaleX(.28); opacity:.18; }
+  50%    { transform:scaleX(1);   opacity:.9;  }
+}
+/* Фаза 3 — сборка: чипы-вопросы появляются один за другим */
+.scrub__chips{
+  display:flex; flex-wrap:wrap; justify-content:center; gap:7px;
+  max-width:min(300px,68vw);
+}
+.scrub__chips i{
+  width:10px; height:10px; border-radius:3px; background:#35312b;
+  opacity:.4; transform:scale(.5);
+  transition:opacity .3s var(--ease), transform .3s var(--ease), background .3s var(--ease);
+}
+.scrub__chips i.on{ opacity:1; transform:none; background:var(--accent-soft); }
+@media (prefers-reduced-motion: reduce){
+  .scrub__ph--scan.on .scrub__spin{ animation:none; }
+  /* строки статичны, но видны: подсветка в спокойном раскрытом состоянии, без движения */
+  .scrub__ph--scan.on .scrub__scan i::after{ animation:none; transform:scaleX(1); opacity:.55; }
+}
 /* Статичный/фолбэк-кадр (нет JS-скраба, reduced, ≤900px): sticky не пиним, трек схлопываем */
 .scrub--static{ min-height:0; }
 .scrub--static .scrub__sticky{ position:static; min-height:0; }
@@ -2041,11 +2115,35 @@ html[data-lab="open"] .lab{ transform:none; }
           <span class="scrub__end">Тест</span>
         </div>
 
-        <div class="scrub__stat">
-          <span class="scrub__num" data-scrub-num>12</span>
-          <span class="scrub__unit">вопросов</span>
+        <div class="scrub__phase" data-scrub-phase aria-hidden="true">
+          <!-- Фаза 1 — Загрузка файла (0–34%) -->
+          <div class="scrub__ph scrub__ph--load" data-ph="1">
+            <span class="scrub__ph-label">Загрузка файла</span>
+            <div class="scrub__bar"><i class="scrub__bar-fill" data-scrub-bar></i></div>
+            <span class="scrub__pct" data-scrub-pct>0&nbsp;%</span>
+          </div>
+          <!-- Фаза 2 — Распознавание (34–66%) -->
+          <div class="scrub__ph scrub__ph--scan" data-ph="2">
+            <span class="scrub__spin"></span>
+            <span class="scrub__ph-label">Распознавание</span>
+            <div class="scrub__scan"><i></i><i></i><i></i></div>
+          </div>
+          <!-- Фаза 3 — Сборка вопросов (66–100%) -->
+          <div class="scrub__ph scrub__ph--build" data-ph="3">
+            <span class="scrub__ph-label">Сборка вопросов</span>
+            <div class="scrub__chips" data-scrub-chips>
+              <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            </div>
+          </div>
         </div>
-        <p class="scrub__time">собрано автоматически · за <b data-scrub-sec>60</b> секунд</p>
+
+        <div class="scrub__payoff" data-scrub-payoff>
+          <div class="scrub__stat">
+            <span class="scrub__num" data-scrub-num>12</span>
+            <span class="scrub__unit">вопросов</span>
+          </div>
+          <p class="scrub__time">собрано автоматически · за <b data-scrub-sec>60</b> секунд</p>
+        </div>
       </div>
     </div>
   </section>
@@ -2942,6 +3040,11 @@ html[data-lab="open"] .lab{ transform:none; }
   var wps   = Array.prototype.slice.call(sec.querySelectorAll('[data-scrub-wp]'));
   var numEl = sec.querySelector('[data-scrub-num]');
   var NUM   = numEl ? (parseInt(numEl.textContent,10) || 12) : 12;
+  var phases  = Array.prototype.slice.call(sec.querySelectorAll('[data-ph]'));
+  var barFill = sec.querySelector('[data-scrub-bar]');
+  var pctEl   = sec.querySelector('[data-scrub-pct]');
+  var chips   = Array.prototype.slice.call(sec.querySelectorAll('[data-scrub-chips] i'));
+  var payoff  = sec.querySelector('[data-scrub-payoff]');
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function isSmall(){ return window.matchMedia && window.matchMedia('(max-width: 900px)').matches; }
   function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
@@ -2956,9 +3059,28 @@ html[data-lab="open"] .lab{ transform:none; }
       wps[i].classList.toggle('on', dp >= th - 0.001);
     }
   }
+  function setPhase(idx){
+    for(var i=0;i<phases.length;i++){
+      phases[i].classList.toggle('on', parseInt(phases[i].getAttribute('data-ph'),10)===idx);
+    }
+  }
+  function setBar(v){
+    if(barFill) barFill.style.transform = 'scaleX('+v.toFixed(3)+')';
+    if(pctEl) pctEl.textContent = Math.round(v*100)+' %';
+  }
+  function setCount(n){
+    if(numEl) numEl.textContent = String(n);
+    for(var i=0;i<chips.length;i++) chips[i].classList.toggle('on', i<n);
+  }
+  function setPayoff(v){                                  // v=прогресс фазы 3 → крупный стат-блок проявляется как финальный payoff
+    if(!payoff) return;
+    payoff.style.opacity = v.toFixed(3);
+    payoff.style.transform = 'translateY('+((1-v)*14).toFixed(1)+'px) scale('+(0.965+0.035*v).toFixed(3)+')';
+  }
   function full(){ if(path){ path.style.strokeDasharray='none'; path.style.strokeDashoffset='0'; }
     for(var i=0;i<wps.length;i++) wps[i].classList.add('on');
-    if(numEl) numEl.textContent = String(NUM); }
+    setPhase(3); setBar(1); setCount(NUM);
+    if(payoff){ payoff.style.opacity=''; payoff.style.transform=''; } }
 
   function staticFrame(){ sec.classList.add('scrub--static'); full(); }
   function live(){ sec.classList.remove('scrub--static'); measurePath(); }
@@ -2971,8 +3093,15 @@ html[data-lab="open"] .lab{ transform:none; }
     if(total<=0){ full(); return; }
     var rect = sec.getBoundingClientRect();
     var p = clamp(-rect.top/total, 0, 1);
-    draw(easeOut(clamp(p/0.60,0,1)));                    // путь рисуется в первые 60%
-    if(numEl) numEl.textContent = String(Math.round(NUM * easeOut(clamp((p-0.38)/0.42,0,1)))); // «12» набегает в 38–80%
+    draw(p);                                              // линия рисуется по скроллу; узлы 0/0.34/0.66/1 зажигаются на своих порогах
+    // локальный прогресс каждого из 3 сегментов пути
+    var seg1 = clamp(p/0.34, 0, 1);                       // 1→2: загрузка файла
+    var seg3 = clamp((p-0.66)/0.34, 0, 1);                // 3→4: сборка вопросов
+    var idx  = p < 0.34 ? 1 : (p < 0.66 ? 2 : 3);         // активная фаза (спиннер крутится только на idx===2)
+    setPhase(idx);
+    setBar(easeOut(seg1));                                // 0→100 % на сегменте 1
+    setCount(Math.round(NUM * easeOut(seg3)));            // «12» набегает на сегменте 3
+    setPayoff(easeOut(seg3));                             // стат-блок скрыт в фазах 1–2, проявляется в фазе 3
   }
   function onScroll(){ if(!ticking){ ticking=true; window.requestAnimationFrame(update); } }
   function setup(){ if(reduce || isSmall()){ staticFrame(); return; } live(); update(); }
