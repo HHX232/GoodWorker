@@ -1002,13 +1002,20 @@ html[data-active-steps="3"] [data-steps="3"]{ display:block; }
 .demo__q-num{ font-size:.78rem; letter-spacing:.14em; text-transform:uppercase; color:#b8b2a6; margin-bottom:1.2rem; }
 .demo__q-text{ font-family:var(--serif); font-weight:500; font-size:clamp(1.3rem,1.1rem + 1.3vw,2rem); line-height:1.2; margin:0 0 2rem; letter-spacing:-0.01em; }
 
-/* Q1 — сопоставление пар */
-.match{ display:grid; grid-template-columns:minmax(0,1fr) minmax(64px,1.1fr) minmax(0,1fr); align-items:stretch; }
+/* Q1 — сопоставление пар (эстетика types-match: боксы-плашки + кривые Безье) */
+.match{ display:grid; grid-template-columns:minmax(0,1fr) clamp(80px,20%,150px) minmax(0,1fr); align-items:stretch; gap:0; }
 .match__col{ display:grid; grid-template-rows:repeat(3,1fr); }
-.match__item{ display:flex; align-items:center; min-height:54px; font-size:1.05rem; color:#b8b2a6; transition:color .4s var(--ease); }
-.match__col--l .match__item{ justify-content:flex-start; font-weight:600; font-family:var(--sans); letter-spacing:.02em; }
-.match__col--r .match__item{ justify-content:flex-end; text-align:right; font-family:var(--serif); }
-.match__item.on{ color:var(--accent-soft); }
+.match__item{ display:flex; align-items:center; min-height:56px; }
+.match__col--l .match__item{ justify-content:flex-start; }
+.match__col--r .match__item{ justify-content:flex-end; }
+.match__box{
+  border:1px solid #35312b; border-radius:8px; padding:.55rem .95rem;
+  font-size:1rem; color:var(--bg); background:transparent; white-space:nowrap;
+  transition:color .4s var(--ease), border-color .4s var(--ease), background-color .4s var(--ease);
+}
+.match__col--l .match__box{ font-family:var(--sans); font-weight:600; letter-spacing:.02em; }
+.match__col--r .match__box{ font-family:var(--serif); }
+.match__box.on{ color:var(--accent-soft); border-color:var(--accent-soft); background:rgba(227,195,122,.08); }
 .match__wires{ width:100%; height:100%; display:block; overflow:visible; }
 .match__wires .match__track{ stroke:#35312b; stroke-width:1.5; fill:none; vector-effect:non-scaling-stroke; }
 .match__wires .match__draw{ stroke:var(--accent-soft); stroke-width:2; fill:none; stroke-linecap:round; vector-effect:non-scaling-stroke; }
@@ -2281,22 +2288,22 @@ html[data-lab="open"] .lab{ transform:none; }
               <p class="demo__q-text">Соотнесите технологию с её ролью</p>
               <div class="match" aria-hidden="true">
                 <div class="match__col match__col--l">
-                  <div class="match__item" data-match-item="0"><b>HTML</b></div>
-                  <div class="match__item" data-match-item="1"><b>CSS</b></div>
-                  <div class="match__item" data-match-item="2"><b>JS</b></div>
+                  <div class="match__item"><span class="match__box" data-match-box="0">HTML</span></div>
+                  <div class="match__item"><span class="match__box" data-match-box="1">CSS</span></div>
+                  <div class="match__item"><span class="match__box" data-match-box="2">JS</span></div>
                 </div>
                 <svg class="match__wires" viewBox="0 0 100 100" preserveAspectRatio="none">
-                  <path class="match__track" d="M3 16.67 H97"/>
-                  <path class="match__track" d="M3 50 H97"/>
-                  <path class="match__track" d="M3 83.33 H97"/>
-                  <path class="match__draw" data-match-draw="0" d="M3 16.67 H97"/>
-                  <path class="match__draw" data-match-draw="1" d="M3 50 H97"/>
-                  <path class="match__draw" data-match-draw="2" d="M3 83.33 H97"/>
+                  <path class="match__track" d="M0 16.67 C50 16.67 50 83.33 100 83.33"/>
+                  <path class="match__track" d="M0 50 C50 50 50 16.67 100 16.67"/>
+                  <path class="match__track" d="M0 83.33 C50 83.33 50 50 100 50"/>
+                  <path class="match__draw" data-match-draw="0" d="M0 16.67 C50 16.67 50 83.33 100 83.33"/>
+                  <path class="match__draw" data-match-draw="1" d="M0 50 C50 50 50 16.67 100 16.67"/>
+                  <path class="match__draw" data-match-draw="2" d="M0 83.33 C50 83.33 50 50 100 50"/>
                 </svg>
                 <div class="match__col match__col--r">
-                  <div class="match__item" data-match-item="0">разметка</div>
-                  <div class="match__item" data-match-item="1">стиль</div>
-                  <div class="match__item" data-match-item="2">логика</div>
+                  <div class="match__item"><span class="match__box" data-match-box="1">стиль</span></div>
+                  <div class="match__item"><span class="match__box" data-match-box="2">логика</span></div>
+                  <div class="match__item"><span class="match__box" data-match-box="0">разметка</span></div>
                 </div>
               </div>
             </div>
@@ -3124,7 +3131,7 @@ html[data-lab="open"] .lab{ transform:none; }
   var barEl   = sec.querySelector('[data-demo-bar]');
   var navEls  = Array.prototype.slice.call(sec.querySelectorAll('[data-demo-nav] span'));
   var draws   = Array.prototype.slice.call(sec.querySelectorAll('[data-match-draw]'));
-  var mItems  = Array.prototype.slice.call(sec.querySelectorAll('[data-match-item]'));
+  var mBoxes  = Array.prototype.slice.call(sec.querySelectorAll('[data-match-box]'));
   var fFields = Array.prototype.slice.call(sec.querySelectorAll('[data-fill-field]'));
   var fTexts  = Array.prototype.slice.call(sec.querySelectorAll('[data-fill-text]'));
   var opts    = Array.prototype.slice.call(sec.querySelectorAll('[data-demo-opt]'));
@@ -3149,7 +3156,7 @@ html[data-lab="open"] .lab{ transform:none; }
       var L = parseFloat(draws[i].style.strokeDasharray) || 0;
       draws[i].style.strokeDashoffset = (L*(1-e)).toFixed(2);
       var on = sub > 0.12;
-      mItems.forEach(function(it){ if(it.getAttribute('data-match-item')==String(i)) it.classList.toggle('on', on); });
+      mBoxes.forEach(function(b){ if(b.getAttribute('data-match-box')==String(i)) b.classList.toggle('on', on); });
     }
   }
   function typeFill(cp){
@@ -3176,7 +3183,7 @@ html[data-lab="open"] .lab{ transform:none; }
   // ── финальный кадр (static / fallback) ──
   function full(){
     draws.forEach(function(d){ d.style.strokeDasharray='none'; d.style.strokeDashoffset='0'; });
-    mItems.forEach(function(it){ it.classList.add('on'); });
+    mBoxes.forEach(function(b){ b.classList.add('on'); });
     fTexts.forEach(function(t){ t.textContent = t.getAttribute('data-full') || ''; });
     fFields.forEach(function(f){ f.classList.remove('is-typing'); f.classList.add('done'); });
     opts.forEach(function(o){ o.classList.remove('is-scan'); o.classList.remove('correct'); });
@@ -3187,7 +3194,7 @@ html[data-lab="open"] .lab{ transform:none; }
   }
   function clearLive(){
     measure();
-    mItems.forEach(function(it){ it.classList.remove('on'); });
+    mBoxes.forEach(function(b){ b.classList.remove('on'); });
     fTexts.forEach(function(t){ t.textContent=''; });
     fFields.forEach(function(f){ f.classList.remove('is-typing','done'); });
     opts.forEach(function(o){ o.classList.remove('is-scan','correct'); });
