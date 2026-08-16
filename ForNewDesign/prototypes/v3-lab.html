@@ -1420,7 +1420,18 @@ html[data-lab="open"] .lab{ transform:none; }
 .scrub__wire .wp{ fill:var(--ink); stroke:#35312b; stroke-width:1.5; transition:fill .4s var(--ease), stroke .4s var(--ease); }
 .scrub__wire .wp.on{ fill:var(--accent-soft); stroke:var(--accent-soft); }
 /* Крупная скрабящаяся статистика — payoff фазы 3 (в фазах 1–2 скрыта, JS правит opacity/transform по seg3) */
+/* Обёртка — общая система координат для note и payoff: note лежит РЯДОМ (не внутри) payoff,
+   иначе её опрокинула бы собственная opacity родителя, которую крутит JS (0 в фазах 1–2). */
+.scrub__result{ position:relative; }
 .scrub__payoff{ opacity:1; will-change:opacity, transform; }
+/* Пока крупный payoff ещё скрыт (фазы 1–2), в его же зарезервированном месте — маленькая серая подпись
+   текущей фазы, чтобы место не пустовало; JS кросс-фейдит note↔payoff одной и той же величиной seg3 */
+.scrub__payoff-note{
+  position:absolute; left:0; right:0; top:50%; transform:translateY(-50%);
+  margin:0; font-family:var(--sans); font-size:.82rem; font-weight:500;
+  letter-spacing:.03em; color:#8b857a; text-align:center;
+  pointer-events:none;
+}
 .scrub__stat{ display:flex; align-items:baseline; justify-content:center; gap:clamp(.6rem,2vw,1.4rem); flex-wrap:wrap; }
 .scrub__num{
   font-family:var(--serif); font-weight:900; line-height:.9;
@@ -1439,7 +1450,7 @@ html[data-lab="open"] .lab{ transform:none; }
 /* Фазовый индикатор: 3 сегмента пути (Загрузка → Распознавание → Готово), кросс-фейд */
 .scrub__phase{
   position:relative; max-width:520px; margin:0 auto clamp(1.4rem,5vh,2.6rem);
-  height:clamp(120px,18vh,168px);
+  height:clamp(104px,17vh,148px);
 }
 .scrub__ph{
   position:absolute; inset:0;
@@ -1453,11 +1464,6 @@ html[data-lab="open"] .lab{ transform:none; }
 .scrub__ph-label{
   font-family:var(--sans); font-size:.78rem; font-weight:600;
   letter-spacing:.2em; text-transform:uppercase; color:var(--accent-soft);
-}
-/* Мелкая подпись под индикатором — своя на фазах 1–2, чтобы не пустовать; фаза 3 (сборка) без неё */
-.scrub__ph-note{
-  font-family:var(--sans); font-size:.64rem; font-weight:500;
-  letter-spacing:.03em; color:#8b857a; text-align:center;
 }
 /* Фаза 1 — загрузка файла: полоска scaleX + счётчик % */
 .scrub__bar{
@@ -2288,14 +2294,12 @@ html[data-lab="open"] .lab{ transform:none; }
             <span class="scrub__ph-label">Загрузка файла</span>
             <div class="scrub__bar"><i class="scrub__bar-fill" data-scrub-bar></i></div>
             <span class="scrub__pct" data-scrub-pct>0&nbsp;%</span>
-            <span class="scrub__ph-note">Проверяем страницы и формат</span>
           </div>
           <!-- Фаза 2 — Распознавание (34–66%) -->
           <div class="scrub__ph scrub__ph--scan" data-ph="2">
             <span class="scrub__spin"></span>
             <span class="scrub__ph-label">Распознавание</span>
             <div class="scrub__scan"><i></i><i></i><i></i></div>
-            <span class="scrub__ph-note">Находим термины, даты, определения</span>
           </div>
           <!-- Фаза 3 — Сборка вопросов (66–100%) -->
           <div class="scrub__ph scrub__ph--build" data-ph="3">
@@ -2306,12 +2310,15 @@ html[data-lab="open"] .lab{ transform:none; }
           </div>
         </div>
 
-        <div class="scrub__payoff" data-scrub-payoff>
-          <div class="scrub__stat">
-            <span class="scrub__num" data-scrub-num>12</span>
-            <span class="scrub__unit">вопросов</span>
+        <div class="scrub__result">
+          <p class="scrub__payoff-note" data-scrub-note aria-hidden="true"></p>
+          <div class="scrub__payoff" data-scrub-payoff>
+            <div class="scrub__stat">
+              <span class="scrub__num" data-scrub-num>12</span>
+              <span class="scrub__unit">вопросов</span>
+            </div>
+            <p class="scrub__time">собрано автоматически · за <b data-scrub-sec>60</b> секунд</p>
           </div>
-          <p class="scrub__time">собрано автоматически · за <b data-scrub-sec>60</b> секунд</p>
         </div>
       </div>
     </div>
@@ -3322,6 +3329,8 @@ html[data-lab="open"] .lab{ transform:none; }
   var pctEl   = sec.querySelector('[data-scrub-pct]');
   var chips   = Array.prototype.slice.call(sec.querySelectorAll('[data-scrub-chips] i'));
   var payoff  = sec.querySelector('[data-scrub-payoff]');
+  var noteEl  = sec.querySelector('[data-scrub-note]');
+  var NOTES   = { 1:'Проверяем страницы и формат', 2:'Находим термины, даты, определения' };
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function isSmall(){ return window.matchMedia && window.matchMedia('(max-width: 900px)').matches; }
   function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
@@ -3354,10 +3363,16 @@ html[data-lab="open"] .lab{ transform:none; }
     payoff.style.opacity = v.toFixed(3);
     payoff.style.transform = 'translateY('+((1-v)*14).toFixed(1)+'px) scale('+(0.965+0.035*v).toFixed(3)+')';
   }
+  function setNote(idx, v){                               // маленькая подпись фазы 1–2 в том же месте, где потом проявится payoff;
+    if(!noteEl) return;                                   // v — та же величина, кросс-фейдится с setPayoff (1-v)
+    if(idx===1 || idx===2) noteEl.textContent = NOTES[idx];
+    noteEl.style.opacity = (1-v).toFixed(3);
+  }
   function full(){ if(path){ path.style.strokeDasharray='none'; path.style.strokeDashoffset='0'; }
     for(var i=0;i<wps.length;i++) wps[i].classList.add('on');
     setPhase(3); setBar(1); setCount(NUM);
-    if(payoff){ payoff.style.opacity=''; payoff.style.transform=''; } }
+    if(payoff){ payoff.style.opacity=''; payoff.style.transform=''; }
+    if(noteEl) noteEl.style.opacity='0'; }
 
   function staticFrame(){ sec.classList.add('scrub--static'); full(); }
   function live(){ sec.classList.remove('scrub--static'); measurePath(); }
@@ -3379,6 +3394,7 @@ html[data-lab="open"] .lab{ transform:none; }
     setBar(easeOut(seg1));                                // 0→100 % на сегменте 1
     setCount(Math.round(NUM * easeOut(seg3)));            // «12» набегает на сегменте 3
     setPayoff(easeOut(seg3));                             // стат-блок скрыт в фазах 1–2, проявляется в фазе 3
+    setNote(idx, easeOut(seg3));                          // и в том же месте гаснет подпись текущей фазы
   }
   function onScroll(){ if(!ticking){ ticking=true; window.requestAnimationFrame(update); } }
   function setup(){ if(reduce || isSmall()){ staticFrame(); return; } live(); update(); }
