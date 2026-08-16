@@ -48,6 +48,7 @@
   --accent:#c8972e;
   --accent-soft:#e3c37a;
   --accent-ink:#8a6410;
+  --accent-text:#0c0a08; /* контрастный текст поверх --accent, считается по гамме */
 
   /* тёмная чертёжная подложка blueprint-hero */
   --draft-bg:#12140f;
@@ -107,7 +108,7 @@ section{ position:relative; }
 }
 .btn svg{ width:16px; height:16px; display:block; }
 /* Primary CTA несёт акцент гаммы (CTA — акцентный элемент, не блок-заливка) */
-.btn--solid{ background:var(--accent); color:#fff; border-color:var(--accent); }
+.btn--solid{ background:var(--accent); color:var(--accent-text); border-color:var(--accent); }
 .btn--solid:hover{ background:transparent; color:var(--accent-ink); border-color:var(--accent); }
 .btn--ghost{ background:transparent; color:var(--ink); border-color:var(--line); }
 .btn--ghost:hover{ border-color:var(--ink); }
@@ -1103,6 +1104,14 @@ html[data-active-steps="3"] [data-steps="3"]{ display:block; }
 .tier__k--accent{ color:var(--accent-ink); }
 .tier__v{ font-family:var(--serif); font-weight:500; font-size:calc(var(--fs-lead) + .2rem); line-height:1.3; letter-spacing:-0.01em; margin:0; }
 .tier__price{ margin:1.6rem 0 0; font-family:var(--serif); font-style:italic; font-size:1.15rem; color:var(--accent-ink); }
+.tier__price--soon{
+  display:inline-flex; align-items:center; gap:.45rem;
+  font-family:var(--sans); font-style:normal; font-weight:600;
+  font-size:.72rem; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--ink-2); border:1px solid var(--line); border-radius:999px;
+  padding:.4rem .8rem .4rem .65rem;
+}
+.tier__price--soon::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--accent-soft); flex:0 0 auto; }
 .tier__buy{ margin-top:1.1rem; align-self:flex-start; }
 .tier--vip{ background:var(--paper); }
 @media (max-width:760px){ .tiers{ grid-template-columns:1fr; } }
@@ -1154,7 +1163,7 @@ html[data-active-steps="3"] [data-steps="3"]{ display:block; }
    ПАНЕЛЬ-ЛАБОРАТОРИЯ
    ============================================================ */
 .lab__toggle{
-  position:fixed; z-index:95; left:.9rem; top:.9rem;
+  position:fixed; z-index:95; left:clamp(.9rem,2vw,1.6rem); bottom:clamp(.9rem,2vw,1.6rem);
   display:inline-flex; align-items:center; gap:.5rem;
   font-family:var(--sans); font-weight:600; font-size:.78rem; letter-spacing:.04em;
   background:var(--paper); color:var(--ink);
@@ -1222,7 +1231,7 @@ html[data-lab="open"] .lab{ transform:none; }
   transition:background .3s var(--ease), color .3s var(--ease), border-color .3s var(--ease);
 }
 .lab-choice button:hover{ border-color:var(--ink); }
-.lab-choice button[aria-pressed="true"]{ background:var(--accent); color:#fff; border-color:var(--accent); }
+.lab-choice button[aria-pressed="true"]{ background:var(--accent); color:var(--accent-text); border-color:var(--accent); }
 
 .lab__actions{ display:flex; gap:.5rem; margin-top:1.1rem; }
 .lab__actions button{
@@ -1550,6 +1559,8 @@ html[data-lab="open"] .lab{ transform:none; }
     <a href="#how">Как работает</a>
     <a href="#types">Типы вопросов</a>
     <a href="#demo">Тест</a>
+    <a href="#errs">Профиль ошибок</a>
+    <a href="#limits">Лимиты</a>
     <a class="site-nav__cta" href="#">Загрузить PDF</a>
   </nav>
 </header>
@@ -1561,7 +1572,6 @@ html[data-lab="open"] .lab{ transform:none; }
     <div class="bp__stage">
 
       <div class="bp__intro">
-        <p class="bp__eyebrow">Чертёж процесса · разрез</p>
         <h1 class="bp__title">Из PDF —<em>в готовый тест.</em></h1>
         <p class="bp__lede">Листай — документ разбирается на слои: страницы, распознанные вопросы, типы ответов, и снова собирается в интерактивный тест.</p>
         <div class="bp__cta">
@@ -1674,7 +1684,6 @@ html[data-lab="open"] .lab{ transform:none; }
     <div class="bp__stage">
 
       <div class="bp__intro">
-        <p class="bp__eyebrow">Чертёж процесса · разлёт</p>
         <h1 class="bp__title">Стопка<em>разлетается в тест.</em></h1>
         <p class="bp__lede">Тот же разбор — с другого ракурса. По скроллу листы стопки разлетаются: страницы, вопросы, типы ответов и собранный тест.</p>
         <div class="bp__cta">
@@ -2352,7 +2361,7 @@ html[data-lab="open"] .lab{ transform:none; }
   </section>
 
   <!-- ============ ПРОФИЛЬ ОШИБОК ============ -->
-  <section class="errs section-pad" aria-label="Профиль ошибок">
+  <section class="errs section-pad" id="errs" aria-label="Профиль ошибок">
     <div class="wrap">
       <div class="errs__grid">
         <div>
@@ -2377,7 +2386,7 @@ html[data-lab="open"] .lab{ transform:none; }
   </section>
 
   <!-- ============ ЛИМИТЫ ============ -->
-  <section class="limits section-pad" aria-label="Лимиты">
+  <section class="limits section-pad" id="limits" aria-label="Лимиты">
     <div class="wrap">
       <h2 class="limits__title display" data-reveal>Лимиты</h2>
       <div class="tiers" data-reveal="fade">
@@ -2403,7 +2412,7 @@ html[data-lab="open"] .lab{ transform:none; }
             VIP
           </div>
           <p class="tier__v">Без лимита на вопросы · все форматы</p>
-          <p class="tier__price">[ЦЕНА VIP — впиши]</p>
+          <p class="tier__price tier__price--soon">Цена скоро</p>
           <a class="btn btn--solid tier__buy" href="#">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 8l4 3 5-6 5 6 4-3-2 11H5z"/></svg>
             Купить VIP
@@ -2444,7 +2453,6 @@ html[data-lab="open"] .lab{ transform:none; }
   <section class="prog section-pad" data-prog aria-label="Прогресс учёбы">
     <div class="wrap">
       <div class="prog__head" data-reveal>
-        <p class="prog__eyebrow">Путь ученика</p>
         <h2 class="prog__title display">Прогресс учёбы</h2>
       </div>
 
@@ -2495,7 +2503,7 @@ html[data-lab="open"] .lab{ transform:none; }
           Купить VIP
         </a>
       </div>
-      <p class="final__note" data-reveal style="--rd:.18s">VIP — <b>[ЦЕНА VIP — впиши]</b> · без лимита, все форматы</p>
+      <p class="final__note" data-reveal style="--rd:.18s">VIP — <b>цена скоро</b> · без лимита, все форматы</p>
     </div>
     <footer class="foot">
       <div class="foot__inner">
@@ -2524,12 +2532,14 @@ html[data-lab="open"] .lab{ transform:none; }
   var root = document.documentElement;
 
   // Гаммы: id → токены (красят только акценты)
+  // text — контрастный текст поверх --accent (WCAG AA ≥4.5:1, посчитано для каждой гаммы):
+  // bordo/teal/forest/terra — тёмный accent → белый текст; book — светлый accent → тёмный ink.
   var GAMUTS = {
-    bordo:  { name:'Бордо',      accent:'#6e1f2e', soft:'#9c4b57', ink:'#4a141f' },
-    book:   { name:'Книжный',    accent:'#c8972e', soft:'#e3c37a', ink:'#8a6410' },
-    teal:   { name:'Бирюза',     accent:'#1f5e59', soft:'#4f8a84', ink:'#123a37' },
-    forest: { name:'Лес',        accent:'#2f5330', soft:'#5c7d55', ink:'#1c3a1d' },
-    terra:  { name:'Терракота',  accent:'#b0533a', soft:'#cd8570', ink:'#7a3626' }
+    bordo:  { name:'Бордо',      accent:'#6e1f2e', soft:'#9c4b57', ink:'#4a141f', text:'#ffffff' },
+    book:   { name:'Книжный',    accent:'#c8972e', soft:'#e3c37a', ink:'#8a6410', text:'#0c0a08' },
+    teal:   { name:'Бирюза',     accent:'#1f5e59', soft:'#4f8a84', ink:'#123a37', text:'#ffffff' },
+    forest: { name:'Лес',        accent:'#2f5330', soft:'#5c7d55', ink:'#1c3a1d', text:'#ffffff' },
+    terra:  { name:'Терракота',  accent:'#b0533a', soft:'#cd8570', ink:'#7a3626', text:'#ffffff' }
   };
   var GAMUT_ORDER = ['bordo','book','teal','forest','terra'];
 
@@ -2579,6 +2589,7 @@ html[data-lab="open"] .lab{ transform:none; }
     root.style.setProperty('--accent', g.accent);
     root.style.setProperty('--accent-soft', g.soft);
     root.style.setProperty('--accent-ink', g.ink);
+    root.style.setProperty('--accent-text', g.text);
     root.setAttribute('data-active-hero', String(state.hero));
     root.setAttribute('data-active-steps', String(state.steps));
   }
@@ -2724,6 +2735,7 @@ html[data-lab="open"] .lab{ transform:none; }
       '  --accent:'+g.accent+';',
       '  --accent-soft:'+g.soft+';',
       '  --accent-ink:'+g.ink+';',
+      '  --accent-text:'+g.text+';',
       '}',
       '/* hero '+state.hero+' · steps '+state.steps+' · гамма '+state.gamut+' */'
     ];
