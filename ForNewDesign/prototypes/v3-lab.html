@@ -1132,10 +1132,14 @@ html[data-active-errs="3"] [data-errs="3"]{ display:block; }
 .weak__meta{ display:flex; align-items:center; gap:.55rem; }
 /* Процент проступает справа, а тонкая полоса-индикатор — по ширине --pct снизу строки: наведение читает частоту ошибки без диаграммы */
 .weak__pct{ font-family:var(--sans); font-weight:700; font-size:.76rem; color:var(--accent-ink); opacity:0; transform:translateX(6px); transition:opacity .3s var(--ease), transform .3s var(--ease); }
-.weak::after{ content:""; position:absolute; left:0; bottom:-1px; height:2px; width:0; background:var(--accent); transition:width .5s var(--ease); }
+.weak::after{
+  content:""; position:absolute; left:0; bottom:-1px; height:2px; width:var(--pct,50%);
+  background:var(--accent); transform:scaleX(0); transform-origin:left;
+  transition:transform .5s var(--ease);
+}
 .weak:hover span{ color:var(--accent-ink); }
 .weak:hover .weak__pct{ opacity:1; transform:none; }
-.weak:hover::after{ width:var(--pct,50%); }
+.weak:hover::after{ transform:scaleX(1); }
 
 /* ============================================================
    E1 — «Досье»: карточка наклоняется за курсором, глянцевый блик
@@ -1209,8 +1213,12 @@ html[data-active-errs="3"] [data-errs="3"]{ display:block; }
 .dbar__meta{ font-family:var(--sans); font-size:.76rem; color:var(--ink-2); }
 .dbar__num{ font-family:var(--sans); font-weight:700; color:var(--accent-ink); }
 .dbar__track{ height:6px; background:var(--line); position:relative; overflow:hidden; }
-.dbar__fill{ position:absolute; inset:0; width:0; background:var(--accent); transition:width 1.1s var(--ease), background .3s var(--ease); }
-.diag.is-in .dbar__fill{ width:var(--pct,0%); }
+.dbar__fill{
+  position:absolute; inset:0; width:var(--pct,0%);
+  background:var(--accent); transform:scaleX(0); transform-origin:left;
+  transition:transform 1.1s var(--ease), background .3s var(--ease);
+}
+.diag.is-in .dbar__fill{ transform:scaleX(1); }
 .dbar:hover .dbar__fill{ background:var(--accent-ink); }
 .dbar:hover .dbar__track{ box-shadow:0 0 0 1px var(--accent-soft); }
 
