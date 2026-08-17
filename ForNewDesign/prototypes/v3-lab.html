@@ -1700,6 +1700,15 @@ html[data-upload="open"] .upload__shell{ transform:none; }
 /* ---- Ошибка: неподходящий формат / большой файл / нечитаемый документ ---- */
 .m1-error__ic{ width:38px; height:38px; color:var(--accent-ink); margin-bottom:.9rem; }
 .m1-error__f{ margin:0 0 1.6rem; font-size:.88rem; color:var(--ink-2); max-width:38ch; }
+/* Короткий «отказ» — классический жест непринятого ввода; ретриггерится через reflow в JS */
+@keyframes uploadErrorShake{
+  0%, 100% { transform:translateX(0); }
+  20% { transform:translateX(-10px); }
+  40% { transform:translateX(8px); }
+  60% { transform:translateX(-6px); }
+  80% { transform:translateX(4px); }
+}
+[data-upload-step="error"].is-shake{ animation:uploadErrorShake .45s cubic-bezier(.36,.07,.19,.97); }
 @media (max-width:560px){
   .upload{ padding:0; align-items:flex-end; }
   .upload__shell{ max-width:none; max-height:92vh; }
@@ -3928,6 +3937,12 @@ html[data-upload="open"] .upload__shell{ transform:none; }
     var m = sh.querySelector('[data-error-msg]');
     if(t) t.textContent = title;
     if(m) m.textContent = msg;
+    var step = sh.querySelector('[data-upload-step="error"]');
+    if(step){
+      step.classList.remove('is-shake');
+      void step.offsetWidth; // форсируем reflow, чтобы анимация переигралась и при повторной ошибке подряд
+      step.classList.add('is-shake');
+    }
   }
 
   function handleFile(file){
