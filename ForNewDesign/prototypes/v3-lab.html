@@ -1362,6 +1362,13 @@ html[data-lab="open"] .lab{ transform:none; }
 }
 .lab-choice button:hover{ border-color:var(--ink); }
 .lab-choice button[aria-pressed="true"]{ background:var(--accent); color:var(--accent-text); border-color:var(--accent); }
+.lab__preview-btn{
+  width:100%; margin-top:.6rem; padding:.55rem .7rem; cursor:pointer;
+  font-family:var(--sans); font-size:.78rem; font-weight:600; letter-spacing:.02em;
+  background:transparent; color:var(--ink); border:1px dashed var(--line);
+  transition:border-color .3s var(--ease), color .3s var(--ease);
+}
+.lab__preview-btn:hover{ border-color:var(--ink); border-style:solid; }
 
 .lab__actions{ display:flex; gap:.5rem; margin-top:1.1rem; }
 .lab__actions button{
@@ -1596,6 +1603,109 @@ html[data-lab="open"] .lab{ transform:none; }
 }
 
 /* ============================================================
+   МОДАЛКА ЗАГРУЗКИ — 3 варианта окна (M1/M2/M3), переключаются
+   из лаборатории; внутри каждого — шаги pick → process → result
+   ============================================================ */
+html[data-upload="open"]{ overflow:hidden; }
+.upload{
+  position:fixed; inset:0; z-index:200;
+  display:flex; align-items:center; justify-content:center; padding:4vh 1rem;
+  overflow-y:auto;
+  opacity:0; pointer-events:none;
+  transition:opacity .35s var(--ease);
+}
+html[data-upload="open"] .upload{ opacity:1; pointer-events:auto; }
+.upload__backdrop{ position:fixed; inset:0; background:rgba(12,10,8,.62); cursor:pointer; }
+.upload__shell{
+  position:relative; z-index:1; display:flex; flex-direction:column;
+  width:100%; max-width:560px; max-height:88vh; overflow-y:auto;
+  transform:translateY(14px) scale(.98);
+  transition:transform .35s var(--ease);
+  outline:none; /* фокус на шелле — только для клавиатурной навигации внутрь диалога, не для рамки на весь блок */
+  background:var(--paper); border:1px solid var(--line); color:var(--ink);
+  box-shadow:0 40px 120px rgba(12,10,8,.35);
+  padding:clamp(1.8rem,4vw,2.8rem);
+}
+html[data-upload="open"] .upload__shell{ transform:none; }
+.upload__close{
+  position:absolute; top:1rem; right:1rem; z-index:2;
+  width:34px; height:34px; display:flex; align-items:center; justify-content:center;
+  background:transparent; border:1px solid var(--line); cursor:pointer;
+  color:inherit; transition:border-color .3s var(--ease), transform .3s var(--ease);
+}
+.upload__close:hover{ border-color:currentColor; transform:rotate(90deg); }
+.upload__close svg{ width:16px; height:16px; }
+
+/* Шаги — виден только активный (data-step на самой .upload__shell) */
+.upload__step{ display:none; flex-direction:column; align-items:center; text-align:center; }
+.upload__shell[data-step="pick"] [data-upload-step="pick"],
+.upload__shell[data-step="process"] [data-upload-step="process"],
+.upload__shell[data-step="result"] [data-upload-step="result"],
+.upload__shell[data-step="error"] [data-upload-step="error"]{ display:flex; }
+
+.upload__actions{ display:flex; flex-direction:column; align-items:center; gap:.9rem; margin-top:1.6rem; width:100%; }
+.upload__dl{ display:flex; gap:.6rem; flex-wrap:wrap; justify-content:center; }
+
+/* Кнопка скачивания — тот же приём вертикального свапа текста, что и у слова PDF в hero:
+   заливка-выкат + смена иконки на галочку + подпись «Скачано» вместо повторного проигрывания с нуля */
+.dl-btn{
+  position:relative; overflow:hidden; display:inline-flex; align-items:center; gap:.55rem;
+  padding:.6rem 1rem; cursor:pointer;
+  font-family:var(--sans); font-size:.82rem; font-weight:600; letter-spacing:.02em;
+  background:transparent; color:var(--ink); border:1px solid var(--line);
+  transition:border-color .3s var(--ease), color .3s var(--ease);
+}
+.dl-btn:hover{ border-color:var(--ink); }
+.dl-btn::before{
+  content:""; position:absolute; inset:0; background:var(--accent);
+  transform:scaleX(0); transform-origin:left; transition:transform .5s var(--ease);
+  z-index:0;
+}
+.dl-btn.is-done::before{ transform:scaleX(1); }
+.dl-btn.is-done{ border-color:var(--accent); color:var(--accent-text); }
+.dl-btn__ic{ position:relative; z-index:1; width:16px; height:16px; flex:0 0 auto; }
+.dl-btn__ic svg{ position:absolute; inset:0; width:100%; height:100%; transition:opacity .3s var(--ease), transform .35s var(--ease); }
+.dl-btn__ic .ic-ok{ opacity:0; transform:rotate(-90deg) scale(.5); }
+.dl-btn.is-done .ic-dl{ opacity:0; transform:rotate(90deg) scale(.5); }
+.dl-btn.is-done .ic-ok{ opacity:1; transform:none; }
+.dl-btn__label{ position:relative; z-index:1; display:inline-block; overflow:hidden; height:1.2em; }
+.dl-btn__track{ display:flex; flex-direction:column; transition:transform .4s var(--ease); }
+.dl-btn__track span{ display:block; height:1.2em; line-height:1.2; white-space:nowrap; }
+.dl-btn.is-done .dl-btn__track{ transform:translateY(-1.2em); }
+
+/* ---- «Бланк»: тёплая бумага, скан-линия по документу ---- */
+.m1-drop{
+  width:100%; border:1.5px dashed var(--line); padding:clamp(2.2rem,6vw,3.4rem) 1.5rem;
+  display:flex; flex-direction:column; align-items:center; gap:1rem;
+  transition:border-color .3s var(--ease), background .3s var(--ease);
+}
+.m1-drop.is-drag{ border-color:var(--accent); background:rgba(12,10,8,.03); }
+.m1-drop__ic{ width:32px; height:32px; color:var(--ink-2); }
+.m1-drop__t{ margin:0; font-family:var(--serif); font-size:1.1rem; line-height:1.4; }
+.m1-drop__f{ font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-2); }
+.m1-scan{ position:relative; width:90px; height:116px; margin-bottom:1.3rem; overflow:hidden; }
+.m1-scan__doc{ width:100%; height:100%; display:block; filter:drop-shadow(0 10px 24px rgba(12,10,8,.18)); }
+.m1-scan__line{
+  position:absolute; left:-4px; right:-4px; height:2px; top:0;
+  background:var(--accent); box-shadow:0 0 12px 1px var(--accent-soft);
+  will-change:top;
+}
+.m1-proc__label{ margin:0 0 .6rem; font-size:.78rem; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-2); }
+.m1-proc__pct{ font-family:var(--serif); font-weight:700; font-size:2.4rem; letter-spacing:-0.01em; }
+.m1-proc__file{ margin:.6rem 0 0; font-size:.82rem; color:var(--ink-2); word-break:break-all; }
+.m1-result__ic{ width:40px; height:40px; color:var(--accent); margin-bottom:.9rem; }
+.m1-result__t{ margin:0 0 .3rem; font-family:var(--serif); font-weight:700; font-size:1.6rem; letter-spacing:-0.01em; }
+.m1-result__f{ margin:0; font-size:.84rem; color:var(--ink-2); word-break:break-all; }
+.m1-result__stats{ display:flex; gap:2rem; margin:1.3rem 0 0; }
+/* ---- Ошибка: неподходящий формат / большой файл / нечитаемый документ ---- */
+.m1-error__ic{ width:38px; height:38px; color:var(--accent-ink); margin-bottom:.9rem; }
+.m1-error__f{ margin:0 0 1.6rem; font-size:.88rem; color:var(--ink-2); max-width:38ch; }
+@media (max-width:560px){
+  .upload{ padding:0; align-items:flex-end; }
+  .upload__shell{ max-width:none; max-height:92vh; }
+}
+
+/* ============================================================
    Reduced-motion — выключаем движение, контент виден
    ============================================================ */
 @media (prefers-reduced-motion: reduce){
@@ -1693,6 +1803,11 @@ html[data-lab="open"] .lab{ transform:none; }
   </div>
 
   <div class="lab__sec">
+    <h3 class="lab__sec-h">Модалка загрузки</h3>
+    <button type="button" class="lab__preview-btn" data-open-upload>Открыть модалку ↗</button>
+  </div>
+
+  <div class="lab__sec">
     <h3 class="lab__sec-h">Пресет</h3>
     <div class="lab__actions">
       <button type="button" data-export>Экспорт CSS</button>
@@ -1701,6 +1816,77 @@ html[data-lab="open"] .lab{ transform:none; }
     <p class="lab__flash" data-flash aria-live="polite"></p>
   </div>
 </aside>
+
+<!-- ============ МОДАЛКА ЗАГРУЗКИ (M1/M2/M3, переключение из лаборатории) ============ -->
+<div class="upload" data-upload>
+  <div class="upload__backdrop" data-upload-close></div>
+
+  <!-- M1 — «Бланк»: тёплая бумага, скан-линия по документу -->
+  <div class="upload__shell upload__shell--m1" data-modal-shell="1" data-step="pick" role="dialog" aria-modal="true" aria-label="Загрузка документа" tabindex="-1">
+    <button type="button" class="upload__close" data-upload-close aria-label="Закрыть">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+
+    <div class="upload__step" data-upload-step="pick">
+      <div class="m1-drop" data-dropzone>
+        <svg class="m1-drop__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        <p class="m1-drop__t">Перетащите файл сюда<br>или выберите на компьютере</p>
+        <span class="m1-drop__f">PDF · DOCX · TXT · RTF · ODT</span>
+        <button type="button" class="btn btn--ghost" data-choose-file>Выбрать файл</button>
+      </div>
+    </div>
+
+    <div class="upload__step" data-upload-step="process">
+      <div class="m1-scan">
+        <svg class="m1-scan__doc" viewBox="0 0 90 116" fill="none" aria-hidden="true">
+          <rect x="1" y="1" width="88" height="114" rx="3" fill="#f3f0ea" stroke="#c9c2b4" stroke-width="1.5"/>
+          <line x1="14" y1="26" x2="76" y2="26" stroke="#c9c2b4" stroke-width="2"/>
+          <line x1="14" y1="40" x2="76" y2="40" stroke="#e3ddd0" stroke-width="2"/>
+          <line x1="14" y1="52" x2="60" y2="52" stroke="#e3ddd0" stroke-width="2"/>
+          <line x1="14" y1="70" x2="76" y2="70" stroke="#e3ddd0" stroke-width="2"/>
+          <line x1="14" y1="82" x2="76" y2="82" stroke="#e3ddd0" stroke-width="2"/>
+          <line x1="14" y1="94" x2="52" y2="94" stroke="#e3ddd0" stroke-width="2"/>
+        </svg>
+        <i class="m1-scan__line" data-scan-line></i>
+      </div>
+      <p class="m1-proc__label" data-proc-label>Загружаем файл…</p>
+      <div class="m1-proc__pct" data-proc-pct>0&nbsp;%</div>
+      <p class="m1-proc__file" data-proc-file></p>
+    </div>
+
+    <div class="upload__step" data-upload-step="result">
+      <svg class="m1-result__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-6"/></svg>
+      <h3 class="m1-result__t">Тест готов</h3>
+      <p class="m1-result__f" data-result-file></p>
+      <div class="m1-result__stats">
+        <div class="pstat"><b data-result-num>12</b><span>вопросов</span></div>
+        <div class="pstat"><b>3</b><span>типа заданий</span></div>
+      </div>
+      <div class="upload__actions">
+        <a class="btn btn--solid" href="#">Получить как тест на сайте</a>
+        <div class="upload__dl">
+          <button type="button" class="dl-btn" data-download="docx">
+            <span class="dl-btn__ic"><svg class="ic-dl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 15V3m0 0L8 7m4-4 4 4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg><svg class="ic-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg></span>
+            <span class="dl-btn__label"><span class="dl-btn__track"><span>Скачать .docx</span><span>Скачано</span></span></span>
+          </button>
+          <button type="button" class="dl-btn" data-download="txt">
+            <span class="dl-btn__ic"><svg class="ic-dl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 15V3m0 0L8 7m4-4 4 4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg><svg class="ic-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg></span>
+            <span class="dl-btn__label"><span class="dl-btn__track"><span>Скачать .txt</span><span>Скачано</span></span></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="upload__step" data-upload-step="error">
+      <svg class="m1-error__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18.14A1.5 1.5 0 0 0 3.11 20.5h17.78a1.5 1.5 0 0 0 1.29-2.36L13.71 3.86a1.5 1.5 0 0 0-3.42 0z"/></svg>
+      <h3 class="m1-result__t" data-error-title>Не удалось загрузить файл</h3>
+      <p class="m1-error__f" data-error-msg></p>
+      <button type="button" class="btn btn--ghost" data-upload-retry>Попробовать снова</button>
+    </div>
+  </div>
+
+  <input type="file" data-upload-input accept=".pdf,.docx,.txt,.rtf,.odt" hidden>
+</div>
 
 <!-- Переключатель версий (контракт interfaces.md) -->
 <nav data-switcher aria-label="Версии лендинга">
@@ -1718,7 +1904,7 @@ html[data-lab="open"] .lab{ transform:none; }
     <a href="#demo">Тест</a>
     <a href="#errs">Профиль ошибок</a>
     <a href="#limits">Лимиты</a>
-    <a class="site-nav__cta" href="#">Загрузить PDF</a>
+    <a class="site-nav__cta" href="#" data-open-upload>Загрузить PDF</a>
   </nav>
 </header>
 
@@ -1729,10 +1915,10 @@ html[data-lab="open"] .lab{ transform:none; }
     <div class="bp__stage">
 
       <div class="bp__intro">
-        <h1 class="bp__title">Из <span class="word-swap"><span class="word-swap__a11y">PDF, DOCX, TXT, Excel, MD</span><span class="word-swap__track" aria-hidden="true"><span>PDF</span><span>DOCX</span><span>TXT</span><span>Excel</span><span>MD</span><span>PDF</span></span></span> —<em>в готовый тест.</em></h1>
+        <h1 class="bp__title">Из <span class="word-swap"><span class="word-swap__a11y">PDF, DOCX, TXT, XLSX, MD</span><span class="word-swap__track" aria-hidden="true"><span>PDF</span><span>DOCX</span><span>TXT</span><span>XLSX</span><span>MD</span><span>PDF</span></span></span> —<em>в готовый тест.</em></h1>
         <p class="bp__lede">Листай — документ разбирается на слои: страницы, распознанные вопросы, типы ответов, и снова собирается в интерактивный тест.</p>
         <div class="bp__cta">
-          <a class="btn btn--solid" href="#">
+          <a class="btn btn--solid" href="#" data-open-upload>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 15V3m0 0L8 7m4-4 4 4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>
             Загрузить PDF
           </a>
@@ -1844,7 +2030,7 @@ html[data-lab="open"] .lab{ transform:none; }
         <h1 class="bp__title">Стопка<em>разлетается в тест.</em></h1>
         <p class="bp__lede">Тот же разбор — с другого ракурса. По скроллу листы стопки разлетаются: страницы, вопросы, типы ответов и собранный тест.</p>
         <div class="bp__cta">
-          <a class="btn btn--solid" href="#">
+          <a class="btn btn--solid" href="#" data-open-upload>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 15V3m0 0L8 7m4-4 4 4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>
             Загрузить PDF
           </a>
@@ -1960,7 +2146,7 @@ html[data-lab="open"] .lab{ transform:none; }
         <h1 class="fly__title display">Вопросы <em>слетают с бланка</em> в тест.</h1>
         <p class="fly__sub">Листай — распознанные вопросы отделяются от бланка и по одному встают в собранный тест ниже, к остальным.</p>
         <div class="fly__cta">
-          <a class="btn btn--solid" href="#">
+          <a class="btn btn--solid" href="#" data-open-upload>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 15V3m0 0L8 7m4-4 4 4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>
             Загрузить PDF
           </a>
@@ -2023,10 +2209,10 @@ html[data-lab="open"] .lab{ transform:none; }
     <div class="hero__stage">
 
       <div class="hero__intro">
-        <h1 class="hero__title display">Из <span class="word-swap"><span class="word-swap__a11y">PDF, DOCX, TXT, Excel, MD</span><span class="word-swap__track" aria-hidden="true"><span>PDF</span><span>DOCX</span><span>TXT</span><span>Excel</span><span>MD</span><span>PDF</span></span></span> —<em>в готовый тест.</em>Автоматически.</h1>
+        <h1 class="hero__title display">Из <span class="word-swap"><span class="word-swap__a11y">PDF, DOCX, TXT, XLSX, MD</span><span class="word-swap__track" aria-hidden="true"><span>PDF</span><span>DOCX</span><span>TXT</span><span>XLSX</span><span>MD</span><span>PDF</span></span></span> —<em>в готовый тест.</em>Автоматически.</h1>
         <p class="hero__sub">Загрузи документ с вопросами — получи интерактивный тест по ссылке. Типы заданий и ответы распознаются сами.</p>
         <div class="hero__cta">
-          <a class="btn btn--solid" href="#">
+          <a class="btn btn--solid" href="#" data-open-upload>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 15V3m0 0L8 7m4-4 4 4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>
             Загрузить PDF
           </a>
@@ -2747,7 +2933,7 @@ html[data-lab="open"] .lab{ transform:none; }
     <div class="wrap final__inner">
       <h2 class="final__phrase" data-reveal="rise">Загрузи <em>первый</em> документ.</h2>
       <div class="final__cta" data-reveal style="--rd:.12s">
-        <a class="btn btn--invert" href="#">
+        <a class="btn btn--invert" href="#" data-open-upload>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 15V3m0 0L8 7m4-4 4 4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>
           Загрузить PDF
         </a>
@@ -2961,7 +3147,6 @@ html[data-lab="open"] .lab{ transform:none; }
       applyAll(); save();
     });
   });
-
   // ---- Панель: тумблер ----
   var toggle = document.querySelector('[data-lab-toggle]');
   function setOpen(open){
@@ -3647,6 +3832,179 @@ html[data-lab="open"] .lab{ transform:none; }
     entries.forEach(function(e){ if(e.isIntersecting){ animate(); io.unobserve(e.target); } });
   }, { threshold:.4 });
   io.observe(card);
+})();
+</script>
+
+<!-- ============ Модалка загрузки: открытие/закрытие, выбор файла, прогресс, скачивание ============ -->
+<script>
+(function(){
+  'use strict';
+  var root = document.documentElement;
+  var uploadEl = document.querySelector('[data-upload]');
+  if(!uploadEl) return;
+  var fileInput = document.querySelector('[data-upload-input]');
+  var shell = document.querySelector('[data-modal-shell]');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---- Ограничения на файл — реально проверяются, а не только заявлены в подписи ----
+  var ALLOWED_EXT = ['pdf','docx','txt','rtf','odt'];
+  var MAX_SIZE = 20 * 1024 * 1024; // 20 МБ
+  function extOf(name){
+    var m = /\.([a-z0-9]+)$/i.exec(name || '');
+    return m ? m[1].toLowerCase() : '';
+  }
+
+  // ---- Открытие / закрытие ----
+  function onKeydown(e){ if(e.key === 'Escape') closeModal(); }
+  function openModal(){
+    if(shell) shell.dataset.step = 'pick';
+    root.setAttribute('data-upload','open');
+    if(shell){ try{ shell.focus({ preventScroll:true }); }catch(e){ shell.focus(); } }
+    document.addEventListener('keydown', onKeydown);
+  }
+  function closeModal(){
+    root.removeAttribute('data-upload');
+    document.removeEventListener('keydown', onKeydown);
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-open-upload]'), function(t){
+    t.addEventListener('click', function(e){ e.preventDefault(); openModal(); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-upload-close]'), function(c){
+    c.addEventListener('click', function(){ closeModal(); });
+  });
+
+  // ---- Выбор файла: кнопка → скрытый input; плюс drag&drop на зоны ----
+  Array.prototype.forEach.call(document.querySelectorAll('[data-choose-file]'), function(b){
+    b.addEventListener('click', function(){ if(fileInput) fileInput.click(); });
+  });
+  if(fileInput){
+    fileInput.addEventListener('change', function(){
+      var f = fileInput.files && fileInput.files[0];
+      if(f) handleFile(f);
+      fileInput.value = '';
+    });
+  }
+  function wireDropzone(el){
+    ['dragenter','dragover'].forEach(function(evt){
+      el.addEventListener(evt, function(e){ e.preventDefault(); el.classList.add('is-drag'); });
+    });
+    ['dragleave'].forEach(function(evt){
+      el.addEventListener(evt, function(){ el.classList.remove('is-drag'); });
+    });
+    el.addEventListener('drop', function(e){
+      e.preventDefault(); el.classList.remove('is-drag');
+      var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if(f) handleFile(f);
+    });
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-dropzone]'), wireDropzone);
+
+  // ---- Прогресс: общий тайминг, визуализация — своя у каждого окна ----
+  function runProgress(onProgress, onDone, duration){
+    var start = null;
+    function step(ts){
+      if(start === null) start = ts;
+      var t = Math.min(1, (ts - start) / duration);
+      var eased = 1 - Math.pow(1 - t, 3);
+      onProgress(eased);
+      if(t < 1) window.requestAnimationFrame(step); else onDone();
+    }
+    window.requestAnimationFrame(step);
+  }
+  function makeProgress(shellEl){
+    var line = shellEl.querySelector('[data-scan-line]');
+    var pct = shellEl.querySelector('[data-proc-pct]');
+    var label = shellEl.querySelector('[data-proc-label]');
+    return function(p){
+      if(line) line.style.top = (p*100).toFixed(1)+'%';
+      if(pct) pct.textContent = Math.round(p*100)+'\u00A0%';
+      if(label) label.textContent = p<0.34 ? 'Загружаем файл…' : (p<0.7 ? 'Распознаём текст…' : 'Собираем вопросы…');
+    };
+  }
+
+  function showError(sh, title, msg){
+    sh.dataset.step = 'error';
+    var t = sh.querySelector('[data-error-title]');
+    var m = sh.querySelector('[data-error-msg]');
+    if(t) t.textContent = title;
+    if(m) m.textContent = msg;
+  }
+
+  function handleFile(file){
+    var sh = shell;
+    if(!sh) return;
+
+    var ext = extOf(file.name);
+    if(ALLOWED_EXT.indexOf(ext) === -1){
+      showError(sh, 'Такой формат не поддерживается',
+        'Загрузите PDF, DOCX, TXT, RTF или ODT — файл «'+file.name+'» не подходит.');
+      return;
+    }
+    if(file.size > MAX_SIZE){
+      showError(sh, 'Файл слишком большой',
+        'Максимальный размер — 20 МБ, а «'+file.name+'» весит '+(file.size/1024/1024).toFixed(1)+' МБ.');
+      return;
+    }
+    if(file.size === 0){
+      showError(sh, 'Не удалось распознать документ',
+        'Файл «'+file.name+'» пустой или повреждён. Проверьте файл и попробуйте снова.');
+      return;
+    }
+
+    sh.dataset.step = 'process';
+    var fileNameEl = sh.querySelector('[data-proc-file]');
+    if(fileNameEl) fileNameEl.textContent = file.name;
+    var onProgress = makeProgress(sh);
+    function finish(){
+      onProgress(1);
+      window.setTimeout(function(){
+        sh.dataset.step = 'result';
+        var rf = sh.querySelector('[data-result-file]');
+        if(rf) rf.textContent = file.name;
+      }, reduce ? 0 : 260);
+    }
+    if(reduce){ finish(); return; }
+    runProgress(onProgress, finish, 2200);
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-upload-retry]'), function(b){
+    b.addEventListener('click', function(){
+      var sh = b.closest('[data-modal-shell]');
+      if(sh) sh.dataset.step = 'pick';
+    });
+  });
+
+  // ---- Кнопки скачивания: заливка + смена иконки на галочку + подпись «Скачано» ----
+  function downloadSampleTxt(){
+    var text = [
+      'PDF → Тест — пример экспортированного теста',
+      '',
+      '1. Что из перечисленного относится к вёрстке?',
+      '   ( ) стиль   (x) разметка   ( ) логика',
+      '',
+      '2. Заполните пропуск: HTML отвечает за ___.',
+      '   Ответ: структуру документа',
+      '',
+      '3. Какая структура данных работает по принципу LIFO?',
+      '   ( ) Очередь   (x) Стек   ( ) Связный список   ( ) Хеш-таблица'
+    ].join('\n');
+    try{
+      var blob = new Blob([text], { type:'text/plain;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = 'test.txt';
+      document.body.appendChild(a); a.click();
+      window.setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 300);
+    }catch(e){}
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-download]'), function(btn){
+    btn.addEventListener('click', function(){
+      if(btn.classList.contains('is-done')) return;
+      if(btn.getAttribute('data-download') === 'txt') downloadSampleTxt();
+      btn.classList.add('is-done');
+      window.setTimeout(function(){ btn.classList.remove('is-done'); }, 1900);
+    });
+  });
 })();
 </script>
 
