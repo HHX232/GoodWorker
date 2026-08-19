@@ -180,6 +180,26 @@
       .cards { grid-template-columns: 1fr; }
       .card { min-height: 0; }
     }
+
+    /* ---- Новая секция: подборка каталог-прототипов (ниже витрины лендинга,
+       существующая разметка/секция выше не тронута) ---- */
+    .catalog-promo {
+      padding-top: clamp(2.5rem, 6vh, 4rem);
+      border-top: 1px solid var(--line);
+    }
+    .catalog-promo__head h2 {
+      margin: 0;
+      font-weight: 800;
+      font-size: clamp(1.5rem, 4vw, 2.25rem);
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+      max-width: 28ch;
+    }
+    .cards--catalog { margin-top: clamp(2rem, 5vh, 3rem); }
+
+    @media (max-width: 720px) {
+      .cards--catalog { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -252,6 +272,66 @@
 
     </div>
   </main>
+
+  <section class="wrap catalog-promo">
+    <header class="catalog-promo__head">
+      <p class="eyebrow">Каталог репетиторов · три прототипа</p>
+      <h2>Тот же выбор направления — для каталога.</h2>
+      <p class="lead">
+        Продуктовый мир, редакторский мир и их гибрид — теперь применительно
+        к странице каталога репетиторов: навбар, фильтры, уведомления, карточки.
+      </p>
+    </header>
+
+    <div class="cards cards--catalog">
+
+      <a class="card" data-reveal href="catalog-a-goodworker.html">
+        <span class="card__num">A</span>
+        <span class="card__title">GoodWorker</span>
+        <span class="card__desc">
+          Продуктовый вариант, ближе к нынешнему GoodWorker: сайдбар-навигация,
+          привычная плотность, крафт STYLE-BRIEF поверх.
+        </span>
+        <span class="card__go">
+          Открыть
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+          </svg>
+        </span>
+      </a>
+
+      <a class="card" data-reveal href="catalog-b-pdftotest.html">
+        <span class="card__num">B</span>
+        <span class="card__title">PDF → Тест</span>
+        <span class="card__desc">
+          Редакторский вариант в эстетике v3-lab: Bodoni Moda, тёплая палитра,
+          острые углы, акцент только на деталях.
+        </span>
+        <span class="card__go">
+          Открыть
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+          </svg>
+        </span>
+      </a>
+
+      <a class="card" data-reveal href="catalog-c-hybrid.html">
+        <span class="card__num">C</span>
+        <span class="card__title">Гибрид</span>
+        <span class="card__desc">
+          Плотность и функциональность варианта A, одетые в визуальный язык
+          варианта B — осознанная смесь, а не третий независимый мир.
+        </span>
+        <span class="card__go">
+          Открыть
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+          </svg>
+        </span>
+      </a>
+
+    </div>
+  </section>
 
   <footer class="wrap">
     <span>PDF → Тест — часть GoodWorker</span>
