@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Каталог репетиторов · Вариант B (PDF → Тест)</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;0,6..96,700;0,6..96,900;1,6..96,400;1,6..96,700&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   КАТАЛОГ РЕПЕТИТОРОВ — вариант B (редакторский, мир «PDF → Тест»).
+   Продолжает эстетику v3-lab.html: тёплая светлая база, Bodoni Moda
+   для дисплея, Archivo для UI, острые углы, hairline вместо теней,
+   акцент только на деталях (гамма bordo). Самостоятельный файл —
+   CSS/JS инлайн, ничего не импортирует из v3-lab.html/лендинга.
+   ============================================================ */
+
+:root{
+  /* мир V3 — база Ч/Б, взято дословно из v3-lab.html */
+  --bg:#f3f0ea;
+  --ink:#0c0a08;
+  --ink-2:#6a655c;
+  --line:#ddd7cc;
+  --paper:#faf8f3;
+
+  --serif:"Bodoni Moda", Georgia, "Times New Roman", serif;
+  --sans:"Archivo", "Helvetica Neue", Arial, sans-serif;
+
+  --ease:cubic-bezier(.19,1,.22,1);
+  --slow:.6s;
+  --pad: clamp(1.25rem, 5vw, 4.5rem);
+
+  /* типографика — набор токенов уже, чем у лендинга (тут нет hero-раскадровки) */
+  --fs-h1: clamp(2.2rem, 4.4vw, 3.4rem);
+  --fs-h2: 1.7rem;
+  --fs-lead: 1.05rem;
+  --fs-body: 1rem;
+  --tracking-display: -0.02em;
+  --leading: 1.6;
+  --section-rhythm: clamp(2.6rem, 6vw, 4.5rem);
+
+  /* акцентная гамма — «Бордо», одна из 5 гамм v3-lab, красит только детали */
+  --accent:#6e1f2e;
+  --accent-soft:#9c4b57;
+  --accent-ink:#4a141f;
+  --accent-text:#ffffff;
+}
+
+*{ box-sizing:border-box; }
+html{ -webkit-text-size-adjust:100%; }
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-weight:400;
+  line-height:var(--leading);
+  font-size:var(--fs-body);
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+img{ max-width:100%; display:block; }
+a{ color:inherit; }
+button{ font:inherit; color:inherit; }
+input, select{ font:inherit; color:inherit; }
+
+/* ---- Типографика ---- */
+.display{
+  font-family:var(--serif);
+  font-weight:700;
+  line-height:1.02;
+  letter-spacing:var(--tracking-display);
+  margin:0;
+}
+.lede{
+  max-width:56ch;
+  color:var(--ink-2);
+  font-size:var(--fs-lead);
+  line-height:1.55;
+  margin:0;
+}
+.eyebrow{
+  font-size:.72rem; letter-spacing:.22em; text-transform:uppercase;
+  color:var(--accent-ink); font-weight:600; margin:0 0 .9rem;
+}
+
+/* ---- Layout ---- */
+.wrap{ max-width:1360px; margin:0 auto; padding-left:var(--pad); padding-right:var(--pad); }
+section{ position:relative; }
+.section-pad{ padding-top:var(--section-rhythm); padding-bottom:var(--section-rhythm); }
+
+/* ---- Кнопки (дословно из v3-lab.html) ---- */
+.btn{
+  display:inline-flex; align-items:center; gap:.6rem;
+  font-family:var(--sans); font-weight:600; font-size:.92rem;
+  letter-spacing:.01em;
+  padding:.85rem 1.4rem;
+  border:1px solid var(--ink);
+  text-decoration:none;
+  border-radius:0;
+  background:none;
+  cursor:pointer;
+  transition:background var(--slow) var(--ease), color var(--slow) var(--ease), border-color var(--slow) var(--ease);
+}
+.btn svg{ width:15px; height:15px; display:block; }
+.btn--solid{ background:var(--accent); color:var(--accent-text); border-color:var(--accent); }
+.btn--solid:hover{ background:transparent; color:var(--accent-ink); border-color:var(--accent); }
+.btn--ghost{ background:transparent; color:var(--ink); border-color:var(--line); }
+.btn--ghost:hover{ border-color:var(--ink); }
+.btn--sm{ padding:.55rem 1rem; font-size:.82rem; }
+.btn--block{ width:100%; justify-content:center; }
+.btn--icon{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:2.4rem; height:2.4rem; padding:0;
+  border:1px solid var(--line); background:transparent;
+  cursor:pointer; transition:border-color var(--slow) var(--ease);
+}
+.btn--icon:hover{ border-color:var(--ink); }
+.btn--icon svg{ width:16px; height:16px; }
+
+/* ============================================================
+   Reveal — контракт reveal-core.js: базовое состояние видимо
+   при reduced-motion, скрывается только классами .is-in/media.
+   ============================================================ */
+[data-reveal]{
+  opacity:0; transform:translateY(18px);
+  transition:opacity .9s var(--ease), transform .9s var(--ease);
+}
+[data-reveal].is-in{ opacity:1; transform:translateY(0); }
+
+/* ============================================================
+   Верхняя навигация продукта (sticky, не перекрывает контент)
+   ============================================================ */
+.site-nav{
+  position:sticky; top:0; z-index:60;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:1rem;
+  padding:1.1rem var(--pad);
+  background:rgba(243,240,234,.92);
+  backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--line);
+}
+.brand{
+  font-family:var(--serif); font-weight:700; font-size:1.2rem;
+  letter-spacing:-0.01em; text-decoration:none; white-space:nowrap;
+}
+.site-nav__links{ display:flex; align-items:center; gap:1.8rem; }
+.site-nav__links a{
+  font-size:.88rem; color:var(--ink-2); text-decoration:none;
+  letter-spacing:.02em; transition:color var(--slow) var(--ease);
+}
+.site-nav__links a:hover{ color:var(--ink); }
+.site-nav__right{ display:flex; align-items:center; gap:.6rem; }
+.site-nav__pill{
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:2.3rem; height:2.3rem; padding:0 .6rem;
+  border:1px solid var(--line);
+  font-size:.78rem; font-weight:600; letter-spacing:.02em;
+  text-decoration:none; color:var(--ink-2);
+  transition:border-color var(--slow) var(--ease), color var(--slow) var(--ease);
+}
+.site-nav__pill:hover{ border-color:var(--ink); color:var(--ink); }
+.site-nav__avatar{
+  width:2.3rem; height:2.3rem;
+  border:1px solid var(--ink);
+  background:var(--accent); color:var(--accent-text);
+  display:inline-flex; align-items:center; justify-content:center;
+  font-family:var(--serif); font-weight:700; font-size:.88rem;
+}
+@media (max-width:860px){
+  .site-nav__links{ display:none; }
+}
+
+/* ============================================================
+   Каталог-переключатель (контракт interfaces.md — свой, без
+   scroll-sync лендинга). Fixed, угол противоположный site-nav.
+   ============================================================ */
+nav[data-catalog-switcher]{
+  position:fixed; z-index:80;
+  right:clamp(.9rem,2vw,1.6rem); bottom:clamp(.9rem,2vw,1.6rem);
+  display:flex; gap:2px;
+  background:var(--paper);
+  border:1px solid var(--line);
+  padding:4px;
+  box-shadow:0 8px 30px rgba(12,10,8,.12);
+}
+nav[data-catalog-switcher] a{
+  font-family:var(--sans); font-size:.74rem; font-weight:600;
+  letter-spacing:.05em; text-decoration:none; color:var(--ink-2);
+  padding:.42rem .72rem; line-height:1;
+  transition:background var(--slow) var(--ease), color var(--slow) var(--ease);
+}
+nav[data-catalog-switcher] a:hover{ color:var(--ink); }
+nav[data-catalog-switcher] a[aria-current="page"]{
+  background:var(--ink); color:var(--bg);
+}
+
+/* ============================================================
+   Заголовок каталога
+   ============================================================ */
+.hero-lite{ padding-top:calc(var(--section-rhythm) * .8); padding-bottom:calc(var(--section-rhythm) * .6); }
+.hero-lite__title{ font-size:var(--fs-h1); max-width:20ch; margin:0 0 1.1rem; }
+.hero-lite__title em{ font-style:italic; font-weight:400; color:var(--accent-ink); }
+
+/* ============================================================
+   Блок фильтров — 3 переключаемых раскладки (data-active-filters)
+   ============================================================ */
+.filters-head{
+  display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between;
+  gap:1rem; margin-bottom:1.4rem;
+}
+.filters-head h2{ font-size:var(--fs-h2); font-family:var(--serif); font-weight:700; margin:0; }
+.filters-switch{ display:flex; gap:.4rem; flex-wrap:wrap; }
+.filters-switch button{
+  font-family:var(--sans); font-size:.8rem; font-weight:600; letter-spacing:.02em;
+  padding:.5rem .95rem; border:1px solid var(--line); background:transparent;
+  cursor:pointer; transition:border-color var(--slow) var(--ease), background var(--slow) var(--ease), color var(--slow) var(--ease);
+}
+.filters-switch button:hover{ border-color:var(--ink); }
+.filters-switch button[aria-pressed="true"]{ background:var(--ink); color:var(--bg); border-color:var(--ink); }
+
+/* показываем только активную раскладку фильтров */
+[data-filters]{ display:none; }
+html[data-active-filters="1"] [data-filters="1"],
+html[data-active-filters="2"] [data-filters="2"],
+html[data-active-filters="3"] [data-filters="3"]{ display:block; }
+
+.filters-panel{
+  background:var(--paper);
+  border:1px solid var(--line);
+}
+.field label{
+  display:block; font-size:.76rem; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--ink-2); margin-bottom:.5rem; font-weight:600;
+}
+.field input[type="text"],
+.field input[type="number"],
+.field select{
+  width:100%; padding:.7rem .8rem;
+  border:1px solid var(--line); background:var(--bg);
+  border-radius:0; font-size:.94rem;
+  transition:border-color var(--slow) var(--ease);
+}
+.field input:focus,
+.field select:focus{ outline:none; border-color:var(--accent); }
+
+/* Раскладка 1 — «Строка»: горизонтальные поля с hairline-разделителями */
+.filters--row{ display:grid; grid-template-columns:repeat(3,1fr); }
+.filters--row .field{ padding:1.3rem 1.5rem; border-left:1px solid var(--line); }
+.filters--row .field:first-child{ border-left:none; }
+@media (max-width:760px){
+  .filters--row{ grid-template-columns:1fr; }
+  .filters--row .field{ border-left:none; border-top:1px solid var(--line); }
+  .filters--row .field:first-child{ border-top:none; }
+}
+
+/* Раскладка 2 — «Список»: вертикальный список с крупными serif-лейблами */
+.filters--list{ padding:1.6rem 1.7rem; display:flex; flex-direction:column; gap:1.5rem; }
+.filters--list .field label{
+  font-family:var(--serif); font-size:1.15rem; text-transform:none;
+  letter-spacing:0; color:var(--ink); font-weight:700; margin-bottom:.7rem;
+}
+.chip-row{ display:flex; flex-wrap:wrap; gap:.5rem; }
+.chip{
+  padding:.5rem .9rem; border:1px solid var(--line); background:var(--bg);
+  font-size:.86rem; cursor:pointer; transition:border-color var(--slow) var(--ease), background var(--slow) var(--ease), color var(--slow) var(--ease);
+}
+.chip:hover{ border-color:var(--ink); }
+.chip[aria-pressed="true"]{ background:var(--accent); border-color:var(--accent); color:var(--accent-text); }
+.range-row{ display:flex; align-items:center; gap:1rem; }
+.range-row input[type="range"]{ flex:1; accent-color:var(--accent); }
+.range-row output{
+  font-family:var(--serif); font-weight:700; font-size:1.05rem;
+  min-width:5.5rem; text-align:right;
+}
+
+/* Раскладка 3 — «Компактно»: тонкая строка над сеткой карточек */
+.filters--compact{
+  display:flex; flex-wrap:wrap; align-items:center; gap:1rem 1.4rem;
+  padding:.9rem 1.2rem;
+}
+.filters--compact .field{ display:flex; align-items:center; gap:.6rem; flex:1 1 180px; }
+.filters--compact .field label{
+  margin:0; white-space:nowrap; font-size:.72rem;
+}
+.filters--compact .field input,
+.filters--compact .field select{ padding:.5rem .6rem; font-size:.86rem; }
+.filters--compact .stepper{ display:flex; align-items:stretch; }
+.filters--compact .stepper input{ text-align:center; }
+.filters--compact .stepper button{
+  width:2.1rem; border:1px solid var(--line); background:var(--bg); cursor:pointer;
+  font-size:1rem; line-height:1; transition:border-color var(--slow) var(--ease);
+}
+.filters--compact .stepper button:hover{ border-color:var(--ink); }
+
+.empty-toggle{
+  margin-top:1.1rem;
+  font-size:.82rem; color:var(--ink-2); text-decoration:underline;
+  text-underline-offset:3px; background:none; border:none; cursor:pointer;
+  padding:0;
+}
+.empty-toggle:hover{ color:var(--ink); }
+
+/* ============================================================
+   Основная область: сетка карточек + аside уведомления
+   ============================================================ */
+.catalog-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 300px;
+  gap:clamp(1.5rem,3vw,3rem);
+  align-items:start;
+}
+@media (max-width:980px){
+  .catalog-layout{ grid-template-columns:1fr; }
+  .notif-card{ position:static; top:auto; }
+}
+
+/* сетка карточек — auto-fill, без хардкода на N (R##.growth) */
+.card-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(260px,1fr));
+  gap:1.6rem;
+}
+
+/* пустое состояние — статичный демо-кадр, НЕ подключён к реальному вводу
+   фильтров (см. spec.md «Решения по реализации» — «Фильтры не фильтруют
+   по-настоящему»); переключается локальной кнопкой «Показать демо» только
+   чтобы продемонстрировать, как это выглядит. */
+.catalog-empty{
+  display:none;
+  text-align:center;
+  padding:4rem 1.5rem;
+  border:1px solid var(--line);
+  background:var(--paper);
+}
+html[data-demo-empty="true"] .card-grid{ display:none; }
+html[data-demo-empty="true"] .catalog-empty{ display:block; }
+.catalog-empty svg{ width:40px; height:40px; margin:0 auto 1.2rem; color:var(--ink-2); }
+.catalog-empty p{ margin:0 0 1.4rem; color:var(--ink-2); font-size:.98rem; }
+.catalog-empty__title{ font-family:var(--serif); font-size:1.3rem; font-weight:700; margin:0 0 .6rem; }
+
+/* ---- Карточка репетитора ---- */
+.tutor-card{
+  display:flex; flex-direction:column;
+  background:var(--paper);
+  border:1px solid var(--line);
+  min-width:0;
+}
+.tutor-card__photo{
+  position:relative;
+  aspect-ratio:16/10;
+  display:flex; align-items:center; justify-content:center;
+  background:
+    repeating-linear-gradient(135deg, rgba(12,10,8,.05) 0 2px, transparent 2px 14px),
+    var(--bg);
+  border-bottom:1px solid var(--line);
+  overflow:hidden;
+}
+.tutor-card__initials{
+  font-family:var(--serif); font-weight:700; font-size:2.6rem;
+  color:var(--accent-ink); letter-spacing:.01em;
+}
+.tutor-card__body{ padding:1.3rem 1.4rem 1.5rem; display:flex; flex-direction:column; gap:.7rem; min-width:0; }
+.tutor-card__name-row{ display:flex; align-items:flex-start; gap:.5rem; min-width:0; }
+.tutor-card__name{
+  font-family:var(--serif); font-weight:700; font-size:1.18rem;
+  margin:0; line-height:1.15;
+  overflow:hidden; text-overflow:ellipsis; display:-webkit-box;
+  -webkit-line-clamp:2; -webkit-box-orient:vertical;
+}
+.tutor-card__badge{ flex:none; width:18px; height:18px; margin-top:.2rem; color:var(--accent); }
+.tutor-card__tag{
+  align-self:flex-start;
+  font-size:.72rem; letter-spacing:.05em; text-transform:uppercase; font-weight:600;
+  padding:.3rem .6rem; border:1px solid var(--accent-soft); color:var(--accent-ink);
+}
+.tutor-card__desc{
+  margin:0; color:var(--ink-2); font-size:.9rem; line-height:1.5;
+  overflow:hidden; text-overflow:ellipsis; display:-webkit-box;
+  -webkit-line-clamp:2; -webkit-box-orient:vertical;
+}
+.tutor-card__stats{ display:flex; gap:1.2rem; margin:.2rem 0 .3rem; }
+.tutor-card__stat{ display:flex; align-items:center; gap:.4rem; font-size:.82rem; color:var(--ink-2); }
+.tutor-card__stat svg{ width:15px; height:15px; flex:none; }
+.tutor-card__foot{ display:flex; align-items:center; gap:.6rem; margin-top:auto; padding-top:.5rem; }
+.tutor-card__foot .btn{ flex:1; }
+
+/* ============================================================
+   Уведомления — тонкая карточка сбоку от каталога
+   ============================================================ */
+.notif-card{
+  background:var(--paper);
+  border:1px solid var(--line);
+  padding:1.4rem 1.4rem 1.6rem;
+  position:sticky; top:5.4rem;
+}
+.notif-card__head{
+  display:flex; align-items:baseline; justify-content:space-between;
+  gap:.6rem; margin-bottom:1.3rem;
+}
+.notif-card__head h2{ font-family:var(--serif); font-size:1.15rem; font-weight:700; margin:0; }
+.notif-card__head a{
+  font-size:.8rem; color:var(--accent-ink); text-decoration:none;
+  border-bottom:1px solid var(--accent-soft); padding-bottom:1px;
+  white-space:nowrap;
+}
+.notif-card__head a:hover{ color:var(--accent); }
+.notif-empty{ text-align:center; padding:2.2rem 0 2rem; }
+.notif-empty svg{ width:34px; height:34px; margin:0 auto 1rem; color:var(--ink-2); }
+.notif-empty p{ margin:0; color:var(--ink-2); font-size:.88rem; }
+
+/* ============================================================
+   Reduced motion — контент виден полностью, движение выключено
+   ============================================================ */
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+}
+
+/* ---- Финальная строка ---- */
+.footer-note{
+  border-top:1px solid var(--line);
+  padding:1.6rem var(--pad) 2.4rem;
+  color:var(--ink-2); font-size:.82rem;
+  display:flex; justify-content:space-between; flex-wrap:wrap; gap:.6rem;
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     Шапка продукта — sticky, лого + ссылки + место аккаунта/языка
+     ============================================================ -->
+<header class="site-nav">
+  <a class="brand" href="#">GoodWorker</a>
+  <nav class="site-nav__links" aria-label="Разделы продукта">
+    <a href="#">Каталог</a>
+    <a href="#">Курсы</a>
+    <a href="#">Игры</a>
+    <a href="#">Поддержка</a>
+  </nav>
+  <div class="site-nav__right">
+    <a class="site-nav__pill" href="#" aria-label="Язык интерфейса">RU</a>
+    <a class="site-nav__pill" href="#" aria-label="Переключить тему">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2 12h2.5M19.5 12H22M4.2 19.8l1.8-1.8M18 6l1.8-1.8"/></svg>
+    </a>
+    <a class="site-nav__avatar" href="#" aria-label="Личный кабинет">М</a>
+  </div>
+</header>
+
+<!-- ============================================================
+     Каталог-переключатель (контракт interfaces.md, дословно)
+     ============================================================ -->
+<nav data-catalog-switcher aria-label="Варианты каталога">
+  <a data-cat="a" href="catalog-a-goodworker.html">A</a>
+  <a data-cat="b" href="catalog-b-pdftotest.html">B</a>
+  <a data-cat="c" href="catalog-c-hybrid.html">C</a>
+</nav>
+
+<main>
+
+  <!-- ============================================================
+       Заголовок каталога
+       ============================================================ -->
+  <section class="hero-lite wrap" data-reveal>
+    <p class="eyebrow">Каталог репетиторов</p>
+    <h1 class="display hero-lite__title">Найдите своего <em>репетитора</em></h1>
+    <p class="lede">Шесть направлений, реальные форматы уроков, без лишнего в описании — только имя, предмет и то, чем человек может быть полезен.</p>
+  </section>
+
+  <!-- ============================================================
+       Блок фильтров — 3 переключаемых раскладки
+       ============================================================ -->
+  <section class="wrap section-pad" style="padding-top:0" data-reveal>
+    <div class="filters-head">
+      <h2>Фильтры</h2>
+      <div class="filters-switch" role="group" aria-label="Раскладка фильтров">
+        <button type="button" data-filters-btn="1" aria-pressed="true">Строка</button>
+        <button type="button" data-filters-btn="2" aria-pressed="false">Список</button>
+        <button type="button" data-filters-btn="3" aria-pressed="false">Компактно</button>
+      </div>
+    </div>
+
+    <!-- Раскладка 1 — горизонтальная строка, select для предмета -->
+    <div data-filters="1">
+      <div class="filters-panel filters--row">
+        <div class="field">
+          <label for="f1-name">Имя</label>
+          <input type="text" id="f1-name" name="name" placeholder="Например, Анна" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="f1-subject">Предмет</label>
+          <select id="f1-subject" name="subject">
+            <option value="">Любой предмет</option>
+            <option>Математика</option>
+            <option>Физика</option>
+            <option>Английский язык</option>
+            <option>Русский язык</option>
+            <option>Химия</option>
+            <option>История</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f1-price">Мин. стоимость урока, ₽</label>
+          <input type="number" id="f1-price" name="price" min="0" step="100" placeholder="0">
+        </div>
+      </div>
+    </div>
+
+    <!-- Раскладка 2 — вертикальный список, чипы для предмета, слайдер цены -->
+    <div data-filters="2">
+      <div class="filters-panel filters--list">
+        <div class="field">
+          <label for="f2-name">Имя репетитора</label>
+          <input type="text" id="f2-name" name="name" placeholder="Введите имя или фамилию" autocomplete="off">
+        </div>
+        <div class="field">
+          <label id="f2-subject-label">Предмет</label>
+          <div class="chip-row" role="group" aria-labelledby="f2-subject-label" data-chip-group>
+            <button type="button" class="chip" aria-pressed="true">Любой</button>
+            <button type="button" class="chip" aria-pressed="false">Математика</button>
+            <button type="button" class="chip" aria-pressed="false">Физика</button>
+            <button type="button" class="chip" aria-pressed="false">Английский язык</button>
+            <button type="button" class="chip" aria-pressed="false">Русский язык</button>
+            <button type="button" class="chip" aria-pressed="false">Химия</button>
+            <button type="button" class="chip" aria-pressed="false">История</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="f2-price">Минимальная стоимость урока</label>
+          <div class="range-row">
+            <input type="range" id="f2-price" name="price" min="0" max="3000" step="100" value="0" data-range-output="f2-price-out">
+            <output id="f2-price-out" for="f2-price">от 0 ₽</output>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Раскладка 3 — компактная строка над сеткой карточек -->
+    <div data-filters="3">
+      <div class="filters-panel filters--compact">
+        <div class="field">
+          <label for="f3-name">Имя</label>
+          <input type="text" id="f3-name" name="name" placeholder="Поиск по имени" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="f3-subject">Предмет</label>
+          <select id="f3-subject" name="subject">
+            <option value="">Любой</option>
+            <option>Математика</option>
+            <option>Физика</option>
+            <option>Английский язык</option>
+            <option>Русский язык</option>
+            <option>Химия</option>
+            <option>История</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f3-price">От, ₽</label>
+          <div class="stepper">
+            <button type="button" data-step="-1" aria-label="Уменьшить">−</button>
+            <input type="number" id="f3-price" name="price" min="0" step="100" value="0" style="width:5rem">
+            <button type="button" data-step="1" aria-label="Увеличить">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Демо пустого состояния (R08.1) — статичная витрина, не связана с
+         вводом полей выше; переключается кнопкой ниже только для показа. -->
+    <button type="button" class="empty-toggle" data-empty-toggle>Показать демо: «нет совпадений» ↓</button>
+  </section>
+
+  <!-- ============================================================
+       Сетка карточек + уведомления сбоку
+       ============================================================ -->
+  <section class="wrap section-pad" style="padding-top:0" data-reveal>
+    <div class="catalog-layout">
+
+      <div>
+        <!-- Пустое состояние фильтра — демо-кадр, скрыт по умолчанию -->
+        <div class="catalog-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.3-4.3"/></svg>
+          <p class="catalog-empty__title">Совпадений нет</p>
+          <p>Попробуйте изменить имя, предмет или минимальную стоимость урока.</p>
+          <button type="button" class="btn btn--ghost" data-empty-toggle>Сбросить демо-фильтр</button>
+        </div>
+
+        <div class="card-grid">
+
+          <!-- Карточка 1 -->
+          <article class="tutor-card">
+            <div class="tutor-card__photo"><span class="tutor-card__initials">АС</span></div>
+            <div class="tutor-card__body">
+              <div class="tutor-card__name-row">
+                <h3 class="tutor-card__name">Анна Соколова</h3>
+                <svg class="tutor-card__badge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9.5"/></svg>
+              </div>
+              <span class="tutor-card__tag">Математика</span>
+              <p class="tutor-card__desc">Готовлю к ЕГЭ и олимпиадам, разбираю задачи по шагам.</p>
+              <div class="tutor-card__stats">
+                <span class="tutor-card__stat">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 4h9l4 4v12H6z"/><path d="M9 10h7M9 14h7M9 18h4"/></svg>
+                  24 поста
+                </span>
+                <span class="tutor-card__stat">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="8" r="3"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17.5" cy="9" r="2.3"/><path d="M15.8 14.3c2.7.3 4.7 2.3 4.7 5.2"/></svg>
+                  87 студентов
+                </span>
+              </div>
+              <div class="tutor-card__foot">
+                <a class="btn btn--solid" href="#">Профиль →</a>
+                <button class="btn--icon" type="button" aria-label="Поделиться профилем">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="18" cy="5" r="2.4"/><circle cx="6" cy="12" r="2.4"/><circle cx="18" cy="19" r="2.4"/><path d="M8.1 10.7l7.8-4.4M8.1 13.3l7.8 4.4"/></svg>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Карточка 2 -->
+          <article class="tutor-card">
+            <div class="tutor-card__photo"><span class="tutor-card__initials">ДВ</span></div>
+            <div class="tutor-card__body">
+              <div class="tutor-card__name-row">
+                <h3 class="tutor-card__name">Дмитрий Волков</h3>
+                <svg class="tutor-card__badge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9.5"/></svg>
+              </div>
+              <span class="tutor-card__tag">Физика</span>
+              <p class="tutor-card__desc">Механика и электродинамика без зубрёжки — через опыт и графики.</p>
+              <div class="tutor-card__stats">
+                <span class="tutor-card__stat">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 4h9l4 4v12H6z"/><path d="M9 10h7M9 14h7M9 18h4"/></svg>
+                  18 постов
+                </span>
+                <span class="tutor-card__stat">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="8" r="3"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17.5" cy="9" r="2.3"/><path d="M15.8 14.3c2.7.3 4.7 2.3 4.7 5.2"/></svg>
+                  42 студента
+                </span>
+              </div>
+              <div class="tutor-card__foot">
+                <a class="btn btn--solid" href="#">Профиль →</a>
+                <button class="btn--icon" type="button" aria-label="Поделиться профилем">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="18" cy="5" r="2.4"/><circle cx="6" cy="12" r="2.4"/><circle cx="18" cy="19" r="2.4"/><path d="M8.1 10.7l7.8-4.4M8.1 13.3l7.8 4.4"/></svg>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Карточка 3 -->
+          <article class="tutor-card">
+            <div class="tutor-card__photo"><span class="tutor-card__initials">МЛ</span></div>
+            <div class="tutor-card__body">
+              <div class="tutor-card__name-row">
+                <h3 class="tutor-card__name">Мария Лебедева</h3>
+                <svg class="tutor-card__badge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9.5"/></svg>
+              </div>
+              <span class="tutor-card__tag">Английский язык</span>
+              <p class="tutor-card__desc">Разговорная практика и подготовка к международным экзаменам.</p>
+              <div class="tutor-card__stats">
+                <span class="tutor-card__stat">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 4h9l4 4v12H6z"/><path d="M9 10h7M9 14h7M9 18h4"/></svg>
+                  56 постов
+                </span>
+                <span class="tutor-card__stat">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="8" r="3"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17.5" cy="9" r="2.3"/><path d="M15.8 14.3c2.7.3 4.7 2.3 4.7 5.2"/></svg>
+                  156 студентов
+                </span>
+              </div>
+              <div class="tutor-card__foot">
+                <a class="btn btn--solid" href="#">Профиль →</a>
+                <button class="btn--icon" type="button" aria-label="Поделиться профилем">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="18" cy="5" r="2.4"/><circle cx="6" cy="12" r="2.4"/><circle cx="18" cy="19" r="2.4"/><path d="M8.1 10.7l7.8-4.4M8.1 13.3l7.8 4.4"/></svg>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Карточка 4 — намеренно длинное имя/описание (R09.1) -->
+          <article class="tutor-card">
+            <div class="tutor-card__photo"><span class="tutor-card__initials">ИК</span></div>
+            <div class="tutor-card__body">
+              <div class="tutor-card__name-row">
+                <h3 class="tutor-card__name">Игорь Александрович Кузнецов-Долгопрудный</h3>
+                <svg class="tutor-card__badge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9.5"/></svg>
+              </div>
+              <span class="tutor-card__tag">Русский язык</span>
+              <p class="tutor-card__desc">Готовлю к сочинению и изложению, разбираю ошибки построчно, работаю с текстами любой сложности и стиля.</p>
+              <div class="tutor-card__stats">
+                <span class="tutor-card__stat">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 4h9l4 4v12H6z"/><path d="M9 10h7M9 14h7M9 18h4"/></svg>
+                  8 постов
+                </span>
+                <span class="tutor-card__stat">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="8" r="3"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17.5" cy="9" r="2.3"/><path d="M15.8 14.3c2.7.3 4.7 2.3 4.7 5.2"/></svg>
+                  19 студентов
+                </span>
+              </div>
+              <div class="tutor-card__foot">
+                <a class="btn btn--solid" href="#">Профиль →</a>
+                <button class="btn--icon" type="button" aria-label="Поделиться профилем">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="18" cy="5" r="2.4"/><circle cx="6" cy="12" r="2.4"/><circle cx="18" cy="19" r="2.4"/><path d="M8.1 10.7l7.8-4.4M8.1 13.3l7.8 4.4"/></svg>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Карточка 5 -->
+          <article class="tutor-card">
+            <div class="tutor-card__photo"><span class="tutor-card__initials">ЕМ</span></div>
+            <div class="tutor-card__body">
+              <div class="tutor-card__name-row">
+                <h3 class="tutor-card__name">Екатерина Морозова</h3>
+                <svg class="tutor-card__badge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9.5"/></svg>
+              </div>
+              <span class="tutor-card__tag">Химия</span>
+              <p class="tutor-card__desc">Органика и неорганика на понятных схемах, без сухого учебника.</p>
+              <div class="tutor-card__stats">
+                <span class="tutor-card__stat">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 4h9l4 4v12H6z"/><path d="M9 10h7M9 14h7M9 18h4"/></svg>
+                  33 поста
+                </span>
+                <span class="tutor-card__stat">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="8" r="3"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17.5" cy="9" r="2.3"/><path d="M15.8 14.3c2.7.3 4.7 2.3 4.7 5.2"/></svg>
+                  63 студента
+                </span>
+              </div>
+              <div class="tutor-card__foot">
+                <a class="btn btn--solid" href="#">Профиль →</a>
+                <button class="btn--icon" type="button" aria-label="Поделиться профилем">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="18" cy="5" r="2.4"/><circle cx="6" cy="12" r="2.4"/><circle cx="18" cy="19" r="2.4"/><path d="M8.1 10.7l7.8-4.4M8.1 13.3l7.8 4.4"/></svg>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Карточка 6 -->
+          <article class="tutor-card">
+            <div class="tutor-card__photo"><span class="tutor-card__initials">ПО</span></div>
+            <div class="tutor-card__body">
+              <div class="tutor-card__name-row">
+                <h3 class="tutor-card__name">Павел Орлов</h3>
+                <svg class="tutor-card__badge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9.5"/></svg>
+              </div>
+              <span class="tutor-card__tag">История</span>
+              <p class="tutor-card__desc">Хронология через карты и источники, готовлю к ЕГЭ по истории.</p>
+              <div class="tutor-card__stats">
+                <span class="tutor-card__stat">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 4h9l4 4v12H6z"/><path d="M9 10h7M9 14h7M9 18h4"/></svg>
+                  11 постов
+                </span>
+                <span class="tutor-card__stat">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="8" r="3"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17.5" cy="9" r="2.3"/><path d="M15.8 14.3c2.7.3 4.7 2.3 4.7 5.2"/></svg>
+                  27 студентов
+                </span>
+              </div>
+              <div class="tutor-card__foot">
+                <a class="btn btn--solid" href="#">Профиль →</a>
+                <button class="btn--icon" type="button" aria-label="Поделиться профилем">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="18" cy="5" r="2.4"/><circle cx="6" cy="12" r="2.4"/><circle cx="18" cy="19" r="2.4"/><path d="M8.1 10.7l7.8-4.4M8.1 13.3l7.8 4.4"/></svg>
+                </button>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+
+      <!-- ============================================================
+           Уведомления — тонкая карточка сбоку от каталога
+           ============================================================ -->
+      <aside class="notif-card" aria-label="Уведомления">
+        <div class="notif-card__head">
+          <h2>Уведомления</h2>
+          <a href="#">Прочитать всё</a>
+        </div>
+        <div class="notif-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 3.5c-3.2 0-5.6 2.6-5.6 6v3.6L4.8 16h14.4l-1.6-2.9V9.5c0-3.4-2.4-6-5.6-6z"/><path d="M9.6 19.5a2.4 2.4 0 0 0 4.8 0"/></svg>
+          <p>Уведомлений пока нет</p>
+        </div>
+        <a class="btn btn--ghost btn--sm btn--block" href="#">Смотреть все уведомления</a>
+      </aside>
+
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer-note">
+  <span>GoodWorker — каталог репетиторов, вариант B</span>
+  <span>Дизайн-разведка · не продакшн</span>
+</footer>
+
+<script src="shared/reveal-core.js" defer></script>
+
+<script>
+/* ============================================================
+   Каталог-переключатель — активная ссылка по имени файла.
+   Свой контракт (см. interfaces.md), без scroll-sync лендинга.
+   ============================================================ */
+(function () {
+  'use strict';
+  var file = (location.pathname.split('/').pop() || '').toLowerCase();
+  var links = document.querySelectorAll('nav[data-catalog-switcher] a');
+  for (var i = 0; i < links.length; i++) {
+    var href = (links[i].getAttribute('href') || '').toLowerCase();
+    if (href && file.indexOf(href) !== -1) {
+      links[i].setAttribute('aria-current', 'page');
+    }
+  }
+})();
+</script>
+
+<script>
+/* ============================================================
+   Переключатель раскладок фильтров — data-active-filters на
+   <html>, тот же паттерн, что hero/steps в v3-lab.html, но без
+   localStorage (переключение — только для просмотра в сессии).
+   ============================================================ */
+(function () {
+  'use strict';
+  var html = document.documentElement;
+  html.setAttribute('data-active-filters', '1');
+
+  var buttons = document.querySelectorAll('[data-filters-btn]');
+  for (var i = 0; i < buttons.length; i++) {
+    buttons[i].addEventListener('click', function () {
+      var id = this.getAttribute('data-filters-btn');
+      html.setAttribute('data-active-filters', id);
+      for (var j = 0; j < buttons.length; j++) {
+        buttons[j].setAttribute('aria-pressed', buttons[j] === this ? 'true' : 'false');
+      }
+    });
+  }
+
+  /* чипы предмета (раскладка 2) — визуальный single-select, не влияет на выдачу */
+  var chipGroups = document.querySelectorAll('[data-chip-group]');
+  for (var g = 0; g < chipGroups.length; g++) {
+    chipGroups[g].addEventListener('click', function (e) {
+      var chip = e.target.closest ? e.target.closest('.chip') : null;
+      if (!chip) return;
+      var chips = this.querySelectorAll('.chip');
+      for (var k = 0; k < chips.length; k++) { chips[k].setAttribute('aria-pressed', 'false'); }
+      chip.setAttribute('aria-pressed', 'true');
+    });
+  }
+
+  /* слайдер цены (раскладка 2) — обновляет подпись значения */
+  var range = document.getElementById('f2-price');
+  var out = document.getElementById('f2-price-out');
+  if (range && out) {
+    range.addEventListener('input', function () {
+      out.textContent = 'от ' + this.value + ' ₽';
+    });
+  }
+
+  /* степпер цены (раскладка 3) */
+  var stepButtons = document.querySelectorAll('.stepper [data-step]');
+  for (var s = 0; s < stepButtons.length; s++) {
+    stepButtons[s].addEventListener('click', function () {
+      var input = this.parentElement.querySelector('input[type="number"]');
+      if (!input) return;
+      var step = parseInt(this.getAttribute('data-step'), 10) || 0;
+      var next = (parseInt(input.value, 10) || 0) + step * 100;
+      input.value = Math.max(0, next);
+    });
+  }
+
+  /* демо пустого состояния — статичный кадр, не связан с реальным вводом */
+  var emptyToggles = document.querySelectorAll('[data-empty-toggle]');
+  for (var t = 0; t < emptyToggles.length; t++) {
+    emptyToggles[t].addEventListener('click', function () {
+      var isOn = html.getAttribute('data-demo-empty') === 'true';
+      html.setAttribute('data-demo-empty', isOn ? 'false' : 'true');
+    });
+  }
+})();
+</script>
+
+</body>
+</html>
