@@ -1,31 +1,37 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
 import {
   Tag, Video, FileText, FileUp, MessageSquare,
-  Star, ArrowRight, CheckCircle, Zap, Users, BookOpen,
+  Star, ArrowRight, CheckCircle, Zap, Users, BookOpen, X,
 } from 'lucide-react'
 import Link from 'next/link'
 import styles from './vip.module.scss'
 
 // ── Starfield ──────────────────────────────────────────────
 
-const STARS = Array.from({ length: 80 }, (_, i) => ({
-  id: i,
-  top: Math.random() * 100,
-  left: Math.random() * 100,
-  size: 1 + Math.random() * 2,
-  delay: Math.random() * 6,
-  dur: 2.5 + Math.random() * 3,
-}))
+function makeStars() {
+  return Array.from({ length: 80 }, (_, i) => ({
+    id: i,
+    top: Math.random() * 100,
+    left: Math.random() * 100,
+    size: 1 + Math.random() * 2,
+    delay: Math.random() * 6,
+    dur: 2.5 + Math.random() * 3,
+  }))
+}
 
 function Starfield() {
+  // Random star positions can't be rendered during SSR without mismatching what the client
+  // re-generates on hydration — render nothing until mounted, then fill in client-side.
+  const [stars, setStars] = useState<ReturnType<typeof makeStars>>([])
+  useEffect(() => { setStars(makeStars()) }, [])
+
   return (
     <div className={styles.starfield} aria-hidden>
-      {STARS.map(s => (
+      {stars.map(s => (
         <motion.div
           key={s.id}
           style={{
@@ -123,10 +129,113 @@ const PROMO_ERRORS: Record<string, string> = {
   ALREADY_USED: 'Вы уже использовали этот промокод',
 }
 
+// ── Promo activation form (shared between the inline "How to get VIP" card and the buy modal) ──
+
+interface PromoFormProps {
+  activated: boolean
+  vipUntil: string | null
+  promoCode: string
+  setPromoCode: (v: string) => void
+  promoError: string
+  setPromoError: (v: string) => void
+  loading: boolean
+  onActivate: () => void
+}
+
+function PromoForm({ activated, vipUntil, promoCode, setPromoCode, promoError, setPromoError, loading, onActivate }: PromoFormProps) {
+  if (activated) {
+    return (
+      <div className={styles.successBlock}>
+        <div className={styles.successIconWrap}>
+          <CheckCircle size={20} />
+        </div>
+        <div>
+          <div className={styles.successTitle}>VIP активирован!</div>
+          {vipUntil && <div className={styles.successSub}>Действует до {vipUntil}</div>}
+        </div>
+        <Link href="/create-road-map" className={styles.goBtn}>
+          Создать курс
+          <ArrowRight size={13} />
+        </Link>
+      </div>
+    )
+  }
+  return (
+    <>
+      <div className={styles.promoRow}>
+        <div className={styles.promoInputWrap}>
+          <span className={styles.promoIconWrap}>
+            <Tag size={14} />
+          </span>
+          <input
+            className={`${styles.promoInput} ${promoError ? styles.promoInputError : ''}`}
+            type="text"
+            aria-label="Промокод"
+            aria-invalid={!!promoError}
+            placeholder="Введите промокод"
+            value={promoCode}
+            onChange={e => { setPromoCode(e.target.value.toUpperCase()); setPromoError('') }}
+            onKeyDown={e => e.key === 'Enter' && onActivate()}
+            maxLength={32}
+          />
+        </div>
+        <button className={styles.activateBtn} onClick={onActivate} disabled={loading}>
+          {loading ? <span className={styles.spinner} /> : <Star size={14} />}
+          {loading ? 'Активируем…' : 'Активировать'}
+        </button>
+      </div>
+      {promoError && <p className={styles.promoError}>{promoError}</p>}
+      <p className={styles.promoHint}>Промокоды чувствительны к регистру — вводите заглавными буквами.</p>
+    </>
+  )
+}
+
+// ── Buy modal (placeholder: opens straight to promo activation until real checkout exists) ──
+
+function BuyModal({ open, onClose, ...promoProps }: { open: boolean; onClose: () => void } & PromoFormProps) {
+  useEffect(() => {
+    if (!open) return
+    function onKeydown(e: KeyboardEvent) { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKeydown)
+    document.body.style.setProperty('overflow', 'hidden', 'important')
+    return () => {
+      document.removeEventListener('keydown', onKeydown)
+      document.body.style.removeProperty('overflow')
+    }
+  }, [open, onClose])
+
+  if (!open) return null
+  return (
+    <div className={styles.buyModalBackdrop} onClick={onClose}>
+      <motion.div
+        className={styles.buyModalCard}
+        initial={{ opacity: 0, y: 12, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.2 }}
+        onClick={e => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Купить VIP"
+      >
+        <button className={styles.buyModalClose} onClick={onClose} aria-label="Закрыть">
+          <X size={16} />
+        </button>
+        <div className={styles.buyModalHeader}>
+          <div className={styles.getCardNum}><Star size={14} fill="currentColor" /></div>
+          <div>
+            <p className={styles.getCardTitle}>Активировать промокод</p>
+            <p className={styles.getCardSub}>Оплата картой скоро — пока VIP включается по промокоду</p>
+          </div>
+        </div>
+        <PromoForm {...promoProps} />
+      </motion.div>
+    </div>
+  )
+}
+
 // ── Page ───────────────────────────────────────────────────
 
 export default function VipClientPage() {
-  const router = useRouter()
 
   useEffect(() => {
     document.body.style.setProperty('overflow', 'auto', 'important')
@@ -137,6 +246,7 @@ export default function VipClientPage() {
     }
   }, [])
 
+  const [buyModalOpen, setBuyModalOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [activated, setActivated] = useState(false)
   const [vipUntil, setVipUntil] = useState<string | null>(null)
@@ -180,11 +290,10 @@ export default function VipClientPage() {
 
   return (
     <main className={styles.page}>
+      <Starfield />
 
       {/* ── Hero ── */}
       <section className={styles.hero}>
-        <Starfield />
-
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -212,6 +321,17 @@ export default function VipClientPage() {
         >
           Больше инструментов, больше контента, больше возможностей для монетизации.
         </motion.p>
+
+        <motion.button
+          className={styles.heroBuyBtn}
+          onClick={() => setBuyModalOpen(true)}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <Star size={15} fill="currentColor" />
+          Купить VIP
+        </motion.button>
       </section>
 
       <div className={styles.content}>
@@ -270,46 +390,16 @@ export default function VipClientPage() {
                 </div>
               </div>
               <div className={styles.getCardBody}>
-                {activated ? (
-                  <div className={styles.successBlock}>
-                    <div className={styles.successIconWrap}>
-                      <CheckCircle size={20} />
-                    </div>
-                    <div>
-                      <div className={styles.successTitle}>VIP активирован!</div>
-                      {vipUntil && <div className={styles.successSub}>Действует до {vipUntil}</div>}
-                    </div>
-                    <Link href="/create-road-map" className={styles.goBtn}>
-                      Создать курс
-                      <ArrowRight size={13} />
-                    </Link>
-                  </div>
-                ) : (
-                  <>
-                    <div className={styles.promoRow}>
-                      <div className={styles.promoInputWrap}>
-                        <span className={styles.promoIconWrap}>
-                          <Tag size={14} />
-                        </span>
-                        <input
-                          className={`${styles.promoInput} ${promoError ? styles.promoInputError : ''}`}
-                          type="text"
-                          placeholder="Введите промокод"
-                          value={promoCode}
-                          onChange={e => { setPromoCode(e.target.value.toUpperCase()); setPromoError('') }}
-                          onKeyDown={e => e.key === 'Enter' && handleActivate()}
-                          maxLength={32}
-                        />
-                      </div>
-                      <button className={styles.activateBtn} onClick={handleActivate} disabled={loading}>
-                        {loading ? <span className={styles.spinner} /> : <Star size={14} />}
-                        {loading ? 'Активируем…' : 'Активировать'}
-                      </button>
-                    </div>
-                    {promoError && <p className={styles.promoError}>{promoError}</p>}
-                    <p className={styles.promoHint}>Промокоды чувствительны к регистру — вводите заглавными буквами.</p>
-                  </>
-                )}
+                <PromoForm
+                  activated={activated}
+                  vipUntil={vipUntil}
+                  promoCode={promoCode}
+                  setPromoCode={setPromoCode}
+                  promoError={promoError}
+                  setPromoError={setPromoError}
+                  loading={loading}
+                  onActivate={handleActivate}
+                />
               </div>
             </motion.div>
 
@@ -340,6 +430,19 @@ export default function VipClientPage() {
         </section>
 
       </div>
+
+      <BuyModal
+        open={buyModalOpen}
+        onClose={() => setBuyModalOpen(false)}
+        activated={activated}
+        vipUntil={vipUntil}
+        promoCode={promoCode}
+        setPromoCode={setPromoCode}
+        promoError={promoError}
+        setPromoError={setPromoError}
+        loading={loading}
+        onActivate={handleActivate}
+      />
     </main>
   )
 }

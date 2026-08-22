@@ -28,6 +28,11 @@ function Header() {
 
   const isProfilePage = pathname.startsWith('/profile')
 
+  // PDF → Test landing owns its own site-nav and a tall pinned-scroll hero; the global header
+  // (even though not sticky) still adds to the page's scrollable content and was throwing off
+  // that page's own scroll-position math, so it renders its own nav instead of this one.
+  if (pathname.startsWith('/info-pdf-to-test')) return null
+
   return (
     <header className={styles.wrapper}>
       <NavProgress />

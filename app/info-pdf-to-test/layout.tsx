@@ -1,7 +1,10 @@
 import type { Metadata } from 'next'
-import { Onest } from 'next/font/google'
+import { Archivo, Bodoni_Moda } from 'next/font/google'
 
-const onest = Onest({ subsets: ['latin', 'cyrillic'], weight: ['300', '400', '500', '600', '700', '800'], display: 'swap' })
+// Neither family ships Cyrillic glyphs on Google Fonts — ru/other Cyrillic text falls back to the
+// web-safe stack in the page CSS (Georgia / Helvetica), matching the prototype's fallback design.
+const archivo = Archivo({ subsets: ['latin', 'latin-ext'], weight: ['400', '500', '600', '700'], variable: '--font-archivo', display: 'swap' })
+const bodoni = Bodoni_Moda({ subsets: ['latin', 'latin-ext'], weight: ['400', '500', '700', '900'], style: ['normal', 'italic'], variable: '--font-bodoni', display: 'swap' })
 
 export const metadata: Metadata = {
   title: 'GoodWorker Тесты — PDF в интерактивный тест',
@@ -9,5 +12,5 @@ export const metadata: Metadata = {
 }
 
 export default function PdfInfoLayout({ children }: { children: React.ReactNode }) {
-  return <div className={onest.className} style={{ isolation: 'isolate' }}>{children}</div>
+  return <div className={`${archivo.variable} ${bodoni.variable}`} style={{ isolation: 'isolate' }}>{children}</div>
 }

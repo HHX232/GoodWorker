@@ -1,27 +1,31 @@
 .page {
+  position: relative;
   min-height: 100vh;
   background: #0e0f11;
   font-family: inherit;
 }
 
 // ── Starfield / hero ───────────────────────────────────────
+// Starfield is fixed behind the whole page (not just the hero), so it stays visible as the
+// user scrolls; .hero and .content sit above it at z-index 1 with transparent backgrounds
+// so .page's base color + the stars show through everywhere.
+
+.starfield {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
 
 .hero {
   position: relative;
-  overflow: hidden;
-  background: #0e0f11;
+  z-index: 1;
   padding: 80px 24px 72px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   gap: 20px;
-}
-
-.starfield {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
 }
 
 .heroBadge {
@@ -53,10 +57,32 @@
 .heroSub {
   position: relative;
   font-size: 16px;
-  color: rgba(255,255,255,0.45);
+  color: rgba(255,255,255,0.6);
   line-height: 1.6;
   margin: 0;
   max-width: 440px;
+}
+
+.heroBuyBtn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 48px;
+  padding: 0 28px;
+  border-radius: 12px;
+  background: #fff;
+  color: #0e0f11;
+  font-size: 14.5px;
+  font-weight: 700;
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: opacity 0.15s, transform 0.12s;
+
+  &:hover { opacity: 0.88; }
+  &:active { transform: scale(0.98); }
 }
 
 // ── Divider line between hero and content ──────────────────
@@ -70,6 +96,8 @@
 // ── Main content (dark) ────────────────────────────────────
 
 .content {
+  position: relative;
+  z-index: 1;
   max-width: 900px;
   margin: 0 auto;
   padding: 56px 24px 80px;
@@ -84,7 +112,7 @@
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.1em;
-  color: rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.5);
   text-transform: uppercase;
   margin: 0 0 20px;
 }
@@ -137,7 +165,7 @@
 
 .featureDesc {
   font-size: 12.5px;
-  color: rgba(255,255,255,0.4);
+  color: rgba(255,255,255,0.62);
   margin: 0;
   line-height: 1.5;
 }
@@ -202,7 +230,7 @@
 
 .getCardSub {
   font-size: 12.5px;
-  color: rgba(255,255,255,0.38);
+  color: rgba(255,255,255,0.6);
   margin: 2px 0 0;
 }
 
@@ -230,7 +258,7 @@
 .promoIconWrap {
   position: absolute;
   left: 12px;
-  color: rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.5);
   pointer-events: none;
   display: flex;
 }
@@ -249,7 +277,7 @@
   transition: border-color 0.15s, background 0.15s;
   letter-spacing: 0.06em;
 
-  &::placeholder { color: rgba(255,255,255,0.25); letter-spacing: 0; }
+  &::placeholder { color: rgba(255,255,255,0.5); letter-spacing: 0; }
   &:focus {
     border-color: rgba(255,255,255,0.25);
     background: rgba(255,255,255,0.08);
@@ -269,7 +297,7 @@
 
 .promoHint {
   font-size: 12px;
-  color: rgba(255,255,255,0.25);
+  color: rgba(255,255,255,0.55);
   margin: 8px 0 0;
   line-height: 1.5;
 }
@@ -399,11 +427,11 @@
 
   p {
     font-size: 13px;
-    color: rgba(255,255,255,0.5);
+    color: rgba(255,255,255,0.62);
     margin: 0;
     line-height: 1.55;
 
-    strong { color: rgba(255,255,255,0.75); }
+    strong { color: rgba(255,255,255,0.85); }
   }
 }
 
@@ -419,4 +447,56 @@
   transition: opacity 0.15s;
 
   &:hover { opacity: 0.75; }
+}
+
+// ── Buy modal (placeholder checkout: opens straight to promo activation) ──────
+
+.buyModalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.buyModalCard {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  background: #17181b;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 18px;
+  padding: 28px;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+}
+
+.buyModalClose {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.6);
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover { background: rgba(255,255,255,0.12); color: #fff; }
+}
+
+.buyModalHeader {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 22px;
+  padding-right: 32px;
 }

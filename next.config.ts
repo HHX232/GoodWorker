@@ -6,6 +6,9 @@ const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 const nextConfig: NextConfig = {
   reactCompiler: true,
   output: "standalone",
+  turbopack: {
+    root: __dirname,
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "i.pravatar.cc" },
