@@ -1,0 +1,94 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 12px;
+  color: #868897;
+}
+
+.control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 6px 6px 12px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  background: #fff;
+  transition: border-color 0.18s;
+
+  &:focus-within {
+    border-color: #6366f1;
+  }
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: #141416;
+
+  &::placeholder {
+    color: #bbb;
+  }
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  color: #868897;
+  cursor: pointer;
+  transition: border-color 0.18s, color 0.18s, transform 0.15s;
+
+  &:hover {
+    border-color: #141416;
+    color: #141416;
+  }
+
+  &:active {
+    transform: scale(0.9);
+  }
+
+  svg {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .label { color: rgba(255, 255, 255, 0.4); }
+  .control {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: #1a1c24;
+    &:focus-within {
+      border-color: #818cf8;
+      background: #1e2030;
+    }
+  }
+  .input {
+    color: #e8eaf0;
+    &::placeholder { color: rgba(255, 255, 255, 0.25); }
+  }
+  .btn {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: transparent;
+    color: rgba(255, 255, 255, 0.4);
+    &:hover {
+      border-color: #e8eaf0;
+      color: #e8eaf0;
+    }
+  }
+}

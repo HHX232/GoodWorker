@@ -23,6 +23,7 @@ async function getInitialTeachers() {
         avatarUrl: true,
         isVip: true,
         lastSeenAt: true,
+        bio: true,
         categories: {
           select: {
             category: {
@@ -35,17 +36,26 @@ async function getInitialTeachers() {
           }
         },
         languages: true,
-        _count: {select: {posts: true, students: true}}
+        _count: {select: {posts: true, students: true}},
+        reviews: {select: {stars: true}},
+        services: {select: {price: true, currency: true}, orderBy: {price: 'asc'}, take: 1}
       }
     }),
     prisma.teacher.count()
   ])
 
   return {
-    teachers: teachers.map((t) => ({
-      ...t,
-      lastSeenAt: t.lastSeenAt ? t.lastSeenAt.toISOString() : null
-    })),
+    teachers: teachers.map(({reviews, services, ...t}) => {
+      const cheapest = services[0]
+      return {
+        ...t,
+        lastSeenAt: t.lastSeenAt ? t.lastSeenAt.toISOString() : null,
+        avgRating: reviews.length ? reviews.reduce((sum, r) => sum + r.stars, 0) / reviews.length : null,
+        reviewsCount: reviews.length,
+        minPrice: cheapest?.price ?? null,
+        minPriceCurrency: cheapest?.currency ?? null
+      }
+    }),
     pagination: {
       page: 1,
       limit: PAGE_LIMIT,

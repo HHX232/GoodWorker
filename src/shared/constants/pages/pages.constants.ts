@@ -5,6 +5,6 @@ const PAGES_WITH_TEACHERS = ['/teachers']
 const ONLY_TEACHERS_PAGES = ['/create-road-map', '/create-test', '/create-post']
 const PAGES_CREATE = ['/create-post', '/edit-post', '/create-road-map', '/create-test']
 const PRIVATE_PAGES = ['/profile', '/admin', ...ONLY_TEACHERS_PAGES]
-const PUBLICK_PAGES = ['/login', '/register']
+const PUBLICK_PAGES = ['/login', '/register', '/forgot-password']
 
 export { ONLY_TEACHERS_PAGES, PAGES_CREATE, PAGES_WITH_POSTS, PAGES_WITH_ROAD_MAPS, PAGES_WITH_TEACHERS, PRIVATE_PAGES, PUBLICK_PAGES }

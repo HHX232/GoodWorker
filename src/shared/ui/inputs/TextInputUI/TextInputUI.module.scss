@@ -230,5 +230,8 @@
     }
     .input__title { color: #9ea4b5; }
     .help__title { color: rgba(255,255,255,0.4); }
+    .error__text { color: #ff6b6b; }
+    .error__input__inner__box { border-color: #ff6b6b !important; }
+    .error__input::placeholder { color: #ff6b6b; }
   }
 }

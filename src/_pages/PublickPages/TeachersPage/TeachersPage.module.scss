@@ -59,37 +59,153 @@
 }
 
 .filters {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 20px;
+  background: #fff;
+  border: 1px solid #ececf2;
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(20, 20, 22, 0.06), 0 2px 8px rgba(20, 20, 22, 0.05);
+  margin-bottom: 24px;
 }
 
-.search_input {
-  width: 100%;
-  max-width: 420px;
-  padding: 10px 16px;
+.filters_head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #ececf2;
+}
+
+.filters_title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #141416;
+}
+
+.filters_body {
+  padding: 18px 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.filters_row {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.field {
+  flex: 1 1 220px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field_label {
+  font-size: 12px;
+  color: #868897;
+  letter-spacing: 0.02em;
+}
+
+.field_control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 12px;
   border: 1.5px solid #e0e0e0;
   border-radius: 10px;
-  font-size: 14px;
-  outline: none;
-  background: #fafafa;
+  background: #fff;
   transition: border-color 0.18s;
 
-  &:focus {
-    border-color: #6366f1;
-    background: #fff;
+  svg {
+    width: 15px;
+    height: 15px;
+    color: #868897;
+    flex-shrink: 0;
   }
+
+  &:focus-within {
+    border-color: #6366f1;
+  }
+}
+
+.field_input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: #141416;
 
   &::placeholder {
     color: #bbb;
   }
 }
 
+.languages_row {
+  padding-top: 18px;
+  border-top: 1px solid #ececf2;
+}
+
+.reset_btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px 8px 10px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #868897;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease;
+
+  &:hover {
+    color: #fff;
+    background-color: #141416;
+  }
+}
+
+.reset_icon {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.reset_icon svg {
+  position: absolute;
+  inset: 0;
+  width: 14px;
+  height: 14px;
+  transition: opacity 0.22s ease, transform 0.28s ease;
+}
+
+.reset_icon_hover {
+  opacity: 0;
+  transform: scale(0.55) rotate(-40deg);
+}
+
+.reset_btn:hover .reset_icon_default {
+  opacity: 0;
+  transform: scale(0.55) rotate(40deg);
+}
+
+.reset_btn:hover .reset_icon_hover {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.4rem;
   width: 100%;
 
   @media (max-width: 500px) {
@@ -138,15 +254,34 @@
 :global(html.theme-dark), :global(html.pomodoro-dark) {
   .title_box h1 { color: #e8eaf0; }
   .decor_line { background: rgba(255,255,255,0.07); }
-  .search_input {
+  .filters {
+    background: #141620;
+    border-color: rgba(255,255,255,0.08);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  }
+  .filters_head { border-bottom-color: rgba(255,255,255,0.08); }
+  .filters_title { color: #e8eaf0; }
+  .languages_row { border-top-color: rgba(255,255,255,0.08); }
+  .field_label { color: rgba(255,255,255,0.4); }
+  .field_control {
     border-color: rgba(255,255,255,0.1);
     background: #1a1c24;
-    color: #e8eaf0;
-    &:focus {
+    svg { color: rgba(255,255,255,0.35); }
+    &:focus-within {
       border-color: #818cf8;
       background: #1e2030;
     }
+  }
+  .field_input {
+    color: #e8eaf0;
     &::placeholder { color: rgba(255,255,255,0.25); }
+  }
+  .reset_btn {
+    color: rgba(255,255,255,0.45);
+    &:hover {
+      color: #141420;
+      background-color: #e8eaf0;
+    }
   }
   .skeleton {
     background: linear-gradient(90deg, #1e2030 25%, #252838 50%, #1e2030 75%);

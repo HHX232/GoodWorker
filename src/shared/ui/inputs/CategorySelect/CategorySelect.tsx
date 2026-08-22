@@ -68,6 +68,14 @@ export function CategorySelect({
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
   const rootRef = useRef<HTMLDivElement>(null)
 
+  useEffect(() => {
+    if (!open) return
+    const id = requestAnimationFrame(() => {
+      rootRef.current?.scrollIntoView({block: 'nearest', behavior: 'smooth'})
+    })
+    return () => cancelAnimationFrame(id)
+  }, [open])
+
   const {data: allCategories = [], isLoading} = useCategories(activeLang)
   const categories = maxLevel ? allCategories.filter((c) => c.levelNumber <= maxLevel) : allCategories
 
@@ -185,6 +193,7 @@ export function CategorySelect({
 
   return (
     <div className={styles.root} ref={rootRef}>
+      {open && <div className={styles.scrim} onClick={() => setOpen(false)} aria-hidden='true' />}
       <button
         type='button'
         className={`${styles.trigger} ${open ? styles.trigger_open : ''}`}

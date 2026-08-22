@@ -12,17 +12,21 @@ export default function LoginPage() {
   const t = useTranslations('auth2.login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [emailError, setEmailError] = useState('')
+  const [passwordError, setPasswordError] = useState('')
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit() {
+    let hasError = false
     if (!email.trim()) {
-      toast.error(t('emailRequired'))
-      return
+      setEmailError(t('emailRequired'))
+      hasError = true
     }
     if (password.length < 6) {
-      toast.error(t('passwordMin'))
-      return
+      setPasswordError(t('passwordMin'))
+      hasError = true
     }
+    if (hasError) return
 
     setLoading(true)
     try {
@@ -33,7 +37,7 @@ export default function LoginPage() {
       })
 
       if (res?.error) {
-        toast.error(t('invalidCredentials'))
+        setPasswordError(t('invalidCredentials'))
       } else {
         toast.success(t('successLogin'))
         window.location.href = '/'
@@ -59,16 +63,25 @@ export default function LoginPage() {
             theme='newWhite'
             placeholder={t('emailPlaceholder')}
             currentValue={email}
-            onSetValue={setEmail}
+            onSetValue={(v) => { setEmail(v); if (emailError) setEmailError('') }}
+            autoComplete='email'
+            errorValue={emailError}
           />
           <TextInputUI
             helpTitle={t('fieldPassword')}
             theme='newWhite'
             placeholder={t('passwordPlaceholder')}
             currentValue={password}
-            onSetValue={setPassword}
+            onSetValue={(v) => { setPassword(v); if (passwordError) setPasswordError('') }}
             isSecret
+            autoComplete='current-password'
+            errorValue={passwordError}
           />
+          <div className={styles.forgotRow}>
+            <Link href='/forgot-password' className={styles.forgotLink}>
+              {t('forgotPassword')}
+            </Link>
+          </div>
         </div>
 
         <button

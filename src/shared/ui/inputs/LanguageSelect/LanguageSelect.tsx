@@ -34,6 +34,12 @@ interface Props {
   label?: string
 }
 
+const CheckIcon = () => (
+  <svg className={styles.check} width='13' height='13' viewBox='0 0 14 14' fill='none'>
+    <path d='M3 7.3L5.6 10L11 4.3' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round' />
+  </svg>
+)
+
 const LanguageSelect: FC<Props> = ({ value, onChange, label = 'Языки преподавания' }) => {
   const toggle = (code: string) => {
     onChange(
@@ -46,18 +52,21 @@ const LanguageSelect: FC<Props> = ({ value, onChange, label = 'Языки пре
   return (
     <div className={styles.wrapper}>
       {label && <label className={styles.label}>{label}</label>}
-      <div className={styles.grid}>
+      <div className={styles.grid} role='group' aria-label={label}>
         {TEACHER_LANGUAGES.map((lang) => {
           const selected = value.includes(lang.code)
           return (
             <button
               key={lang.code}
               type="button"
+              role="checkbox"
+              aria-checked={selected}
               className={`${styles.chip} ${selected ? styles.selected : ''}`}
               onClick={() => toggle(lang.code)}
             >
-              <FlagIcon code={lang.flag} width={20} />
+              <FlagIcon code={lang.flag} width={18} className={styles.flagIcon} />
               <span className={styles.native}>{lang.native}</span>
+              {selected && <CheckIcon />}
             </button>
           )
         })}

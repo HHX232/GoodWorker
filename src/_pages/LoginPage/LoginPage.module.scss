@@ -87,6 +87,23 @@
   margin-bottom: 20px;
 }
 
+.forgotRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -6px;
+}
+
+.forgotLink {
+  font-size: 13px;
+  color: #0a0c12;
+  font-weight: 500;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 .categoriesBlock {
   margin-bottom: 20px;
 }
@@ -220,13 +237,13 @@
 
   .title { color: #e8eaf0; }
   .subtitle {
-    color: rgba(255,255,255,0.4);
+    color: rgba(255,255,255,0.5);
     strong { color: #e8eaf0; }
   }
 
   .roleTab {
     border-color: rgba(255,255,255,0.12);
-    color: rgba(255,255,255,0.45);
+    color: rgba(255,255,255,0.5);
     &:hover { background: rgba(255,255,255,0.07); }
     &.active {
       border-color: #818cf8;
@@ -241,12 +258,13 @@
     &:disabled { opacity: 0.3; }
   }
 
-  .hint { color: rgba(255,255,255,0.35); }
+  .hint { color: rgba(255,255,255,0.5); }
   .link { color: #818cf8; }
-  .resendHint { color: rgba(255,255,255,0.3); }
+  .forgotLink { color: #818cf8; }
+  .resendHint { color: rgba(255,255,255,0.5); }
   .resendBtn { color: #818cf8; }
   .backBtn {
-    color: rgba(255,255,255,0.35);
+    color: rgba(255,255,255,0.5);
     &:hover { color: #e8eaf0; }
   }
 }

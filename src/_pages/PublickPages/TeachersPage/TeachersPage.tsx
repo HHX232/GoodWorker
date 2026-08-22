@@ -2,6 +2,8 @@
 
 import TeacherService, {ITeacherListItem, ITeachersQuery, ITeachersResponse} from '@/features/services/TeacherService.service'
 import {CategorySelect} from '@/shared/ui/inputs/CategorySelect/CategorySelect'
+import LanguageSelect from '@/shared/ui/inputs/LanguageSelect/LanguageSelect'
+import {PriceStepperUI} from '@/shared/ui/inputs/PriceStepperUI/PriceStepperUI'
 import TeacherCard from '@/shared/ui/Teacher/TeacherCard/TeacherCard'
 import {NavBar} from '@/widgets/BaseUI'
 import {NotificationsPanel} from '@/widgets/NotificationsPanel/NotificationsPanel'
@@ -39,6 +41,8 @@ function TeachersPage({initialData}: Props) {
 
   const [search, setSearch] = useState(searchParams.get('q') ?? '')
   const [categoryIds, setCategoryIds] = useState<string[]>([])
+  const [languages, setLanguages] = useState<string[]>([])
+  const [minPrice, setMinPrice] = useState(0)
 
   const sentinelRef = useRef<HTMLDivElement>(null)
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -69,7 +73,9 @@ function TeachersPage({initialData}: Props) {
       const query: ITeachersQuery = {
         page: 1,
         search: search || undefined,
-        categoryId: categoryIds[0] ?? undefined
+        categoryId: categoryIds[0] ?? undefined,
+        languages: languages.length ? languages : undefined,
+        minPrice: minPrice > 0 ? minPrice : undefined
       }
       currentQuery.current = query
       fetchTeachers(query, false)
@@ -78,7 +84,14 @@ function TeachersPage({initialData}: Props) {
     return () => {
       if (searchTimer.current) clearTimeout(searchTimer.current)
     }
-  }, [search, categoryIds, fetchTeachers])
+  }, [search, categoryIds, languages, minPrice, fetchTeachers])
+
+  const handleResetFilters = useCallback(() => {
+    setSearch('')
+    setCategoryIds([])
+    setLanguages([])
+    setMinPrice(0)
+  }, [])
 
   const loadMore = useCallback(async () => {
     if (isLoading || !canLoadMore) return
@@ -112,21 +125,54 @@ function TeachersPage({initialData}: Props) {
           <div className={styles.decor_line} />
         </div>
 
-        <div className={styles.filters}>
-          <input
-            className={styles.search_input}
-            type='text'
-            placeholder={t('searchPlaceholder')}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <CategorySelect
-            placeholder={t('categoryPlaceholder')}
-            canSelectMany={false}
-            value={categoryIds}
-            onChange={setCategoryIds}
-          />
-        </div>
+        <section className={styles.filters} aria-label={t('filtersTitle')}>
+          <div className={styles.filters_head}>
+            <p className={styles.filters_title}>{t('filtersTitle')}</p>
+            <button type='button' className={styles.reset_btn} onClick={handleResetFilters}>
+              <span className={styles.reset_icon}>
+                <svg className={styles.reset_icon_default} viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'><path d='M3 12a9 9 0 1 0 3-6.7' /><path d='M3 4v5h5' /></svg>
+                <svg className={styles.reset_icon_hover} viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.2' strokeLinecap='round' strokeLinejoin='round'><path d='M4 12l5 5L20 6' /></svg>
+              </span>
+              {t('resetFilters')}
+            </button>
+          </div>
+
+          <div className={styles.filters_body}>
+            <div className={styles.filters_row}>
+              <label className={styles.field}>
+                <span className={styles.field_label}>{t('nameFieldLabel')}</span>
+                <span className={styles.field_control}>
+                  <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.6' strokeLinecap='round' strokeLinejoin='round'><circle cx='11' cy='11' r='7' /><path d='M20 20l-3.2-3.2' /></svg>
+                  <input
+                    className={styles.field_input}
+                    type='text'
+                    placeholder={t('searchPlaceholder')}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </span>
+              </label>
+
+              <div className={styles.field}>
+                <span className={styles.field_label}>{t('subjectFieldLabel')}</span>
+                <CategorySelect
+                  placeholder={t('categoryPlaceholder')}
+                  canSelectMany={false}
+                  value={categoryIds}
+                  onChange={setCategoryIds}
+                />
+              </div>
+
+              <div className={styles.field}>
+                <PriceStepperUI label={t('minPriceLabel')} value={minPrice} onChange={setMinPrice} />
+              </div>
+            </div>
+
+            <div className={styles.languages_row}>
+              <LanguageSelect value={languages} onChange={setLanguages} label={t('languagesLabel')} />
+            </div>
+          </div>
+        </section>
 
         <div className={styles.grid}>
           {teachers.map((teacher) => (

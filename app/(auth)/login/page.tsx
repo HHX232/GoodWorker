@@ -1,5 +1,4 @@
 import LoginPage from '@/_pages/LoginPage/LoginPage'
-import {DottedSurface} from '@/shared/ui/DottedSurface/DottedSurface'
 
 import { getTranslations } from 'next-intl/server'
 import type { Metadata } from 'next'
@@ -10,10 +9,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function page() {
-  return (
-    <>
-      <DottedSurface />
-      <LoginPage />
-    </>
-  )
+  return <LoginPage />
 }

@@ -48,6 +48,20 @@ export async function POST(req: NextRequest) {
     const resolvedTargetId = reportedUserId ?? targetId
     const resolvedTargetType = reportedUserId ? 'USER' : (targetType ?? (roadmapId ? 'ROADMAP_NODE' : 'POST'))
 
+    // A reported user can be a student or a teacher — look up which table the id
+    // actually belongs to instead of assuming "student" (the previous behaviour),
+    // so a complaint about a teacher lands on Complaint.teacherId, not studentId.
+    let reportedStudentId: string | null = null
+    let reportedTeacherId: string | null = null
+    if (reportedUserId) {
+      const [student, teacher] = await Promise.all([
+        prisma.student.findUnique({ where: { id: reportedUserId }, select: { id: true } }),
+        prisma.teacher.findUnique({ where: { id: reportedUserId }, select: { id: true } }),
+      ])
+      reportedStudentId = student ? reportedUserId : null
+      reportedTeacherId = teacher ? reportedUserId : null
+    }
+
     const complaint = await prisma.complaint.create({
       data: {
         reporterId: session.user.id,
@@ -57,7 +71,8 @@ export async function POST(req: NextRequest) {
         text: text.trim(),
         roadmapId: roadmapId ?? null,
         postId: postId ?? null,
-        studentId: reportedUserId ?? null,
+        studentId: reportedStudentId,
+        teacherId: reportedTeacherId,
         status: 'pending',
       },
     })

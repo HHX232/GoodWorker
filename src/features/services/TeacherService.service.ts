@@ -15,9 +15,14 @@ export interface ITeacherListItem {
   avatarUrl: string | null
   isVip: boolean
   lastSeenAt: string | null
+  bio: string | null
   languages: string[]
   categories: ITeacherCategory[]
   _count: {posts: number; students: number}
+  avgRating: number | null
+  reviewsCount: number
+  minPrice: number | null
+  minPriceCurrency: string | null
 }
 
 export interface ITeachersQuery {
@@ -25,6 +30,8 @@ export interface ITeachersQuery {
   limit?: number
   search?: string
   categoryId?: string
+  languages?: string[]
+  minPrice?: number
 }
 
 export interface ITeachersResponse {
@@ -44,6 +51,10 @@ const TeacherService = {
     if (query.limit) params.set('limit', String(query.limit))
     if (query.search) params.set('search', query.search)
     if (query.categoryId) params.set('categoryId', query.categoryId)
+    if (query.languages) {
+      for (const lang of query.languages) params.append('languages', lang)
+    }
+    if (query.minPrice) params.set('minPrice', String(query.minPrice))
     const response = await instance.get<ITeachersResponse>(`/teachers?${params.toString()}`)
     return response.data
   }
