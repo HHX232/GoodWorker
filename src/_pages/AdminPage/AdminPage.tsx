@@ -761,6 +761,80 @@ interface VipUsageItem {
   student: { name: string; email: string } | null
 }
 
+function ReferralSettingsCard() {
+  const [rewardDays, setRewardDays] = useState('14')
+  const [maxFreeInvites, setMaxFreeInvites] = useState('0')
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/admin/referral-settings')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data) {
+          setRewardDays(String(data.rewardDays))
+          setMaxFreeInvites(String(data.maxFreeInvites))
+        }
+      })
+      .finally(() => setLoading(false))
+  }, [])
+
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      const res = await fetch('/api/admin/referral-settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rewardDays: Number(rewardDays), maxFreeInvites: Number(maxFreeInvites) }),
+      })
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error) }
+      toast.success('Настройки реферальной программы сохранены')
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Не удалось сохранить настройки')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (loading) return <div className={styles.skeleton} />
+
+  return (
+    <div className={styles.promo_form} style={{ marginBottom: 20 }}>
+      <h3 className={styles.promo_section_title} style={{ marginBottom: 12 }}>Реферальная программа</h3>
+
+      <div className={styles.promo_form_row}>
+        <label className={styles.notif_label}>Дней VIP за приглашённого друга (обеим сторонам)</label>
+        <input
+          className={styles.notif_input}
+          type="number"
+          min="1"
+          value={rewardDays}
+          onChange={e => setRewardDays(e.target.value)}
+        />
+      </div>
+
+      <div className={styles.promo_form_row}>
+        <label className={styles.notif_label}>
+          Лимит бесплатных приглашений на пользователя <span className={styles.notif_optional}>0 = без лимита</span>
+        </label>
+        <input
+          className={styles.notif_input}
+          type="number"
+          min="0"
+          value={maxFreeInvites}
+          onChange={e => setMaxFreeInvites(e.target.value)}
+        />
+      </div>
+
+      <div className={styles.notif_actions}>
+        <button className={styles.send_btn} onClick={handleSave} disabled={saving}>
+          {saving ? 'Сохранение…' : 'Сохранить'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function PromoCodesTab() {
   const t = useTranslations('admin')
   const [codes, setCodes] = useState<PromoCodeItem[]>([])
@@ -883,6 +957,8 @@ function PromoCodesTab() {
 
   return (
     <div className={styles.tab_content}>
+      <ReferralSettingsCard />
+
       <div className={styles.promo_header}>
         <h3 className={styles.promo_section_title}>{t('promoHeading')}</h3>
         <button className={styles.create_promo_btn} onClick={() => setShowForm(p => !p)}>

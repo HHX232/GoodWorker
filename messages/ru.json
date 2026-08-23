@@ -54,7 +54,8 @@
     "games": "Игры",
     "pomodoro": "Помодоро",
     "videoCall": "Видеозвонок",
-    "posts": "Посты"
+    "posts": "Посты",
+    "vip": "VIP"
   },
   "CreateTestPage": {
     "title": "Создать тест",
@@ -2114,6 +2115,7 @@
     "sub_posts": "Посты",
     "sub_courses": "Курсы",
     "sub_support": "Поддержка",
+    "sub_vip": "VIP",
     "btn_create": "Создать курс",
     "btn_create_post": "Создать пост",
     "btn_find_teacher": "Найти учителя",

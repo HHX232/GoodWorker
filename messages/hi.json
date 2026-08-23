@@ -54,7 +54,8 @@
     "games": "गेम्स",
     "pomodoro": "पोमोडोरो",
     "videoCall": "वीडियो कॉल",
-    "posts": "पोस्ट"
+    "posts": "पोस्ट",
+    "vip": "VIP"
   },
   "CreateTestPage": {
     "title": "टेस्ट बनाएं",
@@ -1934,6 +1935,7 @@
     "sub_posts": "पोस्ट",
     "sub_courses": "कोर्स",
     "sub_support": "सहायता",
+    "sub_vip": "VIP",
     "btn_create": "कोर्स बनाएं",
     "btn_create_post": "पोस्ट बनाएं",
     "btn_find_teacher": "शिक्षक खोजें",

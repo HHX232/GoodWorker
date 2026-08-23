@@ -54,7 +54,8 @@
     "games": "Games",
     "pomodoro": "Pomodoro",
     "videoCall": "Video call",
-    "posts": "Posts"
+    "posts": "Posts",
+    "vip": "VIP"
   },
   "CreateTestPage": {
     "title": "Create Test",
@@ -2114,6 +2115,7 @@
     "sub_posts": "Posts",
     "sub_courses": "Courses",
     "sub_support": "Support",
+    "sub_vip": "VIP",
     "btn_create": "Create course",
     "btn_create_post": "Create post",
     "btn_find_teacher": "Find a teacher",

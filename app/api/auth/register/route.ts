@@ -1,5 +1,6 @@
 import { langFromRequest } from '@/features/helpers/langCodeFromHeader'
 import { applyPromoCode } from '@/lib/applyPromoCode'
+import { applyReferralCode } from '@/lib/applyReferralCode'
 import { hasAIProvider } from '@/lib/openrouter'
 import { refineNameTransliterationWithAI } from '@/lib/postAI'
 import { generateOtp, saveOtp, sendOtp, verifyOtp } from '@/shared/api/otp'
@@ -186,7 +187,15 @@ const sendUserSchema = z
       promoResult = await applyPromoCode(user.id, userRole, promoCode).catch(() => null)
     }
 
-    return NextResponse.json({ ...user, promoResult }, { status: 201 })
+    // Apply referral code silently if provided — registration always succeeds regardless
+    const referralCode: string | undefined = body.referralCode?.trim()
+    let referralResult = null
+    if (referralCode && user) {
+      const userRole = body.userType === 'Teacher' ? 'TEACHER' : 'STUDENT'
+      referralResult = await applyReferralCode(user.id, userRole, referralCode).catch(() => null)
+    }
+
+    return NextResponse.json({ ...user, promoResult, referralResult }, { status: 201 })
 
   } catch (e) {
     console.error('VERIFY ERROR:', e)

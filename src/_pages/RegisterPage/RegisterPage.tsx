@@ -7,7 +7,7 @@ import { signIn } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import styles from './RegisterPage.module.scss'
 
@@ -41,6 +41,18 @@ export default function RegisterPage() {
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(['ru'])
   const [agreeConsent, setAgreeConsent] = useState(false)
   const [promoCode, setPromoCode] = useState('')
+  const [referralCode, setReferralCode] = useState('')
+  const [referredBanner, setReferredBanner] = useState(false)
+
+  useEffect(() => {
+    try {
+      const ref = new URLSearchParams(window.location.search).get('ref')
+      if (ref) {
+        setReferralCode(ref.toUpperCase())
+        setReferredBanner(true)
+      }
+    } catch {}
+  }, [])
 
   function validateBasicFields() {
     let ok = true
@@ -129,7 +141,8 @@ export default function RegisterPage() {
           password,
           langCode: 'ru',
           ...(role === 'Teacher' ? {categoryIds: selectedCategories, languages: selectedLanguages} : {}),
-          ...(promoCode.trim() ? {promoCode: promoCode.trim().toUpperCase()} : {})
+          ...(promoCode.trim() ? {promoCode: promoCode.trim().toUpperCase()} : {}),
+          ...(referralCode.trim() ? {referralCode: referralCode.trim().toUpperCase()} : {})
         })
       })
       const data = await res.json()
@@ -145,6 +158,9 @@ export default function RegisterPage() {
       if (data.promoResult?.success) {
         const until = new Date(data.promoResult.vipUntil).toLocaleDateString()
         toast.success(t('promoSuccess', {date: until}), {duration: 6000})
+      }
+      if (data.referralResult?.success) {
+        toast.success(`Вы и пригласивший друг получили по ${data.referralResult.rewardDays} дней VIP бесплатно!`, {duration: 6000})
       }
       router.push('/')
     } catch {
@@ -168,6 +184,12 @@ export default function RegisterPage() {
                   <BackArrowIcon />
                   {t('back')}
                 </button>
+              )}
+
+              {referredBanner && !isTeacherProfileStep && (
+                <div className={styles.referralBanner}>
+                  Вас пригласил друг — зарегистрируйтесь и получите бесплатный VIP
+                </div>
               )}
 
               <div className={styles.header}>

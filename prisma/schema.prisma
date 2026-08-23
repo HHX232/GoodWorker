@@ -55,6 +55,7 @@ model Student {
   supportRequests        SupportRequest[]
   feedbackPromoGiven     Boolean          @default(false)
   homeworkAssignments    HomeworkAssignment[]
+  referralCode           String?          @unique
 }
 
 model Teacher {
@@ -100,6 +101,7 @@ model Teacher {
   supportRequests     SupportRequest[]
   serviceLabels       String[]            @default([])
   feedbackPromoGiven  Boolean             @default(false)
+  referralCode        String?             @unique
 }
 
 model TeacherExperience {
@@ -686,6 +688,28 @@ model PromoCode {
   transactions    VipTransaction[]
 }
 
+model Referral {
+  id                String   @id @default(uuid())
+  referrerTeacherId String?
+  referrerStudentId String?
+  referrerRole      Role
+  referredTeacherId String?  @unique
+  referredStudentId String?  @unique
+  referredRole      Role
+  rewardDays        Int
+  createdAt         DateTime @default(now())
+
+  @@index([referrerTeacherId])
+  @@index([referrerStudentId])
+}
+
+model ReferralSettings {
+  id             String   @id @default("global")
+  rewardDays     Int      @default(14)
+  maxFreeInvites Int      @default(0)
+  updatedAt      DateTime @updatedAt
+}
+
 model VipTransaction {
   id              String          @id @default(uuid())
   teacherId       String?
@@ -720,6 +744,7 @@ enum TransactionType {
   VIP_PURCHASE
   VIP_PROMO
   DEPOSIT
+  REFERRAL
 }
 
 enum PostVisibility {

@@ -262,6 +262,30 @@ export function tplBookingCancelled(serviceName: string): NotifContent {
   )
 }
 
+export function tplReferralReward(rewardDays: number): NotifContent {
+  return mk(
+    { ru: 'Друг зарегистрировался по вашей ссылке', en: 'A friend joined via your link', hi: 'एक दोस्त आपके लिंक से जुड़ा', zh: '好友通过您的链接注册' },
+    {
+      ru: `Вы получили +${rewardDays} дн. VIP бесплатно`,
+      en: `You received +${rewardDays} days of VIP for free`,
+      hi: `आपको +${rewardDays} दिन का VIP मुफ़्त मिला`,
+      zh: `您免费获得了 ${rewardDays} 天 VIP`,
+    },
+  )
+}
+
+export function tplReferralWelcome(rewardDays: number): NotifContent {
+  return mk(
+    { ru: 'Добро пожаловать! Вам начислен VIP', en: 'Welcome! VIP granted', hi: 'स्वागत है! VIP मिला', zh: '欢迎！已获得 VIP' },
+    {
+      ru: `Вы зарегистрировались по реферальной ссылке и получили +${rewardDays} дн. VIP бесплатно`,
+      en: `You registered via a referral link and received +${rewardDays} days of VIP for free`,
+      hi: `आपने रेफ़रल लिंक से पंजीकरण किया और आपको +${rewardDays} दिन का VIP मुफ़्त मिला`,
+      zh: `您通过推荐链接注册，免费获得了 ${rewardDays} 天 VIP`,
+    },
+  )
+}
+
 export function tplHomeworkAssigned(hwTitle: string, dueAt?: string | null): NotifContent {
   const due = dueAt
     ? new Date(dueAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })

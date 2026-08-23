@@ -54,7 +54,8 @@
     "games": "游戏",
     "pomodoro": "番茄钟",
     "videoCall": "视频通话",
-    "posts": "帖子"
+    "posts": "帖子",
+    "vip": "VIP"
   },
   "CreateTestPage": {
     "title": "创建测试",
@@ -1935,6 +1936,7 @@
     "sub_posts": "帖子",
     "sub_courses": "课程",
     "sub_support": "支持",
+    "sub_vip": "VIP",
     "btn_create": "创建课程",
     "btn_create_post": "创建帖子",
     "btn_find_teacher": "找教师",

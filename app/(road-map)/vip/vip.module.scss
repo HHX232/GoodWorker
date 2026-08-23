@@ -85,6 +85,21 @@
   &:active { transform: scale(0.98); }
 }
 
+.heroFreeBtn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fbbf24;
+  text-decoration: none;
+  padding: 4px 2px;
+  transition: opacity 0.15s;
+
+  &:hover { opacity: 0.75; }
+}
+
 // ── Divider line between hero and content ──────────────────
 
 .divider {

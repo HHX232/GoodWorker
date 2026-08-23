@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
+import { useSession } from 'next-auth/react'
 import {
   Tag, Video, FileText, FileUp, MessageSquare,
-  Star, ArrowRight, CheckCircle, Zap, Users, BookOpen, X,
+  Star, ArrowRight, CheckCircle, Zap, Users, BookOpen, X, Copy, Gift,
 } from 'lucide-react'
 import Link from 'next/link'
 import styles from './vip.module.scss'
@@ -190,6 +191,116 @@ function PromoForm({ activated, vipUntil, promoCode, setPromoCode, promoError, s
   )
 }
 
+// ── Referral card (invite friends → free VIP for both sides) ──
+
+interface ReferralData {
+  link: string
+  rewardDays: number
+  isUnlimited: boolean
+  maxFreeInvites: number
+  invitesUsed: number
+  remaining: number | null
+}
+
+function ReferralCard() {
+  const { status } = useSession()
+  const [data, setData] = useState<ReferralData | null>(null)
+  const [loadFailed, setLoadFailed] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    if (status !== 'authenticated') return
+    let cancelled = false
+    fetch('/api/referral/me')
+      .then(res => { if (!res.ok) throw new Error('failed'); return res.json() })
+      .then(json => { if (!cancelled) setData(json) })
+      .catch(() => { if (!cancelled) setLoadFailed(true) })
+    return () => { cancelled = true }
+  }, [status])
+
+  async function handleCopy() {
+    if (!data) return
+    try {
+      await navigator.clipboard.writeText(data.link)
+    } catch {
+      const ta = document.createElement('textarea')
+      ta.value = data.link
+      document.body.appendChild(ta)
+      ta.select()
+      try { document.execCommand('copy') } catch {}
+      document.body.removeChild(ta)
+    }
+    setCopied(true)
+    toast.success('Ссылка скопирована')
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <motion.div
+      id="referral-card"
+      className={styles.getCard}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.4, delay: 0.05 }}
+    >
+      <div className={styles.getCardHeader}>
+        <div className={styles.getCardNum}><Gift size={14} /></div>
+        <div>
+          <p className={styles.getCardTitle}>Получить бесплатный VIP — позвать друзей</p>
+          <p className={styles.getCardSub}>
+            {status === 'authenticated' && data
+              ? `Друг регистрируется по вашей ссылке — вы получаете +${data.rewardDays} дн. VIP, и друг тоже`
+              : 'Пригласите друга по личной ссылке — бонус получите оба'}
+          </p>
+        </div>
+      </div>
+      <div className={styles.getCardBody}>
+        {status === 'loading' && <p className={styles.promoHint}>Загрузка…</p>}
+
+        {status === 'unauthenticated' && (
+          <p className={styles.promoHint}>
+            <Link href="/login" className={styles.freeHintLink}>Войдите в аккаунт</Link>
+            {' '}чтобы получить свою реферальную ссылку.
+          </p>
+        )}
+
+        {status === 'authenticated' && loadFailed && (
+          <p className={styles.promoError}>Не удалось загрузить реферальную ссылку. Попробуйте позже.</p>
+        )}
+
+        {status === 'authenticated' && data && (
+          <>
+            <div className={styles.promoRow}>
+              <div className={styles.promoInputWrap}>
+                <span className={styles.promoIconWrap}>
+                  <Users size={14} />
+                </span>
+                <input
+                  className={styles.promoInput}
+                  type="text"
+                  aria-label="Реферальная ссылка"
+                  readOnly
+                  value={data.link}
+                  onFocus={e => e.currentTarget.select()}
+                />
+              </div>
+              <button className={styles.activateBtn} onClick={handleCopy}>
+                {copied ? <CheckCircle size={14} /> : <Copy size={14} />}
+                {copied ? 'Скопировано' : 'Копировать'}
+              </button>
+            </div>
+            <p className={styles.promoHint}>
+              Приглашено по ссылке: {data.invitesUsed}
+              {data.isUnlimited ? ' · без лимита' : ` из ${data.maxFreeInvites}`}
+            </p>
+          </>
+        )}
+      </div>
+    </motion.div>
+  )
+}
+
 // ── Buy modal (placeholder: opens straight to promo activation until real checkout exists) ──
 
 function BuyModal({ open, onClose, ...promoProps }: { open: boolean; onClose: () => void } & PromoFormProps) {
@@ -332,6 +443,17 @@ export default function VipClientPage() {
           <Star size={15} fill="currentColor" />
           Купить VIP
         </motion.button>
+
+        <motion.a
+          href="#referral-card"
+          className={styles.heroFreeBtn}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.38 }}
+        >
+          <Gift size={14} />
+          Получить бесплатный VIP — позвать друзей
+        </motion.a>
       </section>
 
       <div className={styles.content}>
@@ -402,6 +524,8 @@ export default function VipClientPage() {
                 />
               </div>
             </motion.div>
+
+            <ReferralCard />
 
             {/* Free hint: first feedback */}
             <motion.div

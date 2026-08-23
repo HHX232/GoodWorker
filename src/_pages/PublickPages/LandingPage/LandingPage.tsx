@@ -1180,6 +1180,7 @@ function SubNav() {
     { label: t('sub_posts'),    href: '/posts' },
     { label: t('sub_courses'),  href: '/workflows-list' },
     { label: t('sub_support'),  href: '/feedback' },
+    { label: t('sub_vip'),      href: '/vip' },
   ]
   return (
     <div className={s.subnav}>

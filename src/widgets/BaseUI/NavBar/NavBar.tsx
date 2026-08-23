@@ -126,6 +126,11 @@ const Icon = {
       <rect x='1' y='5' width='15' height='14' rx='2' ry='2' />
     </svg>
   ),
+  Vip: () => (
+    <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'>
+      <polygon points='12 2 15 9 22 9.5 16.5 14 18.5 21 12 17 5.5 21 7.5 14 2 9.5 9 9' />
+    </svg>
+  ),
 }
 
 // ─── Nav item definition ──────────────────────────────────
@@ -212,6 +217,7 @@ export function NavBar({extraClass}: {extraClass?: string}) {
       ...(userId ? [{items: [{href: `/calendar/${userId}`, label: t('calendar'), icon: <Icon.Calendar />}]}] : []),
       {items: [{href: '/game',            label: t('games'),   icon: <Icon.Games />}]},
       {items: [{href: '/teacher-profile', label: t('profile'), icon: <Icon.Profile />}]},
+      {items: [{href: '/vip',             label: t('vip'),     icon: <Icon.Vip />}]},
       {items: [{href: '/feedback',        label: t('support'), icon: <Icon.Support />}]},
     ]
   } else if (role === 'STUDENT') {
@@ -228,6 +234,7 @@ export function NavBar({extraClass}: {extraClass?: string}) {
       {items: [{href: '/game',            label: t('games'),    icon: <Icon.Games />}]},
       {items: [{href: '/pomodoro',        label: t('pomodoro'), icon: <Icon.Pomodoro />}]},
       {items: [{href: '/student-profile', label: t('profile'),  icon: <Icon.Profile />}]},
+      {items: [{href: '/vip',             label: t('vip'),      icon: <Icon.Vip />}]},
       {items: [{href: '/feedback',        label: t('support'),  icon: <Icon.Support />}]},
     ]
   } else {
@@ -241,6 +248,7 @@ export function NavBar({extraClass}: {extraClass?: string}) {
     ]
     bottomGroups = [
       {items: [{href: '/game', label: t('games'), icon: <Icon.Games />}]},
+      {items: [{href: '/vip',  label: t('vip'),   icon: <Icon.Vip />}]},
       {id: 'navbar-login', items: [{href: '/login', label: t('login'), icon: <Icon.Login />}]},
       {items: [{href: '/feedback', label: t('support'), icon: <Icon.Support />}]},
     ]
