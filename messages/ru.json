@@ -2504,6 +2504,7 @@
     "modal_pick_t2": "или выберите на компьютере",
     "modal_pick_formats": "PDF · DOCX · TXT · RTF · ODT",
     "modal_pick_choose": "Выбрать файл",
+    "modal_vip_unlimited": "Убрать ограничение вопросов",
     "modal_proc_label1": "Загружаем файл…",
     "modal_proc_label2": "Распознаём текст…",
     "modal_proc_label3": "Собираем вопросы…",

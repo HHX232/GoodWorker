@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../auth'
 import { callAI, parseJSON } from '@/lib/openrouter'
-import { prisma } from '@/shared/prisma/prisma'
+import { resolveVip } from '@/lib/vipStatus'
 
 const PDF_SERVICE = process.env.PDF_SERVICE_URL ?? 'http://localhost:3001'
 
@@ -29,15 +29,6 @@ const EXT_TO_MIME: Record<string, string> = {
   '.odt':  'application/vnd.oasis.opendocument.text',
 }
 
-async function resolveVip(email: string): Promise<boolean> {
-  const now = new Date()
-  const teacher = await prisma.teacher.findUnique({ where: { email }, select: { isVip: true, vipExpiresAt: true } })
-  if (teacher) return teacher.isVip && (!teacher.vipExpiresAt || teacher.vipExpiresAt > now)
-  const student = await prisma.student.findUnique({ where: { email }, select: { isVip: true, vipExpiresAt: true } })
-  if (student) return student.isVip && (!student.vipExpiresAt || student.vipExpiresAt > now)
-  return false
-}
-
 export async function POST(req: NextRequest) {
   const session = await auth()
   const isGuest = !session?.user?.email
@@ -54,6 +45,10 @@ export async function POST(req: NextRequest) {
   if (!file || !(file instanceof Blob)) {
     return NextResponse.json({ error: 'Файл обязателен' }, { status: 400 })
   }
+
+  const wantsUnlimited = formData.get('removeLimit') === 'true'
+  const isVip = isGuest ? false : await resolveVip(userEmail!)
+  const unlimited = wantsUnlimited && isVip
 
   const fileName = (file as File).name ?? 'document'
   const ext = ('.' + fileName.split('.').pop()!.toLowerCase()) as string
@@ -74,7 +69,6 @@ export async function POST(req: NextRequest) {
     if (isGuest) {
       return NextResponse.json({ error: 'DOCX, TXT, RTF и ODT доступны только зарегистрированным VIP пользователям', vipRequired: true }, { status: 403 })
     }
-    const isVip = await resolveVip(userEmail!)
     if (!isVip) {
       return NextResponse.json({ error: 'Загрузка DOCX, TXT и RTF доступна только VIP пользователям', vipRequired: true }, { status: 403 })
     }
@@ -118,8 +112,10 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Step 2: parse questions with AI ──────────────────────
-  const maxQ    = isGuest ? 5 : 20
-  const maxChars = isGuest ? 4000 : 14000
+  // VIP users can opt out of the standard 20-question cap (up to a hard safety ceiling)
+  // in case the source document naturally supports more meaningful questions.
+  const maxQ     = isGuest ? 5 : unlimited ? 60 : 20
+  const maxChars = isGuest ? 4000 : unlimited ? 30000 : 14000
   const truncated = docText.slice(0, maxChars)
 
   const aiPrompt = `Extract up to ${maxQ} quiz questions from the text below (extracted from a ${docFormat.toUpperCase()} document).
@@ -167,6 +163,7 @@ ${truncated}`
     format: docFormat,
     isGuest,
     guestLimit: isGuest ? maxQ : null,
+    unlimited,
     totalChars: docText.length,
   })
 }

@@ -2504,6 +2504,7 @@
     "modal_pick_t2": "or choose from your computer",
     "modal_pick_formats": "PDF · DOCX · TXT · RTF · ODT",
     "modal_pick_choose": "Choose file",
+    "modal_vip_unlimited": "Remove the question limit",
     "modal_proc_label1": "Uploading file…",
     "modal_proc_label2": "Recognizing text…",
     "modal_proc_label3": "Assembling questions…",

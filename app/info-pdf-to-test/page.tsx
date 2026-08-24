@@ -512,6 +512,10 @@ html.theme-dark, html.pomodoro-dark{
 .m1-drop__ic{ width:32px; height:32px; color:var(--ink-2); }
 .m1-drop__t{ margin:0; font-family:var(--serif); font-size:1.1rem; line-height:1.4; }
 .m1-drop__f{ font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-2); }
+.m1-vip-toggle{ display:flex; align-items:center; gap:.6rem; margin-top:1.1rem; padding:.7rem .9rem; border:1px solid var(--line); cursor:pointer; width:100%; box-sizing:border-box; }
+.m1-vip-toggle input{ accent-color:var(--accent-soft); width:16px; height:16px; flex:0 0 auto; cursor:pointer; }
+.m1-vip-toggle span{ font-size:.82rem; color:var(--ink-2); text-align:left; }
+.m1-vip-toggle span b{ color:var(--accent-ink); font-weight:600; }
 .m1-scan{ position:relative; width:90px; height:116px; margin-bottom:1.3rem; overflow:hidden; }
 .m1-scan__doc{ width:100%; height:100%; display:block; filter:drop-shadow(0 10px 24px rgba(12,10,8,.18)); }
 .m1-scan__line{ position:absolute; left:-4px; right:-4px; height:2px; top:0; background:var(--accent); box-shadow:0 0 12px 1px var(--accent-soft); will-change:top; transition:top .2s linear; }
@@ -1425,6 +1429,8 @@ function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
   const [errorMsg, setErrorMsg] = useState('')
   const [isDrag, setIsDrag] = useState(false)
   const [shake, setShake] = useState(false)
+  const [isVip, setIsVip] = useState(false)
+  const [removeLimit, setRemoveLimit] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
   const shellRef = useRef<HTMLDivElement>(null)
@@ -1484,6 +1490,7 @@ function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
     try {
       const fd = new FormData()
       fd.append('file', file)
+      if (isVip && removeLimit) fd.append('removeLimit', 'true')
       const res = await fetch('/api/pdf-to-test', { method: 'POST', body: fd, signal: controller.signal })
       const data = await res.json()
       cancelAnimationFrame(rafRef.current)
@@ -1502,7 +1509,7 @@ function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
       if ((e as Error).name === 'AbortError') return
       fail(t('modal_error_title_default'), (e as Error).message)
     }
-  }, [fail, t])
+  }, [fail, t, isVip, removeLimit])
 
   const reset = useCallback(() => {
     cancelAnimationFrame(rafRef.current)
@@ -1535,6 +1542,7 @@ function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
     setResult(null)
     setErrorMsg('')
     setFileName('')
+    setRemoveLimit(false)
     if (pendingFile && !beganRef.current) {
       beganRef.current = true
       begin(pendingFile)
@@ -1547,6 +1555,16 @@ function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = '' }
   }, [modalOpen])
+
+  useEffect(() => {
+    if (!modalOpen || !isLoggedIn) { setIsVip(false); return }
+    let cancelled = false
+    fetch('/api/vip-status')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (!cancelled && d?.isVip) setIsVip(true) })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [modalOpen, isLoggedIn])
 
   useEffect(() => {
     if (!modalOpen) return
@@ -1591,6 +1609,16 @@ function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
               <span className="m1-drop__f">{t('modal_pick_formats')}</span>
               <button type="button" className="btn btn--ghost" onClick={e => { e.stopPropagation(); inputRef.current?.click() }}>{t('modal_pick_choose')}</button>
             </div>
+            {isVip && (
+              <label className="m1-vip-toggle" onClick={e => e.stopPropagation()}>
+                <input
+                  type="checkbox"
+                  checked={removeLimit}
+                  onChange={e => setRemoveLimit(e.target.checked)}
+                />
+                <span><b>VIP</b> — {t('modal_vip_unlimited')}</span>
+              </label>
+            )}
           </div>
         )}
 

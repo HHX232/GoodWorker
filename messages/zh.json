@@ -2325,6 +2325,7 @@
     "modal_pick_t2": "或从电脑中选择",
     "modal_pick_formats": "PDF · DOCX · TXT · RTF · ODT",
     "modal_pick_choose": "选择文件",
+    "modal_vip_unlimited": "取消问题数量限制",
     "modal_proc_label1": "文件上传中…",
     "modal_proc_label2": "正在识别文本…",
     "modal_proc_label3": "正在生成题目…",
