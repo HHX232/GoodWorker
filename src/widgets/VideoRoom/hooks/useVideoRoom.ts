@@ -427,6 +427,7 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
       setStatus('')
       setConnected(true)
     } catch (e: any) {
+      console.error('joinRoom failed', e)
       setStatus('Ошибка: ' + e.message)
     }
   }, [roomName, userName, localAvatarUrl, upsert, remove, attachTrack, fetchAvatar])
