@@ -1,0 +1,3 @@
+RewriteEngine On
+RewriteCond %{HTTP_HOST} ^goodworker\.online [NC]
+RewriteRule ^(.*)$ https://www.goodworker.online/$1 [L,R=301]
