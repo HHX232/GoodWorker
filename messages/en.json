@@ -2642,6 +2642,7 @@
     "desc": "Start a lesson in one click — the student joins by link, recording and notes start automatically.",
     "createBtn": "Create room",
     "joinPlaceholder": "Join by code…",
+    "cameraCheck": "Check camera",
     "cameraReady": "Camera and microphone ready",
     "cameraNoAccess": "No access to camera or microphone",
     "cameraChecking": "Checking access…",
