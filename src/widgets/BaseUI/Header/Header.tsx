@@ -37,10 +37,10 @@ function Header() {
     <header className={styles.wrapper}>
       <NavProgress />
       <div className={`${styles.inner} container`}>
-        <Link href='/' className={styles.logo_big}>
+        <Link href='/'>
           <Image className={styles.logo_big} width={100} height={100} alt={t('catalog')} src={LogoBigUrl} />
         </Link>
-        <Link href='/' className={styles.logo_small}>
+        <Link href='/'>
           <Image className={styles.logo_small} width={100} height={100} alt={t('catalog')} src={LogoMobileUrl} />
         </Link>
 
