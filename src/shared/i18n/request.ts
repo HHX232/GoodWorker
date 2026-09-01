@@ -1,9 +1,11 @@
+import { langFromRequest } from '@/features/helpers/langCodeFromHeader'
 import { getRequestConfig } from 'next-intl/server'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 
 export default getRequestConfig(async () => {
   const store = await cookies()
-  const locale = store.get('NEXT_LOCALE')?.value || 'en'
+  const cookieLocale = store.get('NEXT_LOCALE')?.value
+  const locale = cookieLocale || langFromRequest({ headers: await headers() })
 
   return {
     locale,

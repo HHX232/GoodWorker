@@ -37,6 +37,9 @@ export const metadata: Metadata = {
     apple: '/logos/apple-touch-icon.png',
   },
   manifest: '/logos/site.webmanifest',
+  other: {
+    google: 'notranslate',
+  },
 }
 
 export default async function RootLayout({
@@ -47,7 +50,7 @@ export default async function RootLayout({
   const locale = await getLocale()
   const messages = await getMessages()
   return (
-    <html lang={locale}>
+    <html lang={locale} translate="no">
       <body className={`${robotoSans.variable} `}>
         <NextIntlClientProvider messages={messages}>
           <DefaultProvider>
