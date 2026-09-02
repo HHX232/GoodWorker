@@ -80,6 +80,11 @@ export async function sendOtp(
     return false
   }
 
+  forceLog('[OTP] API key present', {
+    length: apiKey.length,
+    prefix: apiKey.slice(0, 6),
+  })
+
   const translations: Record<
     string,
     {
@@ -117,11 +122,14 @@ export async function sendOtp(
 
   const lang = translations[langCode] ?? translations.ru
 
+  const url = 'https://mail.sendcorex.com/v3.0/send'
+
   try {
-    forceLog('[OTP] Sending request...')
+    forceLog('[OTP] Sending request...', {url, to: target, subject: lang.subject})
+    const startedAt = Date.now()
 
     const res = await fetch(
-      'https://graph.sendcorex.com/v3.0/mail/send',
+      url,
       {
         method: 'POST',
         headers: {
@@ -131,6 +139,7 @@ export async function sendOtp(
         body: JSON.stringify({
           to: target,
           subject: lang.subject,
+          replyTo: 'noreply@goodworker.online',
           body: `
           <div style="font-family:sans-serif;max-width:480px;margin:auto">
               <h2>${lang.title}</h2>
@@ -156,38 +165,43 @@ export async function sendOtp(
       }
     )
 
-    let data = {}
+    const durationMs = Date.now() - startedAt
+    const rawText = await res.text()
 
+    let data = {}
     try {
-      data = await res.json()
+      data = JSON.parse(rawText)
     } catch {
-      forceLog('[OTP] Response is not JSON')
+      forceLog('[OTP] Response is not JSON', {rawText})
     }
 
     forceLog('[OTP] Response received', {
+      url,
       status: res.status,
       ok: res.ok,
+      durationMs,
       data,
     })
 
     switch (res.status) {
       case 200: {
         const result = data as {
-          success?: boolean
           id?: string
-          message?: string
+          ids?: string[]
+          recipients?: unknown
         }
 
-        if (result.success) {
+        if (result.id || (result.ids && result.ids.length > 0)) {
           forceLog('[OTP] Email queued successfully', {
             id: result.id,
-            message: result.message,
+            ids: result.ids,
+            recipients: result.recipients,
           })
 
           return true
         }
 
-        forceLog('[OTP] 200 but success=false', result)
+        forceLog('[OTP] 200 but no id/ids in response', result)
 
         return false
       }
@@ -268,7 +282,12 @@ export async function sendOtp(
   } catch (error) {
     forceLog(
       '[OTP] Network / fetch failed',
-      error
+      {
+        url,
+        to: target,
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      }
     )
 
     return false
