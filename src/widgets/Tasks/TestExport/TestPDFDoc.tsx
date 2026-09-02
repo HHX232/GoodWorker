@@ -16,7 +16,9 @@ const s = StyleSheet.create({
   questionText: {fontSize: 11, color: '#0f172a', flex: 1},
 
   line: {fontSize: 10, color: '#334155', marginLeft: 20, marginBottom: 2},
-  lineCorrect: {fontSize: 10, color: '#16a34a', fontWeight: 700, marginLeft: 20, marginBottom: 2},
+  answerPrompt: {fontSize: 10, color: '#0f172a', fontWeight: 700, marginLeft: 20, marginTop: 4, marginBottom: 2},
+  blank: {fontSize: 10, color: '#cbd5e1', marginLeft: 20, marginBottom: 2},
+  spacer: {height: 6},
 
   infoHeading: {fontSize: 9, fontWeight: 700, color: '#94a3b8', letterSpacing: 1, marginBottom: 4, marginTop: 6},
   infoText: {fontSize: 10, color: '#475569', marginBottom: 8},
@@ -28,28 +30,40 @@ const s = StyleSheet.create({
 function QuestionBody({block}: {block: Extract<ExportBlock, {kind: 'question'}>}) {
   switch (block.type) {
     case 'choose':
-      return <>{block.options.map((o, i) => (
-        <Text key={i} style={block.correctOptions.includes(o) ? s.lineCorrect : s.line}>{o}</Text>
-      ))}</>
+      return <>{block.options.map((o, i) => <Text key={i} style={s.line}>{o.label}) {o.text}</Text>)}</>
     case 'free':
-      return block.referenceAnswer ? <Text style={s.lineCorrect}>Ответ: {block.referenceAnswer}</Text> : null
+      return <>
+        <Text style={s.answerPrompt}>{block.answerPrompt}</Text>
+        <Text style={s.blank}>{'_'.repeat(70)}</Text>
+        <Text style={s.blank}>{'_'.repeat(70)}</Text>
+      </>
     case 'match':
-      return <>{block.pairs.map((p, i) => (
-        <Text key={i} style={s.line}>{p.left} — <Text style={s.lineCorrect}>{p.right}</Text></Text>
-      ))}</>
+      return <>
+        {block.left.map((l, i) => <Text key={`l${i}`} style={s.line}>{l.label}. {l.text}</Text>)}
+        <View style={s.spacer} />
+        {block.right.map((r, i) => <Text key={`r${i}`} style={s.line}>{r.label}) {r.text}</Text>)}
+        <Text style={s.answerPrompt}>{block.answerPrompt} {'_'.repeat(40)}</Text>
+      </>
     case 'fill':
       return <Text style={s.line}>{block.text}</Text>
     case 'sequence':
-      return <>{block.items.map((item, i) => <Text key={i} style={s.line}>{i + 1}. {item}</Text>)}</>
+      return <>
+        {block.items.map((item, i) => <Text key={i} style={s.line}>{item.label}) {item.text}</Text>)}
+        <Text style={s.answerPrompt}>{block.answerPrompt} {'_'.repeat(40)}</Text>
+      </>
     case 'highlight':
       return <>{[block.instruction, block.text].filter(Boolean).map((t, i) => <Text key={i} style={s.line}>{t}</Text>)}</>
     case 'scramble':
       return <>
-        <Text style={s.lineCorrect}>Составьте из букв: {block.source}</Text>
+        <Text style={s.line}>{block.scrambled}</Text>
         {block.hint ? <Text style={s.line}>Подсказка: {block.hint}</Text> : null}
+        <Text style={s.answerPrompt}>{block.answerPrompt} {'_'.repeat(40)}</Text>
       </>
     case 'dialogue':
-      return <>{block.lines.map((l, i) => <Text key={i} style={s.line}>{l.speaker}: {l.text}</Text>)}</>
+      return <>
+        {block.lines.map((l, i) => <Text key={i} style={s.line}>{l.label}) {l.speaker}: {l.text}</Text>)}
+        <Text style={s.answerPrompt}>{block.answerPrompt} {'_'.repeat(40)}</Text>
+      </>
   }
 }
 

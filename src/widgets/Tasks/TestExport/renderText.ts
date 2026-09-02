@@ -1,46 +1,64 @@
 import {ExportBlock, ExportModel, questionTitle} from './buildExportModel'
 
-function renderQuestionExtra(block: Extract<ExportBlock, {kind: 'question'}>, bold: (s: string) => string): string[] {
+const BLANK = '_'.repeat(32)
+
+function renderQuestionExtra(block: Extract<ExportBlock, {kind: 'question'}>): string[] {
   switch (block.type) {
     case 'choose':
-      return block.options.map((o) => `  - ${block.correctOptions.includes(o) ? bold(o) : o}`)
+      return block.options.map((o) => `  ${o.label}) ${o.text}`)
     case 'free':
-      return block.referenceAnswer ? [`  Ответ: ${bold(block.referenceAnswer)}`] : []
+      return [`  ${block.answerPrompt}`, `  ${BLANK}`, `  ${BLANK}`]
     case 'match':
-      return block.pairs.map((p) => `  ${p.left} — ${bold(p.right)}`)
+      return [
+        ...block.left.map((l) => `  ${l.label}. ${l.text}`),
+        '',
+        ...block.right.map((r) => `  ${r.label}) ${r.text}`),
+        '',
+        `  ${block.answerPrompt} ${BLANK}`
+      ]
     case 'fill':
       return [`  ${block.text}`]
     case 'sequence':
-      return block.items.map((item, i) => `  ${i + 1}. ${item}`)
+      return [
+        ...block.items.map((item) => `  ${item.label}) ${item.text}`),
+        `  ${block.answerPrompt} ${BLANK}`
+      ]
     case 'highlight':
       return [block.instruction, block.text].filter(Boolean).map((t) => `  ${t}`)
     case 'scramble':
-      return [`  ${bold(block.source)}`, ...(block.hint ? [`  Подсказка: ${block.hint}`] : [])]
+      return [
+        `  ${block.scrambled}`,
+        ...(block.hint ? [`  Подсказка: ${block.hint}`] : []),
+        `  ${block.answerPrompt} ${BLANK}`
+      ]
     case 'dialogue':
-      return block.lines.map((l) => `  ${l.speaker}: ${l.text}`)
+      return [
+        ...block.lines.map((l) => `  ${l.label}) ${l.speaker}: ${l.text}`),
+        `  ${block.answerPrompt} ${BLANK}`
+      ]
   }
 }
 
-function renderBlock(block: ExportBlock, bold: (s: string) => string, heading: (s: string) => string): string {
+function renderBlock(block: ExportBlock, heading: (s: string) => string): string {
   if (block.kind === 'info') {
     if (block.type === 'text') return block.text
     if (block.type === 'media') return heading(`[${block.mediaKind === 'video' ? 'Видео' : 'Изображение'}${block.caption ? ': ' + block.caption : ''}]`)
     return heading(`[Аудио${block.filename ? ': ' + block.filename : ''}]`)
   }
-  return [`${block.num}. ${questionTitle(block)}`, ...renderQuestionExtra(block, bold)].join('\n')
+  return [`${block.num}. ${questionTitle(block)}`, ...renderQuestionExtra(block)].join('\n')
 }
 
-function render(model: ExportModel, opts: {bold: (s: string) => string; heading1: (s: string) => string; heading2: (s: string) => string}): string {
+function render(model: ExportModel, opts: {heading1: (s: string) => string; heading2: (s: string) => string}): string {
   const parts = [opts.heading1(model.title)]
   if (model.description) parts.push(model.description)
-  model.blocks.forEach((block) => parts.push(renderBlock(block, opts.bold, opts.heading2)))
+  model.blocks.forEach((block) => parts.push(renderBlock(block, opts.heading2)))
   return parts.join('\n\n')
 }
 
 export function toPlainText(model: ExportModel): string {
-  return render(model, {bold: (s) => s, heading1: (s) => `${s}\n${'='.repeat(s.length)}`, heading2: (s) => s})
+  return render(model, {heading1: (s) => `${s}\n${'='.repeat(s.length)}`, heading2: (s) => s})
 }
 
 export function toMarkdown(model: ExportModel): string {
-  return render(model, {bold: (s) => `**${s}**`, heading1: (s) => `# ${s}`, heading2: (s) => `### ${s}`})
+  return render(model, {heading1: (s) => `# ${s}`, heading2: (s) => `### ${s}`})
 }

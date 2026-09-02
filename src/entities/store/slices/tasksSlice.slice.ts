@@ -78,7 +78,10 @@ const tasksSlice = createSlice({
     },
 
     addBlocks(state, action: PayloadAction<TestBlock[]>) {
+      const existingIds = new Set(state.blocks.map((b) => b.id))
       for (const block of action.payload) {
+        if (existingIds.has(block.id)) continue
+        existingIds.add(block.id)
         state.blocks.push(block)
       }
     },

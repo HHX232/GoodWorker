@@ -5,6 +5,7 @@ import {DialogueLine, DialoguePayload} from '@/shared/types/Tasks/TaskPayload.ty
 import {closestCenter, DndContext, DragEndEvent, PointerSensor, useSensor, useSensors} from '@dnd-kit/core'
 import {arrayMove, SortableContext, useSortable, verticalListSortingStrategy} from '@dnd-kit/sortable'
 import {CSS} from '@dnd-kit/utilities'
+import {nanoid} from '@reduxjs/toolkit'
 import {CheckCircle2Icon, EyeIcon, GripVerticalIcon, PencilIcon, PlusIcon, Trash2Icon, XCircleIcon} from 'lucide-react'
 import {useTranslations} from 'next-intl'
 import {useState} from 'react'
@@ -15,7 +16,7 @@ interface Props {
   payload: DialoguePayload
 }
 
-const uid = () => Math.random().toString(36).slice(2, 8)
+const uid = () => nanoid()
 
 const COLOR_A = '#3b82f6'
 const COLOR_B = '#10b981'

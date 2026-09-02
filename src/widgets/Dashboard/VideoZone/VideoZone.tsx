@@ -5,6 +5,7 @@ import { TranscriptsModal } from '@/widgets/Forms/ProfileEditForm/TranscriptsMod
 import { useLocale, useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import styles from './VideoZone.module.scss'
 
 interface Room {
@@ -55,6 +56,8 @@ export function VideoZone({isStudent = false}: Props) {
   const [activeTab, setActiveTab] = useState<'active' | 'recent'>('active')
   const [rooms, setRooms] = useState<Room[]>([])
   const [transcriptRoom, setTranscriptRoom] = useState<Room | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [pendingDelete, setPendingDelete] = useState<Room | null>(null)
 
   const canvasRef = useRef<HTMLDivElement>(null)
   const animRef = useRef<number | null>(null)
@@ -222,6 +225,22 @@ export function VideoZone({isStudent = false}: Props) {
     setModalOpen(true)
   }
 
+  const confirmDelete = async () => {
+    const room = pendingDelete
+    if (!room) return
+    setPendingDelete(null)
+    setDeletingId(room.id)
+    try {
+      const res = await fetch(`/api/call/rooms?id=${room.id}`, {method: 'DELETE'})
+      if (!res.ok) throw new Error()
+      setRooms((prev) => prev.map((r) => (r.id === room.id ? {...r, endedAt: new Date().toISOString()} : r)))
+    } catch {
+      toast.error(t('deleteError'))
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
   return (
     <>
       <section className={`${styles.vz} ${styles.vzThreed}`}>
@@ -376,6 +395,18 @@ export function VideoZone({isStudent = false}: Props) {
                         <span className={styles.vzCallBadge}>{t('badgeActive')}</span>
                       </div>
                     </div>
+                    <button
+                      className={styles.vzBtnDelete}
+                      onClick={() => setPendingDelete(room)}
+                      disabled={deletingId === room.id}
+                      title={t('deleteBtn')}
+                    >
+                      <svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+                        <polyline points='3 6 5 6 21 6' />
+                        <path d='M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2' />
+                      </svg>
+                      {t('deleteBtn')}
+                    </button>
                     <button className={styles.vzBtnJoin} onClick={() => router.push(`/call/${room.id}`)}>
                       <svg
                         width='13'
@@ -469,6 +500,18 @@ export function VideoZone({isStudent = false}: Props) {
       )}
       {modalOpen && (
         <VideoCallModal defaultName={modalDefault} isStudent={isStudent} onClose={() => setModalOpen(false)} />
+      )}
+      {pendingDelete && (
+        <div className={styles.vzConfirmOverlay} onClick={() => setPendingDelete(null)}>
+          <div className={styles.vzConfirmModal} onClick={(e) => e.stopPropagation()}>
+            <p className={styles.vzConfirmTitle}>{t('deleteConfirmTitle')}</p>
+            <p className={styles.vzConfirmDesc}>{t('deleteConfirmDesc')}</p>
+            <div className={styles.vzConfirmActions}>
+              <button className={styles.vzConfirmCancel} onClick={() => setPendingDelete(null)}>{t('cancel')}</button>
+              <button className={styles.vzConfirmDelete} onClick={confirmDelete}>{t('deleteBtn')}</button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   )

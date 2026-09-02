@@ -462,6 +462,27 @@
   &:hover { background: #4339a8; }
 }
 
+.vzBtnDelete {
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid #FEE2E2;
+  border-radius: 9px;
+  background: #fff;
+  color: #EF4444;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  transition: background 0.13s, border-color 0.13s;
+
+  &:hover:not(:disabled) { background: #FEF2F2; border-color: #FCA5A5; }
+  &:disabled { opacity: 0.5; cursor: default; }
+}
+
 .vzBtnGhost {
   height: 32px;
   padding: 0 12px;
@@ -562,6 +583,79 @@
   .vzBtnJoin       { height: 30px; padding: 0 10px; font-size: 11.5px; }
   .vzBtnGhost      { height: 29px; padding: 0  9px; font-size: 11.5px; }
   .vzBtnTranscript { height: 29px; padding: 0  9px; font-size: 11.5px; }
+  .vzBtnDelete     { height: 30px; padding: 0  9px; font-size: 11.5px; }
+}
+
+// ── Delete confirmation modal ───────────────────────────────────
+.vzConfirmOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(15, 15, 20, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.vzConfirmModal {
+  width: 100%;
+  max-width: 340px;
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.2);
+}
+
+.vzConfirmTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111118;
+  margin: 0 0 6px;
+}
+
+.vzConfirmDesc {
+  font-size: 13px;
+  color: #636375;
+  margin: 0 0 16px;
+  line-height: 1.45;
+}
+
+.vzConfirmActions {
+  display: flex;
+  gap: 8px;
+}
+
+.vzConfirmCancel {
+  flex: 1;
+  height: 36px;
+  border: 1px solid #DADCEB;
+  border-radius: 9px;
+  background: #fff;
+  color: #636375;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.13s;
+
+  &:hover { background: #f7f5fc; }
+}
+
+.vzConfirmDelete {
+  flex: 1;
+  height: 36px;
+  border: none;
+  border-radius: 9px;
+  background: #EF4444;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.13s;
+
+  &:hover { background: #dc2626; }
 }
 
 // ── Dark theme ────────────────────────────────────────────────
@@ -608,7 +702,23 @@
     color: #a89ff5;
     &:hover { background: rgba(83, 74, 183, 0.28); }
   }
+  .vzBtnDelete {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.25);
+    color: #f87171;
+    &:hover:not(:disabled) { background: rgba(239, 68, 68, 0.15); }
+  }
   .vzEmpty { color: rgba(255, 255, 255, 0.2); }
+
+  .vzConfirmModal { background: #1e2030; box-shadow: 0 20px 48px rgba(0, 0, 0, 0.5); }
+  .vzConfirmTitle { color: #e8eaf0; }
+  .vzConfirmDesc { color: rgba(255, 255, 255, 0.5); }
+  .vzConfirmCancel {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.6);
+    &:hover { background: rgba(255, 255, 255, 0.09); }
+  }
 
   @media (max-width: 768px) {
     .vzPanel { border-top-color: rgba(255, 255, 255, 0.08); }
