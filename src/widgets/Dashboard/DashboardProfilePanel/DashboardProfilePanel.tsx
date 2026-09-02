@@ -6,6 +6,9 @@ import { useTranslations } from 'next-intl'
 import { RefObject, useCallback, useEffect, useRef, useState } from 'react'
 import { CreateImagesInput } from '@/shared/ui/inputs/CreateImagesInput/CreateImagesInput'
 import { VerifiedBadge } from '@/shared/ui/VerifiedBadge/VerifiedBadge'
+import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
+import LanguageSelect from '@/shared/ui/inputs/LanguageSelect/LanguageSelect'
+import { CategorySelect } from '@/shared/ui/inputs/CategorySelect/CategorySelect'
 import styles from './DashboardProfilePanel.module.scss'
 import { signOut } from 'next-auth/react'
 import { toast } from 'sonner'
@@ -489,6 +492,203 @@ function IdentitySection() {
   )
 }
 
+// ─── AboutSection (bio) ────────────────────────────────────
+
+function AboutSection() {
+  const t = useTranslations('dashboard')
+  const [bio, setBio] = useState('')
+  const [initialBio, setInitialBio] = useState('')
+  const [loaded, setLoaded] = useState(false)
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/me')
+      .then(r => r.json())
+      .then(d => { setBio(d.bio ?? ''); setInitialBio(d.bio ?? '') })
+      .catch(() => {})
+      .finally(() => setLoaded(true))
+  }, [])
+
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      const res = await fetch('/api/profile/edit/teacher', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bio: bio.trim() || null }),
+      })
+      if (!res.ok) throw new Error()
+      setInitialBio(bio)
+      toast.success(t('changesSaved'))
+    } catch {
+      toast.error(t('saveErrorMsg'))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (!loaded) return null
+
+  return (
+    <div className={styles.section}>
+      <div className={styles.sectionLabel}>{t('aboutSection')}</div>
+      <textarea
+        className={styles.textarea}
+        rows={4}
+        maxLength={2000}
+        value={bio}
+        onChange={e => setBio(e.target.value)}
+        placeholder={t('aboutPlaceholder')}
+      />
+      <span className={styles.charCount}>{bio.length} / 2000</span>
+      {bio !== initialBio && (
+        <div className={styles.saveRow}>
+          <button className={styles.saveBtn} onClick={handleSave} disabled={saving}>
+            {saving && <span className={styles.spinner} />}
+            {saving ? t('saving') : t('saveChanges')}
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── TeachingConfigSection (languages + subjects) ─────────
+
+function LanguagesEditModal({ initial, onClose, onSaved }: { initial: string[]; onClose: () => void; onSaved: (langs: string[]) => void }) {
+  const t = useTranslations('dashboard')
+  const [langs, setLangs] = useState<string[]>(initial)
+  const [saving, setSaving] = useState(false)
+
+  const handleSave = async () => {
+    if (langs.length === 0) return
+    setSaving(true)
+    try {
+      const res = await fetch('/api/profile/edit/teacher', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ languages: langs }),
+      })
+      if (!res.ok) throw new Error()
+      onSaved(langs)
+      toast.success(t('changesSaved'))
+      onClose()
+    } catch {
+      toast.error(t('saveErrorMsg'))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <ModalWindowDefault isOpen onClose={onClose}>
+      <div className={styles.teachingModal}>
+        <p className={styles.teachingModalTitle}>{t('editLanguagesTitle')}</p>
+        <LanguageSelect value={langs} onChange={setLangs} label='' />
+        <div className={styles.saveRow}>
+          <button className={styles.saveBtn} onClick={handleSave} disabled={saving || langs.length === 0}>
+            {saving && <span className={styles.spinner} />}
+            {saving ? t('saving') : t('saveChanges')}
+          </button>
+        </div>
+      </div>
+    </ModalWindowDefault>
+  )
+}
+
+function SubjectsEditModal({ initial, onClose, onSaved }: { initial: string[]; onClose: () => void; onSaved: (ids: string[]) => void }) {
+  const t = useTranslations('dashboard')
+  const [ids, setIds] = useState<string[]>(initial)
+  const [saving, setSaving] = useState(false)
+
+  const handleSave = async () => {
+    if (ids.length === 0) return
+    setSaving(true)
+    try {
+      const res = await fetch('/api/profile/edit/teacher/categories', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ categoryIds: ids }),
+      })
+      if (!res.ok) throw new Error()
+      onSaved(ids)
+      toast.success(t('changesSaved'))
+      onClose()
+    } catch {
+      toast.error(t('saveErrorMsg'))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <ModalWindowDefault isOpen onClose={onClose}>
+      <div className={styles.teachingModal}>
+        <p className={styles.teachingModalTitle}>{t('editSubjectsTitle')}</p>
+        <CategorySelect value={ids} onChange={setIds} maxLevel={1} />
+        <div className={styles.saveRow}>
+          <button className={styles.saveBtn} onClick={handleSave} disabled={saving || ids.length === 0}>
+            {saving && <span className={styles.spinner} />}
+            {saving ? t('saving') : t('saveChanges')}
+          </button>
+        </div>
+      </div>
+    </ModalWindowDefault>
+  )
+}
+
+function TeachingConfigSection() {
+  const t = useTranslations('dashboard')
+  const [languages, setLanguages] = useState<string[]>([])
+  const [categoryIds, setCategoryIds] = useState<string[]>([])
+  const [loaded, setLoaded] = useState(false)
+  const [langModalOpen, setLangModalOpen] = useState(false)
+  const [subjModalOpen, setSubjModalOpen] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/me')
+      .then(r => r.json())
+      .then(d => {
+        if (Array.isArray(d.languages)) setLanguages(d.languages)
+        if (Array.isArray(d.categories)) {
+          setCategoryIds(d.categories.map((c: { category: { id: string } }) => c.category.id))
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoaded(true))
+  }, [])
+
+  if (!loaded) return null
+
+  return (
+    <>
+      <div className={styles.actions}>
+        <button className={styles.actionBtn} onClick={() => setLangModalOpen(true)}>
+          {t('editLanguagesBtn')}
+        </button>
+        <button className={styles.actionBtn} onClick={() => setSubjModalOpen(true)}>
+          {t('editSubjectsBtn')}
+        </button>
+      </div>
+
+      {langModalOpen && (
+        <LanguagesEditModal
+          initial={languages}
+          onClose={() => setLangModalOpen(false)}
+          onSaved={setLanguages}
+        />
+      )}
+      {subjModalOpen && (
+        <SubjectsEditModal
+          initial={categoryIds}
+          onClose={() => setSubjModalOpen(false)}
+          onSaved={setCategoryIds}
+        />
+      )}
+    </>
+  )
+}
+
 interface Props {
   name: string
   email: string
@@ -650,6 +850,8 @@ export function DashboardProfilePanel({
               )}
             </div>
 
+            <AboutSection />
+
             <div className={styles.section}>
               <div className={styles.sectionLabel}>{t('serviceLabelsLabel')}</div>
               <input
@@ -676,6 +878,7 @@ export function DashboardProfilePanel({
                 </div>
               )}
               {servicesSuccess && <span className={styles.successMsg}>{t('changesSaved')}</span>}
+              <TeachingConfigSection />
             </div>
 
             <ExperienceSection />

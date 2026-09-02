@@ -219,6 +219,21 @@
   flex-shrink: 0;
 }
 
+.freqErrorList {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid #F3F3F8;
+}
+
+.freqErrorItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .freqLast {
   font-size: 10px;
   color: #ABABAB;
@@ -310,6 +325,7 @@
   .freqTrack { background: rgba(255,255,255,0.07); }
   .freqCount { color: #818cf8; }
   .freqLast { color: rgba(255,255,255,0.25); }
+  .freqErrorList { border-top-color: rgba(255,255,255,0.05); }
   .errorItemOpen { background: rgba(129,140,248,0.06); }
   .chevron { color: rgba(255,255,255,0.25); }
   .recPost { background: rgba(129,140,248,0.12); &:hover { background: rgba(129,140,248,0.2); } }

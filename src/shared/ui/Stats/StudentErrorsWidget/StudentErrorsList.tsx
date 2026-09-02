@@ -20,11 +20,19 @@ interface ErrorItem {
   categories: ErrorCategory[]
 }
 
+interface FreqErrorItem {
+  id: string
+  createdAt: string
+  description: string | null
+  fragment: string | null
+}
+
 interface FreqItem {
   id: string
   name: string
   count: number
   lastSeen: string
+  errors: FreqErrorItem[]
 }
 
 interface RecommendedPost {
@@ -187,7 +195,18 @@ export function StudentErrorsList() {
                           style={{ width: `${(item.count / maxCount) * 100}%` }}
                         />
                       </div>
-                      {isOpen && <PostRecs categoryId={item.id} locale={locale} />}
+                      {isOpen && (
+                        <div className={styles.freqErrorList}>
+                          {item.errors.map(err => (
+                            <div key={err.id} className={styles.freqErrorItem}>
+                              <span className={styles.errorDate}>{fmtDate(err.createdAt)}</span>
+                              {err.description && <div className={styles.errorDesc}>{err.description}</div>}
+                              {err.fragment && <div className={styles.errorFragment}>«{err.fragment}»</div>}
+                            </div>
+                          ))}
+                          <PostRecs categoryId={item.id} locale={locale} />
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className={styles.freqRight}>

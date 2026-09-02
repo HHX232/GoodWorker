@@ -45,17 +45,29 @@ export async function GET(req: NextRequest) {
     }
 
     // sort === 'freq': group by category, return categories sorted by count
-    const catMap: Record<string, { name: string; count: number; lastSeen: string }> = {}
+    interface CatAgg {
+      name: string
+      count: number
+      lastSeen: string
+      errors: { id: string; createdAt: string; description: string | null; fragment: string | null }[]
+    }
+    const catMap: Record<string, CatAgg> = {}
     for (const e of errors) {
       for (const c of e.categories) {
         const name = c.category.translations[0]?.name ?? c.category.slug
         if (!catMap[c.categoryId]) {
-          catMap[c.categoryId] = { name, count: 0, lastSeen: e.createdAt.toISOString() }
+          catMap[c.categoryId] = { name, count: 0, lastSeen: e.createdAt.toISOString(), errors: [] }
         }
         catMap[c.categoryId].count++
         if (e.createdAt.toISOString() > catMap[c.categoryId].lastSeen) {
           catMap[c.categoryId].lastSeen = e.createdAt.toISOString()
         }
+        catMap[c.categoryId].errors.push({
+          id: e.id,
+          createdAt: e.createdAt.toISOString(),
+          description: e.description,
+          fragment: e.fragment,
+        })
       }
     }
 

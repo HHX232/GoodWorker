@@ -11,6 +11,7 @@ import {useLocale, useTranslations} from 'next-intl'
 import {useSession} from 'next-auth/react'
 import Image from 'next/image'
 import Link from 'next/link'
+import {useRouter} from 'next/navigation'
 import {FC, useState} from 'react'
 import {toast} from 'sonner'
 import styles from './TeacherCard.module.scss'
@@ -59,7 +60,7 @@ function ReportModal({teacherId, teacherName, onClose}: {teacherId: string; teac
   }
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
+    <div className={styles.overlay} onClick={(e) => { e.stopPropagation(); onClose() }}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <p className={styles.modal_title}>{t('reportTitle', {name: teacherName})}</p>
         <textarea
@@ -84,6 +85,7 @@ function ReportModal({teacherId, teacherName, onClose}: {teacherId: string; teac
 const TeacherCard: FC<Props> = ({teacher}) => {
   const t = useTranslations('TeacherCard')
   const locale = useLocale()
+  const router = useRouter()
   const {data: session} = useSession()
   const [imgError, setImgError] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -106,6 +108,8 @@ const TeacherCard: FC<Props> = ({teacher}) => {
 
   const categories = teacher.categories.slice(0, 3).map(({category}) => {
     const translation = category.translations.find((tr) => tr.langCode === locale)
+      ?? category.translations.find((tr) => tr.langCode === 'ru')
+      ?? category.translations[0]
     return translation?.name ?? category.slug
   })
 
@@ -114,8 +118,21 @@ const TeacherCard: FC<Props> = ({teacher}) => {
     return def?.native ?? code.toUpperCase()
   })
 
+  const goToProfile = () => router.push(`/users/${teacher.id}`)
+
   return (
-    <article className={styles.card}>
+    <article
+      className={styles.card}
+      role='link'
+      tabIndex={0}
+      onClick={goToProfile}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          goToProfile()
+        }
+      }}
+    >
       <div
         className={styles.photo}
         style={showFallback ? {background: `linear-gradient(160deg, ${bg}, ${bg}99)`} : undefined}
@@ -134,7 +151,7 @@ const TeacherCard: FC<Props> = ({teacher}) => {
         )}
         {online && <span className={styles.online_dot} title={activity} />}
 
-        <details className={styles.menu}>
+        <details className={styles.menu} onClick={(e) => e.stopPropagation()}>
           <summary className={styles.menu_trigger} aria-label='Меню карточки'>
             <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'><circle cx='12' cy='5' r='1.4' /><circle cx='12' cy='12' r='1.4' /><circle cx='12' cy='19' r='1.4' /></svg>
           </summary>

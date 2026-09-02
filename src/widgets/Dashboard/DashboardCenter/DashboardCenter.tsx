@@ -124,6 +124,7 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
   const [bookingService, setBookingService] = useState<ServiceItem | null>(null)
 
   const canBook = !isOwner && session?.user?.role === 'STUDENT'
+  const blockedFromBooking = !isOwner && !!session?.user && session.user.role !== 'STUDENT'
 
   async function handleDeletePost(id: string) {
     if (!window.confirm(t('deleteConfirm'))) return
@@ -361,7 +362,13 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
               isPersonalForMe={s.isPersonalForMe}
               onDelete={isOwner ? () => handleDeleteService(s.id) : undefined}
               onEdit={isOwner ? () => { setEditingService(s); setServiceModalOpen(true) } : undefined}
-              onBook={canBook ? () => setBookingService(s) : undefined}
+              onBook={
+                canBook
+                  ? () => setBookingService(s)
+                  : blockedFromBooking
+                    ? () => toast.error(t('teachersCannotBook'))
+                    : undefined
+              }
             />
           ))}
 

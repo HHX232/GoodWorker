@@ -835,7 +835,7 @@ function TeachersBlock() {
   const [teacherTotal, setTeacherTotal] = useState<number | null>(null)
 
   useEffect(() => {
-    fetch('/api/teachers?limit=7&page=1')
+    fetch('/api/teachers?limit=7&page=1&sort=score')
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         if (d?.teachers?.length) setTeachers(d.teachers)

@@ -1,9 +1,10 @@
 import { prisma } from '@/shared/prisma/prisma'
+import { resolveTeacherCategories } from '@/shared/utils/resolveRootCategory'
 import { TeacherPublicProfile } from '@/_pages/TeacherPublicProfile/TeacherPublicProfile'
 import { StudentPublicProfile } from '@/_pages/StudentPublicProfile/StudentPublicProfile'
 import { notFound } from 'next/navigation'
 import { auth } from '../../../../auth'
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 import type { Metadata } from 'next'
 
 interface Props { params: Promise<{ id: string }> }
@@ -47,6 +48,20 @@ export default async function UserPublicPage({ params }: Props) {
               id: true,
               slug: true,
               translations: { select: { langCode: true, name: true } },
+              parent: {
+                select: {
+                  id: true,
+                  slug: true,
+                  translations: { select: { langCode: true, name: true } },
+                  parent: {
+                    select: {
+                      id: true,
+                      slug: true,
+                      translations: { select: { langCode: true, name: true } },
+                    },
+                  },
+                },
+              },
             },
           },
         },
@@ -65,8 +80,8 @@ export default async function UserPublicPage({ params }: Props) {
         orderBy: { yearFrom: 'desc' },
       }),
     ])
-    const categories = teacher.categories.map(tc => tc.category)
-    const locale = session?.user ? undefined : teacher.langCode
+    const categories = resolveTeacherCategories(teacher.categories).map(rc => rc.category)
+    const locale = session?.user ? await getLocale() : teacher.langCode
 
     return (
       <TeacherPublicProfile

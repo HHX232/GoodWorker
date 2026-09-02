@@ -233,6 +233,30 @@
   &:focus { border-color: #534AB7; background: #fff; }
 }
 
+.textarea {
+  border: 1px solid #EBEBEB;
+  border-radius: 10px;
+  padding: 9px 13px;
+  font-size: 13px;
+  color: #111118;
+  outline: none;
+  font-family: inherit;
+  background: #FAFAFA;
+  resize: vertical;
+  min-height: 90px;
+  transition: border-color 0.15s, background 0.15s;
+
+  &::placeholder { color: #C0C0C0; }
+  &:focus { border-color: #534AB7; background: #fff; }
+}
+
+.charCount {
+  font-size: 11px;
+  color: #ABABAB;
+  align-self: flex-end;
+  margin-top: -6px;
+}
+
 // ── Save row ───────────────────────────────────────────────
 
 .saveRow {
@@ -281,6 +305,22 @@
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+// ── Teaching config modals (languages / subjects) ───────────
+
+.teachingModal {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 280px;
+  max-width: 420px;
+}
+
+.teachingModalTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111118;
 }
 
 .spinner {
@@ -684,6 +724,8 @@
   .sectionLabel { color: rgba(255,255,255,0.2); }
   .label { color: rgba(255,255,255,0.35); }
   .input { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &::placeholder { color: rgba(255,255,255,0.2); } &:focus { border-color: #818cf8; background: rgba(255,255,255,0.07); } }
+  .textarea { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8eaf0; &::placeholder { color: rgba(255,255,255,0.2); } &:focus { border-color: #818cf8; background: rgba(255,255,255,0.07); } }
+  .charCount { color: rgba(255,255,255,0.25); }
 
   .saveBtn { background: rgba(255,255,255,0.1); &:hover:not(:disabled) { background: rgba(255,255,255,0.16); } }
   .removeAvatarBtn { border-color: rgba(239,68,68,0.4); color: #f87171; &:hover { background: rgba(239,68,68,0.1); } }
