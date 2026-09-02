@@ -1000,6 +1000,7 @@
       "creating": "Creating service...",
       "created": "Service created!",
       "create": "Create service",
+      "save": "Save service",
       "errorTitle": "Enter title",
       "errorPrice": "Enter price",
       "errorCreate": "Error creating service",

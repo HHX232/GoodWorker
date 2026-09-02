@@ -966,6 +966,7 @@
       "creating": "正在创建服务...",
       "created": "服务已创建！",
       "create": "创建服务",
+      "save": "保存服务",
       "errorTitle": "请输入标题",
       "errorPrice": "请输入价格",
       "errorCreate": "创建服务时出错",
