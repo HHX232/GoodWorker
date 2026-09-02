@@ -37,11 +37,21 @@
    background-color: #fff;
    border-radius: 15px;
    padding: 15px;
+}
 
-   &>h1 {
-      text-align: center;
+.page_header {
+   display: flex;
+   align-items: flex-start;
+   justify-content: space-between;
+   gap: 12px;
+
+   h1 {
+      flex: 1 1 auto;
+      min-width: 0;
       font-size: 42px;
       font-weight: 500;
+      margin: 0;
+      word-break: break-word;
    }
 }
 
@@ -187,9 +197,9 @@
    .main_content {
       background-color: #1a1c27;
       color: #e8eaf0;
-
-      > h1 { color: #e8eaf0; }
    }
+
+   .page_header h1 { color: #e8eaf0; }
 
    .title { color: #e8eaf0; }
    .theme { color: #6b7280; }

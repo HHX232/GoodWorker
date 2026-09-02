@@ -12,6 +12,7 @@ import {ResultToast} from '@/shared/ui/Tasks/ResultToast/ResultToast'
 import {NavBar} from '@/widgets/BaseUI'
 import {TestErrorStatsPanel} from '@/widgets/Tests/TestErrorStatsPanel/TestErrorStatsPanel'
 import {SavedTest} from '@/widgets/Tasks/Storage/testStorage'
+import {DownloadTestButton} from '@/widgets/Tasks/TestExport/DownloadTestButton'
 import {useSession} from 'next-auth/react'
 import {toast} from 'sonner'
 import styles from './TakeTestPage.module.scss'
@@ -127,7 +128,10 @@ export default function TakeTestPage() {
       <NavBar />
       <div className={styles.main_content}>
         {isTeacher && <TestErrorStatsPanel testId={testId} />}
-        <h1>{test.title}</h1>
+        <div className={styles.page_header}>
+          <h1>{test.title}</h1>
+          <DownloadTestButton test={test} />
+        </div>
         <TestPlayer showInlineResult={false} blocks={test.blocks} onResult={handleResult} />
       </div>
     </div>
