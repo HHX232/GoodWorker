@@ -111,14 +111,127 @@ function fmtStat(n: number): string {
   return String(n)
 }
 
+// ─── Hero H1 dev editor (development only, never renders in production) ──
+const H1_DEV_STORAGE_KEY = 'gw:heroH1Dev'
+const H1_PRESETS: { label: string; main: string; hl: string }[] = [
+  { label: 'Дуальная роль + бесплатно', main: 'Учить и учиться —', hl: 'в одном месте, бесплатно' },
+  { label: 'Вариант пользователя А',    main: 'Получайте знания —', hl: 'рутину автоматизируем мы' },
+  { label: 'Вариант пользователя Б',    main: 'Всё для урока —',    hl: 'бесплатно, в одном месте' },
+  { label: 'Обе роли явно',             main: 'Давайте знания. Получайте знания.', hl: 'рутину берём на себя' },
+]
+
+function HeroH1DevTab({ main, hl, onChange, onReset }: {
+  main: string; hl: string
+  onChange: (main: string, hl: string) => void
+  onReset: () => void
+}) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div style={{
+      position: 'fixed', left: 12, bottom: 12, zIndex: 999,
+      fontFamily: 'ui-monospace, monospace', fontSize: 12,
+    }}>
+      {open ? (
+        <div style={{
+          width: 300, background: '#1a1a1f', color: '#e8e8ef', borderRadius: 10,
+          border: '1px solid #33333c', boxShadow: '0 12px 32px -8px rgba(0,0,0,0.5)',
+          padding: 12,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <span style={{ fontWeight: 700, color: '#ffd23e' }}>DEV · H1 editor</span>
+            <button onClick={() => setOpen(false)} style={{
+              background: 'none', border: 'none', color: '#8c8c98', cursor: 'pointer', fontSize: 14,
+            }}>×</button>
+          </div>
+
+          <label style={{ display: 'block', color: '#8c8c98', marginBottom: 3 }}>Основной текст</label>
+          <input
+            value={main}
+            onChange={e => onChange(e.target.value, hl)}
+            style={{
+              width: '100%', background: '#0e0e12', color: '#e8e8ef', border: '1px solid #33333c',
+              borderRadius: 6, padding: '6px 8px', marginBottom: 8, fontSize: 12, fontFamily: 'inherit',
+            }}
+          />
+
+          <label style={{ display: 'block', color: '#8c8c98', marginBottom: 3 }}>Акцент (красный)</label>
+          <input
+            value={hl}
+            onChange={e => onChange(main, e.target.value)}
+            style={{
+              width: '100%', background: '#0e0e12', color: RED, border: '1px solid #33333c',
+              borderRadius: 6, padding: '6px 8px', marginBottom: 10, fontSize: 12, fontFamily: 'inherit',
+            }}
+          />
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 10 }}>
+            {H1_PRESETS.map(p => (
+              <button
+                key={p.label}
+                onClick={() => onChange(p.main, p.hl)}
+                style={{
+                  textAlign: 'left', background: '#23232b', border: '1px solid #33333c', borderRadius: 6,
+                  padding: '6px 8px', color: '#e8e8ef', cursor: 'pointer', fontSize: 11.5, fontFamily: 'inherit',
+                }}
+              >
+                <div style={{ color: '#8c8c98', fontSize: 10, marginBottom: 1 }}>{p.label}</div>
+                {p.main} <span style={{ color: RED }}>{p.hl}</span>
+              </button>
+            ))}
+          </div>
+
+          <button onClick={onReset} style={{
+            width: '100%', background: 'none', border: '1px solid #33333c', borderRadius: 6,
+            padding: '6px 8px', color: '#8c8c98', cursor: 'pointer', fontSize: 11.5, fontFamily: 'inherit',
+          }}>Сбросить к оригиналу</button>
+        </div>
+      ) : (
+        <button onClick={() => setOpen(true)} style={{
+          background: '#1a1a1f', color: '#ffd23e', border: '1px solid #33333c', borderRadius: 8,
+          padding: '7px 10px', cursor: 'pointer', fontSize: 11.5, fontFamily: 'inherit', fontWeight: 600,
+          boxShadow: '0 8px 20px -6px rgba(0,0,0,0.4)',
+        }}>DEV · H1</button>
+      )}
+    </div>
+  )
+}
+
 // ─── Hero ───────────────────────────────────────────────────────
 function HeroSection() {
   const t = useTranslations('LandingPage')
   const { data: session } = useSession()
   const user = session?.user as { name?: string; role?: string } | undefined
   const stats = usePublicStats()
+
+  const [h1Override, setH1Override] = useState<{ main: string; hl: string } | null>(null)
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'development') return
+    try {
+      const saved = localStorage.getItem(H1_DEV_STORAGE_KEY)
+      if (saved) setH1Override(JSON.parse(saved))
+    } catch {}
+  }, [])
+
+  const h1Main = h1Override?.main ?? t('hero_h1')
+  const h1Hl = h1Override?.hl ?? t('hero_h1_hl')
+
   return (
     <div className={s.hero}>
+      {process.env.NODE_ENV === 'development' && (
+        <HeroH1DevTab
+          main={h1Main}
+          hl={h1Hl}
+          onChange={(main, hl) => {
+            setH1Override({ main, hl })
+            try { localStorage.setItem(H1_DEV_STORAGE_KEY, JSON.stringify({ main, hl })) } catch {}
+          }}
+          onReset={() => {
+            setH1Override(null)
+            try { localStorage.removeItem(H1_DEV_STORAGE_KEY) } catch {}
+          }}
+        />
+      )}
+
       <div className={s.hero_left}>
         {user && (
           <div className={s.hero_greeting}>
@@ -129,8 +242,8 @@ function HeroSection() {
         )}
 
         <h1 className={s.hero_h1}>
-          {t('hero_h1')}{' '}
-          <span style={{ color: RED }}>{t('hero_h1_hl')}</span>
+          {h1Main}{' '}
+          <span style={{ color: RED }}>{h1Hl}</span>
         </h1>
 
         <div className={s.hero_typing}>
