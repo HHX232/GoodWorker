@@ -78,13 +78,13 @@ export default async function RootLayout({
         </noscript>
         {/* /Yandex.Metrika counter */}
 
-        {/* Google Tag Manager — beforeInteractive makes Next.js inject this
-            into the initial HTML <head>, matching Google's "as high as
-            possible" placement requirement regardless of where the
-            component sits in the tree. */}
+        {/* Google Tag Manager. strategy="afterInteractive" is Next.js's
+            documented recommendation for tag managers — early enough not to
+            miss tracking, but without blocking hydration the way
+            beforeInteractive would. */}
         <Script
           id="gtm-script"
-          strategy="beforeInteractive"
+          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -97,7 +97,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         {/* Yandex.Metrika counter */}
         <Script
           id="yandex-metrika"
-          strategy="beforeInteractive"
+          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `(function(m,e,t,r,i,k,a){
     m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
