@@ -33,43 +33,6 @@ interface IHighlightedSlider {
   error?: boolean;
 }
 
-
-const MOCK_IMAGE   = 'https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd?w=800';
-const MOCK_IMAGE_2 = 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800';
-const MOCK_IMAGE_3 = 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800';
-
-export const MOCK_HIGHLIGHTED_POSTS: ISliderPost[] = [
-  {
-    id: '1',
-    title: 'Как стать Senior за 2 года',
-    subtitle: 'Разбираем реальный путь роста от Junior до Senior разработчика',
-    backgroundImage: MOCK_IMAGE,
-    author: { id: '101', username: 'Алексей Смирнов', avatar: 'https://i.pravatar.cc/150?img=1', role: 'Teacher' },
-  },
-  {
-    id: '2',
-    title: 'TypeScript: продвинутые паттерны',
-    subtitle: 'Generic, Conditional Types и mapped types на реальных примерах',
-    backgroundImage: MOCK_IMAGE_2,
-    author: { id: '102', username: 'Мария Иванова', avatar: 'https://i.pravatar.cc/150?img=5', role: 'Admin' },
-  },
-  {
-    id: '3',
-    title: 'Next.js App Router: полный гайд',
-    subtitle: 'Server Components, layouts и streaming — всё что нужно знать',
-    backgroundImage: MOCK_IMAGE_3,
-    author: { id: '103', username: 'Дмитрий Козлов', avatar: 'https://i.pravatar.cc/150?img=8', role: 'Teacher' },
-  },
-  {
-    id: '4',
-    title: 'CSS Grid vs Flexbox',
-    subtitle: 'Когда использовать Grid, а когда Flexbox — наглядное сравнение',
-    backgroundImage: MOCK_IMAGE,
-    author: { id: '104', username: 'Анна Петрова', avatar: 'https://i.pravatar.cc/150?img=9', role: 'Student' },
-  },
-];
-
-
 const ArrowLeft: FC = () => (
   <button
     className={`${style.custom_box_left} highlighted-prev`}
@@ -121,11 +84,15 @@ const SkeletonSlides: FC = () => (
 
 
 export  const HighlightedSlider: FC<IHighlightedSlider> = ({
-  posts = MOCK_HIGHLIGHTED_POSTS,
+  posts = [],
   isLoading = false,
   error = false,
 }) => {
   const showSkeleton = isLoading || error;
+
+  // No fabricated placeholder posts — if there's nothing real to show and
+  // we're not actively loading, just don't render the slider at all.
+  if (!showSkeleton && posts.length === 0) return null;
 
   return (
     <div className={style.slider_wrapper}>
