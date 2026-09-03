@@ -1,6 +1,7 @@
 'use client';
 
 import Skeleton from '@mui/material/Skeleton';
+import Link from 'next/link';
 import { FC } from 'react';
 import { Autoplay, Navigation } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -91,8 +92,16 @@ export  const HighlightedSlider: FC<IHighlightedSlider> = ({
   const showSkeleton = isLoading || error;
 
   // No fabricated placeholder posts — if there's nothing real to show and
-  // we're not actively loading, just don't render the slider at all.
-  if (!showSkeleton && posts.length === 0) return null;
+  // we're not actively loading, show an honest empty slot instead.
+  if (!showSkeleton && posts.length === 0) {
+    return (
+      <div className={style.empty_card}>
+        <p className={style.empty_title}>Здесь может быть ваш выделенный пост</p>
+        <p className={style.empty_desc}>Обращайтесь за публикацией в поддержку</p>
+        <Link href="/feedback" className={style.empty_btn}>Написать в поддержку</Link>
+      </div>
+    );
+  }
 
   return (
     <div className={style.slider_wrapper}>

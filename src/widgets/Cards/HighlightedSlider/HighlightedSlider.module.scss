@@ -30,6 +30,57 @@
   border-radius: 12px;
 }
 
+/* ── Пустой слот (нет VIP-постов) ─────────────── */
+.empty_card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  aspect-ratio: 19/20;
+  max-height: 260px;
+  border-radius: 12px;
+  border: 1.5px dashed #DADCEB;
+  background: #FAFAFC;
+  text-align: center;
+  padding: 24px;
+}
+
+.empty_title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #33333d;
+  margin: 0;
+}
+
+.empty_desc {
+  font-size: 13px;
+  color: #868897;
+  margin: 0;
+}
+
+.empty_btn {
+  margin-top: 8px;
+  padding: 9px 16px;
+  border-radius: 9px;
+  background: #111118;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s;
+
+  &:hover { background: #2c2c38; }
+}
+
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .empty_card { border-color: rgba(255,255,255,0.12); background: rgba(255,255,255,0.03); }
+  .empty_title { color: #e8eaf0; }
+  .empty_desc { color: rgba(255,255,255,0.4); }
+  .empty_btn { background: rgba(255,255,255,0.1); &:hover { background: rgba(255,255,255,0.16); } }
+}
+
 /* ── Стрелки ──────────────────────────────────── */
 
 .custom_box_right,
