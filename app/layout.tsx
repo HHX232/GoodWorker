@@ -54,8 +54,8 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <DefaultProvider>
             <Header />
-            <LazyClientWidgets />
             <TutorialProvider>
+              <LazyClientWidgets />
               <TextSelectionProvider>{children}</TextSelectionProvider>
             </TutorialProvider>
             <div id='modal_portal' />
