@@ -1,4 +1,5 @@
 import {prisma} from '@/shared/prisma/prisma'
+import {dedupeById} from '@/shared/utils/dedupeById'
 import {NextRequest, NextResponse} from 'next/server'
 import {auth} from '../../../auth'
 import {cookies} from 'next/headers'
@@ -27,7 +28,7 @@ export async function POST(req: Request) {
       teacherId: teacher.id,
       title,
       aiTopic: theme,
-      content: {description, blocks},
+      content: {description, blocks: dedupeById(blocks)},
       originalLang,
       testCategories: {
         create: (categoryIds as string[]).map((categoryId) => ({categoryId}))

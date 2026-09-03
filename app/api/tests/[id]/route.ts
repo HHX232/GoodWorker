@@ -1,4 +1,5 @@
 import {prisma} from '@/shared/prisma/prisma'
+import {dedupeById} from '@/shared/utils/dedupeById'
 import {NextResponse} from 'next/server'
 import {auth} from '../../../../auth'
 
@@ -43,7 +44,7 @@ export async function PATCH(req: Request, {params}: Params) {
       data: {
         title,
         aiTopic: theme,
-        content: {description, blocks},
+        content: {description, blocks: dedupeById(blocks)},
         testCategories: {
           create: (categoryIds as string[]).map((categoryId: string) => ({categoryId}))
         }
