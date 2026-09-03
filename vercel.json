@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/close-stale-rooms",
+      "schedule": "*/10 * * * *"
+    }
+  ]
+}

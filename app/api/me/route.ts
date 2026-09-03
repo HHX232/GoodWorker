@@ -1,5 +1,6 @@
 // app/api/me/route.ts
 import {prisma} from '@/shared/prisma/prisma'
+import {resolveTeacherCategories} from '@/shared/utils/resolveRootCategory'
 import {NextResponse} from 'next/server'
 import {auth} from '../../../auth'
 
@@ -27,13 +28,29 @@ export async function GET() {
           pasportConfirmed: true,
           createdAt: true,
           updatedAt: true,
+          languages: true,
+          bio: true,
           categories: {
             select: {
               category: {
                 select: {
                   id: true,
                   slug: true,
-                  translations: true
+                  translations: true,
+                  parent: {
+                    select: {
+                      id: true,
+                      slug: true,
+                      translations: true,
+                      parent: {
+                        select: {
+                          id: true,
+                          slug: true,
+                          translations: true
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -45,7 +62,11 @@ export async function GET() {
         return NextResponse.json({error: 'Unauthorized'}, {status: 401})
       }
 
-      return NextResponse.json({role: 'TEACHER', ...teacher})
+      return NextResponse.json({
+        role: 'TEACHER',
+        ...teacher,
+        categories: resolveTeacherCategories(teacher.categories)
+      })
     }
 
     const student = await prisma.student.findUnique({

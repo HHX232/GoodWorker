@@ -32,10 +32,12 @@ function CreateTestPage() {
 
   useEffect(() => {
     if (!existingId) return
+    let ignore = false
     resetConstructor()
     fetch(`/api/tests/${existingId}`)
       .then(r => r.json())
       .then(data => {
+        if (ignore) return
         if (data.title) setTitle(data.title)
         if (data.aiTopic) setTheme(data.aiTopic)
         const content = data.content as {description?: string; blocks?: TestBlock[]}
@@ -45,7 +47,8 @@ function CreateTestPage() {
         if (ids.length > 0) setCategoryIds(ids)
       })
       .catch(() => {})
-      .finally(() => setLoadingTest(false))
+      .finally(() => { if (!ignore) setLoadingTest(false) })
+    return () => { ignore = true }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existingId])
 

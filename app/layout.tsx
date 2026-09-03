@@ -1,6 +1,6 @@
 import DefaultProvider from '@/app/providers/DefaultProvider'
+import { LazyClientWidgets } from '@/app/providers/LazyClientWidgets'
 import { TutorialProvider } from '@/widgets/Tutorial/TutorialContext'
-import TutorialOverlay from '@/widgets/Tutorial/TutorialOverlay'
 import 'flag-icons/css/flag-icons.min.css'
 import '@/shared/scss/_variables.scss'
 import '@/shared/scss/config/functions.scss'
@@ -15,7 +15,6 @@ import type { Metadata } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getMessages } from 'next-intl/server'
 import { Roboto } from 'next/font/google'
-import {ThemedToaster} from '@/app/providers/ThemedToaster'
 
 const robotoSans = Roboto({
   weight: ['300', '400', '500', '600', '700'],
@@ -55,9 +54,8 @@ export default async function RootLayout({
         <NextIntlClientProvider messages={messages}>
           <DefaultProvider>
             <Header />
-            <ThemedToaster />
             <TutorialProvider>
-              <TutorialOverlay />
+              <LazyClientWidgets />
               <TextSelectionProvider>{children}</TextSelectionProvider>
             </TutorialProvider>
             <div id='modal_portal' />

@@ -1,119 +1,26 @@
-import {prisma} from '@/shared/prisma/prisma'
+import {fetchPostsList} from '@/features/services/posts.server'
 import {NextRequest, NextResponse} from 'next/server'
 import {auth} from '../../../auth'
-import {localizePost} from '@/lib/postAI'
-
-async function getCategorySubtree(categoryId: string): Promise<string[]> {
-  const result = await prisma.$queryRaw<{id: string}[]>`
-    WITH RECURSIVE subtree AS (
-      SELECT id FROM "Category" WHERE id = ${categoryId}
-      UNION ALL
-      SELECT c.id FROM "Category" c
-      INNER JOIN subtree s ON c."parentId" = s.id
-    )
-    SELECT id FROM subtree
-  `
-  return result.map((r) => r.id)
-}
-
-function buildVisibilityWhere(userId?: string, userRole?: string) {
-  if (!userId) return {visibility: 'PUBLIC' as const}
-
-  if (userRole === 'TEACHER' || userRole === 'ADMIN') {
-    return {OR: [{visibility: 'PUBLIC' as const}, {teacherId: userId}]}
-  }
-
-  if (userRole === 'STUDENT') {
-    return {
-      OR: [
-        {visibility: 'PUBLIC' as const},
-        {
-          visibility: 'STUDENTS' as const,
-          teacher: {students: {some: {studentId: userId}}}
-        },
-        {
-          visibility: 'SELECTED' as const,
-          allowedStudents: {some: {studentId: userId}}
-        }
-      ]
-    }
-  }
-
-  return {visibility: 'PUBLIC' as const}
-}
 
 export async function GET(req: NextRequest) {
   try {
     const session = await auth()
-    const userId = session?.user?.id
-    const userRole = session?.user?.role
-
     const {searchParams} = new URL(req.url)
-    const page = Math.max(1, Number(searchParams.get('page') ?? 1))
-    const limit = Math.min(50, Math.max(1, Number(searchParams.get('limit') ?? 12)))
-    const categoryId = searchParams.get('categoryId') ?? undefined
-    const teacherId = searchParams.get('teacherId') ?? undefined
-    const search = searchParams.get('search') ?? undefined
-    const onlyVip = searchParams.get('onlyVip') === 'true'
-    const sortBy = searchParams.get('sortBy') === 'viewCount' ? 'viewCount' : 'createdAt'
-    const skip = (page - 1) * limit
-    const now = new Date()
 
-    const [categoryIds, visibilityWhere] = await Promise.all([
-      categoryId ? getCategorySubtree(categoryId) : Promise.resolve(undefined),
-      Promise.resolve(buildVisibilityWhere(userId, userRole))
-    ])
-
-    const baseFilters = [
-      ...(onlyVip ? [{isVip: true, vipExpiresAt: {gt: now}}] : []),
-      ...(categoryIds ? [{categoryId: {in: categoryIds}}] : []),
-      ...(teacherId ? [{teacherId}] : []),
-      ...(search ? [{title: {contains: search, mode: 'insensitive' as const}}] : [])
-    ]
-
-    const postQueryConfig = {
-      skip,
-      take: limit,
-      orderBy: {[sortBy]: 'desc'} as const,
-      include: {
-        teacher: {select: {id: true, name: true, avatarUrl: true}},
-        _count: {select: {comments: true}}
-      }
-    }
-
-    let posts: Awaited<ReturnType<typeof prisma.post.findMany>>
-    let total: number
-
-    try {
-      const where = {AND: [visibilityWhere, {moderationStatus: 'PUBLISHED' as const}, ...baseFilters]}
-      ;[posts, total] = await Promise.all([
-        prisma.post.findMany({...postQueryConfig, where}),
-        prisma.post.count({where})
-      ])
-    } catch {
-      // moderationStatus column may not exist yet — query without it
-      const where = {AND: [visibilityWhere, ...baseFilters]}
-      ;[posts, total] = await Promise.all([
-        prisma.post.findMany({...postQueryConfig, where}),
-        prisma.post.count({where})
-      ])
-    }
-
-    const postIds = posts.map((p) => p.id)
-    const avgRatings = await prisma.postRating.groupBy({
-      by: ['postId'],
-      where: {postId: {in: postIds}},
-      _avg: {stars: true}
+    const result = await fetchPostsList({
+      page: searchParams.get('page') ? Number(searchParams.get('page')) : undefined,
+      limit: searchParams.get('limit') ? Number(searchParams.get('limit')) : undefined,
+      categoryId: searchParams.get('categoryId') ?? undefined,
+      teacherId: searchParams.get('teacherId') ?? undefined,
+      search: searchParams.get('search') ?? undefined,
+      onlyVip: searchParams.get('onlyVip') === 'true',
+      sortBy: searchParams.get('sortBy') === 'viewCount' ? 'viewCount' : 'createdAt',
+      lang: searchParams.get('lang') ?? undefined,
+      userId: session?.user?.id,
+      userRole: session?.user?.role
     })
-    const ratingMap = Object.fromEntries(avgRatings.map((r) => [r.postId, r._avg.stars ?? 0]))
 
-    const lang = searchParams.get('lang') ?? 'ru'
-    const postsWithRating = posts.map((p) => localizePost({...p, avgRating: ratingMap[p.id] ?? 0}, lang))
-
-    return NextResponse.json({
-      posts: postsWithRating,
-      pagination: {page, limit, total, totalPages: Math.ceil(total / limit)}
-    })
+    return NextResponse.json(result)
   } catch (error) {
     console.error('[GET /api/posts]', error)
     return NextResponse.json({error: 'Internal server error'}, {status: 500})

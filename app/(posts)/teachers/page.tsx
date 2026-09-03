@@ -7,6 +7,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 import {prisma} from '@/shared/prisma/prisma'
+import {resolveTeacherCategories} from '@/shared/utils/resolveRootCategory'
 import TeachersPage from '@/_pages/PublickPages/TeachersPage/TeachersPage'
 
 const PAGE_LIMIT = 12
@@ -30,7 +31,21 @@ async function getInitialTeachers() {
               select: {
                 id: true,
                 slug: true,
-                translations: {select: {langCode: true, name: true}}
+                translations: {select: {langCode: true, name: true}},
+                parent: {
+                  select: {
+                    id: true,
+                    slug: true,
+                    translations: {select: {langCode: true, name: true}},
+                    parent: {
+                      select: {
+                        id: true,
+                        slug: true,
+                        translations: {select: {langCode: true, name: true}}
+                      }
+                    }
+                  }
+                }
               }
             }
           }
@@ -45,10 +60,11 @@ async function getInitialTeachers() {
   ])
 
   return {
-    teachers: teachers.map(({reviews, services, ...t}) => {
+    teachers: teachers.map(({reviews, services, categories, ...t}) => {
       const cheapest = services[0]
       return {
         ...t,
+        categories: resolveTeacherCategories(categories),
         lastSeenAt: t.lastSeenAt ? t.lastSeenAt.toISOString() : null,
         avgRating: reviews.length ? reviews.reduce((sum, r) => sum + r.stars, 0) / reviews.length : null,
         reviewsCount: reviews.length,

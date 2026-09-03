@@ -8,6 +8,7 @@ import {useEffect, useState} from 'react'
 import {calculateResult, StudentAnswer, TestResult} from '@/features/Tasks/TaskResult/scoreBlock'
 import instance, {axiosClassic} from '@/shared/api'
 import {ITestFull} from '@/shared/types/Tasks/test.types'
+import {dedupeById} from '@/shared/utils/dedupeById'
 import {ResultToast} from '@/shared/ui/Tasks/ResultToast/ResultToast'
 import {NavBar} from '@/widgets/BaseUI'
 import {TestErrorStatsPanel} from '@/widgets/Tests/TestErrorStatsPanel/TestErrorStatsPanel'
@@ -62,7 +63,7 @@ export default function TakeTestPage() {
           title: data.title,
           theme: data.aiTopic ?? '',
           description: data.content.description ?? '',
-          blocks: data.content.blocks
+          blocks: dedupeById(data.content.blocks)
         })
       })
       .catch(() => setNotFound(true))

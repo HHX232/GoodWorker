@@ -1,34 +1,46 @@
 import {ExportBlock, ExportModel, questionTitle} from './buildExportModel'
 
+const BLANK = '_'.repeat(32)
+
 function questionLines(block: Extract<ExportBlock, {kind: 'question'}>): {text: string; bold?: boolean}[][] {
   const title = [{text: questionTitle(block)}]
   switch (block.type) {
     case 'choose':
-      return [
-        title,
-        ...block.options.map((o) => [{text: '  •  '}, {text: o, bold: block.correctOptions.includes(o)}])
-      ]
+      return [title, ...block.options.map((o) => [{text: `  ${o.label}) ${o.text}`}])]
     case 'free':
+      return [title, [{text: `  ${block.answerPrompt}`}], [{text: `  ${BLANK}`}], [{text: `  ${BLANK}`}]]
+    case 'match':
       return [
         title,
-        ...(block.referenceAnswer ? [[{text: '  Ответ: '}, {text: block.referenceAnswer, bold: true}]] : [])
+        ...block.left.map((l) => [{text: `  ${l.label}. ${l.text}`}]),
+        [{text: ''}],
+        ...block.right.map((r) => [{text: `  ${r.label}) ${r.text}`}]),
+        [{text: ''}],
+        [{text: `  ${block.answerPrompt} ${BLANK}`}]
       ]
-    case 'match':
-      return [title, ...block.pairs.map((p) => [{text: `  ${p.left} — `}, {text: p.right, bold: true}])]
     case 'fill':
       return [title, [{text: `  ${block.text}`}]]
     case 'sequence':
-      return [title, ...block.items.map((item, i) => [{text: `  ${i + 1}. ${item}`}])]
+      return [
+        title,
+        ...block.items.map((item) => [{text: `  ${item.label}) ${item.text}`}]),
+        [{text: `  ${block.answerPrompt} ${BLANK}`}]
+      ]
     case 'highlight':
       return [title, ...[block.instruction, block.text].filter(Boolean).map((t) => [{text: `  ${t}`}])]
     case 'scramble':
       return [
         title,
-        [{text: '  '}, {text: block.source, bold: true}],
-        ...(block.hint ? [[{text: `  Подсказка: ${block.hint}`}]] : [])
+        [{text: `  ${block.scrambled}`}],
+        ...(block.hint ? [[{text: `  Подсказка: ${block.hint}`}]] : []),
+        [{text: `  ${block.answerPrompt} ${BLANK}`}]
       ]
     case 'dialogue':
-      return [title, ...block.lines.map((l) => [{text: `  ${l.speaker}: ${l.text}`}])]
+      return [
+        title,
+        ...block.lines.map((l) => [{text: `  ${l.label}) ${l.speaker}: ${l.text}`}]),
+        [{text: `  ${block.answerPrompt} ${BLANK}`}]
+      ]
   }
 }
 

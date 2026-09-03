@@ -115,3 +115,41 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: e.message ?? 'Internal error' }, { status: 500 })
   }
 }
+
+// DELETE /api/call/rooms?id=xxx — end a room owned by the caller (moves it to
+// "Прошедшие" — the row and its transcript are kept, only the live LiveKit
+// room is torn down and the room is marked ended).
+export async function DELETE(req: NextRequest) {
+  try {
+    const session = await auth()
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const { searchParams } = new URL(req.url)
+    const id = searchParams.get('id')
+    if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
+
+    const room = await prisma.videoCallRoom.findUnique({ where: { id } })
+    if (!room) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    if (room.ownerId !== session.user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+    if (room.endedAt) return NextResponse.json({ ok: true, alreadyEnded: true })
+
+    const apiKey = process.env.LIVEKIT_API_KEY
+    const apiSecret = process.env.LIVEKIT_API_SECRET
+    const lkUrl = process.env.LIVEKIT_URL ?? 'wss://goodworker-livekit.up.railway.app'
+    if (apiKey && apiSecret) {
+      try {
+        const svc = new RoomServiceClient(lkUrl.replace(/^wss?:\/\//, 'https://'), apiKey, apiSecret)
+        await svc.deleteRoom(room.name)
+      } catch {
+        // Room may already be gone from LiveKit (empty-timeout expired) — non-fatal
+      }
+    }
+
+    await prisma.videoCallRoom.update({ where: { id }, data: { endedAt: new Date() } })
+    return NextResponse.json({ ok: true })
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message ?? 'Internal error' }, { status: 500 })
+  }
+}

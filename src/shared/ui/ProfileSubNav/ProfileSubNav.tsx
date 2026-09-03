@@ -9,7 +9,7 @@ export function ProfileSubNav() {
   const links = [
     { label: t('sub_teachers'), href: '/teachers' },
     { label: t('sub_posts'),    href: '/posts' },
-    { label: t('sub_courses'),  href: '/teachers' },
+    { label: t('sub_courses'),  href: '/workflows-list' },
     { label: t('sub_support'),  href: '/feedback' },
   ]
 

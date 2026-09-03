@@ -3,6 +3,7 @@ import {axiosClassic} from '@/shared/api'
 import {useLocale} from 'next-intl'
 import {useQuery} from '@tanstack/react-query'
 import {useEffect, useRef, useState} from 'react'
+import {createPortal} from 'react-dom'
 import styles from './CategorySelect.module.scss'
 
 interface CategoryOption {
@@ -67,6 +68,8 @@ export function CategorySelect({
   const [open, setOpen] = useState(false)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
   const rootRef = useRef<HTMLDivElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const [coords, setCoords] = useState<{top: number; left: number; width: number} | null>(null)
 
   useEffect(() => {
     if (!open) return
@@ -76,6 +79,24 @@ export function CategorySelect({
     return () => cancelAnimationFrame(id)
   }, [open])
 
+  // Dropdown is portaled out of the tree (a modal ancestor's transform/overflow
+  // would otherwise clip it), so its position has to be tracked manually.
+  useEffect(() => {
+    if (!open) return
+    const updateCoords = () => {
+      if (!rootRef.current) return
+      const rect = rootRef.current.getBoundingClientRect()
+      setCoords({top: rect.bottom, left: rect.left, width: rect.width})
+    }
+    updateCoords()
+    window.addEventListener('resize', updateCoords)
+    window.addEventListener('scroll', updateCoords, true)
+    return () => {
+      window.removeEventListener('resize', updateCoords)
+      window.removeEventListener('scroll', updateCoords, true)
+    }
+  }, [open])
+
   const {data: allCategories = [], isLoading} = useCategories(activeLang)
   const categories = maxLevel ? allCategories.filter((c) => c.levelNumber <= maxLevel) : allCategories
 
@@ -83,7 +104,10 @@ export function CategorySelect({
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
+      const target = e.target as Node
+      const insideRoot = rootRef.current?.contains(target)
+      const insideDropdown = dropdownRef.current?.contains(target)
+      if (!insideRoot && !insideDropdown) {
         setOpen(false)
       }
     }
@@ -241,12 +265,17 @@ export function CategorySelect({
         </span>
       </button>
 
-      {open && (
-        <div className={styles.dropdown}>
+      {open && coords && typeof document !== 'undefined' && createPortal(
+        <div
+          ref={dropdownRef}
+          className={styles.dropdown}
+          style={{position: 'fixed', top: coords.top, left: coords.left, width: coords.width, zIndex: 2147483000}}
+        >
           {(treeMap['root']?.length ?? 0) === 0 && !isLoading && <div className={styles.empty}>{activeLang === 'ru' ? 'Нет категорий' : activeLang === 'hi' ? 'कोई श्रेणी नहीं' : activeLang === 'zh' ? '暂无类别' : 'No categories'}</div>}
 
           {renderNodes(null, 1)}
-        </div>
+        </div>,
+        document.getElementById('modal_portal') ?? document.body
       )}
     </div>
   )

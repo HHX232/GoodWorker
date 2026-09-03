@@ -19,6 +19,8 @@ export interface IStudentProfile extends BaseProfile {
 export interface ITeacherProfile extends BaseProfile {
   role: 'TEACHER'
   pasportConfirmed: boolean | null
+  languages: string[]
+  bio: string | null
   categories: {
     category: {
       id: string
