@@ -2509,6 +2509,7 @@
       "vipBadge": "VIP",
       "vipToast": "自动课程计划仅对 VIP 用户开放",
       "studentRequired": "请先选择学生",
+      "subjectRequired": "请先选择课程科目",
       "generating": "正在分析学生历史记录...",
       "generateError": "生成课程计划失败",
       "viewFullPlan": "查看完整计划",

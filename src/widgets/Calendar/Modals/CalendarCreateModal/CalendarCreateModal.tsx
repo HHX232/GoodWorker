@@ -35,6 +35,7 @@ interface CalendarCreateModalProps {
   editingEvent?: CalendarEvent | null
   teacherServices?: ServiceOption[]
   teacherStudents?: StudentOption[]
+  teacherCategoryIds?: string[]
   isVip?: boolean
 }
 
@@ -64,6 +65,7 @@ export function CalendarCreateModal({
   editingEvent,
   teacherServices,
   teacherStudents = [],
+  teacherCategoryIds,
   isVip = false,
 }: CalendarCreateModalProps) {
   const t = useTranslations('calendar.createModal')
@@ -77,12 +79,14 @@ export function CalendarCreateModal({
   const [lessonPlan, setLessonPlan] = useState<LessonPlan | null>(null)
   const [generatingPlan, setGeneratingPlan] = useState(false)
   const [studentFieldError, setStudentFieldError] = useState(false)
+  const [subjectFieldError, setSubjectFieldError] = useState(false)
   const [planModalOpen, setPlanModalOpen] = useState(false)
   const [autoSummary, setAutoSummary] = useState('')
 
   useEffect(() => {
     if (!isOpen) { setTab('event'); return }
     setStudentFieldError(false)
+    setSubjectFieldError(false)
     setPlanModalOpen(false)
     setGeneratingPlan(false)
     if (editingEvent) {
@@ -137,12 +141,17 @@ export function CalendarCreateModal({
       toast.error(tPlan('studentRequired'))
       return
     }
+    if (!form.categoryId) {
+      setSubjectFieldError(true)
+      toast.error(tPlan('subjectRequired'))
+      return
+    }
     setGeneratingPlan(true)
     try {
       const res = await fetch('/api/teacher/lesson-plan', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({studentId: form.studentId, categoryId: form.categoryId || undefined}),
+        body: JSON.stringify({studentId: form.studentId, categoryId: form.categoryId}),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Failed to generate plan')
@@ -328,8 +337,13 @@ export function CalendarCreateModal({
               langCode={locale}
               canSelectMany={false}
               maxLevel={3}
+              allowedRootIds={teacherCategoryIds}
+              error={subjectFieldError}
               value={form.categoryId ? [form.categoryId] : []}
-              onChange={(ids) => setForm((prev) => ({...prev, categoryId: ids[0] ?? ''}))}
+              onChange={(ids) => {
+                setSubjectFieldError(false)
+                setForm((prev) => ({...prev, categoryId: ids[0] ?? ''}))
+              }}
               placeholder={t('subjectPlaceholder')}
             />
           </div>

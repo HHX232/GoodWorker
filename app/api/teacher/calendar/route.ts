@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
   const teacherId = await resolveTeacherId(req, id, role)
   if (!teacherId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const [teacher, conferences] = await Promise.all([
+  const [teacher, conferences, categoryLinks] = await Promise.all([
     prisma.teacher.findUnique({ where: { id: teacherId }, select: { calendar: true } }),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (prisma.conference.findMany as any)({
@@ -54,6 +54,7 @@ export async function GET(req: NextRequest) {
         },
       },
     }),
+    prisma.teacherCategory.findMany({ where: { teacherId }, select: { categoryId: true } }),
   ])
 
   const calendarData = teacher?.calendar as { events?: unknown[]; tasks?: unknown[] } | null
@@ -100,6 +101,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     events: [...storedEvents, ...conferenceEvents],
     tasks: calendarData?.tasks ?? [],
+    categoryIds: categoryLinks.map(l => l.categoryId),
   })
 }
 
