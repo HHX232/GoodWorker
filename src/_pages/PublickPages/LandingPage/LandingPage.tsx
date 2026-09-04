@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { slugify } from '@/shared/lib/slugify'
+import { useMediaQuery } from '@/shared/hooks/useMediaQuery'
 import s from './LandingPage.module.scss'
 import TypingText from './TypingText'
 
@@ -202,6 +203,9 @@ function HeroSection() {
   const { data: session } = useSession()
   const user = session?.user as { name?: string; role?: string } | undefined
   const stats = usePublicStats()
+  // WebGL scene still mounts and runs its render loop even while hidden by
+  // .hero_globe's CSS — skip it outright on mobile instead of just hiding it.
+  const isMobile = useMediaQuery('(max-width: 860px)')
 
   const [h1Override, setH1Override] = useState<{ main: string; hl: string } | null>(null)
   useEffect(() => {
@@ -285,7 +289,7 @@ function HeroSection() {
       </div>
 
       <div className={s.hero_globe}>
-        <KnowledgeGlobe />
+        {!isMobile && <KnowledgeGlobe />}
       </div>
     </div>
   )
@@ -1103,6 +1107,7 @@ function PdfTestPromo() {
 
 function FeaturesBlock() {
   const t = useTranslations('LandingPage')
+  const isMobile = useMediaQuery('(max-width: 860px)')
   const features = [
     { badgeKey: 'f1_badge', badgeColor: '#1f8a4c', titleKey: 'f1_title', descKey: 'f1_desc', kind: 'ico' as const, accent: '#ff7a3d' },
     { badgeKey: 'f2_badge', badgeColor: RED, titleKey: 'f2_title', descKey: 'f2_desc', kind: 'cube' as const, accent: RED },
@@ -1120,7 +1125,7 @@ function FeaturesBlock() {
         {features.map(f => (
           <div key={f.titleKey} className={s.feature_card}>
             <div className={s.feature_shape}>
-              <ThreeShape kind={f.kind} accent={f.accent} size={120} />
+              {!isMobile && <ThreeShape kind={f.kind} accent={f.accent} size={120} />}
             </div>
             <span className={s.feature_badge} style={{ color: f.badgeColor, background: `${f.badgeColor}18` }}>{t(f.badgeKey as Parameters<typeof t>[0])}</span>
             <div className={s.feature_title}>{t(f.titleKey as Parameters<typeof t>[0])}</div>
