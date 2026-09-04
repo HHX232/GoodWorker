@@ -27,11 +27,42 @@ const SYSTEM_PROMPT = `Ты — опытный ассистент репетит
 
 interface LessonPlanRequestBody {
   studentId: string
-  categoryId?: string
+  categoryId: string
 }
 
 function pickCategoryName(translations: {langCode: string; name: string}[]): string {
   return translations.find(t => t.langCode === 'ru')?.name ?? translations[0]?.name ?? ''
+}
+
+/** categoryId + every descendant id, walked from a flat {id, parentId} list. */
+function collectSubtreeIds(rootId: string, all: {id: string; parentId: string | null}[]): Set<string> {
+  const childrenByParent = new Map<string, string[]>()
+  for (const c of all) {
+    if (!c.parentId) continue
+    if (!childrenByParent.has(c.parentId)) childrenByParent.set(c.parentId, [])
+    childrenByParent.get(c.parentId)!.push(c.id)
+  }
+  const result = new Set<string>([rootId])
+  const queue = [rootId]
+  while (queue.length) {
+    const cur = queue.shift()!
+    for (const child of childrenByParent.get(cur) ?? []) {
+      if (!result.has(child)) { result.add(child); queue.push(child) }
+    }
+  }
+  return result
+}
+
+/** Top-level ancestor id of a category, walked from a flat {id, parentId} list. */
+function getRootCategoryId(id: string, all: {id: string; parentId: string | null}[]): string {
+  const byId = new Map(all.map(c => [c.id, c]))
+  let cur = byId.get(id)
+  while (cur?.parentId) {
+    const parent = byId.get(cur.parentId)
+    if (!parent) break
+    cur = parent
+  }
+  return cur?.id ?? id
 }
 
 export async function POST(req: NextRequest) {
@@ -56,6 +87,9 @@ export async function POST(req: NextRequest) {
     if (!studentId) {
       return NextResponse.json({error: 'studentId required'}, {status: 400})
     }
+    if (!categoryId) {
+      return NextResponse.json({error: 'categoryId required'}, {status: 400})
+    }
 
     const relationship = await prisma.teacherStudent.findUnique({
       where: {teacherId_studentId: {teacherId, studentId}}
@@ -64,19 +98,34 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({error: 'Unauthorized'}, {status: 401})
     }
 
-    const [teacherCategories, errors, attempts, roadmapProgress] = await Promise.all([
-      prisma.teacherCategory.findMany({
-        where: {teacherId},
-        include: {category: {include: {translations: {where: {langCode: 'ru'}}}}}
-      }),
+    const [teacherCategories, allCategories] = await Promise.all([
+      prisma.teacherCategory.findMany({where: {teacherId}, select: {categoryId: true}}),
+      prisma.category.findMany({select: {id: true, parentId: true, translations: {where: {langCode: 'ru'}}}})
+    ])
+
+    const taughtRootIds = new Set(teacherCategories.map(tc => tc.categoryId))
+    if (!taughtRootIds.has(getRootCategoryId(categoryId, allCategories))) {
+      return NextResponse.json({error: 'Category is not taught by this teacher'}, {status: 403})
+    }
+
+    const subtreeIds = [...collectSubtreeIds(categoryId, allCategories)]
+
+    const byId = new Map(allCategories.map(c => [c.id, c]))
+    const subjectParts: string[] = []
+    for (let cur = byId.get(categoryId); cur; cur = cur.parentId ? byId.get(cur.parentId) : undefined) {
+      subjectParts.unshift(pickCategoryName(cur.translations))
+    }
+    const subject = subjectParts.join(' - ')
+
+    const [errors, attempts, roadmapProgress] = await Promise.all([
       prisma.studentError.findMany({
-        where: {studentId, isCorrection: false},
+        where: {studentId, isCorrection: false, categories: {some: {categoryId: {in: subtreeIds}}}},
         orderBy: {createdAt: 'desc'},
         take: 30,
         include: {categories: {include: {category: {include: {translations: {where: {langCode: 'ru'}}}}}}}
       }),
       prisma.studentTestAttempt.findMany({
-        where: {studentId, test: {teacherId}},
+        where: {studentId, test: {teacherId, testCategories: {some: {categoryId: {in: subtreeIds}}}}},
         orderBy: {startedAt: 'desc'},
         take: 15,
         include: {
@@ -89,35 +138,10 @@ export async function POST(req: NextRequest) {
         }
       }),
       prisma.studentRoadmapProgress.findMany({
-        where: {studentId, roadmap: {teacherId}},
+        where: {studentId, roadmap: {teacherId, roadmapCategories: {some: {categoryId: {in: subtreeIds}}}}},
         select: {completedSteps: true, roadmap: {select: {title: true}}}
       })
     ])
-
-    const teacherCategoryNames = teacherCategories.map(tc => ({
-      id: tc.categoryId,
-      name: pickCategoryName(tc.category.translations)
-    }))
-
-    let subject = ''
-    if (categoryId) {
-      subject = teacherCategoryNames.find(c => c.id === categoryId)?.name ?? ''
-    } else {
-      const taughtIds = new Set(teacherCategoryNames.map(c => c.id))
-      const errorCategoryCounts = new Map<string, number>()
-      for (const err of errors) {
-        for (const ec of err.categories) {
-          if (!taughtIds.has(ec.categoryId)) continue
-          errorCategoryCounts.set(ec.categoryId, (errorCategoryCounts.get(ec.categoryId) ?? 0) + 1)
-        }
-      }
-      const topCategoryId = [...errorCategoryCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0]
-      if (topCategoryId) {
-        subject = teacherCategoryNames.find(c => c.id === topCategoryId)?.name ?? ''
-      } else if (teacherCategoryNames.length === 1) {
-        subject = teacherCategoryNames[0].name
-      }
-    }
 
     const errorsBlock = errors.length
       ? errors.map(e => {
@@ -138,7 +162,9 @@ export async function POST(req: NextRequest) {
       ? roadmapProgress.map(p => `- курс "${p.roadmap.title}": пройдено шагов — ${p.completedSteps.length}`).join('\n')
       : 'нет данных'
 
-    const userPrompt = `Предмет урока: ${subject || 'не определён, определи сам по истории'}
+    const userPrompt = `Предмет урока: ${subject}
+
+Ниже — история ученика, уже отфильтрованная строго по этому предмету и его подтемам. Не выходи за его рамки: не предлагай темы и рекомендации по другим предметам, даже если в общей истории ученика они есть.
 
 === ОШИБКИ ИЗ ИСТОРИИ (недавние) ===
 ${errorsBlock}
@@ -159,7 +185,7 @@ ${roadmapBlock}`
     }>(raw)
 
     return NextResponse.json({
-      subject: plan.subject || subject || 'Общий урок',
+      subject: subject || plan.subject || 'Общий урок',
       summary: plan.summary ?? '',
       reviewSteps: plan.reviewSteps ?? [],
       activeSteps: plan.activeSteps ?? [],
