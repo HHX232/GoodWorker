@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Offer-блоки — варианты для главной</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Russo+One&family=JetBrains+Mono:wght@500;600;700&family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0e0e12; --gray:#6b6b7a; --border:#ececf2; --paper:#fafafa;
+    --radius:22px; --radius-btn:14px;
+    --red:#ED0606;      --red-ink:#8a0404;
+    --violet:#7c3aed;   --violet-ink:#4c1d95;
+    --amber:#c9820f;    --amber-ink:#7a4c07;
+    --teal:#0f9d8c;     --teal-ink:#0a5e53;
+    --plum:#7a1f4b;     --plum-ink:#4a112d;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'Roboto',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .intro{
+    max-width:900px; margin:0 auto; padding:56px 24px 24px;
+  }
+  .intro h1{
+    font-family:'Russo One',system-ui,sans-serif; font-weight:400;
+    font-size:clamp(28px,4vw,38px); line-height:1.12; letter-spacing:-0.01em;
+    margin:0 0 12px;
+  }
+  .intro p{
+    font-size:15px; line-height:1.6; color:var(--gray); max-width:640px; margin:0;
+  }
+  .intro .note{
+    margin-top:16px; font-family:'JetBrains Mono',monospace; font-size:12px;
+    color:#9a9aa6; letter-spacing:0.02em;
+  }
+
+  main{ max-width:900px; margin:0 auto; padding:24px 24px 120px; display:flex; flex-direction:column; gap:28px; }
+
+  .row_label{
+    display:flex; align-items:baseline; gap:10px; margin:8px 2px 2px;
+  }
+  .row_label .n{
+    font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:700;
+    color:#c4c4cc;
+  }
+  .row_label .name{
+    font-size:13px; font-weight:600; color:var(--gray);
+  }
+
+  /* ── Offer card — shared anatomy ─────────────────── */
+  .offer{
+    border-radius:var(--radius);
+    padding:26px 28px;
+    display:flex; align-items:center; gap:22px;
+    position:relative; overflow:hidden;
+  }
+  .offer_icon{
+    flex:0 0 auto;
+    width:48px; height:48px; border-radius:14px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .offer_icon svg{ width:23px; height:23px; }
+  .offer_body{ flex:1 1 auto; min-width:0; }
+  .offer_tag{
+    display:inline-block;
+    font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600;
+    letter-spacing:0.06em; text-transform:uppercase;
+    padding:3px 9px; border-radius:999px; margin-bottom:9px;
+  }
+  .offer_h{
+    font-family:'Russo One',system-ui,sans-serif; font-weight:400;
+    font-size:21px; line-height:1.18; letter-spacing:-0.005em;
+    margin:0 0 6px;
+  }
+  .offer_desc{
+    font-size:14px; line-height:1.5; margin:0; max-width:46ch;
+  }
+  .offer_cta{
+    flex:0 0 auto;
+    display:inline-flex; align-items:center; gap:8px;
+    height:44px; padding:0 20px; border-radius:var(--radius-btn);
+    font-size:14px; font-weight:600; text-decoration:none;
+    white-space:nowrap; cursor:pointer;
+    transition:transform .13s ease, box-shadow .18s ease;
+  }
+  .offer_cta:hover{ transform:translateY(-2px); }
+  .offer_cta:active{ transform:translateY(0); }
+  .offer_cta svg{ width:14px; height:14px; flex:0 0 auto; }
+
+  @media (max-width:620px){
+    .offer{ flex-direction:column; align-items:flex-start; padding:22px 20px; }
+    .offer_cta{ width:100%; justify-content:center; }
+  }
+
+  /* ── Tint style (restrained: white card, accent 8-10%) ── */
+  .offer--tint{ background:#fff; border:1px solid var(--border); }
+  .offer--red.offer--tint{ box-shadow:0 10px 28px -18px rgba(237,6,6,0.35); }
+  .offer--red .offer_icon{ background:rgba(237,6,6,0.10); color:var(--red); }
+  .offer--red .offer_tag{ background:rgba(237,6,6,0.10); color:var(--red-ink); }
+  .offer--red .offer_desc{ color:var(--gray); }
+  .offer--red .offer_cta{ background:var(--red); color:#fff; box-shadow:0 12px 28px -14px rgba(237,6,6,0.55); }
+  .offer--red .offer_cta:hover{ background:#c80505; box-shadow:0 16px 32px -14px rgba(237,6,6,0.65); }
+
+  .offer--violet.offer--tint{ box-shadow:0 10px 28px -18px rgba(124,58,237,0.30); }
+  .offer--violet .offer_icon{ background:rgba(124,58,237,0.10); color:var(--violet); }
+  .offer--violet .offer_tag{ background:rgba(124,58,237,0.10); color:var(--violet-ink); }
+  .offer--violet .offer_desc{ color:var(--gray); }
+  .offer--violet .offer_cta{ background:var(--violet); color:#fff; box-shadow:0 12px 28px -14px rgba(124,58,237,0.5); }
+  .offer--violet .offer_cta:hover{ background:#6926d9; box-shadow:0 16px 32px -14px rgba(124,58,237,0.6); }
+
+  .offer--teal.offer--tint{ box-shadow:0 10px 28px -18px rgba(15,157,140,0.28); }
+  .offer--teal .offer_icon{ background:rgba(15,157,140,0.12); color:var(--teal); }
+  .offer--teal .offer_tag{ background:rgba(15,157,140,0.12); color:var(--teal-ink); }
+  .offer--teal .offer_desc{ color:var(--gray); }
+  .offer--teal .offer_cta{ background:var(--teal); color:#fff; box-shadow:0 12px 28px -14px rgba(15,157,140,0.5); }
+  .offer--teal .offer_cta:hover{ background:#0c7d70; box-shadow:0 16px 32px -14px rgba(15,157,140,0.6); }
+
+  /* ── Solid-fill style (committed: saturated card, white text) ── */
+  .offer--solid{ color:#fff; }
+  .offer--solid .offer_icon{ background:rgba(255,255,255,0.16); color:#fff; }
+  .offer--solid .offer_desc{ color:rgba(255,255,255,0.78); }
+  .offer--solid .offer_cta{ background:#fff; }
+  .offer--solid .offer_cta:hover{ box-shadow:0 14px 30px -14px rgba(0,0,0,0.35); }
+
+  .offer--ink{ background:var(--ink); box-shadow:0 16px 36px -18px rgba(0,0,0,0.45); }
+  .offer--ink .offer_tag{ background:rgba(255,255,255,0.14); color:#fff; }
+  .offer--ink .offer_cta{ color:var(--ink); }
+
+  .offer--amber{ background:linear-gradient(155deg,#d9930f,#b16f08); box-shadow:0 16px 36px -18px rgba(0,0,0,0.32); }
+  .offer--amber .offer_tag{ background:rgba(255,255,255,0.18); color:#fff; }
+  .offer--amber .offer_cta{ color:var(--amber-ink); }
+
+  .offer--plum{ background:linear-gradient(155deg,#8a2456,#5c1636); box-shadow:0 16px 36px -18px rgba(0,0,0,0.35); }
+  .offer--plum .offer_tag{ background:rgba(255,255,255,0.16); color:#fff; }
+  .offer--plum .offer_cta{ color:var(--plum-ink); }
+
+  footer{
+    max-width:900px; margin:0 auto; padding:0 24px 64px;
+    font-size:12.5px; color:#b0b0bc; font-family:'JetBrains Mono',monospace;
+  }
+</style>
+</head>
+<body>
+
+  <header class="intro">
+    <h1>Offer-блоки — 6 вариантов</h1>
+    <p>Один и тот же блок (иконка + заголовок + строка описания + кнопка) в разных цветовых
+       решениях: три сдержанных (белая карточка + акцент) и три насыщенных (заливка цветом).
+       Копирайт честный — без выдуманных цифр и без цены VIP (её ещё нет в продукте).</p>
+    <p class="note">Ссылки — заглушки (href="#"), файл не подключён к роутингу приложения.</p>
+  </header>
+
+  <main>
+
+    <div class="row_label"><span class="n">01</span><span class="name">Красный — сдержанный (текущий primary-акцент сайта)</span></div>
+    <section class="offer offer--red offer--tint">
+      <div class="offer_icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.6 12.4 12.6 20.4a2 2 0 0 1-2.8 0L3 13.6V4h9.6l8 8.4Z"/><circle cx="7.5" cy="8.5" r="1.5"/>
+        </svg>
+      </div>
+      <div class="offer_body">
+        <span class="offer_tag">Бесплатно</span>
+        <h3 class="offer_h">Всё бесплатно, без карты</h3>
+        <p class="offer_desc">Видеозвонки, курсы, календарь и сборка тестов из файла — доступны сразу после регистрации.</p>
+      </div>
+      <a href="#" class="offer_cta">Начать бесплатно</a>
+    </section>
+
+    <div class="row_label"><span class="n">02</span><span class="name">Фиолетовый — сдержанный (уже встречается в UI звонков)</span></div>
+    <section class="offer offer--violet offer--tint">
+      <div class="offer_icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>
+        </svg>
+      </div>
+      <div class="offer_body">
+        <span class="offer_tag">Маркетплейс</span>
+        <h3 class="offer_h">Найдите своего репетитора</h3>
+        <p class="offer_desc">Учителя по разным предметам и языкам — с рейтингом и отзывами учеников.</p>
+      </div>
+      <a href="#" class="offer_cta">Смотреть учителей</a>
+    </section>
+
+    <div class="row_label"><span class="n">03</span><span class="name">Бирюзовый — сдержанный (новый акцент)</span></div>
+    <section class="offer offer--teal offer--tint">
+      <div class="offer_icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2.5" y="6" width="14" height="12" rx="2.5"/><path d="m21.5 8.3-5 3.2v1l5 3.2Z"/>
+        </svg>
+      </div>
+      <div class="offer_body">
+        <span class="offer_tag">Функция</span>
+        <h3 class="offer_h">Урок ведёт конспект — не вы</h3>
+        <p class="offer_desc">Каждый видеозвонок расшифровывается автоматически: ничего не забудете и не потеряете.</p>
+      </div>
+      <a href="#" class="offer_cta">Как это работает</a>
+    </section>
+
+    <div class="row_label"><span class="n">04</span><span class="name">Чёрный — насыщенный (тон кнопки btn_dark)</span></div>
+    <section class="offer offer--ink offer--solid">
+      <div class="offer_icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+          <path d="m9.5 14.5 2 2 3.5-4"/>
+        </svg>
+      </div>
+      <div class="offer_body">
+        <span class="offer_tag">Инструмент</span>
+        <h3 class="offer_h">Соберите тест из файла за 60 секунд</h3>
+        <p class="offer_desc">Загрузите документ с вопросами — сервис сам распознает варианты и правильные ответы.</p>
+      </div>
+      <a href="#" class="offer_cta">Загрузить файл</a>
+    </section>
+
+    <div class="row_label"><span class="n">05</span><span class="name">Янтарный — насыщенный (новый акцент)</span></div>
+    <section class="offer offer--amber offer--solid">
+      <div class="offer_icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 10c0 6-4.5 11-10 11S2 16 2 10c2 1 4.5 1 6-1 1.3 2 3 3 4 3s2.7-1 4-3c1.5 2 4 2 6 1Z"/><path d="M8 10c0-3 1.8-6 4-8 2.2 2 4 5 4 8"/>
+        </svg>
+      </div>
+      <div class="offer_body">
+        <span class="offer_tag">Для преподавателей</span>
+        <h3 class="offer_h">Станьте преподавателем на GoodWorker</h3>
+        <p class="offer_desc">Ведите занятия, публикуйте курсы и получайте учеников через платформу.</p>
+      </div>
+      <a href="#" class="offer_cta">Стать преподавателем</a>
+    </section>
+
+    <div class="row_label"><span class="n">06</span><span class="name">Сливовый — насыщенный, премиальный (VIP-тизер, без цены)</span></div>
+    <section class="offer offer--plum offer--solid">
+      <div class="offer_icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 8.5 7 11l5-6 5 6 4-2.5-2 10.5H5L3 8.5Z"/>
+        </svg>
+      </div>
+      <div class="offer_body">
+        <span class="offer_tag">VIP</span>
+        <h3 class="offer_h">VIP — скоро</h3>
+        <p class="offer_desc">Больше форматов файлов и снятые лимиты на вопросы. Цена уточняется.</p>
+      </div>
+      <a href="#" class="offer_cta">Узнать первым</a>
+    </section>
+
+  </main>
+
+  <footer>ForNewDesign/prototypes/offer-blocks-goodworker.html · сравнение цветов, не финальная сборка</footer>
+
+</body>
+</html>

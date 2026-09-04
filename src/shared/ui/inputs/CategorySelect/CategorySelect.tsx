@@ -6,12 +6,24 @@ import {useEffect, useRef, useState} from 'react'
 import {createPortal} from 'react-dom'
 import styles from './CategorySelect.module.scss'
 
-interface CategoryOption {
+export interface CategoryOption {
   id: string
   slug: string
   levelNumber: number
   name: string
   parentId: string | null
+}
+
+/** Full ancestor-to-leaf label, e.g. "Русский - Фонетика - ...". */
+export function getCategoryPath(id: string, categories: CategoryOption[]): string {
+  const byId = new Map(categories.map((c) => [c.id, c]))
+  const parts: string[] = []
+  let cur = byId.get(id)
+  while (cur) {
+    parts.unshift(cur.name)
+    cur = cur.parentId ? byId.get(cur.parentId) : undefined
+  }
+  return parts.join(' - ')
 }
 
 interface CategorySelectProps {
@@ -41,7 +53,7 @@ function buildTree(categories: CategoryOption[]) {
   return map
 }
 
-function useCategories(langCode: string) {
+export function useCategories(langCode: string) {
   return useQuery({
     queryKey: ['categories', langCode],
     queryFn: async () => {
@@ -237,7 +249,7 @@ export function CategorySelect({
                   color: '#fff'
                 }}
               >
-                {cat.name}
+                {getCategoryPath(cat.id, categories)}
                 <span
                   className={styles.tag_remove}
                   onMouseDown={(e) => {

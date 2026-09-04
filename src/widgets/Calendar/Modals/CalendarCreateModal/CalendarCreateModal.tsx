@@ -4,11 +4,12 @@ import {useState, useEffect} from 'react'
 import {useRouter} from 'next/navigation'
 import {CalendarEvent, CalendarEventColor, LessonPlan} from '@/shared/types/Calendar/calendar.types'
 import {EVENT_COLORS, formatDateKey} from '@/shared/helpers/calendar/calendar.helpers'
-import {useTranslations} from 'next-intl'
+import {useLocale, useTranslations} from 'next-intl'
 import {toast} from 'sonner'
 import styles from './CalendarCreateModal.module.scss'
 import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
 import {LessonPlanModal} from '@/widgets/Calendar/Modals/LessonPlanModal/LessonPlanModal'
+import {CategorySelect, getCategoryPath, useCategories} from '@/shared/ui/inputs/CategorySelect/CategorySelect'
 
 type Tab = 'event' | 'note' | 'homework'
 
@@ -24,11 +25,6 @@ interface StudentOption {
   name: string
 }
 
-interface CategoryOption {
-  id: string
-  name: string
-}
-
 interface CalendarCreateModalProps {
   isOpen: boolean
   onClose: () => void
@@ -39,8 +35,6 @@ interface CalendarCreateModalProps {
   editingEvent?: CalendarEvent | null
   teacherServices?: ServiceOption[]
   teacherStudents?: StudentOption[]
-  teacherSubjects?: string[]
-  teacherCategories?: CategoryOption[]
   isVip?: boolean
 }
 
@@ -70,13 +64,13 @@ export function CalendarCreateModal({
   editingEvent,
   teacherServices,
   teacherStudents = [],
-  teacherSubjects = [],
-  teacherCategories = [],
   isVip = false,
 }: CalendarCreateModalProps) {
   const t = useTranslations('calendar.createModal')
   const tPlan = useTranslations('calendar.lessonPlan')
   const router = useRouter()
+  const locale = useLocale()
+  const {data: categories = []} = useCategories(locale)
   const [tab, setTab] = useState<Tab>('event')
   const [form, setForm] = useState(EMPTY_FORM)
   const [selectedServiceId, setSelectedServiceId] = useState('')
@@ -133,12 +127,6 @@ export function CalendarCreateModal({
     setForm((prev) => ({...prev, studentId: id, studentName: student?.name ?? ''}))
   }
 
-  const handleSubjectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const name = e.target.value
-    const category = teacherCategories.find(c => c.name === name)
-    setForm((prev) => ({...prev, subject: name, categoryId: category?.id ?? ''}))
-  }
-
   const handleGeneratePlan = async () => {
     if (!isVip) {
       toast.error(tPlan('vipToast'))
@@ -178,6 +166,7 @@ export function CalendarCreateModal({
       return
     }
     const svc = teacherServices?.find(s => s.id === selectedServiceId)
+    const subjectPath = form.categoryId ? getCategoryPath(form.categoryId, categories) : ''
     onSave({
       ...(editingEvent ? {id: editingEvent.id} : {}),
       title: form.title.trim(),
@@ -188,7 +177,7 @@ export function CalendarCreateModal({
       status: form.status,
       studentId: form.studentId || undefined,
       studentName: form.studentName.trim() || undefined,
-      subject: form.subject.trim() || undefined,
+      subject: subjectPath || undefined,
       categoryId: form.categoryId || undefined,
       description: form.description.trim() || undefined,
       noteType: tab === 'note' ? 'note' : undefined,
@@ -204,20 +193,16 @@ export function CalendarCreateModal({
 
   const isEditing = !!editingEvent
 
+  const modalTitle = (
+    <div className={styles.modalTitle}>
+      <span className={styles.eyebrow}>{isEditing ? t('editEvent') : t('newEvent')}</span>
+      <span className={styles.title}>{isEditing ? t('editTitle') : t('createTitle')}</span>
+    </div>
+  )
+
   return (
     <>
-    <ModalWindowDefault isOpen={isOpen} onClose={onClose}>
-      <div className={styles.header}>
-        <div className={styles.headerLeft}>
-          <div className={styles.eyebrow}>{isEditing ? t('editEvent') : t('newEvent')}</div>
-          <div className={styles.title}>{isEditing ? t('editTitle') : t('createTitle')}</div>
-        </div>
-        <button className={styles.closeBtn} onClick={onClose}>
-          <svg width='12' height='12' viewBox='0 0 24 24' fill='none'>
-            <path d='M18 6L6 18M6 6l12 12' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
-          </svg>
-        </button>
-      </div>
+    <ModalWindowDefault isOpen={isOpen} onClose={onClose} additionalTitle={modalTitle}>
 
       {/* Tab switcher */}
       <div className={styles.tabRow}>
@@ -339,26 +324,14 @@ export function CalendarCreateModal({
         <div className={styles.row}>
           <div className={styles.field}>
             <label className={styles.label}>{t('subjectLabel')}</label>
-            {teacherSubjects.length > 0 ? (
-              <select
-                className={styles.input}
-                value={form.subject}
-                onChange={handleSubjectChange}
-              >
-                <option value=''>{t('subjectPlaceholder')}</option>
-                {teacherSubjects.map(s => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            ) : (
-              <input
-                className={styles.input}
-                type='text'
-                placeholder={t('subjectPlaceholder')}
-                value={form.subject}
-                onChange={set('subject')}
-              />
-            )}
+            <CategorySelect
+              langCode={locale}
+              canSelectMany={false}
+              maxLevel={3}
+              value={form.categoryId ? [form.categoryId] : []}
+              onChange={(ids) => setForm((prev) => ({...prev, categoryId: ids[0] ?? ''}))}
+              placeholder={t('subjectPlaceholder')}
+            />
           </div>
           <div className={styles.field}>
             <label className={styles.label}>{t('statusLabel')}</label>
