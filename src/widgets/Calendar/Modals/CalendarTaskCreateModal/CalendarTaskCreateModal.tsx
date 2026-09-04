@@ -133,7 +133,7 @@ export function CalendarTaskCreateModal({isOpen, onClose, onSave, editingTask}: 
         <div className={styles.row}>
           <div className={styles.field}>
             <label className={styles.label}>{t('dueDateLabel')}</label>
-            <input className={styles.input} type='date' value={form.dueDate} onChange={set('dueDate')} />
+            <input className={styles.input} type='date' value={form.dueDate} onChange={set('dueDate')} onClick={(e) => e.currentTarget.showPicker?.()} />
           </div>
           <div className={styles.field}>
             <label className={styles.label}>{t('categoryLabel')}</label>

@@ -497,7 +497,7 @@
   .editBtn { &:hover { background: rgba(129,140,248,0.08); } }
   .btnPrimary { background: #818cf8; &:hover { background: #6366f1; } }
   .fieldLabel { color: rgba(255,255,255,0.25); }
-  .input { background: #23263a; border-color: rgba(255,255,255,0.08); color: #e8eaf0; &:focus { border-color: #818cf8; background: #1f2130; } }
+  .input { background: #23263a; border-color: rgba(255,255,255,0.08); color: #e8eaf0; color-scheme: dark; &:focus { border-color: #818cf8; background: #1f2130; } }
   .textarea { background: #23263a; border-color: rgba(255,255,255,0.08); color: #e8eaf0; &:focus { border-color: #818cf8; background: #1f2130; } }
   .priorityBtn { background: #23263a; border-color: rgba(255,255,255,0.08); color: rgba(255,255,255,0.35); &:hover { background: #2e3148; } }
   .checklistProgress { color: rgba(255,255,255,0.3); }
