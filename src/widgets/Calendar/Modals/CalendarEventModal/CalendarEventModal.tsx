@@ -45,23 +45,18 @@ export function CalendarEventModal({event, onClose, onEdit, onDelete, onConfirm}
     cancelled: {label: t('statusCancelled'), bg: '#FCEBEB', color: '#A32D2D'}
   }
 
-  return (
-    <ModalWindowDefault isOpen={!!event} onClose={onClose}>
-      <div className={styles.header}>
-        <div className={styles.headerLeft}>
-          <div className={styles.eyebrow}>{t('eventLabel')}</div>
-          <div className={styles.title}>
-            <div className={styles.colorDot} style={{background: colors.border}} />
-            {event.title}
-          </div>
-        </div>
-        <button className={styles.closeBtn} onClick={onClose}>
-          <svg width='12' height='12' viewBox='0 0 24 24' fill='none'>
-            <path d='M18 6L6 18M6 6l12 12' stroke='currentColor' strokeWidth='2' strokeLinecap='round' />
-          </svg>
-        </button>
-      </div>
+  const modalTitle = (
+    <div className={styles.modalTitle}>
+      <span className={styles.eyebrow}>{t('eventLabel')}</span>
+      <span className={styles.title}>
+        <span className={styles.colorDot} style={{background: colors.border}} />
+        {event.title}
+      </span>
+    </div>
+  )
 
+  return (
+    <ModalWindowDefault isOpen={!!event} onClose={onClose} additionalTitle={modalTitle}>
       <div className={styles.body}>
         {event.warning && (
           <div style={{
