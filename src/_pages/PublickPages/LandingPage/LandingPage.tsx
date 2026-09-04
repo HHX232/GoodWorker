@@ -1011,7 +1011,7 @@ function TeachersBlock() {
                       <path d="M3 7l4 4 5-7 5 7 4-4v11H3z" />
                     </svg>
                   )}
-                  <Link href={`/teacher-profile?id=${teacher.id}`} style={{ textDecoration: 'none' }}>
+                  <Link href={`/users/${teacher.id}`} style={{ textDecoration: 'none' }}>
                     <div className={s.podium_avatar} style={{
                       width: rank === 1 ? 88 : 72, height: rank === 1 ? 88 : 72,
                       background: teacher.avatarUrl
@@ -1053,7 +1053,7 @@ function TeachersBlock() {
                       ? <img src={row.avatarUrl} alt={displayName(row)} style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover' }} />
                       : <Avatar name={displayName(row)} size={34} />
                     }
-                    <Link href={`/teacher-profile?id=${row.id}`} className={s.table_tname}>{displayName(row)}</Link>
+                    <Link href={`/users/${row.id}`} className={s.table_tname}>{displayName(row)}</Link>
                   </span>
                   <span className={s.table_spec}>{teacherSpec(row)}</span>
                   <span className={s.table_students}>{row._count.students.toLocaleString()}</span>

@@ -19,6 +19,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "www.goodworker.by" },
       { protocol: "https", hostname: "www.goodworker.ru" },
       { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "*.srvstatic.kz" },
     ],
   },
   compiler: {
