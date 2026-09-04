@@ -6,20 +6,12 @@ import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindo
 import {StarRating} from '@/shared/ui/Posts/PostCommentSection/PostCommentSection'
 import {CreateImagesInput} from '@/shared/ui/inputs/CreateImagesInput/CreateImagesInput'
 import {TextAreaUI} from '@/shared/ui/inputs/TextAreaUI/TextAreaUI'
+import {uploadFile} from '@/shared/lib/uploadFile'
 import {useQueryClient} from '@tanstack/react-query'
 import {useTranslations} from 'next-intl'
 import {useEffect, useState} from 'react'
 import {toast} from 'sonner'
 import styles from './RoadmapReviewModal.module.scss'
-
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result as string)
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
-}
 
 interface Props {
   roadmapId: string
@@ -56,8 +48,8 @@ export function RoadmapReviewModal({roadmapId, isOpen, onClose, initialStars}: P
     setSubmitting(true)
     const toastId = toast.loading(t('reviewSaving'))
     try {
-      const uploadedBase64 = await Promise.all(newFiles.map(fileToBase64))
-      const allImageUrls = [...activeImages, ...uploadedBase64]
+      const uploadedUrls = await Promise.all(newFiles.map((f) => uploadFile(f, 'roadmap-review')))
+      const allImageUrls = [...activeImages, ...uploadedUrls]
 
       await Promise.all([
         text.trim() || allImageUrls.length > 0

@@ -2,6 +2,7 @@
 
 import { NavBar } from '@/widgets/BaseUI'
 import { CreateImagesInput } from '@/shared/ui/inputs/CreateImagesInput/CreateImagesInput'
+import { uploadFile } from '@/shared/lib/uploadFile'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import Image from 'next/image'
@@ -104,12 +105,7 @@ export function FeedbackPage() {
     try {
       let uploadedPhotoUrl: string | undefined
       if (photoFiles.length > 0) {
-        const toBase64 = (file: File) => new Promise<string>((resolve) => {
-          const reader = new FileReader()
-          reader.onload = () => resolve(reader.result as string)
-          reader.readAsDataURL(file)
-        })
-        const urls = await Promise.all(photoFiles.map(toBase64))
+        const urls = await Promise.all(photoFiles.map((f) => uploadFile(f, 'feedback')))
         uploadedPhotoUrl = urls.length === 1 ? urls[0] : JSON.stringify(urls)
       }
 

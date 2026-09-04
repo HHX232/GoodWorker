@@ -6,6 +6,7 @@ import { CURRENCIES, LOCALE_DEFAULT_CURRENCY } from '@/shared/utils/currencyConv
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { uploadFile } from '@/shared/lib/uploadFile'
 import styles from './CreateServiceModal.module.scss'
 
 interface CategoryOption {
@@ -198,12 +199,15 @@ export function CreateServiceModal({ open, onClose, teacherId, onCreated, initia
 
   if (!open) return null
 
-  function handlePhoto(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handlePhoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = () => setPhotoUrl(reader.result as string)
-    reader.readAsDataURL(file)
+    try {
+      const url = await uploadFile(file, 'service-photos')
+      setPhotoUrl(url)
+    } catch {
+      toast.error(t('photoUploadError'))
+    }
     e.target.value = ''
   }
 

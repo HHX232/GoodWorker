@@ -4,6 +4,7 @@
 
 import {RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
 import {useViewMode} from '@/shared/ui/RoadMap/context/ViewModeContext'
+import {uploadFile} from '@/shared/lib/uploadFile'
 import {useReactFlow, useStore} from '@xyflow/react'
 import {
   DownloadIcon,
@@ -20,7 +21,8 @@ import {
 } from 'lucide-react'
 import {useTranslations} from 'next-intl'
 import Image from 'next/image'
-import {useRef} from 'react'
+import {useRef, useState} from 'react'
+import {toast} from 'sonner'
 import styles from './FileRow.module.scss'
 
 interface UploadedFile {
@@ -181,27 +183,34 @@ export default function FileBlock({nodeId}: {nodeId: string}) {
   const files = useStore(
     (s) => ((s.nodeLookup.get(nodeId)?.data as FileBlockData)?.uploadedFiles ?? []) as UploadedFile[]
   )
+  const [uploading, setUploading] = useState(false)
 
   const update = (patch: Partial<FileBlockData>) => updateNodeData(nodeId, patch as any)
 
-  const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (readOnly) return
     const selected = Array.from(e.target.files ?? [])
     if (!selected.length) return
     const current = files
     const remaining = MAX_FILES - current.length
-    const newFiles: UploadedFile[] = []
-    for (const file of selected.slice(0, remaining)) {
-      if (file.size > MAX_SIZE_MB * 1024 * 1024) continue
-      newFiles.push({
-        name: file.name,
-        size: file.size,
-        mimeType: file.type || 'application/octet-stream',
-        url: URL.createObjectURL(file)
-      })
+    const toUpload = selected.slice(0, remaining).filter((f) => f.size <= MAX_SIZE_MB * 1024 * 1024)
+    setUploading(true)
+    try {
+      const newFiles: UploadedFile[] = await Promise.all(
+        toUpload.map(async (file) => ({
+          name: file.name,
+          size: file.size,
+          mimeType: file.type || 'application/octet-stream',
+          url: await uploadFile(file, 'roadmap-files')
+        }))
+      )
+      update({uploadedFiles: [...current, ...newFiles]})
+    } catch {
+      toast.error(t('uploadError'))
+    } finally {
+      setUploading(false)
+      if (fileRef.current) fileRef.current.value = ''
     }
-    update({uploadedFiles: [...current, ...newFiles]})
-    if (fileRef.current) fileRef.current.value = ''
   }
 
   const removeFile = (index: number) => {
@@ -253,11 +262,12 @@ export default function FileBlock({nodeId}: {nodeId: string}) {
           type='button'
           className={`${styles.uploadBtn} ${files.length > 0 ? styles.uploadBtnCompact : ''}`}
           onClick={() => fileRef.current?.click()}
+          disabled={uploading}
         >
           <UploadIcon size={files.length > 0 ? 14 : 20} />
           <div className={styles.uploadText}>
-            <span>{files.length > 0 ? t('addFiles') : t('uploadFiles')}</span>
-            {files.length === 0 && (
+            <span>{uploading ? t('uploading') : files.length > 0 ? t('addFiles') : t('uploadFiles')}</span>
+            {files.length === 0 && !uploading && (
               <span className={styles.uploadHint}>
                 {t('anyFormatMaxSize', {maxSize: MAX_SIZE_MB, maxFiles: MAX_FILES})}
               </span>

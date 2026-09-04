@@ -1,8 +1,10 @@
 'use client'
 import {InfoAudioPayload} from '@/shared/types/Tasks/TaskPayload.type'
+import {uploadFile} from '@/shared/lib/uploadFile'
 import {Mic2Icon, PauseIcon, PlayIcon, UploadIcon, XIcon} from 'lucide-react'
 import {useTranslations} from 'next-intl'
 import {useCallback, useEffect, useRef, useState} from 'react'
+import {toast} from 'sonner'
 import styles from './InfoAudioEditor.module.scss'
 
 interface Props {
@@ -158,14 +160,17 @@ export const InfoAudioEditor = ({payload, onChange, viewOnly = false}: Props) =>
     const file = e.target.files?.[0]
     if (!file) return
     setExtracting(true)
-    const url = URL.createObjectURL(file)
     try {
-      const waveform = await extractWaveform(file)
+      const [url, waveform] = await Promise.all([
+        uploadFile(file, 'post-audio'),
+        extractWaveform(file).catch(() => Array(100).fill(0.5))
+      ])
       update({url, filename: file.name, waveform})
     } catch {
-      update({url, filename: file.name, waveform: Array(100).fill(0.5)})
+      toast.error(t('uploadError'))
     } finally {
       setExtracting(false)
+      if (fileRef.current) fileRef.current.value = ''
     }
   }
 

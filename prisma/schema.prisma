@@ -102,6 +102,8 @@ model Teacher {
   serviceLabels       String[]            @default([])
   feedbackPromoGiven  Boolean             @default(false)
   referralCode        String?             @unique
+
+  @@index([isVip, createdAt])
 }
 
 model TeacherExperience {
@@ -243,6 +245,7 @@ model TeacherCategory {
   teacher    Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 
   @@id([teacherId, categoryId])
+  @@index([categoryId])
 }
 
 model Post {
@@ -282,6 +285,13 @@ model Post {
 
   allowedStudents  PostAllowedStudent[]
   miniTestAttempts PostTestAttempt[]
+
+  @@index([teacherId])
+  @@index([categoryId])
+  @@index([moderationStatus, visibility])
+  @@index([viewCount])
+  @@index([createdAt])
+  @@index([isVip, vipExpiresAt])
 }
 
 model PostTestAttempt {
@@ -884,6 +894,9 @@ model VideoCallRoom {
   transcriptJson Json?
 
   participants   VideoCallParticipant[]
+
+  @@index([ownerId])
+  @@index([endedAt])
 }
 
 model VideoCallParticipant {

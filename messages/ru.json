@@ -175,6 +175,8 @@
   },
   "InfoMediaEditor": {
     "uploadFile": "Загрузить файл",
+    "uploading": "Загрузка...",
+    "uploadError": "Не удалось загрузить файл",
     "orPasteLink": "или вставить ссылку",
     "urlPlaceholder": "https://youtube.com/watch?v=... или URL картинки",
     "emptyHint": "Загрузите изображение или вставьте ссылку на видео",
@@ -184,13 +186,16 @@
     "uploadAudio": "Загрузить аудиофайл",
     "audioFormats": "MP3, WAV, OGG, M4A",
     "analyzing": "Анализирую аудио...",
-    "studentHint": "Ученик увидит этот плеер в режиме прохождения"
+    "studentHint": "Ученик увидит этот плеер в режиме прохождения",
+    "uploadError": "Не удалось загрузить аудио"
   },
   "InfoFileListEditor": {
     "downloadFile": "Скачать",
     "removeFile": "Удалить",
     "uploadFiles": "Загрузить файлы",
     "addFiles": "Добавить файлы",
+    "uploading": "Загрузка...",
+    "uploadError": "Не удалось загрузить файл",
     "anyFormatMaxSize": "Любые форматы · до {maxSize} МБ · макс {maxFiles} файлов",
     "maxFilesLimit": "Максимум {maxFiles} файлов"
   },
@@ -542,6 +547,8 @@
     "removeFile": "Удалить",
     "uploadFiles": "Загрузить файлы",
     "addFiles": "Добавить файлы",
+    "uploading": "Загрузка...",
+    "uploadError": "Не удалось загрузить файл",
     "anyFormatMaxSize": "Любые форматы · до {maxSize} МБ · макс {maxFiles} файлов",
     "maxFilesLimit": "Максимум {maxFiles} файлов"
   },
@@ -861,6 +868,7 @@
     "reviewSelectStars": "Пожалуйста, выберите оценку",
     "reviewEnterText": "Пожалуйста, напишите отзыв",
     "reviewError": "Не удалось отправить отзыв",
+    "mediaUploadError": "Не удалось загрузить файл",
     "reviewLoginToLeave": "Войдите, чтобы оставить отзыв",
     "reviewsEmpty": "Отзывов пока нет",
     "memberSince": "На платформе с",
@@ -967,6 +975,7 @@
       "close": "Закрыть",
       "photoLabel": "Фото",
       "photoAdd": "Добавить фото",
+      "photoUploadError": "Не удалось загрузить фото",
       "titleLabel": "Название *",
       "titlePlaceholder": "Например: Индивидуальный урок английского",
       "descLabel": "Описание",

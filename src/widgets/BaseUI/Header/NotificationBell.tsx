@@ -2,11 +2,20 @@
 
 import {useSession} from 'next-auth/react'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import {usePathname, useRouter} from 'next/navigation'
 import React, {useCallback, useEffect, useRef, useState} from 'react'
 import {useLocale, useTranslations} from 'next-intl'
 import styles from './NotificationBell.module.scss'
-import {BookingResponseModal, BookingInfo} from '@/widgets/Dashboard/BookingResponseModal/BookingResponseModal'
+import type {BookingInfo} from '@/widgets/Dashboard/BookingResponseModal/BookingResponseModal'
+
+// Rendered for every logged-in user on every page (via Header), but its
+// content stays invisible until a booking notification is actually clicked
+// — keep its code out of the bundle everyone else pays for.
+const BookingResponseModal = dynamic(
+  () => import('@/widgets/Dashboard/BookingResponseModal/BookingResponseModal').then((m) => m.BookingResponseModal),
+  {ssr: false}
+)
 
 function getNotifHref(type: string, payload?: Record<string, unknown>): string {
   if (type === 'NEW_COMPLAINT' || type === 'COMPLAINT_REPLIED' || type === 'COMPLAINT_CLOSED') return '/notifications'

@@ -175,6 +175,8 @@
   },
   "InfoMediaEditor": {
     "uploadFile": "Upload file",
+    "uploading": "Uploading...",
+    "uploadError": "Failed to upload file",
     "orPasteLink": "or paste a link",
     "urlPlaceholder": "https://youtube.com/watch?v=... or image URL",
     "emptyHint": "Upload an image or paste a video link",
@@ -184,13 +186,16 @@
     "uploadAudio": "Upload audio file",
     "audioFormats": "MP3, WAV, OGG, M4A",
     "analyzing": "Analyzing audio...",
-    "studentHint": "The student will see this player during the lesson"
+    "studentHint": "The student will see this player during the lesson",
+    "uploadError": "Failed to upload audio"
   },
   "InfoFileListEditor": {
     "downloadFile": "Download",
     "removeFile": "Remove",
     "uploadFiles": "Upload files",
     "addFiles": "Add files",
+    "uploading": "Uploading...",
+    "uploadError": "Failed to upload file",
     "anyFormatMaxSize": "Any format · up to {maxSize} MB · max {maxFiles} files",
     "maxFilesLimit": "Maximum {maxFiles} files"
   },
@@ -542,6 +547,8 @@
     "removeFile": "Remove",
     "uploadFiles": "Upload files",
     "addFiles": "Add files",
+    "uploading": "Uploading...",
+    "uploadError": "Failed to upload file",
     "anyFormatMaxSize": "Any format · up to {maxSize} MB · max {maxFiles} files",
     "maxFilesLimit": "Maximum {maxFiles} files"
   },
@@ -861,6 +868,7 @@
     "reviewSelectStars": "Please select a rating",
     "reviewEnterText": "Please write a review",
     "reviewError": "Failed to submit review",
+    "mediaUploadError": "Failed to upload file",
     "reviewLoginToLeave": "Log in to leave a review",
     "reviewsEmpty": "No reviews yet",
     "memberSince": "Member since",
@@ -967,6 +975,7 @@
       "close": "Close",
       "photoLabel": "Photo",
       "photoAdd": "Add photo",
+      "photoUploadError": "Failed to upload photo",
       "titleLabel": "Title *",
       "titlePlaceholder": "E.g.: Individual English lesson",
       "descLabel": "Description",

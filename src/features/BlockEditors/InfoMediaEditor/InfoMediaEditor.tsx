@@ -1,9 +1,11 @@
 'use client'
 import { InfoMediaKind, InfoMediaPayload } from '@/shared/types/Tasks/TaskPayload.type'
-import { ImageIcon, UploadIcon, VideoIcon, XIcon } from 'lucide-react'
+import { uploadFile } from '@/shared/lib/uploadFile'
+import { ImageIcon, Loader2Icon, UploadIcon, VideoIcon, XIcon } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
+import { toast } from 'sonner'
 import styles from './InfoMediaEditor.module.scss'
 
 interface Props {
@@ -23,16 +25,24 @@ export const InfoMediaEditor = ({payload, onChange, viewOnly = false}: Props) =>
   const t = useTranslations('InfoMediaEditor')
   const editable = !!onChange && !viewOnly
   const fileRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
 
   const update = (patch: Partial<InfoMediaPayload>) => onChange?.({...payload, ...patch})
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     const kind: InfoMediaKind = file.type.startsWith('video') ? 'video' : 'image'
-    const reader = new FileReader()
-    reader.onload = () => update({kind, url: reader.result as string})
-    reader.readAsDataURL(file)
+    setUploading(true)
+    try {
+      const url = await uploadFile(file, 'post-media')
+      update({kind, url})
+    } catch {
+      toast.error(t('uploadError'))
+    } finally {
+      setUploading(false)
+      if (fileRef.current) fileRef.current.value = ''
+    }
   }
 
   const handleUrlInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,9 +107,9 @@ export const InfoMediaEditor = ({payload, onChange, viewOnly = false}: Props) =>
       {!hasMedia && (
         <>
           <div className={styles.kind_row}>
-            <button type='button' className={styles.kind_btn} onClick={() => fileRef.current?.click()}>
-              <UploadIcon size={16} />
-              {t('uploadFile')}
+            <button type='button' className={styles.kind_btn} onClick={() => fileRef.current?.click()} disabled={uploading}>
+              {uploading ? <Loader2Icon size={16} className={styles.spin} /> : <UploadIcon size={16} />}
+              {uploading ? t('uploading') : t('uploadFile')}
             </button>
             <span className={styles.or}>{t('orPasteLink')}</span>
             <input
@@ -107,6 +117,7 @@ export const InfoMediaEditor = ({payload, onChange, viewOnly = false}: Props) =>
               placeholder={t('urlPlaceholder')}
               defaultValue={payload.url ?? ''}
               onBlur={handleUrlInput}
+              disabled={uploading}
             />
             <input
               ref={fileRef}
@@ -114,6 +125,7 @@ export const InfoMediaEditor = ({payload, onChange, viewOnly = false}: Props) =>
               accept='image/*,video/*'
               className={styles.hidden}
               onChange={handleFileChange}
+              disabled={uploading}
             />
           </div>
           <div className={styles.empty_hint}>

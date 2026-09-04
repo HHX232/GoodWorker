@@ -189,6 +189,8 @@
   },
   "InfoMediaEditor": {
     "uploadFile": "फ़ाइल अपलोड करें",
+    "uploading": "अपलोड हो रहा है...",
+    "uploadError": "फ़ाइल अपलोड नहीं हो सकी",
     "orPasteLink": "या लिंक चिपकाएं",
     "urlPlaceholder": "https://youtube.com/watch?v=... या छवि URL",
     "emptyHint": "छवि अपलोड करें या वीडियो लिंक चिपकाएं",
@@ -198,13 +200,16 @@
     "uploadAudio": "ऑडियो फ़ाइल अपलोड करें",
     "audioFormats": "MP3, WAV, OGG, M4A",
     "analyzing": "ऑडियो का विश्लेषण हो रहा है...",
-    "studentHint": "छात्र पाठ के दौरान यह प्लेयर देखेगा"
+    "studentHint": "छात्र पाठ के दौरान यह प्लेयर देखेगा",
+    "uploadError": "ऑडियो अपलोड नहीं हो सका"
   },
   "InfoFileListEditor": {
     "downloadFile": "डाउनलोड करें",
     "removeFile": "हटाएं",
     "uploadFiles": "फ़ाइलें अपलोड करें",
     "addFiles": "फ़ाइलें जोड़ें",
+    "uploading": "अपलोड हो रहा है...",
+    "uploadError": "फ़ाइल अपलोड नहीं हो सकी",
     "anyFormatMaxSize": "कोई भी फॉर्मेट · अधिकतम {maxSize} MB · अधिकतम {maxFiles} फ़ाइलें",
     "maxFilesLimit": "अधिकतम {maxFiles} फ़ाइलें"
   },
@@ -521,6 +526,8 @@
     "removeFile": "हटाएँ",
     "uploadFiles": "फ़ाइलें अपलोड करें",
     "addFiles": "फ़ाइलें जोड़ें",
+    "uploading": "अपलोड हो रहा है...",
+    "uploadError": "फ़ाइल अपलोड नहीं हो सकी",
     "anyFormatMaxSize": "कोई भी फ़ॉर्मेट · अधिकतम {maxSize} MB · अधिकतम {maxFiles} फ़ाइलें",
     "maxFilesLimit": "अधिकतम {maxFiles} फ़ाइलें"
   },
@@ -827,6 +834,7 @@
     "reviewSelectStars": "कृपया रेटिंग चुनें",
     "reviewEnterText": "कृपया समीक्षा लिखें",
     "reviewError": "समीक्षा सबमिट नहीं हो सकी",
+    "mediaUploadError": "फ़ाइल अपलोड नहीं हो सकी",
     "reviewLoginToLeave": "समीक्षा देने के लिए लॉग इन करें",
     "reviewsEmpty": "अभी तक कोई समीक्षा नहीं",
     "memberSince": "सदस्य बने",
@@ -933,6 +941,7 @@
       "close": "बंद करें",
       "photoLabel": "फोटो",
       "photoAdd": "फोटो जोड़ें",
+      "photoUploadError": "फोटो अपलोड नहीं हो सकी",
       "titleLabel": "शीर्षक *",
       "titlePlaceholder": "जैसे: व्यक्तिगत अंग्रेजी पाठ",
       "descLabel": "विवरण",

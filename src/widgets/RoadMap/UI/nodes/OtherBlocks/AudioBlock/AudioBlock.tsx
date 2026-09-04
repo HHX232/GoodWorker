@@ -3,9 +3,11 @@
 
 import {RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
 import {useViewMode} from '@/shared/ui/RoadMap/context/ViewModeContext'
+import {uploadFile} from '@/shared/lib/uploadFile'
 import {useReactFlow, useStore} from '@xyflow/react'
 import {Mic2Icon, PauseIcon, PlayIcon, UploadIcon, XIcon} from 'lucide-react'
 import {useCallback, useEffect, useRef, useState} from 'react'
+import {toast} from 'sonner'
 import styles from './AudioBlock.module.scss'
 import {useTranslations} from 'next-intl'
 
@@ -191,14 +193,17 @@ export default function AudioBlock({nodeId}: {nodeId: string}) {
     const file = e.target.files?.[0]
     if (!file) return
     setExtracting(true)
-    const url = URL.createObjectURL(file)
     try {
-      const waveform = await extractWaveform(file)
+      const [url, waveform] = await Promise.all([
+        uploadFile(file, 'roadmap-audio'),
+        extractWaveform(file).catch(() => Array(80).fill(0.5))
+      ])
       update({audioUrl: url, audioFilename: file.name, audioWaveform: waveform})
     } catch {
-      update({audioUrl: url, audioFilename: file.name, audioWaveform: Array(80).fill(0.5)})
+      toast.error(t('mediaUploadError'))
     } finally {
       setExtracting(false)
+      if (fileRef.current) fileRef.current.value = ''
     }
   }
 
