@@ -5,15 +5,16 @@ import 'mathlive/static.css'
 import styles from './FormulaKeyboard.module.scss'
 
 interface Props {
-  onInsert: (dataUrl: string, width: number, height: number) => void
+  initialLatex?: string
+  onInsert: (latex: string, dataUrl: string, width: number, height: number) => void
   onClose: () => void
 }
 
-export function FormulaKeyboard({ onInsert, onClose }: Props) {
+export function FormulaKeyboard({ initialLatex, onInsert, onClose }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const fieldRef = useRef<{ value: string; focus: () => void } | null>(null)
   const [ready, setReady] = useState(false)
-  const [isEmpty, setIsEmpty] = useState(true)
+  const [isEmpty, setIsEmpty] = useState(!initialLatex?.trim())
   const [inserting, setInserting] = useState(false)
 
   useEffect(() => {
@@ -23,9 +24,14 @@ export function FormulaKeyboard({ onInsert, onClose }: Props) {
     import('mathlive').then(() => {
       if (cancelled || !containerRef.current) return
       field = document.createElement('math-field') as typeof field
-      field.value = ''
+      field.value = initialLatex ?? ''
       field.setAttribute('style', 'width: 100%; font-size: 28px; border: none;')
       field.addEventListener('input', () => setIsEmpty(!field.value.trim()))
+      // Excalidraw's global tool shortcuts (digits, letters) live on a
+      // document-level keydown listener that doesn't recognize this custom
+      // element as "text editing" — stop the event here so typing a formula
+      // (e.g. the "2" in "x^2") doesn't switch the active drawing tool.
+      field.addEventListener('keydown', (e) => e.stopPropagation())
       containerRef.current.appendChild(field)
       fieldRef.current = field
       field.focus()
@@ -38,7 +44,7 @@ export function FormulaKeyboard({ onInsert, onClose }: Props) {
       window.mathVirtualKeyboard?.hide()
       field?.remove()
     }
-  }, [])
+  }, [initialLatex])
 
   const handleInsert = useCallback(async () => {
     const latex = fieldRef.current?.value?.trim()
@@ -67,7 +73,7 @@ export function FormulaKeyboard({ onInsert, onClose }: Props) {
       const canvas = await html2canvas(holder, { backgroundColor: '#ffffff', scale: 2 })
       holder.remove()
 
-      onInsert(canvas.toDataURL('image/png'), canvas.width / 2, canvas.height / 2)
+      onInsert(latex, canvas.toDataURL('image/png'), canvas.width / 2, canvas.height / 2)
     } catch (err) {
       console.error('[FormulaKeyboard] insert failed:', err)
     } finally {

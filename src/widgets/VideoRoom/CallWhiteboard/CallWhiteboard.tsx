@@ -34,6 +34,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast }: Pro
   const isApplyingRemoteRef = useRef(false)
   const [ready, setReady] = useState(false)
   const [showFormulaKeyboard, setShowFormulaKeyboard] = useState(false)
+  const [editingFormula, setEditingFormula] = useState<{ id: string; latex: string; x: number; y: number; width: number; height: number } | null>(null)
   const { isDark } = useThemeCtx()
 
   // Apply remote elements when they arrive
@@ -85,7 +86,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast }: Pro
     [onBroadcast],
   )
 
-  const handleInsertFormula = useCallback(async (dataUrl: string, width: number, height: number) => {
+  const handleInsertFormula = useCallback(async (latex: string, dataUrl: string, width: number, height: number) => {
     if (!apiRef.current) return
     const { convertToExcalidrawElements } = await import('@excalidraw/excalidraw')
 
@@ -98,45 +99,61 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast }: Pro
     }
     apiRef.current.addFiles([fileData])
 
-    const { scrollX, scrollY, width: viewWidth, height: viewHeight } = apiRef.current.getAppState()
-    const [imageElement] = convertToExcalidrawElements([
-      {
-        type: 'image',
-        fileId,
-        x: -scrollX + viewWidth / 2 - width / 2,
-        y: -scrollY + viewHeight / 2 - height / 2,
-        width,
-        height,
-      },
-    ])
+    // Editing an existing formula keeps it centered on the same spot instead
+    // of jumping to the viewport center; a fresh insert centers on-screen.
+    let x: number
+    let y: number
+    if (editingFormula) {
+      x = editingFormula.x + editingFormula.width / 2 - width / 2
+      y = editingFormula.y + editingFormula.height / 2 - height / 2
+    } else {
+      const { scrollX, scrollY, width: viewWidth, height: viewHeight } = apiRef.current.getAppState()
+      x = -scrollX + viewWidth / 2 - width / 2
+      y = -scrollY + viewHeight / 2 - height / 2
+    }
 
-    apiRef.current.updateScene({ elements: [...apiRef.current.getSceneElements(), imageElement] })
+    const [imageElement] = convertToExcalidrawElements(
+      [
+        {
+          type: 'image',
+          id: editingFormula?.id,
+          fileId,
+          x,
+          y,
+          width,
+          height,
+          link: 'Изменить формулу',
+          customData: { formulaLatex: latex },
+        },
+      ],
+      { regenerateIds: false },
+    )
+
+    const current = apiRef.current.getSceneElements()
+    const nextElements = editingFormula
+      ? current.map(el => (el.id === editingFormula.id ? imageElement : el))
+      : [...current, imageElement]
+
+    apiRef.current.updateScene({ elements: nextElements })
     setShowFormulaKeyboard(false)
+    setEditingFormula(null)
+  }, [editingFormula])
+
+  const handleLinkOpen = useCallback((element: ExcalidrawElement, event: CustomEvent<{ nativeEvent: unknown }>) => {
+    const latex = element.customData?.formulaLatex
+    if (typeof latex !== 'string') return
+    event.preventDefault()
+    setEditingFormula({ id: element.id, latex, x: element.x, y: element.y, width: element.width, height: element.height })
+    setShowFormulaKeyboard(true)
   }, [])
 
   return (
     <div className={styles.root}>
-      <div className={styles.header}>
-        <button
-          type="button"
-          className={styles.formulaButton}
-          onClick={() => setShowFormulaKeyboard(v => !v)}
-        >
-          ∑ Формула
-        </button>
-        {showFormulaKeyboard && (
-          <div className={styles.formulaPopover}>
-            <FormulaKeyboard
-              onInsert={handleInsertFormula}
-              onClose={() => setShowFormulaKeyboard(false)}
-            />
-          </div>
-        )}
-      </div>
       <div className={styles.canvas}>
         <Excalidraw
           excalidrawAPI={api => { apiRef.current = api; setReady(true) }}
           onChange={handleChange}
+          onLinkOpen={handleLinkOpen}
           theme={isDark ? 'dark' : 'light'}
           viewModeEnabled={false}
           isCollaborating={false}
@@ -148,6 +165,33 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast }: Pro
               toggleTheme: false,
             },
           }}
+          renderTopRightUI={() => (
+            <div className={styles.formulaWrap}>
+              <button
+                type="button"
+                className={styles.formulaButton}
+                onClick={() => {
+                  setEditingFormula(null)
+                  setShowFormulaKeyboard(v => !v)
+                }}
+                title="Формула"
+              >
+                ∑ Формула
+              </button>
+              {showFormulaKeyboard && (
+                <div className={styles.formulaPopover}>
+                  <FormulaKeyboard
+                    initialLatex={editingFormula?.latex}
+                    onInsert={handleInsertFormula}
+                    onClose={() => {
+                      setShowFormulaKeyboard(false)
+                      setEditingFormula(null)
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+          )}
         />
       </div>
     </div>
