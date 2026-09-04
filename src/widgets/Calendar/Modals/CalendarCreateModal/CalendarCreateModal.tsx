@@ -258,7 +258,7 @@ export function CalendarCreateModal({
             </div>
             <div className={styles.field}>
               <label className={styles.label}>Дата</label>
-              <input className={styles.input} type='date' value={form.date} onChange={set('date')} />
+              <input className={styles.input} type='date' value={form.date} onChange={set('date')} onClick={(e) => e.currentTarget.showPicker?.()} />
             </div>
             <div className={styles.field}>
               <label className={styles.label}>Текст заметки</label>
@@ -292,7 +292,7 @@ export function CalendarCreateModal({
         <div className={styles.row}>
           <div className={styles.field}>
             <label className={styles.label}>{t('dateLabel')}</label>
-            <input className={styles.input} type='date' value={form.date} onChange={set('date')} />
+            <input className={styles.input} type='date' value={form.date} onChange={set('date')} onClick={(e) => e.currentTarget.showPicker?.()} />
           </div>
           <div className={styles.field}>
             <label className={styles.label}>{t('studentLabel')}</label>

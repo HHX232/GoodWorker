@@ -262,6 +262,7 @@ export function CalendarTaskModal({task, onClose, onToggle, onSave}: CalendarTas
               type='date'
               value={form.dueDate ?? ''}
               onChange={(e) => setField('dueDate', e.target.value || undefined)}
+              onClick={(e) => e.currentTarget.showPicker?.()}
             />
           </div>
           <div className={styles.field}>
