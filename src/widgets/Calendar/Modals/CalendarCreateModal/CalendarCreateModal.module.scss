@@ -1,13 +1,7 @@
-.header {
+.modalTitle {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 20px 20px 16px;
-  border-bottom: 0.5px solid rgba(0, 0, 0, 0.07);
-}
-
-.headerLeft {
-  flex: 1;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .eyebrow {
@@ -15,32 +9,12 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #aaa;
-  margin-bottom: 4px;
 }
 
 .title {
   font-size: 17px;
   font-weight: 600;
   color: #141416;
-}
-
-.closeBtn {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  border: 0.5px solid rgba(0, 0, 0, 0.1);
-  background: transparent;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #888;
-  flex-shrink: 0;
-  transition: background 0.15s;
-
-  &:hover {
-    background: #f3f3f7;
-  }
 }
 
 // ── Body ──────────────────────────────────────────────
@@ -122,11 +96,11 @@
 // ── AI lesson plan ────────────────────────────────────
 
 .planBtn {
-  padding: 9px 16px;
-  border-radius: 8px;
+  padding: 12px 22px;
+  border-radius: 9px;
   background: #141416;
   border: none;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
   color: #ffffff;
   cursor: pointer;
@@ -328,8 +302,6 @@
 :global(html.theme-dark), :global(html.pomodoro-dark) {
   .eyebrow { color: rgba(255,255,255,0.25); }
   .title { color: #e8eaf0; }
-  .closeBtn { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); &:hover { background: #23263a; } }
-  .header { border-bottom-color: rgba(255,255,255,0.07); }
   .label { color: rgba(255,255,255,0.25); }
   .input { background: #23263a; border-color: rgba(255,255,255,0.08); color: #e8eaf0; &:focus { border-color: #818cf8; background: #1f2130; } }
   .textarea { background: #23263a; border-color: rgba(255,255,255,0.08); color: #e8eaf0; &:focus { border-color: #818cf8; background: #1f2130; } }

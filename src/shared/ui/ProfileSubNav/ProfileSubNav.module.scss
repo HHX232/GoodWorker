@@ -47,6 +47,14 @@
   flex-shrink: 0;
 }
 
+.subnav_sep {
+  width: 1px;
+  height: 16px;
+  background: #e4e4ea;
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
 :global(html.theme-dark), :global(html.pomodoro-dark) {
   .subnav {
     background: #1a1c24;
@@ -63,5 +71,9 @@
       background: #23263a;
       color: #d8dae8;
     }
+  }
+
+  .subnav_sep {
+    background: rgba(255, 255, 255, 0.1);
   }
 }

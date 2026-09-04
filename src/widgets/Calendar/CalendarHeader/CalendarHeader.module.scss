@@ -120,6 +120,30 @@
    }
 }
 
+.googleBtn {
+   padding: 7px 14px;
+   border-radius: 8px;
+   background: #534AB7;
+   border: none;
+   font-size: 13px;
+   color: #ffffff;
+   cursor: pointer;
+   display: flex;
+   align-items: center;
+   gap: 6px;
+   transition: background 0.15s ease;
+   font-family: inherit;
+
+   &:hover:not(:disabled) {
+      background: #4338CA;
+   }
+
+   &:disabled {
+      opacity: 0.55;
+      cursor: default;
+   }
+}
+
 .vipBadge {
    display: inline-flex;
    align-items: center;

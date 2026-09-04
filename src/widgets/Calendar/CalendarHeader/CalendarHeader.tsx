@@ -116,7 +116,7 @@ export function CalendarHeader({
         </button>
         {onImportGoogle && (
           <button
-            className={`${styles.share} ${!isVip ? styles.shareVipLocked : ''}`}
+            className={`${styles.googleBtn} ${!isVip ? styles.shareVipLocked : ''}`}
             onClick={onImportGoogle}
             title={isVip ? 'Импорт Google Calendar' : 'Только для VIP'}
           >
