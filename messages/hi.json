@@ -200,13 +200,16 @@
     "uploadAudio": "ऑडियो फ़ाइल अपलोड करें",
     "audioFormats": "MP3, WAV, OGG, M4A",
     "analyzing": "ऑडियो का विश्लेषण हो रहा है...",
-    "studentHint": "छात्र पाठ के दौरान यह प्लेयर देखेगा"
+    "studentHint": "छात्र पाठ के दौरान यह प्लेयर देखेगा",
+    "uploadError": "ऑडियो अपलोड नहीं हो सका"
   },
   "InfoFileListEditor": {
     "downloadFile": "डाउनलोड करें",
     "removeFile": "हटाएं",
     "uploadFiles": "फ़ाइलें अपलोड करें",
     "addFiles": "फ़ाइलें जोड़ें",
+    "uploading": "अपलोड हो रहा है...",
+    "uploadError": "फ़ाइल अपलोड नहीं हो सकी",
     "anyFormatMaxSize": "कोई भी फॉर्मेट · अधिकतम {maxSize} MB · अधिकतम {maxFiles} फ़ाइलें",
     "maxFilesLimit": "अधिकतम {maxFiles} फ़ाइलें"
   },
@@ -523,6 +526,8 @@
     "removeFile": "हटाएँ",
     "uploadFiles": "फ़ाइलें अपलोड करें",
     "addFiles": "फ़ाइलें जोड़ें",
+    "uploading": "अपलोड हो रहा है...",
+    "uploadError": "फ़ाइल अपलोड नहीं हो सकी",
     "anyFormatMaxSize": "कोई भी फ़ॉर्मेट · अधिकतम {maxSize} MB · अधिकतम {maxFiles} फ़ाइलें",
     "maxFilesLimit": "अधिकतम {maxFiles} फ़ाइलें"
   },

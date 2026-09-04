@@ -1,9 +1,12 @@
 import {prisma} from '@/shared/prisma/prisma'
 import {createNotification, NOTIFICATION_TYPES} from '@/shared/lib/notifications'
 import {tplNewComment} from '@/shared/lib/notificationTemplates'
+import {uploadFilesToS3} from '@/shared/s3/uploadFilesToS3'
 import {NextRequest, NextResponse} from 'next/server'
 import {auth} from '../../../../../auth'
 import {enrichCommentWithAI, localizeComment} from '@/lib/postAI'
+
+export const runtime = 'nodejs'
 
 interface RouteParams {
   params: Promise<{id: string}>
@@ -13,18 +16,6 @@ interface AuthorRecord {
   id: string
   name: string
   avatarUrl: string | null
-}
-
-async function filesToBase64(form: FormData, field: string): Promise<string[]> {
-  const entries = form.getAll(field)
-  const results: string[] = []
-  for (const entry of entries) {
-    if (!(entry instanceof File) || entry.size === 0) continue
-    const buffer = await entry.arrayBuffer()
-    const base64 = Buffer.from(buffer).toString('base64')
-    results.push(`data:${entry.type};base64,${base64}`)
-  }
-  return results
 }
 
 export async function GET(req: NextRequest, {params}: RouteParams) {
@@ -112,7 +103,7 @@ export async function POST(req: NextRequest, {params}: RouteParams) {
       return NextResponse.json({error: 'You have already left a comment on this post'}, {status: 409})
     }
 
-    const imageUrls = await filesToBase64(form, 'images')
+    const imageUrls = await uploadFilesToS3(form, 'images', 'post-comments', session.user.id)
 
     const comment = await prisma.postComment.create({
       data: {

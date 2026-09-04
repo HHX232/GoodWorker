@@ -1,7 +1,10 @@
 import {prisma} from '@/shared/prisma/prisma'
+import {uploadFilesToS3} from '@/shared/s3/uploadFilesToS3'
 import {NextRequest, NextResponse} from 'next/server'
 import {auth} from '../../../../../../auth'
 import {enrichCommentWithAI} from '@/lib/postAI'
+
+export const runtime = 'nodejs'
 
 interface RouteParams {
   params: Promise<{id: string; commentId: string}>
@@ -11,18 +14,6 @@ interface AuthorRecord {
   id: string
   name: string
   avatarUrl: string | null
-}
-
-async function filesToBase64(form: FormData, field: string): Promise<string[]> {
-  const entries = form.getAll(field)
-  const results: string[] = []
-  for (const entry of entries) {
-    if (!(entry instanceof File) || entry.size === 0) continue
-    const buffer = await entry.arrayBuffer()
-    const base64 = Buffer.from(buffer).toString('base64')
-    results.push(`data:${entry.type};base64,${base64}`)
-  }
-  return results
 }
 
 async function resolveAuthor(authorId: string, authorRole: string): Promise<AuthorRecord | null> {
@@ -49,7 +40,7 @@ export async function PATCH(req: NextRequest, {params}: RouteParams) {
       return NextResponse.json({error: 'Text cannot be empty'}, {status: 400})
     }
     const keepImageUrls = form.getAll('keepImageUrls').filter((v): v is string => typeof v === 'string')
-    const newImages = await filesToBase64(form, 'images')
+    const newImages = await uploadFilesToS3(form, 'images', 'post-comments', session.user.id)
 
     const imageUrls =
       newImages.length > 0 || keepImageUrls.length !== comment.imageUrls.length

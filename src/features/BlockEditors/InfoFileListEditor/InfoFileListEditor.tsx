@@ -2,6 +2,7 @@
 'use client'
 
 import {PostFileEntry, PostFileListPayload} from '@/shared/types/Post/Post.type'
+import {uploadFile} from '@/shared/lib/uploadFile'
 import {
   DownloadIcon,
   FileArchiveIcon,
@@ -17,7 +18,8 @@ import {
 } from 'lucide-react'
 import {useTranslations} from 'next-intl'
 import Image from 'next/image'
-import {useRef} from 'react'
+import {useRef, useState} from 'react'
+import {toast} from 'sonner'
 import styles from './InfoFileListEditor.module.scss'
 
 interface Props {
@@ -166,28 +168,35 @@ export const InfoFileListEditor = ({payload, onChange, viewOnly = false}: Props)
   const t = useTranslations('InfoFileListEditor')
   const editable = !!onChange && !viewOnly
   const fileRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
 
   const files = payload.files ?? []
 
   const update = (patch: Partial<PostFileListPayload>) => onChange?.({...payload, ...patch})
 
-  const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!editable) return
     const selected = Array.from(e.target.files ?? [])
     if (!selected.length) return
     const remaining = MAX_FILES - files.length
-    const newFiles: PostFileEntry[] = []
-    for (const file of selected.slice(0, remaining)) {
-      if (file.size > MAX_SIZE_MB * 1024 * 1024) continue
-      newFiles.push({
-        name: file.name,
-        size: file.size,
-        mimeType: file.type || 'application/octet-stream',
-        url: URL.createObjectURL(file)
-      })
+    const toUpload = selected.slice(0, remaining).filter((f) => f.size <= MAX_SIZE_MB * 1024 * 1024)
+    setUploading(true)
+    try {
+      const newFiles: PostFileEntry[] = await Promise.all(
+        toUpload.map(async (file) => ({
+          name: file.name,
+          size: file.size,
+          mimeType: file.type || 'application/octet-stream',
+          url: await uploadFile(file, 'post-files')
+        }))
+      )
+      update({files: [...files, ...newFiles]})
+    } catch {
+      toast.error(t('uploadError'))
+    } finally {
+      setUploading(false)
+      if (fileRef.current) fileRef.current.value = ''
     }
-    update({files: [...files, ...newFiles]})
-    if (fileRef.current) fileRef.current.value = ''
   }
 
   const removeFile = (index: number) => {
@@ -229,11 +238,12 @@ export const InfoFileListEditor = ({payload, onChange, viewOnly = false}: Props)
           type='button'
           className={`${styles.uploadBtn} ${files.length > 0 ? styles.uploadBtnCompact : ''}`}
           onClick={() => fileRef.current?.click()}
+          disabled={uploading}
         >
           <UploadIcon size={files.length > 0 ? 16 : 24} />
           <div className={styles.uploadText}>
-            <span>{files.length > 0 ? t('addFiles') : t('uploadFiles')}</span>
-            {files.length === 0 && (
+            <span>{uploading ? t('uploading') : files.length > 0 ? t('addFiles') : t('uploadFiles')}</span>
+            {files.length === 0 && !uploading && (
               <span className={styles.uploadHint}>
                 {t('anyFormatMaxSize', {maxSize: MAX_SIZE_MB, maxFiles: MAX_FILES})}
               </span>

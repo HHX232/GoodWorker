@@ -186,13 +186,16 @@
     "uploadAudio": "Upload audio file",
     "audioFormats": "MP3, WAV, OGG, M4A",
     "analyzing": "Analyzing audio...",
-    "studentHint": "The student will see this player during the lesson"
+    "studentHint": "The student will see this player during the lesson",
+    "uploadError": "Failed to upload audio"
   },
   "InfoFileListEditor": {
     "downloadFile": "Download",
     "removeFile": "Remove",
     "uploadFiles": "Upload files",
     "addFiles": "Add files",
+    "uploading": "Uploading...",
+    "uploadError": "Failed to upload file",
     "anyFormatMaxSize": "Any format · up to {maxSize} MB · max {maxFiles} files",
     "maxFilesLimit": "Maximum {maxFiles} files"
   },
@@ -544,6 +547,8 @@
     "removeFile": "Remove",
     "uploadFiles": "Upload files",
     "addFiles": "Add files",
+    "uploading": "Uploading...",
+    "uploadError": "Failed to upload file",
     "anyFormatMaxSize": "Any format · up to {maxSize} MB · max {maxFiles} files",
     "maxFilesLimit": "Maximum {maxFiles} files"
   },

@@ -200,13 +200,16 @@
     "uploadAudio": "上传音频文件",
     "audioFormats": "MP3, WAV, OGG, M4A",
     "analyzing": "正在分析音频...",
-    "studentHint": "学生在学习时会看到此播放器"
+    "studentHint": "学生在学习时会看到此播放器",
+    "uploadError": "音频上传失败"
   },
   "InfoFileListEditor": {
     "downloadFile": "下载",
     "removeFile": "删除",
     "uploadFiles": "上传文件",
     "addFiles": "添加文件",
+    "uploading": "上传中...",
+    "uploadError": "文件上传失败",
     "anyFormatMaxSize": "任意格式 · 最大 {maxSize} MB · 最多 {maxFiles} 个文件",
     "maxFilesLimit": "最多 {maxFiles} 个文件"
   },
@@ -523,6 +526,8 @@
     "removeFile": "删除",
     "uploadFiles": "上传文件",
     "addFiles": "添加文件",
+    "uploading": "上传中...",
+    "uploadError": "文件上传失败",
     "anyFormatMaxSize": "任意格式 · 最大 {maxSize} MB · 最多 {maxFiles} 个文件",
     "maxFilesLimit": "最多 {maxFiles} 个文件"
   },
