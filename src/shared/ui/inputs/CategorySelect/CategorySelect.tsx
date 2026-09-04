@@ -26,13 +26,28 @@ export function getCategoryPath(id: string, categories: CategoryOption[]): strin
   return parts.join(' - ')
 }
 
+/** Top-level ancestor id of a category (or itself, if already top-level). */
+function getRootId(id: string, categories: CategoryOption[]): string {
+  const byId = new Map(categories.map((c) => [c.id, c]))
+  let cur = byId.get(id)
+  while (cur?.parentId) {
+    const parent = byId.get(cur.parentId)
+    if (!parent) break
+    cur = parent
+  }
+  return cur?.id ?? id
+}
+
 interface CategorySelectProps {
   langCode?: string
   canSelectMany?: boolean
   maxLevel?: number
+  /** Restrict the tree to these top-level category ids and their descendants (e.g. a teacher's own registered subjects). */
+  allowedRootIds?: string[]
   value: string[]
   onChange: (ids: string[]) => void
   placeholder?: string
+  error?: boolean
 }
 
 const ACCENT_COLORS = ['#EC972A', '#FF7A00', '#BD00FF']
@@ -70,9 +85,11 @@ export function CategorySelect({
   langCode,
   canSelectMany = true,
   maxLevel,
+  allowedRootIds,
   value,
   onChange,
-  placeholder
+  placeholder,
+  error
 }: CategorySelectProps) {
   const locale = useLocale()
   const activeLang = langCode ?? locale
@@ -110,7 +127,10 @@ export function CategorySelect({
   }, [open])
 
   const {data: allCategories = [], isLoading} = useCategories(activeLang)
-  const categories = maxLevel ? allCategories.filter((c) => c.levelNumber <= maxLevel) : allCategories
+  const levelFiltered = maxLevel ? allCategories.filter((c) => c.levelNumber <= maxLevel) : allCategories
+  const categories = allowedRootIds
+    ? levelFiltered.filter((c) => allowedRootIds.includes(getRootId(c.id, allCategories)))
+    : levelFiltered
 
   const treeMap = buildTree(categories)
 
@@ -232,7 +252,7 @@ export function CategorySelect({
       {open && <div className={styles.scrim} onClick={() => setOpen(false)} aria-hidden='true' />}
       <button
         type='button'
-        className={`${styles.trigger} ${open ? styles.trigger_open : ''}`}
+        className={`${styles.trigger} ${open ? styles.trigger_open : ''} ${error ? styles.trigger_error : ''}`}
         onClick={() => setOpen((v) => !v)}
         disabled={isLoading}
       >

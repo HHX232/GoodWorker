@@ -60,6 +60,7 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
   const events = useTypedSelector(selectEvents)
 
   const [teacherServices, setTeacherServices] = useState<{id: string; title: string; price: number; duration: number}[]>([])
+  const [teacherCategoryIds, setTeacherCategoryIds] = useState<string[]>([])
 
   interface HomeworkCalendarItem {
     id: string
@@ -81,6 +82,7 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
       .then((d) => {
         if (Array.isArray(d.events) && d.events.length > 0) setEvents(d.events)
         if (Array.isArray(d.tasks) && d.tasks.length > 0) setTasks(d.tasks)
+        if (Array.isArray(d.categoryIds)) setTeacherCategoryIds(d.categoryIds)
       })
       .catch(() => {})
 
@@ -346,6 +348,7 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
         onSave={handleSaveEvent}
         teacherServices={teacherServices}
         teacherStudents={students.map(s => ({ id: s.id, name: s.name }))}
+        teacherCategoryIds={teacherCategoryIds}
         isVip={isVip}
       />
     </div>
