@@ -8,11 +8,14 @@
   overflow: hidden;
 }
 
-// Rendered via Excalidraw's own `renderTopRightUI` slot, so it sits in the
-// same toolbar row as the native tools/Library button instead of a bolted-on
-// header above the canvas.
+// Floats over the canvas, top-left, below Excalidraw's own toolbar row —
+// there's no public API to add a button into that native toolbar, and the
+// top-right corner is taken by the call's video preview tile.
 .formulaWrap {
-  position: relative;
+  position: absolute;
+  top: 64px;
+  left: 12px;
+  z-index: 5;
 }
 
 .formulaButton {
@@ -35,7 +38,7 @@
 .formulaPopover {
   position: absolute;
   top: calc(100% + 6px);
-  right: 0;
+  left: 0;
   z-index: 10;
 }
 

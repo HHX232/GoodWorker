@@ -165,34 +165,36 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast }: Pro
               toggleTheme: false,
             },
           }}
-          renderTopRightUI={() => (
-            <div className={styles.formulaWrap}>
-              <button
-                type="button"
-                className={styles.formulaButton}
-                onClick={() => {
+        />
+        {/* Excalidraw has no public slot for adding a button into its own
+            left-side toolbar Island, and the top-right slot (renderTopRightUI)
+            collides with the call's video preview tile — so this floats on
+            top of the canvas, below the native toolbar, on the left. */}
+        <div className={styles.formulaWrap}>
+          <button
+            type="button"
+            className={styles.formulaButton}
+            onClick={() => {
+              setEditingFormula(null)
+              setShowFormulaKeyboard(v => !v)
+            }}
+            title="Формула"
+          >
+            ∑ Формула
+          </button>
+          {showFormulaKeyboard && (
+            <div className={styles.formulaPopover}>
+              <FormulaKeyboard
+                initialLatex={editingFormula?.latex}
+                onInsert={handleInsertFormula}
+                onClose={() => {
+                  setShowFormulaKeyboard(false)
                   setEditingFormula(null)
-                  setShowFormulaKeyboard(v => !v)
                 }}
-                title="Формула"
-              >
-                ∑ Формула
-              </button>
-              {showFormulaKeyboard && (
-                <div className={styles.formulaPopover}>
-                  <FormulaKeyboard
-                    initialLatex={editingFormula?.latex}
-                    onInsert={handleInsertFormula}
-                    onClose={() => {
-                      setShowFormulaKeyboard(false)
-                      setEditingFormula(null)
-                    }}
-                  />
-                </div>
-              )}
+              />
             </div>
           )}
-        />
+        </div>
       </div>
     </div>
   )
