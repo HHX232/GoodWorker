@@ -508,14 +508,17 @@ useEffect(() => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [participantCount])
 
-  // ── Reload camera when test/whiteboard tile leaves main slot ─────────────
-  // Fires after React paints new DOM. Only acts on the false→true→false transition
-  // (testWasMainRef guards against the initial mount where testIsMain is already false).
+  // ── Reload camera whenever the test/whiteboard tile enters or leaves the main slot ──
+  // Fires after React paints new DOM. The local <video> element is looked up by id
+  // (see attachVideoWithRetry) and gets recreated in a differently-sized container
+  // on EITHER transition, which detaches the live track — so both directions need
+  // a reload, not just leaving (testWasMainRef guards the initial mount, where
+  // testIsMain is already false and no transition actually happened).
   const testIsMainForEffect = callTest !== null && mainSpeaker === '__test__'
   useEffect(() => {
     const wasMain = testWasMainRef.current
     testWasMainRef.current = testIsMainForEffect
-    if (wasMain && !testIsMainForEffect) {
+    if (wasMain !== testIsMainForEffect) {
       // Slight delay so React finishes mounting video elements before reload
       const t = setTimeout(() => reloadCamera(), 800)
       return () => clearTimeout(t)
