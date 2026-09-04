@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
   const teacherId = await resolveTeacherId(req, id, role)
   if (!teacherId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const [teacher, conferences, categoryLinks] = await Promise.all([
+  const [teacher, conferences] = await Promise.all([
     prisma.teacher.findUnique({ where: { id: teacherId }, select: { calendar: true } }),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (prisma.conference.findMany as any)({
@@ -53,10 +53,6 @@ export async function GET(req: NextRequest) {
           take: 1,
         },
       },
-    }),
-    prisma.teacherCategory.findMany({
-      where: { teacherId },
-      include: { category: { include: { translations: { take: 3 } } } },
     }),
   ])
 
@@ -101,21 +97,9 @@ export async function GET(req: NextRequest) {
       }
     })
 
-  const categoryNames = (categoryLinks as Array<{ categoryId: string; category: { translations: Array<{ langCode: string; name: string }> } }>)
-    .map(l => {
-      const t = l.category.translations.find(tr => tr.langCode === 'ru') ??
-                l.category.translations[0]
-      return t?.name ? { id: l.categoryId, name: t.name } : null
-    })
-    .filter((c): c is { id: string; name: string } => c !== null)
-
-  const subjects = categoryNames.map(c => c.name)
-
   return NextResponse.json({
     events: [...storedEvents, ...conferenceEvents],
     tasks: calendarData?.tasks ?? [],
-    subjects,
-    categories: categoryNames,
   })
 }
 

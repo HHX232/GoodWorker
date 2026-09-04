@@ -281,7 +281,7 @@ export const StudentDashboard: FC<Props> = ({ initialData }) => {
 
   return (
     <div className={styles.wrapper}>
-      <ProfileSubNav />
+      <ProfileSubNav calendarHref='/student-calendar' />
       <div
         className={styles.dashboard}
         style={{ gridTemplateColumns: `${leftWidth}px 1fr ${rightWidth}px` }}
