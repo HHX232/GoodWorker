@@ -195,9 +195,9 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
 
   const TABS: { key: Tab; label: string }[] = [
     { key: 'all',      label: t('tabAll') },
+    { key: 'services', label: t('tabServices') },
     { key: 'roadmap',  label: t('tabRoadmap') },
     { key: 'posts',    label: t('tabPosts') },
-    { key: 'services', label: t('tabServices') },
     { key: 'tests',    label: t('tabTests') },
   ]
 
