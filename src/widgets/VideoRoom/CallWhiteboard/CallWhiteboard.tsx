@@ -3,14 +3,19 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import '@excalidraw/excalidraw/index.css'
-import type { ExcalidrawElement } from '@excalidraw/excalidraw/element/types'
-import type { AppState, BinaryFiles, ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types'
+import type { ExcalidrawElement, FileId } from '@excalidraw/excalidraw/element/types'
+import type { AppState, BinaryFileData, BinaryFiles, DataURL, ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types'
 import { useThemeCtx } from '@/app/providers/ThemeContext'
 import styles from './CallWhiteboard.module.scss'
 
 const Excalidraw = dynamic(
   () => import('@excalidraw/excalidraw').then(m => ({ default: m.Excalidraw })),
   { ssr: false, loading: () => <div className={styles.loading}>Загрузка доски…</div> },
+)
+
+const FormulaKeyboard = dynamic(
+  () => import('./FormulaKeyboard').then(m => ({ default: m.FormulaKeyboard })),
+  { ssr: false },
 )
 
 interface Props {
@@ -28,6 +33,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast }: Pro
   // Prevents re-broadcasting when a remote update triggers onChange
   const isApplyingRemoteRef = useRef(false)
   const [ready, setReady] = useState(false)
+  const [showFormulaKeyboard, setShowFormulaKeyboard] = useState(false)
   const { isDark } = useThemeCtx()
 
   // Apply remote elements when they arrive
@@ -79,8 +85,54 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast }: Pro
     [onBroadcast],
   )
 
+  const handleInsertFormula = useCallback(async (dataUrl: string, width: number, height: number) => {
+    if (!apiRef.current) return
+    const { convertToExcalidrawElements } = await import('@excalidraw/excalidraw')
+
+    const fileId = crypto.randomUUID() as FileId
+    const fileData: BinaryFileData = {
+      id: fileId,
+      mimeType: 'image/png',
+      dataURL: dataUrl as DataURL,
+      created: Date.now(),
+    }
+    apiRef.current.addFiles([fileData])
+
+    const { scrollX, scrollY, width: viewWidth, height: viewHeight } = apiRef.current.getAppState()
+    const [imageElement] = convertToExcalidrawElements([
+      {
+        type: 'image',
+        fileId,
+        x: -scrollX + viewWidth / 2 - width / 2,
+        y: -scrollY + viewHeight / 2 - height / 2,
+        width,
+        height,
+      },
+    ])
+
+    apiRef.current.updateScene({ elements: [...apiRef.current.getSceneElements(), imageElement] })
+    setShowFormulaKeyboard(false)
+  }, [])
+
   return (
     <div className={styles.root}>
+      <div className={styles.header}>
+        <button
+          type="button"
+          className={styles.formulaButton}
+          onClick={() => setShowFormulaKeyboard(v => !v)}
+        >
+          ∑ Формула
+        </button>
+        {showFormulaKeyboard && (
+          <div className={styles.formulaPopover}>
+            <FormulaKeyboard
+              onInsert={handleInsertFormula}
+              onClose={() => setShowFormulaKeyboard(false)}
+            />
+          </div>
+        )}
+      </div>
       <div className={styles.canvas}>
         <Excalidraw
           excalidrawAPI={api => { apiRef.current = api; setReady(true) }}
