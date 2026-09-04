@@ -1,0 +1,157 @@
+.timeline {
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #999;
+  margin: 14px 0 8px;
+
+  .stepGroup:first-child & {
+    margin-top: 0;
+  }
+}
+
+.step {
+  display: flex;
+  gap: 12px;
+}
+
+.iconCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.iconCircle {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.status_success {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+}
+
+.status_error {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}
+
+.status_active {
+  background: rgba(83, 74, 183, 0.12);
+  color: #534AB7;
+}
+
+.status_upcoming {
+  background: rgba(0, 0, 0, 0.06);
+  color: #999;
+}
+
+.connector {
+  width: 2px;
+  flex: 1;
+  min-height: 14px;
+  background: rgba(0, 0, 0, 0.08);
+  margin: 2px 0;
+}
+
+.content {
+  flex: 1;
+  padding-bottom: 16px;
+  min-width: 0;
+}
+
+.stepHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0;
+  border-radius: 6px;
+}
+
+.stepHeaderClickable {
+  cursor: pointer;
+
+  &:hover {
+    .stepTitle {
+      color: #534AB7;
+    }
+  }
+}
+
+.stepTitle {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #141416;
+  transition: color 0.12s;
+}
+
+.chevron {
+  color: #999;
+  flex-shrink: 0;
+  display: flex;
+}
+
+.stepBody {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s ease;
+}
+
+.stepBodyOpen {
+  grid-template-rows: 1fr;
+  margin-top: 4px;
+}
+
+.stepBodyInner {
+  overflow: hidden;
+}
+
+.stepDescription {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #555;
+  margin: 0 0 6px;
+}
+
+.stepRecommendation {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #534AB7;
+  background: rgba(83, 74, 183, 0.06);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin: 0;
+}
+
+.empty {
+  font-size: 13px;
+  color: #999;
+  text-align: center;
+  padding: 24px 0;
+}
+
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .sectionLabel { color: rgba(255, 255, 255, 0.3); }
+  .status_upcoming { background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.4); }
+  .status_active { background: rgba(129, 140, 248, 0.15); color: #818cf8; }
+  .connector { background: rgba(255, 255, 255, 0.1); }
+  .stepTitle { color: #e8eaf0; }
+  .stepHeaderClickable:hover .stepTitle { color: #818cf8; }
+  .chevron { color: rgba(255, 255, 255, 0.4); }
+  .stepDescription { color: rgba(255, 255, 255, 0.6); }
+  .stepRecommendation { color: #a5b4fc; background: rgba(129, 140, 248, 0.1); }
+  .empty { color: rgba(255, 255, 255, 0.35); }
+}

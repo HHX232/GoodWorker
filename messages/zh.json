@@ -2500,6 +2500,21 @@
       "closeBtn": "关闭",
       "retryBtn": "重试",
       "vipToast": "Google 日历导入仅对 VIP 用户开放"
+    },
+    "lessonPlan": {
+      "button": "自动生成课程计划",
+      "regenerateButton": "重新生成课程计划",
+      "vipBadge": "VIP",
+      "vipToast": "自动课程计划仅对 VIP 用户开放",
+      "studentRequired": "请先选择学生",
+      "generating": "正在分析学生历史记录...",
+      "generateError": "生成课程计划失败",
+      "viewFullPlan": "查看完整计划",
+      "modalTitle": "课程计划",
+      "sectionReview": "复习",
+      "sectionActive": "当前课程内容",
+      "sectionUpcoming": "接下来",
+      "close": "关闭"
     }
   },
   "videoZone": {

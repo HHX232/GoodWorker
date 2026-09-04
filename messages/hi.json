@@ -2499,6 +2499,21 @@
       "closeBtn": "बंद करें",
       "retryBtn": "फिर से प्रयास करें",
       "vipToast": "Google Calendar आयात केवल VIP उपयोगकर्ताओं के लिए उपलब्ध है"
+    },
+    "lessonPlan": {
+      "button": "पाठ योजना स्वतः बनाएं",
+      "regenerateButton": "पाठ योजना फिर से बनाएं",
+      "vipBadge": "VIP",
+      "vipToast": "स्वचालित पाठ योजना केवल VIP उपयोगकर्ताओं के लिए उपलब्ध है",
+      "studentRequired": "पहले छात्र चुनें",
+      "generating": "छात्र का इतिहास विश्लेषण किया जा रहा है...",
+      "generateError": "पाठ योजना बनाना विफल रहा",
+      "viewFullPlan": "पूरी योजना देखें",
+      "modalTitle": "पाठ योजना",
+      "sectionReview": "दोहराएं",
+      "sectionActive": "अभी कार्यक्रम में",
+      "sectionUpcoming": "आगे",
+      "close": "बंद करें"
     }
   },
   "videoZone": {

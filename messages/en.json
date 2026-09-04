@@ -1490,6 +1490,21 @@
       "closeBtn": "Close",
       "retryBtn": "Try again",
       "vipToast": "Google Calendar import is available for VIP users only"
+    },
+    "lessonPlan": {
+      "button": "Automatically create a lesson plan",
+      "regenerateButton": "Regenerate lesson plan",
+      "vipBadge": "VIP",
+      "vipToast": "Automatic lesson plans are available for VIP users only",
+      "studentRequired": "Select a student first",
+      "generating": "Analyzing student history...",
+      "generateError": "Failed to create a lesson plan",
+      "viewFullPlan": "View full plan",
+      "modalTitle": "Lesson plan",
+      "sectionReview": "Review",
+      "sectionActive": "Now in the program",
+      "sectionUpcoming": "Coming up",
+      "close": "Close"
     }
   },
   "roadmapViewer": {

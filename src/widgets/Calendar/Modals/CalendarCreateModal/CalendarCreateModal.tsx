@@ -2,11 +2,13 @@
 
 import {useState, useEffect} from 'react'
 import {useRouter} from 'next/navigation'
-import {CalendarEvent, CalendarEventColor} from '@/shared/types/Calendar/calendar.types'
+import {CalendarEvent, CalendarEventColor, LessonPlan} from '@/shared/types/Calendar/calendar.types'
 import {EVENT_COLORS, formatDateKey} from '@/shared/helpers/calendar/calendar.helpers'
 import {useTranslations} from 'next-intl'
+import {toast} from 'sonner'
 import styles from './CalendarCreateModal.module.scss'
 import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
+import {LessonPlanModal} from '@/widgets/Calendar/Modals/LessonPlanModal/LessonPlanModal'
 
 type Tab = 'event' | 'note' | 'homework'
 
@@ -22,6 +24,11 @@ interface StudentOption {
   name: string
 }
 
+interface CategoryOption {
+  id: string
+  name: string
+}
+
 interface CalendarCreateModalProps {
   isOpen: boolean
   onClose: () => void
@@ -33,6 +40,8 @@ interface CalendarCreateModalProps {
   teacherServices?: ServiceOption[]
   teacherStudents?: StudentOption[]
   teacherSubjects?: string[]
+  teacherCategories?: CategoryOption[]
+  isVip?: boolean
 }
 
 const COLOR_OPTIONS = Object.keys(EVENT_COLORS) as CalendarEventColor[]
@@ -42,8 +51,10 @@ const EMPTY_FORM = {
   date: '',
   startTime: '09:00',
   endTime: '10:00',
+  studentId: '',
   studentName: '',
   subject: '',
+  categoryId: '',
   description: '',
   status: 'scheduled' as CalendarEvent['status'],
   color: 'purple' as CalendarEventColor
@@ -60,28 +71,43 @@ export function CalendarCreateModal({
   teacherServices,
   teacherStudents = [],
   teacherSubjects = [],
+  teacherCategories = [],
+  isVip = false,
 }: CalendarCreateModalProps) {
   const t = useTranslations('calendar.createModal')
+  const tPlan = useTranslations('calendar.lessonPlan')
   const router = useRouter()
   const [tab, setTab] = useState<Tab>('event')
   const [form, setForm] = useState(EMPTY_FORM)
   const [selectedServiceId, setSelectedServiceId] = useState('')
+  const [lessonPlan, setLessonPlan] = useState<LessonPlan | null>(null)
+  const [generatingPlan, setGeneratingPlan] = useState(false)
+  const [studentFieldError, setStudentFieldError] = useState(false)
+  const [planModalOpen, setPlanModalOpen] = useState(false)
+  const [autoSummary, setAutoSummary] = useState('')
 
   useEffect(() => {
     if (!isOpen) { setTab('event'); return }
+    setStudentFieldError(false)
+    setPlanModalOpen(false)
+    setGeneratingPlan(false)
     if (editingEvent) {
       setForm({
         title: editingEvent.title,
         date: editingEvent.date,
         startTime: editingEvent.startTime,
         endTime: editingEvent.endTime,
+        studentId: editingEvent.studentId ?? '',
         studentName: editingEvent.studentName ?? '',
         subject: editingEvent.subject ?? '',
+        categoryId: editingEvent.categoryId ?? '',
         description: editingEvent.description ?? '',
         status: editingEvent.status ?? 'scheduled',
         color: editingEvent.color
       })
       setSelectedServiceId(editingEvent.serviceId ?? '')
+      setLessonPlan(editingEvent.lessonPlan ?? null)
+      setAutoSummary(editingEvent.lessonPlan?.summary ?? '')
     } else {
       setForm({
         ...EMPTY_FORM,
@@ -90,6 +116,8 @@ export function CalendarCreateModal({
         endTime: initialEndTime ?? '10:00'
       })
       setSelectedServiceId('')
+      setLessonPlan(null)
+      setAutoSummary('')
     }
   }, [isOpen, editingEvent, initialDate, initialStartTime, initialEndTime])
 
@@ -97,6 +125,52 @@ export function CalendarCreateModal({
     (key: keyof typeof EMPTY_FORM) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
       setForm((prev) => ({...prev, [key]: e.target.value}))
+
+  const handleStudentChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const id = e.target.value
+    const student = teacherStudents.find(s => s.id === id)
+    setStudentFieldError(false)
+    setForm((prev) => ({...prev, studentId: id, studentName: student?.name ?? ''}))
+  }
+
+  const handleSubjectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const name = e.target.value
+    const category = teacherCategories.find(c => c.name === name)
+    setForm((prev) => ({...prev, subject: name, categoryId: category?.id ?? ''}))
+  }
+
+  const handleGeneratePlan = async () => {
+    if (!isVip) {
+      toast.error(tPlan('vipToast'))
+      return
+    }
+    if (!form.studentId) {
+      setStudentFieldError(true)
+      toast.error(tPlan('studentRequired'))
+      return
+    }
+    setGeneratingPlan(true)
+    try {
+      const res = await fetch('/api/teacher/lesson-plan', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({studentId: form.studentId, categoryId: form.categoryId || undefined}),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? 'Failed to generate plan')
+      const plan: LessonPlan = data
+      setLessonPlan(plan)
+      setForm((prev) => ({
+        ...prev,
+        description: !prev.description.trim() || prev.description === autoSummary ? plan.summary : prev.description,
+      }))
+      setAutoSummary(plan.summary)
+    } catch {
+      toast.error(tPlan('generateError'))
+    } finally {
+      setGeneratingPlan(false)
+    }
+  }
 
   const handleSave = () => {
     if (!form.title.trim()) {
@@ -112,10 +186,13 @@ export function CalendarCreateModal({
       endTime: form.endTime,
       color: form.color,
       status: form.status,
+      studentId: form.studentId || undefined,
       studentName: form.studentName.trim() || undefined,
       subject: form.subject.trim() || undefined,
+      categoryId: form.categoryId || undefined,
       description: form.description.trim() || undefined,
       noteType: tab === 'note' ? 'note' : undefined,
+      lessonPlan: lessonPlan ?? undefined,
       ...(svc ? {
         serviceId: svc.id,
         serviceTitle: svc.title,
@@ -128,6 +205,7 @@ export function CalendarCreateModal({
   const isEditing = !!editingEvent
 
   return (
+    <>
     <ModalWindowDefault isOpen={isOpen} onClose={onClose}>
       <div className={styles.header}>
         <div className={styles.headerLeft}>
@@ -226,13 +304,13 @@ export function CalendarCreateModal({
             <label className={styles.label}>{t('studentLabel')}</label>
             {teacherStudents.length > 0 ? (
               <select
-                className={styles.input}
-                value={form.studentName}
-                onChange={set('studentName')}
+                className={`${styles.input} ${studentFieldError ? styles.inputError : ''}`}
+                value={form.studentId}
+                onChange={handleStudentChange}
               >
                 <option value=''>{t('studentPlaceholder')}</option>
                 {teacherStudents.map(s => (
-                  <option key={s.id} value={s.name}>{s.name}</option>
+                  <option key={s.id} value={s.id}>{s.name}</option>
                 ))}
               </select>
             ) : (
@@ -265,7 +343,7 @@ export function CalendarCreateModal({
               <select
                 className={styles.input}
                 value={form.subject}
-                onChange={set('subject')}
+                onChange={handleSubjectChange}
               >
                 <option value=''>{t('subjectPlaceholder')}</option>
                 {teacherSubjects.map(s => (
@@ -311,6 +389,35 @@ export function CalendarCreateModal({
         )}
 
         <div className={styles.field}>
+          <button
+            type='button'
+            className={`${styles.planBtn} ${!isVip ? styles.planBtnLocked : ''}`}
+            onClick={handleGeneratePlan}
+            disabled={generatingPlan}
+          >
+            {generatingPlan ? (
+              tPlan('generating')
+            ) : (
+              <>
+                {lessonPlan ? tPlan('regenerateButton') : tPlan('button')}
+                {!isVip && (
+                  <span className={styles.vipBadge}>{tPlan('vipBadge')}</span>
+                )}
+              </>
+            )}
+          </button>
+          {lessonPlan && (
+            <button
+              type='button'
+              className={styles.viewPlanBtn}
+              onClick={() => setPlanModalOpen(true)}
+            >
+              {tPlan('viewFullPlan')}
+            </button>
+          )}
+        </div>
+
+        <div className={styles.field}>
           <label className={styles.label}>{t('colorLabel')}</label>
           <div className={styles.colorPicker}>
             {COLOR_OPTIONS.map((c) => (
@@ -348,5 +455,11 @@ export function CalendarCreateModal({
       </div>
       </>)}
     </ModalWindowDefault>
+    <LessonPlanModal
+      isOpen={planModalOpen}
+      onClose={() => setPlanModalOpen(false)}
+      plan={lessonPlan}
+    />
+    </>
   )
 }

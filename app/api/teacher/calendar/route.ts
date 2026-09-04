@@ -101,18 +101,21 @@ export async function GET(req: NextRequest) {
       }
     })
 
-  const subjects = (categoryLinks as Array<{ category: { translations: Array<{ langCode: string; name: string }> } }>)
+  const categoryNames = (categoryLinks as Array<{ categoryId: string; category: { translations: Array<{ langCode: string; name: string }> } }>)
     .map(l => {
       const t = l.category.translations.find(tr => tr.langCode === 'ru') ??
                 l.category.translations[0]
-      return t?.name ?? null
+      return t?.name ? { id: l.categoryId, name: t.name } : null
     })
-    .filter((n): n is string => n !== null)
+    .filter((c): c is { id: string; name: string } => c !== null)
+
+  const subjects = categoryNames.map(c => c.name)
 
   return NextResponse.json({
     events: [...storedEvents, ...conferenceEvents],
     tasks: calendarData?.tasks ?? [],
     subjects,
+    categories: categoryNames,
   })
 }
 

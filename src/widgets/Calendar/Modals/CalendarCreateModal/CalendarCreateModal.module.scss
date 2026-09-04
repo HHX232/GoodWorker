@@ -119,6 +119,76 @@
   }
 }
 
+// ── AI lesson plan ────────────────────────────────────
+
+.planBtn {
+  padding: 9px 16px;
+  border-radius: 8px;
+  background: #141416;
+  border: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: #ffffff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s ease;
+  font-family: inherit;
+
+  &:hover:not(:disabled) {
+    background: #2c2c2e;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+.planBtnLocked {
+  background: linear-gradient(135deg, #534AB7 0%, #7C3AED 100%);
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #4338CA 0%, #6D28D9 100%);
+  }
+}
+
+.vipBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #FFD23C;
+  margin-left: 2px;
+}
+
+.viewPlanBtn {
+  margin-top: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: transparent;
+  border: 0.5px solid rgba(83, 74, 183, 0.4);
+  font-size: 13px;
+  font-weight: 500;
+  color: #534AB7;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: rgba(83, 74, 183, 0.08);
+  }
+}
+
+.inputError {
+  border-color: #ef4444 !important;
+}
+
 // ── Color picker ──────────────────────────────────────
 
 .colorPicker {
@@ -271,4 +341,6 @@
   .hwPanelTitle { color: #e8eaf0; }
   .hwPanelSub { color: rgba(255,255,255,0.35); }
   .hwPanelBtn { background: #6d28d9; &:hover { background: #5b21b6; } }
+  .planBtn { background: #23263a; &:hover:not(:disabled) { background: #2e3148; } }
+  .viewPlanBtn { color: #a5b4fc; border-color: rgba(165, 180, 252, 0.4); &:hover { background: rgba(165, 180, 252, 0.08); } }
 }
