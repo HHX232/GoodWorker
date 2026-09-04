@@ -1489,7 +1489,7 @@
       "summaryLabel": "What to review",
       "closeBtn": "Close",
       "retryBtn": "Try again",
-      "vipToast": "Google Calendar import is available for VIP teachers only"
+      "vipToast": "Google Calendar import is available for VIP users only"
     }
   },
   "roadmapViewer": {

@@ -1489,7 +1489,7 @@
       "summaryLabel": "Что нужно проверить",
       "closeBtn": "Закрыть",
       "retryBtn": "Попробовать снова",
-      "vipToast": "Импорт Google Calendar доступен только для VIP-учителей"
+      "vipToast": "Импорт Google Calendar доступен только для VIP"
     }
   },
   "roadmapViewer": {

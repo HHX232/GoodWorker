@@ -23,8 +23,11 @@ export default async function CalendarPageRoute({ params }: { params: Promise<{ 
 
   const teacher = await prisma.teacher.findUnique({
     where: { id },
-    select: { isVip: true },
+    select: { isVip: true, vipExpiresAt: true },
   }).catch(() => null)
 
-  return <CalendarPage teacherId={id} isVip={teacher?.isVip ?? false} />
+  const teacherIsVip =
+    teacher?.isVip === true && (teacher.vipExpiresAt === null || teacher.vipExpiresAt > new Date())
+
+  return <CalendarPage teacherId={id} isVip={role === 'ADMIN' || teacherIsVip} />
 }
