@@ -12,12 +12,19 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 
-export default async function TeacherProfilePage() {
+interface TeacherProfilePageProps {
+  searchParams: Promise<{ id?: string }>
+}
+
+export default async function TeacherProfilePage({ searchParams }: TeacherProfilePageProps) {
   const session = await auth()
 
   if (!session) redirect("/login")
   const role = session.user.role as string
   if (role === "STUDENT") redirect("/student-profile")
+
+  const { id: requestedId } = await searchParams
+  if (requestedId && requestedId !== session.user.id) redirect(`/users/${requestedId}`)
 
   const id = session.user.id
 
