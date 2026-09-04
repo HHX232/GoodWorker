@@ -6,6 +6,22 @@ export interface CalendarChecklistItem {
   completed: boolean
 }
 
+export interface LessonPlanStep {
+  title: string
+  description: string
+  status?: 'success' | 'error' | 'active' | 'upcoming'
+  recommendation?: string
+}
+
+export interface LessonPlan {
+  subject: string
+  summary: string
+  reviewSteps: LessonPlanStep[]
+  activeSteps: LessonPlanStep[]
+  upcomingSteps: LessonPlanStep[]
+  generatedAt: string
+}
+
 export interface CalendarEvent {
   id: string
   title: string
@@ -13,9 +29,11 @@ export interface CalendarEvent {
   endTime: string
   date: string
   color: CalendarEventColor
+  studentId?: string
   studentName?: string
   teacherName?: string
   subject?: string
+  categoryId?: string
   description?: string
   status?: 'scheduled' | 'completed' | 'cancelled'
   fromTeacher?: boolean
@@ -26,6 +44,7 @@ export interface CalendarEvent {
   durationMinutes?: number
   warning?: boolean
   noteType?: 'event' | 'note'
+  lessonPlan?: LessonPlan
 }
 
 export interface CalendarTask {

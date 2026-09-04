@@ -1489,7 +1489,22 @@
       "summaryLabel": "Что нужно проверить",
       "closeBtn": "Закрыть",
       "retryBtn": "Попробовать снова",
-      "vipToast": "Импорт Google Calendar доступен только для VIP-учителей"
+      "vipToast": "Импорт Google Calendar доступен только для VIP"
+    },
+    "lessonPlan": {
+      "button": "Автоматически создать план урока",
+      "regenerateButton": "Пересоздать план урока",
+      "vipBadge": "VIP",
+      "vipToast": "Автоматический план урока доступен только для VIP",
+      "studentRequired": "Сначала выберите ученика",
+      "generating": "Анализируем историю ученика...",
+      "generateError": "Не удалось создать план урока",
+      "viewFullPlan": "Смотреть полный план",
+      "modalTitle": "План урока",
+      "sectionReview": "Повторить",
+      "sectionActive": "Сейчас по программе",
+      "sectionUpcoming": "Дальше",
+      "close": "Закрыть"
     }
   },
   "roadmapViewer": {

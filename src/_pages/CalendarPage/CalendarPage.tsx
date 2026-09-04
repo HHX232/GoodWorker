@@ -61,6 +61,7 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
 
   const [teacherServices, setTeacherServices] = useState<{id: string; title: string; price: number; duration: number}[]>([])
   const [teacherSubjects, setTeacherSubjects] = useState<string[]>([])
+  const [teacherCategories, setTeacherCategories] = useState<{id: string; name: string}[]>([])
 
   interface HomeworkCalendarItem {
     id: string
@@ -83,6 +84,7 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
         if (Array.isArray(d.events) && d.events.length > 0) setEvents(d.events)
         if (Array.isArray(d.tasks) && d.tasks.length > 0) setTasks(d.tasks)
         if (Array.isArray(d.subjects) && d.subjects.length > 0) setTeacherSubjects(d.subjects)
+        if (Array.isArray(d.categories) && d.categories.length > 0) setTeacherCategories(d.categories)
       })
       .catch(() => {})
 
@@ -349,6 +351,8 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
         teacherServices={teacherServices}
         teacherStudents={students.map(s => ({ id: s.id, name: s.name }))}
         teacherSubjects={teacherSubjects}
+        teacherCategories={teacherCategories}
+        isVip={isVip}
       />
     </div>
   )

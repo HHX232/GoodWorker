@@ -18,14 +18,22 @@ import {DayCalendar} from '@/widgets/Calendar/DayCalendar/DayCalendar'
 import {CalendarEventModal} from '@/widgets/Calendar/Modals/CalendarEventModal/CalendarEventModal'
 import {CalendarTaskCreateModal} from '@/widgets/Calendar/Modals/CalendarTaskCreateModal/CalendarTaskCreateModal'
 import {CalendarTaskModal} from '@/widgets/Calendar/Modals/CalendarTaskModal/CalendarTaskModal'
+import {GoogleCalendarImportModal} from '@/widgets/Calendar/Modals/GoogleCalendarImportModal/GoogleCalendarImportModal'
 import {MonthCalendar} from '@/widgets/Calendar/MonthCalendar/MonthCalendar'
 import {WeekCalendar} from '@/widgets/Calendar/WeekCalendar/WeekCalendar'
 import {useLocale, useTranslations} from 'next-intl'
 import {useEffect, useRef, useState} from 'react'
+import {toast} from 'sonner'
 import styles from '../CalendarPage/CalendarPage.module.scss'
 
-export function StudentCalendarPage() {
+interface StudentCalendarPageProps {
+  isVip?: boolean
+  studentId: string
+}
+
+export function StudentCalendarPage({isVip = false, studentId}: StudentCalendarPageProps) {
   const tSidebar = useTranslations('calendar.sidebar')
+  const tGoogleImport = useTranslations('calendar.googleImport')
   const {
     setEvents,
     setTasks,
@@ -45,7 +53,18 @@ export function StudentCalendarPage() {
     goToPrevMonth,
     goToNextMonth,
     setCurrentDate,
+    addEvent,
   } = useActions()
+
+  const [importModalOpen, setImportModalOpen] = useState(false)
+
+  const handleImportGoogleClick = () => {
+    if (!isVip) {
+      toast.error(tGoogleImport('vipToast'))
+      return
+    }
+    setImportModalOpen(true)
+  }
 
   const weekDays = useTypedSelector(selectWeekDays)
   const events = useTypedSelector(selectEvents)
@@ -120,6 +139,8 @@ export function StudentCalendarPage() {
           onDateSelect={(d) => setCurrentDate(d.toISOString())}
           onAdd={() => setCreateTaskModalStatus(true)}
           exporting={false}
+          onImportGoogle={handleImportGoogleClick}
+          isVip={isVip}
         />
         {view === 'week' && (
           <WeekCalendar
@@ -173,6 +194,16 @@ export function StudentCalendarPage() {
         onClose={() => selectTask(null)}
         onToggle={toggleCalendarTask}
         onSave={updateCalendarTask}
+      />
+
+      <GoogleCalendarImportModal
+        isOpen={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        teacherId={studentId}
+        students={[]}
+        onImported={(newEvents) => {
+          newEvents.forEach((e) => addEvent(e))
+        }}
       />
     </div>
   )
