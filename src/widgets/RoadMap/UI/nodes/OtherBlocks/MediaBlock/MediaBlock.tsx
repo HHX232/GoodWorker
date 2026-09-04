@@ -3,7 +3,7 @@
 
 import {RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
 import {useViewMode} from '@/shared/ui/RoadMap/context/ViewModeContext'
-import {compressImageToBase64} from '@/shared/helpers/compressImage'
+import {uploadFile} from '@/shared/lib/uploadFile'
 import {useReactFlow, useStore} from '@xyflow/react'
 import {
   ChevronLeftIcon,
@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import {useTranslations} from 'next-intl'
 import {useRef, useState} from 'react'
+import {toast} from 'sonner'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import {Navigation} from 'swiper/modules'
@@ -38,15 +39,6 @@ const SIZES: MediaSize[] = ['mini', 'medium', 'large']
 const POINTS_IMAGE = 1
 const POINTS_VIDEO = 3
 const MAX_POINTS = 15
-
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result as string)
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
-}
 
 function calcPoints(items: MediaItem[]) {
   return items.reduce((acc, i) => acc + i.points, 0)
@@ -96,15 +88,17 @@ export default function MediaBlock({nodeId}: {nodeId: string}) {
     const newItems: MediaItem[] = []
     let pts = usedPoints
 
-    for (const file of files) {
-      const isVideo = file.type.startsWith('video/')
-      const cost = isVideo ? POINTS_VIDEO : POINTS_IMAGE
-      if (pts + cost > MAX_POINTS) continue
-      const url = isVideo
-        ? await fileToBase64(file)
-        : await compressImageToBase64(file, 1200, 900, 0.75)
-      newItems.push({ url, type: isVideo ? 'video' : 'image', points: cost })
-      pts += cost
+    try {
+      for (const file of files) {
+        const isVideo = file.type.startsWith('video/')
+        const cost = isVideo ? POINTS_VIDEO : POINTS_IMAGE
+        if (pts + cost > MAX_POINTS) continue
+        const url = await uploadFile(file, 'roadmap-media')
+        newItems.push({ url, type: isVideo ? 'video' : 'image', points: cost })
+        pts += cost
+      }
+    } catch {
+      toast.error(t('mediaUploadError'))
     }
 
     update({mediaItems: [...current, ...newItems]})

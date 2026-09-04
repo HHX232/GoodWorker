@@ -12,6 +12,7 @@ import { CategorySelect } from '@/shared/ui/inputs/CategorySelect/CategorySelect
 import styles from './DashboardProfilePanel.module.scss'
 import { signOut } from 'next-auth/react'
 import { toast } from 'sonner'
+import { uploadFile } from '@/shared/lib/uploadFile'
 
 const TG_MODAL_KEY = 'tg_welcome_shown'
 
@@ -317,11 +318,7 @@ function ExperienceSection() {
     if (!files.length) return
     setSavingPhotoId(id)
     try {
-      const newUrls = await Promise.all(files.map(f => new Promise<string>((resolve) => {
-        const reader = new FileReader()
-        reader.onload = () => resolve(reader.result as string)
-        reader.readAsDataURL(f)
-      })))
+      const newUrls = await Promise.all(files.map((f) => uploadFile(f, 'experience-docs')))
       const merged = [...existingUrls, ...newUrls]
       const resp = await fetch(`/api/teacher/experience/${id}`, {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' },
@@ -447,22 +444,23 @@ function IdentitySection() {
       .finally(() => setLoading(false))
   }, [])
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
+    e.target.value = ''
     if (!file) return
     setUploading(true)
-    const reader = new FileReader()
-    reader.onload = async () => {
-      const url = reader.result as string
+    try {
+      const url = await uploadFile(file, 'identity-docs')
       await fetch('/api/teacher/identity', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ passportDocumentUrl: url }),
       })
       setDocUrl(url)
+    } catch {
+      toast.error(t('saveErrorMsg'))
+    } finally {
       setUploading(false)
     }
-    reader.readAsDataURL(file)
-    e.target.value = ''
   }
 
   if (loading) return null

@@ -9,6 +9,7 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import {FC, useEffect, useRef, useState} from 'react'
 import { toast } from 'sonner'
+import { uploadFile } from '@/shared/lib/uploadFile'
 import {useTranslations} from 'next-intl'
 import styles from './ProfileEditForm.module.scss'
 import {useUpdateProfile} from '@/features/hooks/User/useUpdateProfile'
@@ -95,21 +96,27 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, stats
     e.target.value = ''
   }
 
-  const handleCropSave = (croppedFile: File) => {
-    const reader = new FileReader()
-    reader.onload = () => setAvatarUrl(reader.result as string)
-    reader.readAsDataURL(croppedFile)
+  const handleCropSave = async (croppedFile: File) => {
     setCropOpen(false)
     if (cropSrc) URL.revokeObjectURL(cropSrc)
     setCropSrc(null)
+    try {
+      const url = await uploadFile(croppedFile, 'avatars')
+      setAvatarUrl(url)
+    } catch {
+      toast.error(t('saveErrorMsg'))
+    }
   }
 
-  const handleCoverFilesChange = (files: File[]) => {
+  const handleCoverFilesChange = async (files: File[]) => {
     const file = files[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = () => setCoverPhotoUrl(reader.result as string)
-    reader.readAsDataURL(file)
+    try {
+      const url = await uploadFile(file, 'cover-photos')
+      setCoverPhotoUrl(url)
+    } catch {
+      toast.error(t('saveErrorMsg'))
+    }
   }
 
   const handleCoverActiveChange = (urls: string[]) => {

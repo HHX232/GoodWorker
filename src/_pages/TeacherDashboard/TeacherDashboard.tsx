@@ -13,6 +13,7 @@ import { useTranslations } from 'next-intl'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useUpdateProfile } from '@/features/hooks/User/useUpdateProfile'
 import { toast } from 'sonner'
+import { uploadFile } from '@/shared/lib/uploadFile'
 import styles from './TeacherDashboard.module.scss'
 
 const LEFT_DEFAULT = 272
@@ -139,13 +140,17 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
     e.target.value = ''
   }
 
-  const handleCropSave = (croppedFile: File) => {
-    const reader = new FileReader()
-    reader.onload = () => { setAvatarUrl(reader.result as string); setPersonalDirty(true) }
-    reader.readAsDataURL(croppedFile)
+  const handleCropSave = async (croppedFile: File) => {
     setCropOpen(false)
     if (cropSrc) URL.revokeObjectURL(cropSrc)
     setCropSrc(null)
+    try {
+      const url = await uploadFile(croppedFile, 'avatars')
+      setAvatarUrl(url)
+      setPersonalDirty(true)
+    } catch {
+      toast.error(t('saveErrorMsg'))
+    }
   }
 
   const handleSavePersonal = async () => {
