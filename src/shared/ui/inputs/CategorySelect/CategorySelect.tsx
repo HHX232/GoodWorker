@@ -48,6 +48,8 @@ interface CategorySelectProps {
   onChange: (ids: string[]) => void
   placeholder?: string
   error?: boolean
+  /** Extra class on the trigger button, e.g. to match a host form's own input styling. */
+  triggerClassName?: string
 }
 
 const ACCENT_COLORS = ['#EC972A', '#FF7A00', '#BD00FF']
@@ -89,7 +91,8 @@ export function CategorySelect({
   value,
   onChange,
   placeholder,
-  error
+  error,
+  triggerClassName
 }: CategorySelectProps) {
   const locale = useLocale()
   const activeLang = langCode ?? locale
@@ -128,8 +131,15 @@ export function CategorySelect({
 
   const {data: allCategories = [], isLoading} = useCategories(activeLang)
   const levelFiltered = maxLevel ? allCategories.filter((c) => c.levelNumber <= maxLevel) : allCategories
-  const categories = allowedRootIds
-    ? levelFiltered.filter((c) => allowedRootIds.includes(getRootId(c.id, allCategories)))
+  // `allowedRootIds` may itself hold non-root ids (a teacher can be linked to
+  // a level-2/3 category directly) — normalize to actual roots before
+  // comparing, otherwise a teacher linked only to sub-categories sees nothing.
+  // An empty/missing list means "not scoped yet", not "nothing allowed".
+  const allowedRoots = allowedRootIds?.length
+    ? new Set(allowedRootIds.map((id) => getRootId(id, allCategories)))
+    : null
+  const categories = allowedRoots
+    ? levelFiltered.filter((c) => allowedRoots.has(getRootId(c.id, allCategories)))
     : levelFiltered
 
   const treeMap = buildTree(categories)
@@ -252,7 +262,7 @@ export function CategorySelect({
       {open && <div className={styles.scrim} onClick={() => setOpen(false)} aria-hidden='true' />}
       <button
         type='button'
-        className={`${styles.trigger} ${open ? styles.trigger_open : ''} ${error ? styles.trigger_error : ''}`}
+        className={`${styles.trigger} ${open ? styles.trigger_open : ''} ${error ? styles.trigger_error : ''} ${triggerClassName ?? ''}`}
         onClick={() => setOpen((v) => !v)}
         disabled={isLoading}
       >

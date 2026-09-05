@@ -345,6 +345,7 @@ export function CalendarCreateModal({
                 setForm((prev) => ({...prev, categoryId: ids[0] ?? ''}))
               }}
               placeholder={t('subjectPlaceholder')}
+              triggerClassName={styles.categorySelectTrigger}
             />
           </div>
           <div className={styles.field}>

@@ -163,6 +163,21 @@
   border-color: #ef4444 !important;
 }
 
+// Makes CategorySelect's trigger button match .input's look — it ships with
+// its own (taller, more rounded) default styling meant for standalone use.
+.categorySelectTrigger {
+  min-height: unset !important;
+  background: #F8F8FB !important;
+  border: 0.5px solid rgba(0, 0, 0, 0.1) !important;
+  border-radius: 8px !important;
+  padding: 9px 12px !important;
+  font-size: 13px !important;
+
+  &:hover {
+    border-color: rgba(0, 0, 0, 0.1) !important;
+  }
+}
+
 // ── Color picker ──────────────────────────────────────
 
 .colorPicker {
@@ -304,6 +319,11 @@
   .title { color: #e8eaf0; }
   .label { color: rgba(255,255,255,0.25); }
   .input { background: #23263a; border-color: rgba(255,255,255,0.08); color: #e8eaf0; color-scheme: dark; &:focus { border-color: #818cf8; background: #1f2130; } }
+  .categorySelectTrigger {
+    background: #23263a !important;
+    border-color: rgba(255,255,255,0.08) !important;
+    &:hover { border-color: rgba(255,255,255,0.08) !important; }
+  }
   .textarea { background: #23263a; border-color: rgba(255,255,255,0.08); color: #e8eaf0; &:focus { border-color: #818cf8; background: #1f2130; } }
   .footer { border-top-color: rgba(255,255,255,0.07); }
   .btnSecondary { color: rgba(255,255,255,0.4); border-color: rgba(255,255,255,0.1); &:hover { background: #23263a; } }
