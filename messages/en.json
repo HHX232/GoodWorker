@@ -614,7 +614,13 @@
       "fieldPassword": "Password",
       "fieldName": "Name",
       "fieldPhone": "Phone",
-      "fieldPromoCode": "Promo code"
+      "fieldPromoCode": "Promo code",
+      "fieldSchoolGrade": "Grade / year",
+      "schoolGradePlaceholder": "Not selected",
+      "schoolGradeOption": "Grade {grade}",
+      "schoolGroupLabel": "School",
+      "universityGroupLabel": "College / university",
+      "courseOption": "Year {course}"
     },
     "forgotPassword": {
       "title": "Reset password",
@@ -841,6 +847,12 @@
     "basicInfo": "Basic Information",
     "fullName": "Full name",
     "phone": "Phone",
+    "fieldSchoolGrade": "Grade / year",
+    "schoolGradePlaceholder": "Not selected",
+    "schoolGradeOption": "Grade {grade}",
+    "schoolGroupLabel": "School",
+    "universityGroupLabel": "College / university",
+    "courseOption": "Year {course}",
     "saving": "Saving...",
     "saveChanges": "Save changes",
     "changesSaved": "Changes saved!",

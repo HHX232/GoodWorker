@@ -347,7 +347,7 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
         onClose={closeCreate}
         onSave={handleSaveEvent}
         teacherServices={teacherServices}
-        teacherStudents={students.map(s => ({ id: s.id, name: s.name }))}
+        teacherStudents={students.map(s => ({ id: s.id, name: s.name, schoolGrade: s.schoolGrade, courseNumber: s.courseNumber }))}
         teacherCategoryIds={teacherCategoryIds}
         isVip={isVip}
       />

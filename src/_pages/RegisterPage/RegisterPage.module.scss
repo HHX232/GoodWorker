@@ -105,6 +105,19 @@
   margin-bottom: 20px;
 }
 
+.gradeField {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.gradeLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: #2a2e46;
+  padding-left: 15px;
+}
+
 .categoriesBlock {
   margin-bottom: 20px;
 }
@@ -307,6 +320,8 @@
   }
 
   .categoriesLabel { color: rgba(255,255,255,0.5); }
+
+  .gradeLabel { color: #9ea4b5; }
 
   .btn {
     background: rgba(255,255,255,0.12);

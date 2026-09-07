@@ -31,6 +31,8 @@ model Student {
   password               String?
   isVip                  Boolean                  @default(false)
   vipExpiresAt           DateTime?
+  schoolGrade            Int?
+  courseNumber           Int?
   complaints             Complaint[]
   errors                 StudentError[]
   favoritePosts          StudentFavoritePost[]
@@ -557,6 +559,28 @@ model StudentTestAttempt {
   student       Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
   test          Test           @relation(fields: [testId], references: [id], onDelete: Cascade)
   studentErrors StudentError[]
+}
+
+/// Учебная программа предмета по классам, выгруженная из PDF Минобра.
+/// rawText — источник правды (полный текст), summary — сжатый конспект тем,
+/// который реально уходит в промпт ИИ-планировщика (см. src/lib/curriculumContext.ts).
+model CurriculumProgram {
+  id           String    @id @default(cuid())
+  subject      String
+  scope        String
+  gradeFrom    Int
+  gradeTo      Int
+  grade        Int?
+  sourceFile   String
+  rawText      String
+  rawHash      String
+  summary      Json?
+  summarizedAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([subject, scope, gradeFrom, gradeTo, grade])
+  @@index([subject, grade])
 }
 
 model StudentSavedText {

@@ -174,6 +174,13 @@
   min-width: 0;
 }
 
+.cardNameRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
 .cardName {
   font-size: 13px;
   font-weight: 600;
@@ -182,6 +189,17 @@
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: 1.3;
+}
+
+.gradeBadge {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 600;
+  color: #534AB7;
+  background: rgba(83, 74, 183, 0.1);
+  padding: 2px 8px;
+  border-radius: 99px;
+  white-space: nowrap;
 }
 
 .cardSubject {
@@ -276,6 +294,7 @@
   .loading { color: rgba(255,255,255,0.2); }
   .card { background: #1e2030; border-color: rgba(255,255,255,0.08); &:hover { box-shadow: 0 4px 18px rgba(0,0,0,0.3); border-color: rgba(129,140,248,0.3); } }
   .cardName { color: #e8eaf0; }
+  .gradeBadge { background: rgba(129,140,248,0.15); color: #a5b4fc; }
   .cardSubject { color: rgba(255,255,255,0.35); }
   .nextRow { color: rgba(255,255,255,0.3); }
   .nextTime { color: #e8eaf0; }

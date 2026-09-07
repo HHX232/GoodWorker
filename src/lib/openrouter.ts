@@ -12,7 +12,7 @@ function getProvider(): Provider {
   return process.env.DEEPSEEK_API_KEY ? 'deepseek' : 'openrouter'
 }
 
-function buildRequest(systemPrompt: string, userPrompt: string, opts: { temperature?: number }): { endpoint: string; headers: Record<string, string>; body: string } {
+function buildRequest(systemPrompt: string, userPrompt: string, opts: { temperature?: number; maxTokens?: number }): { endpoint: string; headers: Record<string, string>; body: string } {
   const provider = getProvider()
 
   if (provider === 'deepseek') {
@@ -29,6 +29,7 @@ function buildRequest(systemPrompt: string, userPrompt: string, opts: { temperat
           { role: 'user', content: userPrompt },
         ],
         temperature: opts.temperature ?? 0.1,
+        ...(opts.maxTokens ? { max_tokens: opts.maxTokens } : {}),
         response_format: { type: 'json_object' },
         stream: true,
       }),
@@ -50,6 +51,7 @@ function buildRequest(systemPrompt: string, userPrompt: string, opts: { temperat
         { role: 'user', content: userPrompt },
       ],
       temperature: opts.temperature ?? 0.1,
+      ...(opts.maxTokens ? { max_tokens: opts.maxTokens } : {}),
       response_format: { type: 'json_object' },
       stream: true,
     }),
@@ -59,7 +61,7 @@ function buildRequest(systemPrompt: string, userPrompt: string, opts: { temperat
 export async function callAI(
   systemPrompt: string,
   userPrompt: string,
-  opts: { temperature?: number } = {},
+  opts: { temperature?: number; maxTokens?: number } = {},
 ): Promise<string> {
   const provider = getProvider()
   if (provider === 'deepseek' && !process.env.DEEPSEEK_API_KEY) throw new Error('DEEPSEEK_API_KEY is not set')

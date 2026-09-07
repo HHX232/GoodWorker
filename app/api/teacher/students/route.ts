@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
 
   const rows = await prisma.teacherStudent.findMany({
     where: { teacherId },
-    include: { student: { select: { id: true, name: true, nameTransliterated: true, avatarUrl: true } } },
+    include: { student: { select: { id: true, name: true, nameTransliterated: true, avatarUrl: true, schoolGrade: true, courseNumber: true } } },
     orderBy: { linkedAt: 'asc' },
   })
 
@@ -52,6 +52,8 @@ export async function GET(req: NextRequest) {
       avatarUrl: r.student.avatarUrl ?? null,
       avatarColor: palette.bg,
       avatarTextColor: palette.text,
+      schoolGrade: r.student.schoolGrade ?? null,
+      courseNumber: r.student.courseNumber ?? null,
     }
   })
 

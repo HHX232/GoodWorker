@@ -70,7 +70,7 @@ export async function GET(
     const [studentRecord, teacherRecord, errors, attempts, postViews, calls] = await Promise.all([
       prisma.student.findUnique({
         where: { id: studentId },
-        select: { name: true, email: true, avatarUrl: true, createdAt: true },
+        select: { name: true, email: true, avatarUrl: true, createdAt: true, schoolGrade: true, courseNumber: true },
       }),
       prisma.teacher.findUnique({
         where: { id: teacherId },

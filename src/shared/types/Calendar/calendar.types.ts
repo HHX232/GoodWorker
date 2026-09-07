@@ -65,6 +65,8 @@ export interface CalendarStudent {
   subject: string
   avatarColor: string
   avatarTextColor: string
+  schoolGrade?: number | null
+  courseNumber?: number | null
 }
 
 export type CalendarView = 'week' | 'day' | 'month'

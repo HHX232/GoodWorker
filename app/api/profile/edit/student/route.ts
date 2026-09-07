@@ -13,7 +13,9 @@ const updateStudentSchema = z.object({
   .pipe(z.string().min(7, 'Minimum 7 characters').nullable())
   .optional()
   .nullable(),
-  avatarUrl: z.string().optional().nullable(), 
+  avatarUrl: z.string().optional().nullable(),
+  schoolGrade: z.coerce.number().int().min(1).max(11).optional().nullable(),
+  courseNumber: z.coerce.number().int().min(1).max(6).optional().nullable(),
 })
 
 export async function GET() {
@@ -48,6 +50,8 @@ export async function PATCH(req: NextRequest) {
       ...(parsed.data.name !== undefined && { name: parsed.data.name }),
       ...(parsed.data.phone !== undefined && { phone: parsed.data.phone }),
       ...(parsed.data.avatarUrl !== undefined && { avatarUrl: parsed.data.avatarUrl }),
+      ...(parsed.data.schoolGrade !== undefined && { schoolGrade: parsed.data.schoolGrade }),
+      ...(parsed.data.courseNumber !== undefined && { courseNumber: parsed.data.courseNumber }),
     },
     select: {
       id: true,
@@ -56,6 +60,8 @@ export async function PATCH(req: NextRequest) {
       phone: true,
       avatarUrl: true,
       langCode: true,
+      schoolGrade: true,
+      courseNumber: true,
     },
   })
 

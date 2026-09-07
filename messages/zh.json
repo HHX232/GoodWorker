@@ -593,7 +593,13 @@
       "fieldPassword": "密码",
       "fieldName": "姓名",
       "fieldPhone": "电话",
-      "fieldPromoCode": "优惠码"
+      "fieldPromoCode": "优惠码",
+      "fieldSchoolGrade": "年级 / 课程",
+      "schoolGradePlaceholder": "未选择",
+      "schoolGradeOption": "{grade} 年级",
+      "schoolGroupLabel": "学校",
+      "universityGroupLabel": "专科 / 大学",
+      "courseOption": "{course} 年级（大学）"
     },
     "forgotPassword": {
       "title": "重置密码",
@@ -807,6 +813,12 @@
     "basicInfo": "基本信息",
     "fullName": "全名",
     "phone": "电话",
+    "fieldSchoolGrade": "年级 / 课程",
+    "schoolGradePlaceholder": "未选择",
+    "schoolGradeOption": "{grade} 年级",
+    "schoolGroupLabel": "学校",
+    "universityGroupLabel": "专科 / 大学",
+    "courseOption": "{course} 年级（大学）",
     "saving": "保存中...",
     "saveChanges": "保存更改",
     "changesSaved": "更改已保存！",

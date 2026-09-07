@@ -2,6 +2,7 @@
 
 import { InputOtp, TextInputUI } from '@/shared/ui/inputs'
 import { CategorySelect } from '@/shared/ui/inputs/CategorySelect/CategorySelect'
+import { GradeSelect, type GradeValue } from '@/shared/ui/inputs/GradeSelect/GradeSelect'
 import LanguageSelect from '@/shared/ui/inputs/LanguageSelect/LanguageSelect'
 import { signIn } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
@@ -34,6 +35,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
+  const [gradeValue, setGradeValue] = useState<GradeValue | null>(null)
   const [nameError, setNameError] = useState('')
   const [emailError, setEmailError] = useState('')
   const [passwordError, setPasswordError] = useState('')
@@ -98,6 +100,10 @@ export default function RegisterPage() {
         password,
         langCode: 'ru'
       }
+      if (role === 'User' && gradeValue) {
+        if (gradeValue.level === 'school') body.schoolGrade = gradeValue.number
+        else body.courseNumber = gradeValue.number
+      }
       if (role === 'Teacher') {
         body.categoryIds = selectedCategories
         body.languages = selectedLanguages
@@ -140,6 +146,7 @@ export default function RegisterPage() {
           phone,
           password,
           langCode: 'ru',
+          ...(role === 'User' && gradeValue ? (gradeValue.level === 'school' ? {schoolGrade: gradeValue.number} : {courseNumber: gradeValue.number}) : {}),
           ...(role === 'Teacher' ? {categoryIds: selectedCategories, languages: selectedLanguages} : {}),
           ...(promoCode.trim() ? {promoCode: promoCode.trim().toUpperCase()} : {}),
           ...(referralCode.trim() ? {referralCode: referralCode.trim().toUpperCase()} : {})
@@ -246,6 +253,20 @@ export default function RegisterPage() {
                       onSetValue={setPhone}
                       autoComplete='tel'
                     />
+                    {role === 'User' && (
+                      <div className={styles.gradeField}>
+                        <span className={styles.gradeLabel}>{t('fieldSchoolGrade')}</span>
+                        <GradeSelect
+                          value={gradeValue}
+                          onChange={setGradeValue}
+                          placeholder={t('schoolGradePlaceholder')}
+                          schoolGroupLabel={t('schoolGroupLabel')}
+                          universityGroupLabel={t('universityGroupLabel')}
+                          schoolOptionLabel={grade => t('schoolGradeOption', {grade})}
+                          universityOptionLabel={course => t('courseOption', {course})}
+                        />
+                      </div>
+                    )}
                     <TextInputUI
                       helpTitle={t('fieldPassword')}
                       theme='newWhite'

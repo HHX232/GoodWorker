@@ -6,6 +6,7 @@ import { BookmarksModal } from '@/widgets/Forms/ProfileEditForm/BookmarksModal'
 import { TranscriptsModal } from '@/widgets/Forms/ProfileEditForm/TranscriptsModal'
 import { StudentCenter } from '@/widgets/Dashboard/StudentCenter/StudentCenter'
 import { StudentProfilePanel } from '@/widgets/Dashboard/StudentProfilePanel/StudentProfilePanel'
+import type { GradeValue } from '@/shared/ui/inputs/GradeSelect/GradeSelect'
 import { StudentStatsModal } from '@/widgets/Dashboard/StudentStatsModal/StudentStatsModal'
 import { StudentTeachersSidebar } from '@/widgets/Dashboard/StudentTeachersSidebar/StudentTeachersSidebar'
 import { ProfileSubNav } from '@/shared/ui/ProfileSubNav/ProfileSubNav'
@@ -38,6 +39,8 @@ interface ProfileData {
   email: string
   phone: string | null
   avatarUrl: string | null
+  schoolGrade: number | null
+  courseNumber: number | null
 }
 
 interface Teacher {
@@ -160,6 +163,11 @@ export const StudentDashboard: FC<Props> = ({ initialData }) => {
   const [name, setName] = useState(initialData.name)
   const [phone, setPhone] = useState(initialData.phone ?? '')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(initialData.avatarUrl)
+  const [gradeValue, setGradeValue] = useState<GradeValue | null>(
+    initialData.schoolGrade ? { level: 'school', number: initialData.schoolGrade }
+    : initialData.courseNumber ? { level: 'university', number: initialData.courseNumber }
+    : null
+  )
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [saveSuccess, setSaveSuccess] = useState(false)
@@ -221,7 +229,13 @@ export const StudentDashboard: FC<Props> = ({ initialData }) => {
     setSaveSuccess(false)
     const tid = toast.loading(t('savingShort'))
     try {
-      await updateProfile({ name: name.trim(), phone: phone.trim() || null, avatarUrl })
+      await updateProfile({
+        name: name.trim(),
+        phone: phone.trim() || null,
+        avatarUrl,
+        schoolGrade: gradeValue?.level === 'school' ? gradeValue.number : null,
+        courseNumber: gradeValue?.level === 'university' ? gradeValue.number : null,
+      })
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 3000)
       toast.success(t('saveSuccessShort'), { id: tid })
@@ -317,6 +331,8 @@ export const StudentDashboard: FC<Props> = ({ initialData }) => {
           email={initialData.email}
           phone={phone}
           avatarUrl={avatarUrl}
+          gradeValue={gradeValue}
+          onGradeChange={setGradeValue}
           memberSince={profileData?.memberSince ?? new Date().toISOString()}
           errorCount={profileData?.errorCount ?? 0}
           correctedCount={profileData?.correctedCount ?? 0}

@@ -4,6 +4,7 @@ import {useState, useEffect} from 'react'
 import {useRouter} from 'next/navigation'
 import {CalendarEvent, CalendarEventColor, LessonPlan} from '@/shared/types/Calendar/calendar.types'
 import {EVENT_COLORS, formatDateKey} from '@/shared/helpers/calendar/calendar.helpers'
+import {formatGradeLabel} from '@/shared/lib/formatGrade'
 import {useLocale, useTranslations} from 'next-intl'
 import {toast} from 'sonner'
 import styles from './CalendarCreateModal.module.scss'
@@ -23,6 +24,8 @@ interface ServiceOption {
 interface StudentOption {
   id: string
   name: string
+  schoolGrade?: number | null
+  courseNumber?: number | null
 }
 
 interface CalendarCreateModalProps {
@@ -303,9 +306,12 @@ export function CalendarCreateModal({
                 onChange={handleStudentChange}
               >
                 <option value=''>{t('studentPlaceholder')}</option>
-                {teacherStudents.map(s => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
+                {teacherStudents.map(s => {
+                  const gradeLabel = formatGradeLabel(s.schoolGrade, s.courseNumber)
+                  return (
+                    <option key={s.id} value={s.id}>{gradeLabel ? `${s.name} (${gradeLabel})` : s.name}</option>
+                  )
+                })}
               </select>
             ) : (
               <input

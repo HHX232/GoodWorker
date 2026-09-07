@@ -593,7 +593,13 @@
       "fieldPassword": "पासवर्ड",
       "fieldName": "नाम",
       "fieldPhone": "फ़ोन",
-      "fieldPromoCode": "प्रोमो कोड"
+      "fieldPromoCode": "प्रोमो कोड",
+      "fieldSchoolGrade": "कक्षा / वर्ष",
+      "schoolGradePlaceholder": "चयनित नहीं",
+      "schoolGradeOption": "कक्षा {grade}",
+      "schoolGroupLabel": "स्कूल",
+      "universityGroupLabel": "कॉलेज / विश्वविद्यालय",
+      "courseOption": "वर्ष {course}"
     },
     "forgotPassword": {
       "title": "पासवर्ड रीसेट करें",
@@ -807,6 +813,12 @@
     "basicInfo": "मूल जानकारी",
     "fullName": "पूरा नाम",
     "phone": "फोन",
+    "fieldSchoolGrade": "कक्षा / वर्ष",
+    "schoolGradePlaceholder": "चयनित नहीं",
+    "schoolGradeOption": "कक्षा {grade}",
+    "schoolGroupLabel": "स्कूल",
+    "universityGroupLabel": "कॉलेज / विश्वविद्यालय",
+    "courseOption": "वर्ष {course}",
     "saving": "सहेज रहे हैं...",
     "saveChanges": "बदलाव सहेजें",
     "changesSaved": "बदलाव सहेजे गए!",

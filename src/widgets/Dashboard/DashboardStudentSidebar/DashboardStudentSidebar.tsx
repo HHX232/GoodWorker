@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import styles from './DashboardStudentSidebar.module.scss'
 import { StudentDetailModal } from '@/widgets/Dashboard/StudentDetailModal/StudentDetailModal'
+import { formatGradeLabel } from '@/shared/lib/formatGrade'
 
 interface Student {
   id: string
@@ -14,6 +15,8 @@ interface Student {
   subject: string
   avatarColor: string
   avatarTextColor: string
+  schoolGrade: number | null
+  courseNumber: number | null
 }
 
 interface CalendarEvent {
@@ -172,7 +175,12 @@ export function DashboardStudentSidebar({ teacherId }: Props) {
                   {student.initials}
                 </div>
                 <div className={styles.cardInfo}>
-                  <div className={styles.cardName}>{student.name}</div>
+                  <div className={styles.cardNameRow}>
+                    <div className={styles.cardName}>{student.name}</div>
+                    {formatGradeLabel(student.schoolGrade, student.courseNumber) && (
+                      <span className={styles.gradeBadge}>{formatGradeLabel(student.schoolGrade, student.courseNumber)}</span>
+                    )}
+                  </div>
                   {student.subject && (
                     <div className={styles.cardSubject}>{student.subject}</div>
                   )}

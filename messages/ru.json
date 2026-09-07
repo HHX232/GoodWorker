@@ -614,7 +614,13 @@
       "fieldPassword": "Пароль",
       "fieldName": "Имя",
       "fieldPhone": "Телефон",
-      "fieldPromoCode": "Промокод"
+      "fieldPromoCode": "Промокод",
+      "fieldSchoolGrade": "Класс / курс",
+      "schoolGradePlaceholder": "Не выбран",
+      "schoolGradeOption": "{grade} класс",
+      "schoolGroupLabel": "Школа",
+      "universityGroupLabel": "Колледж / университет",
+      "courseOption": "{course} курс"
     },
     "forgotPassword": {
       "title": "Восстановление пароля",
@@ -841,6 +847,12 @@
     "basicInfo": "Основная информация",
     "fullName": "Полное имя",
     "phone": "Телефон",
+    "fieldSchoolGrade": "Класс / курс",
+    "schoolGradePlaceholder": "Не выбран",
+    "schoolGradeOption": "{grade} класс",
+    "schoolGroupLabel": "Школа",
+    "universityGroupLabel": "Колледж / университет",
+    "courseOption": "{course} курс",
     "saving": "Сохранение...",
     "saveChanges": "Сохранить изменения",
     "changesSaved": "Изменения сохранены!",
