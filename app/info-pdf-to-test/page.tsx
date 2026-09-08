@@ -1418,10 +1418,10 @@ const MAX_PHOTOS = 10
 
 type ModalStep = 'pick' | 'process' | 'result' | 'error' | 'vip'
 
-function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
+function UploadModal({ modalOpen, onClose, pendingFiles, isLoggedIn }: {
   modalOpen: boolean
   onClose: () => void
-  pendingFile: File | null
+  pendingFiles: File[] | null
   isLoggedIn: boolean
 }) {
   const t = useTranslations('PdfInfoPage')
@@ -1602,18 +1602,23 @@ function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
     setErrorMsg('')
   }, [])
 
-  // Single drop zone / picker for everything: if the first file looks like a photo and the
-  // user is VIP, route the whole selection to the photo-batch flow; otherwise treat it as one
-  // document, exactly like before. Non-VIP users dropping a photo just hit the format error.
-  const onFiles = (files: FileList | null) => {
-    if (!files || files.length === 0) return
-    const arr = Array.from(files)
+  // Single drop zone / picker for everything (including the page-level global dropzone): if the
+  // first file looks like a photo and the user is VIP, route the whole selection to the
+  // photo-batch flow; otherwise treat it as one document, exactly like before. Non-VIP users
+  // dropping a photo just hit the format error.
+  const routeFiles = useCallback((arr: File[]) => {
+    if (arr.length === 0) return
     const firstExt = extOf(arr[0].name)
     if (isVip && ALLOWED_IMG_EXT.includes(firstExt)) {
       beginPhotos(arr)
       return
     }
     begin(arr[0])
+  }, [isVip, begin, beginPhotos])
+
+  const onFiles = (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    routeFiles(Array.from(files))
   }
 
   // Fade the modal in over two frames so the CSS transition has a starting state to animate from
@@ -1633,12 +1638,12 @@ function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
     setErrorMsg('')
     setFileName('')
     setRemoveLimit(false)
-    if (pendingFile && !beganRef.current) {
+    if (pendingFiles && pendingFiles.length > 0 && !beganRef.current) {
       beganRef.current = true
-      begin(pendingFile)
+      routeFiles(pendingFiles)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [modalOpen, pendingFile])
+  }, [modalOpen, pendingFiles])
 
   useEffect(() => {
     if (!modalOpen) return
@@ -1807,7 +1812,7 @@ function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
 }
 
 // ── Global full-viewport dropzone (drag a file anywhere on the page) ───────────────────────
-function GlobalDropzone({ onFileDropped, suppress }: { onFileDropped: (f: File) => void; suppress: boolean }) {
+function GlobalDropzone({ onFileDropped, suppress }: { onFileDropped: (files: File[]) => void; suppress: boolean }) {
   const t = useTranslations('PdfInfoPage')
   const [active, setActive] = useState(false)
   const depthRef = useRef(0)
@@ -1831,8 +1836,8 @@ function GlobalDropzone({ onFileDropped, suppress }: { onFileDropped: (f: File) 
       e.preventDefault()
       depthRef.current = 0
       setActive(false)
-      const f = e.dataTransfer?.files?.[0]
-      if (f) onFileDropped(f)
+      const files = e.dataTransfer?.files ? Array.from(e.dataTransfer.files) : []
+      if (files.length > 0) onFileDropped(files)
     }
     window.addEventListener('dragenter', onDragEnter)
     window.addEventListener('dragover', onDragOver)
@@ -1873,11 +1878,11 @@ export default function PdfInfoPage() {
   const errsRef = useRef<HTMLDivElement>(null)
 
   const [modalOpen, setModalOpen] = useState(false)
-  const [pendingFile, setPendingFile] = useState<File | null>(null)
+  const [pendingFiles, setPendingFiles] = useState<File[] | null>(null)
 
-  const openModal = useCallback((file?: File) => { setPendingFile(file ?? null); setModalOpen(true) }, [])
+  const openModal = useCallback((files?: File[]) => { setPendingFiles(files ?? null); setModalOpen(true) }, [])
   const closeModal = useCallback(() => setModalOpen(false), [])
-  const handleGlobalDrop = useCallback((file: File) => { openModal(file) }, [openModal])
+  const handleGlobalDrop = useCallback((files: File[]) => { openModal(files) }, [openModal])
 
   useEffect(() => {
     // Horizontal clipping lives on <body> (not on .pdf3 or any ancestor of the pinned hero/scrub/demo
@@ -2254,7 +2259,7 @@ export default function PdfInfoPage() {
         <ProgSection progRef={progRef} />
         <FinalSection onOpenUpload={() => openModal()} />
       </main>
-      <UploadModal modalOpen={modalOpen} onClose={closeModal} pendingFile={pendingFile} isLoggedIn={isLoggedIn} />
+      <UploadModal modalOpen={modalOpen} onClose={closeModal} pendingFiles={pendingFiles} isLoggedIn={isLoggedIn} />
       <GlobalDropzone onFileDropped={handleGlobalDrop} suppress={modalOpen} />
     </div>
   )
