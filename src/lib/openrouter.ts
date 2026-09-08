@@ -1,5 +1,6 @@
-const DEEPSEEK_MODEL    = 'deepseek-chat'
-const DEEPSEEK_ENDPOINT = 'https://api.deepseek.com/chat/completions'
+const DEEPSEEK_MODEL        = 'deepseek-chat'
+const DEEPSEEK_VISION_MODEL = 'deepseek-v4-flash-vision-exp'
+const DEEPSEEK_ENDPOINT     = 'https://api.deepseek.com/chat/completions'
 
 const OR_MODEL    = 'openrouter/free'
 const OR_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions'
@@ -58,6 +59,40 @@ function buildRequest(systemPrompt: string, userPrompt: string, opts: { temperat
   }
 }
 
+export type VisionImage = { mimeType: string; base64: string }
+
+function buildVisionRequest(
+  systemPrompt: string,
+  images: VisionImage[],
+  userPrompt: string,
+  opts: { temperature?: number; maxTokens?: number },
+): { endpoint: string; headers: Record<string, string>; body: string } {
+  return {
+    endpoint: DEEPSEEK_ENDPOINT,
+    headers: {
+      Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: DEEPSEEK_VISION_MODEL,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: userPrompt },
+            ...images.map(img => ({ type: 'image_url', image_url: { url: `data:${img.mimeType};base64,${img.base64}` } })),
+          ],
+        },
+      ],
+      temperature: opts.temperature ?? 0.1,
+      ...(opts.maxTokens ? { max_tokens: opts.maxTokens } : {}),
+      response_format: { type: 'json_object' },
+      stream: true,
+    }),
+  }
+}
+
 export async function callAI(
   systemPrompt: string,
   userPrompt: string,
@@ -71,6 +106,26 @@ export async function callAI(
   const promptPreview = userPrompt.slice(0, 120).replace(/\n/g, ' ')
   console.log(`[AI] provider=${provider} prompt="${promptPreview}..."`)
 
+  return sendChatRequest(endpoint, headers, body, provider)
+}
+
+// DeepSeek-only: the free OpenRouter fallback model has no vision support, so
+// this feature is simply unavailable when DEEPSEEK_API_KEY isn't configured.
+export async function callVisionAI(
+  systemPrompt: string,
+  images: VisionImage[],
+  userPrompt: string,
+  opts: { temperature?: number; maxTokens?: number } = {},
+): Promise<string> {
+  if (!process.env.DEEPSEEK_API_KEY) throw new Error('DEEPSEEK_API_KEY is not set — photo analysis requires the DeepSeek vision model')
+
+  const { endpoint, headers, body } = buildVisionRequest(systemPrompt, images, userPrompt, opts)
+  console.log(`[AI] provider=deepseek-vision images=${images.length}`)
+
+  return sendChatRequest(endpoint, headers, body, 'deepseek-vision')
+}
+
+async function sendChatRequest(endpoint: string, headers: Record<string, string>, body: string, providerLabel: string): Promise<string> {
   for (let attempt = 0; attempt < 3; attempt++) {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(new Error(`AI timed out after ${TIMEOUT_MS / 1000}s`)), TIMEOUT_MS)
@@ -83,7 +138,7 @@ export async function callAI(
       clearTimeout(timer)
       console.warn(`[AI] attempt=${attempt + 1} network error: ${(err as Error).message}`)
       if (attempt < 2) { await sleep(3000 * (attempt + 1)); continue }
-      throw new Error(`${provider} network error: ${(err as Error).message}`)
+      throw new Error(`${providerLabel} network error: ${(err as Error).message}`)
     }
 
     if (res.status === 429) {
@@ -91,20 +146,20 @@ export async function callAI(
       console.warn(`[AI] attempt=${attempt + 1} rate limited (429)`)
       if (attempt < 2) { await sleep(2000 * (attempt + 1)); continue }
       const text = await res.text()
-      throw new Error(`${provider} 429 (rate limit): ${text}`)
+      throw new Error(`${providerLabel} 429 (rate limit): ${text}`)
     }
 
     if (!res.ok) {
       clearTimeout(timer)
       const text = await res.text()
       console.error(`[AI] attempt=${attempt + 1} HTTP ${res.status}: ${text.slice(0, 200)}`)
-      throw new Error(`${provider} ${res.status}: ${text}`)
+      throw new Error(`${providerLabel} ${res.status}: ${text}`)
     }
 
     try {
       const content = await readStream(res)
       clearTimeout(timer)
-      if (!content) throw new Error(`${provider} returned empty content`)
+      if (!content) throw new Error(`${providerLabel} returned empty content`)
       console.log(`[AI] ok attempt=${attempt + 1} ms=${Date.now() - t0} chars=${content.length}`)
       return content
     } catch (err) {
@@ -119,7 +174,7 @@ export async function callAI(
     }
   }
 
-  throw new Error(`${provider}: all retries exhausted`)
+  throw new Error(`${providerLabel}: all retries exhausted`)
 }
 
 async function readStream(res: Response): Promise<string> {

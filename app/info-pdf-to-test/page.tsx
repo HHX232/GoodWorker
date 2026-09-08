@@ -1411,6 +1411,11 @@ function FinalSection({ onOpenUpload }: { onOpenUpload: () => void }) {
 const ALLOWED_EXT = ['pdf', 'docx', 'txt', 'rtf', 'odt']
 const MAX_SIZE = 20 * 1024 * 1024
 
+// VIP-only: upload up to 10 photos instead of a document (analyzed via DeepSeek vision)
+const ALLOWED_IMG_EXT = ['jpg', 'jpeg', 'png', 'webp', 'gif']
+const MAX_PHOTO_SIZE = 15 * 1024 * 1024
+const MAX_PHOTOS = 10
+
 type ModalStep = 'pick' | 'process' | 'result' | 'error' | 'vip'
 
 function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
@@ -1516,6 +1521,77 @@ function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
     }
   }, [fail, t, isVip, removeLimit])
 
+  const beginPhotos = useCallback(async (files: File[]) => {
+    if (files.length === 0) return
+    if (files.length > MAX_PHOTOS) {
+      fail(t('modal_error_photos_count_title'), t('modal_error_photos_count_msg', { n: files.length }))
+      return
+    }
+    for (const f of files) {
+      const ext = extOf(f.name)
+      if (!ALLOWED_IMG_EXT.includes(ext)) {
+        fail(t('modal_error_photos_format_title'), t('modal_error_photos_format_msg', { name: f.name }))
+        return
+      }
+      if (f.size > MAX_PHOTO_SIZE) {
+        fail(t('modal_error_photos_size_title'), t('modal_error_photos_size_msg', { name: f.name, mb: (f.size / 1024 / 1024).toFixed(1) }))
+        return
+      }
+      if (f.size === 0) {
+        fail(t('modal_error_empty_title'), t('modal_error_empty_msg', { name: f.name }))
+        return
+      }
+    }
+
+    cancelAnimationFrame(rafRef.current)
+    controllerRef.current?.abort()
+    const controller = new AbortController()
+    controllerRef.current = controller
+
+    setStep('process')
+    setFileName(files.length === 1 ? files[0].name : t('modal_pick_photos_count', { n: files.length }))
+    setProgress(0)
+    setResult(null)
+    setPreviewIdx(0)
+
+    startRef.current = performance.now()
+    const ESTIMATED_MS = 18000
+    const animFrame = () => {
+      const elapsed = performance.now() - startRef.current
+      const tt = Math.min(elapsed / ESTIMATED_MS, 1)
+      const eased = 1 - Math.pow(1 - tt, 2.2)
+      setProgress(Math.round(eased * 92))
+      rafRef.current = requestAnimationFrame(animFrame)
+    }
+    rafRef.current = requestAnimationFrame(animFrame)
+
+    try {
+      const fd = new FormData()
+      files.forEach(f => fd.append('photos', f))
+      const res = await fetch('/api/pdf-to-test/photos', { method: 'POST', body: fd, signal: controller.signal })
+      const data = await res.json()
+      cancelAnimationFrame(rafRef.current)
+
+      if (!res.ok) {
+        if (data.vipRequired) { setStep('vip'); return }
+        fail(t('modal_error_title_default'), data.error ?? `${res.status}`)
+        return
+      }
+
+      setProgress(100)
+      setResult(data as TestResult)
+      pushDataLayerEvent('pdf_to_test_created', {
+        is_guest: (data as TestResult).isGuest,
+        question_count: (data as TestResult).questions?.length ?? 0,
+      })
+      window.setTimeout(() => setStep('result'), 400)
+    } catch (e) {
+      cancelAnimationFrame(rafRef.current)
+      if ((e as Error).name === 'AbortError') return
+      fail(t('modal_error_title_default'), (e as Error).message)
+    }
+  }, [fail, t])
+
   const reset = useCallback(() => {
     cancelAnimationFrame(rafRef.current)
     controllerRef.current?.abort()
@@ -1526,9 +1602,18 @@ function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
     setErrorMsg('')
   }, [])
 
-  const onPick = (files: FileList | null) => {
-    const f = files?.[0]
-    if (f) begin(f)
+  // Single drop zone / picker for everything: if the first file looks like a photo and the
+  // user is VIP, route the whole selection to the photo-batch flow; otherwise treat it as one
+  // document, exactly like before. Non-VIP users dropping a photo just hit the format error.
+  const onFiles = (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    const arr = Array.from(files)
+    const firstExt = extOf(arr[0].name)
+    if (isVip && ALLOWED_IMG_EXT.includes(firstExt)) {
+      beginPhotos(arr)
+      return
+    }
+    begin(arr[0])
   }
 
   // Fade the modal in over two frames so the CSS transition has a starting state to animate from
@@ -1607,13 +1692,14 @@ function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
               onDragEnter={e => { e.preventDefault(); dragDepth.current += 1; setIsDrag(true) }}
               onDragOver={e => e.preventDefault()}
               onDragLeave={e => { e.preventDefault(); dragDepth.current -= 1; if (dragDepth.current <= 0) { dragDepth.current = 0; setIsDrag(false) } }}
-              onDrop={e => { e.preventDefault(); dragDepth.current = 0; setIsDrag(false); onPick(e.dataTransfer.files) }}
+              onDrop={e => { e.preventDefault(); dragDepth.current = 0; setIsDrag(false); onFiles(e.dataTransfer.files) }}
             >
               <svg className="m1-drop__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
               <p className="m1-drop__t">{t('modal_pick_t')}<br />{t('modal_pick_t2')}</p>
-              <span className="m1-drop__f">{t('modal_pick_formats')}</span>
+              <span className="m1-drop__f">{t('modal_pick_formats')}{isVip ? ` · ${t('modal_pick_formats_vip_extra')}` : ''}</span>
               <button type="button" className="btn btn--ghost" onClick={e => { e.stopPropagation(); inputRef.current?.click() }}>{t('modal_pick_choose')}</button>
             </div>
+
             {isVip && (
               <label className="m1-vip-toggle" onClick={e => e.stopPropagation()}>
                 <input
@@ -1710,9 +1796,10 @@ function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
         <input
           ref={inputRef}
           type="file"
-          accept=".pdf,.docx,.txt,.rtf,.odt"
+          accept={isVip ? '.pdf,.docx,.txt,.rtf,.odt,image/jpeg,image/png,image/webp,image/gif' : '.pdf,.docx,.txt,.rtf,.odt'}
+          multiple={isVip}
           hidden
-          onChange={e => { onPick(e.target.files); e.target.value = '' }}
+          onChange={e => { onFiles(e.target.files); e.target.value = '' }}
         />
       </div>
     </div>
