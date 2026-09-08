@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useSession } from 'next-auth/react'
 import { useMe } from '@/features/hooks/User/useMe'
+import { pushDataLayerEvent } from '@/shared/lib/analytics'
 
 // ── CSS (ported from ForNewDesign/prototypes/v3-lab.html — hero H4 · steps S3 · errs E1 — with
 //    the lab panel, unused hero/steps/errs variants and blueprint hero stripped out) ──────────
@@ -1503,6 +1504,10 @@ function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
 
       setProgress(100)
       setResult(data as TestResult)
+      pushDataLayerEvent('pdf_to_test_created', {
+        is_guest: (data as TestResult).isGuest,
+        question_count: (data as TestResult).questions?.length ?? 0,
+      })
       window.setTimeout(() => setStep('result'), 400)
     } catch (e) {
       cancelAnimationFrame(rafRef.current)

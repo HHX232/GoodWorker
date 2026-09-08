@@ -3,6 +3,7 @@
 import { InputOtp, TextInputUI } from '@/shared/ui/inputs'
 import { CategorySelect } from '@/shared/ui/inputs/CategorySelect/CategorySelect'
 import { GradeSelect, type GradeValue } from '@/shared/ui/inputs/GradeSelect/GradeSelect'
+import { pushDataLayerEvent } from '@/shared/lib/analytics'
 import LanguageSelect from '@/shared/ui/inputs/LanguageSelect/LanguageSelect'
 import { signIn } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
@@ -158,6 +159,8 @@ export default function RegisterPage() {
         toast.error(data.error ?? t('unexpectedError'))
         return
       }
+
+      pushDataLayerEvent('registration_complete', {user_type: role === 'Teacher' ? 'teacher' : 'student'})
 
       // sign in right after registration
       await signIn('credentials', {email, password, redirect: false})
