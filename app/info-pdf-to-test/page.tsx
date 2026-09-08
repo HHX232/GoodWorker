@@ -575,6 +575,7 @@ interface TestResult {
   isGuest: boolean
   guestLimit: number | null
   totalChars: number
+  truncated: boolean
 }
 
 // ── Interactive preview primitives (real /api/check-answer wired for fill-in) ──────────────
@@ -1760,10 +1761,17 @@ function UploadModal({ modalOpen, onClose, pendingFiles, isLoggedIn }: {
               </div>
             )}
 
-            {result.isGuest && (
+            {result.isGuest && result.truncated && (
+              <div className="result-guest result-guest--truncated">
+                {t('modal_guest_truncated_pre')}{' '}
+                <Link href="/register" style={{ color: 'var(--accent-ink)', fontWeight: 600, textDecoration: 'underline' }}>{t('modal_guest_truncated_link')}</Link>{' '}
+                {t('modal_guest_truncated_post')}
+              </div>
+            )}
+            {result.isGuest && !result.truncated && (
               <div className="result-guest">
                 {t('modal_guest_pre', { n: result.guestLimit ?? 0 })}{' '}
-                <Link href="/auth/register" style={{ color: 'var(--accent-ink)', fontWeight: 600, textDecoration: 'underline' }}>{t('modal_guest_link')}</Link>{' '}
+                <Link href="/register" style={{ color: 'var(--accent-ink)', fontWeight: 600, textDecoration: 'underline' }}>{t('modal_guest_link')}</Link>{' '}
                 {t('modal_guest_post')}
               </div>
             )}
@@ -1771,7 +1779,7 @@ function UploadModal({ modalOpen, onClose, pendingFiles, isLoggedIn }: {
             <div className="upload__actions">
               {isLoggedIn
                 ? <Link className="btn btn--solid" href="/profile">{t('modal_result_save')}</Link>
-                : <Link className="btn btn--solid" href="/auth/register">{t('modal_result_login_save')}</Link>}
+                : <Link className="btn btn--solid" href="/register">{t('modal_result_login_save')}</Link>}
               <button type="button" className="btn btn--ghost" onClick={reset}>{t('modal_result_another')}</button>
             </div>
           </div>
@@ -1780,12 +1788,25 @@ function UploadModal({ modalOpen, onClose, pendingFiles, isLoggedIn }: {
         {step === 'vip' && (
           <div className="upload__step">
             <svg className="m1-result__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="M3 8l4 3 5-6 5 6 4-3-2 11H5z"/></svg>
-            <h3 className="m1-result__t">{t('modal_vip_title')}</h3>
-            <p className="m1-error__f">{t('modal_vip_msg')}</p>
-            <div className="upload__actions">
-              <Link className="btn btn--solid" href="/vip">{t('modal_vip_upgrade')}</Link>
-              <button type="button" className="btn btn--ghost" onClick={reset}>{t('modal_vip_back')}</button>
-            </div>
+            {isLoggedIn ? (
+              <>
+                <h3 className="m1-result__t">{t('modal_vip_title')}</h3>
+                <p className="m1-error__f">{t('modal_vip_msg')}</p>
+                <div className="upload__actions">
+                  <Link className="btn btn--solid" href="/vip">{t('modal_vip_upgrade')}</Link>
+                  <button type="button" className="btn btn--ghost" onClick={reset}>{t('modal_vip_back')}</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="m1-result__t">{t('modal_vip_guest_title')}</h3>
+                <p className="m1-error__f">{t('modal_vip_guest_msg')}</p>
+                <div className="upload__actions">
+                  <Link className="btn btn--solid" href="/register">{t('modal_vip_guest_cta')}</Link>
+                  <button type="button" className="btn btn--ghost" onClick={reset}>{t('modal_vip_back')}</button>
+                </div>
+              </>
+            )}
           </div>
         )}
 
