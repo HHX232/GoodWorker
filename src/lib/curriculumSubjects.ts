@@ -7,6 +7,6 @@
 export const CATEGORY_ROOT_SLUG_TO_SUBJECT: Record<string, string> = {
   russian: 'rus_yaz',
   mathematics: 'matem',
-  // physics: 'fizika',   — добавить, когда появится соответствующая root-категория
-  // history: 'istoriya', — добавить, когда появится соответствующая root-категория
+  physics: 'fizika',
+  history: 'istoriya',
 }
