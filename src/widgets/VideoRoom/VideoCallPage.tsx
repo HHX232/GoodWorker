@@ -127,10 +127,11 @@ interface Props {
   localAvatarUrl?: string
   topic?: string
   userRole?: string
+  isVip?: boolean
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
-export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIdentity, localAvatarUrl, topic, userRole }: Props) {
+export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIdentity, localAvatarUrl, topic, userRole, isVip }: Props) {
   const t = useTranslations('VideoCall')
   const router = useRouter()
   const [roomName] = useState(autoJoinRoom ?? '')
@@ -958,6 +959,8 @@ useEffect(() => {
                 remoteElements={whiteboardElements}
                 remoteFiles={whiteboardFiles}
                 onBroadcast={broadcastWhiteboard}
+                roomName={roomName}
+                isVip={isVip}
               />
             </div>
           </div>

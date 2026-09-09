@@ -16,7 +16,7 @@ const config = {
     '**/src/shared/tests/unit/**/*.test.ts',
     '**/src/shared/tests/components/**/*.test.tsx'
   ],
-  setupFilesAfterFramework: ['@testing-library/jest-dom'],
+  setupFilesAfterEnv: ['@testing-library/jest-dom'],
   transformIgnorePatterns: ['node_modules/(?!(next-intl|use-intl|swiper)/)'],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',

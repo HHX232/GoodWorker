@@ -22,9 +22,11 @@ interface Props {
   remoteElements: readonly ExcalidrawElement[] | null
   remoteFiles: BinaryFiles | null
   onBroadcast: (elements: readonly ExcalidrawElement[], files: BinaryFiles) => void
+  roomName?: string
+  isVip?: boolean
 }
 
-export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast }: Props) {
+export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomName, isVip }: Props) {
   const apiRef = useRef<ExcalidrawImperativeAPI | null>(null)
   const broadcastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastBroadcast = useRef<readonly ExcalidrawElement[]>([])
@@ -191,6 +193,8 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast }: Pro
                   setShowFormulaKeyboard(false)
                   setEditingFormula(null)
                 }}
+                roomName={roomName}
+                isVip={isVip}
               />
             </div>
           )}

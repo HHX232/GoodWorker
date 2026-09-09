@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from '@/shared/prisma/prisma'
+import { closeRoomIfEmpty } from '@/shared/lib/videoRoom/closeRoomIfEmpty'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
 
@@ -28,11 +29,14 @@ export async function POST(req: NextRequest) {
     await prisma.videoCallRoom.update({
       where: { id: room.id },
       data: {
-        endedAt: callEndedAt,
         transcriptRaw: transcriptRaw ?? null,
         transcriptJson: transcriptJson ?? null,
       },
     })
+
+    // Only actually ends the room if it's truly empty — a participant
+    // leaving a call others are still on must not deactivate it.
+    await closeRoomIfEmpty(roomName).catch((e) => console.error('[transcript] closeRoomIfEmpty error:', e))
 
     // Upsert participants
     if (Array.isArray(participants) && participants.length > 0) {
@@ -90,10 +94,11 @@ export async function POST(req: NextRequest) {
             if (ev.status !== 'scheduled') return ev
             if (ev.date !== callDate) return ev
 
-            const studentMatch =
-              studentNames.length === 0 ||
-              (ev.studentName &&
-                studentNames.some(n => (ev.studentName as string).toLowerCase().includes(n) || n.includes((ev.studentName as string).toLowerCase())))
+            const studentMatch = ev.studentId
+              ? studentIds.includes(ev.studentId as string)
+              : studentNames.length === 0 ||
+                (ev.studentName &&
+                  studentNames.some(n => (ev.studentName as string).toLowerCase().includes(n) || n.includes((ev.studentName as string).toLowerCase())))
 
             if (!studentMatch) return ev
 

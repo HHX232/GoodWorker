@@ -2,7 +2,7 @@
 import {axiosClassic} from '@/shared/api'
 import {useLocale} from 'next-intl'
 import {useQuery} from '@tanstack/react-query'
-import {useEffect, useRef, useState} from 'react'
+import {useEffect, useRef, useState, type ReactNode} from 'react'
 import {createPortal} from 'react-dom'
 import styles from './CategorySelect.module.scss'
 
@@ -50,6 +50,8 @@ interface CategorySelectProps {
   error?: boolean
   /** Extra class on the trigger button, e.g. to match a host form's own input styling. */
   triggerClassName?: string
+  /** Small caption shown below the category list, e.g. pointing to where to add a missing subject. */
+  footerHint?: ReactNode
 }
 
 const ACCENT_COLORS = ['#EC972A', '#FF7A00', '#BD00FF']
@@ -92,7 +94,8 @@ export function CategorySelect({
   onChange,
   placeholder,
   error,
-  triggerClassName
+  triggerClassName,
+  footerHint
 }: CategorySelectProps) {
   const locale = useLocale()
   const activeLang = langCode ?? locale
@@ -101,7 +104,7 @@ export function CategorySelect({
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
   const rootRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
-  const [coords, setCoords] = useState<{top: number; left: number; width: number} | null>(null)
+  const [coords, setCoords] = useState<{top: number; left: number; width: number; maxHeight: number} | null>(null)
 
   useEffect(() => {
     if (!open) return
@@ -112,13 +115,22 @@ export function CategorySelect({
   }, [open])
 
   // Dropdown is portaled out of the tree (a modal ancestor's transform/overflow
-  // would otherwise clip it), so its position has to be tracked manually.
+  // would otherwise clip it), so its position has to be tracked manually. Height
+  // is clamped to whatever room is actually left below the trigger — a trigger
+  // sitting low in a tall modal would otherwise let the list run off the bottom
+  // of the viewport with no way to reach the rest of it.
   useEffect(() => {
     if (!open) return
+    const EDGE_MARGIN = 12
+    const MIN_HEIGHT = 120
+    const PREFERRED_MAX = 360
+
     const updateCoords = () => {
       if (!rootRef.current) return
       const rect = rootRef.current.getBoundingClientRect()
-      setCoords({top: rect.bottom, left: rect.left, width: rect.width})
+      const spaceBelow = window.innerHeight - rect.bottom - EDGE_MARGIN
+      const maxHeight = Math.max(MIN_HEIGHT, Math.min(PREFERRED_MAX, spaceBelow))
+      setCoords({top: rect.bottom, left: rect.left, width: rect.width, maxHeight})
     }
     updateCoords()
     window.addEventListener('resize', updateCoords)
@@ -311,11 +323,13 @@ export function CategorySelect({
         <div
           ref={dropdownRef}
           className={styles.dropdown}
-          style={{position: 'fixed', top: coords.top, left: coords.left, width: coords.width, zIndex: 2147483000}}
+          style={{position: 'fixed', top: coords.top, left: coords.left, width: coords.width, maxHeight: coords.maxHeight, zIndex: 2147483000}}
         >
           {(treeMap['root']?.length ?? 0) === 0 && !isLoading && <div className={styles.empty}>{activeLang === 'ru' ? 'Нет категорий' : activeLang === 'hi' ? 'कोई श्रेणी नहीं' : activeLang === 'zh' ? '暂无类别' : 'No categories'}</div>}
 
           {renderNodes(null, 1)}
+
+          {footerHint && <div className={styles.footerHint}>{footerHint}</div>}
         </div>,
         document.getElementById('modal_portal') ?? document.body
       )}

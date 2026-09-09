@@ -56,7 +56,7 @@ html.theme-dark, html.pomodoro-dark{
 .pdf3 a:not(.btn):not(.nav-profile) { display: inline; }
 .pdf3 *{ box-sizing:border-box; }
 .pdf3 img{ max-width:100%; display:block; }
-.pdf3 a{ color:inherit; }
+.pdf3 a:not(.btn){ color:inherit; }
 .pdf3 section{ position:relative; }
 .display{ font-family:var(--serif); font-weight:900; line-height:.98; letter-spacing:var(--tracking-display); margin:0; }
 .display em{ font-style:italic; font-weight:700; }
