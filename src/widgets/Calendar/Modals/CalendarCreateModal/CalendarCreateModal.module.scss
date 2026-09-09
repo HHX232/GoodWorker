@@ -236,6 +236,103 @@
   color: #534AB7;
 }
 
+// ── Repeat / recurrence ───────────────────────────────
+
+.repeatToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1.5px solid #ef4444;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: #ef4444;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover { background: rgba(239, 68, 68, 0.06); }
+}
+
+.repeatToggleActive {
+  background: rgba(239, 68, 68, 0.1);
+
+  &:hover { background: rgba(239, 68, 68, 0.16); }
+}
+
+.repeatToggleDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ef4444;
+  flex-shrink: 0;
+}
+
+.repeatPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #F8F8FB;
+  border: 0.5px solid rgba(0, 0, 0, 0.08);
+
+  // Inputs would otherwise match the panel's own background 1:1 and vanish into it.
+  .input, .textarea {
+    background: #fff;
+  }
+}
+
+.repeatEndTabRow {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.intervalRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .input { width: auto; flex: 1; }
+}
+
+.intervalUnit {
+  font-size: 13px;
+  color: #666;
+  white-space: nowrap;
+}
+
+.weekdayPicker {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.weekdayChip {
+  padding: 6px 10px;
+  border-radius: 7px;
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
+  background: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.12s;
+
+  &:hover { background: #f4f4f7; }
+
+  &.weekdayChipSelected {
+    background: #534AB7;
+    border-color: #534AB7;
+    color: #fff;
+  }
+}
+
 // ── Homework panel ────────────────────────────────────
 .hwPanel {
   display: flex;
@@ -335,4 +432,20 @@
   .hwPanelBtn { background: #6d28d9; &:hover { background: #5b21b6; } }
   .planBtn { background: #23263a; &:hover:not(:disabled) { background: #2e3148; } }
   .viewPlanBtn { color: #a5b4fc; border-color: rgba(165, 180, 252, 0.4); &:hover { background: rgba(165, 180, 252, 0.08); } }
+  .repeatToggle { border-color: #f87171; color: #f87171; &:hover { background: rgba(248, 113, 113, 0.08); } }
+  .repeatToggleActive { background: rgba(248, 113, 113, 0.12); &:hover { background: rgba(248, 113, 113, 0.18); } }
+  .repeatToggleDot { background: #f87171; }
+  .repeatPanel {
+    background: #23263a;
+    border-color: rgba(255,255,255,0.08);
+    .input, .textarea { background: #1a1c2b; }
+  }
+  .intervalUnit { color: rgba(255,255,255,0.4); }
+  .weekdayChip {
+    background: #1f2130;
+    border-color: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.5);
+    &:hover { background: #2a2d42; }
+    &.weekdayChipSelected { background: #818cf8; border-color: #818cf8; color: #16172a; }
+  }
 }

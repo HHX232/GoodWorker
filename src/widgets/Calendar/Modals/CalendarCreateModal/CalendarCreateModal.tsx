@@ -4,6 +4,7 @@ import {useState, useEffect} from 'react'
 import {useRouter} from 'next/navigation'
 import {CalendarEvent, CalendarEventColor, LessonPlan} from '@/shared/types/Calendar/calendar.types'
 import {EVENT_COLORS, formatDateKey} from '@/shared/helpers/calendar/calendar.helpers'
+import {MAX_RECURRENCE_OCCURRENCES, generateRecurrenceDates, pluralize} from '@/shared/helpers/calendar/recurrence.helpers'
 import {formatGradeLabel} from '@/shared/lib/formatGrade'
 import {useLocale, useTranslations} from 'next-intl'
 import {toast} from 'sonner'
@@ -11,6 +12,7 @@ import styles from './CalendarCreateModal.module.scss'
 import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
 import {LessonPlanModal} from '@/widgets/Calendar/Modals/LessonPlanModal/LessonPlanModal'
 import {CategorySelect, getCategoryPath, useCategories} from '@/shared/ui/inputs/CategorySelect/CategorySelect'
+import {SelectUI} from '@/shared/ui/inputs/SelectUI/SelectUI'
 
 type Tab = 'event' | 'note' | 'homework'
 
@@ -32,6 +34,7 @@ interface CalendarCreateModalProps {
   isOpen: boolean
   onClose: () => void
   onSave: (event: Omit<CalendarEvent, 'id'> & {id?: string}) => void
+  onSaveMany?: (events: Omit<CalendarEvent, 'id'>[]) => void
   initialDate?: string | null
   initialStartTime?: string | null
   initialEndTime?: string | null
@@ -62,6 +65,7 @@ export function CalendarCreateModal({
   isOpen,
   onClose,
   onSave,
+  onSaveMany,
   initialDate,
   initialStartTime,
   initialEndTime,
@@ -85,6 +89,14 @@ export function CalendarCreateModal({
   const [subjectFieldError, setSubjectFieldError] = useState(false)
   const [planModalOpen, setPlanModalOpen] = useState(false)
   const [autoSummary, setAutoSummary] = useState('')
+  const [repeatEnabled, setRepeatEnabled] = useState(false)
+  const [repeatFreq, setRepeatFreq] = useState<'daily' | 'weekly' | 'monthly'>('weekly')
+  const [repeatInterval, setRepeatInterval] = useState(1)
+  const [repeatWeekdays, setRepeatWeekdays] = useState<number[]>([])
+  const [repeatEndType, setRepeatEndType] = useState<'count' | 'until'>('count')
+  const [repeatCount, setRepeatCount] = useState(8)
+  const [repeatUntil, setRepeatUntil] = useState('')
+  const [additionalNotes, setAdditionalNotes] = useState('')
 
   useEffect(() => {
     if (!isOpen) { setTab('event'); return }
@@ -92,6 +104,14 @@ export function CalendarCreateModal({
     setSubjectFieldError(false)
     setPlanModalOpen(false)
     setGeneratingPlan(false)
+    setRepeatEnabled(false)
+    setRepeatFreq('weekly')
+    setRepeatInterval(1)
+    setRepeatWeekdays([])
+    setRepeatEndType('count')
+    setRepeatCount(8)
+    setRepeatUntil('')
+    setAdditionalNotes('')
     if (editingEvent) {
       setForm({
         title: editingEvent.title,
@@ -127,13 +147,6 @@ export function CalendarCreateModal({
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
       setForm((prev) => ({...prev, [key]: e.target.value}))
 
-  const handleStudentChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const id = e.target.value
-    const student = teacherStudents.find(s => s.id === id)
-    setStudentFieldError(false)
-    setForm((prev) => ({...prev, studentId: id, studentName: student?.name ?? ''}))
-  }
-
   const handleGeneratePlan = async () => {
     if (!isVip) {
       toast.error(tPlan('vipToast'))
@@ -154,7 +167,7 @@ export function CalendarCreateModal({
       const res = await fetch('/api/teacher/lesson-plan', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({studentId: form.studentId, categoryId: form.categoryId}),
+        body: JSON.stringify({studentId: form.studentId, categoryId: form.categoryId, additionalNotes: additionalNotes.trim() || undefined}),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Failed to generate plan')
@@ -179,10 +192,9 @@ export function CalendarCreateModal({
     }
     const svc = teacherServices?.find(s => s.id === selectedServiceId)
     const subjectPath = form.categoryId ? getCategoryPath(form.categoryId, categories) : ''
-    onSave({
-      ...(editingEvent ? {id: editingEvent.id} : {}),
+
+    const baseEvent: Omit<CalendarEvent, 'id' | 'date'> = {
       title: form.title.trim(),
-      date: form.date,
       startTime: form.startTime,
       endTime: form.endTime,
       color: form.color,
@@ -200,10 +212,68 @@ export function CalendarCreateModal({
         servicePrice: svc.price,
         serviceDurationMinutes: svc.duration,
       } : {}),
+    }
+
+    if (!isEditing && repeatEnabled && onSaveMany) {
+      if (repeatFreq === 'weekly' && repeatWeekdays.length === 0) {
+        toast.error(t('repeatWeekdaysRequired'))
+        return
+      }
+      const dates = generateRecurrenceDates({
+        freq: repeatFreq,
+        interval: repeatInterval,
+        byWeekday: repeatWeekdays,
+        endType: repeatEndType,
+        count: repeatCount,
+        until: repeatUntil || undefined,
+        startDate: form.date,
+      })
+      if (dates.length === 0) {
+        toast.error(t('repeatGenerateError'))
+        return
+      }
+      if (dates.length > MAX_RECURRENCE_OCCURRENCES) {
+        toast.error(t('repeatTooMany'))
+        return
+      }
+      const recurrenceRule = {
+        freq: repeatFreq,
+        interval: repeatInterval,
+        byWeekday: repeatFreq === 'weekly' ? repeatWeekdays : undefined,
+        count: repeatEndType === 'count' ? repeatCount : undefined,
+        until: repeatEndType === 'until' ? repeatUntil : undefined,
+      }
+      onSaveMany(dates.map((date) => ({...baseEvent, date, recurrenceRule})))
+      return
+    }
+
+    onSave({
+      ...(editingEvent ? {id: editingEvent.id} : {}),
+      ...baseEvent,
+      date: form.date,
     })
   }
 
   const isEditing = !!editingEvent
+
+  const toggleWeekday = (idx: number) => {
+    setRepeatWeekdays((prev) => (prev.includes(idx) ? prev.filter((x) => x !== idx) : [...prev, idx].sort()))
+  }
+
+  const handleToggleRepeat = (checked: boolean) => {
+    setRepeatEnabled(checked)
+    if (checked && repeatWeekdays.length === 0 && form.date) {
+      const [y, m, d] = form.date.split('-').map(Number)
+      const jsDay = new Date(y, m - 1, d).getDay()
+      setRepeatWeekdays([(jsDay + 6) % 7])
+    }
+  }
+
+  const freqUnitForms: Record<'daily' | 'weekly' | 'monthly', [string, string, string]> = {
+    daily: [t('repeatIntervalUnitDaily_one'), t('repeatIntervalUnitDaily_few'), t('repeatIntervalUnitDaily_many')],
+    weekly: [t('repeatIntervalUnitWeekly_one'), t('repeatIntervalUnitWeekly_few'), t('repeatIntervalUnitWeekly_many')],
+    monthly: [t('repeatIntervalUnitMonthly_one'), t('repeatIntervalUnitMonthly_few'), t('repeatIntervalUnitMonthly_many')],
+  }
 
   const modalTitle = (
     <div className={styles.modalTitle}>
@@ -300,19 +370,22 @@ export function CalendarCreateModal({
           <div className={styles.field}>
             <label className={styles.label}>{t('studentLabel')}</label>
             {teacherStudents.length > 0 ? (
-              <select
-                className={`${styles.input} ${studentFieldError ? styles.inputError : ''}`}
+              <SelectUI
+                error={studentFieldError}
                 value={form.studentId}
-                onChange={handleStudentChange}
-              >
-                <option value=''>{t('studentPlaceholder')}</option>
-                {teacherStudents.map(s => {
-                  const gradeLabel = formatGradeLabel(s.schoolGrade, s.courseNumber)
-                  return (
-                    <option key={s.id} value={s.id}>{gradeLabel ? `${s.name} (${gradeLabel})` : s.name}</option>
-                  )
-                })}
-              </select>
+                onChange={(id) => {
+                  const student = teacherStudents.find(s => s.id === id)
+                  setStudentFieldError(false)
+                  setForm((prev) => ({...prev, studentId: id, studentName: student?.name ?? ''}))
+                }}
+                options={[
+                  {value: '', label: t('studentPlaceholder')},
+                  ...teacherStudents.map(s => {
+                    const gradeLabel = formatGradeLabel(s.schoolGrade, s.courseNumber)
+                    return {value: s.id, label: gradeLabel ? `${s.name} (${gradeLabel})` : s.name}
+                  }),
+                ]}
+              />
             ) : (
               <input
                 className={styles.input}
@@ -324,6 +397,108 @@ export function CalendarCreateModal({
             )}
           </div>
         </div>
+
+        {!isEditing && (
+          <button
+            type='button'
+            className={`${styles.repeatToggle} ${repeatEnabled ? styles.repeatToggleActive : ''}`}
+            onClick={() => handleToggleRepeat(!repeatEnabled)}
+          >
+            <span className={styles.repeatToggleDot} />
+            {t('repeatLabel')}
+          </button>
+        )}
+
+        {!isEditing && repeatEnabled && (
+          <div className={styles.repeatPanel}>
+            <div className={styles.row}>
+              <div className={styles.field}>
+                <label className={styles.label}>{t('repeatFreqLabel')}</label>
+                <SelectUI
+                  value={repeatFreq}
+                  onChange={(v) => setRepeatFreq(v as 'daily' | 'weekly' | 'monthly')}
+                  options={[
+                    {value: 'daily', label: t('repeatFreqDaily')},
+                    {value: 'weekly', label: t('repeatFreqWeekly')},
+                    {value: 'monthly', label: t('repeatFreqMonthly')},
+                  ]}
+                />
+              </div>
+              <div className={styles.field}>
+                <label className={styles.label}>{t('repeatIntervalLabel')}</label>
+                <div className={styles.intervalRow}>
+                  <input
+                    className={styles.input}
+                    type='number'
+                    min={1}
+                    max={30}
+                    value={repeatInterval}
+                    onChange={(e) => setRepeatInterval(Math.max(1, Number(e.target.value) || 1))}
+                  />
+                  <span className={styles.intervalUnit}>
+                    {pluralize(locale, repeatInterval, freqUnitForms[repeatFreq])}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {repeatFreq === 'weekly' && (
+              <div className={styles.field}>
+                <label className={styles.label}>{t('repeatWeekdaysLabel')}</label>
+                <div className={styles.weekdayPicker}>
+                  {[t('weekdayMon'), t('weekdayTue'), t('weekdayWed'), t('weekdayThu'), t('weekdayFri'), t('weekdaySat'), t('weekdaySun')].map((label, i) => (
+                    <button
+                      key={i}
+                      type='button'
+                      className={`${styles.weekdayChip} ${repeatWeekdays.includes(i) ? styles.weekdayChipSelected : ''}`}
+                      onClick={() => toggleWeekday(i)}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className={styles.field}>
+              <label className={styles.label}>{t('repeatEndLabel')}</label>
+              <div className={styles.repeatEndTabRow}>
+                <button
+                  type='button'
+                  className={`${styles.tabBtn} ${repeatEndType === 'count' ? styles.tabBtnActive : ''}`}
+                  onClick={() => setRepeatEndType('count')}
+                >
+                  {t('repeatEndByCount')}
+                </button>
+                <button
+                  type='button'
+                  className={`${styles.tabBtn} ${repeatEndType === 'until' ? styles.tabBtnActive : ''}`}
+                  onClick={() => setRepeatEndType('until')}
+                >
+                  {t('repeatEndByDate')}
+                </button>
+              </div>
+              {repeatEndType === 'count' ? (
+                <input
+                  className={styles.input}
+                  type='number'
+                  min={1}
+                  max={MAX_RECURRENCE_OCCURRENCES}
+                  value={repeatCount}
+                  onChange={(e) => setRepeatCount(Math.max(1, Number(e.target.value) || 1))}
+                />
+              ) : (
+                <input
+                  className={styles.input}
+                  type='date'
+                  value={repeatUntil}
+                  onChange={(e) => setRepeatUntil(e.target.value)}
+                  onClick={(e) => e.currentTarget.showPicker?.()}
+                />
+              )}
+            </div>
+          </div>
+        )}
 
         <div className={styles.row}>
           <div className={styles.field}>
@@ -356,31 +531,45 @@ export function CalendarCreateModal({
           </div>
           <div className={styles.field}>
             <label className={styles.label}>{t('statusLabel')}</label>
-            <select className={styles.input} value={form.status} onChange={set('status')}>
-              <option value='scheduled'>{t('statusScheduled')}</option>
-              <option value='completed'>{t('statusCompleted')}</option>
-              <option value='cancelled'>{t('statusCancelled')}</option>
-            </select>
+            <SelectUI
+              value={form.status ?? 'scheduled'}
+              onChange={(v) => setForm((prev) => ({...prev, status: v as CalendarEvent['status']}))}
+              options={[
+                {value: 'scheduled', label: t('statusScheduled')},
+                {value: 'completed', label: t('statusCompleted')},
+                {value: 'cancelled', label: t('statusCancelled')},
+              ]}
+            />
           </div>
         </div>
 
         {teacherServices && teacherServices.length > 0 && (
           <div className={styles.field}>
             <label className={styles.label}>{t('serviceLabel')}</label>
-            <select
-              className={styles.input}
+            <SelectUI
               value={selectedServiceId}
-              onChange={e => setSelectedServiceId(e.target.value)}
-            >
-              <option value=''>{t('noService')}</option>
-              {teacherServices.map(s => (
-                <option key={s.id} value={s.id}>
-                  {s.title} — {s.price.toLocaleString()} ₽ / {s.duration} мин
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedServiceId}
+              options={[
+                {value: '', label: t('noService')},
+                ...teacherServices.map(s => ({
+                  value: s.id,
+                  label: `${s.title} — ${s.price.toLocaleString()} ₽ / ${s.duration} мин`,
+                })),
+              ]}
+            />
           </div>
         )}
+
+        <div className={styles.field}>
+          <label className={styles.label}>{tPlan('additionalNotesLabel')}</label>
+          <textarea
+            className={styles.textarea}
+            placeholder={tPlan('additionalNotesPlaceholder')}
+            value={additionalNotes}
+            onChange={(e) => setAdditionalNotes(e.target.value)}
+            rows={2}
+          />
+        </div>
 
         <div className={styles.field}>
           <button

@@ -45,6 +45,14 @@ export interface CalendarEvent {
   warning?: boolean
   noteType?: 'event' | 'note'
   lessonPlan?: LessonPlan
+  recurrenceId?: string
+  recurrenceRule?: {
+    freq: 'daily' | 'weekly' | 'monthly'
+    interval: number
+    byWeekday?: number[]
+    count?: number
+    until?: string
+  }
 }
 
 export interface CalendarTask {

@@ -1,0 +1,107 @@
+.wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 36px;
+  border: 0.5px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  background-color: #F8F8FB;
+  padding: 9px 10px 9px 12px;
+  cursor: pointer;
+  outline: none;
+  font-size: 13px;
+  color: #141416;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:hover { border-color: rgba(0, 0, 0, 0.2); }
+  &:focus-visible { border-color: #534AB7; background: #fff; }
+}
+
+.triggerError {
+  border-color: #ef4444 !important;
+}
+
+.triggerLabel {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.arrow {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  color: #8b8f9e;
+  margin-left: 4px;
+  transition: transform 0.2s ease;
+}
+
+.arrowOpen {
+  transform: rotate(180deg);
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  background-color: #fff;
+  border: 0.5px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  padding: 6px 0;
+  list-style: none;
+  margin: 0;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+}
+
+.dropdownItem {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #141416;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover { background-color: #f2f2f5; }
+}
+
+.dropdownItemActive {
+  background-color: #eeedfd;
+  color: #534AB7;
+  font-weight: 500;
+}
+
+// ─── Dark theme ─────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .trigger {
+    background-color: #23263a;
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #e8eaf0;
+    &:hover { border-color: rgba(255, 255, 255, 0.18); }
+    &:focus-visible { border-color: #818cf8; background: #1f2130; }
+  }
+  .arrow { color: rgba(255, 255, 255, 0.4); }
+
+  .dropdown {
+    background-color: #23263a;
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+  }
+  .dropdownItem {
+    color: #e8eaf0;
+    &:hover { background-color: rgba(255, 255, 255, 0.06); }
+  }
+  .dropdownItemActive {
+    background-color: rgba(129, 140, 248, 0.15);
+    color: #a5b4fc;
+  }
+}

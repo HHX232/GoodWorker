@@ -34,6 +34,7 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
 
   const {
     addEvent,
+    addEvents,
     setEvents,
     setTasks,
     setStudents,
@@ -229,6 +230,26 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
     }
     closeCreateModal()
   }
+
+  const handleSaveManyEvents = (eventsData: Omit<CalendarEvent, 'id'>[]) => {
+    addEvents(eventsData)
+    const first = eventsData[0]
+    // Single notification for the whole series, not one per occurrence.
+    fetch('/api/teacher/calendar/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: first.title,
+        date: first.date,
+        startTime: first.startTime,
+        endTime: first.endTime,
+        studentName: first.studentName,
+        recurrenceCount: eventsData.length,
+      }),
+    }).catch(() => {})
+    closeCreateModal()
+  }
+
   const closeEvent = () => selectEvent(null)
   const closeTask = () => selectTask(null)
   const closeCreate = () => closeCreateModal()
@@ -346,6 +367,7 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
         editingEvent={createModal.editingEvent}
         onClose={closeCreate}
         onSave={handleSaveEvent}
+        onSaveMany={handleSaveManyEvents}
         teacherServices={teacherServices}
         teacherStudents={students.map(s => ({ id: s.id, name: s.name, schoolGrade: s.schoolGrade, courseNumber: s.courseNumber }))}
         teacherCategoryIds={teacherCategoryIds}

@@ -59,6 +59,12 @@ const calendarSlice = createSlice({
     addEvent(state, action: PayloadAction<Omit<CalendarEvent, 'id'>>) {
       state.events.push({...action.payload, id: nanoid()})
     },
+    addEvents(state, action: PayloadAction<Omit<CalendarEvent, 'id'>[]>) {
+      const recurrenceId = nanoid()
+      for (const ev of action.payload) {
+        state.events.push({...ev, id: nanoid(), recurrenceId})
+      }
+    },
     setCreateTaskModalStatus(state, action: PayloadAction<boolean>) {
       state.createTaskIsOpen = action.payload
     },
@@ -192,6 +198,7 @@ export const {
   setTasks,
   setStudents,
   addEvent,
+  addEvents,
   updateEvent,
   deleteEvent,
   selectEvent,
