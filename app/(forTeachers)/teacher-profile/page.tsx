@@ -1,5 +1,6 @@
 import { prisma } from "@/shared/prisma/prisma"
 import { TeacherDashboard } from "@/_pages/TeacherDashboard/TeacherDashboard"
+import { getTeacherCallStats } from "@/shared/lib/videoRoom/getTeacherCallStats"
 import { redirect } from "next/navigation"
 import { auth } from "../../../auth"
 
@@ -41,9 +42,10 @@ export default async function TeacherProfilePage({ searchParams }: TeacherProfil
     avatarUrl: null,
   }
 
-  const [studentCount, callCount] = await Promise.all([
+  const [studentCount, callCount, { totalHours }] = await Promise.all([
     prisma.teacherStudent.count({ where: { teacherId: id } }).catch(() => 0),
     prisma.videoCallRoom.count({ where: { ownerId: id } }).catch(() => 0),
+    getTeacherCallStats(id).catch(() => ({ totalCalls: 0, totalHours: 0 })),
   ])
 
   const now = new Date()
@@ -58,6 +60,7 @@ export default async function TeacherProfilePage({ searchParams }: TeacherProfil
       statsId={id}
       studentCount={studentCount}
       callCount={callCount}
+      totalHours={totalHours}
       isVip={isVip}
       vipExpiresAt={vipExpiresAt ? vipExpiresAt.toISOString() : null}
     />

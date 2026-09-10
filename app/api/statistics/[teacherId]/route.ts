@@ -32,9 +32,12 @@ export async function GET(
     })
     if (!teacher) return NextResponse.json({ error: 'Teacher not found' }, { status: 404 })
 
-    // All completed calls owned by this teacher
+    // All completed calls owned by this teacher — no ownerRole filter: an
+    // admin account backed by a teacher record creates rooms with
+    // ownerRole 'ADMIN', not 'TEACHER', so filtering on role dropped those
+    // calls even though ownerId already scopes this to the right teacher.
     const calls = await prisma.videoCallRoom.findMany({
-      where: { ownerId: teacherId, ownerRole: 'TEACHER', endedAt: { not: null } },
+      where: { ownerId: teacherId, endedAt: { not: null } },
       include: {
         participants: { select: { userId: true, userRole: true, identity: true } },
       },

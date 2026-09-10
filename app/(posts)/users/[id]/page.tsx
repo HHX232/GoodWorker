@@ -1,4 +1,5 @@
 import { prisma } from '@/shared/prisma/prisma'
+import { getTeacherCallStats } from '@/shared/lib/videoRoom/getTeacherCallStats'
 import { resolveTeacherCategories } from '@/shared/utils/resolveRootCategory'
 import { TeacherPublicProfile } from '@/_pages/TeacherPublicProfile/TeacherPublicProfile'
 import { StudentPublicProfile } from '@/_pages/StudentPublicProfile/StudentPublicProfile'
@@ -71,9 +72,10 @@ export default async function UserPublicPage({ params }: Props) {
   })
 
   if (teacher) {
-    const [studentCount, callCount, experiences] = await Promise.all([
+    const [studentCount, callCount, { totalHours }, experiences] = await Promise.all([
       prisma.teacherStudent.count({ where: { teacherId: id } }),
       prisma.videoCallRoom.count({ where: { ownerId: id } }),
+      getTeacherCallStats(id),
       prisma.teacherExperience.findMany({
         where: { teacherId: id },
         select: { id: true, title: true, organization: true, yearFrom: true, yearTo: true, description: true, verifiedAt: true, documentUrls: true },
@@ -93,6 +95,7 @@ export default async function UserPublicPage({ params }: Props) {
         studentCount={studentCount}
         postCount={teacher._count.posts}
         callCount={callCount}
+        totalHours={totalHours}
         categories={categories}
         locale={locale}
         bio={teacher.bio}

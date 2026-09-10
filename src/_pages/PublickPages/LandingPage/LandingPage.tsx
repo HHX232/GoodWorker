@@ -1308,6 +1308,15 @@ function SubNav() {
           {l.label}
         </Link>
       ))}
+      <Link href='/info-pdf-to-test' className={s.subnav_link}>
+        <span className={s.subnav_dot} />
+        {t('sub_pdf_from')}
+        <svg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+          <path d='M5 12h14' />
+          <path d='M13 6l6 6-6 6' />
+        </svg>
+        {t('sub_pdf_to')}
+      </Link>
     </div>
   )
 }

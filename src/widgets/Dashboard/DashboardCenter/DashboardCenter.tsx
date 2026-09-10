@@ -64,6 +64,7 @@ interface Props {
   statsId: string
   studentCount: number
   callCount: number
+  totalHours: number
   isOwner?: boolean
   ownerName?: string
 }
@@ -108,7 +109,7 @@ function mapPost(p: PostItem) {
   }
 }
 
-export function DashboardCenter({ statsId, studentCount, callCount, isOwner = false, ownerName = '' }: Props) {
+export function DashboardCenter({ statsId, studentCount, callCount, totalHours, isOwner = false, ownerName = '' }: Props) {
   const t = useTranslations('dashboard')
   const locale = useLocale()
   const { data: session } = useSession()
@@ -227,7 +228,7 @@ export function DashboardCenter({ statsId, studentCount, callCount, isOwner = fa
     },
     {
       label: t('hours'),
-      value: callCount,
+      value: totalHours,
       bg: '#FEF9C3',
       icon: (
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2" strokeLinecap="round">
