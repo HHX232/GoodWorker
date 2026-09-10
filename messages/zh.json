@@ -2547,7 +2547,14 @@
       "sectionReview": "复习",
       "sectionActive": "当前课程内容",
       "sectionUpcoming": "接下来",
-      "close": "关闭"
+      "close": "关闭",
+      "addStep": "添加项目",
+      "saveChanges": "保存更改",
+      "aiEditButton": "通过 AI 修改",
+      "aiEditPlaceholder": "输入您想要的修改...",
+      "aiEditSubmit": "发送",
+      "aiEditLoading": "正在应用...",
+      "aiEditError": "应用修改失败"
     }
   },
   "videoZone": {

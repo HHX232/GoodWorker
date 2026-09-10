@@ -1548,7 +1548,14 @@
       "sectionReview": "Review",
       "sectionActive": "Now in the program",
       "sectionUpcoming": "Coming up",
-      "close": "Close"
+      "close": "Close",
+      "addStep": "Add item",
+      "saveChanges": "Save changes",
+      "aiEditButton": "Edit with AI",
+      "aiEditPlaceholder": "Describe the changes you want...",
+      "aiEditSubmit": "Send",
+      "aiEditLoading": "Applying...",
+      "aiEditError": "Failed to apply changes"
     }
   },
   "roadmapViewer": {

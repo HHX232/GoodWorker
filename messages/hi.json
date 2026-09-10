@@ -2546,7 +2546,14 @@
       "sectionReview": "दोहराएं",
       "sectionActive": "अभी कार्यक्रम में",
       "sectionUpcoming": "आगे",
-      "close": "बंद करें"
+      "close": "बंद करें",
+      "addStep": "आइटम जोड़ें",
+      "saveChanges": "बदलाव सहेजें",
+      "aiEditButton": "AI से बदलें",
+      "aiEditPlaceholder": "अपने बदलाव लिखें...",
+      "aiEditSubmit": "भेजें",
+      "aiEditLoading": "लागू किया जा रहा है...",
+      "aiEditError": "बदलाव लागू नहीं हो सके"
     }
   },
   "videoZone": {

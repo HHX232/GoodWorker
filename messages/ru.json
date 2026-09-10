@@ -1548,7 +1548,14 @@
       "sectionReview": "Повторить",
       "sectionActive": "Сейчас по программе",
       "sectionUpcoming": "Дальше",
-      "close": "Закрыть"
+      "close": "Закрыть",
+      "addStep": "Добавить пункт",
+      "saveChanges": "Сохранить изменения",
+      "aiEditButton": "Изменить через ИИ",
+      "aiEditPlaceholder": "Введите желаемые изменения...",
+      "aiEditSubmit": "Отправить",
+      "aiEditLoading": "Применяем...",
+      "aiEditError": "Не удалось применить изменения"
     }
   },
   "roadmapViewer": {

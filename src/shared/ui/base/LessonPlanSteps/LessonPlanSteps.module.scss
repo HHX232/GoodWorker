@@ -143,6 +143,139 @@
   padding: 24px 0;
 }
 
+// ── Editable mode ─────────────────────────────────────
+
+.editBucket {
+  padding-bottom: 4px;
+
+  &:first-child .sectionLabel { margin-top: 0; }
+}
+
+.editStep {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 4px;
+  border-radius: 8px;
+  transition: background 0.12s;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.02);
+
+    .dragHandle { opacity: 1; }
+    .deleteBtn { opacity: 1; }
+  }
+}
+
+.dragHandle {
+  flex-shrink: 0;
+  color: #ccc;
+  cursor: grab;
+  opacity: 0;
+  transition: opacity 0.12s;
+  margin-top: 5px;
+
+  &:active { cursor: grabbing; }
+}
+
+.iconCircleBtn {
+  border: none;
+  cursor: pointer;
+  margin-top: 1px;
+  transition: transform 0.12s;
+
+  &:hover { transform: scale(1.1); }
+}
+
+.editContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.inlineField {
+  width: 100%;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 6px;
+  padding: 3px 6px;
+  margin: 0 -6px;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: #141416;
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  transition: border-color 0.12s, background 0.12s;
+
+  &::placeholder { color: #bbb; }
+
+  &:hover { background: rgba(0, 0, 0, 0.025); }
+
+  &:focus {
+    border-color: rgba(83, 74, 183, 0.4);
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  }
+}
+
+.inlineFieldTitle {
+  font-weight: 500;
+}
+
+.inlineFieldArea {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.5;
+}
+
+.inlineFieldRecommendation {
+  color: #534AB7;
+}
+
+.deleteBtn {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: #bbb;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s, background 0.12s, color 0.12s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 3px;
+
+  &:hover { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+}
+
+.addStepBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 4px 0 10px 32px;
+  padding: 5px 10px;
+  border-radius: 7px;
+  border: 1px dashed rgba(0, 0, 0, 0.15);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 500;
+  color: #999;
+  cursor: pointer;
+  transition: all 0.12s;
+
+  &:hover {
+    border-color: #534AB7;
+    color: #534AB7;
+    background: rgba(83, 74, 183, 0.05);
+  }
+}
+
 :global(html.theme-dark), :global(html.pomodoro-dark) {
   .sectionLabel { color: rgba(255, 255, 255, 0.3); }
   .status_upcoming { background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.4); }
@@ -154,4 +287,21 @@
   .stepDescription { color: rgba(255, 255, 255, 0.6); }
   .stepRecommendation { color: #a5b4fc; background: rgba(129, 140, 248, 0.1); }
   .empty { color: rgba(255, 255, 255, 0.35); }
+
+  .editStep:hover { background: rgba(255, 255, 255, 0.03); }
+  .dragHandle { color: rgba(255, 255, 255, 0.25); }
+  .inlineField {
+    color: #e8eaf0;
+    &::placeholder { color: rgba(255, 255, 255, 0.25); }
+    &:hover { background: rgba(255, 255, 255, 0.04); }
+    &:focus { border-color: rgba(129, 140, 248, 0.5); background: #1a1c2b; }
+  }
+  .inlineFieldArea { color: rgba(255, 255, 255, 0.6); }
+  .inlineFieldRecommendation { color: #a5b4fc; }
+  .deleteBtn { color: rgba(255, 255, 255, 0.25); &:hover { background: rgba(239, 68, 68, 0.15); color: #f87171; } }
+  .addStepBtn {
+    border-color: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.4);
+    &:hover { border-color: #818cf8; color: #818cf8; background: rgba(129, 140, 248, 0.08); }
+  }
 }

@@ -642,6 +642,7 @@ export function CalendarCreateModal({
       isOpen={planModalOpen}
       onClose={() => setPlanModalOpen(false)}
       plan={lessonPlan}
+      onSave={setLessonPlan}
     />
     </>
   )

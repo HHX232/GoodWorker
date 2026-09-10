@@ -1,13 +1,7 @@
-.header {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 20px 20px 16px;
-  border-bottom: 0.5px solid rgba(0, 0, 0, 0.07);
-}
-
 .headerLeft {
-  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .eyebrow {
@@ -15,32 +9,12 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #aaa;
-  margin-bottom: 4px;
 }
 
 .title {
   font-size: 17px;
   font-weight: 600;
   color: #141416;
-}
-
-.closeBtn {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  border: 0.5px solid rgba(0, 0, 0, 0.1);
-  background: transparent;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #888;
-  flex-shrink: 0;
-  transition: background 0.15s;
-
-  &:hover {
-    background: #f3f3f7;
-  }
 }
 
 .body {
@@ -53,10 +27,17 @@
 
 .footer {
   display: flex;
-  gap: 8px;
-  justify-content: flex-end;
+  flex-direction: column;
+  gap: 10px;
   padding: 12px 20px;
   border-top: 0.5px solid rgba(0, 0, 0, 0.07);
+}
+
+.footerRow {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .btnPrimary {
@@ -70,15 +51,59 @@
   border: none;
   transition: background 0.15s;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: #7F77DD;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+.btnSecondary {
+  padding: 8px 16px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  background: transparent;
+  color: #534AB7;
+  border: 0.5px solid rgba(83, 74, 183, 0.35);
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(83, 74, 183, 0.06);
+  }
+}
+
+.aiEditRow {
+  display: flex;
+  gap: 8px;
+}
+
+.aiEditInput {
+  flex: 1;
+  min-width: 0;
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
+  border-radius: 9px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #141416;
+  background: #F8F8FB;
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+
+  &:focus {
+    border-color: #534AB7;
+    background: #fff;
   }
 }
 
 :global(html.theme-dark), :global(html.pomodoro-dark) {
   .eyebrow { color: rgba(255, 255, 255, 0.25); }
   .title { color: #e8eaf0; }
-  .closeBtn { border-color: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.4); &:hover { background: #23263a; } }
-  .header { border-bottom-color: rgba(255, 255, 255, 0.07); }
   .footer { border-top-color: rgba(255, 255, 255, 0.07); }
+  .btnSecondary { color: #a5b4fc; border-color: rgba(129, 140, 248, 0.35); &:hover { background: rgba(129, 140, 248, 0.08); } }
+  .aiEditInput { background: #23263a; border-color: rgba(255, 255, 255, 0.08); color: #e8eaf0; &:focus { border-color: #818cf8; background: #1f2130; } }
 }
