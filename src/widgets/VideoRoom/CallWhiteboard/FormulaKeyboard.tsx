@@ -26,9 +26,11 @@ interface Props {
   onClose: () => void
   roomName?: string
   isVip?: boolean
+  isAdmin?: boolean
+  autoOpenAi?: boolean
 }
 
-export function FormulaKeyboard({ initialLatex, onInsert, onClose, roomName, isVip }: Props) {
+export function FormulaKeyboard({ initialLatex, onInsert, onClose, roomName, isVip, isAdmin, autoOpenAi }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const fieldRef = useRef<{ value: string; focus: () => void } | null>(null)
   const [ready, setReady] = useState(false)
@@ -37,6 +39,16 @@ export function FormulaKeyboard({ initialLatex, onInsert, onClose, roomName, isV
   const [aiOpen, setAiOpen] = useState(false)
   const [aiPrompt, setAiPrompt] = useState('')
   const [generating, setGenerating] = useState(false)
+  const canUseAi = !!isVip || !!isAdmin
+
+  useEffect(() => {
+    if (!autoOpenAi) return
+    if (!canUseAi) {
+      toast.error('Генерация формул ИИ доступна только для VIP')
+      return
+    }
+    setAiOpen(true)
+  }, [autoOpenAi, canUseAi])
 
   useEffect(() => {
     let field: HTMLElement & { value: string; focus: () => void }
@@ -103,12 +115,12 @@ export function FormulaKeyboard({ initialLatex, onInsert, onClose, roomName, isV
   }, [inserting, onInsert])
 
   const handleAiToggle = useCallback(() => {
-    if (!isVip) {
+    if (!canUseAi) {
       toast.error('Генерация формул ИИ доступна только для VIP')
       return
     }
     setAiOpen(v => !v)
-  }, [isVip])
+  }, [canUseAi])
 
   const handleGenerate = useCallback(async () => {
     const description = aiPrompt.trim()
@@ -143,8 +155,8 @@ export function FormulaKeyboard({ initialLatex, onInsert, onClose, roomName, isV
       <div className={styles.aiRow}>
         <button type="button" className={styles.aiToggle} onClick={handleAiToggle}>
           <SparklesIcon />
-          ИИ
-          {!isVip && <span className={styles.vipBadge}>VIP</span>}
+          Создать формулу с ИИ
+          {!canUseAi && <span className={styles.vipBadge}>VIP</span>}
         </button>
       </div>
       {aiOpen && (

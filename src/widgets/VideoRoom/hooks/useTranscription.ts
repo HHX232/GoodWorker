@@ -25,6 +25,11 @@ interface UseTranscriptionOptions {
   userName: string
   broadcast: (msg: object) => void
   agentPresent: boolean
+  // Bump to force a clean SpeechRecognition re-init — e.g. after reloadCamera() churns the
+  // local camera track, which on some webcam/mic combo devices leaves the existing SR instance
+  // stuck failing 'audio-capture' forever (restarting the SAME instance never recovers; only a
+  // freshly constructed one does).
+  mediaResetKey?: number
 }
 
 interface UseTranscriptionResult {
@@ -43,6 +48,7 @@ export function useTranscription({
   userName,
   broadcast,
   agentPresent,
+  mediaResetKey,
 }: UseTranscriptionOptions): UseTranscriptionResult {
   const [liveText, setLiveText] = useState('')
   const [remoteLiveTexts, setRemoteLiveTexts] = useState<Record<string, string>>({})
@@ -170,7 +176,7 @@ export function useTranscription({
       srRef.current = null
       setLiveText('')
     }
-  }, [connected, micEnabled, browserHasSpeech, broadcast, userName])
+  }, [connected, micEnabled, browserHasSpeech, broadcast, userName, mediaResetKey])
 
   // ── Handler for incoming data-channel messages ────────────────────────────
   const handleRemoteMessage = useCallback(

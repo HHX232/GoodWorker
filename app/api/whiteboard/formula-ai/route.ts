@@ -34,7 +34,8 @@ export async function POST(req: NextRequest) {
       })
       isVip = teacher?.isVip === true && (teacher.vipExpiresAt === null || teacher.vipExpiresAt > new Date())
     }
-    if (!isVip) return NextResponse.json({ error: 'VIP only' }, { status: 403 })
+    const isAdmin = session.user.role === 'ADMIN'
+    if (!isVip && !isAdmin) return NextResponse.json({ error: 'VIP only' }, { status: 403 })
 
     const raw = await callAI(SYSTEM_PROMPT, desc, { temperature: 0.2 })
     const { latex } = parseJSON<{ latex: string }>(raw)

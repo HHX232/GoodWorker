@@ -223,6 +223,9 @@ useEffect(() => {
   useEffect(() => { whiteboardElementsRef.current = whiteboardElements }, [whiteboardElements])
   // Tracks previous testIsMain value so we only reload camera on hide/stop, not on initial mount
   const testWasMainRef = useRef(false)
+  // Bumped after reloadCamera() settles from a whiteboard/test main-slot transition, forcing
+  // useTranscription to build a fresh SpeechRecognition instance (see mediaResetKey doc there).
+  const [srResetKey, setSrResetKey] = useState(0)
 
   const transcription = useTranscription({
     connected: room.connected,
@@ -230,6 +233,7 @@ useEffect(() => {
     userName,
     broadcast: room.broadcast,
     agentPresent: !!room.agentIdentity,
+    mediaResetKey: srResetKey,
   })
 
   // Wire the data-channel router once (all deps are stable useCallbacks, so this runs once).
@@ -515,13 +519,20 @@ useEffect(() => {
   // on EITHER transition, which detaches the live track — so both directions need
   // a reload, not just leaving (testWasMainRef guards the initial mount, where
   // testIsMain is already false and no transition actually happened).
+  // On some webcam/mic combo devices, stopping+restarting the camera track here also
+  // hiccups the OS audio-capture device the browser's SpeechRecognition (subtitles/
+  // конспект) is reading from — and once that happens, restarting the SAME SR instance
+  // never recovers, so bump srResetKey once the reload settles to force a fresh one.
   const testIsMainForEffect = callTest !== null && mainSpeaker === '__test__'
   useEffect(() => {
     const wasMain = testWasMainRef.current
     testWasMainRef.current = testIsMainForEffect
     if (wasMain !== testIsMainForEffect) {
       // Slight delay so React finishes mounting video elements before reload
-      const t = setTimeout(() => reloadCamera(), 800)
+      const t = setTimeout(async () => {
+        await reloadCamera()
+        setSrResetKey(k => k + 1)
+      }, 800)
       return () => clearTimeout(t)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -961,6 +972,7 @@ useEffect(() => {
                 onBroadcast={broadcastWhiteboard}
                 roomName={roomName}
                 isVip={isVip}
+                isAdmin={userRole === 'ADMIN'}
               />
             </div>
           </div>
