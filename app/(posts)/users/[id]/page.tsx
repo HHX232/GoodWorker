@@ -72,9 +72,8 @@ export default async function UserPublicPage({ params }: Props) {
   })
 
   if (teacher) {
-    const [studentCount, callCount, { totalHours }, experiences] = await Promise.all([
+    const [studentCount, { totalCalls: callCount, totalHours }, experiences] = await Promise.all([
       prisma.teacherStudent.count({ where: { teacherId: id } }),
-      prisma.videoCallRoom.count({ where: { ownerId: id } }),
       getTeacherCallStats(id),
       prisma.teacherExperience.findMany({
         where: { teacherId: id },

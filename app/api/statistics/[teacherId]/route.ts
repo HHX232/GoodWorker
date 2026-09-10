@@ -1,4 +1,5 @@
 import { prisma } from '@/shared/prisma/prisma'
+import { MAX_HOURS_PER_CALL } from '@/shared/lib/videoRoom/getTeacherCallStats'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
 
@@ -36,8 +37,11 @@ export async function GET(
     // admin account backed by a teacher record creates rooms with
     // ownerRole 'ADMIN', not 'TEACHER', so filtering on role dropped those
     // calls even though ownerId already scopes this to the right teacher.
+    // `participants: { some: {} }` excludes rooms that were created but
+    // never actually joined and only got endedAt from the close-stale-rooms
+    // cron, sometimes days later — see getTeacherCallStats for the same fix.
     const calls = await prisma.videoCallRoom.findMany({
-      where: { ownerId: teacherId, endedAt: { not: null } },
+      where: { ownerId: teacherId, endedAt: { not: null }, participants: { some: {} } },
       include: {
         participants: { select: { userId: true, userRole: true, identity: true } },
       },
@@ -88,10 +92,10 @@ export async function GET(
       totalProgress,
     }
 
-    // Compute per-call durations (hours)
+    // Compute per-call durations (hours), clamped so one bad row can't skew the total
     const callsWithDuration = calls.map((c) => {
       const ms = c.endedAt!.getTime() - c.createdAt.getTime()
-      return { ...c, durationHours: Math.max(0, ms / (1000 * 60 * 60)) }
+      return { ...c, durationHours: Math.min(Math.max(0, ms / (1000 * 60 * 60)), MAX_HOURS_PER_CALL) }
     })
 
     const totalCalls = calls.length

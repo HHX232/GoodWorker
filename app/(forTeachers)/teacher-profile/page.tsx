@@ -42,9 +42,8 @@ export default async function TeacherProfilePage({ searchParams }: TeacherProfil
     avatarUrl: null,
   }
 
-  const [studentCount, callCount, { totalHours }] = await Promise.all([
+  const [studentCount, { totalCalls: callCount, totalHours }] = await Promise.all([
     prisma.teacherStudent.count({ where: { teacherId: id } }).catch(() => 0),
-    prisma.videoCallRoom.count({ where: { ownerId: id } }).catch(() => 0),
     getTeacherCallStats(id).catch(() => ({ totalCalls: 0, totalHours: 0 })),
   ])
 
