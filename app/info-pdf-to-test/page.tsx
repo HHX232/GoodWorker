@@ -2010,6 +2010,38 @@ export default function PdfInfoPage() {
       }
     }
 
+    // -- Word-swap ticker: translateY(-Nem) in the CSS above drifts from the browser's
+    // rounded-to-pixel row layout (up to ~0.4px by the 3rd/4th row), leaking a faint ghost
+    // of the neighboring word through overflow:hidden. Measure each row's real offsetTop
+    // once fonts settle and drive the animation off px keyframes instead of em — the
+    // transform then always lands exactly where the browser already put the text.
+    {
+      const hero = heroRef.current
+      const track = hero?.querySelector<HTMLElement>('.word-swap__track')
+      if (track && !reduce) {
+        let styleEl: HTMLStyleElement | null = null
+        const setup = () => {
+          const spans = Array.from(track.querySelectorAll<HTMLElement>(':scope > span'))
+          if (spans.length < 2) return
+          if (!styleEl) {
+            styleEl = document.createElement('style')
+            document.head.appendChild(styleEl)
+          }
+          const stops = ['0%,16%', '20%,36%', '40%,56%', '60%,76%', '80%,96%', '100%']
+          const kf = spans.map((s, i) => `${stops[i] ?? '100%'}{transform:translateY(-${s.offsetTop}px);}`).join('')
+          styleEl.textContent = `@keyframes wordSwapPx{${kf}}`
+          track.style.animation = 'wordSwapPx 10s cubic-bezier(.16,1,.3,1) infinite'
+        }
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(setup)
+        setup()
+        window.addEventListener('resize', setup, { passive: true })
+        cleanups.push(() => {
+          window.removeEventListener('resize', setup)
+          styleEl?.remove()
+        })
+      }
+    }
+
     // -- Block B — scrub: draws the PDF→test path and counts up as the section scrolls --
     {
       const sec = scrubRef.current
