@@ -55,6 +55,11 @@ export function useTranscription({
   const [callNotes, setCallNotes] = useState<NoteEntry[]>([])
   const [finalTranscript, setFinalTranscript] = useState<string | null>(null)
   const [srError, setSrError] = useState<string | null>(null)
+  // Bumped from inside the SR effect itself whenever 'audio-capture' fires — restarting
+  // the SAME SpeechRecognition instance after that error frequently never recovers (see
+  // the effect below), so this forces a full teardown+recreate regardless of what
+  // triggered the hiccup (camera reload, another participant's WebRTC renegotiation, etc).
+  const [audioCaptureGen, setAudioCaptureGen] = useState(0)
 
   const srRef = useRef<any>(null)
   const clearTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
@@ -148,11 +153,19 @@ export function useTranscription({
         shouldRestart = false
         const msg =
           event.error === 'not-allowed'        ? 'Нет доступа к микрофону' :
-          event.error === 'audio-capture'      ? 'Микрофон занят другим потоком (WebRTC). Конспект недоступен.' :
           /* service-not-allowed */              'Сервис распознавания недоступен'
         setSrError(msg)
+        return
       }
-      // 'no-speech' and 'network' are transient — we still restart below.
+      if (event.error === 'audio-capture') {
+        // Restarting THIS instance (via onend below) after a real audio-capture
+        // hiccup frequently never recovers — force a full effect teardown+recreate
+        // instead, which constructs a brand new SpeechRecognition object.
+        shouldRestart = false
+        setTimeout(() => setAudioCaptureGen((g) => g + 1), 500)
+        return
+      }
+      // 'no-speech' and 'network' are transient — we still restart below (same instance).
     }
 
     sr.onend = () => {
@@ -176,7 +189,7 @@ export function useTranscription({
       srRef.current = null
       setLiveText('')
     }
-  }, [connected, micEnabled, browserHasSpeech, broadcast, userName, mediaResetKey])
+  }, [connected, micEnabled, browserHasSpeech, broadcast, userName, mediaResetKey, audioCaptureGen])
 
   // ── Handler for incoming data-channel messages ────────────────────────────
   const handleRemoteMessage = useCallback(
