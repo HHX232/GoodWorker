@@ -102,13 +102,22 @@ $border: #ececf2;
   flex: 1;
   padding: 4px 22px;
   min-width: 80px;
+  text-align: center;
 }
-.stat_n {
+.stat_n,
+.stat_n_link {
+  display: block;
   font-size: 26px;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: $ink;
   line-height: 1;
+}
+.stat_n_link {
+  text-decoration: none;
+  transition: color 0.16s ease;
+
+  &:hover { color: $red; }
 }
 .stat_label {
   font-size: 12.5px;
@@ -185,6 +194,8 @@ $border: #ececf2;
   align-items: center;
   gap: 10px;
   transition: border-color 0.18s ease, transform 0.13s ease, box-shadow 0.18s ease, background 0.18s ease;
+
+  span { font-size: 18px; line-height: 1; }
 
   &:hover {
     border-color: $ink;
@@ -1083,7 +1094,8 @@ $border: #ececf2;
   .hero_typing        { color: #7a7a90; }
   .hero_desc          { color: #5a5a74; }
 
-  .stat_n     { color: #e8eaf0; }
+  .stat_n,
+  .stat_n_link { color: #e8eaf0; &:hover { color: $red; } }
   .stat_label { color: #5a5a74; }
 
   .btn_outline {

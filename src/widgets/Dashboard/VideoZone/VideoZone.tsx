@@ -31,14 +31,24 @@ function formatDate(dateStr: string, locale: string, today: string, yesterday: s
   return date.toLocaleDateString(locale, {day: 'numeric', month: 'short'})
 }
 
-async function requestMediaPermission(): Promise<boolean> {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true})
-    stream.getTracks().forEach((t) => t.stop())
-    return true
-  } catch {
-    return false
+// Checks camera and mic independently — {video: true, audio: true} in one call
+// rejects outright when either device is simply missing (e.g. a mic-only
+// laptop with no webcam), even though the other one works fine. Room
+// creation/joining never depends on this: it's purely a status indicator,
+// since listening in with only a mic (or with neither) is a valid way to
+// join a call.
+async function probeMediaDevices(): Promise<boolean> {
+  const tryGet = async (constraints: MediaStreamConstraints) => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia(constraints)
+      stream.getTracks().forEach((t) => t.stop())
+      return true
+    } catch {
+      return false
+    }
   }
+  const [audio, video] = await Promise.all([tryGet({audio: true}), tryGet({video: true})])
+  return audio || video
 }
 
 export function VideoZone({isStudent = false}: Props) {
@@ -51,7 +61,6 @@ export function VideoZone({isStudent = false}: Props) {
   const [joinCode, setJoinCode] = useState('')
   const [joining, setJoining] = useState(false)
   const [joinError, setJoinError] = useState('')
-  const [createPermError, setCreatePermError] = useState('')
   const [mediaStatus, setMediaStatus] = useState<'idle' | 'checking' | 'ready' | 'denied'>('idle')
   const [activeTab, setActiveTab] = useState<'active' | 'recent'>('active')
   const [rooms, setRooms] = useState<Room[]>([])
@@ -168,13 +177,6 @@ export function VideoZone({isStudent = false}: Props) {
     setJoining(true)
     setJoinError('')
 
-    const granted = await requestMediaPermission()
-    if (!granted) {
-      setJoinError(t('errorPermission'))
-      setJoining(false)
-      return
-    }
-
     try {
       const res = await fetch(`/api/call/rooms?name=${encodeURIComponent(code)}`)
       const data = await res.json()
@@ -192,30 +194,21 @@ export function VideoZone({isStudent = false}: Props) {
     }
   }
 
-  // Auto-check camera on mount
+  // Auto-check camera/mic on mount — informational only, never blocks the flow below.
   useEffect(() => {
     setMediaStatus('checking')
-    requestMediaPermission().then((granted) => {
-      setMediaStatus(granted ? 'ready' : 'denied')
+    probeMediaDevices().then((ready) => {
+      setMediaStatus(ready ? 'ready' : 'denied')
     })
   }, [])
 
   const handleCheckMedia = async () => {
     setMediaStatus('checking')
-    const granted = await requestMediaPermission()
-    setMediaStatus(granted ? 'ready' : 'denied')
+    const ready = await probeMediaDevices()
+    setMediaStatus(ready ? 'ready' : 'denied')
   }
 
-  const handleCreateClick = async () => {
-    setCreatePermError('')
-    if (mediaStatus !== 'ready') {
-      const granted = await requestMediaPermission()
-      setMediaStatus(granted ? 'ready' : 'denied')
-      if (!granted) {
-        setCreatePermError(t('errorPermission'))
-        return
-      }
-    }
+  const handleCreateClick = () => {
     setModalDefault('')
     setModalOpen(true)
   }
@@ -284,7 +277,6 @@ export function VideoZone({isStudent = false}: Props) {
             </svg>
             {t('createBtn')}
           </button>
-          {createPermError && <p className={styles.vzJoinError}>{createPermError}</p>}
 
           <form className={styles.vzJoin} onSubmit={handleJoin}>
             <input

@@ -70,6 +70,13 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
   const onDataMessageRef = useRef(onDataMessage)
   onDataMessageRef.current = onDataMessage
 
+  // What the user actually wants, as opposed to what's live right now — defaults
+  // to "on" so a mic/camera that was simply missing at join time gets picked up
+  // automatically once plugged in, without overriding an explicit manual mute.
+  const micWantsOnRef = useRef(true)
+  const camWantsOnRef = useRef(true)
+  const deviceChangeHandlerRef = useRef<(() => void) | null>(null)
+
   // ── Participant helpers ────────────────────────────────────────────────────
   const upsert = useCallback((identity: string, patch: Partial<Participant> = {}) => {
     setParticipants(prev => {
@@ -205,6 +212,7 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
   const toggleMic = useCallback(async () => {
     if (!roomRef.current) return
     const next = !micEnabled
+    micWantsOnRef.current = next
     try {
       await roomRef.current.localParticipant.setMicrophoneEnabled(next)
       setMicEnabled(next)
@@ -217,9 +225,14 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
   const toggleCam = useCallback(async () => {
     if (!roomRef.current) return
     const next = !camEnabled
-    await roomRef.current.localParticipant.setCameraEnabled(next)
-    setCamEnabled(next)
-    upsert(userName, { videoMuted: !next })
+    camWantsOnRef.current = next
+    try {
+      await roomRef.current.localParticipant.setCameraEnabled(next)
+      setCamEnabled(next)
+      upsert(userName, { videoMuted: !next })
+    } catch (e) {
+      console.error('toggleCam failed', e)
+    }
   }, [camEnabled, upsert, userName])
 
   // ── Join ───────────────────────────────────────────────────────────────────
@@ -403,16 +416,31 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
         )
       } catch {}
 
-      await room.localParticipant.setMicrophoneEnabled(true, {
-        echoCancellation: true,
-        noiseSuppression: true,
-        autoGainControl: false, // AGC amplifies the feedback loop when two devices are nearby
-      })
+      micWantsOnRef.current = true
+      camWantsOnRef.current = true
+
+      let micOk = true
+      try {
+        await room.localParticipant.setMicrophoneEnabled(true, {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: false, // AGC amplifies the feedback loop when two devices are nearby
+        })
+      } catch {
+        micOk = false // no microphone — continue without audio input, still able to listen
+      }
+      let camOk = true
       try {
         await room.localParticipant.setCameraEnabled(true)
       } catch {
-        // no camera — continue without video
+        camOk = false // no camera — continue without video
       }
+      // Reflect what actually got published, not just the intent — otherwise the
+      // mic/camera toggle buttons show "on" for a device that was never live, and
+      // plugging one in mid-call needs two clicks (one to notice it's off, one to
+      // turn it on) instead of one.
+      setMicEnabled(micOk)
+      setCamEnabled(camOk)
       // Also try to attach immediately in case LocalTrackPublished already fired
       const cam = room.localParticipant.getTrackPublication(Track.Source.Camera)?.track
       if (cam) attachVideoWithRetry(room.localParticipant.identity, cam)
@@ -423,6 +451,42 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
         const vids = devices.filter(d => d.kind === 'videoinput')
         setVideoDevices(vids)
       } catch {}
+
+      // Plugging in a mic/camera mid-call fires 'devicechange' — if the user still
+      // wants that device on (join-time failure or never explicitly muted it),
+      // retry the publish now that it exists instead of waiting for a manual toggle.
+      const handleDeviceChange = async () => {
+        try {
+          const devices = await navigator.mediaDevices.enumerateDevices()
+          setVideoDevices(devices.filter(d => d.kind === 'videoinput'))
+        } catch {}
+
+        const lp = room.localParticipant
+        if (micWantsOnRef.current && !lp.isMicrophoneEnabled) {
+          try {
+            await lp.setMicrophoneEnabled(true, {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: false,
+            })
+            setMicEnabled(true)
+          } catch {
+            // still no microphone — nothing to do until the next devicechange
+          }
+        }
+        if (camWantsOnRef.current && !lp.isCameraEnabled) {
+          try {
+            await lp.setCameraEnabled(true)
+            setCamEnabled(true)
+            const track = lp.getTrackPublication(Track.Source.Camera)?.track
+            if (track) attachVideoWithRetry(lp.identity, track)
+          } catch {
+            // still no camera — nothing to do until the next devicechange
+          }
+        }
+      }
+      navigator.mediaDevices.addEventListener('devicechange', handleDeviceChange)
+      deviceChangeHandlerRef.current = handleDeviceChange
 
       setStatus('')
       setConnected(true)
@@ -517,6 +581,10 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
   }, [screenShareEnabled])
 
   const disconnect = useCallback(async () => {
+    if (deviceChangeHandlerRef.current) {
+      navigator.mediaDevices.removeEventListener('devicechange', deviceChangeHandlerRef.current)
+      deviceChangeHandlerRef.current = null
+    }
     await roomRef.current?.disconnect()
     roomRef.current = null
   }, [])

@@ -100,7 +100,7 @@ function Avatar({ name, size = 36 }: { name: string; size?: number }) {
 
 // ─── Hero stats (real data from DB) ────────────────────────────
 function usePublicStats() {
-  const [stats, setStats] = useState<{ students: number; teachers: number; posts: number; calls: number } | null>(null)
+  const [stats, setStats] = useState<{ students: number; teachers: number; courses: number; calls: number } | null>(null)
   useEffect(() => {
     fetch('/api/public/stats').then(r => r.ok ? r.json() : null).then(d => { if (d) setStats(d) }).catch(() => {})
   }, [])
@@ -267,24 +267,34 @@ function HeroSection() {
         <div className={s.hero_stats}>
           <StatItem n={stats ? fmtStat(stats.calls) : '…'} label={t('stat_calls')} first />
           <StatItem n={stats ? fmtStat(stats.students) : '…'} label={t('stat_students')} />
-          <StatItem n={stats ? fmtStat(stats.teachers) : '…'} label={t('stat_teachers')} />
-          <StatItem n={stats ? fmtStat(stats.posts) : '…'} label={t('stat_courses')} />
+          <StatItem n={stats ? fmtStat(stats.teachers) : '…'} label={t('stat_teachers')} href="/teachers" />
+          <StatItem n={stats ? fmtStat(stats.courses) : '…'} label={t('stat_courses')} href="/workflows-list" />
         </div>
 
         <div className={s.hero_cta}>
           {user?.role === 'TEACHER' ? (
-            <Link href="/create-post" className={s.btn_dark}>
-              {t('btn_create_post')} <span>+</span>
-            </Link>
+            <>
+              <Link href="/teacher-profile" className={s.btn_dark}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                {t('btn_start_lesson')}
+              </Link>
+              <Link href="/create-road-map" className={s.btn_outline}>
+                {t('btn_create_course')} <span>+</span>
+              </Link>
+            </>
           ) : (
-            <Link href="/teachers" className={`${s.btn_dark} ${s.btn_dark_bordered}`}>
-              {t('btn_find_teacher')}
-            </Link>
+            <>
+              <Link href="/teachers" className={`${s.btn_dark} ${s.btn_dark_bordered}`}>
+                {t('btn_find_teacher')}
+              </Link>
+              <Link href="/workflows-list?maxPrice=0" className={s.btn_outline}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H12v18H6.5A2.5 2.5 0 0 0 4 22.5z" /><path d="M12 2h5.5A2.5 2.5 0 0 1 20 4.5v16a2.5 2.5 0 0 0-2.5-2.5H12z" />
+                </svg>
+                {t('btn_find_free_course')}
+              </Link>
+            </>
           )}
-          <Link href="/profile" className={s.btn_outline}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-            {t('btn_how')}
-          </Link>
         </div>
       </div>
 
@@ -295,10 +305,12 @@ function HeroSection() {
   )
 }
 
-function StatItem({ n, label, first }: { n: string; label: string; first?: boolean }) {
+function StatItem({ n, label, first, href }: { n: string; label: string; first?: boolean; href?: string }) {
   return (
     <div className={`${s.stat_item} ${first ? '' : s.stat_item_sep}`}>
-      <div className={s.stat_n}>{n}</div>
+      {href
+        ? <Link href={href} className={s.stat_n_link}>{n}</Link>
+        : <div className={s.stat_n}>{n}</div>}
       <div className={s.stat_label}>{label}</div>
     </div>
   )
@@ -916,6 +928,8 @@ interface ApiTeacher {
   isVip: boolean; languages: string[]
   categories: { category: { id: string; slug: string; translations: { langCode: string; name: string }[] } }[]
   _count: { posts: number; students: number }
+  trend?: number[]
+  newStudents30d?: number
 }
 
 function nameHue(name: string) {
@@ -924,25 +938,56 @@ function nameHue(name: string) {
   return h % 360
 }
 
-function Sparkline({ seed, students }: { seed: number; students: number }) {
-  const data = Array.from({ length: 7 }, (_, i) => {
-    const base = students > 0 ? Math.max(1, students - 300 + i * 40) : i + 1
-    return base + ((seed * (i + 1) * 17) % 50)
-  })
+// Real weekly student-count history (see /api/teachers, sort=score): `trend[i]`
+// is the cumulative student total at the end of week i, so the line only ever
+// rises when students actually joined — a flat line means no growth, honestly.
+function Sparkline({ trend, delta }: { trend: number[]; delta: number }) {
+  const [hover, setHover] = useState<number | null>(null)
+  const data = trend.length ? trend : [0]
   const min = Math.min(...data), max = Math.max(...data), span = max - min || 1
   const w = 80, h = 28
   const pts = data.map((v, i) => [
-    (i / (data.length - 1)) * w,
+    data.length > 1 ? (i / (data.length - 1)) * w : w,
     h - 4 - ((v - min) / span) * (h - 8),
   ])
   const d = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ')
   const last = pts[pts.length - 1]
+
   return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
-      <path d={d} fill="none" stroke={RED} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx={last[0]} cy={last[1]} r="2.4" fill={RED} />
-    </svg>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+      <svg
+        width={w} height={h} viewBox={`0 0 ${w} ${h}`}
+        style={{ overflow: 'visible' }}
+        onMouseLeave={() => setHover(null)}
+      >
+        <path d={d} fill="none" stroke={RED} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        {pts.map((p, i) => (
+          <circle
+            key={i}
+            cx={p[0]} cy={p[1]}
+            r={hover === i ? 3.4 : 7}
+            fill={hover === i ? RED : 'transparent'}
+            onMouseEnter={() => setHover(i)}
+            style={{ cursor: 'pointer' }}
+          >
+            <title>{`${weeksAgoLabel(data.length - 1 - i)}: ${data[i]}`}</title>
+          </circle>
+        ))}
+        {hover === null && <circle cx={last[0]} cy={last[1]} r="2.4" fill={RED} style={{ pointerEvents: 'none' }} />}
+      </svg>
+      <span style={{
+        color: hover !== null ? '#6b6b76' : (delta > 0 ? RED : '#b4b4be'),
+        fontSize: 12, fontWeight: 600, minWidth: 26, textAlign: 'right',
+      }}>
+        {hover !== null ? data[hover].toLocaleString() : (delta > 0 ? `+${delta}` : '0')}
+      </span>
+    </span>
   )
+}
+
+function weeksAgoLabel(weeksAgo: number) {
+  if (weeksAgo === 0) return 'Сейчас'
+  return `${weeksAgo} нед. назад`
 }
 
 function TeachersBlock() {
@@ -1062,8 +1107,7 @@ function TeachersBlock() {
                   <span className={s.table_spec}>{teacherSpec(row)}</span>
                   <span className={s.table_students}>{row._count.students.toLocaleString()}</span>
                   <span className={s.table_spark}>
-                    <Sparkline seed={i + 1} students={row._count.students} />
-                    <span style={{ color: RED, fontSize: 12, fontWeight: 600 }}>+{Math.max(1, row._count.students % 200)}</span>
+                    <Sparkline trend={row.trend ?? [row._count.students]} delta={row.newStudents30d ?? 0} />
                   </span>
                 </div>
               ))}
