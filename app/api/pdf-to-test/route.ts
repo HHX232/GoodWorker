@@ -165,5 +165,6 @@ ${truncated}`
     guestLimit: isGuest ? maxQ : null,
     unlimited,
     totalChars: docText.length,
+    truncated: docText.length > maxChars,
   })
 }

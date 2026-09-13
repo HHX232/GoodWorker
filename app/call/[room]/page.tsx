@@ -35,6 +35,7 @@ export default async function RoomPage({ params }: Props) {
   let roomName = decodedName
   let ownerIdentity = identity
   let roomTopic: string | undefined
+  let isVip = false
 
   try {
     // try by CUID first, then by name
@@ -45,6 +46,17 @@ export default async function RoomPage({ params }: Props) {
       roomName = dbRoom.name
       ownerIdentity = dbRoom.ownerIdentity
       roomTopic = dbRoom.topic ?? undefined
+
+      // VIP-gated whiteboard features (e.g. AI formula generation) key off the
+      // room owner's (teacher's) subscription, not whichever participant is
+      // currently drawing — a VIP teacher's perk applies to their own lessons.
+      if (dbRoom.ownerRole === 'TEACHER') {
+        const teacher = await prisma.teacher.findUnique({
+          where: { id: dbRoom.ownerId },
+          select: { isVip: true, vipExpiresAt: true },
+        })
+        isVip = teacher?.isVip === true && (teacher.vipExpiresAt === null || teacher.vipExpiresAt > new Date())
+      }
     }
   } catch {
     // table doesn't exist yet — current user is owner, room name = decoded param
@@ -69,6 +81,7 @@ export default async function RoomPage({ params }: Props) {
       ownerIdentity={ownerIdentity}
       localAvatarUrl={localAvatarUrl}
       topic={roomTopic}
+      isVip={isVip}
     />
   )
 }

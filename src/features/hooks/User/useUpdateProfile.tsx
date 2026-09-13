@@ -19,6 +19,8 @@ interface UpdateProfileDto {
   socialLinks?: SocialLinks | null
   languages?: string[]
   serviceLabels?: string[]
+  schoolGrade?: number | null
+  courseNumber?: number | null
 }
 
 const updateProfile = async (userType: 'Student' | 'Teacher', dto: UpdateProfileDto) => {

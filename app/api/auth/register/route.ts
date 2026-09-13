@@ -24,9 +24,11 @@ const sendUserSchema = z
   .optional()
   .nullable(),
     password: z.string({ error: 'Minimum 6 characters' }).min(6, 'Minimum 6 characters').default(''),
-    langCode: z.string().default('ru')
+    langCode: z.string().default('ru'),
+    schoolGrade: z.coerce.number().int().min(1).max(11).optional(),
+    courseNumber: z.coerce.number().int().min(1).max(6).optional()
   })
-  
+
   const sendTeacherSchema = z.object({
     step: z.literal('send'),
     name: z.string({ error: 'Name is required' }).min(1, 'Name is required').default(''),
@@ -49,7 +51,9 @@ const sendUserSchema = z
     password: z.string().min(6, 'Password must be at least 6 characters'),
     name: z.string({ error: 'Name is required' }).min(1, 'Name is required'),
     email: z.string({ error: 'Invalid email' }).email('Invalid email'),
-    phone: z.string({ error: 'Minimum 7 characters' }).optional()
+    phone: z.string({ error: 'Minimum 7 characters' }).optional(),
+    schoolGrade: z.coerce.number().int().min(1).max(11).optional(),
+    courseNumber: z.coerce.number().int().min(1).max(6).optional()
   })
 
   export async function POST(req: NextRequest) {
@@ -121,7 +125,7 @@ const sendUserSchema = z
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
   }
 
-  const { name, email, phone, password, otp } = parsed.data
+  const { name, email, phone, password, otp, schoolGrade, courseNumber } = parsed.data
 
   const rateLimitSuccess = await limits.verify(ip)
   if (!rateLimitSuccess) return tooManyRequests()
@@ -146,6 +150,8 @@ const sendUserSchema = z
           password: hashedPassword,
           langCode: body.langCode ?? 'ru',
           nameTransliterated,
+          schoolGrade,
+          courseNumber,
         },
         select: { id: true, name: true, email: true, phone: true },
       })

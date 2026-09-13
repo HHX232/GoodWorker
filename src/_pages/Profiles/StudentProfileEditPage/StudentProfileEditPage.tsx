@@ -17,6 +17,8 @@ export default async function StudentProfileEditPage() {
       email: true,
       phone: true,
       avatarUrl: true,
+      schoolGrade: true,
+      courseNumber: true,
     },
   })
 

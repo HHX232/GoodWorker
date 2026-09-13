@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     const [student, errors, meetings, confirmedBookings] = await Promise.all([
       prisma.student.findUnique({
         where: { id: studentId },
-        select: { id: true, name: true, email: true, avatarUrl: true },
+        select: { id: true, name: true, email: true, avatarUrl: true, schoolGrade: true, courseNumber: true },
       }),
 
       prisma.studentError.findMany({

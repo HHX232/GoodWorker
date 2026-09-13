@@ -22,9 +22,12 @@ interface Props {
   remoteElements: readonly ExcalidrawElement[] | null
   remoteFiles: BinaryFiles | null
   onBroadcast: (elements: readonly ExcalidrawElement[], files: BinaryFiles) => void
+  roomName?: string
+  isVip?: boolean
+  isAdmin?: boolean
 }
 
-export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast }: Props) {
+export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomName, isVip, isAdmin }: Props) {
   const apiRef = useRef<ExcalidrawImperativeAPI | null>(null)
   const broadcastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastBroadcast = useRef<readonly ExcalidrawElement[]>([])
@@ -35,6 +38,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast }: Pro
   const [ready, setReady] = useState(false)
   const [showFormulaKeyboard, setShowFormulaKeyboard] = useState(false)
   const [editingFormula, setEditingFormula] = useState<{ id: string; latex: string; x: number; y: number; width: number; height: number } | null>(null)
+  const [autoOpenAi, setAutoOpenAi] = useState(false)
   const { isDark } = useThemeCtx()
 
   // Apply remote elements when they arrive
@@ -171,17 +175,32 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast }: Pro
             collides with the call's video preview tile — so this floats on
             top of the canvas, below the native toolbar, on the left. */}
         <div className={styles.formulaWrap}>
-          <button
-            type="button"
-            className={styles.formulaButton}
-            onClick={() => {
-              setEditingFormula(null)
-              setShowFormulaKeyboard(v => !v)
-            }}
-            title="Формула"
-          >
-            ∑ Формула
-          </button>
+          <div className={styles.formulaButtonsRow}>
+            <button
+              type="button"
+              className={styles.formulaButton}
+              onClick={() => {
+                setEditingFormula(null)
+                setAutoOpenAi(false)
+                setShowFormulaKeyboard(v => !v)
+              }}
+              title="Формула"
+            >
+              ∑ Формула
+            </button>
+            <button
+              type="button"
+              className={styles.aiMiniButton}
+              onClick={() => {
+                setEditingFormula(null)
+                setAutoOpenAi(true)
+                setShowFormulaKeyboard(true)
+              }}
+              title="Создать формулу с ИИ"
+            >
+              ✨ ИИ
+            </button>
+          </div>
           {showFormulaKeyboard && (
             <div className={styles.formulaPopover}>
               <FormulaKeyboard
@@ -190,7 +209,12 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast }: Pro
                 onClose={() => {
                   setShowFormulaKeyboard(false)
                   setEditingFormula(null)
+                  setAutoOpenAi(false)
                 }}
+                roomName={roomName}
+                isVip={isVip}
+                isAdmin={isAdmin}
+                autoOpenAi={autoOpenAi}
               />
             </div>
           )}

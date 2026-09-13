@@ -35,12 +35,25 @@ export function CreateRoomModal({isOpen, onClose, onConfirm, loading}: CreateRoo
   const [emailInput, setEmailInput] = useState('')
   const [extraEmails, setExtraEmails] = useState<string[]>([])
   const emailInputRef = useRef<HTMLInputElement>(null)
+  const [teacherCategoryIds, setTeacherCategoryIds] = useState<string[]>([])
 
   useEffect(() => {
     if (!isOpen || !isTeacher) return
     fetch('/api/call/my-students')
       .then((r) => r.json())
       .then((d) => setStudents(d.students ?? []))
+      .catch(() => {})
+  }, [isOpen, isTeacher])
+
+  useEffect(() => {
+    if (!isOpen || !isTeacher) return
+    fetch('/api/me')
+      .then((r) => r.json())
+      .then((d) => {
+        if (Array.isArray(d.categories)) {
+          setTeacherCategoryIds(d.categories.map((c: {category: {id: string}}) => c.category.id))
+        }
+      })
       .catch(() => {})
   }, [isOpen, isTeacher])
 
@@ -127,6 +140,10 @@ export function CreateRoomModal({isOpen, onClose, onConfirm, loading}: CreateRoo
             value={categoryIds}
             onChange={setCategoryIds}
             placeholder="Выберите предмет"
+            allowedRootIds={isTeacher ? teacherCategoryIds : undefined}
+            footerHint={isTeacher ? (
+              <>Нет нужного предмета? Добавьте его в разделе «Мои предметы» в <a href="/teacher-profile">профиле</a>.</>
+            ) : undefined}
           />
         </div>
 

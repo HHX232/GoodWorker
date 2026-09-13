@@ -3,6 +3,7 @@
 import OtpModal from '@/shared/ui/Modals/OtpModal/OtpModal'
 import ImageCropEditor from '@/widgets/BaseUI/ImageCropEditor/ImageCropEditor'
 import { CreateImagesInput } from '@/shared/ui/inputs/CreateImagesInput/CreateImagesInput'
+import { GradeSelect, type GradeValue } from '@/shared/ui/inputs/GradeSelect/GradeSelect'
 import LanguageSelect from '@/shared/ui/inputs/LanguageSelect/LanguageSelect'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -37,6 +38,8 @@ interface ProfileData {
   coverPhotoUrl?: string | null
   socialLinks?: SocialLinks | Record<string, string> | null
   languages?: string[]
+  schoolGrade?: number | null
+  courseNumber?: number | null
 }
 
 interface ProfileEditFormProps {
@@ -62,6 +65,13 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, stats
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [saveSuccess, setSaveSuccess] = useState(false)
+
+  // Student-only fields
+  const [gradeValue, setGradeValue] = useState<GradeValue | null>(
+    initialData.schoolGrade ? { level: 'school', number: initialData.schoolGrade }
+    : initialData.courseNumber ? { level: 'university', number: initialData.courseNumber }
+    : null
+  )
 
   // Teacher-only fields
   const [bio, setBio] = useState(initialData.bio ?? '')
@@ -145,6 +155,10 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, stats
           coverPhotoUrl,
           socialLinks: cleanSocialLinks(),
           languages,
+        }),
+        ...(userType === 'Student' && {
+          schoolGrade: gradeValue?.level === 'school' ? gradeValue.number : null,
+          courseNumber: gradeValue?.level === 'university' ? gradeValue.number : null,
         }),
       })
       setSaveSuccess(true)
@@ -271,6 +285,20 @@ const ProfileEditForm: FC<ProfileEditFormProps> = ({userType, initialData, stats
                 placeholder="+7 999 000 00 00"
               />
             </div>
+            {userType === 'Student' && (
+              <div className={styles.field}>
+                <label className={styles.label}>Класс / курс</label>
+                <GradeSelect
+                  value={gradeValue}
+                  onChange={setGradeValue}
+                  placeholder="Не выбран"
+                  schoolGroupLabel="Школа"
+                  universityGroupLabel="Колледж / университет"
+                  schoolOptionLabel={grade => `${grade} класс`}
+                  universityOptionLabel={course => `${course} курс`}
+                />
+              </div>
+            )}
           </div>
 
           <div className={styles.saveRow}>

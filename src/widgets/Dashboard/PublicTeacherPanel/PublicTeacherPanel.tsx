@@ -50,6 +50,7 @@ interface Props {
   studentCount: number
   postCount: number
   callCount: number
+  totalHours: number
   categories: Category[]
   locale?: string
   bio?: string | null
@@ -62,7 +63,7 @@ interface Props {
 }
 
 export function PublicTeacherPanel({
-  name, avatarUrl, isVip, createdAt, studentCount, postCount, callCount, categories, locale = 'en',
+  name, avatarUrl, isVip, createdAt, studentCount, postCount, callCount, totalHours, categories, locale = 'en',
   bio, coverPhotoUrl, socialLinks, teachingLanguage,
   serviceLabels = [],
   experiences,
@@ -241,7 +242,7 @@ export function PublicTeacherPanel({
                   <circle cx="12" cy="12" r="10" />
                   <polyline points="12 6 12 12 16 14" />
                 </svg>
-                <span>{t('hoursLabel', { count: callCount })}</span>
+                <span>{t('hoursLabel', { count: totalHours })}</span>
               </div>
               <div className={styles.aboutItem}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#534AB7" strokeWidth="2" strokeLinecap="round">

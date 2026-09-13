@@ -100,7 +100,7 @@ function Avatar({ name, size = 36 }: { name: string; size?: number }) {
 
 // ─── Hero stats (real data from DB) ────────────────────────────
 function usePublicStats() {
-  const [stats, setStats] = useState<{ students: number; teachers: number; posts: number; calls: number } | null>(null)
+  const [stats, setStats] = useState<{ students: number; teachers: number; courses: number; calls: number } | null>(null)
   useEffect(() => {
     fetch('/api/public/stats').then(r => r.ok ? r.json() : null).then(d => { if (d) setStats(d) }).catch(() => {})
   }, [])
@@ -267,24 +267,34 @@ function HeroSection() {
         <div className={s.hero_stats}>
           <StatItem n={stats ? fmtStat(stats.calls) : '…'} label={t('stat_calls')} first />
           <StatItem n={stats ? fmtStat(stats.students) : '…'} label={t('stat_students')} />
-          <StatItem n={stats ? fmtStat(stats.teachers) : '…'} label={t('stat_teachers')} />
-          <StatItem n={stats ? fmtStat(stats.posts) : '…'} label={t('stat_courses')} />
+          <StatItem n={stats ? fmtStat(stats.teachers) : '…'} label={t('stat_teachers')} href="/teachers" />
+          <StatItem n={stats ? fmtStat(stats.courses) : '…'} label={t('stat_courses')} href="/workflows-list" />
         </div>
 
         <div className={s.hero_cta}>
-          {user?.role === 'TEACHER' ? (
-            <Link href="/create-post" className={s.btn_dark}>
-              {t('btn_create_post')} <span>+</span>
-            </Link>
+          {user?.role === 'TEACHER' || user?.role === 'ADMIN' ? (
+            <>
+              <Link href="/teacher-profile" className={s.btn_dark}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                {t('btn_start_lesson')}
+              </Link>
+              <Link href="/create-road-map" className={s.btn_outline}>
+                {t('btn_create_course')} <span>+</span>
+              </Link>
+            </>
           ) : (
-            <Link href="/teachers" className={`${s.btn_dark} ${s.btn_dark_bordered}`}>
-              {t('btn_find_teacher')}
-            </Link>
+            <>
+              <Link href="/teachers" className={`${s.btn_dark} ${s.btn_dark_bordered}`}>
+                {t('btn_find_teacher')}
+              </Link>
+              <Link href="/workflows-list?maxPrice=0" className={s.btn_outline}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H12v18H6.5A2.5 2.5 0 0 0 4 22.5z" /><path d="M12 2h5.5A2.5 2.5 0 0 1 20 4.5v16a2.5 2.5 0 0 0-2.5-2.5H12z" />
+                </svg>
+                {t('btn_find_free_course')}
+              </Link>
+            </>
           )}
-          <Link href="/profile" className={s.btn_outline}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-            {t('btn_how')}
-          </Link>
         </div>
       </div>
 
@@ -295,10 +305,12 @@ function HeroSection() {
   )
 }
 
-function StatItem({ n, label, first }: { n: string; label: string; first?: boolean }) {
+function StatItem({ n, label, first, href }: { n: string; label: string; first?: boolean; href?: string }) {
   return (
     <div className={`${s.stat_item} ${first ? '' : s.stat_item_sep}`}>
-      <div className={s.stat_n}>{n}</div>
+      {href
+        ? <Link href={href} className={s.stat_n_link}>{n}</Link>
+        : <div className={s.stat_n}>{n}</div>}
       <div className={s.stat_label}>{label}</div>
     </div>
   )
@@ -1340,6 +1352,15 @@ function SubNav() {
           {l.label}
         </Link>
       ))}
+      <Link href='/info-pdf-to-test' className={s.subnav_link}>
+        <span className={s.subnav_dot} />
+        {t('sub_pdf_from')}
+        <svg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+          <path d='M5 12h14' />
+          <path d='M13 6l6 6-6 6' />
+        </svg>
+        {t('sub_pdf_to')}
+      </Link>
     </div>
   )
 }

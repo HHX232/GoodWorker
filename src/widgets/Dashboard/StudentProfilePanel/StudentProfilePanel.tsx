@@ -7,6 +7,7 @@ import { RefObject, useCallback, useEffect, useRef, useState } from 'react'
 import styles from './StudentProfilePanel.module.scss'
 import { signOut } from 'next-auth/react'
 import { toast } from 'sonner'
+import { GradeSelect, type GradeValue } from '@/shared/ui/inputs/GradeSelect/GradeSelect'
 
 // ─── Telegram icon ────────────────────────────────────────
 
@@ -220,6 +221,7 @@ interface Props {
   email: string
   phone: string
   avatarUrl: string | null
+  gradeValue: GradeValue | null
   memberSince: string
   errorCount: number
   correctedCount: number
@@ -229,6 +231,7 @@ interface Props {
   avatarInputRef: RefObject<HTMLInputElement | null>
   onNameChange: (v: string) => void
   onPhoneChange: (v: string) => void
+  onGradeChange: (v: GradeValue | null) => void
   onAvatarUploadClick: () => void
   onAvatarRemove: () => void
   onSave: () => void
@@ -244,11 +247,11 @@ function formatMemberSince(iso: string): string {
 }
 
 export function StudentProfilePanel({
-  name, email, phone, avatarUrl, memberSince, errorCount,
+  name, email, phone, avatarUrl, gradeValue, memberSince, errorCount,
   correctedCount,
   saving, saveError, saveSuccess,
   avatarInputRef,
-  onNameChange, onPhoneChange,
+  onNameChange, onPhoneChange, onGradeChange,
   onAvatarUploadClick, onAvatarRemove,
   onSave,
   onChangeEmail, onChangePassword,
@@ -328,6 +331,18 @@ export function StudentProfilePanel({
               value={phone}
               onChange={e => onPhoneChange(e.target.value)}
               placeholder="+7 999 000 00 00"
+            />
+          </div>
+          <div className={styles.field}>
+            <label className={styles.label}>{t('fieldSchoolGrade')}</label>
+            <GradeSelect
+              value={gradeValue}
+              onChange={onGradeChange}
+              placeholder={t('schoolGradePlaceholder')}
+              schoolGroupLabel={t('schoolGroupLabel')}
+              universityGroupLabel={t('universityGroupLabel')}
+              schoolOptionLabel={grade => t('schoolGradeOption', {grade})}
+              universityOptionLabel={course => t('courseOption', {course})}
             />
           </div>
           <div className={styles.saveRow}>

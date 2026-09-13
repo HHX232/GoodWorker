@@ -1,0 +1,121 @@
+.wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid #2f2f2f33;
+  border-radius: 15px;
+  background-color: #fff;
+  padding: 0 12px 0 15px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s ease;
+
+  &:hover { border-color: #2f2f2f66; }
+  &:focus-visible { border-color: #2a2e46; }
+}
+
+.triggerLabel {
+  font-size: 15px;
+  color: #2a2e46;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.placeholder {
+  color: #8b8f9e;
+}
+
+.arrow {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  color: #6b6b6b;
+  margin-left: 6px;
+  transition: transform 0.2s ease;
+}
+
+.arrowOpen {
+  transform: rotate(180deg);
+}
+
+// ── dropdown ─────────────────────────────────────────────────────────────
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  max-height: 280px;
+  overflow-y: auto;
+  background-color: #fff;
+  border: 1px solid #2f2f2f1a;
+  border-radius: 16px;
+  padding: 8px 0;
+  list-style: none;
+  margin: 0;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+}
+
+.groupHeader {
+  padding: 8px 16px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8b8f9e;
+}
+
+.dropdownItem, .clearItem {
+  padding: 10px 16px;
+  font-size: 14px;
+  color: #2a2e46;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover { background-color: #f2f2f5; }
+}
+
+.clearItem {
+  color: #8b8f9e;
+  border-bottom: 1px solid #2f2f2f14;
+  margin-bottom: 4px;
+}
+
+.dropdownItemActive {
+  background-color: #f2f2f5;
+  font-weight: 500;
+}
+
+// ─── Dark theme ─────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .trigger {
+    background-color: #1a1c22;
+    border-color: rgba(255,255,255,0.1);
+    &:hover { border-color: rgba(255,255,255,0.2); }
+  }
+  .triggerLabel { color: #e8eaf0; }
+  .placeholder { color: rgba(255,255,255,0.35); }
+  .arrow { color: rgba(255,255,255,0.5); }
+
+  .dropdown {
+    background-color: #1a1c24;
+    border-color: rgba(255,255,255,0.1);
+    box-shadow: 0 16px 32px rgba(0,0,0,0.4);
+  }
+  .groupHeader { color: rgba(255,255,255,0.4); }
+  .dropdownItem, .clearItem {
+    color: #e8eaf0;
+    &:hover { background-color: rgba(255,255,255,0.07); }
+  }
+  .clearItem { color: rgba(255,255,255,0.4); border-bottom-color: rgba(255,255,255,0.08); }
+  .dropdownItemActive { background-color: rgba(255,255,255,0.09); }
+}

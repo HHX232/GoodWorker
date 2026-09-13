@@ -4,12 +4,12 @@ import { NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  const [students, teachers, posts, calls] = await Promise.all([
+  const [students, teachers, courses, calls] = await Promise.all([
     prisma.student.count(),
     prisma.teacher.count(),
-    (prisma.post as any).count({ where: { moderationStatus: 'PUBLISHED' } }),
+    prisma.roadmap.count({ where: { moderationStatus: 'PUBLISHED' } }),
     prisma.videoCallRoom.count(),
   ])
 
-  return NextResponse.json({ students, teachers, posts, calls })
+  return NextResponse.json({ students, teachers, courses, calls })
 }

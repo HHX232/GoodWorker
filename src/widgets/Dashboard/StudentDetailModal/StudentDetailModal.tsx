@@ -3,6 +3,7 @@
 import { CreateServiceModal } from '@/widgets/Dashboard/CreateServiceModal/CreateServiceModal'
 import { HomeworkTab } from './HomeworkTab'
 import {getDisplayName} from '@/shared/utils/transliterate'
+import {formatGradeLabel} from '@/shared/lib/formatGrade'
 import { DateTimePickerField } from '@/shared/ui/Calendar/DateTimePickerField'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
@@ -30,6 +31,8 @@ interface StudentData {
   name: string
   email: string
   avatarUrl: string | null
+  schoolGrade: number | null
+  courseNumber: number | null
 }
 
 interface ServiceOption {
@@ -195,7 +198,12 @@ export function StudentDetailModal({
               {studentInitials}
             </div>
             <div>
-              <div className={styles.studentName}>{displayName}</div>
+              <div className={styles.studentNameRow}>
+                <div className={styles.studentName}>{displayName}</div>
+                {student && formatGradeLabel(student.schoolGrade, student.courseNumber) && (
+                  <span className={styles.gradeBadge}>{formatGradeLabel(student.schoolGrade, student.courseNumber)}</span>
+                )}
+              </div>
               {subject && <div className={styles.studentSubject}>{subject}</div>}
               {student?.email && <div className={styles.studentEmail}>{student.email}</div>}
             </div>

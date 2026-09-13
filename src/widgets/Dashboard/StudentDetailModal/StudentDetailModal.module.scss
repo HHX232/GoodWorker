@@ -51,10 +51,26 @@
   flex-shrink: 0;
 }
 
+.studentNameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .studentName {
   font-size: 15px;
   font-weight: 700;
   color: #111;
+}
+
+.gradeBadge {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #534AB7;
+  background: rgba(83, 74, 183, 0.1);
+  padding: 2px 9px;
+  border-radius: 99px;
 }
 
 .studentSubject {
@@ -473,6 +489,7 @@
   .modal { background: #1e2030; border-color: rgba(255,255,255,0.08); box-shadow: 0 8px 40px rgba(0,0,0,0.4); }
   .header { border-color: rgba(255,255,255,0.07); }
   .studentName { color: #e8eaf0; }
+  .gradeBadge { background: rgba(129,140,248,0.15); color: #a5b4fc; }
   .studentSubject { color: #a5b4fc; }
   .studentEmail { color: rgba(255,255,255,0.25); }
   .offerBtn { border-color: rgba(129,140,248,0.4); color: #a5b4fc; &:hover { background: #534AB7; border-color: #534AB7; color: #fff; } }

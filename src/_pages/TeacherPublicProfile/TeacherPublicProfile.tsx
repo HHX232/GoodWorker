@@ -27,6 +27,7 @@ interface Props {
   studentCount: number
   postCount: number
   callCount: number
+  totalHours: number
   categories: Category[]
   locale?: string
   bio?: string | null
@@ -39,7 +40,7 @@ interface Props {
 
 export function TeacherPublicProfile({
   teacherId, name, avatarUrl, isVip, createdAt,
-  studentCount, postCount, callCount, categories, locale,
+  studentCount, postCount, callCount, totalHours, categories, locale,
   bio, coverPhotoUrl, socialLinks, experiences, serviceLabels, identityConfirmed,
 }: Props) {
   useEffect(() => {
@@ -54,7 +55,7 @@ export function TeacherPublicProfile({
       <ProfileSubNav />
       <div className={styles.dashboard}>
         <PublicReviewsSidebar teacherId={teacherId} />
-        <DashboardCenter statsId={teacherId} studentCount={studentCount} callCount={callCount} />
+        <DashboardCenter statsId={teacherId} studentCount={studentCount} callCount={callCount} totalHours={totalHours} />
         <PublicTeacherPanel
           name={name}
           avatarUrl={avatarUrl}
@@ -63,6 +64,7 @@ export function TeacherPublicProfile({
           studentCount={studentCount}
           postCount={postCount}
           callCount={callCount}
+          totalHours={totalHours}
           categories={categories}
           locale={locale}
           bio={bio}

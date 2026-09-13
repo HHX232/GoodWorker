@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useSession } from 'next-auth/react'
 import { useMe } from '@/features/hooks/User/useMe'
+import { pushDataLayerEvent } from '@/shared/lib/analytics'
 
 // ── CSS (ported from ForNewDesign/prototypes/v3-lab.html — hero H4 · steps S3 · errs E1 — with
 //    the lab panel, unused hero/steps/errs variants and blueprint hero stripped out) ──────────
@@ -55,7 +56,7 @@ html.theme-dark, html.pomodoro-dark{
 .pdf3 a:not(.btn):not(.nav-profile) { display: inline; }
 .pdf3 *{ box-sizing:border-box; }
 .pdf3 img{ max-width:100%; display:block; }
-.pdf3 a{ color:inherit; }
+.pdf3 a:not(.btn){ color:inherit; }
 .pdf3 section{ position:relative; }
 .display{ font-family:var(--serif); font-weight:900; line-height:.98; letter-spacing:var(--tracking-display); margin:0; }
 .display em{ font-style:italic; font-weight:700; }
@@ -574,6 +575,7 @@ interface TestResult {
   isGuest: boolean
   guestLimit: number | null
   totalChars: number
+  truncated: boolean
 }
 
 // ── Interactive preview primitives (real /api/check-answer wired for fill-in) ──────────────
@@ -1410,12 +1412,17 @@ function FinalSection({ onOpenUpload }: { onOpenUpload: () => void }) {
 const ALLOWED_EXT = ['pdf', 'docx', 'txt', 'rtf', 'odt']
 const MAX_SIZE = 20 * 1024 * 1024
 
+// VIP-only: upload up to 10 photos instead of a document (analyzed via DeepSeek vision)
+const ALLOWED_IMG_EXT = ['jpg', 'jpeg', 'png', 'webp', 'gif']
+const MAX_PHOTO_SIZE = 15 * 1024 * 1024
+const MAX_PHOTOS = 10
+
 type ModalStep = 'pick' | 'process' | 'result' | 'error' | 'vip'
 
-function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
+function UploadModal({ modalOpen, onClose, pendingFiles, isLoggedIn }: {
   modalOpen: boolean
   onClose: () => void
-  pendingFile: File | null
+  pendingFiles: File[] | null
   isLoggedIn: boolean
 }) {
   const t = useTranslations('PdfInfoPage')
@@ -1503,6 +1510,10 @@ function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
 
       setProgress(100)
       setResult(data as TestResult)
+      pushDataLayerEvent('pdf_to_test_created', {
+        is_guest: (data as TestResult).isGuest,
+        question_count: (data as TestResult).questions?.length ?? 0,
+      })
       window.setTimeout(() => setStep('result'), 400)
     } catch (e) {
       cancelAnimationFrame(rafRef.current)
@@ -1510,6 +1521,77 @@ function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
       fail(t('modal_error_title_default'), (e as Error).message)
     }
   }, [fail, t, isVip, removeLimit])
+
+  const beginPhotos = useCallback(async (files: File[]) => {
+    if (files.length === 0) return
+    if (files.length > MAX_PHOTOS) {
+      fail(t('modal_error_photos_count_title'), t('modal_error_photos_count_msg', { n: files.length }))
+      return
+    }
+    for (const f of files) {
+      const ext = extOf(f.name)
+      if (!ALLOWED_IMG_EXT.includes(ext)) {
+        fail(t('modal_error_photos_format_title'), t('modal_error_photos_format_msg', { name: f.name }))
+        return
+      }
+      if (f.size > MAX_PHOTO_SIZE) {
+        fail(t('modal_error_photos_size_title'), t('modal_error_photos_size_msg', { name: f.name, mb: (f.size / 1024 / 1024).toFixed(1) }))
+        return
+      }
+      if (f.size === 0) {
+        fail(t('modal_error_empty_title'), t('modal_error_empty_msg', { name: f.name }))
+        return
+      }
+    }
+
+    cancelAnimationFrame(rafRef.current)
+    controllerRef.current?.abort()
+    const controller = new AbortController()
+    controllerRef.current = controller
+
+    setStep('process')
+    setFileName(files.length === 1 ? files[0].name : t('modal_pick_photos_count', { n: files.length }))
+    setProgress(0)
+    setResult(null)
+    setPreviewIdx(0)
+
+    startRef.current = performance.now()
+    const ESTIMATED_MS = 18000
+    const animFrame = () => {
+      const elapsed = performance.now() - startRef.current
+      const tt = Math.min(elapsed / ESTIMATED_MS, 1)
+      const eased = 1 - Math.pow(1 - tt, 2.2)
+      setProgress(Math.round(eased * 92))
+      rafRef.current = requestAnimationFrame(animFrame)
+    }
+    rafRef.current = requestAnimationFrame(animFrame)
+
+    try {
+      const fd = new FormData()
+      files.forEach(f => fd.append('photos', f))
+      const res = await fetch('/api/pdf-to-test/photos', { method: 'POST', body: fd, signal: controller.signal })
+      const data = await res.json()
+      cancelAnimationFrame(rafRef.current)
+
+      if (!res.ok) {
+        if (data.vipRequired) { setStep('vip'); return }
+        fail(t('modal_error_title_default'), data.error ?? `${res.status}`)
+        return
+      }
+
+      setProgress(100)
+      setResult(data as TestResult)
+      pushDataLayerEvent('pdf_to_test_created', {
+        is_guest: (data as TestResult).isGuest,
+        question_count: (data as TestResult).questions?.length ?? 0,
+      })
+      window.setTimeout(() => setStep('result'), 400)
+    } catch (e) {
+      cancelAnimationFrame(rafRef.current)
+      if ((e as Error).name === 'AbortError') return
+      fail(t('modal_error_title_default'), (e as Error).message)
+    }
+  }, [fail, t])
 
   const reset = useCallback(() => {
     cancelAnimationFrame(rafRef.current)
@@ -1521,9 +1603,23 @@ function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
     setErrorMsg('')
   }, [])
 
-  const onPick = (files: FileList | null) => {
-    const f = files?.[0]
-    if (f) begin(f)
+  // Single drop zone / picker for everything (including the page-level global dropzone): if the
+  // first file looks like a photo and the user is VIP, route the whole selection to the
+  // photo-batch flow; otherwise treat it as one document, exactly like before. Non-VIP users
+  // dropping a photo just hit the format error.
+  const routeFiles = useCallback((arr: File[]) => {
+    if (arr.length === 0) return
+    const firstExt = extOf(arr[0].name)
+    if (isVip && ALLOWED_IMG_EXT.includes(firstExt)) {
+      beginPhotos(arr)
+      return
+    }
+    begin(arr[0])
+  }, [isVip, begin, beginPhotos])
+
+  const onFiles = (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    routeFiles(Array.from(files))
   }
 
   // Fade the modal in over two frames so the CSS transition has a starting state to animate from
@@ -1543,12 +1639,12 @@ function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
     setErrorMsg('')
     setFileName('')
     setRemoveLimit(false)
-    if (pendingFile && !beganRef.current) {
+    if (pendingFiles && pendingFiles.length > 0 && !beganRef.current) {
       beganRef.current = true
-      begin(pendingFile)
+      routeFiles(pendingFiles)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [modalOpen, pendingFile])
+  }, [modalOpen, pendingFiles])
 
   useEffect(() => {
     if (!modalOpen) return
@@ -1602,13 +1698,14 @@ function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
               onDragEnter={e => { e.preventDefault(); dragDepth.current += 1; setIsDrag(true) }}
               onDragOver={e => e.preventDefault()}
               onDragLeave={e => { e.preventDefault(); dragDepth.current -= 1; if (dragDepth.current <= 0) { dragDepth.current = 0; setIsDrag(false) } }}
-              onDrop={e => { e.preventDefault(); dragDepth.current = 0; setIsDrag(false); onPick(e.dataTransfer.files) }}
+              onDrop={e => { e.preventDefault(); dragDepth.current = 0; setIsDrag(false); onFiles(e.dataTransfer.files) }}
             >
               <svg className="m1-drop__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
               <p className="m1-drop__t">{t('modal_pick_t')}<br />{t('modal_pick_t2')}</p>
-              <span className="m1-drop__f">{t('modal_pick_formats')}</span>
+              <span className="m1-drop__f">{t('modal_pick_formats')}{isVip ? ` · ${t('modal_pick_formats_vip_extra')}` : ''}</span>
               <button type="button" className="btn btn--ghost" onClick={e => { e.stopPropagation(); inputRef.current?.click() }}>{t('modal_pick_choose')}</button>
             </div>
+
             {isVip && (
               <label className="m1-vip-toggle" onClick={e => e.stopPropagation()}>
                 <input
@@ -1664,10 +1761,17 @@ function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
               </div>
             )}
 
-            {result.isGuest && (
+            {result.isGuest && result.truncated && (
+              <div className="result-guest result-guest--truncated">
+                {t('modal_guest_truncated_pre')}{' '}
+                <Link href="/register" style={{ color: 'var(--accent-ink)', fontWeight: 600, textDecoration: 'underline' }}>{t('modal_guest_truncated_link')}</Link>{' '}
+                {t('modal_guest_truncated_post')}
+              </div>
+            )}
+            {result.isGuest && !result.truncated && (
               <div className="result-guest">
                 {t('modal_guest_pre', { n: result.guestLimit ?? 0 })}{' '}
-                <Link href="/auth/register" style={{ color: 'var(--accent-ink)', fontWeight: 600, textDecoration: 'underline' }}>{t('modal_guest_link')}</Link>{' '}
+                <Link href="/register" style={{ color: 'var(--accent-ink)', fontWeight: 600, textDecoration: 'underline' }}>{t('modal_guest_link')}</Link>{' '}
                 {t('modal_guest_post')}
               </div>
             )}
@@ -1675,7 +1779,7 @@ function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
             <div className="upload__actions">
               {isLoggedIn
                 ? <Link className="btn btn--solid" href="/profile">{t('modal_result_save')}</Link>
-                : <Link className="btn btn--solid" href="/auth/register">{t('modal_result_login_save')}</Link>}
+                : <Link className="btn btn--solid" href="/register">{t('modal_result_login_save')}</Link>}
               <button type="button" className="btn btn--ghost" onClick={reset}>{t('modal_result_another')}</button>
             </div>
           </div>
@@ -1684,12 +1788,25 @@ function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
         {step === 'vip' && (
           <div className="upload__step">
             <svg className="m1-result__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="M3 8l4 3 5-6 5 6 4-3-2 11H5z"/></svg>
-            <h3 className="m1-result__t">{t('modal_vip_title')}</h3>
-            <p className="m1-error__f">{t('modal_vip_msg')}</p>
-            <div className="upload__actions">
-              <Link className="btn btn--solid" href="/vip">{t('modal_vip_upgrade')}</Link>
-              <button type="button" className="btn btn--ghost" onClick={reset}>{t('modal_vip_back')}</button>
-            </div>
+            {isLoggedIn ? (
+              <>
+                <h3 className="m1-result__t">{t('modal_vip_title')}</h3>
+                <p className="m1-error__f">{t('modal_vip_msg')}</p>
+                <div className="upload__actions">
+                  <Link className="btn btn--solid" href="/vip">{t('modal_vip_upgrade')}</Link>
+                  <button type="button" className="btn btn--ghost" onClick={reset}>{t('modal_vip_back')}</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="m1-result__t">{t('modal_vip_guest_title')}</h3>
+                <p className="m1-error__f">{t('modal_vip_guest_msg')}</p>
+                <div className="upload__actions">
+                  <Link className="btn btn--solid" href="/register">{t('modal_vip_guest_cta')}</Link>
+                  <button type="button" className="btn btn--ghost" onClick={reset}>{t('modal_vip_back')}</button>
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -1705,9 +1822,10 @@ function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
         <input
           ref={inputRef}
           type="file"
-          accept=".pdf,.docx,.txt,.rtf,.odt"
+          accept={isVip ? '.pdf,.docx,.txt,.rtf,.odt,image/jpeg,image/png,image/webp,image/gif' : '.pdf,.docx,.txt,.rtf,.odt'}
+          multiple={isVip}
           hidden
-          onChange={e => { onPick(e.target.files); e.target.value = '' }}
+          onChange={e => { onFiles(e.target.files); e.target.value = '' }}
         />
       </div>
     </div>
@@ -1715,7 +1833,7 @@ function UploadModal({ modalOpen, onClose, pendingFile, isLoggedIn }: {
 }
 
 // ── Global full-viewport dropzone (drag a file anywhere on the page) ───────────────────────
-function GlobalDropzone({ onFileDropped, suppress }: { onFileDropped: (f: File) => void; suppress: boolean }) {
+function GlobalDropzone({ onFileDropped, suppress }: { onFileDropped: (files: File[]) => void; suppress: boolean }) {
   const t = useTranslations('PdfInfoPage')
   const [active, setActive] = useState(false)
   const depthRef = useRef(0)
@@ -1739,8 +1857,8 @@ function GlobalDropzone({ onFileDropped, suppress }: { onFileDropped: (f: File) 
       e.preventDefault()
       depthRef.current = 0
       setActive(false)
-      const f = e.dataTransfer?.files?.[0]
-      if (f) onFileDropped(f)
+      const files = e.dataTransfer?.files ? Array.from(e.dataTransfer.files) : []
+      if (files.length > 0) onFileDropped(files)
     }
     window.addEventListener('dragenter', onDragEnter)
     window.addEventListener('dragover', onDragOver)
@@ -1781,11 +1899,11 @@ export default function PdfInfoPage() {
   const errsRef = useRef<HTMLDivElement>(null)
 
   const [modalOpen, setModalOpen] = useState(false)
-  const [pendingFile, setPendingFile] = useState<File | null>(null)
+  const [pendingFiles, setPendingFiles] = useState<File[] | null>(null)
 
-  const openModal = useCallback((file?: File) => { setPendingFile(file ?? null); setModalOpen(true) }, [])
+  const openModal = useCallback((files?: File[]) => { setPendingFiles(files ?? null); setModalOpen(true) }, [])
   const closeModal = useCallback(() => setModalOpen(false), [])
-  const handleGlobalDrop = useCallback((file: File) => { openModal(file) }, [openModal])
+  const handleGlobalDrop = useCallback((files: File[]) => { openModal(files) }, [openModal])
 
   useEffect(() => {
     // Horizontal clipping lives on <body> (not on .pdf3 or any ancestor of the pinned hero/scrub/demo
@@ -1889,6 +2007,38 @@ export default function PdfInfoPage() {
           update()
           cleanups.push(() => { window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onResize) })
         }
+      }
+    }
+
+    // -- Word-swap ticker: translateY(-Nem) in the CSS above drifts from the browser's
+    // rounded-to-pixel row layout (up to ~0.4px by the 3rd/4th row), leaking a faint ghost
+    // of the neighboring word through overflow:hidden. Measure each row's real offsetTop
+    // once fonts settle and drive the animation off px keyframes instead of em — the
+    // transform then always lands exactly where the browser already put the text.
+    {
+      const hero = heroRef.current
+      const track = hero?.querySelector<HTMLElement>('.word-swap__track')
+      if (track && !reduce) {
+        let styleEl: HTMLStyleElement | null = null
+        const setup = () => {
+          const spans = Array.from(track.querySelectorAll<HTMLElement>(':scope > span'))
+          if (spans.length < 2) return
+          if (!styleEl) {
+            styleEl = document.createElement('style')
+            document.head.appendChild(styleEl)
+          }
+          const stops = ['0%,16%', '20%,36%', '40%,56%', '60%,76%', '80%,96%', '100%']
+          const kf = spans.map((s, i) => `${stops[i] ?? '100%'}{transform:translateY(-${s.offsetTop}px);}`).join('')
+          styleEl.textContent = `@keyframes wordSwapPx{${kf}}`
+          track.style.animation = 'wordSwapPx 10s cubic-bezier(.16,1,.3,1) infinite'
+        }
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(setup)
+        setup()
+        window.addEventListener('resize', setup, { passive: true })
+        cleanups.push(() => {
+          window.removeEventListener('resize', setup)
+          styleEl?.remove()
+        })
       }
     }
 
@@ -2162,7 +2312,7 @@ export default function PdfInfoPage() {
         <ProgSection progRef={progRef} />
         <FinalSection onOpenUpload={() => openModal()} />
       </main>
-      <UploadModal modalOpen={modalOpen} onClose={closeModal} pendingFile={pendingFile} isLoggedIn={isLoggedIn} />
+      <UploadModal modalOpen={modalOpen} onClose={closeModal} pendingFiles={pendingFiles} isLoggedIn={isLoggedIn} />
       <GlobalDropzone onFileDropped={handleGlobalDrop} suppress={modalOpen} />
     </div>
   )

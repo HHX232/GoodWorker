@@ -18,7 +18,7 @@ import { Roboto } from 'next/font/google'
 import Script from 'next/script'
 
 const GTM_ID = 'GTM-TRVK6CGM'
-const YANDEX_METRIKA_ID = 112274831
+const YANDEX_METRIKA_ID = 112380454
 
 const robotoSans = Roboto({
   weight: ['300', '400', '500', '600', '700'],

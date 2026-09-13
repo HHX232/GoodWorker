@@ -4,6 +4,7 @@ import {selectMonthTasks, selectPendingTasksCount, selectWeekTasks} from '@/feat
 import {useActions} from '@/features/hooks/store/useActions'
 import {useTypedSelector} from '@/features/hooks/store/useTypedSelector'
 import {CalendarStudent, CalendarTask} from '@/shared/types/Calendar/calendar.types'
+import {formatGradeLabel} from '@/shared/lib/formatGrade'
 import {useSession} from 'next-auth/react'
 import {useTranslations} from 'next-intl'
 import Link from 'next/link'
@@ -163,7 +164,9 @@ export function CalendarSidebar({tasks, students, onTaskClick, onTaskToggle, peo
                 </div>
                 <div className={styles.studentInfo}>
                   <span className={styles.studentName}>{student.name}</span>
-                  <span className={styles.studentTag}>{student.subject}</span>
+                  <span className={styles.studentTag}>
+                    {[student.subject, formatGradeLabel(student.schoolGrade, student.courseNumber)].filter(Boolean).join(' · ')}
+                  </span>
                 </div>
               </div>
             ))}

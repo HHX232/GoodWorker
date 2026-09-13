@@ -7,6 +7,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts'
 import {useThemeCtx} from '@/app/providers/ThemeContext'
+import {formatGradeLabel} from '@/shared/lib/formatGrade'
 import styles from './StudentReportPage.module.scss'
 
 interface ReportData {
@@ -15,6 +16,8 @@ interface ReportData {
     email: string
     avatarUrl: string | null
     createdAt: string
+    schoolGrade: number | null
+    courseNumber: number | null
   } | null
   teacher: { name: string } | null
   totalErrors: number
@@ -349,7 +352,9 @@ export function StudentReportPage({ studentId }: Props) {
           <div>
             <div className={styles.reportTitle}>{t.title}</div>
             <div className={styles.studentName}>{data.student?.name ?? '—'}</div>
-            <div className={styles.meta}>{data.student?.email}</div>
+            <div className={styles.meta}>
+              {[data.student?.email, formatGradeLabel(data.student?.schoolGrade, data.student?.courseNumber)].filter(Boolean).join(' · ')}
+            </div>
           </div>
           <div className={styles.metaBlock}>
             <div className={styles.meta}>{t.teacher}: <strong>{data.teacher?.name ?? '—'}</strong></div>
