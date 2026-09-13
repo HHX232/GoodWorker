@@ -1265,6 +1265,7 @@
     "dropLabel": "将文件拖放至此或",
     "dropLabelLink": "选择文件",
     "dropSub": "PDF — 数量不限 · DOCX、TXT、RTF、ODT — 一次一个文件",
+    "dropSubVip": "PDF、DOCX、TXT、RTF、ODT — 数量不限 · 照片（JPG/PNG/WEBP/GIF）— 最多{n}张",
     "vipNotice": "免费版：最多<b>5页</b>。VIP：每次最多<b>50页</b>。",
     "processBtn": "处理文件",
     "processBtnMulti": "处理{count}个文件",
@@ -1273,6 +1274,9 @@
     "uploadAnother": "上传其他文件",
     "processing": "正在处理文件...",
     "step1": "正在从文件中提取内容...",
+    "errOneDocAtATime": "免费版 DOCX/TXT/RTF/ODT 一次只能上传一个文件",
+    "errImagesVipOnly": "仅VIP可上传照片",
+    "errMaxPhotos": "一次最多上传{n}张照片",
     "step2": "正在分析内容...",
     "step3": "正在生成测试块...",
     "successNotice": "已处理<b>{pages}页</b> · 找到<b>{count}个块</b>",
@@ -1291,11 +1295,7 @@
     "typeInfo": "文本",
     "typeImage": "图片",
     "refAnswer": "参考答案：{text}",
-    "morePairs": "+{n}更多...",
-    "errMaxPhotos": "一次最多上传{n}张照片",
-    "errOneDocAtATime": "免费版 DOCX/TXT/RTF/ODT 一次只能上传一个文件",
-    "dropSubVip": "PDF、DOCX、TXT、RTF、ODT — 数量不限 · 照片（JPG/PNG/WEBP/GIF）— 最多{n}张",
-    "errImagesVipOnly": "仅VIP可上传照片"
+    "morePairs": "+{n}更多..."
   },
   "notifications": {
     "title": "通知",

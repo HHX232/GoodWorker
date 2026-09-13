@@ -1598,6 +1598,7 @@
     "dropLabel": "Перетащите файлы сюда или",
     "dropLabelLink": "выберите файл",
     "dropSub": "PDF — сколько угодно · DOCX, TXT, RTF, ODT — один файл за раз",
+    "dropSubVip": "PDF, DOCX, TXT, RTF, ODT — сколько угодно · Фото (JPG/PNG/WEBP/GIF) — до {n} шт.",
     "vipNotice": "Без VIP: до <b>5 страниц</b>. С VIP: до <b>50 страниц</b> за один импорт. ИИ сгенерирует вопросы — вы выберете нужные.",
     "processBtn": "Обработать файлы",
     "processBtnMulti": "Обработать {count} файла",
@@ -1606,6 +1607,9 @@
     "uploadAnother": "Загрузить другой",
     "processing": "Обрабатываю файлы...",
     "step1": "Извлекаю содержимое из файлов...",
+    "errOneDocAtATime": "На бесплатном тарифе DOCX, TXT, RTF и ODT — только один файл за раз",
+    "errImagesVipOnly": "Загрузка фото доступна только VIP",
+    "errMaxPhotos": "Можно загрузить не больше {n} фото за раз",
     "step2": "Анализирую содержимое...",
     "step3": "Генерирую блоки теста...",
     "successNotice": "Обработано <b>{pages} стр.</b> · Найдено <b>{count} блоков</b>",
@@ -1624,11 +1628,7 @@
     "typeInfo": "Текст",
     "typeImage": "Изображение",
     "refAnswer": "Эталон: {text}",
-    "morePairs": "+{n} ещё...",
-    "errMaxPhotos": "Можно загрузить не больше {n} фото за раз",
-    "errOneDocAtATime": "На бесплатном тарифе DOCX, TXT, RTF и ODT — только один файл за раз",
-    "dropSubVip": "PDF, DOCX, TXT, RTF, ODT — сколько угодно · Фото (JPG/PNG/WEBP/GIF) — до {n} шт.",
-    "errImagesVipOnly": "Загрузка фото доступна только VIP"
+    "morePairs": "+{n} ещё..."
   },
   "card": {
     "readFullPost": "Читать пост",

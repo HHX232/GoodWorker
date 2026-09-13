@@ -1598,6 +1598,7 @@
     "dropLabel": "Drag and drop files here or",
     "dropLabelLink": "browse file",
     "dropSub": "PDF — any number · DOCX, TXT, RTF, ODT — one file at a time",
+    "dropSubVip": "PDF, DOCX, TXT, RTF, ODT — any number · Photos (JPG/PNG/WEBP/GIF) — up to {n}",
     "vipNotice": "Free: up to <b>5 pages</b>. VIP: up to <b>50 pages</b> per import. AI will generate questions — you pick the ones you need.",
     "processBtn": "Process files",
     "processBtnMulti": "Process {count} files",
@@ -1606,6 +1607,9 @@
     "uploadAnother": "Upload another",
     "processing": "Processing files...",
     "step1": "Extracting content from files...",
+    "errOneDocAtATime": "On the free plan, DOCX/TXT/RTF/ODT — only one file at a time",
+    "errImagesVipOnly": "Photo upload is available for VIP only",
+    "errMaxPhotos": "You can upload up to {n} photos at a time",
     "step2": "Analysing content...",
     "step3": "Generating test blocks...",
     "successNotice": "Processed <b>{pages} pages</b> · Found <b>{count} blocks</b>",
@@ -1624,11 +1628,7 @@
     "typeInfo": "Text",
     "typeImage": "Image",
     "refAnswer": "Reference: {text}",
-    "morePairs": "+{n} more...",
-    "errMaxPhotos": "You can upload up to {n} photos at a time",
-    "errOneDocAtATime": "On the free plan, DOCX/TXT/RTF/ODT — only one file at a time",
-    "dropSubVip": "PDF, DOCX, TXT, RTF, ODT — any number · Photos (JPG/PNG/WEBP/GIF) — up to {n}",
-    "errImagesVipOnly": "Photo upload is available for VIP only"
+    "morePairs": "+{n} more..."
   },
   "card": {
     "readFullPost": "Read full post",
