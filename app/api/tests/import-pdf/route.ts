@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
-import { prisma } from '@/shared/prisma/prisma'
-import { callAI, parseJSON } from '@/lib/openrouter'
+import { callAI, callVisionAI, parseJSON } from '@/lib/openrouter'
+import { resolveVip } from '@/lib/vipStatus'
+import { kindOf, extOf, MAX_PHOTOS } from '@/shared/constants/pdfImport'
 import { nanoid } from 'nanoid'
 
 const VIP_PAGE_LIMIT = 50
 const FREE_PAGE_LIMIT = 5
+
+const EXT_TO_IMAGE_MIME: Record<string, string> = {
+  jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif',
+}
 
 // ─── Block normalizers ────────────────────────────────────────────────────────
 
@@ -115,6 +120,74 @@ async function extractFromPdf(pdfServiceUrl: string, file: File): Promise<PdfExt
   return { text, pageCount, tablesText, imageBlocks }
 }
 
+// DOCX/TXT/RTF/ODT — same universal endpoint used by /api/pdf-to-test for the
+// public landing page; no table/image extraction there, text only.
+async function extractFromDocument(pdfServiceUrl: string, file: File): Promise<PdfExtractResult> {
+  const form = new FormData()
+  form.append('file', file)
+
+  const res = await fetch(`${pdfServiceUrl}/api/pdf/extract-document-from-upload`, { method: 'POST', body: form })
+  if (!res.ok) {
+    const msg = (await res.json().catch(() => ({}))).message
+    throw new Error(msg ?? `Document extraction failed for "${file.name}"`)
+  }
+  const data = await res.json()
+  const text = (data.data?.text as string) ?? ''
+  const pageCount = (data.data?.pageCount as number) ?? 1
+
+  console.log(`[import-pdf] "${file.name}" (doc): ${pageCount} pages, ${text.length} chars`)
+
+  return { text, pageCount, tablesText: '', imageBlocks: [] }
+}
+
+// VIP-only photo batch: read all photos as one combined document via vision AI
+// and generate test blocks directly (same block schema as the text path).
+function buildVisionPrompt(photoCount: number) {
+  return `Look at the ${photoCount} photo(s) provided — they show pages of study material (notes, a textbook, a worksheet, a slide, etc.), in the order given. Read all text visible across the photos as one combined document and generate structured test blocks for an e-learning platform.
+
+Use ONLY these block types:
+- CHOOSE_OPTION: question with options. Use "correctId": "o1" for ONE correct answer, or "correctId": ["o1","o3"] for MULTIPLE correct answers (when the source explicitly lists multiple correct answers, e.g. "A1 — 1,2,3")
+- FREE_ANSWER: open-ended question requiring a written answer
+- MATCH_PAIRS: matching left items to right items (3–6 pairs)
+- INFO_TEXT: informational/context block (section header, instructions, definition)
+
+Rules:
+- Generate between 5 and 30 blocks depending on content visible
+- Detect the language of the content and generate all questions in THAT SAME LANGUAGE
+- For CHOOSE_OPTION: option ids must be "o1","o2",... — correctId is a string for single answer, string array for multiple
+- For MATCH_PAIRS: pair ids must be "p1","p2",...
+- For INFO_TEXT: preserve important context or section headings as plain text
+- NEVER generate SEQUENCE, WORD_SCRAMBLE, DIALOGUE, HIGHLIGHT_TEXT blocks
+- Include referenceAnswer in FREE_ANSWER whenever a model answer can be inferred
+- If a photo is blurry or partially unreadable, use what you can still make out and ignore the rest
+
+Return ONLY a valid JSON object {"blocks":[...]}:
+{"blocks":[
+  {"type":"CHOOSE_OPTION","payload":{"question":"...","options":[{"id":"o1","text":"..."},{"id":"o2","text":"..."},{"id":"o3","text":"..."}],"correctId":"o1"}},
+  {"type":"FREE_ANSWER","payload":{"question":"...","referenceAnswer":"..."}},
+  {"type":"MATCH_PAIRS","payload":{"pairs":[{"id":"p1","left":"...","right":"..."},{"id":"p2","left":"...","right":"..."}]}},
+  {"type":"INFO_TEXT","payload":{"text":"..."}}
+]}`
+}
+
+async function extractBlocksFromImages(files: File[]): Promise<unknown[]> {
+  const images: { mimeType: string; base64: string }[] = []
+  for (const file of files) {
+    const buf = Buffer.from(await file.arrayBuffer())
+    const mimeType = file.type || EXT_TO_IMAGE_MIME[extOf(file.name)] || 'image/jpeg'
+    images.push({ mimeType, base64: buf.toString('base64') })
+  }
+
+  const raw = await callVisionAI(
+    'You are an expert educational test generator with vision. Return ONLY valid JSON, no markdown.',
+    images,
+    buildVisionPrompt(images.length),
+    { temperature: 0.2 },
+  )
+  const parsed = parseJSON<{ blocks: unknown[] }>(raw)
+  return normalizeBlocks(parsed.blocks ?? [])
+}
+
 // ─── AI prompt ────────────────────────────────────────────────────────────────
 
 function buildPrompt(chunk: string, chunkIndex: number, totalChunks: number, fileCount: number) {
@@ -162,37 +235,72 @@ export async function POST(req: NextRequest) {
     const session = await auth()
     if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { id: userId, role } = session.user as { id: string; role: string }
+    const { role, email } = session.user as { id: string; role: string; email?: string | null }
     if (role !== 'TEACHER' && role !== 'ADMIN') {
       return NextResponse.json({ error: 'Teachers only' }, { status: 403 })
     }
 
-    const teacher = await (prisma.teacher as any).findUnique({
-      where: { id: userId },
-      select: { isVip: true, vipExpiresAt: true },
-    })
-    const now = new Date()
-    const isVip = !!(teacher?.isVip && teacher?.vipExpiresAt && new Date(teacher.vipExpiresAt) > now)
     const isAdmin = role === 'ADMIN'
+    const isVip = !isAdmin && email ? await resolveVip(email) : false
+    const privileged = isAdmin || isVip
     const pageLimit = isAdmin ? Infinity : isVip ? VIP_PAGE_LIMIT : FREE_PAGE_LIMIT
 
     const formData = await req.formData()
-    const fileEntries = formData.getAll('files') as File[]
-    const files = fileEntries.filter((f) => f instanceof File && f.name.toLowerCase().endsWith('.pdf'))
+    const fileEntries = (formData.getAll('files') as unknown[]).filter((f): f is File => f instanceof File)
 
-    if (files.length === 0) return NextResponse.json({ error: 'No PDF files provided' }, { status: 400 })
+    // Role-based file matrix (mirrors app/info-pdf-to-test's UploadModal):
+    // free — unlimited PDFs, at most one doc-format (docx/txt/rtf/odt) file,
+    // no photos; VIP/admin — everything, photos capped at MAX_PHOTOS.
+    const pdfFiles: File[] = []
+    const docFiles: File[] = []
+    const imageFiles: File[] = []
+    for (const f of fileEntries) {
+      const kind = kindOf(f.name)
+      if (kind === 'pdf') pdfFiles.push(f)
+      else if (kind === 'doc') docFiles.push(f)
+      else if (kind === 'image') imageFiles.push(f)
+    }
+
+    if (!privileged && imageFiles.length > 0) {
+      return NextResponse.json(
+        { error: 'Загрузка фото доступна только VIP пользователям', vipRequired: true },
+        { status: 403 },
+      )
+    }
+    if (!privileged && docFiles.length > 1) {
+      return NextResponse.json(
+        { error: 'На бесплатном тарифе DOCX, TXT, RTF и ODT — только один файл за раз', vipRequired: true },
+        { status: 403 },
+      )
+    }
+    if (privileged && imageFiles.length > MAX_PHOTOS) {
+      return NextResponse.json({ error: `Можно загрузить не больше ${MAX_PHOTOS} фото за раз` }, { status: 400 })
+    }
+
+    const docLikeFiles = [...pdfFiles, ...docFiles]
+    if (docLikeFiles.length === 0 && imageFiles.length === 0) {
+      return NextResponse.json({ error: 'No files provided' }, { status: 400 })
+    }
 
     const pdfServiceUrl = process.env.PDF_SERVICE_URL
     if (!pdfServiceUrl) return NextResponse.json({ error: 'PDF service not configured' }, { status: 503 })
+    if (!process.env.OPENROUTER_API_KEY && !process.env.DEEPSEEK_API_KEY)
+      return NextResponse.json({ error: 'AI service not configured' }, { status: 503 })
 
-    console.log(`[import-pdf] Processing ${files.length} file(s)`)
+    console.log(`[import-pdf] Processing ${pdfFiles.length} pdf, ${docFiles.length} doc, ${imageFiles.length} image file(s)`)
 
-    // Extract all files via microservice
+    // Extract text-bearing files (pdf + doc) via microservice
     const results: (PdfExtractResult & { name: string })[] = []
-    for (const file of files) {
+    for (const file of pdfFiles) {
       try {
-        const r = await extractFromPdf(pdfServiceUrl, file)
-        results.push({ name: file.name, ...r })
+        results.push({ name: file.name, ...(await extractFromPdf(pdfServiceUrl, file)) })
+      } catch (err) {
+        return NextResponse.json({ error: (err as Error).message }, { status: 502 })
+      }
+    }
+    for (const file of docFiles) {
+      try {
+        results.push({ name: file.name, ...(await extractFromDocument(pdfServiceUrl, file)) })
       } catch (err) {
         return NextResponse.json({ error: (err as Error).message }, { status: 502 })
       }
@@ -201,13 +309,10 @@ export async function POST(req: NextRequest) {
     const totalPages = results.reduce((s, r) => s + r.pageCount, 0)
     if (totalPages > pageLimit) {
       return NextResponse.json(
-        { error: 'PAGE_LIMIT_EXCEEDED', pageCount: totalPages, limit: pageLimit, isVip },
+        { error: 'PAGE_LIMIT_EXCEEDED', pageCount: totalPages, limit: pageLimit, isVip: privileged },
         { status: 422 },
       )
     }
-
-    if (!process.env.OPENROUTER_API_KEY)
-      return NextResponse.json({ error: 'AI service not configured' }, { status: 503 })
 
     // Combine content: tables first (better structure), then text — no images
     const combinedContent = results
@@ -218,34 +323,46 @@ export async function POST(req: NextRequest) {
       })
       .join('\n\n')
 
-    // All image blocks from all files (prepended before AI blocks)
-    const allImageBlocks = results.flatMap((r) => r.imageBlocks)
+    // All image blocks embedded inside pdf/doc files (prepended before AI blocks)
+    const embeddedImageBlocks = results.flatMap((r) => r.imageBlocks)
 
-    const isUnlimited = isAdmin || isVip
-    const CHUNK_SIZE = 40_000
-    const SYSTEM = 'You are an expert educational test generator. Return ONLY valid JSON, no markdown.'
     let aiBlocks: unknown[] = []
+    if (combinedContent.trim()) {
+      const isUnlimited = isAdmin || isVip
+      const CHUNK_SIZE = 40_000
+      const SYSTEM = 'You are an expert educational test generator. Return ONLY valid JSON, no markdown.'
 
-    if (isUnlimited && combinedContent.length > CHUNK_SIZE) {
-      const chunks: string[] = []
-      for (let i = 0; i < combinedContent.length; i += CHUNK_SIZE) chunks.push(combinedContent.slice(i, i + CHUNK_SIZE))
-      const toProcess = chunks.slice(0, 8)
-      console.log(`[import-pdf] VIP/ADMIN: ${toProcess.length} chunk(s)`)
-      for (let i = 0; i < toProcess.length; i++) {
-        const raw = await callAI(SYSTEM, buildPrompt(toProcess[i], i, toProcess.length, files.length), { temperature: 0.2 })
+      if (isUnlimited && combinedContent.length > CHUNK_SIZE) {
+        const chunks: string[] = []
+        for (let i = 0; i < combinedContent.length; i += CHUNK_SIZE) chunks.push(combinedContent.slice(i, i + CHUNK_SIZE))
+        const toProcess = chunks.slice(0, 8)
+        console.log(`[import-pdf] VIP/ADMIN: ${toProcess.length} chunk(s)`)
+        for (let i = 0; i < toProcess.length; i++) {
+          const raw = await callAI(SYSTEM, buildPrompt(toProcess[i], i, toProcess.length, docLikeFiles.length), { temperature: 0.2 })
+          const parsed = parseJSON<{ blocks: unknown[] }>(raw)
+          aiBlocks.push(...normalizeBlocks(parsed.blocks ?? []))
+        }
+      } else {
+        const raw = await callAI(SYSTEM, buildPrompt(combinedContent.slice(0, CHUNK_SIZE), 0, 1, docLikeFiles.length), { temperature: 0.2 })
         const parsed = parseJSON<{ blocks: unknown[] }>(raw)
-        aiBlocks.push(...normalizeBlocks(parsed.blocks ?? []))
+        aiBlocks = normalizeBlocks(parsed.blocks ?? [])
       }
-    } else {
-      const raw = await callAI(SYSTEM, buildPrompt(combinedContent.slice(0, CHUNK_SIZE), 0, 1, files.length), { temperature: 0.2 })
-      const parsed = parseJSON<{ blocks: unknown[] }>(raw)
-      aiBlocks = normalizeBlocks(parsed.blocks ?? [])
+    }
+
+    // VIP/admin photo batch — read via vision AI straight into test blocks
+    let visionBlocks: unknown[] = []
+    if (imageFiles.length > 0) {
+      try {
+        visionBlocks = await extractBlocksFromImages(imageFiles)
+      } catch (err) {
+        return NextResponse.json({ error: (err as Error).message }, { status: 502 })
+      }
     }
 
     // Images go first so the teacher sees them before questions
-    const blocks = [...allImageBlocks, ...aiBlocks]
+    const blocks = [...embeddedImageBlocks, ...aiBlocks, ...visionBlocks]
 
-    return NextResponse.json({ blocks, pageCount: totalPages, isVip })
+    return NextResponse.json({ blocks, pageCount: totalPages, isVip: privileged })
   } catch (error) {
     console.error('[POST /api/tests/import-pdf]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

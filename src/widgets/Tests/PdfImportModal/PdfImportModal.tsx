@@ -1,7 +1,9 @@
 'use client'
 
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
+import { useSession } from 'next-auth/react'
+import { DOC_EXTENSIONS, IMAGE_EXTENSIONS, MAX_PHOTOS, kindOf } from '@/shared/constants/pdfImport'
 import styles from './PdfImportModal.module.scss'
 
 // ─── Types ────────────────────────────────────────────────
@@ -144,6 +146,17 @@ interface PdfImportModalProps {
 
 export function PdfImportModal({ onClose, onImport }: PdfImportModalProps) {
   const t = useTranslations('pdfImport')
+  const { data: authSession } = useSession()
+  const isAdmin = authSession?.user?.role === 'ADMIN'
+  const [isVip, setIsVip] = useState(false)
+  const privileged = isVip || isAdmin
+
+  useEffect(() => {
+    fetch('/api/vip-status')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.isVip) setIsVip(true) })
+      .catch(() => {})
+  }, [])
 
   const [step, setStep] = useState<Step>('upload')
   const [files, setFiles] = useState<File[]>([])
@@ -153,17 +166,38 @@ export function PdfImportModal({ onClose, onImport }: PdfImportModalProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [totalPages, setTotalPages] = useState<number | null>(null)
   const [error, setError] = useState<ErrorState | null>(null)
+  const [uploadWarning, setUploadWarning] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Free tier: unlimited PDFs, but only ONE doc-format (docx/txt/rtf/odt) file
+  // at a time, no photos at all. VIP/admin: everything, photos capped at
+  // MAX_PHOTOS — mirrors app/info-pdf-to-test's role-based upload matrix.
   const addFiles = (incoming: FileList | File[]) => {
-    const pdfs = Array.from(incoming).filter(f => f.name.toLowerCase().endsWith('.pdf'))
-    if (!pdfs.length) return
-    setFiles(prev => {
-      const existingNames = new Set(prev.map(f => f.name))
-      const deduped = pdfs.filter(f => !existingNames.has(f.name))
-      return [...prev, ...deduped]
-    })
+    const existingNames = new Set(files.map(f => f.name))
+    let docBudget = privileged ? Infinity : Math.max(0, 1 - files.filter(f => kindOf(f.name) === 'doc').length)
+    let imageBudget = privileged ? Math.max(0, MAX_PHOTOS - files.filter(f => kindOf(f.name) === 'image').length) : 0
+
+    const toAdd: File[] = []
+    let warning: string | null = null
+
+    for (const f of Array.from(incoming)) {
+      if (existingNames.has(f.name)) continue
+      const kind = kindOf(f.name)
+      if (kind === 'unknown') continue
+      if (kind === 'image') {
+        if (imageBudget <= 0) { warning = privileged ? t('errMaxPhotos', { n: MAX_PHOTOS }) : t('errImagesVipOnly'); continue }
+        imageBudget--
+      } else if (kind === 'doc') {
+        if (docBudget <= 0) { warning = t('errOneDocAtATime'); continue }
+        docBudget--
+      }
+      existingNames.add(f.name)
+      toAdd.push(f)
+    }
+
+    if (toAdd.length) setFiles(prev => [...prev, ...toAdd])
     setError(null)
+    setUploadWarning(warning)
   }
 
   const removeFile = (name: string) => {
@@ -174,7 +208,7 @@ export function PdfImportModal({ onClose, onImport }: PdfImportModalProps) {
     e.preventDefault()
     setDragging(false)
     addFiles(e.dataTransfer.files)
-  }, [])
+  }, [addFiles])
 
   const handleProcess = async () => {
     if (!files.length) return
@@ -246,6 +280,7 @@ export function PdfImportModal({ onClose, onImport }: PdfImportModalProps) {
     setSelected(new Set())
     setError(null)
     setTotalPages(null)
+    setUploadWarning(null)
   }
 
   const totalSize = files.reduce((s, f) => s + f.size, 0)
@@ -299,7 +334,9 @@ export function PdfImportModal({ onClose, onImport }: PdfImportModalProps) {
                     <p className={styles.drop_label}>
                       {t('dropLabel')} <span>{t('dropLabelLink')}</span>
                     </p>
-                    <p className={styles.drop_sub}>{t('dropSub')}</p>
+                    <p className={styles.drop_sub}>
+                      {privileged ? t('dropSubVip', { n: MAX_PHOTOS }) : t('dropSub')}
+                    </p>
                   </>
                 ) : (
                   <div className={styles.drop_compact_inner}>
@@ -314,7 +351,9 @@ export function PdfImportModal({ onClose, onImport }: PdfImportModalProps) {
                 <input
                   ref={fileInputRef}
                   type='file'
-                  accept='.pdf'
+                  accept={privileged
+                    ? `.pdf,.${DOC_EXTENSIONS.join(',.')},${IMAGE_EXTENSIONS.map(e => `.${e}`).join(',')}`
+                    : `.pdf,.${DOC_EXTENSIONS.join(',.')}`}
                   multiple
                   className={styles.file_input}
                   onChange={(e) => { if (e.target.files) addFiles(e.target.files); e.target.value = '' }}
@@ -355,6 +394,15 @@ export function PdfImportModal({ onClose, onImport }: PdfImportModalProps) {
                       </button>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {uploadWarning && (
+                <div className={styles.warning_notice}>
+                  <svg className={styles.vip_notice_icon} width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+                    <circle cx='12' cy='12' r='10'/><line x1='12' y1='8' x2='12' y2='12'/><line x1='12' y1='16' x2='12.01' y2='16'/>
+                  </svg>
+                  <span>{uploadWarning}</span>
                 </div>
               )}
 

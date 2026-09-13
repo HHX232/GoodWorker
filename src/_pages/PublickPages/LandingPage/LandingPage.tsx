@@ -916,6 +916,8 @@ interface ApiTeacher {
   isVip: boolean; languages: string[]
   categories: { category: { id: string; slug: string; translations: { langCode: string; name: string }[] } }[]
   _count: { posts: number; students: number }
+  trend?: number[]
+  newStudents30d?: number
 }
 
 function nameHue(name: string) {
@@ -924,25 +926,56 @@ function nameHue(name: string) {
   return h % 360
 }
 
-function Sparkline({ seed, students }: { seed: number; students: number }) {
-  const data = Array.from({ length: 7 }, (_, i) => {
-    const base = students > 0 ? Math.max(1, students - 300 + i * 40) : i + 1
-    return base + ((seed * (i + 1) * 17) % 50)
-  })
+// Real weekly student-count history (see /api/teachers, sort=score): `trend[i]`
+// is the cumulative student total at the end of week i, so the line only ever
+// rises when students actually joined — a flat line means no growth, honestly.
+function Sparkline({ trend, delta }: { trend: number[]; delta: number }) {
+  const [hover, setHover] = useState<number | null>(null)
+  const data = trend.length ? trend : [0]
   const min = Math.min(...data), max = Math.max(...data), span = max - min || 1
   const w = 80, h = 28
   const pts = data.map((v, i) => [
-    (i / (data.length - 1)) * w,
+    data.length > 1 ? (i / (data.length - 1)) * w : w,
     h - 4 - ((v - min) / span) * (h - 8),
   ])
   const d = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ')
   const last = pts[pts.length - 1]
+
   return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
-      <path d={d} fill="none" stroke={RED} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx={last[0]} cy={last[1]} r="2.4" fill={RED} />
-    </svg>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+      <svg
+        width={w} height={h} viewBox={`0 0 ${w} ${h}`}
+        style={{ overflow: 'visible' }}
+        onMouseLeave={() => setHover(null)}
+      >
+        <path d={d} fill="none" stroke={RED} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        {pts.map((p, i) => (
+          <circle
+            key={i}
+            cx={p[0]} cy={p[1]}
+            r={hover === i ? 3.4 : 7}
+            fill={hover === i ? RED : 'transparent'}
+            onMouseEnter={() => setHover(i)}
+            style={{ cursor: 'pointer' }}
+          >
+            <title>{`${weeksAgoLabel(data.length - 1 - i)}: ${data[i]}`}</title>
+          </circle>
+        ))}
+        {hover === null && <circle cx={last[0]} cy={last[1]} r="2.4" fill={RED} style={{ pointerEvents: 'none' }} />}
+      </svg>
+      <span style={{
+        color: hover !== null ? '#6b6b76' : (delta > 0 ? RED : '#b4b4be'),
+        fontSize: 12, fontWeight: 600, minWidth: 26, textAlign: 'right',
+      }}>
+        {hover !== null ? data[hover].toLocaleString() : (delta > 0 ? `+${delta}` : '0')}
+      </span>
+    </span>
   )
+}
+
+function weeksAgoLabel(weeksAgo: number) {
+  if (weeksAgo === 0) return 'Сейчас'
+  return `${weeksAgo} нед. назад`
 }
 
 function TeachersBlock() {
@@ -1062,8 +1095,7 @@ function TeachersBlock() {
                   <span className={s.table_spec}>{teacherSpec(row)}</span>
                   <span className={s.table_students}>{row._count.students.toLocaleString()}</span>
                   <span className={s.table_spark}>
-                    <Sparkline seed={i + 1} students={row._count.students} />
-                    <span style={{ color: RED, fontSize: 12, fontWeight: 600 }}>+{Math.max(1, row._count.students % 200)}</span>
+                    <Sparkline trend={row.trend ?? [row._count.students]} delta={row.newStudents30d ?? 0} />
                   </span>
                 </div>
               ))}

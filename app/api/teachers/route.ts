@@ -119,26 +119,44 @@ export async function GET(req: NextRequest) {
             ...baseSelect,
             email: true,
             posts: {select: {viewCount: true}},
-            roadmaps: {select: {_count: {select: {views: true}}}}
+            roadmaps: {select: {_count: {select: {views: true}}}},
+            students: {select: {linkedAt: true}}
           }
         }),
         prisma.teacher.count({where})
       ])
 
-      const scored = all.map(({reviews, services, posts, roadmaps, categories, email, ...teacher}) => {
+      const now = Date.now()
+      const DAY_MS = 86400000
+      const WEEK_MS = DAY_MS * 7
+
+      const scored = all.map(({reviews, services, posts, roadmaps, categories, email, students, ...teacher}) => {
         const cheapest = services[0]
         const totalViews =
           posts.reduce((sum, p) => sum + p.viewCount, 0) +
           roadmaps.reduce((sum, r) => sum + r._count.views, 0)
         const avgRating = reviews.length ? reviews.reduce((sum, r) => sum + r.stars, 0) / reviews.length : null
         const reviewsCount = reviews.length
+        // "Динамика" на публичном рейтинге — реальные данные о вступлении
+        // учеников (linkedAt), а не косметика: newStudents30d — сколько
+        // вступило за последние 30 дней (значение по умолчанию для бейджа),
+        // trend — сколько всего было учеников на конец каждой из последних
+        // 7 недель (кумулятивно, последняя точка = текущий _count.students).
+        const linkedTimes = students.map(st => st.linkedAt.getTime())
+        const newStudents30d = linkedTimes.filter(tm => now - tm <= 30 * DAY_MS).length
+        const trend = Array.from({length: 7}, (_, i) => {
+          const cutoff = now - (6 - i) * WEEK_MS
+          return linkedTimes.filter(tm => tm <= cutoff).length
+        })
         const t = {
           ...teacher,
           categories: resolveTeacherCategories(categories),
           avgRating,
           reviewsCount,
           minPrice: cheapest?.price ?? null,
-          minPriceCurrency: cheapest?.currency ?? null
+          minPriceCurrency: cheapest?.currency ?? null,
+          newStudents30d,
+          trend
         }
         const score = computeScore({isVip: teacher.isVip, avgRating, reviewsCount, totalViews, _count: teacher._count})
         return {t, score, isSeedAccount: email === SEED_ACCOUNT_EMAIL}
