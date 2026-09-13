@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" data-catalog-state="cards" data-gamut="mono">
+<html lang="ru" data-catalog-state="cards">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,11 +30,15 @@
 
   --ease:cubic-bezier(.19,1,.22,1);
 
-  /* акцентная гамма — переключается панелью свотчей (G08), дефолт: Монохром */
-  --accent:#141416;
-  --accent-soft:#868897;
-  --accent-ink:#000000;
-  --accent-text:#ffffff;
+  /* акцентная гамма файла — реальный бренд GoodWorker */
+  --accent:#AC8CFE;
+  --accent-soft:#D9C9FE;
+  --accent-ink:#6D4FD1;
+  --accent-text:var(--ink);
+
+  /* нейтральный категорийный чип (overflow-тег "+N") */
+  --chip-bg:#f5f5f7;
+  --chip-ink:#555;
 
   --shadow-sm:0 1px 2px rgba(20,20,22,.06), 0 2px 8px rgba(20,20,22,.05);
   --shadow-md:0 4px 20px rgba(0,0,0,.08);
@@ -46,24 +50,6 @@
 
   --sidebar-w:250px;
   --notif-w:296px;
-}
-
-/* ---- Гаммы (G08): красят только акцент — линии/бейдж/фокус/CTA-обводку,
-   нейтральная база (ink/bg/border/paper) не меняется. Монохром — дефолт. ---- */
-html[data-gamut="mono"]{
-  --accent:#141416; --accent-soft:#868897; --accent-ink:#000000; --accent-text:#ffffff;
-}
-html[data-gamut="lilac"]{
-  --accent:#AC8CFE; --accent-soft:#E4D9FF; --accent-ink:#6D4FD1; --accent-text:#141416;
-}
-html[data-gamut="violet"]{
-  --accent:#7c3aed; --accent-soft:#ddd6fe; --accent-ink:#5b21b6; --accent-text:#ffffff;
-}
-html[data-gamut="red"]{
-  --accent:#ED0606; --accent-soft:#FFD9D6; --accent-ink:#B30404; --accent-text:#ffffff;
-}
-html[data-gamut="orange"]{
-  --accent:#E85D2A; --accent-soft:#FFDCC7; --accent-ink:#B8431A; --accent-text:#ffffff;
 }
 
 *{ box-sizing:border-box; }
@@ -111,38 +97,18 @@ svg{ display:block; flex-shrink:0; }
   border-radius:var(--radius-sm);
   background:transparent; color:var(--ink);
   text-decoration:none; cursor:pointer;
-  /* Многоэтапный ховер: цвет/фон отвечают первыми, следом — лёгкий подъём,
-     тень-кольцо вступает последней и медленнее всех — эффект «наслаивается»,
-     а не щёлкает всем сразу (было: box-shadow вне transition = жёсткий хлопок). */
-  transition:
-    background .22s var(--ease),
-    color .22s var(--ease),
-    border-color .26s var(--ease) .02s,
-    transform .32s var(--ease) .03s,
-    box-shadow .42s var(--ease) .06s;
+  transition:background .3s var(--ease), color .3s var(--ease), border-color .3s var(--ease);
 }
-.btn:hover{ transform:translateY(-1px); }
-.btn:active{ transform:translateY(0); transition-duration:.1s; }
 .btn svg{ width:14px; height:14px; }
-/* Кнопки перехода (карточка → профиль) — без заливки по умолчанию, заливка
-   вступает только на ховере (акцент — в hover-обводке, не в заливке, G09). */
-.btn--solid{ background:transparent; color:var(--ink); border-color:var(--ink); }
-.btn--solid:hover{ background:var(--ink); border-color:var(--accent); color:#fff; box-shadow:0 0 0 3px var(--accent-soft); }
+.btn--solid{ background:var(--accent); color:var(--accent-text); border-color:var(--accent); }
+.btn--solid:hover{ background:var(--accent-ink); border-color:var(--accent-ink); color:#fff; }
 .btn--ghost{ background:var(--paper); color:var(--ink); border-color:var(--line); }
 .btn--ghost:hover{ border-color:var(--ink); }
 .btn--sm{ padding:.5rem .85rem; font-size:.78rem; }
 .btn--reset{ background:var(--paper); color:var(--ink-2); border-color:var(--line); }
-.btn--reset:hover{ border-color:var(--ink); color:#fff; background:var(--ink); }
-/* Иконка-слот: два SVG наложены друг на друга, на ховере — перекрёстное
-   затухание со сменой поворота/масштаба (обычная стрелка сброса → галочка) */
-.btn--reset__icon{ position:relative; width:14px; height:14px; flex-shrink:0; }
-.btn--reset__icon svg{
-  position:absolute; inset:0; width:14px; height:14px;
-  transition:opacity .25s var(--ease), transform .3s var(--ease);
-}
-.btn--reset__icon-hover{ opacity:0; transform:scale(.55) rotate(-40deg); }
-.btn--reset:hover .btn--reset__icon-default{ opacity:0; transform:scale(.55) rotate(40deg); }
-.btn--reset:hover .btn--reset__icon-hover{ opacity:1; transform:scale(1) rotate(0deg); }
+.btn--reset svg{ transition:transform .3s var(--ease); }
+.btn--reset:hover{ border-color:var(--accent); color:var(--accent-ink); background:var(--accent-soft); }
+.btn--reset:hover svg{ transform:rotate(-90deg); }
 
 /* ---- Reveal (contract: shared/reveal-core.js) ---- */
 [data-reveal]{
@@ -263,24 +229,6 @@ svg{ display:block; flex-shrink:0; }
   cursor:pointer; border:1px solid var(--accent);
 }
 
-/* ---- Переключатель акцентной гаммы (G08) — компактный ряд свотчей ---- */
-.gamut-switch{
-  display:flex; align-items:center; gap:.4rem;
-  padding-right:.6rem; margin-right:.2rem;
-  border-right:1px solid var(--line);
-}
-.gamut-swatch{
-  width:18px; height:18px; border-radius:50%;
-  border:1.5px solid var(--line); padding:0; cursor:pointer;
-  transition:transform .2s var(--ease), border-color .2s var(--ease), box-shadow .2s var(--ease);
-}
-.gamut-swatch:hover{ transform:scale(1.15); }
-.gamut-swatch:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
-.gamut-swatch[aria-pressed="true"]{
-  border-color:var(--ink);
-  box-shadow:0 0 0 2px var(--paper), 0 0 0 3px var(--ink);
-}
-
 .wrap{ max-width:1040px; padding: clamp(1.4rem,3vw,2.2rem); }
 
 .page-head{ padding-bottom:.4rem; }
@@ -312,64 +260,23 @@ svg{ display:block; flex-shrink:0; }
   padding:.6rem .75rem;
 }
 .field__control svg{ width:15px; height:15px; color:var(--ink-2); flex-shrink:0; }
-.field__control input{
+.field__control input, .field select{
   border:none; outline:none; background:transparent;
   font-family:var(--sans); font-size:.86rem; color:var(--ink); width:100%; min-width:0;
 }
-.field__suffix{ font-size:.8rem; color:var(--ink-2); }
-
-/* ---- Кастомный дропдаун (замена нативного select) ---- */
-.cselect{ position:relative; }
-.cselect__trigger{
-  width:100%; justify-content:space-between; text-align:left;
-  background:var(--bg); cursor:pointer;
-  transition:border-color .2s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease);
-}
-.cselect__trigger:hover{ border-color:var(--accent); }
-.cselect__value{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.cselect__arrow{ width:14px; height:14px; color:var(--ink-2); flex-shrink:0; transition:transform .25s var(--ease); }
-.cselect[data-open="true"] .cselect__trigger{
-  border-color:var(--accent); background:var(--paper); box-shadow:0 0 0 3px var(--accent-soft);
-}
-.cselect[data-open="true"] .cselect__arrow{ transform:rotate(180deg); }
-.cselect__panel{
-  position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:30;
-  background:var(--paper); border:1px solid var(--line); border-radius:var(--radius);
-  box-shadow:var(--shadow-md);
-  padding:.35rem; margin:0; list-style:none;
-  max-height:min(280px, 60vh); overflow-y:auto;
-}
-.cselect__option{
-  display:flex; align-items:center; justify-content:space-between; gap:.6rem;
-  padding:.55rem .65rem; border-radius:6px;
-  font-size:.86rem; color:var(--ink); cursor:pointer;
-  transition:background .18s var(--ease), color .18s var(--ease);
-}
-.cselect__option:hover, .cselect__option.is-active{ background:var(--bg); }
-.cselect__option.is-selected{ font-weight:600; color:var(--accent-ink); }
-.cselect__check{
-  width:14px; height:14px; color:var(--accent-ink); flex-shrink:0;
-  opacity:0; transform:scale(.6);
-  transition:opacity .2s var(--ease), transform .2s var(--ease);
-}
-.cselect__option.is-selected .cselect__check{ opacity:1; transform:scale(1); }
-
-/* ---- Кастомный числовой степпер (замена нативного input[type=number]) ---- */
-.nstepper{ padding:.3rem .3rem .3rem .75rem; gap:.45rem; }
-.nstepper__input{
-  border:none; outline:none; background:transparent; text-align:left;
-  font-family:var(--sans); font-size:.86rem; color:var(--ink); width:100%; min-width:0;
-}
-.nstepper__btn{
-  display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;
-  width:26px; height:26px; border-radius:6px;
-  border:1px solid var(--line); background:var(--paper); color:var(--ink-2);
+.field select{
+  border:1px solid var(--line); background:var(--bg); padding:.6rem .75rem;
+  border-radius:var(--radius);
+  appearance:none; -webkit-appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23868897' stroke-width='1.6'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat:no-repeat; background-position:right .7rem center; background-size:14px;
+  padding-right:2rem;
   cursor:pointer;
-  transition:border-color .2s var(--ease), color .2s var(--ease), background .2s var(--ease), transform .15s var(--ease);
+  transition:border-color .2s var(--ease), box-shadow .2s var(--ease);
 }
-.nstepper__btn svg{ width:12px; height:12px; }
-.nstepper__btn:hover{ border-color:var(--ink); color:var(--ink); }
-.nstepper__btn:active{ transform:scale(.9); }
+.field select:hover{ border-color:var(--accent); }
+.field select:focus{ border-color:var(--accent); outline:none; box-shadow:0 0 0 3px var(--accent-soft); }
+.field__suffix{ font-size:.8rem; color:var(--ink-2); }
 
 /* Раскладка 1 — горизонтальная строка (единственная, R12) */
 .filters__row{ display:flex; gap:1.1rem; flex-wrap:wrap; }
@@ -479,41 +386,20 @@ html[data-catalog-state="empty"] [data-catalog="empty"]{ display:flex; }
   display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
   overflow:hidden; overflow-wrap:anywhere;
 }
-.tutor-card__badge-wrap{
-  position:relative; display:inline-flex; flex-shrink:0; margin-top:2px;
-}
-.tutor-card__badge-wrap:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; border-radius:50%; }
 .tutor-card__badge{
-  width:16px; height:16px; color:var(--accent);
+  flex-shrink:0; width:16px; height:16px; margin-top:2px; color:var(--accent);
   transition:transform .3s var(--ease), filter .3s var(--ease);
 }
 .tutor-card:hover .tutor-card__badge,
 .tutor-card:focus-within .tutor-card__badge{
   transform:scale(1.15);
+  filter:drop-shadow(0 0 3px var(--accent-soft)) drop-shadow(0 0 6px var(--accent-soft));
 }
-/* Ховер/фокус конкретно на бейдже (не только на всей карточке) */
-.tutor-card__badge-wrap:hover .tutor-card__badge,
-.tutor-card__badge-wrap:focus-visible .tutor-card__badge{
+.tutor-card__badge:hover,
+.tutor-card__badge:focus-visible{
   transform:scale(1.15);
-}
-/* Тултип бейджа (G10): «Профиль проверен модераторами» */
-.tutor-card__tooltip{
-  position:absolute; bottom:calc(100% + 8px); left:50%;
-  transform:translateX(-50%) translateY(4px);
-  background:var(--ink); color:#fff;
-  font-size:.72rem; font-weight:500; line-height:1.3;
-  padding:.4rem .6rem; border-radius:6px; white-space:nowrap;
-  opacity:0; visibility:hidden; pointer-events:none;
-  transition:opacity .2s var(--ease), transform .2s var(--ease), visibility .2s;
-  z-index:15;
-}
-.tutor-card__tooltip::after{
-  content:""; position:absolute; top:100%; left:50%; transform:translateX(-50%);
-  border:5px solid transparent; border-top-color:var(--ink);
-}
-.tutor-card__badge-wrap:hover .tutor-card__tooltip,
-.tutor-card__badge-wrap:focus-visible .tutor-card__tooltip{
-  opacity:1; visibility:visible; transform:translateX(-50%) translateY(0);
+  filter:drop-shadow(0 0 3px var(--accent-soft)) drop-shadow(0 0 6px var(--accent-soft));
+  outline:none;
 }
 .tutor-card__tags{ display:flex; align-items:center; flex-wrap:wrap; gap:.35rem; }
 .tutor-card__tag{
@@ -522,41 +408,11 @@ html[data-catalog-state="empty"] [data-catalog="empty"]{ display:flex; }
   border-radius:var(--radius-pill);
   padding:.2rem .55rem; white-space:nowrap;
 }
-/* Чип «+N» (G11) — та же пилюля/размер, что у обычных тегов, но нейтрального
-   цвета, без заливки — читается как «ещё N», а не как отдельный акцентный тег */
-.tutor-card__tag--more{ color:var(--ink-2); background:transparent; border-color:var(--line); }
-.tutor-card__meta{ display:flex; flex-direction:column; align-items:flex-start; gap:.4rem; }
-.tutor-card__price{ display:inline-flex; align-items:baseline; gap:.35rem; font-size:.78rem; color:var(--ink-2); white-space:nowrap; }
-.tutor-card__price-old{ text-decoration:line-through; opacity:.6; font-size:.74rem; }
-.tutor-card__price-sale{ color:#D6362A; font-weight:700; }
-.tutor-card__price-badge{
-  font-size:.66rem; font-weight:700; letter-spacing:.02em; color:#fff;
-  background:#D6362A; border-radius:var(--radius-pill);
-  padding:.1rem .4rem; line-height:1.3;
-}
-/* Две строки: иконка+подпись сверху, сам список языков — отдельной строкой
-   ниже (не одной длинной инлайн-строкой, которая раньше вылезала за карточку) */
-.tutor-card__lang{
-  display:flex; flex-direction:column; gap:.15rem; font-size:.78rem; color:var(--ink-2);
-  max-width:100%; min-width:0;
-}
-.tutor-card__lang-head{ display:flex; align-items:center; gap:.35rem; }
+.tutor-card__tag--more{ color:var(--chip-ink); background:var(--chip-bg); border-color:transparent; }
+.tutor-card__meta{ display:flex; align-items:center; gap:.7rem; flex-wrap:wrap; }
+.tutor-card__price{ font-size:.78rem; color:var(--ink-2); white-space:nowrap; }
+.tutor-card__lang{ display:flex; align-items:center; gap:.3rem; font-size:.78rem; color:var(--ink-2); white-space:nowrap; }
 .tutor-card__lang svg{ width:13px; height:13px; color:var(--ink-2); flex-shrink:0; }
-.tutor-card__lang-text{
-  padding-left:1.15rem; min-width:0;
-  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
-  overflow:hidden;
-}
-/* Подпись «Языки обучения:» (G12) — явно называет это языком урока, не путать
-   с предметом (теги выше) или родным языком репетитора */
-.tutor-card__lang-label{ font-weight:700; color:var(--ink-2); flex-shrink:0; }
-/* Рейтинг звёздами (G13) */
-.tutor-card__rating{ display:flex; align-items:center; gap:.4rem; }
-.tutor-card__stars{ display:flex; align-items:center; gap:1px; }
-.tutor-card__stars svg{ width:13px; height:13px; flex-shrink:0; }
-.tutor-card__stars svg.is-filled{ fill:var(--accent); stroke:var(--accent); }
-.tutor-card__stars svg.is-empty{ fill:none; stroke:var(--ink-2); }
-.tutor-card__rating-value{ font-size:.78rem; font-weight:600; color:var(--ink); }
 .tutor-card__desc{
   font-size:.84rem; color:var(--ink-2); margin:0; line-height:1.45;
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
@@ -715,13 +571,6 @@ nav[data-catalog-switcher] a[aria-current="page"]{ background:var(--ink); color:
       </label>
       <span class="topbar__spacer"></span>
       <div class="topbar__actions">
-        <div class="gamut-switch" role="group" aria-label="Акцентная гамма">
-          <button type="button" class="gamut-swatch" data-gamut-btn="mono" style="background:#141416" aria-label="Монохром" aria-pressed="true"></button>
-          <button type="button" class="gamut-swatch" data-gamut-btn="lilac" style="background:#AC8CFE" aria-label="Сирень" aria-pressed="false"></button>
-          <button type="button" class="gamut-swatch" data-gamut-btn="violet" style="background:#7c3aed" aria-label="Фиолетовый" aria-pressed="false"></button>
-          <button type="button" class="gamut-swatch" data-gamut-btn="red" style="background:#ED0606" aria-label="Красный" aria-pressed="false"></button>
-          <button type="button" class="gamut-swatch" data-gamut-btn="orange" style="background:#E85D2A" aria-label="Оранжевый (выведенный тон, в продукте готового нет)" aria-pressed="false"></button>
-        </div>
         <button type="button" class="icon-btn" aria-label="Переключить тему">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.3 6.3 0 0 0 10.5 10.5z"/></svg>
         </button>
@@ -736,7 +585,7 @@ nav[data-catalog-switcher] a[aria-current="page"]{ background:var(--ink); color:
 
       <div class="page-head" data-reveal>
         <h1 class="display">Каталог репетиторов</h1>
-        <p class="lede">Все репетиторы платформы — с фильтром по предмету и цене урока.</p>
+        <p class="lede">Все репетиторы платформы в одном месте. Сузите список по предмету и стоимости урока, откройте профиль или поделитесь ссылкой.</p>
       </div>
 
       <!-- ============================================================
@@ -746,17 +595,14 @@ nav[data-catalog-switcher] a[aria-current="page"]{ background:var(--ink); color:
         <div class="filters__head">
           <p class="filters__title">Фильтры</p>
           <button type="button" class="btn btn--sm btn--reset" id="resetFiltersFormBtn">
-            <span class="btn--reset__icon">
-              <svg class="btn--reset__icon-default" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
-              <svg class="btn--reset__icon-hover" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>
-            </span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
             Сбросить фильтры
           </button>
         </div>
 
         <div class="filters__body">
 
-          <!-- Горизонтальная строка: текст / кастомный дропдаун / кастомный числовой степпер -->
+          <!-- Горизонтальная строка: текст / select / число -->
           <form class="filters__row" id="filtersForm">
             <label class="field">
               <span class="field__label">Имя</span>
@@ -765,61 +611,25 @@ nav[data-catalog-switcher] a[aria-current="page"]{ background:var(--ink); color:
                 <input type="text" placeholder="Например, Анна">
               </span>
             </label>
-
-            <div class="field">
-              <span class="field__label" id="subjectLabel">Предмет</span>
-              <div class="cselect" data-cselect>
-                <button type="button" class="cselect__trigger field__control" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="subjectLabel">
-                  <span class="cselect__value" data-cselect-value>Любой предмет</span>
-                  <svg class="cselect__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-                </button>
-                <ul class="cselect__panel" role="listbox" aria-label="Предмет" hidden>
-                  <li role="option" class="cselect__option is-selected" data-value="" aria-selected="true">
-                    <span class="cselect__option-label">Любой предмет</span>
-                    <svg class="cselect__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>
-                  </li>
-                  <li role="option" class="cselect__option" data-value="Математика" aria-selected="false">
-                    <span class="cselect__option-label">Математика</span>
-                    <svg class="cselect__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>
-                  </li>
-                  <li role="option" class="cselect__option" data-value="Английский язык" aria-selected="false">
-                    <span class="cselect__option-label">Английский язык</span>
-                    <svg class="cselect__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>
-                  </li>
-                  <li role="option" class="cselect__option" data-value="Физика" aria-selected="false">
-                    <span class="cselect__option-label">Физика</span>
-                    <svg class="cselect__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>
-                  </li>
-                  <li role="option" class="cselect__option" data-value="Информатика" aria-selected="false">
-                    <span class="cselect__option-label">Информатика</span>
-                    <svg class="cselect__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>
-                  </li>
-                  <li role="option" class="cselect__option" data-value="Химия" aria-selected="false">
-                    <span class="cselect__option-label">Химия</span>
-                    <svg class="cselect__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>
-                  </li>
-                  <li role="option" class="cselect__option" data-value="Русский язык" aria-selected="false">
-                    <span class="cselect__option-label">Русский язык</span>
-                    <svg class="cselect__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>
-                  </li>
-                </ul>
-                <input type="hidden" name="subject" data-cselect-input value="">
-              </div>
-            </div>
-
-            <div class="field">
-              <span class="field__label" id="priceLabel">Минимальная стоимость, ₽/урок</span>
-              <div class="field__control nstepper" role="group" aria-labelledby="priceLabel">
-                <button type="button" class="nstepper__btn" data-nstep="-1" aria-label="Уменьшить на 100 ₽">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>
-                </button>
-                <input type="text" inputmode="numeric" class="nstepper__input" id="minPriceInput" placeholder="0" autocomplete="off">
+            <label class="field">
+              <span class="field__label">Предмет</span>
+              <select>
+                <option value="">Любой предмет</option>
+                <option>Математика</option>
+                <option>Английский язык</option>
+                <option>Физика</option>
+                <option>Информатика</option>
+                <option>Химия</option>
+                <option>Русский язык</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field__label">Минимальная стоимость, ₽/урок</span>
+              <span class="field__control">
+                <input type="number" min="0" step="100" placeholder="0">
                 <span class="field__suffix">₽</span>
-                <button type="button" class="nstepper__btn" data-nstep="1" aria-label="Увеличить на 100 ₽">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-                </button>
-              </div>
-            </div>
+              </span>
+            </label>
           </form>
 
         </div>
@@ -850,30 +660,16 @@ nav[data-catalog-switcher] a[aria-current="page"]{ background:var(--ink); color:
           <div class="tutor-card__body">
             <div class="tutor-card__name-row">
               <h3 class="tutor-card__name">Анна Соколова</h3>
-              <span class="tutor-card__badge-wrap" tabindex="0" aria-describedby="badgeTip1">
-                <svg class="tutor-card__badge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Профиль подтверждён"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>
-                <span class="tutor-card__tooltip" role="tooltip" id="badgeTip1">Профиль проверен модераторами</span>
-              </span>
+              <svg class="tutor-card__badge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Профиль подтверждён"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>
             </div>
             <div class="tutor-card__tags">
               <span class="tutor-card__tag">Математика</span>
             </div>
-            <div class="tutor-card__rating" aria-label="Рейтинг 4.9 из 5">
-              <span class="tutor-card__stars" aria-hidden="true"><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg></span>
-              <span class="tutor-card__rating-value">4.9</span>
-            </div>
             <div class="tutor-card__meta">
-              <span class="tutor-card__price">
-                <span class="tutor-card__price-sale">от 1 200 ₽/урок</span>
-                <span class="tutor-card__price-old">1 400 ₽</span>
-                <span class="tutor-card__price-badge">-14%</span>
-              </span>
-              <span class="tutor-card__lang" title="Языки обучения: русский">
-                <span class="tutor-card__lang-head">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 2.5 15.4 0 18M12 3c-2.5 2.6-2.5 15.4 0 18"/></svg>
-                  <span class="tutor-card__lang-label">Языки обучения:</span>
-                </span>
-                <span class="tutor-card__lang-text">Русский</span>
+              <span class="tutor-card__price">1 200 ₽/урок</span>
+              <span class="tutor-card__lang">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 2.5 15.4 0 18M12 3c-2.5 2.6-2.5 15.4 0 18"/></svg>
+                Русский
               </span>
             </div>
             <p class="tutor-card__desc">Готовит к ЕГЭ и олимпиадам, разбирает сложные темы просто</p>
@@ -907,27 +703,17 @@ nav[data-catalog-switcher] a[aria-current="page"]{ background:var(--ink); color:
           <div class="tutor-card__body">
             <div class="tutor-card__name-row">
               <h3 class="tutor-card__name">Дмитрий Волков</h3>
-              <span class="tutor-card__badge-wrap" tabindex="0" aria-describedby="badgeTip2">
-                <svg class="tutor-card__badge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Профиль подтверждён"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>
-                <span class="tutor-card__tooltip" role="tooltip" id="badgeTip2">Профиль проверен модераторами</span>
-              </span>
+              <svg class="tutor-card__badge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Профиль подтверждён"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>
             </div>
             <div class="tutor-card__tags">
               <span class="tutor-card__tag">Английский язык</span>
               <span class="tutor-card__tag">Литература</span>
             </div>
-            <div class="tutor-card__rating" aria-label="Рейтинг 4.3 из 5">
-              <span class="tutor-card__stars" aria-hidden="true"><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg><svg class="is-empty" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg></span>
-              <span class="tutor-card__rating-value">4.3</span>
-            </div>
             <div class="tutor-card__meta">
-              <span class="tutor-card__price">от 1 500 ₽/урок</span>
-              <span class="tutor-card__lang" title="Языки обучения: русский, английский">
-                <span class="tutor-card__lang-head">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 2.5 15.4 0 18M12 3c-2.5 2.6-2.5 15.4 0 18"/></svg>
-                  <span class="tutor-card__lang-label">Языки обучения:</span>
-                </span>
-                <span class="tutor-card__lang-text">Русский, английский</span>
+              <span class="tutor-card__price">1 500 ₽/урок</span>
+              <span class="tutor-card__lang">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 2.5 15.4 0 18M12 3c-2.5 2.6-2.5 15.4 0 18"/></svg>
+                Русский, английский
               </span>
             </div>
             <p class="tutor-card__desc">Разговорный английский и подготовка к международным экзаменам</p>
@@ -961,26 +747,16 @@ nav[data-catalog-switcher] a[aria-current="page"]{ background:var(--ink); color:
           <div class="tutor-card__body">
             <div class="tutor-card__name-row">
               <h3 class="tutor-card__name">Мария Лебедева</h3>
-              <span class="tutor-card__badge-wrap" tabindex="0" aria-describedby="badgeTip3">
-                <svg class="tutor-card__badge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Профиль подтверждён"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>
-                <span class="tutor-card__tooltip" role="tooltip" id="badgeTip3">Профиль проверен модераторами</span>
-              </span>
+              <svg class="tutor-card__badge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Профиль подтверждён"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>
             </div>
             <div class="tutor-card__tags">
               <span class="tutor-card__tag">Физика</span>
             </div>
-            <div class="tutor-card__rating" aria-label="Рейтинг 4.8 из 5">
-              <span class="tutor-card__stars" aria-hidden="true"><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg></span>
-              <span class="tutor-card__rating-value">4.8</span>
-            </div>
             <div class="tutor-card__meta">
-              <span class="tutor-card__price">от 1 100 ₽/урок</span>
-              <span class="tutor-card__lang" title="Языки обучения: русский">
-                <span class="tutor-card__lang-head">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 2.5 15.4 0 18M12 3c-2.5 2.6-2.5 15.4 0 18"/></svg>
-                  <span class="tutor-card__lang-label">Языки обучения:</span>
-                </span>
-                <span class="tutor-card__lang-text">Русский</span>
+              <span class="tutor-card__price">1 100 ₽/урок</span>
+              <span class="tutor-card__lang">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 2.5 15.4 0 18M12 3c-2.5 2.6-2.5 15.4 0 18"/></svg>
+                Русский
               </span>
             </div>
             <p class="tutor-card__desc">Механика и электродинамика — для школьников и абитуриентов</p>
@@ -1014,27 +790,17 @@ nav[data-catalog-switcher] a[aria-current="page"]{ background:var(--ink); color:
           <div class="tutor-card__body">
             <div class="tutor-card__name-row">
               <h3 class="tutor-card__name">Игорь Петров</h3>
-              <span class="tutor-card__badge-wrap" tabindex="0" aria-describedby="badgeTip4">
-                <svg class="tutor-card__badge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Профиль подтверждён"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>
-                <span class="tutor-card__tooltip" role="tooltip" id="badgeTip4">Профиль проверен модераторами</span>
-              </span>
+              <svg class="tutor-card__badge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Профиль подтверждён"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>
             </div>
             <div class="tutor-card__tags">
               <span class="tutor-card__tag">Информатика</span>
               <span class="tutor-card__tag">Математика</span>
             </div>
-            <div class="tutor-card__rating" aria-label="Рейтинг 4.2 из 5">
-              <span class="tutor-card__stars" aria-hidden="true"><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg><svg class="is-empty" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg></span>
-              <span class="tutor-card__rating-value">4.2</span>
-            </div>
             <div class="tutor-card__meta">
-              <span class="tutor-card__price">от 1 600 ₽/урок</span>
-              <span class="tutor-card__lang" title="Языки обучения: русский, английский">
-                <span class="tutor-card__lang-head">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 2.5 15.4 0 18M12 3c-2.5 2.6-2.5 15.4 0 18"/></svg>
-                  <span class="tutor-card__lang-label">Языки обучения:</span>
-                </span>
-                <span class="tutor-card__lang-text">Русский, английский</span>
+              <span class="tutor-card__price">1 600 ₽/урок</span>
+              <span class="tutor-card__lang">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 2.5 15.4 0 18M12 3c-2.5 2.6-2.5 15.4 0 18"/></svg>
+                Русский, английский
               </span>
             </div>
             <p class="tutor-card__desc">Программирование на Python — с нуля до алгоритмов и структур</p>
@@ -1069,10 +835,7 @@ nav[data-catalog-switcher] a[aria-current="page"]{ background:var(--ink); color:
           <div class="tutor-card__body">
             <div class="tutor-card__name-row">
               <h3 class="tutor-card__name">Александра Константиновна Виноградова-Романовская</h3>
-              <span class="tutor-card__badge-wrap" tabindex="0" aria-describedby="badgeTip5">
-                <svg class="tutor-card__badge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Профиль подтверждён"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>
-                <span class="tutor-card__tooltip" role="tooltip" id="badgeTip5">Профиль проверен модераторами</span>
-              </span>
+              <svg class="tutor-card__badge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Профиль подтверждён"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>
             </div>
             <!-- Стресс-тест: 8 предметов — показываем 3 + чип «+5» (G07) -->
             <div class="tutor-card__tags">
@@ -1081,18 +844,11 @@ nav[data-catalog-switcher] a[aria-current="page"]{ background:var(--ink); color:
               <span class="tutor-card__tag">Физика</span>
               <span class="tutor-card__tag tutor-card__tag--more">+5</span>
             </div>
-            <div class="tutor-card__rating" aria-label="Рейтинг 5.0 из 5">
-              <span class="tutor-card__stars" aria-hidden="true"><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg></span>
-              <span class="tutor-card__rating-value">5.0</span>
-            </div>
             <div class="tutor-card__meta">
-              <span class="tutor-card__price">от 1 350 ₽/урок</span>
-              <span class="tutor-card__lang" title="Языки обучения: русский, английский, немецкий">
-                <span class="tutor-card__lang-head">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 2.5 15.4 0 18M12 3c-2.5 2.6-2.5 15.4 0 18"/></svg>
-                  <span class="tutor-card__lang-label">Языки обучения:</span>
-                </span>
-                <span class="tutor-card__lang-text">Русский, английский, немецкий</span>
+              <span class="tutor-card__price">1 350 ₽/урок</span>
+              <span class="tutor-card__lang">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 2.5 15.4 0 18M12 3c-2.5 2.6-2.5 15.4 0 18"/></svg>
+                Русский, английский, немецкий
               </span>
             </div>
             <p class="tutor-card__desc">Органическая и неорганическая химия, разбор задач олимпиадного уровня для старшеклассников</p>
@@ -1126,26 +882,16 @@ nav[data-catalog-switcher] a[aria-current="page"]{ background:var(--ink); color:
           <div class="tutor-card__body">
             <div class="tutor-card__name-row">
               <h3 class="tutor-card__name">Сергей Морозов</h3>
-              <span class="tutor-card__badge-wrap" tabindex="0" aria-describedby="badgeTip6">
-                <svg class="tutor-card__badge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Профиль подтверждён"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>
-                <span class="tutor-card__tooltip" role="tooltip" id="badgeTip6">Профиль проверен модераторами</span>
-              </span>
+              <svg class="tutor-card__badge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Профиль подтверждён"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>
             </div>
             <div class="tutor-card__tags">
               <span class="tutor-card__tag">Русский язык</span>
             </div>
-            <div class="tutor-card__rating" aria-label="Рейтинг 4.6 из 5">
-              <span class="tutor-card__stars" aria-hidden="true"><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg><svg class="is-filled" viewBox="0 0 24 24" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.9-6.3 3.9 1.7-7L2 9.2l7.1-.6z"/></svg></span>
-              <span class="tutor-card__rating-value">4.6</span>
-            </div>
             <div class="tutor-card__meta">
-              <span class="tutor-card__price">от 900 ₽/урок</span>
-              <span class="tutor-card__lang" title="Языки обучения: русский">
-                <span class="tutor-card__lang-head">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 2.5 15.4 0 18M12 3c-2.5 2.6-2.5 15.4 0 18"/></svg>
-                  <span class="tutor-card__lang-label">Языки обучения:</span>
-                </span>
-                <span class="tutor-card__lang-text">Русский</span>
+              <span class="tutor-card__price">900 ₽/урок</span>
+              <span class="tutor-card__lang">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 2.5 15.4 0 18M12 3c-2.5 2.6-2.5 15.4 0 18"/></svg>
+                Русский
               </span>
             </div>
             <p class="tutor-card__desc">Сочинения, орфография и подготовка к ОГЭ и ЕГЭ</p>
@@ -1172,13 +918,7 @@ nav[data-catalog-switcher] a[aria-current="page"]{ background:var(--ink); color:
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/><path d="M8.5 11h5"/></svg>
         <p class="cards-empty__title">По этим фильтрам ничего не нашлось</p>
         <p class="cards-empty__note">Попробуйте изменить предмет или снизить минимальную стоимость урока.</p>
-        <button type="button" class="btn btn--sm btn--reset" id="resetFiltersDemo">
-          <span class="btn--reset__icon">
-            <svg class="btn--reset__icon-default" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
-            <svg class="btn--reset__icon-hover" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>
-          </span>
-          Сбросить фильтры
-        </button>
+        <button type="button" class="btn btn--ghost btn--sm" id="resetFiltersDemo">Сбросить фильтры</button>
       </section>
 
     </div>
@@ -1222,26 +962,6 @@ nav[data-catalog-switcher] a[aria-current="page"]{ background:var(--ink); color:
     if (links[i].getAttribute('href') === file) links[i].setAttribute('aria-current', 'page');
   }
 
-  // ---- Гамма (G08): свотчи меняют только --accent*, persist в localStorage ----
-  var GAMUTS = ['mono', 'lilac', 'violet', 'red', 'orange'];
-  var gamutBtns = document.querySelectorAll('[data-gamut-btn]');
-  function setGamut(g){
-    if (GAMUTS.indexOf(g) === -1) g = 'mono';
-    document.documentElement.setAttribute('data-gamut', g);
-    for (var gi = 0; gi < gamutBtns.length; gi++) {
-      gamutBtns[gi].setAttribute('aria-pressed', gamutBtns[gi].getAttribute('data-gamut-btn') === g ? 'true' : 'false');
-    }
-    try { localStorage.setItem('goodworker:catalogA:gamut', g); } catch (e) {}
-  }
-  var savedGamut = 'mono';
-  try { savedGamut = localStorage.getItem('goodworker:catalogA:gamut') || 'mono'; } catch (e) {}
-  setGamut(savedGamut);
-  for (var gj = 0; gj < gamutBtns.length; gj++) {
-    (function(btn){
-      btn.addEventListener('click', function(){ setGamut(btn.getAttribute('data-gamut-btn')); });
-    })(gamutBtns[gj]);
-  }
-
   // ---- Форма фильтров: no-op сброс полей (G05) ----
   var filtersForm = document.getElementById('filtersForm');
   var resetFormBtn = document.getElementById('resetFiltersFormBtn');
@@ -1250,87 +970,6 @@ nav[data-catalog-switcher] a[aria-current="page"]{ background:var(--ink); color:
   }
   if (resetFormBtn && filtersForm) {
     resetFormBtn.addEventListener('click', function(){ filtersForm.reset(); });
-  }
-
-  // ---- Кастомный дропдаун «Предмет» ----
-  var cselect = document.querySelector('[data-cselect]');
-  if (cselect) {
-    var cTrigger = cselect.querySelector('.cselect__trigger');
-    var cValue = cselect.querySelector('[data-cselect-value]');
-    var cPanel = cselect.querySelector('.cselect__panel');
-    var cInput = cselect.querySelector('[data-cselect-input]');
-    var cOptions = cselect.querySelectorAll('.cselect__option');
-    var cDefaultLabel = cValue.textContent;
-
-    function cOpen(){
-      cselect.setAttribute('data-open', 'true');
-      cTrigger.setAttribute('aria-expanded', 'true');
-      cPanel.hidden = false;
-    }
-    function cClose(){
-      cselect.setAttribute('data-open', 'false');
-      cTrigger.setAttribute('aria-expanded', 'false');
-      cPanel.hidden = true;
-    }
-    function cSelect(option){
-      for (var oi = 0; oi < cOptions.length; oi++) {
-        cOptions[oi].classList.remove('is-selected');
-        cOptions[oi].setAttribute('aria-selected', 'false');
-      }
-      option.classList.add('is-selected');
-      option.setAttribute('aria-selected', 'true');
-      cValue.textContent = option.querySelector('.cselect__option-label').textContent;
-      cInput.value = option.getAttribute('data-value') || '';
-    }
-
-    cTrigger.addEventListener('click', function(){
-      cselect.getAttribute('data-open') === 'true' ? cClose() : cOpen();
-    });
-    for (var ci = 0; ci < cOptions.length; ci++) {
-      cOptions[ci].addEventListener('click', function(){ cSelect(this); cClose(); cTrigger.focus(); });
-    }
-    document.addEventListener('click', function(e){
-      if (!cselect.contains(e.target)) cClose();
-    });
-    cselect.addEventListener('keydown', function(e){
-      if (e.key === 'Escape') { cClose(); cTrigger.focus(); }
-      if (e.key === 'Enter' && document.activeElement === cTrigger) {
-        cselect.getAttribute('data-open') === 'true' ? cClose() : cOpen();
-      }
-    });
-    if (filtersForm) {
-      filtersForm.addEventListener('reset', function(){
-        setTimeout(function(){
-          cValue.textContent = cDefaultLabel;
-          cInput.value = '';
-          for (var ri = 0; ri < cOptions.length; ri++) {
-            var isFirst = ri === 0;
-            cOptions[ri].classList.toggle('is-selected', isFirst);
-            cOptions[ri].setAttribute('aria-selected', isFirst ? 'true' : 'false');
-          }
-          cClose();
-        }, 0);
-      });
-    }
-  }
-
-  // ---- Кастомный числовой степпер «Минимальная стоимость» ----
-  var minPriceInput = document.getElementById('minPriceInput');
-  var stepButtons = document.querySelectorAll('.nstepper__btn[data-nstep]');
-  var PRICE_STEP = 100;
-  if (minPriceInput) {
-    minPriceInput.addEventListener('input', function(){
-      this.value = this.value.replace(/[^0-9]/g, '');
-    });
-    for (var si = 0; si < stepButtons.length; si++) {
-      (function(btn){
-        btn.addEventListener('click', function(){
-          var dir = parseInt(btn.getAttribute('data-nstep'), 10);
-          var current = parseInt(minPriceInput.value, 10) || 0;
-          minPriceInput.value = Math.max(0, current + dir * PRICE_STEP);
-        });
-      })(stepButtons[si]);
-    }
   }
 
   // ---- Demo-переключатель состояния сетки: карточки / пустой результат ----

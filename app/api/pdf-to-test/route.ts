@@ -30,20 +30,6 @@ const EXT_TO_MIME: Record<string, string> = {
 }
 
 export async function POST(req: NextRequest) {
-  // Everything below used to run without an outer safety net — any throw
-  // (e.g. from `new File(...)`, `resolveVip`, or `auth()`) bubbled up
-  // uncaught past Next.js's own error handling in the production standalone
-  // build, which the platform/edge in front of it turned into a bare 502
-  // with no response body at all instead of a JSON error.
-  try {
-    return await handlePdfToTest(req)
-  } catch (error) {
-    console.error('[POST /api/pdf-to-test]', error)
-    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
-  }
-}
-
-async function handlePdfToTest(req: NextRequest) {
   const session = await auth()
   const isGuest = !session?.user?.email
   const userEmail = session?.user?.email ?? null
@@ -89,22 +75,22 @@ async function handlePdfToTest(req: NextRequest) {
   }
 
   // ── Step 1: extract text via microservice ─────────────────
+  const docForm = new FormData()
+  // Use a proper File object so multer sees the correct MIME
+  const fileBlob = new File([file], fileName, { type: mimeType })
+  docForm.append('file', fileBlob, fileName)
+
+  // PDF → existing endpoint; other formats → new universal endpoint
+  const extractEndpoint = isPdf
+    ? `${PDF_SERVICE}/api/pdf/extract-from-upload`
+    : `${PDF_SERVICE}/api/pdf/extract-document-from-upload`
+
   let docText = ''
   let pageCount = 1
   let ocr = false
   let docFormat = isPdf ? 'pdf' : ext.slice(1)
 
   try {
-    const docForm = new FormData()
-    // Use a proper File object so multer sees the correct MIME
-    const fileBlob = new File([file], fileName, { type: mimeType })
-    docForm.append('file', fileBlob, fileName)
-
-    // PDF → existing endpoint; other formats → new universal endpoint
-    const extractEndpoint = isPdf
-      ? `${PDF_SERVICE}/api/pdf/extract-from-upload`
-      : `${PDF_SERVICE}/api/pdf/extract-document-from-upload`
-
     const svcRes = await fetch(extractEndpoint, { method: 'POST', body: docForm })
     if (!svcRes.ok) {
       const errText = await svcRes.text()

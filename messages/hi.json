@@ -1265,7 +1265,6 @@
     "dropLabel": "फ़ाइलें यहाँ खींचें या",
     "dropLabelLink": "फ़ाइल चुनें",
     "dropSub": "PDF — कितनी भी · DOCX, TXT, RTF, ODT — एक बार में एक फ़ाइल",
-    "dropSubVip": "PDF, DOCX, TXT, RTF, ODT — कितनी भी · फ़ोटो (JPG/PNG/WEBP/GIF) — {n} तक",
     "vipNotice": "नि:शुल्क: <b>5 पृष्ठ</b> तक। VIP: प्रति आयात <b>50 पृष्ठ</b> तक।",
     "processBtn": "फ़ाइलें प्रोसेस करें",
     "processBtnMulti": "{count} फाइलें प्रोसेस करें",
@@ -1274,9 +1273,6 @@
     "uploadAnother": "दूसरी फ़ाइल अपलोड करें",
     "processing": "फ़ाइलें प्रोसेस हो रही हैं...",
     "step1": "फ़ाइलों से सामग्री निकाली जा रही है...",
-    "errOneDocAtATime": "नि:शुल्क योजना में DOCX/TXT/RTF/ODT — एक बार में केवल एक फ़ाइल",
-    "errImagesVipOnly": "फ़ोटो अपलोड केवल VIP के लिए उपलब्ध है",
-    "errMaxPhotos": "एक बार में अधिकतम {n} फ़ोटो अपलोड की जा सकती हैं",
     "step2": "सामग्री का विश्लेषण...",
     "step3": "परीक्षा ब्लॉक बनाए जा रहे हैं...",
     "successNotice": "<b>{pages} पृष्ठ</b> संसाधित · <b>{count} ब्लॉक</b> मिले",
@@ -1294,7 +1290,11 @@
     "typeMatch": "जोड़े मिलाएं",
     "typeInfo": "टेक्स्ट",
     "refAnswer": "संदर्भ: {text}",
-    "morePairs": "+{n} और..."
+    "morePairs": "+{n} और...",
+    "errMaxPhotos": "एक बार में अधिकतम {n} फ़ोटो अपलोड की जा सकती हैं",
+    "errOneDocAtATime": "नि:शुल्क योजना में DOCX/TXT/RTF/ODT — एक बार में केवल एक फ़ाइल",
+    "dropSubVip": "PDF, DOCX, TXT, RTF, ODT — कितनी भी · फ़ोटो (JPG/PNG/WEBP/GIF) — {n} तक",
+    "errImagesVipOnly": "फ़ोटो अपलोड केवल VIP के लिए उपलब्ध है"
   },
   "notifications": {
     "title": "सूचनाएं",
