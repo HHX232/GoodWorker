@@ -12,6 +12,15 @@ const MAX_QUESTIONS = 60 // VIP-only feature — same ceiling as the "unlimited"
 const ALLOWED_MIMES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
 
 export async function POST(req: NextRequest) {
+  try {
+    return await handlePhotos(req)
+  } catch (error) {
+    console.error('[POST /api/pdf-to-test/photos]', error)
+    return NextResponse.json({ error: 'Внутренняя ошибка сервера' }, { status: 500 })
+  }
+}
+
+async function handlePhotos(req: NextRequest) {
   const session = await auth()
   const userEmail = session?.user?.email ?? null
   if (!userEmail) {
@@ -31,6 +40,7 @@ export async function POST(req: NextRequest) {
   }
 
   const files = formData.getAll('photos').filter((f): f is File => f instanceof Blob)
+  console.log(`[pdf-to-test/photos] ${userEmail}: ${files.length} photo(s) received`)
   if (files.length === 0) {
     return NextResponse.json({ error: 'Нужно хотя бы одно фото' }, { status: 400 })
   }
@@ -53,6 +63,7 @@ export async function POST(req: NextRequest) {
     const buf = Buffer.from(await file.arrayBuffer())
     images.push({ mimeType: file.type, base64: buf.toString('base64') })
   }
+  console.log(`[pdf-to-test/photos] ${userEmail}: ${images.length} photo(s) validated, calling vision AI`)
 
   const aiPrompt = `Look at the ${images.length} photo(s) provided — they show pages of study material (notes, a textbook, a worksheet, a slide, etc.), in the order given.
 Read all text visible across the photos as one combined document and extract up to ${MAX_QUESTIONS} quiz questions from it.
@@ -87,11 +98,12 @@ Rules:
     )
     parsed = parseJSON<{ title?: string; questions?: unknown[] }>(raw)
   } catch (e) {
-    console.error('[pdf-to-test/photos] AI error:', e)
+    console.error(`[pdf-to-test/photos] ${userEmail}: AI error:`, e)
     return NextResponse.json({ error: 'Ошибка анализа фото' }, { status: 500 })
   }
 
   const questions = (parsed.questions ?? []).slice(0, MAX_QUESTIONS)
+  console.log(`[pdf-to-test/photos] ${userEmail}: done — ${questions.length} question(s) generated`)
   if (questions.length === 0) {
     return NextResponse.json({ error: 'Не удалось распознать текст на фото — попробуйте более чёткие снимки' }, { status: 422 })
   }

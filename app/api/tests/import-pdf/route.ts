@@ -338,14 +338,18 @@ export async function POST(req: NextRequest) {
         const toProcess = chunks.slice(0, 8)
         console.log(`[import-pdf] VIP/ADMIN: ${toProcess.length} chunk(s)`)
         for (let i = 0; i < toProcess.length; i++) {
+          console.log(`[import-pdf] AI chunk ${i + 1}/${toProcess.length}: asking...`)
           const raw = await callAI(SYSTEM, buildPrompt(toProcess[i], i, toProcess.length, docLikeFiles.length), { temperature: 0.2 })
           const parsed = parseJSON<{ blocks: unknown[] }>(raw)
           aiBlocks.push(...normalizeBlocks(parsed.blocks ?? []))
+          console.log(`[import-pdf] AI chunk ${i + 1}/${toProcess.length}: ${parsed.blocks?.length ?? 0} block(s)`)
         }
       } else {
+        console.log(`[import-pdf] AI: asking for blocks from ${combinedContent.length} char(s)...`)
         const raw = await callAI(SYSTEM, buildPrompt(combinedContent.slice(0, CHUNK_SIZE), 0, 1, docLikeFiles.length), { temperature: 0.2 })
         const parsed = parseJSON<{ blocks: unknown[] }>(raw)
         aiBlocks = normalizeBlocks(parsed.blocks ?? [])
+        console.log(`[import-pdf] AI: ${aiBlocks.length} block(s) generated`)
       }
     }
 
@@ -353,14 +357,19 @@ export async function POST(req: NextRequest) {
     let visionBlocks: unknown[] = []
     if (imageFiles.length > 0) {
       try {
+        console.log(`[import-pdf] vision AI: analyzing ${imageFiles.length} photo(s)...`)
         visionBlocks = await extractBlocksFromImages(imageFiles)
+        console.log(`[import-pdf] vision AI: ${visionBlocks.length} block(s) generated`)
       } catch (err) {
+        console.error('[import-pdf] vision AI error:', err)
         return NextResponse.json({ error: (err as Error).message }, { status: 502 })
       }
     }
 
     // Images go first so the teacher sees them before questions
     const blocks = [...embeddedImageBlocks, ...aiBlocks, ...visionBlocks]
+
+    console.log(`[import-pdf] done — ${blocks.length} block(s) total, ${totalPages} page(s)`)
 
     return NextResponse.json({ blocks, pageCount: totalPages, isVip: privileged })
   } catch (error) {

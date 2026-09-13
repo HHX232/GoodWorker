@@ -74,6 +74,11 @@ async function handlePdfToTest(req: NextRequest) {
   const isPdf = PDF_MIMES.has(mimeType)
   const isVipFormat = VIP_MIMES.has(mimeType)
 
+  console.log(
+    `[pdf-to-test] "${fileName}" (${file.size}b, ${mimeType}) — ` +
+    `${isGuest ? 'guest' : isVip ? 'vip' : 'user'}, unlimited=${unlimited}`,
+  )
+
   if (!isPdf && !isVipFormat) {
     return NextResponse.json({ error: 'Поддерживаются PDF, DOCX, TXT, RTF, ODT' }, { status: 400 })
   }
@@ -95,6 +100,7 @@ async function handlePdfToTest(req: NextRequest) {
   let docFormat = isPdf ? 'pdf' : ext.slice(1)
 
   try {
+    console.log(`[pdf-to-test] "${fileName}": building upload for microservice...`)
     const docForm = new FormData()
     // Use a proper File object so multer sees the correct MIME
     const fileBlob = new File([file], fileName, { type: mimeType })
@@ -105,7 +111,9 @@ async function handlePdfToTest(req: NextRequest) {
       ? `${PDF_SERVICE}/api/pdf/extract-from-upload`
       : `${PDF_SERVICE}/api/pdf/extract-document-from-upload`
 
+    console.log(`[pdf-to-test] "${fileName}": POST ${extractEndpoint}`)
     const svcRes = await fetch(extractEndpoint, { method: 'POST', body: docForm })
+    console.log(`[pdf-to-test] "${fileName}": microservice responded ${svcRes.status}`)
     if (!svcRes.ok) {
       const errText = await svcRes.text()
       console.error('[pdf-to-test] microservice error:', errText)
@@ -116,12 +124,14 @@ async function handlePdfToTest(req: NextRequest) {
     pageCount = svcData.data?.pageCount ?? 1
     ocr       = svcData.data?.ocr       ?? false
     docFormat = svcData.data?.format    ?? docFormat
+    console.log(`[pdf-to-test] "${fileName}": extracted ${pageCount} page(s), ${docText.length} chars, ocr=${ocr}`)
   } catch (e) {
-    console.error('[pdf-to-test] microservice unreachable:', e)
+    console.error(`[pdf-to-test] "${fileName}": microservice unreachable:`, e)
     return NextResponse.json({ error: 'Сервис обработки документов недоступен' }, { status: 503 })
   }
 
   if (!docText.trim()) {
+    console.warn(`[pdf-to-test] "${fileName}": extraction returned no text`)
     return NextResponse.json({ error: 'Документ не содержит текста — попробуйте другой файл' }, { status: 422 })
   }
 
@@ -158,6 +168,7 @@ ${truncated}`
 
   let parsed: { title?: string; questions?: unknown[] }
   try {
+    console.log(`[pdf-to-test] "${fileName}": asking AI for up to ${maxQ} questions (${truncated.length} chars)`)
     const raw = await callAI(
       'You are an educational test parser. Return ONLY valid JSON without markdown.',
       aiPrompt,
@@ -165,9 +176,11 @@ ${truncated}`
     )
     parsed = parseJSON<{ title?: string; questions?: unknown[] }>(raw)
   } catch (e) {
-    console.error('[pdf-to-test] AI error:', e)
+    console.error(`[pdf-to-test] "${fileName}": AI error:`, e)
     return NextResponse.json({ error: 'Ошибка анализа вопросов' }, { status: 500 })
   }
+
+  console.log(`[pdf-to-test] "${fileName}": done — ${(parsed.questions ?? []).length} question(s) generated`)
 
   return NextResponse.json({
     title: parsed.title ?? 'Тест из документа',
