@@ -23,7 +23,11 @@ const nextConfig: NextConfig = {
     ],
   },
   compiler: {
-    removeConsole: process.env.NODE_ENV === "production",
+    // Was `true`, which strips EVERY console.* call from the production
+    // bundle — including every console.error() this codebase relies on for
+    // Railway logs. That's why "no logs" for the pdf-to-test crash: it was
+    // never a logging gap in the route code, the compiler deleted all of it.
+    removeConsole: false,
   },
   experimental: {
     serverActions: {
