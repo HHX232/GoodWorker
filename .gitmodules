@@ -1,0 +1,3 @@
+[submodule "tg-bot"]
+	path = tg-bot
+	url = https://github.com/HHX232/goodworker-tg-bot.git
