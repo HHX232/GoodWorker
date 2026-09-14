@@ -1,0 +1,48 @@
+.layer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.capture {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.highlight {
+  stroke: #f59e0b;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.previewLine {
+  stroke: #2563eb;
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+}
+
+.snapDot {
+  fill: #2563eb;
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+
+// ── Dark theme ────────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .snapDot {
+    stroke: #121016;
+  }
+}

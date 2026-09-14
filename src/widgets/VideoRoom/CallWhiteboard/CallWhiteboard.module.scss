@@ -41,6 +41,11 @@
   }
 }
 
+.formulaButtonActive {
+  border-color: #2563eb;
+  color: #1d4ed8;
+}
+
 .aiMiniButton {
   height: 2.5rem;
   padding: 0 10px;
@@ -79,6 +84,43 @@
   :global(.excalidraw-container) {
     width: 100% !important;
     height: 100% !important;
+    position: relative;
+    z-index: 1;
+  }
+}
+
+// Behind Excalidraw's own (transparent) canvas — see the comment in
+// CallWhiteboard.tsx. Position/scale follow the board's scroll and zoom so
+// the pattern reads as attached to the canvas, like paper.
+.gridLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-repeat: repeat;
+  background-position: var(--grid-offset-x, 0px) var(--grid-offset-y, 0px);
+  background-size: var(--grid-size, 24px) var(--grid-size, 24px);
+
+  --grid-line-color: rgba(15, 23, 42, 0.12);
+  --grid-dot-color: rgba(15, 23, 42, 0.28);
+
+  &[data-grid-style='off'] {
+    background-image: none;
+  }
+
+  &[data-grid-style='squares'] {
+    background-image:
+      linear-gradient(to right, var(--grid-line-color) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line-color) 1px, transparent 1px);
+  }
+
+  &[data-grid-style='lines'] {
+    background-image: linear-gradient(to bottom, var(--grid-line-color) 1px, transparent 1px);
+  }
+
+  &[data-grid-style='dots'] {
+    background-image: radial-gradient(var(--grid-dot-color) 1.5px, transparent 1.6px);
+    background-position: calc(var(--grid-offset-x, 0px) - 0.5px) calc(var(--grid-offset-y, 0px) - 0.5px);
   }
 }
 
@@ -101,5 +143,13 @@
     border-color: rgba(255, 255, 255, 0.16);
 
     &:hover { background: rgba(255, 255, 255, 0.14); }
+  }
+  .formulaButtonActive {
+    border-color: #818cf8;
+    color: #c7d2fe;
+  }
+  .gridLayer {
+    --grid-line-color: rgba(255, 255, 255, 0.10);
+    --grid-dot-color: rgba(255, 255, 255, 0.22);
   }
 }

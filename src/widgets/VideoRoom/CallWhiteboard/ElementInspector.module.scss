@@ -1,0 +1,74 @@
+.inspector {
+  position: absolute;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px 5px 10px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.16);
+  transform: translateY(-100%);
+  pointer-events: auto;
+  white-space: nowrap;
+}
+
+.name {
+  font-size: 12px;
+  color: #334155;
+  cursor: default;
+  user-select: none;
+}
+
+.nameInput {
+  width: 120px;
+  padding: 2px 4px;
+  font-size: 12px;
+  border: 1px solid #93c5fd;
+  border-radius: 4px;
+  outline: none;
+  color: #1e293b;
+  background: #f8fafc;
+}
+
+.editButton {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #475569;
+  cursor: pointer;
+  font-size: 13px;
+
+  &:hover {
+    background: #f1f5f9;
+  }
+}
+
+// ── Dark theme ────────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .inspector {
+    background: #1a1826;
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+  .name {
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .nameInput {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: #818cf8;
+    color: #e8eaf0;
+  }
+  .editButton {
+    color: rgba(255, 255, 255, 0.75);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+}

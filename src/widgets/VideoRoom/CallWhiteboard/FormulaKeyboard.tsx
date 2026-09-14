@@ -3,6 +3,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import 'mathlive/static.css'
+import { useThemeCtx } from '@/app/providers/ThemeContext'
+import { INK_PALETTE } from './shapeGeometry'
 import styles from './FormulaKeyboard.module.scss'
 
 function SparklesIcon() {
@@ -22,7 +24,8 @@ function SparklesIcon() {
 
 interface Props {
   initialLatex?: string
-  onInsert: (latex: string, dataUrl: string, width: number, height: number) => void
+  initialColor?: string
+  onInsert: (latex: string, dataUrl: string, width: number, height: number, color: string) => void
   onClose: () => void
   roomName?: string
   isVip?: boolean
@@ -30,7 +33,8 @@ interface Props {
   autoOpenAi?: boolean
 }
 
-export function FormulaKeyboard({ initialLatex, onInsert, onClose, roomName, isVip, isAdmin, autoOpenAi }: Props) {
+export function FormulaKeyboard({ initialLatex, initialColor, onInsert, onClose, roomName, isVip, isAdmin, autoOpenAi }: Props) {
+  const { isDark } = useThemeCtx()
   const containerRef = useRef<HTMLDivElement>(null)
   const fieldRef = useRef<{ value: string; focus: () => void } | null>(null)
   const [ready, setReady] = useState(false)
@@ -39,6 +43,7 @@ export function FormulaKeyboard({ initialLatex, onInsert, onClose, roomName, isV
   const [aiOpen, setAiOpen] = useState(false)
   const [aiPrompt, setAiPrompt] = useState('')
   const [generating, setGenerating] = useState(false)
+  const [color, setColor] = useState(initialColor ?? (isDark ? '#ececec' : '#1e1e1e'))
   const canUseAi = !!isVip || !!isAdmin
 
   useEffect(() => {
@@ -95,24 +100,25 @@ export function FormulaKeyboard({ initialLatex, onInsert, onClose, roomName, isV
       holder.style.position = 'fixed'
       holder.style.left = '-9999px'
       holder.style.top = '0'
-      holder.style.background = '#ffffff'
       holder.style.padding = '12px'
       holder.style.fontSize = '32px'
-      holder.style.color = '#0a0a0a'
+      holder.style.color = color
       holder.innerHTML = markup
       document.body.appendChild(holder)
 
       await document.fonts.ready
-      const canvas = await html2canvas(holder, { backgroundColor: '#ffffff', scale: 2 })
+      // transparent background — a formula's ink color should read correctly
+      // whichever color the board itself is (light or dark theme)
+      const canvas = await html2canvas(holder, { backgroundColor: null, scale: 2 })
       holder.remove()
 
-      onInsert(latex, canvas.toDataURL('image/png'), canvas.width / 2, canvas.height / 2)
+      onInsert(latex, canvas.toDataURL('image/png'), canvas.width / 2, canvas.height / 2, color)
     } catch (err) {
       console.error('[FormulaKeyboard] insert failed:', err)
     } finally {
       setInserting(false)
     }
-  }, [inserting, onInsert])
+  }, [inserting, onInsert, color])
 
   const handleAiToggle = useCallback(() => {
     if (!canUseAi) {
@@ -185,6 +191,18 @@ export function FormulaKeyboard({ initialLatex, onInsert, onClose, roomName, isV
       )}
 
       {!ready && <div className={styles.loading}>Загрузка клавиатуры формул…</div>}
+      <div className={styles.colorRow}>
+        {INK_PALETTE.map(swatch => (
+          <button
+            key={swatch}
+            type="button"
+            className={`${styles.swatch} ${color === swatch ? styles.swatchActive : ''}`}
+            style={{ '--swatch-color': swatch } as React.CSSProperties}
+            onClick={() => setColor(swatch)}
+            title={swatch}
+          />
+        ))}
+      </div>
       <div className={styles.actions}>
         <button type="button" className={styles.cancel} onClick={onClose}>
           Отмена

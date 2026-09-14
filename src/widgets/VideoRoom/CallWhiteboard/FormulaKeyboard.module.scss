@@ -119,6 +119,29 @@
   }
 }
 
+.colorRow {
+  display: flex;
+  gap: 6px;
+}
+
+.swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background-color: var(--swatch-color);
+  cursor: pointer;
+  padding: 0;
+
+  &:hover {
+    border-color: #cbd5e1;
+  }
+}
+
+.swatchActive {
+  border-color: #2563eb;
+}
+
 .actions {
   display: flex;
   justify-content: flex-end;
@@ -180,5 +203,11 @@
     &:focus {
       border-color: #818cf8;
     }
+  }
+  .swatch:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+  .swatchActive {
+    border-color: #818cf8;
   }
 }

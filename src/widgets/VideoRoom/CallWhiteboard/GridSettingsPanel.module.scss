@@ -1,0 +1,153 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 260px;
+  max-width: calc(100vw - 32px);
+  padding: 14px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.styleRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.styleButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    border-color: #94a3b8;
+  }
+}
+
+.styleButtonActive {
+  border-color: #2563eb;
+  background: rgba(37, 99, 235, 0.08);
+  color: #1d4ed8;
+}
+
+.swatch {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border-radius: 3px;
+  background-color: #fff;
+  border: 1px solid #cbd5e1;
+  background-repeat: repeat;
+  background-size: 6px 6px;
+
+  &[data-swatch='off'] {
+    background-image: none;
+  }
+  &[data-swatch='squares'] {
+    background-image:
+      linear-gradient(to right, #94a3b8 1px, transparent 1px),
+      linear-gradient(to bottom, #94a3b8 1px, transparent 1px);
+  }
+  &[data-swatch='lines'] {
+    background-image: linear-gradient(to bottom, #94a3b8 1px, transparent 1px);
+  }
+  &[data-swatch='dots'] {
+    background-image: radial-gradient(#94a3b8 1px, transparent 1.2px);
+  }
+}
+
+.sizeRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sizeLabel {
+  font-size: 12px;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.sizeValue {
+  font-size: 12px;
+  color: #475569;
+  min-width: 32px;
+  text-align: right;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.close {
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: none;
+  background: #2563eb;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+// ── Dark theme ────────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .panel {
+    background: #1a1826;
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+  .title {
+    color: rgba(255, 255, 255, 0.9);
+  }
+  .styleButton {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.16);
+    color: rgba(255, 255, 255, 0.75);
+  }
+  .styleButtonActive {
+    border-color: #818cf8;
+    background: rgba(129, 140, 248, 0.16);
+    color: #c7d2fe;
+  }
+  .swatch {
+    background-color: transparent;
+    border-color: rgba(255, 255, 255, 0.2);
+
+    &[data-swatch='squares'] {
+      background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.5) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.5) 1px, transparent 1px);
+    }
+    &[data-swatch='lines'] {
+      background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.5) 1px, transparent 1px);
+    }
+    &[data-swatch='dots'] {
+      background-image: radial-gradient(rgba(255, 255, 255, 0.5) 1px, transparent 1.2px);
+    }
+  }
+  .sizeLabel, .sizeValue {
+    color: rgba(255, 255, 255, 0.65);
+  }
+}
