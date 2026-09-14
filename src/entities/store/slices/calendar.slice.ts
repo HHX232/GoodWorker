@@ -9,6 +9,7 @@ interface CreateModalState {
   startTime: string | null
   endTime: string | null
   editingEvent: CalendarEvent | null
+  initialStudentId: string | null
 }
 
 export interface CalendarState {
@@ -36,7 +37,8 @@ const initialState: CalendarState = {
     date: null,
     startTime: null,
     endTime: null,
-    editingEvent: null
+    editingEvent: null,
+    initialStudentId: null
   },
   view: 'week'
 }
@@ -177,14 +179,16 @@ const calendarSlice = createSlice({
         startTime?: string | null
         endTime?: string | null
         editEventId?: string
+        initialStudentId?: string
       }>
     ) {
-      const {date, startTime, endTime, editEventId} = action.payload
+      const {date, startTime, endTime, editEventId, initialStudentId} = action.payload
       state.createModal.isOpen = true
       state.createModal.date = date ?? null
       state.createModal.startTime = startTime ?? null
       state.createModal.endTime = endTime ?? null
       state.createModal.editingEvent = editEventId ? state.events.find((e) => e.id === editEventId) ?? null : null
+      state.createModal.initialStudentId = initialStudentId ?? null
     },
 
     closeCreateModal(state) {

@@ -58,6 +58,7 @@ model Student {
   feedbackPromoGiven     Boolean          @default(false)
   homeworkAssignments    HomeworkAssignment[]
   referralCode           String?          @unique
+  paymentReminderSettings PaymentReminderSetting[]
 }
 
 model Teacher {
@@ -104,6 +105,7 @@ model Teacher {
   serviceLabels       String[]            @default([])
   feedbackPromoGiven  Boolean             @default(false)
   referralCode        String?             @unique
+  paymentReminderSettings PaymentReminderSetting[]
 
   @@index([isVip, createdAt])
 }
@@ -181,12 +183,30 @@ model ServiceBooking {
   desiredTime   String?
   confirmedDate String?
   confirmedTime String?
+  paidAt        DateTime?
   createdAt     DateTime      @default(now())
   service       Service       @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   student       Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([serviceId, studentId])
   @@index([studentId])
+}
+
+// Per (teacher, student) cadence for "remind about payment after N lessons"
+// (calendar payment-reminder feature — see PaymentReminder API routes).
+model PaymentReminderSetting {
+  teacherId              String
+  studentId              String
+  everyNLessons          Int
+  // Unpaid-booking count at the last reminder sent (tg-bot scheduler) — reminders
+  // fire again only once the unpaid count grows past this, so it doesn't repeat daily.
+  lastRemindedUnpaidCount Int      @default(0)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  teacher                Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  student                Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([teacherId, studentId])
 }
 
 model ServicePromoCode {

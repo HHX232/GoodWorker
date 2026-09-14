@@ -43,18 +43,29 @@ function TelegramSection() {
 
   const startLinkFlow = useCallback(async () => {
     setLinking(true)
+    // Open the tab synchronously (inside the click's user-activation window) —
+    // opening it after the await below gets silently blocked by popup blockers
+    // in Safari/Chrome, which is why the button used to appear to do nothing.
+    const newTab = window.open('', '_blank')
     try {
       const res = await fetch('/api/telegram/link-token', { method: 'POST' })
       const data = await res.json()
       if (data.deepLink) {
-        window.open(data.deepLink, '_blank')
+        if (newTab) newTab.location.href = data.deepLink
+        else window.open(data.deepLink, '_blank')
         pollRef.current = setInterval(async () => {
           const ok = await checkStatus()
           if (ok) { clearInterval(pollRef.current!); toast.success(t('tgLinked')) }
         }, 3000)
         setTimeout(() => { if (pollRef.current) clearInterval(pollRef.current) }, 120_000)
+      } else {
+        newTab?.close()
+        toast.error(t('tgLinkError'))
       }
-    } catch { toast.error(t('tgLinkError')) }
+    } catch {
+      newTab?.close()
+      toast.error(t('tgLinkError'))
+    }
     finally { setLinking(false) }
   }, [checkStatus, t])
 

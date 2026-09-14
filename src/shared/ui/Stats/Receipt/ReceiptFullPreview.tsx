@@ -1,5 +1,6 @@
 'use client'
 import {Receipt} from '@/shared/types/Receipt/receipt.types'
+import {useTranslations} from 'next-intl'
 import styles from './ReceiptPreview.module.scss'
 
 interface ReceiptFullPreviewProps {
@@ -20,10 +21,14 @@ function SectionLabel({children}: {children: React.ReactNode}) {
   return <p className={styles.full_section_label}>{children}</p>
 }
 
+const STATUS_ICON: Record<Receipt['status'], string> = {
+  paid: styles.icon_paid,
+  unpaid: styles.icon_unpaid,
+  planned: styles.icon_planned,
+}
+
 export function ReceiptFullPreview({receipt, onBack}: ReceiptFullPreviewProps) {
-  const handleDownload = () => {
-    console.log('download receipt', receipt.txId)
-  }
+  const t = useTranslations('statsPage.heroCard')
 
   return (
     <div className={styles.full}>
@@ -37,72 +42,52 @@ export function ReceiptFullPreview({receipt, onBack}: ReceiptFullPreviewProps) {
             strokeLinejoin='round'
           />
         </svg>
-        Все чеки
+        {t('allReceipts')}
       </button>
 
       <div className={styles.full_header}>
-        <div className={styles.full_check}>
-          <svg viewBox='0 0 20 20' fill='none'>
-            <path
-              d='M4 10.5 8 14.5 16 6.5'
-              stroke='#27500A'
-              strokeWidth='1.8'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-            />
-          </svg>
+        <div className={`${styles.full_check} ${STATUS_ICON[receipt.status]}`}>
+          {receipt.status === 'paid' && (
+            <svg viewBox='0 0 20 20' fill='none'>
+              <path d='M4 10.5 8 14.5 16 6.5' stroke='#27500A' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round' />
+            </svg>
+          )}
+          {receipt.status === 'unpaid' && (
+            <svg viewBox='0 0 20 20' fill='none'>
+              <path d='M10 5.5v6M10 14.2v.1' stroke='#7A2020' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round' />
+            </svg>
+          )}
+          {receipt.status === 'planned' && (
+            <svg viewBox='0 0 20 20' fill='none'>
+              <circle cx='10' cy='10' r='6' stroke='#1B4A8A' strokeWidth='1.6' />
+              <path d='M10 7v3.2l2.2 1.3' stroke='#1B4A8A' strokeWidth='1.6' strokeLinecap='round' strokeLinejoin='round' />
+            </svg>
+          )}
         </div>
-        <p className={styles.full_title}>Оплата успешно выполнена</p>
-        <p className={styles.full_subtitle}>Чек сформирован. Детали платежа и занятия доступны ниже</p>
+        <p className={styles.full_title}>{t(`fullTitle_${receipt.status}`)}</p>
+        <p className={styles.full_subtitle}>{t(`fullSubtitle_${receipt.status}`)}</p>
       </div>
 
       <div className={styles.full_block}>
-        <SectionLabel>Платёж</SectionLabel>
-        <Row label='Номер транзакции' value={receipt.txId} />
-        <Row label='Дата оплаты' value={receipt.date} />
-        <Row label='Время оплаты' value={receipt.paidAt} />
-        <Row label='Сумма' value={`${receipt.amount.toLocaleString('ru')} ${receipt.currency}`} />
-        <Row label='Способ оплаты' value={receipt.payMethod} />
-      </div>
-
-      <hr className={styles.full_dash} />
-
-      <div className={styles.full_block}>
-        <SectionLabel>Отправитель (ученик)</SectionLabel>
-        <Row label='Имя' value={receipt.studentName} />
-        <Row label='Счёт' value={receipt.studentAcc} />
+        <SectionLabel>{t('lessonSection')}</SectionLabel>
+        <Row label={t('subjectLabel')} value={receipt.subject} />
+        {receipt.date && <Row label={t('dateLabel')} value={receipt.date} />}
+        <Row label={t('amountLabel')} value={`${receipt.amount.toLocaleString('ru')} ${receipt.currency}`} />
       </div>
 
       <hr className={styles.full_dash} />
 
       <div className={styles.full_block}>
-        <SectionLabel>Получатель (репетитор)</SectionLabel>
-        <Row label='Имя' value={receipt.tutorName} />
-        <Row label='Счёт' value={receipt.tutorAcc} />
-      </div>
-
-      <hr className={styles.full_dash} />
-
-      <div className={styles.full_block}>
-        <SectionLabel>Занятие</SectionLabel>
-        <Row label='Предмет' value={receipt.subjectFull} />
-        <Row label='Тип занятия' value={receipt.type} />
-        <Row label='Дата занятия' value={receipt.date} />
-        <Row label='Время занятия' value={receipt.timeRange} />
-        <Row label='Длительность' value={receipt.duration} />
-        <Row label='Формат' value={receipt.format} />
+        <SectionLabel>{t('studentSection')}</SectionLabel>
+        <Row label={t('nameLabel')} value={receipt.studentName} />
       </div>
 
       <div className={styles.full_total}>
-        <span className={styles.full_total_k}>Итого</span>
+        <span className={styles.full_total_k}>{t('total')}</span>
         <span className={styles.full_total_v}>
           {receipt.amount.toLocaleString('ru')} {receipt.currency}
         </span>
       </div>
-
-      <button type='button' className={styles.full_btn} onClick={handleDownload}>
-        Скачать чек
-      </button>
     </div>
   )
 }

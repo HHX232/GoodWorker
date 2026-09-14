@@ -14,6 +14,8 @@ interface CalendarEventModalProps {
   onEdit: (event: CalendarEvent) => void
   onDelete: (id: string) => void
   onConfirm?: (id: string) => void
+  paymentDueStudentIds?: Set<string>
+  onViewPayment?: (studentId: string) => void
 }
 
 function timeToMins(t: string): number {
@@ -21,13 +23,15 @@ function timeToMins(t: string): number {
   return h * 60 + (m || 0)
 }
 
-export function CalendarEventModal({event, onClose, onEdit, onDelete, onConfirm}: CalendarEventModalProps) {
+export function CalendarEventModal({event, onClose, onEdit, onDelete, onConfirm, paymentDueStudentIds, onViewPayment}: CalendarEventModalProps) {
   const t = useTranslations('calendar.eventModal')
   const locale = useLocale()
   const intlLocale = locale === 'ru' ? 'ru-RU' : 'en-US'
   const [showTooltip, setShowTooltip] = useState(false)
 
   if (!event) return null
+
+  const paymentDue = !!event.studentId && !!paymentDueStudentIds?.has(event.studentId)
 
   const colors = EVENT_COLORS[event.color] ?? EVENT_COLORS.purple
 
@@ -71,6 +75,26 @@ export function CalendarEventModal({event, onClose, onEdit, onDelete, onConfirm}
             }}>!</span>
             <span style={{fontSize: 12, color: '#92400E', lineHeight: 1.4}}>
               Импортировано из Google Calendar. Проверьте и подтвердите запись.
+            </span>
+          </div>
+        )}
+        {paymentDue && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px',
+            background: '#EFF6FF', borderRadius: 10, marginBottom: 12,
+            border: '1px solid #BFDBFE',
+          }}>
+            <span style={{
+              width: 22, height: 22, borderRadius: '50%', background: '#2563EB',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              <svg width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='#fff' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+                <path d='M12 3c-3 3-8 3.5-8 3.5s-.5 8 8 14.5c8.5-6.5 8-14.5 8-14.5S15 6 12 3z' />
+                <path d='M12 9v6M9.5 11.5h5' />
+              </svg>
+            </span>
+            <span style={{fontSize: 12, color: '#1E40AF', lineHeight: 1.4}}>
+              {t('paymentDueBadge')}
             </span>
           </div>
         )}
@@ -148,6 +172,15 @@ export function CalendarEventModal({event, onClose, onEdit, onDelete, onConfirm}
       </div>
 
       <div className={styles.footer}>
+        {paymentDue && event.studentId && onViewPayment && (
+          <button
+            className={styles.btnSecondary}
+            style={{background: '#2563EB', color: '#fff', borderColor: '#2563EB'}}
+            onClick={() => onViewPayment(event.studentId!)}
+          >
+            {t('paymentDueBtn')}
+          </button>
+        )}
         {event.warning && onConfirm && (
           <button
             className={styles.btnSecondary}

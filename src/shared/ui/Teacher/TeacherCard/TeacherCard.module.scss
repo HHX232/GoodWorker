@@ -24,15 +24,6 @@
   justify-content: center;
   background: #f0f0f5;
   overflow: hidden;
-
-  // Тонкая диагональная штриховка поверх фото/инициалов — как в HTML-прототипе
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: repeating-linear-gradient(135deg, rgba(12, 10, 8, 0.05) 0 1px, transparent 1px 14px);
-    pointer-events: none;
-  }
 }
 
 .photo_img {

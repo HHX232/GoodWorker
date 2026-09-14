@@ -202,6 +202,64 @@
 
 }
 
+.list_tabs {
+   display: flex;
+   gap: 6px;
+   margin-bottom: 16px;
+}
+
+.list_tab {
+   padding: 7px 16px;
+   border-radius: 20px;
+   border: 1px solid #e8e8e8;
+   background: #fff;
+   color: #999;
+   font-size: 12px;
+   font-weight: 500;
+   cursor: pointer;
+   font-family: inherit;
+   transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+   &:hover { border-color: #d8d8d8; color: #555; }
+}
+
+.list_tab_active {
+   background: #1a1a1a;
+   border-color: #1a1a1a;
+   color: #fff;
+
+   &:hover { color: #fff; }
+}
+
+.list_empty {
+   font-size: 13px;
+   color: #bbb;
+   padding: 40px 0;
+   text-align: center;
+}
+
+.no_receipts_hint {
+   font-size: 12px;
+   color: #bbb;
+   margin: 4px 0 8px;
+}
+
+.upcoming_link {
+   display: inline-flex;
+   align-self: flex-start;
+   background: transparent;
+   border: none;
+   padding: 0;
+   margin: 4px 0 0;
+   font-size: 11px;
+   font-weight: 500;
+   color: #3b82f6;
+   cursor: pointer;
+   font-family: inherit;
+
+   &:hover { text-decoration: underline; }
+}
+
 .list_grid {
    display: grid;
    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));

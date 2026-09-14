@@ -23,6 +23,7 @@ import {CalendarEventModal} from '@/widgets/Calendar/Modals/CalendarEventModal/C
 import {GoogleCalendarImportModal} from '@/widgets/Calendar/Modals/GoogleCalendarImportModal/GoogleCalendarImportModal'
 import {CalendarTaskCreateModal} from '@/widgets/Calendar/Modals/CalendarTaskCreateModal/CalendarTaskCreateModal'
 import {CalendarTaskModal} from '@/widgets/Calendar/Modals/CalendarTaskModal/CalendarTaskModal'
+import {PaymentReminderModal} from '@/widgets/Calendar/Modals/PaymentReminderModal/PaymentReminderModal'
 import {MonthCalendar} from '@/widgets/Calendar/MonthCalendar/MonthCalendar'
 import {WeekCalendar} from '@/widgets/Calendar/WeekCalendar/WeekCalendar'
 import {useLocale, useTranslations} from 'next-intl'
@@ -62,6 +63,8 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
 
   const [teacherServices, setTeacherServices] = useState<{id: string; title: string; price: number; duration: number}[]>([])
   const [teacherCategoryIds, setTeacherCategoryIds] = useState<string[]>([])
+  const [paymentDueStudentIds, setPaymentDueStudentIds] = useState<Set<string>>(new Set())
+  const [studentModalId, setStudentModalId] = useState<string | null>(null)
 
   interface HomeworkCalendarItem {
     id: string
@@ -84,6 +87,7 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
         if (Array.isArray(d.events) && d.events.length > 0) setEvents(d.events)
         if (Array.isArray(d.tasks) && d.tasks.length > 0) setTasks(d.tasks)
         if (Array.isArray(d.categoryIds)) setTeacherCategoryIds(d.categoryIds)
+        if (Array.isArray(d.studentsWithPendingPayment)) setPaymentDueStudentIds(new Set(d.studentsWithPendingPayment))
       })
       .catch(() => {})
 
@@ -271,6 +275,7 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
         students={students}
         onTaskClick={(task) => selectTask(task.id)}
         onTaskToggle={(id) => toggleCalendarTask(id)}
+        onStudentClick={(student) => setStudentModalId(student.id)}
       />
 
       <div className={styles.main}>
@@ -297,6 +302,7 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
             onEventClick={(event) => selectEvent(event.id)}
             onCellClick={(date, startTime, endTime) => openCreateModal({date, startTime, endTime})}
             onEventUpdate={updateEvent}
+            paymentDueStudentIds={paymentDueStudentIds}
           />
         )}
         {view === 'day' && (
@@ -309,6 +315,7 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
             onEventClick={(event) => selectEvent(event.id)}
             onCellClick={(date, startTime, endTime) => openCreateModal({date, startTime, endTime})}
             onEventUpdate={updateEvent}
+            paymentDueStudentIds={paymentDueStudentIds}
           />
         )}
         {view === 'month' && (
@@ -332,6 +339,17 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
         onConfirm={(id) => {
           updateEvent({ ...selectedEvent!, id, warning: false })
           selectEvent(null)
+        }}
+        paymentDueStudentIds={paymentDueStudentIds}
+        onViewPayment={(studentId) => { selectEvent(null); setStudentModalId(studentId) }}
+      />
+
+      <PaymentReminderModal
+        student={students.find(s => s.id === studentModalId) ?? null}
+        onClose={() => setStudentModalId(null)}
+        onCreateBooking={(studentId) => {
+          setStudentModalId(null)
+          openCreateModal({initialStudentId: studentId})
         }}
       />
 
@@ -372,6 +390,7 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
         teacherStudents={students.map(s => ({ id: s.id, name: s.name, schoolGrade: s.schoolGrade, courseNumber: s.courseNumber }))}
         teacherCategoryIds={teacherCategoryIds}
         isVip={isVip}
+        initialStudentId={createModal.initialStudentId}
       />
     </div>
   )

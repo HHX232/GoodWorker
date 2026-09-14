@@ -111,6 +111,27 @@
    color: #3daa5f;
 }
 
+// ─── Status color variants ────────────────────────────────────────────────────
+
+.status_paid {
+   .mini_dot { background: #3daa5f; box-shadow: 0 0 0 2px rgba(61, 170, 95, 0.2); }
+   .mini_status_text { color: #3daa5f; }
+}
+
+.status_unpaid {
+   .mini_dot { background: #d64545; box-shadow: 0 0 0 2px rgba(214, 69, 69, 0.2); }
+   .mini_status_text { color: #d64545; }
+}
+
+.status_planned {
+   .mini_dot { background: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
+   .mini_status_text { color: #3b82f6; }
+}
+
+.icon_paid { background: #e8f5ee; }
+.icon_unpaid { background: #fbe9e9; }
+.icon_planned { background: #e7f0fd; }
+
 .mini_amount {
    font-size: 26px;
    font-weight: 300;

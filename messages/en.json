@@ -811,7 +811,29 @@
       "receipts": "Receipts",
       "profile": "Profile",
       "allReceipts": "All receipts",
-      "receiptsCount": "Receipts ({count})"
+      "receiptsCount": "Receipts ({count})",
+      "noReceipts": "No receipts yet",
+      "tabCurrent": "Current",
+      "tabUpcoming": "Next month",
+      "upcomingHint": "{count} planned in the next month",
+      "status_paid": "Paid",
+      "status_unpaid": "Unpaid",
+      "status_planned": "Planned",
+      "dateLabel": "Date",
+      "studentLabel": "Student",
+      "open": "Open",
+      "fullTitle_paid": "Payment received",
+      "fullTitle_unpaid": "Payment pending",
+      "fullTitle_planned": "Upcoming lesson",
+      "fullSubtitle_paid": "The receipt has been generated. Details are below.",
+      "fullSubtitle_unpaid": "This lesson hasn't been paid for yet.",
+      "fullSubtitle_planned": "Scheduled for the coming month — not due yet.",
+      "lessonSection": "Lesson",
+      "subjectLabel": "Subject",
+      "amountLabel": "Amount",
+      "studentSection": "Student",
+      "nameLabel": "Name",
+      "total": "Total"
     },
     "topSubjects": {
       "title": "Top subjects",
@@ -1177,7 +1199,9 @@
     "sdmCommentPlaceholder": "Comment for this error…",
     "sdmMarkFixedBadge": "mark fixed",
     "sdmMarkFixedTitle": "Mark as fixed",
-    "sdmUnmarkFixedTitle": "Unmark as fixed"
+    "sdmUnmarkFixedTitle": "Unmark as fixed",
+    "paymentPaid": "Paid",
+    "paymentUnpaid": "Unpaid"
   },
   "SetCommentBlock": {
     "heading": "Leave a review",
@@ -1470,7 +1494,9 @@
       "delete": "Delete",
       "statusScheduled": "Scheduled",
       "statusCompleted": "Completed",
-      "statusCancelled": "Cancelled"
+      "statusCancelled": "Cancelled",
+      "paymentDueBadge": "Payment due after this meeting",
+      "paymentDueBtn": "Payment after meeting. View info"
     },
     "taskCreateModal": {
       "newTask": "New task",
@@ -1564,6 +1590,28 @@
       "aiEditSubmit": "Send",
       "aiEditLoading": "Applying...",
       "aiEditError": "Failed to apply changes"
+    },
+    "paymentReminder": {
+      "eyebrow": "Payment",
+      "studentFallback": "Student",
+      "settingLabel": "Remind about payment after this many lessons",
+      "settingPlaceholder": "e.g. 4",
+      "settingHint": "Leave empty to turn reminders off for this student.",
+      "save": "Save",
+      "saving": "Saving…",
+      "settingSaved": "Reminder setting saved",
+      "settingSaveError": "Failed to save the setting",
+      "loading": "Loading…",
+      "loadError": "Failed to load payment data",
+      "noBookings": "No booked services yet",
+      "statusPaid": "Paid",
+      "statusUnpaid": "Unpaid",
+      "markPaidError": "Failed to update status",
+      "totalOwed": "Total owed",
+      "tabPayment": "Payment",
+      "tabCreateBooking": "Create booking",
+      "createBookingHint": "Book a new lesson for {name}.",
+      "createBookingBtn": "Create booking"
     }
   },
   "roadmapViewer": {

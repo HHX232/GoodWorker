@@ -90,3 +90,18 @@
    pointer-events: none;
    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
+
+.paymentBadge {
+   position: absolute;
+   bottom: 4px;
+   right: 6px;
+   width: 14px;
+   height: 14px;
+   border-radius: 50%;
+   background: #2563EB;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   pointer-events: none;
+   box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}

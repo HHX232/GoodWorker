@@ -43,6 +43,7 @@ interface CalendarCreateModalProps {
   teacherStudents?: StudentOption[]
   teacherCategoryIds?: string[]
   isVip?: boolean
+  initialStudentId?: string | null
 }
 
 const COLOR_OPTIONS = Object.keys(EVENT_COLORS) as CalendarEventColor[]
@@ -74,6 +75,7 @@ export function CalendarCreateModal({
   teacherStudents = [],
   teacherCategoryIds,
   isVip = false,
+  initialStudentId,
 }: CalendarCreateModalProps) {
   const t = useTranslations('calendar.createModal')
   const tPlan = useTranslations('calendar.lessonPlan')
@@ -130,17 +132,22 @@ export function CalendarCreateModal({
       setLessonPlan(editingEvent.lessonPlan ?? null)
       setAutoSummary(editingEvent.lessonPlan?.summary ?? '')
     } else {
+      const preselectedStudent = initialStudentId
+        ? teacherStudents.find((s) => s.id === initialStudentId)
+        : undefined
       setForm({
         ...EMPTY_FORM,
         date: initialDate ?? formatDateKey(new Date()),
         startTime: initialStartTime ?? '09:00',
-        endTime: initialEndTime ?? '10:00'
+        endTime: initialEndTime ?? '10:00',
+        studentId: preselectedStudent?.id ?? '',
+        studentName: preselectedStudent?.name ?? ''
       })
       setSelectedServiceId('')
       setLessonPlan(null)
       setAutoSummary('')
     }
-  }, [isOpen, editingEvent, initialDate, initialStartTime, initialEndTime])
+  }, [isOpen, editingEvent, initialDate, initialStartTime, initialEndTime, initialStudentId, teacherStudents])
 
   const set =
     (key: keyof typeof EMPTY_FORM) =>

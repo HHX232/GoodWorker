@@ -1,0 +1,247 @@
+.studentHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.studentAvatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.studentHeaderName {
+  font-size: 16px;
+  font-weight: 600;
+  color: #141416;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 20px;
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.07);
+}
+
+.tabBtn {
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: #999;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover { color: #555; }
+}
+
+.tabBtnActive {
+  color: #534AB7;
+  border-bottom-color: #534AB7;
+}
+
+.createHint {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+.body {
+  padding: 8px 20px 12px;
+}
+
+.settingRow {
+  padding: 8px 0 14px;
+}
+
+.settingLabel {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #141416;
+  margin-bottom: 8px;
+}
+
+.settingInputRow {
+  display: flex;
+  gap: 8px;
+}
+
+.settingInput {
+  width: 90px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
+  font-size: 13px;
+  color: #141416;
+  background: #fff;
+
+  &:focus {
+    outline: none;
+    border-color: #534AB7;
+  }
+}
+
+.saveBtn {
+  padding: 8px 16px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  background: #534AB7;
+  color: #fff;
+  border: none;
+  transition: opacity 0.15s;
+
+  &:hover { opacity: 0.85; }
+  &:disabled { opacity: 0.5; cursor: default; }
+}
+
+.settingHint {
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: #999;
+  line-height: 1.4;
+}
+
+.divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.06);
+  margin: 4px 0 12px;
+}
+
+.empty {
+  padding: 20px 0;
+  text-align: center;
+  font-size: 13px;
+  color: #aaa;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #FCEBEB;
+  border: 0.5px solid #F7C1C1;
+}
+
+.itemPaid {
+  background: #E1F5EE;
+  border-color: #B5E9D6;
+}
+
+.itemInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.itemTitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: #141416;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemMeta {
+  font-size: 11px;
+  color: #999;
+}
+
+.itemPrice {
+  font-size: 13px;
+  font-weight: 700;
+  color: #141416;
+  flex-shrink: 0;
+}
+
+.statusBtn {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.15s;
+
+  &:hover { opacity: 0.8; }
+}
+
+.statusUnpaid {
+  background: #A32D2D;
+  color: #fff;
+}
+
+.statusPaid {
+  background: #085041;
+  color: #fff;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-top: 0.5px solid rgba(0, 0, 0, 0.07);
+}
+
+.totalLabel {
+  font-size: 12px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.totalValue {
+  font-size: 17px;
+  font-weight: 700;
+  color: #141416;
+}
+
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .studentHeaderName { color: #e8eaf0; }
+  .tabs { border-bottom-color: rgba(255, 255, 255, 0.07); }
+  .tabBtn { color: rgba(255, 255, 255, 0.35); &:hover { color: rgba(255, 255, 255, 0.6); } }
+  .tabBtnActive { color: #a5b4fc; border-bottom-color: #a5b4fc; }
+  .createHint { color: rgba(255, 255, 255, 0.5); }
+  .settingLabel { color: #e8eaf0; }
+  .settingInput { background: #23263a; border-color: rgba(255, 255, 255, 0.1); color: #e8eaf0; }
+  .settingHint { color: rgba(255, 255, 255, 0.3); }
+  .divider { background: rgba(255, 255, 255, 0.06); }
+  .empty { color: rgba(255, 255, 255, 0.25); }
+  .item { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.25); }
+  .itemPaid { background: rgba(34, 197, 94, 0.1); border-color: rgba(34, 197, 94, 0.25); }
+  .itemTitle { color: #e8eaf0; }
+  .itemMeta { color: rgba(255, 255, 255, 0.3); }
+  .itemPrice { color: #e8eaf0; }
+  .footer { border-top-color: rgba(255, 255, 255, 0.07); }
+  .totalLabel { color: rgba(255, 255, 255, 0.3); }
+  .totalValue { color: #e8eaf0; }
+}

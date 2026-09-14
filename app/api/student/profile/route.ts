@@ -67,6 +67,7 @@ export async function GET() {
                   timeFrom: true,
                   timeTo: true,
                   price: true,
+                  currency: true,
                   photoUrl: true,
                   category: {
                     select: {
@@ -165,6 +166,8 @@ export async function GET() {
         id: sb.id,
         status: sb.status,
         finalPrice: sb.finalPrice,
+        paid: !!sb.paidAt,
+        confirmedDate: sb.confirmedDate,
         createdAt: sb.createdAt.toISOString(),
         service: sb.service,
       })),

@@ -7,7 +7,34 @@ import { StatsHero } from '@/shared/ui/Stats/StatsHero/StatsHero'
 import StatsHeroCard from '@/shared/ui/Stats/StatsHeroCard/StatsHeroCard'
 import { SubjectsPieChart } from '@/shared/ui/Stats/SubjectsPieChart/SubjectsPieChart'
 import { WeekCalendar, CalendarLesson } from '@/shared/ui/Stats/WeekCalendar/WeekCalendar'
+import { Receipt } from '@/shared/types/Receipt/receipt.types'
 import styles from './TutorStatsPage.module.scss'
+
+interface ReceiptRow {
+  id: string
+  studentId: string
+  studentName: string
+  studentAvatar: string | null
+  serviceTitle: string
+  amount: number
+  currency: string
+  date: string | null
+  status: 'paid' | 'unpaid' | 'planned'
+}
+
+function receiptRowToReceipt(r: ReceiptRow): Receipt {
+  return {
+    id: r.id,
+    status: r.status,
+    subject: r.serviceTitle,
+    date: r.date,
+    amount: r.amount,
+    currency: r.currency,
+    studentId: r.studentId,
+    studentName: r.studentName,
+    studentAvatar: r.studentAvatar,
+  }
+}
 
 interface SubjectItem {
   name: string
@@ -48,6 +75,8 @@ interface StatsData {
   heroStats: HeroStats
   errorStats: ErrorStat[]
   correctionStats?: ErrorStat[]
+  receipts?: ReceiptRow[]
+  upcomingReceipts?: ReceiptRow[]
 }
 
 function calendarEventToLesson(e: CalendarEvent, eventSubject: string): CalendarLesson {
@@ -128,7 +157,12 @@ export default function TutorStatsPage({ teacherId }: { teacherId: string }) {
       />
 
       <div className={styles.page}>
-        <StatsHeroCard extraClass={styles.hero_card} teacher={data.teacher} />
+        <StatsHeroCard
+          extraClass={styles.hero_card}
+          teacher={data.teacher}
+          receipts={(data.receipts ?? []).map(receiptRowToReceipt)}
+          upcomingReceipts={(data.upcomingReceipts ?? []).map(receiptRowToReceipt)}
+        />
         <HoursChart extraClass={styles.hours_chart} monthsData={data.monthsData} />
         <SubjectsPieChart extraClass={styles.sub_pie} data={data.subjectData} />
         <WeekCalendar

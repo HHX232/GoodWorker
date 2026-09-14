@@ -792,6 +792,35 @@
       "avg": "平均",
       "noLessons": "暂无历史课程",
       "participants": "人"
+    },
+    "heroCard": {
+      "teacher": "教师",
+      "receipts": "收据",
+      "profile": "个人资料",
+      "allReceipts": "所有收据",
+      "receiptsCount": "收据（{count}）",
+      "noReceipts": "暂无收据",
+      "tabCurrent": "当前",
+      "tabUpcoming": "下个月",
+      "upcomingHint": "下个月计划 {count} 笔",
+      "status_paid": "已付款",
+      "status_unpaid": "未付款",
+      "status_planned": "已计划",
+      "dateLabel": "日期",
+      "studentLabel": "学生",
+      "open": "打开",
+      "fullTitle_paid": "已收到付款",
+      "fullTitle_unpaid": "等待付款",
+      "fullTitle_planned": "即将到来的课程",
+      "fullSubtitle_paid": "收据已生成，详情见下方",
+      "fullSubtitle_unpaid": "此课程尚未付款",
+      "fullSubtitle_planned": "计划在下个月进行 — 尚未到付款时间",
+      "lessonSection": "课程",
+      "subjectLabel": "科目",
+      "amountLabel": "金额",
+      "studentSection": "学生",
+      "nameLabel": "姓名",
+      "total": "总计"
     }
   },
   "dashboard": {
@@ -1143,7 +1172,9 @@
     "sdmCommentPlaceholder": "对此错误的评论…",
     "sdmMarkFixedBadge": "标记为已修正",
     "sdmMarkFixedTitle": "标记为已修正",
-    "sdmUnmarkFixedTitle": "取消标记"
+    "sdmUnmarkFixedTitle": "取消标记",
+    "paymentPaid": "已付款",
+    "paymentUnpaid": "未付款"
   },
   "SetCommentBlock": {
     "heading": "留下评价",
@@ -2568,6 +2599,32 @@
       "aiEditSubmit": "发送",
       "aiEditLoading": "正在应用...",
       "aiEditError": "应用修改失败"
+    },
+    "eventModal": {
+      "paymentDueBadge": "此次会面后需要付款",
+      "paymentDueBtn": "会面后付款。查看信息"
+    },
+    "paymentReminder": {
+      "eyebrow": "付款",
+      "studentFallback": "学生",
+      "settingLabel": "每多少节课后提醒付款",
+      "settingPlaceholder": "例如 4",
+      "settingHint": "留空则关闭该学生的提醒。",
+      "save": "保存",
+      "saving": "保存中…",
+      "settingSaved": "设置已保存",
+      "settingSaveError": "保存设置失败",
+      "loading": "加载中…",
+      "loadError": "加载付款数据失败",
+      "noBookings": "尚无已预约的服务",
+      "statusPaid": "已付款",
+      "statusUnpaid": "未付款",
+      "markPaidError": "更新状态失败",
+      "totalOwed": "应付总额",
+      "tabPayment": "付款",
+      "tabCreateBooking": "创建预约",
+      "createBookingHint": "为 {name} 预约新课程。",
+      "createBookingBtn": "创建预约"
     }
   },
   "videoZone": {

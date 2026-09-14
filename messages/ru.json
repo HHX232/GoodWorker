@@ -811,7 +811,29 @@
       "receipts": "Чеки",
       "profile": "Профиль",
       "allReceipts": "Все чеки",
-      "receiptsCount": "Чеки ({count})"
+      "receiptsCount": "Чеки ({count})",
+      "noReceipts": "Чеков пока нет",
+      "tabCurrent": "Текущие",
+      "tabUpcoming": "Ближайший месяц",
+      "upcomingHint": "{count} запланировано на ближайший месяц",
+      "status_paid": "Оплачено",
+      "status_unpaid": "Не оплачено",
+      "status_planned": "Запланировано",
+      "dateLabel": "Дата",
+      "studentLabel": "Ученик",
+      "open": "Открыть",
+      "fullTitle_paid": "Оплата получена",
+      "fullTitle_unpaid": "Ожидает оплаты",
+      "fullTitle_planned": "Предстоящее занятие",
+      "fullSubtitle_paid": "Чек сформирован. Детали платежа доступны ниже",
+      "fullSubtitle_unpaid": "За это занятие ещё не поступила оплата",
+      "fullSubtitle_planned": "Запланировано на ближайший месяц — срок оплаты ещё не наступил",
+      "lessonSection": "Занятие",
+      "subjectLabel": "Предмет",
+      "amountLabel": "Сумма",
+      "studentSection": "Ученик",
+      "nameLabel": "Имя",
+      "total": "Итого"
     },
     "topSubjects": {
       "title": "Топ предметов",
@@ -1177,7 +1199,9 @@
     "sdmCommentPlaceholder": "Комментарий к этой ошибке…",
     "sdmMarkFixedBadge": "отметить исправленным",
     "sdmMarkFixedTitle": "Отметить как исправленное",
-    "sdmUnmarkFixedTitle": "Снять отметку"
+    "sdmUnmarkFixedTitle": "Снять отметку",
+    "paymentPaid": "Оплачено",
+    "paymentUnpaid": "Не оплачено"
   },
   "SetCommentBlock": {
     "heading": "Оставить отзыв",
@@ -1470,7 +1494,9 @@
       "delete": "Удалить",
       "statusScheduled": "Запланировано",
       "statusCompleted": "Проведено",
-      "statusCancelled": "Отменено"
+      "statusCancelled": "Отменено",
+      "paymentDueBadge": "После встречи нужна оплата",
+      "paymentDueBtn": "Оплата после встречи. Просмотреть информацию"
     },
     "taskCreateModal": {
       "newTask": "Новая задача",
@@ -1564,6 +1590,28 @@
       "aiEditSubmit": "Отправить",
       "aiEditLoading": "Применяем...",
       "aiEditError": "Не удалось применить изменения"
+    },
+    "paymentReminder": {
+      "eyebrow": "Оплата",
+      "studentFallback": "Ученик",
+      "settingLabel": "Напоминать об оплате после скольких занятий",
+      "settingPlaceholder": "напр. 4",
+      "settingHint": "Оставьте пустым, чтобы отключить напоминания для этого ученика.",
+      "save": "Сохранить",
+      "saving": "Сохранение…",
+      "settingSaved": "Настройка сохранена",
+      "settingSaveError": "Не удалось сохранить настройку",
+      "loading": "Загрузка…",
+      "loadError": "Не удалось загрузить данные об оплате",
+      "noBookings": "Пока нет забронированных услуг",
+      "statusPaid": "Оплачено",
+      "statusUnpaid": "Не оплачено",
+      "markPaidError": "Не удалось изменить статус",
+      "totalOwed": "Итого к оплате",
+      "tabPayment": "Оплата",
+      "tabCreateBooking": "Создать запись",
+      "createBookingHint": "Записать {name} на новое занятие.",
+      "createBookingBtn": "Создать запись"
     }
   },
   "roadmapViewer": {

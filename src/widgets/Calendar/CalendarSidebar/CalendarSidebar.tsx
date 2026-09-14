@@ -16,10 +16,11 @@ interface CalendarSidebarProps {
   students: CalendarStudent[]
   onTaskClick: (task: CalendarTask) => void
   onTaskToggle: (taskId: string) => void
+  onStudentClick?: (student: CalendarStudent) => void
   peopleLabel?: string
 }
 
-export function CalendarSidebar({tasks, students, onTaskClick, onTaskToggle, peopleLabel}: CalendarSidebarProps) {
+export function CalendarSidebar({tasks, students, onTaskClick, onTaskToggle, onStudentClick, peopleLabel}: CalendarSidebarProps) {
   const t = useTranslations('calendar.sidebar')
   const { data: session } = useSession()
   const role = (session?.user as { role?: string })?.role ?? ''
@@ -155,7 +156,12 @@ export function CalendarSidebar({tasks, students, onTaskClick, onTaskToggle, peo
           </button>
           {!studentsCollapsed &&
             students.map((student) => (
-              <div key={student.id} className={styles.studentRow}>
+              <div
+                key={student.id}
+                className={styles.studentRow}
+                onClick={() => onStudentClick?.(student)}
+                role={onStudentClick ? 'button' : undefined}
+              >
                 <div
                   className={styles.avatar}
                   style={{background: student.avatarColor, color: student.avatarTextColor}}

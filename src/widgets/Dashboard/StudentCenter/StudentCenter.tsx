@@ -79,6 +79,7 @@ interface ServiceBooking {
   id: string
   status: string
   finalPrice: number
+  paid?: boolean
   createdAt: string
   service: {
     id: string
@@ -87,6 +88,7 @@ interface ServiceBooking {
     timeFrom: string
     timeTo: string
     price: number
+    currency?: string
     photoUrl: string | null
     category: { translations: { langCode: string; name: string }[] } | null
     teacher: { id: string; name: string; avatarUrl: string | null }
@@ -108,6 +110,23 @@ const STATUS_COLORS: Record<string, string> = {
   PENDING: '#F59E0B',
   CONFIRMED: '#10B981',
   CANCELLED: '#EF4444',
+}
+
+function PaymentStatusBadge({ paid, t }: { paid: boolean; t: ReturnType<typeof useTranslations> }) {
+  return (
+    <span style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      padding: '2px 8px',
+      borderRadius: '99px',
+      fontSize: '10px',
+      fontWeight: 600,
+      background: paid ? '#10B98120' : '#EF444420',
+      color: paid ? '#10B981' : '#EF4444',
+    }}>
+      {paid ? t('paymentPaid') : t('paymentUnpaid')}
+    </span>
+  )
 }
 
 function BookingStatusBadge({ status, t }: { status: string; t: ReturnType<typeof useTranslations> }) {
@@ -307,8 +326,9 @@ export function StudentCenter({
                 />
                 <div className={styles.bookingMeta}>
                   <BookingStatusBadge status={sb.status} t={t} />
+                  {sb.status === 'CONFIRMED' && <PaymentStatusBadge paid={!!sb.paid} t={t} />}
                   <span className={styles.bookingTeacher}>{sb.service.teacher.name}</span>
-                  <span className={styles.bookingPrice}>{sb.finalPrice} ₽</span>
+                  <span className={styles.bookingPrice}>{sb.finalPrice} {sb.service.currency ?? '₽'}</span>
                 </div>
               </div>
             ))}

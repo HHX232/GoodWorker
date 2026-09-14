@@ -15,15 +15,18 @@ interface CalendarEventCardProps {
   onDragStart?: (event: CalendarEvent, grabOffsetY: number) => void
   isDragging?: boolean
   suppressClickRef?: React.MutableRefObject<string | null>
+  /** Student ids with an unpaid confirmed service booking — shows the payment-due badge. */
+  paymentDueStudentIds?: Set<string>
 }
 
 const OVERLAP_OFFSET_PX = 10   // horizontal shift per column
 const OVERLAP_WIDTH_SHRINK = 14 // px to shrink width per additional column
 
 export function CalendarEventCard({
-  event, onClick, col = 0, cols = 1, onDragStart, isDragging, suppressClickRef,
+  event, onClick, col = 0, cols = 1, onDragStart, isDragging, suppressClickRef, paymentDueStudentIds,
 }: CalendarEventCardProps) {
   const [hovered, setHovered] = useState(false)
+  const paymentDue = !!event.studentId && !!paymentDueStudentIds?.has(event.studentId)
   const draggable = !isDragging && event.status !== 'completed' && event.status !== 'cancelled'
   const colors = EVENT_COLORS[event.color] ?? EVENT_COLORS.purple
   const top = getEventTop(event.startTime)
@@ -104,6 +107,14 @@ export function CalendarEventCard({
       )}
       {event.warning && (
         <div className={styles.warningBadge}>!</div>
+      )}
+      {paymentDue && (
+        <div className={styles.paymentBadge} title="Payment due after this meeting">
+          <svg width='9' height='9' viewBox='0 0 24 24' fill='none' stroke='#fff' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+            <path d='M12 3c-3 3-8 3.5-8 3.5s-.5 8 8 14.5c8.5-6.5 8-14.5 8-14.5S15 6 12 3z' />
+            <path d='M12 9v6M9.5 11.5h5' />
+          </svg>
+        </div>
       )}
       {event.status === 'completed' && (
         <div className={styles.statusDot} style={{background: '#22c55e'}} />

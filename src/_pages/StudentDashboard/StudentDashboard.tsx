@@ -70,6 +70,7 @@ interface ServiceBooking {
   id: string
   status: string
   finalPrice: number
+  paid?: boolean
   createdAt: string
   service: {
     id: string
@@ -78,6 +79,7 @@ interface ServiceBooking {
     timeFrom: string
     timeTo: string
     price: number
+    currency?: string
     photoUrl: string | null
     category: { translations: { langCode: string; name: string }[] } | null
     teacher: { id: string; name: string; avatarUrl: string | null }

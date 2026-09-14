@@ -249,6 +249,57 @@ export async function GET(
       correctionStats = buildStats(rawCorrCats, CORRECTION_COLORS)
     }
 
+    // ── Receipts (paid service bookings) — "чеки" ────────────────────────────
+    // confirmedDate/desiredDate are stored as "YYYY-MM-DD" strings, so ISO
+    // string comparison doubles as date comparison here.
+    const todayStr = now.toISOString().slice(0, 10)
+    const in30DaysStr = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+
+    const receiptBookings = await prisma.serviceBooking.findMany({
+      where: { status: 'CONFIRMED', service: { teacherId } },
+      select: {
+        id: true,
+        finalPrice: true,
+        paidAt: true,
+        confirmedDate: true,
+        desiredDate: true,
+        createdAt: true,
+        service: { select: { title: true, currency: true } },
+        student: { select: { id: true, name: true, avatarUrl: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+    })
+
+    const allReceipts = receiptBookings.map((b) => {
+      const date = b.confirmedDate ?? b.desiredDate ?? null
+      const status: 'paid' | 'unpaid' | 'planned' = b.paidAt
+        ? 'paid'
+        : date && date > todayStr
+          ? 'planned'
+          : 'unpaid'
+      return {
+        id: b.id,
+        studentId: b.student.id,
+        studentName: b.student.name,
+        studentAvatar: b.student.avatarUrl,
+        serviceTitle: b.service.title,
+        amount: b.finalPrice,
+        currency: b.service.currency,
+        date,
+        status,
+      }
+    })
+
+    const receipts = allReceipts
+      .filter((r) => r.status !== 'planned')
+      .sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''))
+      .slice(0, 50)
+
+    const upcomingReceipts = allReceipts
+      .filter((r) => r.status === 'planned' && r.date! <= in30DaysStr)
+      .sort((a, b) => (a.date ?? '').localeCompare(b.date ?? ''))
+
     return NextResponse.json({
       teacher: { id: teacher.id, name: teacher.name, avatarUrl: teacher.avatarUrl },
       totalCalls,
@@ -263,6 +314,8 @@ export async function GET(
       heroStats,
       errorStats,
       correctionStats,
+      receipts,
+      upcomingReceipts,
     })
   } catch (e: any) {
     return NextResponse.json({ error: e.message ?? 'Internal error' }, { status: 500 })
