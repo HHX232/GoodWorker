@@ -671,7 +671,15 @@ useEffect(() => {
     if (room.participants.length === 0) return (
       <div className={styles.waiting}><div className={styles.waitingPulse} /><p>Ожидаем участников...</p></div>
     )
-    if (layout === 'pip') {
+    // split/grid never had a rendering path for a focused main tile — only
+    // pip's branch below actually calls renderTestTile(true). So opening the
+    // whiteboard while in split/grid ("PiP нестандартный", i.e. not pip)
+    // silently showed nothing but the camera tiles, since testIsMain was
+    // true but nothing in the split/grid JSX below ever checked it. Whenever
+    // something is focused as main, always use the pip-style "big focus +
+    // floating thumbnails" treatment regardless of the chosen layout — the
+    // layout choice only matters when nothing is focused.
+    if (layout === 'pip' || testIsMain) {
       return (
         <div className={styles.pipArea}>
           {testIsMain
