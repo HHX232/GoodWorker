@@ -61,7 +61,7 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
   const weekDays = useTypedSelector(selectWeekDays)
   const events = useTypedSelector(selectEvents)
 
-  const [teacherServices, setTeacherServices] = useState<{id: string; title: string; price: number; duration: number}[]>([])
+  const [teacherServices, setTeacherServices] = useState<{id: string; title: string; price: number; duration: number; currency?: string}[]>([])
   const [teacherCategoryIds, setTeacherCategoryIds] = useState<string[]>([])
   const [paymentDueStudentIds, setPaymentDueStudentIds] = useState<Set<string>>(new Set())
   const [studentModalId, setStudentModalId] = useState<string | null>(null)
@@ -102,8 +102,8 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
       .then(r => r.json())
       .then(d => {
         if (Array.isArray(d.services)) {
-          setTeacherServices(d.services.map((s: {id: string; title: string; price: number; duration: number}) => ({
-            id: s.id, title: s.title, price: s.price, duration: s.duration,
+          setTeacherServices(d.services.map((s: {id: string; title: string; price: number; duration: number; currency?: string}) => ({
+            id: s.id, title: s.title, price: s.price, duration: s.duration, currency: s.currency,
           })))
         }
       })

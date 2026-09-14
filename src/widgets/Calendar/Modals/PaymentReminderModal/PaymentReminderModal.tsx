@@ -20,7 +20,7 @@ interface SummaryItem {
 interface Summary {
   everyNLessons: number | null
   items: SummaryItem[]
-  totalOwed: number
+  totals: { currency: string; amount: number }[]
   unpaidCount: number
 }
 
@@ -195,11 +195,11 @@ export function PaymentReminderModal({ student, onClose, onCreateBooking }: Paym
         </div>
       )}
 
-      {tab === 'payment' && summary && (
+      {tab === 'payment' && summary && summary.totals.length > 0 && (
         <div className={styles.footer}>
           <span className={styles.totalLabel}>{t('totalOwed')}</span>
           <span className={styles.totalValue}>
-            {summary.totalOwed.toLocaleString()} {summary.items[0]?.currency ?? ''}
+            {summary.totals.map(t => `${t.amount.toLocaleString()} ${t.currency}`).join(' + ')}
           </span>
         </div>
       )}

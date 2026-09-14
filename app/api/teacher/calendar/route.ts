@@ -1,6 +1,7 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
+import { isBillableEvent, type BillableCalendarEvent } from '@/shared/helpers/calendar/eventBilling'
 
 async function resolveTeacherId(req: NextRequest, sessionId: string, sessionRole: string): Promise<string | null> {
   const tid = req.nextUrl.searchParams.get('teacherId') ?? sessionId
@@ -46,17 +47,19 @@ export async function GET(req: NextRequest) {
         description: true,
         durationMinutes: true,
         serviceId: true,
-        service: { select: { title: true, price: true, duration: true } },
+        service: { select: { title: true, price: true, duration: true, currency: true } },
         participants: {
           where: { studentId: { not: null } },
-          select: { student: { select: { name: true } } },
+          select: { student: { select: { id: true, name: true } } },
           take: 1,
         },
       },
     }),
     prisma.teacherCategory.findMany({ where: { teacherId }, select: { categoryId: true } }),
     // Students with at least one confirmed-but-unpaid service booking — drives the
-    // "payment due" badge on calendar events (see PaymentReminderModal).
+    // "payment due" badge on calendar events (see PaymentReminderModal). This is
+    // ONE of several sources of a billable lesson — see isBillableEvent for the rest
+    // (manually scheduled / repeated calendar events, and video calls tied to a service).
     prisma.serviceBooking.findMany({
       where: { status: 'CONFIRMED', paidAt: null, service: { teacherId } },
       select: { studentId: true },
@@ -75,8 +78,8 @@ export async function GET(req: NextRequest) {
   type ConferenceRow = {
     id: string; title: string; scheduledAt: Date | null; description: string | null
     durationMinutes?: number | null; serviceId?: string | null
-    service?: { title: string; price: number; duration: number } | null
-    participants: { student: { name: string } | null }[]
+    service?: { title: string; price: number; duration: number; currency: string } | null
+    participants: { student: { id: string; name: string } | null }[]
   }
 
   const conferenceEvents = (conferences as ConferenceRow[])
@@ -85,7 +88,7 @@ export async function GET(req: NextRequest) {
       const start = c.scheduledAt!
       const durMins = c.durationMinutes ?? (parseInt(c.description ?? '60', 10) || 60)
       const end = new Date(start.getTime() + durMins * 60 * 1000)
-      const studentName = c.participants[0]?.student?.name ?? undefined
+      const student = c.participants[0]?.student ?? null
       return {
         id: c.id,
         title: c.title,
@@ -93,23 +96,33 @@ export async function GET(req: NextRequest) {
         startTime: toLocalTime(start),
         endTime: toLocalTime(end),
         color: 'purple' as const,
-        studentName,
+        studentId: student?.id,
+        studentName: student?.name,
         status: 'scheduled' as const,
         durationMinutes: durMins,
         ...(c.serviceId ? {
           serviceId: c.serviceId,
           serviceTitle: c.service?.title,
           servicePrice: c.service?.price,
+          serviceCurrency: c.service?.currency,
           serviceDurationMinutes: c.service?.duration,
         } : {}),
       }
     })
 
+  // Union of every "unpaid billable lesson" source: confirmed ServiceBookings,
+  // plus any billable event in the merged calendar (manually created, repeated,
+  // or a video call tied to a service) that isn't marked paid yet.
+  const pendingFromBookings = unpaidBookings.map(b => b.studentId)
+  const pendingFromEvents = [...storedEvents, ...conferenceEvents]
+    .filter((e): e is BillableCalendarEvent => isBillableEvent(e as BillableCalendarEvent) && !(e as BillableCalendarEvent).paid)
+    .map(e => e.studentId!)
+
   return NextResponse.json({
     events: [...storedEvents, ...conferenceEvents],
     tasks: calendarData?.tasks ?? [],
     categoryIds: categoryLinks.map(l => l.categoryId),
-    studentsWithPendingPayment: unpaidBookings.map(b => b.studentId),
+    studentsWithPendingPayment: [...new Set([...pendingFromBookings, ...pendingFromEvents])],
   })
 }
 

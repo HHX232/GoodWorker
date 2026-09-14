@@ -21,6 +21,7 @@ interface ServiceOption {
   title: string
   price: number
   duration: number
+  currency?: string
 }
 
 interface StudentOption {
@@ -217,6 +218,7 @@ export function CalendarCreateModal({
         serviceId: svc.id,
         serviceTitle: svc.title,
         servicePrice: svc.price,
+        serviceCurrency: svc.currency,
         serviceDurationMinutes: svc.duration,
       } : {}),
     }

@@ -40,8 +40,11 @@ export interface CalendarEvent {
   serviceId?: string
   serviceTitle?: string
   servicePrice?: number
+  serviceCurrency?: string
   serviceDurationMinutes?: number
   durationMinutes?: number
+  /** Payment received for this lesson — see PaymentReminderModal / eventBilling.ts */
+  paid?: boolean
   warning?: boolean
   noteType?: 'event' | 'note'
   lessonPlan?: LessonPlan

@@ -116,10 +116,14 @@ export async function PATCH(
         startTime: theTime,
         endTime,
         color: 'purple',
+        studentId: booking.studentId,
         studentName: booking.student.name,
         status: 'scheduled',
         serviceId: booking.serviceId,
         serviceTitle: booking.service.title,
+        servicePrice: booking.service.price,
+        serviceCurrency: booking.service.currency,
+        serviceDurationMinutes: booking.service.duration,
       }
 
       await tx.teacher.update({

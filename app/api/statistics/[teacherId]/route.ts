@@ -2,6 +2,8 @@ import { prisma } from '@/shared/prisma/prisma'
 import { MAX_HOURS_PER_CALL } from '@/shared/lib/videoRoom/getTeacherCallStats'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
+import { eventAmount, isBillableEvent } from '@/shared/helpers/calendar/eventBilling'
+import { loadMergedEvents } from '@/shared/server/calendarEvents'
 
 const isoMonthKey = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
@@ -255,23 +257,26 @@ export async function GET(
     const todayStr = now.toISOString().slice(0, 10)
     const in30DaysStr = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
 
-    const receiptBookings = await prisma.serviceBooking.findMany({
-      where: { status: 'CONFIRMED', service: { teacherId } },
-      select: {
-        id: true,
-        finalPrice: true,
-        paidAt: true,
-        confirmedDate: true,
-        desiredDate: true,
-        createdAt: true,
-        service: { select: { title: true, currency: true } },
-        student: { select: { id: true, name: true, avatarUrl: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 200,
-    })
+    const [receiptBookings, { merged: mergedCalendarEvents }] = await Promise.all([
+      prisma.serviceBooking.findMany({
+        where: { status: 'CONFIRMED', service: { teacherId } },
+        select: {
+          id: true,
+          finalPrice: true,
+          paidAt: true,
+          confirmedDate: true,
+          desiredDate: true,
+          createdAt: true,
+          service: { select: { title: true, currency: true } },
+          student: { select: { id: true, name: true, avatarUrl: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 200,
+      }),
+      loadMergedEvents(teacherId),
+    ])
 
-    const allReceipts = receiptBookings.map((b) => {
+    const bookingReceipts = receiptBookings.map((b) => {
       const date = b.confirmedDate ?? b.desiredDate ?? null
       const status: 'paid' | 'unpaid' | 'planned' = b.paidAt
         ? 'paid'
@@ -290,6 +295,42 @@ export async function GET(
         status,
       }
     })
+
+    // Same billable-lesson set that drives the calendar's payment-due badge —
+    // manually scheduled/repeated calendar events and service-linked video
+    // calls. booking-* events are skipped inside isBillableEvent to avoid
+    // double-counting a lesson already covered by its ServiceBooking row.
+    const billableEventIds = [...new Set(
+      mergedCalendarEvents.filter(isBillableEvent).map(e => e.studentId!)
+    )]
+    const eventStudents = billableEventIds.length > 0
+      ? await prisma.student.findMany({ where: { id: { in: billableEventIds } }, select: { id: true, name: true, avatarUrl: true } })
+      : []
+    const eventStudentMap = new Map(eventStudents.map(s => [s.id, s]))
+
+    const eventReceipts = mergedCalendarEvents
+      .filter(isBillableEvent)
+      .map((e) => {
+        const student = eventStudentMap.get(e.studentId!)
+        const status: 'paid' | 'unpaid' | 'planned' = e.paid
+          ? 'paid'
+          : e.date > todayStr
+            ? 'planned'
+            : 'unpaid'
+        return {
+          id: `cal:${e.id}`,
+          studentId: e.studentId!,
+          studentName: student?.name ?? e.studentName ?? '',
+          studentAvatar: student?.avatarUrl ?? null,
+          serviceTitle: e.serviceTitle ?? '',
+          amount: eventAmount(e) ?? 0,
+          currency: e.serviceCurrency ?? 'BYN',
+          date: e.date,
+          status,
+        }
+      })
+
+    const allReceipts = [...bookingReceipts, ...eventReceipts]
 
     const receipts = allReceipts
       .filter((r) => r.status !== 'planned')

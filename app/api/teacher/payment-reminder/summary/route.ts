@@ -1,10 +1,10 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../../auth'
+import { eventAmount, isBillableEvent } from '@/shared/helpers/calendar/eventBilling'
+import { loadMergedEvents } from '@/shared/server/calendarEvents'
 
 // GET /api/teacher/payment-reminder/summary?studentId=xxx
-// Billing ledger = confirmed ServiceBookings (the only place price/discount already
-// live, via finalPrice) for this student across this teacher's services.
 export async function GET(req: NextRequest) {
   try {
     const session = await auth()
@@ -24,30 +24,21 @@ export async function GET(req: NextRequest) {
     })
     if (!link) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-    const [setting, bookings] = await Promise.all([
+    const [setting, bookings, { merged }] = await Promise.all([
       prisma.paymentReminderSetting.findUnique({
         where: { teacherId_studentId: { teacherId, studentId } },
       }),
       prisma.serviceBooking.findMany({
-        where: {
-          studentId,
-          status: 'CONFIRMED',
-          service: { teacherId },
-        },
-        orderBy: { createdAt: 'desc' },
+        where: { studentId, status: 'CONFIRMED', service: { teacherId } },
         select: {
-          id: true,
-          finalPrice: true,
-          confirmedDate: true,
-          confirmedTime: true,
-          desiredDate: true,
-          paidAt: true,
+          id: true, finalPrice: true, paidAt: true, confirmedDate: true, confirmedTime: true, desiredDate: true,
           service: { select: { title: true, currency: true } },
         },
       }),
+      loadMergedEvents(teacherId),
     ])
 
-    const items = bookings.map(b => ({
+    const bookingItems = bookings.map(b => ({
       id: b.id,
       serviceTitle: b.service.title,
       price: b.finalPrice,
@@ -57,13 +48,34 @@ export async function GET(req: NextRequest) {
       paid: !!b.paidAt,
     }))
 
-    const totalOwed = items.filter(i => !i.paid).reduce((s, i) => s + i.price, 0)
-    const unpaidCount = items.filter(i => !i.paid).length
+    const eventItems = merged
+      .filter(e => e.studentId === studentId && isBillableEvent(e))
+      .map(e => ({
+        id: `cal:${e.id}`,
+        serviceTitle: e.serviceTitle ?? '',
+        price: eventAmount(e) ?? 0,
+        currency: e.serviceCurrency ?? 'BYN',
+        date: e.date,
+        time: e.startTime,
+        paid: !!e.paid,
+      }))
+
+    const items = [...bookingItems, ...eventItems].sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''))
+    const unpaid = items.filter(i => !i.paid)
+    const unpaidCount = unpaid.length
+
+    // Group by currency instead of summing them together — a student can in
+    // principle owe for services priced in different currencies.
+    const totalsByCurrency = new Map<string, number>()
+    for (const i of unpaid) totalsByCurrency.set(i.currency, (totalsByCurrency.get(i.currency) ?? 0) + i.price)
+    const totals = [...totalsByCurrency.entries()].map(([currency, amount]) => ({ currency, amount }))
 
     return NextResponse.json({
       everyNLessons: setting?.everyNLessons ?? null,
       items,
-      totalOwed,
+      totals,
+      // Back-compat single total for the common single-currency case.
+      totalOwed: totals[0]?.amount ?? 0,
       unpaidCount,
     })
   } catch (e) {
@@ -72,8 +84,10 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// PATCH /api/teacher/payment-reminder/summary — toggle a booking's paid status
-// body: { bookingId: string, paid: boolean }
+// PATCH /api/teacher/payment-reminder/summary — toggle a booking's or calendar
+// event's paid status. body: { bookingId: string, paid: boolean }
+// bookingId is either a raw ServiceBooking id, or "cal:<eventId>" for a lesson
+// that lives in the teacher's calendar (manually scheduled/repeated, or a call).
 export async function PATCH(req: NextRequest) {
   try {
     const session = await auth()
@@ -87,12 +101,38 @@ export async function PATCH(req: NextRequest) {
     const { bookingId, paid } = await req.json()
     if (!bookingId) return NextResponse.json({ error: 'bookingId required' }, { status: 400 })
 
+    const teacherId = session.user.id
+
+    if (typeof bookingId === 'string' && bookingId.startsWith('cal:')) {
+      const eventId = bookingId.slice('cal:'.length)
+      const { stored, merged } = await loadMergedEvents(teacherId)
+
+      const target = merged.find(e => e.id === eventId)
+      if (!target) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+      const alreadyStored = stored.some(e => e.id === eventId)
+      const nextStored = alreadyStored
+        ? stored.map(e => (e.id === eventId ? { ...e, paid: !!paid } : e))
+        : [...stored, { ...target, paid: !!paid }]
+
+      const teacher = await prisma.teacher.findUnique({ where: { id: teacherId }, select: { calendar: true } })
+      const tasks = (teacher?.calendar as { tasks?: unknown[] } | null)?.tasks ?? []
+
+      await prisma.teacher.update({
+        where: { id: teacherId },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data: { calendar: { events: nextStored, tasks } as any },
+      })
+
+      return NextResponse.json({ id: bookingId, paid: !!paid })
+    }
+
     const booking = await prisma.serviceBooking.findUnique({
       where: { id: bookingId },
       select: { id: true, service: { select: { teacherId: true } } },
     })
     if (!booking) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-    if (booking.service.teacherId !== session.user.id) {
+    if (booking.service.teacherId !== teacherId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

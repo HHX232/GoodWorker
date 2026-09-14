@@ -130,7 +130,7 @@ export function CalendarEventModal({event, onClose, onEdit, onDelete, onConfirm,
         )}
         {meetingCost != null && (
           <InfoRow icon={<RubIcon />} label={t('costLabel')}>
-            <span style={{fontWeight: 700, marginRight: 8}}>{meetingCost.toLocaleString()} ₽</span>
+            <span style={{fontWeight: 700, marginRight: 8}}>{meetingCost.toLocaleString()} {event.serviceCurrency ?? '₽'}</span>
             {event.serviceTitle && (
               <span style={{fontSize: 11, color: '#9CA3AF', marginRight: 8}}>
                 ({event.serviceTitle})
