@@ -1356,7 +1356,9 @@
       "PERSONAL_SERVICE": "व्यक्तिगत सेवाएं",
       "BOOKING_RESPONSE": "बुकिंग प्रतिक्रियाएं",
       "SERVICE_BOOKING": "सेवा बुकिंग",
-      "SYSTEM": "सिस्टम"
+      "SYSTEM": "सिस्टम",
+      "HOMEWORK_ASSIGNED": "गृहकार्य",
+      "REFERRAL_REWARD": "रेफ़रल पुरस्कार"
     },
     "actions": {
       "NEW_COMPLAINT": "शिकायतें खोलें",

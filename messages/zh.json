@@ -1357,7 +1357,9 @@
       "PERSONAL_SERVICE": "个人服务",
       "BOOKING_RESPONSE": "预约回复",
       "SERVICE_BOOKING": "服务预约",
-      "SYSTEM": "系统"
+      "SYSTEM": "系统",
+      "HOMEWORK_ASSIGNED": "作业",
+      "REFERRAL_REWARD": "推荐奖励"
     },
     "actions": {
       "NEW_COMPLAINT": "查看投诉",

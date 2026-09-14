@@ -1353,7 +1353,9 @@
       "PERSONAL_SERVICE": "Personal services",
       "BOOKING_RESPONSE": "Booking responses",
       "SERVICE_BOOKING": "Service bookings",
-      "SYSTEM": "System"
+      "SYSTEM": "System",
+      "HOMEWORK_ASSIGNED": "Homework",
+      "REFERRAL_REWARD": "Referral rewards"
     },
     "actions": {
       "NEW_COMPLAINT": "Open complaints",

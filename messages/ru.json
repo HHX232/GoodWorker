@@ -1353,7 +1353,9 @@
       "PERSONAL_SERVICE": "Личные услуги",
       "BOOKING_RESPONSE": "Ответы на запись",
       "SERVICE_BOOKING": "Запись на услуги",
-      "SYSTEM": "Системные"
+      "SYSTEM": "Системные",
+      "HOMEWORK_ASSIGNED": "Домашние задания",
+      "REFERRAL_REWARD": "Реферальные награды"
     },
     "actions": {
       "NEW_COMPLAINT": "Открыть жалобы",
