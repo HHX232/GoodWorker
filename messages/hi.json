@@ -59,7 +59,7 @@
   },
   "CreateTestPage": {
     "title": "टेस्ट बनाएं",
-    "namePlaceholder": "टेस्ट का नाम दर्ज करें",
+    "namePlaceholder": "खाली छोड़ें — AI नाम सोचेगा",
     "themePlaceholder": "टेस्ट का विषय दर्ज करें",
     "descriptionPlaceholder": "टेस्ट का विवरण दर्ज करें, उदा. क्रियाविशेषण विषय अक्सर परीक्षाओं में आता है",
     "loading": "लोड हो रहा है...",
@@ -77,7 +77,8 @@
     "errorSaveFailed": "टेस्ट सहेजने में विफल",
     "titleEdit": "परीक्षण संपादित करें",
     "nameLabel": "नाम",
-    "descriptionLabel": "विवरण"
+    "descriptionLabel": "विवरण",
+    "errorAutoNameFailed": "नाम नहीं सोच पाए — मैन्युअल रूप से दर्ज करें"
   },
   "BlockEditor": {
     "fillText": "पाठ भरें",
@@ -1293,7 +1294,7 @@
     "morePairs": "+{n} और...",
     "errMaxPhotos": "एक बार में अधिकतम {n} फ़ोटो अपलोड की जा सकती हैं",
     "errOneDocAtATime": "नि:शुल्क योजना में DOCX/TXT/RTF/ODT — एक बार में केवल एक फ़ाइल",
-    "dropSubVip": "PDF, DOCX, TXT, RTF, ODT — कितनी भी · फ़ोटो (JPG/PNG/WEBP/GIF) — {n} तक",
+    "dropSubVip": "PDF, DOCX, TXT, RTF, ODT — कितनी भी · फ़ोटो (JPG/PNG/WEBP/GIF/HEIC) — {n} तक",
     "errImagesVipOnly": "फ़ोटो अपलोड केवल VIP के लिए उपलब्ध है"
   },
   "notifications": {
@@ -2363,7 +2364,7 @@
     "modal_pick_formats": "PDF · DOCX · TXT · RTF · ODT",
     "modal_pick_choose": "फ़ाइल चुनें",
     "modal_vip_unlimited": "प्रश्नों की सीमा हटाएं",
-    "modal_pick_formats_vip_extra": "JPG · PNG · WEBP · GIF (अधिकतम 10 फ़ोटो, VIP)",
+    "modal_pick_formats_vip_extra": "JPG · PNG · WEBP · GIF · HEIC (अधिकतम 10 फ़ोटो, VIP)",
     "modal_pick_photos_count": "{n} फ़ोटो",
     "modal_error_photos_count_title": "बहुत अधिक फ़ोटो",
     "modal_error_photos_count_msg": "एक बार में अधिकतम 10 फ़ोटो अपलोड की जा सकती हैं, {n} चुनी गई हैं।",

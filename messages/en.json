@@ -59,7 +59,7 @@
   },
   "CreateTestPage": {
     "title": "Create Test",
-    "namePlaceholder": "Enter test name",
+    "namePlaceholder": "Leave empty — AI will name it",
     "themePlaceholder": "Enter test topic",
     "descriptionPlaceholder": "Enter test description, e.g. \"Participles often appear in exams\"",
     "loading": "Loading...",
@@ -77,7 +77,8 @@
     "errorSaveFailed": "Failed to save test",
     "titleEdit": "Edit Test",
     "nameLabel": "Name",
-    "descriptionLabel": "Description"
+    "descriptionLabel": "Description",
+    "errorAutoNameFailed": "Couldn't come up with a name — enter one manually"
   },
   "CreatePostPage": {
     "editPost": "Edit post",
@@ -1627,7 +1628,7 @@
     "morePairs": "+{n} more...",
     "errMaxPhotos": "You can upload up to {n} photos at a time",
     "errOneDocAtATime": "On the free plan, DOCX/TXT/RTF/ODT — only one file at a time",
-    "dropSubVip": "PDF, DOCX, TXT, RTF, ODT — any number · Photos (JPG/PNG/WEBP/GIF) — up to {n}",
+    "dropSubVip": "PDF, DOCX, TXT, RTF, ODT — any number · Photos (JPG/PNG/WEBP/GIF/HEIC) — up to {n}",
     "errImagesVipOnly": "Photo upload is available for VIP only"
   },
   "card": {
@@ -2597,7 +2598,7 @@
     "modal_pick_formats": "PDF · DOCX · TXT · RTF · ODT",
     "modal_pick_choose": "Choose file",
     "modal_vip_unlimited": "Remove the question limit",
-    "modal_pick_formats_vip_extra": "JPG · PNG · WEBP · GIF (up to 10 photos, VIP)",
+    "modal_pick_formats_vip_extra": "JPG · PNG · WEBP · GIF · HEIC (up to 10 photos, VIP)",
     "modal_pick_photos_count": "{n} photos",
     "modal_error_photos_count_title": "Too many photos",
     "modal_error_photos_count_msg": "You can upload up to 10 photos at once — {n} were selected.",

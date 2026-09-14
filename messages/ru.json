@@ -59,7 +59,7 @@
   },
   "CreateTestPage": {
     "title": "Создать тест",
-    "namePlaceholder": "Введите название теста",
+    "namePlaceholder": "Оставьте пустым — ИИ придумает название",
     "themePlaceholder": "Введите тему теста",
     "descriptionPlaceholder": "Введите описание теста, например «Тема деепричастие часто попадается в экзаменах»",
     "loading": "Загрузка...",
@@ -77,7 +77,8 @@
     "errorSaveFailed": "Не удалось сохранить тест",
     "titleEdit": "Редактировать тест",
     "nameLabel": "Название",
-    "descriptionLabel": "Описание"
+    "descriptionLabel": "Описание",
+    "errorAutoNameFailed": "Не удалось придумать название — введите его вручную"
   },
   "CreatePostPage": {
     "editPost": "Редактировать пост",
@@ -1627,7 +1628,7 @@
     "morePairs": "+{n} ещё...",
     "errMaxPhotos": "Можно загрузить не больше {n} фото за раз",
     "errOneDocAtATime": "На бесплатном тарифе DOCX, TXT, RTF и ODT — только один файл за раз",
-    "dropSubVip": "PDF, DOCX, TXT, RTF, ODT — сколько угодно · Фото (JPG/PNG/WEBP/GIF) — до {n} шт.",
+    "dropSubVip": "PDF, DOCX, TXT, RTF, ODT — сколько угодно · Фото (JPG/PNG/WEBP/GIF/HEIC) — до {n} шт.",
     "errImagesVipOnly": "Загрузка фото доступна только VIP"
   },
   "card": {
@@ -2597,7 +2598,7 @@
     "modal_pick_formats": "PDF · DOCX · TXT · RTF · ODT",
     "modal_pick_choose": "Выбрать файл",
     "modal_vip_unlimited": "Убрать ограничение вопросов",
-    "modal_pick_formats_vip_extra": "JPG · PNG · WEBP · GIF (до 10 фото, VIP)",
+    "modal_pick_formats_vip_extra": "JPG · PNG · WEBP · GIF · HEIC (до 10 фото, VIP)",
     "modal_pick_photos_count": "{n} фото",
     "modal_error_photos_count_title": "Слишком много фото",
     "modal_error_photos_count_msg": "Можно загрузить не больше 10 фото за раз, а выбрано {n}.",

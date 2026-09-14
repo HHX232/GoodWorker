@@ -59,7 +59,7 @@
   },
   "CreateTestPage": {
     "title": "创建测试",
-    "namePlaceholder": "输入测试名称",
+    "namePlaceholder": "留空 — AI 将自动命名",
     "themePlaceholder": "输入测试主题",
     "descriptionPlaceholder": "输入测试说明，例如\"分词在考试中经常出现\"",
     "loading": "加载中...",
@@ -77,7 +77,8 @@
     "errorSaveFailed": "保存测试失败",
     "titleEdit": "编辑测试",
     "nameLabel": "名称",
-    "descriptionLabel": "描述"
+    "descriptionLabel": "描述",
+    "errorAutoNameFailed": "无法想出名称 — 请手动输入"
   },
   "BlockEditor": {
     "fillText": "填空",
@@ -1294,7 +1295,7 @@
     "morePairs": "+{n}更多...",
     "errMaxPhotos": "一次最多上传{n}张照片",
     "errOneDocAtATime": "免费版 DOCX/TXT/RTF/ODT 一次只能上传一个文件",
-    "dropSubVip": "PDF、DOCX、TXT、RTF、ODT — 数量不限 · 照片（JPG/PNG/WEBP/GIF）— 最多{n}张",
+    "dropSubVip": "PDF、DOCX、TXT、RTF、ODT — 数量不限 · 照片（JPG/PNG/WEBP/GIF/HEIC）— 最多{n}张",
     "errImagesVipOnly": "仅VIP可上传照片"
   },
   "notifications": {
@@ -2364,7 +2365,7 @@
     "modal_pick_formats": "PDF · DOCX · TXT · RTF · ODT",
     "modal_pick_choose": "选择文件",
     "modal_vip_unlimited": "取消问题数量限制",
-    "modal_pick_formats_vip_extra": "JPG · PNG · WEBP · GIF(最多 10 张照片,VIP)",
+    "modal_pick_formats_vip_extra": "JPG · PNG · WEBP · GIF · HEIC(最多 10 张照片,VIP)",
     "modal_pick_photos_count": "{n} 张照片",
     "modal_error_photos_count_title": "照片太多",
     "modal_error_photos_count_msg": "一次最多上传 10 张照片,已选择 {n} 张。",

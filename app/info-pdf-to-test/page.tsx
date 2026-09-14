@@ -6,6 +6,8 @@ import Image from 'next/image'
 import { useSession } from 'next-auth/react'
 import { useMe } from '@/features/hooks/User/useMe'
 import { pushDataLayerEvent } from '@/shared/lib/analytics'
+import { convertHeicFiles } from '@/shared/lib/heicConvert'
+import { isHeic } from '@/shared/constants/pdfImport'
 
 // ── CSS (ported from ForNewDesign/prototypes/v3-lab.html — hero H4 · steps S3 · errs E1 — with
 //    the lab panel, unused hero/steps/errs variants and blueprint hero stripped out) ──────────
@@ -1413,7 +1415,9 @@ const ALLOWED_EXT = ['pdf', 'docx', 'txt', 'rtf', 'odt']
 const MAX_SIZE = 20 * 1024 * 1024
 
 // VIP-only: upload up to 10 photos instead of a document (analyzed via DeepSeek vision)
-const ALLOWED_IMG_EXT = ['jpg', 'jpeg', 'png', 'webp', 'gif']
+// heic/heif (iPhone default) are accepted here but converted to JPEG client-side
+// before upload — see convertHeicFiles — since the vision AI can't read HEIC.
+const ALLOWED_IMG_EXT = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'heic', 'heif']
 const MAX_PHOTO_SIZE = 15 * 1024 * 1024
 const MAX_PHOTOS = 10
 
@@ -1607,14 +1611,16 @@ function UploadModal({ modalOpen, onClose, pendingFiles, isLoggedIn }: {
   // first file looks like a photo and the user is VIP, route the whole selection to the
   // photo-batch flow; otherwise treat it as one document, exactly like before. Non-VIP users
   // dropping a photo just hit the format error.
-  const routeFiles = useCallback((arr: File[]) => {
+  const routeFiles = useCallback(async (arr: File[]) => {
     if (arr.length === 0) return
-    const firstExt = extOf(arr[0].name)
+    const converted = await convertHeicFiles(arr, isHeic)
+    if (converted.length === 0) return
+    const firstExt = extOf(converted[0].name)
     if (isVip && ALLOWED_IMG_EXT.includes(firstExt)) {
-      beginPhotos(arr)
+      beginPhotos(converted)
       return
     }
-    begin(arr[0])
+    begin(converted[0])
   }, [isVip, begin, beginPhotos])
 
   const onFiles = (files: FileList | null) => {
@@ -1822,7 +1828,7 @@ function UploadModal({ modalOpen, onClose, pendingFiles, isLoggedIn }: {
         <input
           ref={inputRef}
           type="file"
-          accept={isVip ? '.pdf,.docx,.txt,.rtf,.odt,image/jpeg,image/png,image/webp,image/gif' : '.pdf,.docx,.txt,.rtf,.odt'}
+          accept={isVip ? '.pdf,.docx,.txt,.rtf,.odt,image/jpeg,image/png,image/webp,image/gif,.heic,.heif' : '.pdf,.docx,.txt,.rtf,.odt'}
           multiple={isVip}
           hidden
           onChange={e => { onFiles(e.target.files); e.target.value = '' }}

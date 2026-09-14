@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { useSession } from 'next-auth/react'
-import { DOC_EXTENSIONS, IMAGE_EXTENSIONS, MAX_PHOTOS, kindOf } from '@/shared/constants/pdfImport'
+import { DOC_EXTENSIONS, IMAGE_EXTENSIONS, MAX_PHOTOS, isHeic, kindOf } from '@/shared/constants/pdfImport'
+import { convertHeicFiles } from '@/shared/lib/heicConvert'
 import styles from './PdfImportModal.module.scss'
 
 // ─── Types ────────────────────────────────────────────────
@@ -172,7 +173,8 @@ export function PdfImportModal({ onClose, onImport }: PdfImportModalProps) {
   // Free tier: unlimited PDFs, but only ONE doc-format (docx/txt/rtf/odt) file
   // at a time, no photos at all. VIP/admin: everything, photos capped at
   // MAX_PHOTOS — mirrors app/info-pdf-to-test's role-based upload matrix.
-  const addFiles = (incoming: FileList | File[]) => {
+  const addFiles = async (incoming: FileList | File[]) => {
+    const converted = await convertHeicFiles(Array.from(incoming), isHeic)
     const existingNames = new Set(files.map(f => f.name))
     let docBudget = privileged ? Infinity : Math.max(0, 1 - files.filter(f => kindOf(f.name) === 'doc').length)
     let imageBudget = privileged ? Math.max(0, MAX_PHOTOS - files.filter(f => kindOf(f.name) === 'image').length) : 0
@@ -180,7 +182,7 @@ export function PdfImportModal({ onClose, onImport }: PdfImportModalProps) {
     const toAdd: File[] = []
     let warning: string | null = null
 
-    for (const f of Array.from(incoming)) {
+    for (const f of converted) {
       if (existingNames.has(f.name)) continue
       const kind = kindOf(f.name)
       if (kind === 'unknown') continue
