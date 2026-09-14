@@ -1173,7 +1173,11 @@
     "getVip": "Получить VIP",
     "showAll": "Показать всё",
     "sdmTabHomework": "Домашнее задание",
-    "tabHomework": "ДЗ"
+    "tabHomework": "ДЗ",
+    "sdmCommentPlaceholder": "Комментарий к этой ошибке…",
+    "sdmMarkFixedBadge": "отметить исправленным",
+    "sdmMarkFixedTitle": "Отметить как исправленное",
+    "sdmUnmarkFixedTitle": "Снять отметку"
   },
   "SetCommentBlock": {
     "heading": "Оставить отзыв",

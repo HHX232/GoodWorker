@@ -604,6 +604,7 @@ model StudentError {
   description  String?
   fragment     String?
   isCorrection Boolean                @default(false)
+  teacherComment String?
   createdAt    DateTime               @default(now())
   attempt      StudentTestAttempt?    @relation(fields: [attemptId], references: [id], onDelete: SetNull)
   student     Student                @relation(fields: [studentId], references: [id], onDelete: Cascade)

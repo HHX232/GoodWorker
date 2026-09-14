@@ -1139,7 +1139,11 @@
     "getVip": "获取 VIP",
     "showAll": "显示全部",
     "sdmTabHomework": "作业",
-    "tabHomework": "作业"
+    "tabHomework": "作业",
+    "sdmCommentPlaceholder": "对此错误的评论…",
+    "sdmMarkFixedBadge": "标记为已修正",
+    "sdmMarkFixedTitle": "标记为已修正",
+    "sdmUnmarkFixedTitle": "取消标记"
   },
   "SetCommentBlock": {
     "heading": "留下评价",

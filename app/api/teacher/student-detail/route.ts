@@ -115,6 +115,7 @@ export async function GET(req: NextRequest) {
         description: e.description,
         fragment: e.fragment,
         isCorrection: e.isCorrection,
+        teacherComment: e.teacherComment,
         categories: e.categories.map(c => ({
           id: c.categoryId,
           name: c.category.translations[0]?.name ?? c.category.slug,
@@ -149,6 +150,47 @@ export async function DELETE(req: NextRequest) {
 
     await prisma.studentError.delete({ where: { id: errorId } })
     return NextResponse.json({ ok: true })
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message ?? 'Internal error' }, { status: 500 })
+  }
+}
+
+// PATCH /api/teacher/student-detail?errorId=xxx — teacher toggles fixed status / edits comment
+export async function PATCH(req: NextRequest) {
+  try {
+    const session = await auth()
+    if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const errorId = req.nextUrl.searchParams.get('errorId')
+    if (!errorId) return NextResponse.json({ error: 'errorId required' }, { status: 400 })
+
+    const error = await prisma.studentError.findUnique({
+      where: { id: errorId },
+      select: { id: true, studentId: true },
+    })
+    if (!error) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+    const link = await prisma.teacherStudent.findFirst({
+      where: { teacherId: session.user.id, studentId: error.studentId },
+    })
+    if (!link) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+    const body = await req.json()
+    const data: { isCorrection?: boolean; teacherComment?: string | null } = {}
+    if (typeof body.isCorrection === 'boolean') data.isCorrection = body.isCorrection
+    if (typeof body.teacherComment === 'string' || body.teacherComment === null) {
+      data.teacherComment = body.teacherComment
+    }
+    if (Object.keys(data).length === 0) {
+      return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
+    }
+
+    const updated = await prisma.studentError.update({ where: { id: errorId }, data })
+    return NextResponse.json({
+      id: updated.id,
+      isCorrection: updated.isCorrection,
+      teacherComment: updated.teacherComment,
+    })
   } catch (e: any) {
     return NextResponse.json({ error: e.message ?? 'Internal error' }, { status: 500 })
   }

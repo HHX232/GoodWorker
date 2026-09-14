@@ -16,6 +16,7 @@ interface ErrorItem {
   description: string | null
   fragment: string | null
   isCorrection: boolean
+  teacherComment: string | null
   categories: { id: string; name: string }[]
 }
 
@@ -130,6 +131,29 @@ export function StudentDetailModal({
   const deleteError = async (errorId: string) => {
     setErrors(prev => prev.filter(e => e.id !== errorId))
     await fetch(`/api/teacher/student-detail?errorId=${errorId}`, { method: 'DELETE' })
+  }
+
+  const toggleErrorStatus = async (errorId: string, isCorrection: boolean) => {
+    setErrors(prev => prev.map(e => (e.id === errorId ? { ...e, isCorrection } : e)))
+    try {
+      await fetch(`/api/teacher/student-detail?errorId=${errorId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isCorrection }),
+      })
+    } catch {}
+  }
+
+  const saveErrorComment = async (errorId: string, teacherComment: string) => {
+    const value = teacherComment.trim() || null
+    setErrors(prev => prev.map(e => (e.id === errorId ? { ...e, teacherComment: value } : e)))
+    try {
+      await fetch(`/api/teacher/student-detail?errorId=${errorId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teacherComment: value }),
+      })
+    } catch {}
   }
 
   const cancelMeeting = async (conferenceId: string) => {
@@ -318,7 +342,23 @@ export function StudentDetailModal({
                     <div key={err.id} className={`${styles.errorCard} ${err.isCorrection ? styles.errorCardFixed : ''}`}>
                       <div className={styles.errorMeta}>
                         <span className={styles.errorDate}>{formatDate(err.createdAt)}</span>
-                        {err.isCorrection && <span className={styles.fixedBadge}>{t('sdmFixedBadge')}</span>}
+                        {err.isCorrection ? (
+                          <button
+                            className={styles.fixedBadge}
+                            onClick={() => toggleErrorStatus(err.id, false)}
+                            title={t('sdmUnmarkFixedTitle')}
+                          >
+                            {t('sdmFixedBadge')}
+                          </button>
+                        ) : (
+                          <button
+                            className={styles.markFixedBtn}
+                            onClick={() => toggleErrorStatus(err.id, true)}
+                            title={t('sdmMarkFixedTitle')}
+                          >
+                            {t('sdmMarkFixedBadge')}
+                          </button>
+                        )}
                       </div>
                       {err.fragment && <div className={styles.errorFragment}>{err.fragment}</div>}
                       {err.description && <div className={styles.errorDesc}>{err.description}</div>}
@@ -329,6 +369,17 @@ export function StudentDetailModal({
                           ))}
                         </div>
                       )}
+                      <textarea
+                        className={styles.commentField}
+                        defaultValue={err.teacherComment ?? ''}
+                        placeholder={t('sdmCommentPlaceholder')}
+                        onBlur={(e) => {
+                          const value = e.target.value
+                          if (value.trim() !== (err.teacherComment ?? '').trim()) {
+                            saveErrorComment(err.id, value)
+                          }
+                        }}
+                      />
                       <button className={styles.deleteErrBtn} onClick={() => deleteError(err.id)} title={t('sdmDeleteTitle')}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                           <polyline points="3 6 5 6 21 6" />

@@ -1173,7 +1173,11 @@
     "getVip": "Get VIP",
     "showAll": "Show all",
     "sdmTabHomework": "Homework",
-    "tabHomework": "HW"
+    "tabHomework": "HW",
+    "sdmCommentPlaceholder": "Comment for this error…",
+    "sdmMarkFixedBadge": "mark fixed",
+    "sdmMarkFixedTitle": "Mark as fixed",
+    "sdmUnmarkFixedTitle": "Unmark as fixed"
   },
   "SetCommentBlock": {
     "heading": "Leave a review",

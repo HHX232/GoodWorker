@@ -1139,7 +1139,11 @@
     "getVip": "VIP प्राप्त करें",
     "showAll": "सब दिखाएं",
     "sdmTabHomework": "गृहकार्य",
-    "tabHomework": "गृहकार्य"
+    "tabHomework": "गृहकार्य",
+    "sdmCommentPlaceholder": "इस त्रुटि पर टिप्पणी…",
+    "sdmMarkFixedBadge": "ठीक चिह्नित करें",
+    "sdmMarkFixedTitle": "ठीक के रूप में चिह्नित करें",
+    "sdmUnmarkFixedTitle": "चिह्न हटाएं"
   },
   "SetCommentBlock": {
     "heading": "समीक्षा छोड़ें",
