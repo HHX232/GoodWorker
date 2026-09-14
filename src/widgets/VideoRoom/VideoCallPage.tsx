@@ -88,22 +88,34 @@ function LiveCaptionWidget({ captionText }: { captionText: string }) {
 }
 
 // ── Draggable PiP tile ────────────────────────────────────────────────────────
-function DraggablePip({ children, index }: { children: React.ReactNode; index: number }) {
+// setPointerCapture fires on every pointerdown regardless of whether the user
+// actually drags — with no movement threshold, a plain click (e.g. to restore
+// a minimized whiteboard) reads as a micro-drag on some devices/browsers and
+// the click never lands. Track real movement and fire onClick ourselves when
+// there wasn't any, instead of relying on the native click event.
+function DraggablePip({ children, index, onClick }: { children: React.ReactNode; index: number; onClick?: () => void }) {
   const [off, setOff] = useState({ x: 0, y: 0 })
-  const drag = useRef<{ sx: number; sy: number; ox: number; oy: number } | null>(null)
+  const drag = useRef<{ sx: number; sy: number; ox: number; oy: number; moved: boolean } | null>(null)
   return (
     <div
       className={styles.pipTile}
       style={{ '--pip-index': index, transform: `translate(${off.x}px,${off.y}px)` } as React.CSSProperties}
       onPointerDown={(e) => {
         ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
-        drag.current = { sx: e.clientX, sy: e.clientY, ox: off.x, oy: off.y }
+        drag.current = { sx: e.clientX, sy: e.clientY, ox: off.x, oy: off.y, moved: false }
       }}
       onPointerMove={(e) => {
         if (!drag.current) return
-        setOff({ x: drag.current.ox + e.clientX - drag.current.sx, y: drag.current.oy + e.clientY - drag.current.sy })
+        const dx = e.clientX - drag.current.sx
+        const dy = e.clientY - drag.current.sy
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) drag.current.moved = true
+        setOff({ x: drag.current.ox + dx, y: drag.current.oy + dy })
       }}
-      onPointerUp={() => { drag.current = null }}
+      onPointerUp={() => {
+        const wasClick = !!drag.current && !drag.current.moved
+        drag.current = null
+        if (wasClick) onClick?.()
+      }}
     >
       {children}
     </div>
@@ -692,7 +704,7 @@ useEffect(() => {
           ))}
           {/* test as small pip when not main */}
           {!testIsMain && callTest && (
-            <DraggablePip key="__test__" index={sideParts.length}>
+            <DraggablePip key="__test__" index={sideParts.length} onClick={restoreTest}>
               {renderTestTile(false)}
             </DraggablePip>
           )}
@@ -702,7 +714,7 @@ useEffect(() => {
     // In split/grid: whiteboard that's been hidden shows as a floating PiP;
     // regular test tiles stay in the grid so progress counters remain visible.
     const whiteboardPip = !testIsMain && callTest?.mode === 'whiteboard' && (
-      <DraggablePip key="__test__" index={sideParts.length}>
+      <DraggablePip key="__test__" index={sideParts.length} onClick={restoreTest}>
         {renderTestTile(false)}
       </DraggablePip>
     )
@@ -949,6 +961,12 @@ useEffect(() => {
     broadcast({ type: 'speaker', identity: fallback })
   }, [broadcast, ownerIdentity, userName])
 
+  // Clicking the minimized whiteboard/test pip brings it back to the main slot.
+  const restoreTest = useCallback(() => {
+    setMainSpeaker('__test__')
+    broadcast({ type: 'speaker', identity: '__test__' })
+  }, [broadcast])
+
   const openTestPicker = useCallback(async () => {
     setShowTestPicker(true)
     setTestPickerTab('list')
@@ -1031,10 +1049,7 @@ useEffect(() => {
       <div
         key="__test__"
         className={`${styles.tile} ${styles.testTileSmall}`}
-        onClick={() => {
-          setMainSpeaker('__test__')
-          broadcast({ type: 'speaker', identity: '__test__' })
-        }}
+        onClick={restoreTest}
       >
         <div className={styles.noVideo}>
           <div className={styles.testTileIcon}>{tileIcon}</div>

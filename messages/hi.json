@@ -1240,6 +1240,7 @@
     "sendError": "भेजने में विफल"
   },
   "VideoCall": {
+    "layoutTooltip": "कैमरा लेआउट बदलें",
     "micOn": "माइक्रोफ़ोन",
     "micOff": "म्यूट",
     "micTooltipOn": "माइक्रोफ़ोन बंद करें",

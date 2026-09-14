@@ -1240,6 +1240,7 @@
     "sendError": "发送失败"
   },
   "VideoCall": {
+    "layoutTooltip": "切换摄像头布局",
     "micOn": "麦克风",
     "micOff": "已静音",
     "micTooltipOn": "关闭麦克风",

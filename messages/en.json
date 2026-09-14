@@ -1267,6 +1267,7 @@
     "sendError": "Failed to send"
   },
   "VideoCall": {
+    "layoutTooltip": "Change camera layout",
     "micOn": "Microphone",
     "micOff": "Muted",
     "micTooltipOn": "Turn off microphone",
