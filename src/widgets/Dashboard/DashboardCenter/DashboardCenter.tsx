@@ -12,6 +12,7 @@ import { RoadMapPreview } from '@/shared/ui/RoadMap/RoadMapPreview/RoadMapPrevie
 import { useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import styles from './DashboardCenter.module.scss'
 
@@ -117,8 +118,18 @@ export function DashboardCenter({ statsId, studentCount, callCount, totalHours, 
   const [roadmaps, setRoadmaps] = useState<RoadmapItem[]>([])
   const [posts, setPosts] = useState<PostItem[]>([])
   const [services, setServices] = useState<ServiceItem[]>([])
-  const [tests, setTests] = useState<TestItem[]>([])
   const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
+
+  // React Query (not local state) so this list reacts to the same
+  // invalidateQueries(['tests', ...]) call useSaveTest fires on save/delete —
+  // a plain useState+fetch here never refreshed after saving a test elsewhere.
+  const { data: testsData } = useQuery({
+    queryKey: ['tests', 'teacher', statsId],
+    queryFn: () => fetch(`/api/tests?teacherId=${statsId}`).then(r => r.json()),
+    enabled: !!statsId,
+  })
+  const tests: TestItem[] = Array.isArray(testsData) ? testsData : []
   const [pickerOpen, setPickerOpen] = useState(false)
   const [serviceModalOpen, setServiceModalOpen] = useState(false)
   const [editingService, setEditingService] = useState<ServiceItem | null>(null)
@@ -172,7 +183,7 @@ export function DashboardCenter({ statsId, studentCount, callCount, totalHours, 
     try {
       const res = await fetch(`/api/tests/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error()
-      setTests(prev => prev.filter(t => t.id !== id))
+      queryClient.invalidateQueries({ queryKey: ['tests'] })
       toast.success(t('deleteSuccess'), { id: tid })
     } catch {
       toast.error(t('deleteError'), { id: tid })
@@ -185,14 +196,12 @@ export function DashboardCenter({ statsId, studentCount, callCount, totalHours, 
       fetch(`/api/roadmap?teacherId=${statsId}&limit=6&lang=${locale}`).then(r => r.json()),
       fetch(`/api/posts?teacherId=${statsId}&limit=6&lang=${locale}`).then(r => r.json()),
       fetch(`/api/services?teacherId=${statsId}&lang=${locale}`).then(r => r.json()),
-      fetch(`/api/tests?teacherId=${statsId}`).then(r => r.json()),
-    ]).then(([rmData, postsData, svcData, testsData]) => {
+    ]).then(([rmData, postsData, svcData]) => {
       if (Array.isArray(rmData.roadmaps)) setRoadmaps(rmData.roadmaps)
       if (Array.isArray(postsData.posts)) setPosts(postsData.posts)
       if (Array.isArray(svcData.services)) setServices(svcData.services)
-      if (Array.isArray(testsData)) setTests(testsData)
     }).catch(() => {}).finally(() => setLoading(false))
-  }, [statsId])
+  }, [statsId, locale])
 
   const TABS: { key: Tab; label: string }[] = [
     { key: 'all',      label: t('tabAll') },

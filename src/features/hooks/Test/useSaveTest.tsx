@@ -57,7 +57,7 @@ export function validateBlocks(blocks: TestBlock[]): Map<string, string> {
 export function useSaveTest(existingId?: string) {
   const t = useTranslations('CreateTestPage')
   const {blocks, title, theme, description, categoryIds} = useTypedSelector((s) => s.tasks)
-  const {resetConstructor} = useActions()
+  const {resetConstructor, setTitle} = useActions()
   const [invalidBlockIds, setInvalidBlockIds] = useState<Set<string>>(new Set())
   const [errorsMap, setErrorsMap] = useState<Map<string, string>>(new Map())
   const router = useRouter()
@@ -71,29 +71,34 @@ export function useSaveTest(existingId?: string) {
     })
 
   const mutation = useMutation({
-    mutationFn: async () => {
-      const payload = {title, theme, description, blocks, categoryIds}
+    mutationFn: async (vars: {title: string}) => {
+      const payload = {title: vars.title, theme, description, blocks, categoryIds}
       const {data} = existingId
         ? await instance.patch<{id: string}>(`/tests/${existingId}`, payload)
         : await instance.post<{id: string}>('/tests', payload)
       return data
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({queryKey: ['tests', 'mine']})
-      resetConstructor()
-      router.push(`/test/${data.id || existingId}`)
-      toast.success(existingId ? t('successUpdated') : t('successCreated'))
-    },
-    onError: () => {
-      toast.error(t('errorSaveFailed'))
-    },
   })
 
-  const save = () => {
-    if (!title.trim()) {
-      toast.error(t('errorTitleRequired'))
-      return
-    }
+  // No manual title → ask the AI to name the test from its content. If saving
+  // with that name fails for any reason, retry once with a different
+  // AI-generated alternative before surfacing an error.
+  const generateTitle = async (avoid?: string) => {
+    const {data} = await instance.post<{title: string}>('/tests/generate-title', {
+      theme, description, blocks, avoid,
+    })
+    return data.title
+  }
+
+  const finishSave = async (attemptTitle: string) => {
+    const data = await mutation.mutateAsync({title: attemptTitle})
+    queryClient.invalidateQueries({queryKey: ['tests']})
+    resetConstructor()
+    router.push(`/test/${data.id || existingId}`)
+    toast.success(existingId ? t('successUpdated') : t('successCreated'))
+  }
+
+  const save = async () => {
     if (blocks.length === 0) {
       toast.error(t('errorBlocksRequired'))
       return
@@ -116,7 +121,34 @@ export function useSaveTest(existingId?: string) {
 
     setErrorsMap(new Map())
     setInvalidBlockIds(new Set())
-    mutation.mutate()
+
+    let attemptTitle = title.trim()
+    const autoNamed = !attemptTitle
+    if (autoNamed) {
+      try {
+        attemptTitle = await generateTitle()
+        setTitle(attemptTitle)
+      } catch {
+        toast.error(t('errorAutoNameFailed'))
+        return
+      }
+    }
+
+    try {
+      await finishSave(attemptTitle)
+    } catch {
+      if (!autoNamed) {
+        toast.error(t('errorSaveFailed'))
+        return
+      }
+      try {
+        const altTitle = await generateTitle(attemptTitle)
+        setTitle(altTitle)
+        await finishSave(altTitle)
+      } catch {
+        toast.error(t('errorSaveFailed'))
+      }
+    }
   }
 
   const status: 'idle' | 'saving' | 'saved' | 'error' =
