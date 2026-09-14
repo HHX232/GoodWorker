@@ -7,6 +7,8 @@ import {useActions} from '@/features/hooks/store/useActions'
 import {InfoAudioPayload, InfoMediaPayload, InfoTextPayload} from '@/shared/types/Tasks/TaskPayload.type'
 import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
 import {useInvalidTestBlocks} from '@/shared/ui/Tasks/providers/InvalidBlocksContext/InvalidBlocksContext'
+import {useSortable} from '@dnd-kit/sortable'
+import {CSS} from '@dnd-kit/utilities'
 import {useTranslations} from 'next-intl'
 import {useEffect} from 'react'
 import styles from './BlockEditor.module.scss'
@@ -37,10 +39,38 @@ function BlockEditor({block}: Props) {
   const error = errors.get(block.id) ?? null
   const deleteBtn = <DeleteBlockButton label={t('deleteBlock')} onDelete={() => removeBlock(block.id)} />
 
+  // origin: 'block-sort' tells CreateTestDndWrapper's onDragEnd this is a
+  // reorder, not a palette drop — the two share one DndContext.
+  const {attributes, listeners, setNodeRef, transform, transition, isDragging} = useSortable({
+    id: block.id,
+    data: {origin: 'block-sort'},
+  })
+  const dragStyle = {transform: CSS.Transform.toString(transform), transition}
+
   const wrapper = (heading: string, children: React.ReactNode) => (
-    <div id={`block-${block.id}`} className={`${styles.block_wrap} ${isInvalid ? styles.block_invalid : ''}`}>
+    <div
+      id={`block-${block.id}`}
+      ref={setNodeRef}
+      style={dragStyle}
+      className={`${styles.block_wrap} ${isInvalid ? styles.block_invalid : ''} ${isDragging ? styles.block_dragging : ''}`}
+    >
       <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
-        <h3 className={styles.block_heading}>{heading}</h3>
+        <div className={styles.block_top_row}>
+          <button
+            type='button'
+            className={styles.drag_handle}
+            aria-label={t('dragBlock')}
+            {...attributes}
+            {...listeners}
+          >
+            <svg width='16' height='16' viewBox='0 0 24 24' fill='currentColor'>
+              <circle cx='9' cy='6' r='1.6' /><circle cx='15' cy='6' r='1.6' />
+              <circle cx='9' cy='12' r='1.6' /><circle cx='15' cy='12' r='1.6' />
+              <circle cx='9' cy='18' r='1.6' /><circle cx='15' cy='18' r='1.6' />
+            </svg>
+          </button>
+          <h3 className={styles.block_heading}>{heading}</h3>
+        </div>
         {deleteBtn}
         {children}
       </div>

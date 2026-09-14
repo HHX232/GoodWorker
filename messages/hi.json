@@ -92,7 +92,8 @@
     "infoText": "टेक्स्ट ब्लॉक",
     "infoMedia": "मीडिया ब्लॉक",
     "infoAudio": "ऑडियो ब्लॉक",
-    "deleteBlock": "ब्लॉक हटाएं"
+    "deleteBlock": "ब्लॉक हटाएं",
+    "dragBlock": "ब्लॉक खींचें"
   },
   "CreatePostPage": {
     "editPost": "पोस्ट संपादित करें",

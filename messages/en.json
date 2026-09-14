@@ -212,7 +212,8 @@
     "infoText": "Text block",
     "infoMedia": "Media block",
     "infoAudio": "Audio block",
-    "deleteBlock": "Delete block"
+    "deleteBlock": "Delete block",
+    "dragBlock": "Drag block"
   },
   "CollectionsMenu": {
     "collections": "Collections",

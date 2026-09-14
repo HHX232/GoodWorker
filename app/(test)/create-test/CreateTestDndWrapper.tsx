@@ -8,7 +8,7 @@ import {useState} from 'react'
 
 export function CreateTestDndWrapper() {
   const [draggingType, setDraggingType] = useState<TaskBlockType | null>(null)
-  const {addBlock} = useActions()
+  const {addBlock, reorderBlocks} = useActions()
 
   const handleDragStart = (event: DragStartEvent) => {
     const {type, origin} = event.active.data.current ?? {}
@@ -18,11 +18,19 @@ export function CreateTestDndWrapper() {
   const handleDragEnd = (event: DragEndEvent) => {
     setDraggingType(null)
     const {active, over} = event
-    if (!over || over.id !== 'droppable-canvas') return
+    if (!over) return
     const {type, origin} = active.data.current ?? {}
+
     if (origin === 'palette') {
+      if (over.id !== 'droppable-canvas') return
       addBlock(type)
       window.dispatchEvent(new CustomEvent('test-block-dropped'))
+      return
+    }
+
+    // Reordering existing blocks (see BlockEditor's drag handle / useSortable)
+    if (origin === 'block-sort' && over.id !== active.id) {
+      reorderBlocks({activeId: String(active.id), overId: String(over.id)})
     }
   }
 

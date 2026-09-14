@@ -92,7 +92,8 @@
     "infoText": "文本块",
     "infoMedia": "媒体块",
     "infoAudio": "音频块",
-    "deleteBlock": "删除区块"
+    "deleteBlock": "删除区块",
+    "dragBlock": "拖动区块"
   },
   "CreatePostPage": {
     "editPost": "编辑帖子",

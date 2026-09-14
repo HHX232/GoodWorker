@@ -9,11 +9,43 @@
    animation: shake 0.35s ease;
 }
 
+.block_dragging {
+   opacity: 0.5;
+   z-index: 10;
+}
+
+.block_top_row {
+   display: flex;
+   align-items: center;
+   gap: 8px;
+}
+
+.drag_handle {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   flex-shrink: 0;
+   width: 28px;
+   height: 28px;
+   margin-top: 15px;
+   border-radius: 6px;
+   color: #9ca3af;
+   cursor: grab;
+   touch-action: none;
+   transition: background 0.15s, color 0.15s;
+   &:hover { background: #f3f4f6; color: #4b5563; }
+   &:active { cursor: grabbing; }
+}
+
 .block_heading {
    margin-top: 15px;
    font-weight: 500;
    font-size: 32px;
    color: #1a1d23;
+}
+
+.block_top_row .block_heading {
+   margin-top: 0;
 }
 
 .delete_btn {
@@ -32,6 +64,7 @@
 :global(html.theme-dark), :global(html.pomodoro-dark) {
    .block_heading { color: #e8eaf0; }
    .delete_btn { background-color: rgba(255,255,255,0.07); color: rgba(255,255,255,0.5); &:hover { background-color: rgba(239,68,68,0.15); color: #f87171; } }
+   .drag_handle { color: rgba(255,255,255,0.35); &:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.7); } }
 }
 
 @keyframes shake {
