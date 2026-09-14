@@ -2442,7 +2442,11 @@
     "modal_vip_guest_msg": "DOCX、TXT、RTF 和 ODT 格式仅对已注册的 VIP 用户开放。请先免费注册账号——或直接上传 PDF。",
     "modal_vip_guest_cta": "立即注册",
     "drop_overlay_title": "松开鼠标以上传",
-    "drop_overlay_sub": "PDF · DOCX · TXT · RTF · ODT"
+    "drop_overlay_sub": "PDF · DOCX · TXT · RTF · ODT",
+    "modal_result_save_error": "保存测试失败，请重试",
+    "modal_result_save_success": "测试已保存到您的个人资料",
+    "modal_result_save_teachers_only": "只有教师账号才能将测试保存到个人资料",
+    "modal_result_saving": "保存中…"
   },
   "Pomodoro": {
     "title": "番茄钟",

@@ -2441,7 +2441,11 @@
     "modal_vip_guest_msg": "DOCX, TXT, RTF और ODT केवल रजिस्टर्ड VIP उपयोगकर्ताओं के लिए उपलब्ध हैं। पहले मुफ़्त खाता बनाएं — या अभी PDF अपलोड करें।",
     "modal_vip_guest_cta": "रजिस्टर करें",
     "drop_overlay_title": "फ़ाइल छोड़ें",
-    "drop_overlay_sub": "PDF · DOCX · TXT · RTF · ODT"
+    "drop_overlay_sub": "PDF · DOCX · TXT · RTF · ODT",
+    "modal_result_save_error": "टेस्ट सहेजने में विफल — फिर से प्रयास करें",
+    "modal_result_save_success": "टेस्ट आपकी प्रोफ़ाइल में सहेजा गया",
+    "modal_result_save_teachers_only": "केवल शिक्षक खाते ही प्रोफ़ाइल में टेस्ट सहेज सकते हैं",
+    "modal_result_saving": "सहेजा जा रहा है…"
   },
   "Pomodoro": {
     "title": "पोमोडोरो",

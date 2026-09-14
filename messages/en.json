@@ -2692,7 +2692,11 @@
     "modal_vip_guest_msg": "DOCX, TXT, RTF and ODT are only available to registered VIP users. Create a free account first — or upload a PDF right now.",
     "modal_vip_guest_cta": "Sign up",
     "drop_overlay_title": "Drop your file",
-    "drop_overlay_sub": "PDF · DOCX · TXT · RTF · ODT"
+    "drop_overlay_sub": "PDF · DOCX · TXT · RTF · ODT",
+    "modal_result_save_error": "Failed to save the test — try again",
+    "modal_result_save_success": "Test saved to your profile",
+    "modal_result_save_teachers_only": "Only tutor accounts can save tests to a profile",
+    "modal_result_saving": "Saving…"
   },
   "Pomodoro": {
     "title": "Pomodoro",

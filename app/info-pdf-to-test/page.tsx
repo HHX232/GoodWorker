@@ -3,7 +3,9 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { toast } from 'sonner'
 import { useMe } from '@/features/hooks/User/useMe'
 import { pushDataLayerEvent } from '@/shared/lib/analytics'
 import { convertHeicFiles } from '@/shared/lib/heicConvert'
@@ -578,6 +580,80 @@ interface TestResult {
   guestLimit: number | null
   totalChars: number
   truncated: boolean
+}
+
+// ── Map /api/pdf-to-test's preview question shape onto the real test-block
+// schema (POST /api/tests) so the generated test can actually be persisted —
+// this page used to just link to /profile without saving anything at all.
+function textToTiptap(text: string) {
+  return { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text }] }] }
+}
+
+function pdfQuestionsToBlocks(questions: PQ[]): { id: string; type: string; payload: unknown }[] {
+  const blocks: { id: string; type: string; payload: unknown }[] = []
+  const uid = () => (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2))
+
+  for (const q of questions) {
+    switch (q.type) {
+      case 'single':
+        blocks.push({
+          id: uid(),
+          type: 'CHOOSE_OPTION',
+          payload: {
+            question: q.question,
+            options: q.options.map((text, i) => ({ id: `o${i + 1}`, text })),
+            correctId: `o${q.correct + 1}`,
+          },
+        })
+        break
+      case 'multi':
+        blocks.push({
+          id: uid(),
+          type: 'CHOOSE_OPTION',
+          payload: {
+            question: q.question,
+            options: q.options.map((text, i) => ({ id: `o${i + 1}`, text })),
+            correctId: q.correct.map((i) => `o${i + 1}`),
+          },
+        })
+        break
+      case 'match':
+        if (q.question) blocks.push({ id: uid(), type: 'INFO_TEXT', payload: { content: textToTiptap(q.question) } })
+        blocks.push({
+          id: uid(),
+          type: 'MATCH_PAIRS',
+          payload: { pairs: q.pairs.map(([left, right], i) => ({ id: `p${i + 1}`, left, right })) },
+        })
+        break
+      case 'fill':
+        blocks.push({
+          id: uid(),
+          type: 'FREE_ANSWER',
+          payload: { question: q.question, referenceAnswer: q.answer },
+        })
+        break
+      case 'bool':
+        blocks.push({
+          id: uid(),
+          type: 'CHOOSE_OPTION',
+          payload: {
+            question: q.statement,
+            options: [{ id: 'o1', text: 'Верно' }, { id: 'o2', text: 'Неверно' }],
+            correctId: q.correct ? 'o1' : 'o2',
+          },
+        })
+        break
+      case 'order':
+        if (q.question) blocks.push({ id: uid(), type: 'INFO_TEXT', payload: { content: textToTiptap(q.question) } })
+        blocks.push({
+          id: uid(),
+          type: 'SEQUENCE',
+          payload: { items: q.items.map((text, i) => ({ id: `s${i + 1}`, text })) },
+        })
+        break
+    }
+  }
+  return blocks
 }
 
 // ── Interactive preview primitives (real /api/check-answer wired for fill-in) ──────────────
@@ -1430,11 +1506,13 @@ function UploadModal({ modalOpen, onClose, pendingFiles, isLoggedIn }: {
   isLoggedIn: boolean
 }) {
   const t = useTranslations('PdfInfoPage')
+  const router = useRouter()
   const [ready, setReady] = useState(false)
   const [step, setStep] = useState<ModalStep>('pick')
   const [progress, setProgress] = useState(0)
   const [fileName, setFileName] = useState('')
   const [result, setResult] = useState<TestResult | null>(null)
+  const [savingTest, setSavingTest] = useState(false)
   const [previewIdx, setPreviewIdx] = useState(0)
   const [errorTitle, setErrorTitle] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
@@ -1606,6 +1684,31 @@ function UploadModal({ modalOpen, onClose, pendingFiles, isLoggedIn }: {
     setResult(null)
     setErrorMsg('')
   }, [])
+
+  const handleSaveToProfile = useCallback(async () => {
+    if (!result || savingTest) return
+    setSavingTest(true)
+    try {
+      const blocks = pdfQuestionsToBlocks(result.questions)
+      const res = await fetch('/api/tests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: result.title, description: '', blocks, categoryIds: [] }),
+      })
+      if (res.status === 403) {
+        toast.error(t('modal_result_save_teachers_only'))
+        return
+      }
+      if (!res.ok) throw new Error('save failed')
+      const data = await res.json()
+      toast.success(t('modal_result_save_success'))
+      router.push(data?.id ? `/test/${data.id}` : '/profile')
+    } catch {
+      toast.error(t('modal_result_save_error'))
+    } finally {
+      setSavingTest(false)
+    }
+  }, [result, savingTest, router, t])
 
   // Single drop zone / picker for everything (including the page-level global dropzone): if the
   // first file looks like a photo and the user is VIP, route the whole selection to the
@@ -1784,7 +1887,9 @@ function UploadModal({ modalOpen, onClose, pendingFiles, isLoggedIn }: {
 
             <div className="upload__actions">
               {isLoggedIn
-                ? <Link className="btn btn--solid" href="/profile">{t('modal_result_save')}</Link>
+                ? <button type="button" className="btn btn--solid" onClick={handleSaveToProfile} disabled={savingTest}>
+                    {savingTest ? t('modal_result_saving') : t('modal_result_save')}
+                  </button>
                 : <Link className="btn btn--solid" href="/register">{t('modal_result_login_save')}</Link>}
               <button type="button" className="btn btn--ghost" onClick={reset}>{t('modal_result_another')}</button>
             </div>

@@ -2692,7 +2692,11 @@
     "modal_vip_guest_msg": "DOCX, TXT, RTF и ODT доступны только зарегистрированным VIP-пользователям. Сначала создайте бесплатный аккаунт — или загрузите PDF прямо сейчас.",
     "modal_vip_guest_cta": "Зарегистрироваться",
     "drop_overlay_title": "Отпустите файл",
-    "drop_overlay_sub": "PDF · DOCX · TXT · RTF · ODT"
+    "drop_overlay_sub": "PDF · DOCX · TXT · RTF · ODT",
+    "modal_result_save_error": "Не удалось сохранить тест — попробуйте ещё раз",
+    "modal_result_save_success": "Тест сохранён в профиль",
+    "modal_result_save_teachers_only": "Сохранять тесты в профиль могут только аккаунты репетиторов",
+    "modal_result_saving": "Сохранение…"
   },
   "Pomodoro": {
     "title": "Помодоро",
