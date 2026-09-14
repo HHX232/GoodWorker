@@ -600,7 +600,7 @@ useEffect(() => {
 
     return (
       <div key={p.identity} className={`${styles.tile} ${p.isLocal ? styles.tileLocal : ''} ${large ? styles.tileLarge : ''} ${isPip ? styles.tilePip : ''}`}>
-        <video id={`v-${p.identity}`} className={styles.video} autoPlay playsInline muted={p.isLocal} />
+        <video id={`v-${p.identity}`} className={styles.video} autoPlay playsInline muted={p.isLocal} disablePictureInPicture />
         {noVid && <div className={styles.noVideo}><Avatar name={p.identity} url={p.avatarUrl} /></div>}
         <div className={styles.tileMeta}>
           <span className={styles.tileName}>{p.identity}</span>
@@ -1283,6 +1283,7 @@ useEffect(() => {
           autoPlay
           playsInline
           muted={isLocal}
+          disablePictureInPicture
         />
       </div>
     )

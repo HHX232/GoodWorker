@@ -276,11 +276,15 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
           setTimeout(() => attachVideoToEl(`ss-${p.identity}`, track), 150)
           return
         }
-        upsert(p.identity)
         if (track.kind === Track.Kind.Video || track.kind === 'video') {
+          // A real video track just arrived — clear the "no camera" placeholder
+          // even if ParticipantConnected defaulted it to true (camera can
+          // publish moments after connecting).
+          upsert(p.identity, { videoMuted: false })
           // Delay so React can render the <video> element before attaching
           setTimeout(() => attachTrack(p.identity, track), 150)
         } else {
+          upsert(p.identity)
           attachTrack(p.identity, track)
         }
       })
@@ -329,7 +333,14 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
           )
         } catch {}
         if (p.identity.startsWith('agent-')) { setAgentIdentity(p.identity); return }
-        upsert(p.identity)
+        // Default was `videoMuted: false`, which shows a blank/black tile
+        // instead of the avatar placeholder for a participant who joined
+        // with no camera at all (no video track ever published, so
+        // TrackMuted/TrackSubscribed never fire to correct it). Check any
+        // camera publication that already exists at connect time instead.
+        const camPub = p.getTrackPublication?.(Track.Source.Camera)
+        const hasLiveCam = !!camPub && !camPub.isMuted
+        upsert(p.identity, { videoMuted: !hasLiveCam })
         fetchAvatar(p.identity)
         setStatus(`${p.identity} подключился`)
         setTimeout(() => setStatus(''), 3000)
@@ -382,7 +393,9 @@ export function useVideoRoom({ roomName, userName, localAvatarUrl, onDataMessage
       upsert(room.localParticipant.identity, { isLocal: true, avatarUrl: localAvatarUrl })
       room.remoteParticipants.forEach(p => {
         if (p.identity.startsWith('agent-')) { setAgentIdentity(p.identity); return }
-        upsert(p.identity)
+        const camPub = p.getTrackPublication?.(Track.Source.Camera)
+        const hasLiveCam = !!camPub && !camPub.isMuted
+        upsert(p.identity, { videoMuted: !hasLiveCam })
         fetchAvatar(p.identity)
         p.trackPublications.forEach(pub => {
           if (pub.track) attachTrack(p.identity, pub.track)
