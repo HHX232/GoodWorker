@@ -194,6 +194,19 @@ export const TYPE_CONFIG: Record<string, TypeConfig> = {
     actionLabel: 'Выполнить',
     getHref: (p) => p.assignmentId ? `/homework/${p.assignmentId}` : null,
   },
+  PAYMENT_REMINDER: {
+    color: '#2563eb',
+    bg: '#eff6ff',
+    hideActor: true,
+    icon: (
+      <svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.2' strokeLinecap='round' strokeLinejoin='round'>
+        <path d='M12 3c-3 3-8 3.5-8 3.5s-.5 8 8 14.5c8.5-6.5 8-14.5 8-14.5S15 6 12 3z' />
+        <path d='M12 9v6M9.5 11.5h5' />
+      </svg>
+    ),
+    actionLabel: 'Профиль',
+    getHref: () => '/profile',
+  },
 }
 
 export const FALLBACK_CONFIG: TypeConfig = {

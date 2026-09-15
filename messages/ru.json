@@ -1380,6 +1380,7 @@
       "SERVICE_BOOKING": "Запись на услуги",
       "SYSTEM": "Системные",
       "HOMEWORK_ASSIGNED": "Домашние задания",
+      "PAYMENT_REMINDER": "Напоминания об оплате",
       "REFERRAL_REWARD": "Реферальные награды"
     },
     "actions": {

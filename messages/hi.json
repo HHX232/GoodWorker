@@ -1390,6 +1390,7 @@
       "SERVICE_BOOKING": "सेवा बुकिंग",
       "SYSTEM": "सिस्टम",
       "HOMEWORK_ASSIGNED": "गृहकार्य",
+      "PAYMENT_REMINDER": "भुगतान अनुस्मारक",
       "REFERRAL_REWARD": "रेफ़रल पुरस्कार"
     },
     "actions": {

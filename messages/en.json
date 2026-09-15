@@ -1380,6 +1380,7 @@
       "SERVICE_BOOKING": "Service bookings",
       "SYSTEM": "System",
       "HOMEWORK_ASSIGNED": "Homework",
+      "PAYMENT_REMINDER": "Payment reminders",
       "REFERRAL_REWARD": "Referral rewards"
     },
     "actions": {

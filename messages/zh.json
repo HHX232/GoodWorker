@@ -1391,6 +1391,7 @@
       "SERVICE_BOOKING": "服务预约",
       "SYSTEM": "系统",
       "HOMEWORK_ASSIGNED": "作业",
+      "PAYMENT_REMINDER": "付款提醒",
       "REFERRAL_REWARD": "推荐奖励"
     },
     "actions": {
