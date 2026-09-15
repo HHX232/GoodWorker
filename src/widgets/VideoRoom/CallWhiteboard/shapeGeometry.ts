@@ -115,6 +115,11 @@ export type SnapRef =
    * cone/cylinder's base cap. Lets a construction line be a "plane"/side
    * median instead of only vertex/edge-midpoint/solid-centroid. */
   | { kind: 'faceCenter'; index: number }
+  /** An arbitrary point along one edge, not just its endpoints/midpoint —
+   * `t` (0..1) is the position from the edge's v1 to v2. Lets a line end
+   * "slide" anywhere along an edge and still stay glued to it (re-resolved
+   * from edgeIndex+t) after the shape rotates, moves, or is resized. */
+  | { kind: 'edgePoint'; edgeIndex: number; t: number }
   | { kind: 'centroid' }
 
 export interface SnapCandidate extends Point {
@@ -122,9 +127,20 @@ export interface SnapCandidate extends Point {
   ref: SnapRef
 }
 
+/** One shape edge in absolute scene coordinates — used to snap a
+ * construction-line endpoint to any point along the edge (not just its
+ * discrete vertex/midpoint candidates), via projection onto the segment. */
+export interface EdgeSegmentCandidate {
+  zoneElementId: string
+  edgeIndex: number
+  a: Point
+  b: Point
+}
+
 export function snapRefsEqual(a: SnapRef, b: SnapRef): boolean {
   if (a.kind !== b.kind) return false
   if (a.kind === 'centroid') return true
+  if (a.kind === 'edgePoint') return a.edgeIndex === (b as { edgeIndex: number }).edgeIndex && Math.abs(a.t - (b as { t: number }).t) < 1e-6
   return a.index === (b as { index: number }).index
 }
 
@@ -157,5 +173,32 @@ export function findNearestSnapPoint(point: Point, candidates: SnapCandidate[], 
     if (!best || dist < best.dist) best = { point: candidate, dist }
   }
   if (best && best.dist * zoom <= maxScreenDistance) return best.point
+  return null
+}
+
+/** Nearest point on segment a→b to p, plus how far along the segment it is
+ * (t, 0..1) and the distance from p to that projected point. */
+export function projectPointToSegment(p: Point, a: Point, b: Point): { point: Point; t: number; dist: number } {
+  const dx = b.x - a.x
+  const dy = b.y - a.y
+  const lengthSq = dx * dx + dy * dy
+  if (lengthSq === 0) return { point: a, t: 0, dist: Math.hypot(p.x - a.x, p.y - a.y) }
+  const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / lengthSq))
+  const point = { x: a.x + t * dx, y: a.y + t * dy }
+  return { point, t, dist: Math.hypot(p.x - point.x, p.y - point.y) }
+}
+
+/** Like findNearestSnapPoint but for landing anywhere along an edge, not
+ * just its discrete vertex/midpoint — the "slide along the rest of the
+ * edge" half of construction-line snapping. */
+export function findNearestEdgePoint(point: Point, segments: EdgeSegmentCandidate[], maxScreenDistance: number, zoom: number): SnapCandidate | null {
+  let best: { candidate: SnapCandidate; dist: number } | null = null
+  for (const seg of segments) {
+    const { point: proj, t, dist } = projectPointToSegment(point, seg.a, seg.b)
+    if (!best || dist < best.dist) {
+      best = { candidate: { x: proj.x, y: proj.y, zoneElementId: seg.zoneElementId, ref: { kind: 'edgePoint', edgeIndex: seg.edgeIndex, t } }, dist }
+    }
+  }
+  if (best && best.dist * zoom <= maxScreenDistance) return best.candidate
   return null
 }

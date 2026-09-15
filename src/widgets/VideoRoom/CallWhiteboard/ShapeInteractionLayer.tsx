@@ -4,8 +4,8 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { sceneCoordsToViewportCoords, viewportCoordsToSceneCoords } from '@excalidraw/excalidraw'
 import type { ExcalidrawElement } from '@excalidraw/excalidraw/element/types'
 import type { Zoom } from '@excalidraw/excalidraw/types'
-import { findNearestSnapPoint, getAllZones, type Point, type SnapCandidate, type SnapRef } from './shapeGeometry'
-import { computeZoneSnapCandidates } from './threeDRender'
+import { findNearestEdgePoint, findNearestSnapPoint, getAllZones, type EdgeSegmentCandidate, type Point, type SnapCandidate, type SnapRef } from './shapeGeometry'
+import { computeZoneEdgeSegments, computeZoneSnapCandidates } from './threeDRender'
 import styles from './ShapeInteractionLayer.module.scss'
 
 export interface ViewTransform {
@@ -31,13 +31,35 @@ interface Props {
   onInsertZoneLine: (zoneElementId: string, startRef: SnapRef, endRef: SnapRef) => void
 }
 
-const SNAP_PX = 16
+// Vertices/midpoints/face-centers/centroid are "magnetic": a bigger capture
+// radius pulls the cursor onto them, and an even bigger release radius keeps
+// it locked there for a bit as the cursor moves away (the "задерживалась"
+// feel) instead of letting go the instant it's no longer the closest point.
+// Landing anywhere else on an edge still snaps continuously to the edge
+// itself (EDGE_SNAP_PX), tighter than the magnet radius so a point near a
+// vertex prefers the vertex over sliding.
+const MAGNET_CAPTURE_PX = 16
+const MAGNET_RELEASE_PX = 26
+const EDGE_SNAP_PX = 13
 
 interface DrawState {
   start: Point
   startSnap: SnapCandidate | null
   current: Point
   snapped: SnapCandidate | null
+}
+
+/** Resolves the live draw-cursor position against magnet points first (with
+ * hysteresis via `prevSnap`), then falls back to sliding along the nearest
+ * edge, then to a free unbound point. */
+function resolveDrawPoint(point: Point, prevSnap: SnapCandidate | null, snapPoints: SnapCandidate[], edgeSegments: EdgeSegmentCandidate[], zoom: number): SnapCandidate | null {
+  if (prevSnap && prevSnap.ref.kind !== 'edgePoint') {
+    const stillNear = Math.hypot(point.x - prevSnap.x, point.y - prevSnap.y) * zoom <= MAGNET_RELEASE_PX
+    if (stillNear) return prevSnap
+  }
+  const magnet = findNearestSnapPoint(point, snapPoints, MAGNET_CAPTURE_PX, zoom)
+  if (magnet) return magnet
+  return findNearestEdgePoint(point, edgeSegments, EDGE_SNAP_PX, zoom)
 }
 
 export function ShapeInteractionLayer({ elements, viewTransform, constructionMode, onInsertLine, onInsertZoneLine }: Props) {
@@ -62,23 +84,30 @@ export function ShapeInteractionLayer({ elements, viewTransform, constructionMod
     }
     return candidates
   }, [elements])
+  const edgeSegments = useMemo(() => {
+    const segments: EdgeSegmentCandidate[] = []
+    for (const { element, zone, rect } of getAllZones(elements)) {
+      segments.push(...computeZoneEdgeSegments(element.id, zone, rect))
+    }
+    return segments
+  }, [elements])
   const zoomValue = viewTransform.zoom.value
 
   const handleCaptureDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     const point = toScene(e.clientX, e.clientY)
-    const snap = findNearestSnapPoint(point, snapPoints, SNAP_PX, zoomValue)
+    const snap = resolveDrawPoint(point, null, snapPoints, edgeSegments, zoomValue)
     setDrawState({ start: snap ?? point, startSnap: snap, current: snap ?? point, snapped: snap })
     e.currentTarget.setPointerCapture(e.pointerId)
-  }, [toScene, snapPoints, zoomValue])
+  }, [toScene, snapPoints, edgeSegments, zoomValue])
 
   const handleCaptureMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     setDrawState(prev => {
       if (!prev) return prev
       const point = toScene(e.clientX, e.clientY)
-      const snap = findNearestSnapPoint(point, snapPoints, SNAP_PX, zoomValue)
+      const snap = resolveDrawPoint(point, prev.snapped, snapPoints, edgeSegments, zoomValue)
       return { ...prev, current: snap ?? point, snapped: snap }
     })
-  }, [toScene, snapPoints, zoomValue])
+  }, [toScene, snapPoints, edgeSegments, zoomValue])
 
   const handleCaptureUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     // Side effect (onInsertLine) lives outside the setState call on purpose —

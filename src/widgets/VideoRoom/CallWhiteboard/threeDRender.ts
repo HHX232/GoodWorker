@@ -6,7 +6,7 @@
 // code into the SSR bundle. Everything that needs this file is already
 // mounted behind a `dynamic(..., { ssr: false })` boundary.
 import * as THREE from 'three'
-import { DEFAULT_SEGMENTS, rotateAroundCenter, type Point, type ShapeId, type SnapCandidate, type SnapRef, type ThreeDZone, type ZoneRect } from './shapeGeometry'
+import { DEFAULT_SEGMENTS, rotateAroundCenter, type EdgeSegmentCandidate, type Point, type ShapeId, type SnapCandidate, type SnapRef, type ThreeDZone, type ZoneRect } from './shapeGeometry'
 
 export const CREASE_ANGLE_THRESHOLD = THREE.MathUtils.degToRad(1)
 // A shape's own surface is what can hide part of its own edges (no other
@@ -330,19 +330,12 @@ export function getLocalSnapPoints(topology: EdgeTopology[]): LocalSnapPoints {
   return { vertices, midpoints, centroid }
 }
 
-/** Every construction-mode snap point (vertex/midpoint/centroid) for one
- * zone, in absolute scene coordinates — accounts for the zone's current
- * rotation/scale (3D) and its on-board position/rotation (2D, `rect.angle`
- * from the native Excalidraw rotate handle). Rebuilds geometry+topology on
- * every call; only meant for infrequent triggers (construction mode toggling
- * on, a zone's config changing), not a per-frame hot path. */
-export function computeZoneSnapCandidates(elementId: string, zone: ThreeDZone, rect: ZoneRect): SnapCandidate[] {
-  const geometry = buildGeometry(zone.primitive, zone.segments ?? DEFAULT_SEGMENTS[zone.primitive], zone.flat ?? false)
-  const topology = buildEdgeTopology(geometry)
-  const faces = buildFaceTopology(geometry)
-  geometry.dispose()
-  const { vertices, midpoints, centroid } = getLocalSnapPoints(topology)
-
+/** Projects a zone-local (unrotated-3D) point to its absolute scene position
+ * — accounts for the zone's current 3D rotation/scale and its on-board
+ * position/rotation (`rect.angle`, from the native Excalidraw rotate
+ * handle). Shared by every function below that needs to place a local point
+ * (vertex, face center, arbitrary edge point, …) on the board. */
+function buildZoneProjector(zone: ThreeDZone, rect: ZoneRect): (local: THREE.Vector3) => Point {
   const group = new THREE.Group()
   group.rotation.set(zone.rotationX, zone.rotationY, zone.rotationZ)
   group.scale.setScalar(zone.scale)
@@ -351,10 +344,23 @@ export function computeZoneSnapCandidates(elementId: string, zone: ThreeDZone, r
   camera.updateMatrixWorld(true)
 
   const center = { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 }
-  const toScene = (local: THREE.Vector3): Point => {
+  return (local: THREE.Vector3): Point => {
     const p = projectPoint(local, group, camera, rect.width, rect.height)
     return rotateAroundCenter({ x: rect.x + p.x, y: rect.y + p.y }, center, rect.angle)
   }
+}
+
+/** Every construction-mode snap point (vertex/midpoint/centroid) for one
+ * zone, in absolute scene coordinates. Rebuilds geometry+topology on every
+ * call; only meant for infrequent triggers (construction mode toggling on,
+ * a zone's config changing), not a per-frame hot path. */
+export function computeZoneSnapCandidates(elementId: string, zone: ThreeDZone, rect: ZoneRect): SnapCandidate[] {
+  const geometry = buildGeometry(zone.primitive, zone.segments ?? DEFAULT_SEGMENTS[zone.primitive], zone.flat ?? false)
+  const topology = buildEdgeTopology(geometry)
+  const faces = buildFaceTopology(geometry)
+  geometry.dispose()
+  const { vertices, midpoints, centroid } = getLocalSnapPoints(topology)
+  const toScene = buildZoneProjector(zone, rect)
 
   const candidates: SnapCandidate[] = []
   vertices.forEach((v, index) => candidates.push({ ...toScene(v), zoneElementId: elementId, ref: { kind: 'vertex', index } }))
@@ -364,10 +370,36 @@ export function computeZoneSnapCandidates(elementId: string, zone: ThreeDZone, r
   return candidates
 }
 
+/** Every edge of one zone, as a segment in absolute scene coordinates —
+ * lets a construction-line endpoint snap to any point along an edge (not
+ * just its discrete vertex/midpoint), via projection onto the segment. */
+export function computeZoneEdgeSegments(elementId: string, zone: ThreeDZone, rect: ZoneRect): EdgeSegmentCandidate[] {
+  const geometry = buildGeometry(zone.primitive, zone.segments ?? DEFAULT_SEGMENTS[zone.primitive], zone.flat ?? false)
+  const topology = buildEdgeTopology(geometry)
+  geometry.dispose()
+  const toScene = buildZoneProjector(zone, rect)
+  return topology.map((edge, edgeIndex) => ({
+    zoneElementId: elementId,
+    edgeIndex,
+    a: toScene(edge.v1),
+    b: toScene(edge.v2),
+  }))
+}
+
 /** Resolve one specific snap ref (e.g. "vertex 2") to its current absolute
  * scene position — used to re-anchor a construction line bound to this zone
- * after the zone's rotation/primitive/etc. changes. */
+ * after the zone's rotation/primitive/etc. changes. `edgePoint` is resolved
+ * directly (interpolated along the edge) rather than searched for in the
+ * discrete candidate list, since its `t` isn't one of a finite set. */
 export function resolveSnapRef(elementId: string, zone: ThreeDZone, rect: ZoneRect, ref: SnapRef): Point | null {
+  if (ref.kind === 'edgePoint') {
+    const geometry = buildGeometry(zone.primitive, zone.segments ?? DEFAULT_SEGMENTS[zone.primitive], zone.flat ?? false)
+    const topology = buildEdgeTopology(geometry)
+    geometry.dispose()
+    const edge = topology[ref.edgeIndex]
+    if (!edge) return null
+    return buildZoneProjector(zone, rect)(edge.v1.clone().lerp(edge.v2, ref.t))
+  }
   const candidates = computeZoneSnapCandidates(elementId, zone, rect)
   return candidates.find(c => c.ref.kind === ref.kind && (ref.kind === 'centroid' || (c.ref as { index: number }).index === (ref as { index: number }).index)) ?? null
 }
@@ -378,6 +410,10 @@ export function resolveSnapRef(elementId: string, zone: ThreeDZone, rect: ZoneRe
  * scratch on every rotation frame would be wasteful. */
 export function resolveLocalSnapPoint(topology: EdgeTopology[], faces: FaceTopology[], ref: SnapRef): THREE.Vector3 | null {
   if (ref.kind === 'faceCenter') return faces[ref.index]?.center ?? null
+  if (ref.kind === 'edgePoint') {
+    const edge = topology[ref.edgeIndex]
+    return edge ? edge.v1.clone().lerp(edge.v2, ref.t) : null
+  }
   const { vertices, midpoints, centroid } = getLocalSnapPoints(topology)
   if (ref.kind === 'vertex') return vertices[ref.index] ?? null
   if (ref.kind === 'midpoint') return midpoints[ref.index] ?? null
