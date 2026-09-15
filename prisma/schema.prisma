@@ -59,6 +59,7 @@ model Student {
   homeworkAssignments    HomeworkAssignment[]
   referralCode           String?          @unique
   paymentReminderSettings PaymentReminderSetting[]
+  conversationsAsStudent Conversation[]
 }
 
 model Teacher {
@@ -106,6 +107,7 @@ model Teacher {
   feedbackPromoGiven  Boolean             @default(false)
   referralCode        String?             @unique
   paymentReminderSettings PaymentReminderSetting[]
+  conversationsAsTeacher Conversation[]
 
   @@index([isVip, createdAt])
 }
@@ -231,6 +233,39 @@ model TeacherStudent {
   teacher   Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 
   @@id([teacherId, studentId])
+}
+
+model Conversation {
+  id            String   @id @default(uuid())
+  teacherId     String
+  studentId     String
+  createdAt     DateTime @default(now())
+  lastMessageAt DateTime @default(now())
+  teacher       Teacher       @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  student       Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  messages      ChatMessage[]
+
+  @@unique([teacherId, studentId])
+  @@index([teacherId, lastMessageAt])
+  @@index([studentId, lastMessageAt])
+}
+
+model ChatMessage {
+  id             String       @id @default(uuid())
+  conversationId String
+  senderRole     Role
+  text           String?
+  attachmentUrl  String?
+  attachmentType String?
+  attachmentName String?
+  attachmentSize Int?
+  eventType      String?
+  eventPayload   Json?
+  isRead         Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
 }
 
 model Category {
