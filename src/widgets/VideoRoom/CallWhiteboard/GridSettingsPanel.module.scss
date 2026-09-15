@@ -57,8 +57,16 @@
   background-repeat: repeat;
   background-size: 6px 6px;
 
+  // "Off" reads as transparency (checkerboard), not as a plain white swatch.
   &[data-swatch='off'] {
-    background-image: none;
+    background-color: #fff;
+    background-image:
+      linear-gradient(45deg, #cbd5e1 25%, transparent 25%),
+      linear-gradient(-45deg, #cbd5e1 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #cbd5e1 75%),
+      linear-gradient(-45deg, transparent 75%, #cbd5e1 75%);
+    background-size: 8px 8px;
+    background-position: 0 0, 0 4px, 4px -4px, -4px 0;
   }
   &[data-swatch='squares'] {
     background-image:
@@ -77,6 +85,49 @@
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: #cbd5e1;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #2563eb;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.35);
+    cursor: pointer;
+  }
+
+  &::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #2563eb;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.35);
+    cursor: pointer;
+  }
+
+  &::-moz-range-track {
+    height: 4px;
+    border-radius: 2px;
+    background: #cbd5e1;
+  }
 }
 
 .sizeLabel {
@@ -135,6 +186,14 @@
     background-color: transparent;
     border-color: rgba(255, 255, 255, 0.2);
 
+    &[data-swatch='off'] {
+      background-color: #2a2836;
+      background-image:
+        linear-gradient(45deg, rgba(255, 255, 255, 0.25) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(255, 255, 255, 0.25) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.25) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.25) 75%);
+    }
     &[data-swatch='squares'] {
       background-image:
         linear-gradient(to right, rgba(255, 255, 255, 0.5) 1px, transparent 1px),
@@ -149,5 +208,20 @@
   }
   .sizeLabel, .sizeValue {
     color: rgba(255, 255, 255, 0.65);
+  }
+  .slider {
+    background: rgba(255, 255, 255, 0.2);
+
+    &::-webkit-slider-thumb {
+      background: #818cf8;
+      border-color: #1a1826;
+    }
+    &::-moz-range-thumb {
+      background: #818cf8;
+      border-color: #1a1826;
+    }
+    &::-moz-range-track {
+      background: rgba(255, 255, 255, 0.2);
+    }
   }
 }

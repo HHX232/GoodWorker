@@ -3,167 +3,24 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { useThemeCtx } from '@/app/providers/ThemeContext'
-import { INK_PALETTE, PRIMITIVE_LABELS, type ProjectedEdge, type ShapeId, type ThreeDInsertPayload, type ThreeDShapeMeta } from './shapeGeometry'
+import {
+  DEFAULT_SEGMENTS,
+  INK_PALETTE,
+  PRIMITIVE_LABELS,
+  SEGMENT_ADJUSTABLE,
+  type ShapeId,
+  type ThreeDShapeMeta,
+} from './shapeGeometry'
+import { buildEdgeTopology, buildGeometry, classifyEdges, splitSolidDashedPositions, type EdgeTopology } from './threeDRender'
 import styles from './ThreeDPanel.module.scss'
 
-const SHAPE_OPTIONS: ShapeId[] = ['cube', 'pyramid', 'cone', 'cylinder', 'sphere']
-const DEFAULT_ROTATION = { x: -0.5, y: 0.7 }
+const SHAPE_OPTIONS: ShapeId[] = ['cube', 'pyramid', 'cone', 'cylinder', 'sphere', 'polygon']
+const DEFAULT_ROTATION = { x: -0.5, y: 0.7, z: 0 }
 const CANVAS_SIZE = 220
-const CREASE_ANGLE_THRESHOLD = THREE.MathUtils.degToRad(1)
-// A shape's own surface is what can hide part of its own edges here (no
-// other objects in this scene) — so the classification below only needs to
-// answer "does the shape's near side block this edge", not a full depth test.
-const VIEW_DIR = new THREE.Vector3(0, 0, 1)
-
-function buildGeometry(primitive: ShapeId): THREE.BufferGeometry {
-  switch (primitive) {
-    case 'cube':
-      return new THREE.BoxGeometry(1.5, 1.5, 1.5)
-    case 'pyramid':
-      return new THREE.ConeGeometry(1.1, 1.7, 4)
-    case 'cone':
-      return new THREE.ConeGeometry(1.1, 1.7, 32)
-    case 'cylinder':
-      return new THREE.CylinderGeometry(0.9, 0.9, 1.6, 28)
-    case 'sphere':
-      return new THREE.SphereGeometry(1.1, 18, 12)
-  }
-}
-
-interface EdgeTopology {
-  v1: THREE.Vector3
-  v2: THREE.Vector3
-  normalA: THREE.Vector3
-  normalB: THREE.Vector3 | null
-}
-
-/**
- * For a convex solid, a point is visible from an external camera iff it lies
- * on a front-facing face — so an edge shared by two faces is either fully
- * visible or fully hidden, never partially (the ray from the camera to any
- * point on it is blocked, or not, by the same near surface for the whole
- * edge). This walks the source triangles once per primitive to find each
- * edge's one or two adjacent face normals, in local (unrotated) space.
- */
-function buildEdgeTopology(geometry: THREE.BufferGeometry): EdgeTopology[] {
-  const index = geometry.index
-  const position = geometry.attributes.position
-  if (!index) return []
-
-  const indexArray = index.array
-  const triCount = indexArray.length / 3
-
-  // Built-in three.js geometries duplicate vertices along UV seams (e.g. the
-  // sphere/cylinder wrap-around), so edges across a seam don't share an
-  // index. Weld by position first so adjacency still matches there.
-  const weldedId = new Map<string, number>()
-  const weldOf = new Int32Array(position.count)
-  const v = new THREE.Vector3()
-  for (let i = 0; i < position.count; i++) {
-    v.fromBufferAttribute(position, i)
-    const key = `${v.x.toFixed(4)}_${v.y.toFixed(4)}_${v.z.toFixed(4)}`
-    let id = weldedId.get(key)
-    if (id === undefined) {
-      id = weldedId.size
-      weldedId.set(key, id)
-    }
-    weldOf[i] = id
-  }
-
-  const vA = new THREE.Vector3()
-  const vB = new THREE.Vector3()
-  const vC = new THREE.Vector3()
-  const faceNormals: THREE.Vector3[] = []
-  for (let t = 0; t < triCount; t++) {
-    vA.fromBufferAttribute(position, indexArray[t * 3])
-    vB.fromBufferAttribute(position, indexArray[t * 3 + 1])
-    vC.fromBufferAttribute(position, indexArray[t * 3 + 2])
-    faceNormals.push(new THREE.Vector3().subVectors(vC, vB).cross(vA.clone().sub(vB)).normalize())
-  }
-
-  const edgeTriangles = new Map<string, number[]>()
-  const edgeVerts = new Map<string, [number, number]>()
-  for (let t = 0; t < triCount; t++) {
-    const corners: [number, number][] = [
-      [indexArray[t * 3], indexArray[t * 3 + 1]],
-      [indexArray[t * 3 + 1], indexArray[t * 3 + 2]],
-      [indexArray[t * 3 + 2], indexArray[t * 3]],
-    ]
-    for (const [p, q] of corners) {
-      const a = weldOf[p]
-      const b = weldOf[q]
-      const key = a < b ? `${a}_${b}` : `${b}_${a}`
-      if (!edgeVerts.has(key)) edgeVerts.set(key, [p, q])
-      const entry = edgeTriangles.get(key)
-      if (entry) entry.push(t)
-      else edgeTriangles.set(key, [t])
-    }
-  }
-
-  const topology: EdgeTopology[] = []
-  for (const [key, tris] of edgeTriangles) {
-    const [p, q] = edgeVerts.get(key)!
-    const v1 = new THREE.Vector3().fromBufferAttribute(position, p)
-    const v2 = new THREE.Vector3().fromBufferAttribute(position, q)
-    if (tris.length < 2) {
-      // Open boundary edge — shouldn't happen for these closed solids, but
-      // default to always-visible defensively.
-      topology.push({ v1, v2, normalA: faceNormals[tris[0]], normalB: null })
-      continue
-    }
-    const normalA = faceNormals[tris[0]]
-    const normalB = faceNormals[tris[1]]
-    if (normalA.angleTo(normalB) > CREASE_ANGLE_THRESHOLD) {
-      topology.push({ v1, v2, normalA, normalB })
-    }
-  }
-  return topology
-}
-
-interface ClassifiedEdge {
-  v1: THREE.Vector3
-  v2: THREE.Vector3
-  dashed: boolean
-}
-
-function classifyEdges(topology: EdgeTopology[], rotationX: number, rotationY: number): ClassifiedEdge[] {
-  const euler = new THREE.Euler(rotationX, rotationY, 0)
-  const nA = new THREE.Vector3()
-  const nB = new THREE.Vector3()
-  return topology.map(edge => {
-    nA.copy(edge.normalA).applyEuler(euler)
-    const frontA = nA.dot(VIEW_DIR) > 0
-    let dashed = false
-    if (edge.normalB) {
-      nB.copy(edge.normalB).applyEuler(euler)
-      const frontB = nB.dot(VIEW_DIR) > 0
-      dashed = !frontA && !frontB
-    }
-    return { v1: edge.v1, v2: edge.v2, dashed }
-  })
-}
-
-function projectClassifiedEdges(edges: ClassifiedEdge[], group: THREE.Group, camera: THREE.PerspectiveCamera): ProjectedEdge[] {
-  group.updateMatrixWorld(true)
-  camera.updateMatrixWorld(true)
-  const p1 = new THREE.Vector3()
-  const p2 = new THREE.Vector3()
-  return edges.map(edge => {
-    p1.copy(edge.v1).applyMatrix4(group.matrixWorld).project(camera)
-    p2.copy(edge.v2).applyMatrix4(group.matrixWorld).project(camera)
-    return {
-      x1: (p1.x * 0.5 + 0.5) * CANVAS_SIZE,
-      y1: (1 - (p1.y * 0.5 + 0.5)) * CANVAS_SIZE,
-      x2: (p2.x * 0.5 + 0.5) * CANVAS_SIZE,
-      y2: (1 - (p2.y * 0.5 + 0.5)) * CANVAS_SIZE,
-      dashed: edge.dashed,
-    }
-  })
-}
 
 interface Props {
   initial?: ThreeDShapeMeta
-  onInsert: (shape: ThreeDInsertPayload) => void
+  onInsert: (shape: ThreeDShapeMeta) => void
   onClose: () => void
 }
 
@@ -178,11 +35,19 @@ export function ThreeDPanel({ initial, onInsert, onClose }: Props) {
   const dashedLineRef = useRef<THREE.LineSegments | null>(null)
   const edgeTopologyRef = useRef<EdgeTopology[]>([])
   const dragRef = useRef<{ active: boolean; lastX: number; lastY: number }>({ active: false, lastX: 0, lastY: 0 })
-  const rotationRef = useRef({ x: initial?.rotationX ?? DEFAULT_ROTATION.x, y: initial?.rotationY ?? DEFAULT_ROTATION.y })
+  const rotationRef = useRef({
+    x: initial?.rotationX ?? DEFAULT_ROTATION.x,
+    y: initial?.rotationY ?? DEFAULT_ROTATION.y,
+    z: initial?.rotationZ ?? DEFAULT_ROTATION.z,
+  })
 
   const [primitive, setPrimitive] = useState<ShapeId>(initial?.primitive ?? 'cube')
   const [scale, setScale] = useState(initial?.scale ?? 1)
   const [color, setColor] = useState(initial?.color ?? (isDark ? '#ececec' : '#1e1e1e'))
+  const [segments, setSegments] = useState(initial?.segments ?? DEFAULT_SEGMENTS[initial?.primitive ?? 'cube'])
+  const [flat, setFlat] = useState(initial?.flat ?? false)
+  // Roll (Z) isn't reachable by 2-axis drag — a slider covers the 3rd axis.
+  const [rollDisplay, setRollDisplay] = useState(initial?.rotationZ ?? DEFAULT_ROTATION.z)
 
   const render = useCallback(() => {
     if (rendererRef.current && sceneRef.current && cameraRef.current) {
@@ -198,32 +63,32 @@ export function ThreeDPanel({ initial, onInsert, onClose }: Props) {
     const solidLine = solidLineRef.current
     const dashedLine = dashedLineRef.current
     if (!solidLine || !dashedLine) return
-    const classified = classifyEdges(edgeTopologyRef.current, rotationRef.current.x, rotationRef.current.y)
-
-    const solidPositions: number[] = []
-    const dashedPositions: number[] = []
-    for (const edge of classified) {
-      const target = edge.dashed ? dashedPositions : solidPositions
-      target.push(edge.v1.x, edge.v1.y, edge.v1.z, edge.v2.x, edge.v2.y, edge.v2.z)
-    }
+    const classified = classifyEdges(edgeTopologyRef.current, rotationRef.current.x, rotationRef.current.y, rotationRef.current.z)
+    const { solid, dashed } = splitSolidDashedPositions(classified)
 
     solidLine.geometry.dispose()
     const solidGeometry = new THREE.BufferGeometry()
-    solidGeometry.setAttribute('position', new THREE.Float32BufferAttribute(solidPositions, 3))
+    solidGeometry.setAttribute('position', new THREE.Float32BufferAttribute(solid, 3))
     solidLine.geometry = solidGeometry
 
     dashedLine.geometry.dispose()
     const dashedGeometry = new THREE.BufferGeometry()
-    dashedGeometry.setAttribute('position', new THREE.Float32BufferAttribute(dashedPositions, 3))
+    dashedGeometry.setAttribute('position', new THREE.Float32BufferAttribute(dashed, 3))
     dashedLine.geometry = dashedGeometry
     dashedLine.computeLineDistances()
 
     render()
   }, [render])
 
-  // Set up the scene once
+  // Set up the scene once. The container is captured into a local instead of
+  // re-read from the ref at cleanup time — in React 18 dev StrictMode this
+  // effect mounts, cleans up and mounts again immediately to surface exactly
+  // this kind of bug, and re-reading `containerRef.current` at cleanup found
+  // it stale, so the old <canvas> was never actually removed: the second
+  // mount appended its own on top, leaving two overlapping renderers.
   useEffect(() => {
-    if (!containerRef.current) return
+    const container = containerRef.current
+    if (!container) return
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100)
     camera.position.set(0, 0, 4.6)
@@ -231,10 +96,10 @@ export function ThreeDPanel({ initial, onInsert, onClose }: Props) {
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true })
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.setSize(CANVAS_SIZE, CANVAS_SIZE)
-    containerRef.current.appendChild(renderer.domElement)
+    container.appendChild(renderer.domElement)
 
     const group = new THREE.Group()
-    group.rotation.set(rotationRef.current.x, rotationRef.current.y, 0)
+    group.rotation.set(rotationRef.current.x, rotationRef.current.y, rotationRef.current.z)
     group.scale.setScalar(scale)
     scene.add(group)
 
@@ -249,9 +114,7 @@ export function ThreeDPanel({ initial, onInsert, onClose }: Props) {
       dashedLineRef.current?.geometry.dispose()
       ;(dashedLineRef.current?.material as THREE.Material | undefined)?.dispose()
       renderer.dispose()
-      if (containerRef.current && renderer.domElement.parentNode === containerRef.current) {
-        containerRef.current.removeChild(renderer.domElement)
-      }
+      renderer.domElement.remove()
       sceneRef.current = null
       cameraRef.current = null
       rendererRef.current = null
@@ -263,7 +126,7 @@ export function ThreeDPanel({ initial, onInsert, onClose }: Props) {
   }, [])
 
   // Rebuild the topology and the two (solid/dashed) line meshes when the
-  // primitive or color changes.
+  // primitive, its segment count, flatness or color changes.
   useEffect(() => {
     const group = groupRef.current
     if (!group) return
@@ -279,7 +142,7 @@ export function ThreeDPanel({ initial, onInsert, onClose }: Props) {
       ;(dashedLineRef.current.material as THREE.Material).dispose()
     }
 
-    const geometry = buildGeometry(primitive)
+    const geometry = buildGeometry(primitive, segments, flat)
     edgeTopologyRef.current = buildEdgeTopology(geometry)
     geometry.dispose()
 
@@ -292,7 +155,7 @@ export function ThreeDPanel({ initial, onInsert, onClose }: Props) {
     dashedLineRef.current = dashedLine
 
     updateVisualization()
-  }, [primitive, color, updateVisualization])
+  }, [primitive, segments, flat, color, updateVisualization])
 
   // Apply scale changes without rebuilding the mesh — uniform scale doesn't
   // change which faces point toward the camera, so visibility stays as-is.
@@ -302,9 +165,15 @@ export function ThreeDPanel({ initial, onInsert, onClose }: Props) {
   }, [scale, render])
 
   const applyRotation = useCallback(() => {
-    groupRef.current?.rotation.set(rotationRef.current.x, rotationRef.current.y, 0)
+    groupRef.current?.rotation.set(rotationRef.current.x, rotationRef.current.y, rotationRef.current.z)
     updateVisualization()
   }, [updateVisualization])
+
+  const handlePrimitiveSelect = useCallback((value: ShapeId) => {
+    setPrimitive(value)
+    setSegments(DEFAULT_SEGMENTS[value])
+    if (value !== 'polygon') setFlat(false)
+  }, [])
 
   const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     dragRef.current = { active: true, lastX: e.clientX, lastY: e.clientY }
@@ -318,6 +187,7 @@ export function ThreeDPanel({ initial, onInsert, onClose }: Props) {
     dragRef.current.lastX = e.clientX
     dragRef.current.lastY = e.clientY
     rotationRef.current = {
+      ...rotationRef.current,
       x: rotationRef.current.x + dy * 0.01,
       y: rotationRef.current.y + dx * 0.01,
     }
@@ -329,21 +199,27 @@ export function ThreeDPanel({ initial, onInsert, onClose }: Props) {
     try { e.currentTarget.releasePointerCapture(e.pointerId) } catch {}
   }, [])
 
+  const handleRollChange = useCallback((value: number) => {
+    setRollDisplay(value)
+    rotationRef.current = { ...rotationRef.current, z: value }
+    applyRotation()
+  }, [applyRotation])
+
   const handleInsert = useCallback(() => {
-    const group = groupRef.current
-    const camera = cameraRef.current
-    if (!group || !camera) return
-    const classified = classifyEdges(edgeTopologyRef.current, rotationRef.current.x, rotationRef.current.y)
-    const edges = projectClassifiedEdges(classified, group, camera)
     onInsert({
       primitive,
       rotationX: rotationRef.current.x,
       rotationY: rotationRef.current.y,
+      rotationZ: rotationRef.current.z,
       scale,
       color,
-      edges,
+      segments: SEGMENT_ADJUSTABLE.has(primitive) ? segments : undefined,
+      flat: primitive === 'polygon' ? flat : undefined,
+      label: initial?.label,
     })
-  }, [onInsert, primitive, scale, color])
+  }, [onInsert, primitive, scale, color, segments, flat, initial?.label])
+
+  const showSegments = SEGMENT_ADJUSTABLE.has(primitive)
 
   return (
     <div className={styles.panel}>
@@ -354,12 +230,18 @@ export function ThreeDPanel({ initial, onInsert, onClose }: Props) {
             key={value}
             type="button"
             className={`${styles.shapeButton} ${primitive === value ? styles.shapeButtonActive : ''}`}
-            onClick={() => setPrimitive(value)}
+            onClick={() => handlePrimitiveSelect(value)}
           >
             {PRIMITIVE_LABELS[value]}
           </button>
         ))}
       </div>
+      {primitive === 'polygon' && (
+        <label className={styles.flatToggle}>
+          <input type="checkbox" checked={flat} onChange={e => setFlat(e.target.checked)} />
+          Плоская фигура (2D)
+        </label>
+      )}
       <div
         ref={containerRef}
         className={styles.viewport}
@@ -372,6 +254,7 @@ export function ThreeDPanel({ initial, onInsert, onClose }: Props) {
       <label className={styles.scaleRow}>
         <span className={styles.scaleLabel}>Масштаб</span>
         <input
+          className={styles.slider}
           type="range"
           min={0.5}
           max={2}
@@ -380,6 +263,33 @@ export function ThreeDPanel({ initial, onInsert, onClose }: Props) {
           onChange={e => setScale(Number(e.target.value))}
         />
       </label>
+      <label className={styles.scaleRow}>
+        <span className={styles.scaleLabel}>Поворот (ось Z)</span>
+        <input
+          className={styles.slider}
+          type="range"
+          min={-180}
+          max={180}
+          step={1}
+          value={Math.round(THREE.MathUtils.radToDeg(rollDisplay))}
+          onChange={e => handleRollChange(THREE.MathUtils.degToRad(Number(e.target.value)))}
+        />
+      </label>
+      {showSegments && (
+        <label className={styles.scaleRow}>
+          <span className={styles.scaleLabel}>{primitive === 'polygon' ? 'Число углов' : 'Видимые рёбра'}</span>
+          <input
+            className={styles.slider}
+            type="range"
+            min={primitive === 'polygon' ? 3 : 6}
+            max={primitive === 'polygon' ? 12 : 40}
+            step={1}
+            value={segments}
+            onChange={e => setSegments(Number(e.target.value))}
+          />
+          <span className={styles.scaleValue}>{segments}</span>
+        </label>
+      )}
       <div className={styles.colorRow}>
         {INK_PALETTE.map(swatch => (
           <button

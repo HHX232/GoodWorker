@@ -45,6 +45,7 @@ export function GridSettingsPanel({ settings, onChange, onClose }: Props) {
       <label className={styles.sizeRow}>
         <span className={styles.sizeLabel}>Размер ячейки</span>
         <input
+          className={styles.slider}
           type="range"
           min={10}
           max={60}

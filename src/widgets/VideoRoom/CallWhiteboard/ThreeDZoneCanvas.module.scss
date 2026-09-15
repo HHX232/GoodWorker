@@ -1,0 +1,86 @@
+.zone {
+  position: absolute;
+  pointer-events: none;
+  transform-origin: center;
+}
+
+.canvasHolder {
+  width: 100%;
+  height: 100%;
+}
+
+.zone[data-active] {
+  .canvasHolder {
+    pointer-events: auto;
+    cursor: grab;
+  }
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.closeButton {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #475569;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
+
+  &:hover {
+    background: #f1f5f9;
+  }
+}
+
+.colorPopover {
+  position: absolute;
+  display: flex;
+  gap: 4px;
+  padding: 5px 6px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.2);
+  transform: translate(-50%, -110%);
+  pointer-events: auto;
+}
+
+.popoverSwatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background-color: var(--swatch-color);
+  cursor: pointer;
+  padding: 0;
+
+  &:hover {
+    border-color: #cbd5e1;
+  }
+}
+
+// ── Dark theme ────────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .closeButton {
+    background: #1a1826;
+    border-color: rgba(255, 255, 255, 0.16);
+    color: rgba(255, 255, 255, 0.8);
+
+    &:hover { background: rgba(255, 255, 255, 0.1); }
+  }
+  .colorPopover {
+    background: #1a1826;
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+  .popoverSwatch:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+}

@@ -1,6 +1,6 @@
 import type { ExcalidrawElement } from '@excalidraw/excalidraw/element/types'
 
-export type ShapeId = 'cube' | 'pyramid' | 'cone' | 'cylinder' | 'sphere'
+export type ShapeId = 'cube' | 'pyramid' | 'cone' | 'cylinder' | 'sphere' | 'polygon'
 
 export const PRIMITIVE_LABELS: Record<ShapeId, string> = {
   cube: 'Куб',
@@ -8,34 +8,43 @@ export const PRIMITIVE_LABELS: Record<ShapeId, string> = {
   cone: 'Конус',
   cylinder: 'Цилиндр',
   sphere: 'Сфера',
+  polygon: 'Многоугольник',
+}
+
+// Primitives whose facet/side count is user-adjustable ("visible edges" for
+// the round ones; the defining N for the polygon).
+export const SEGMENT_ADJUSTABLE: ReadonlySet<ShapeId> = new Set(['cone', 'cylinder', 'sphere', 'polygon'])
+export const DEFAULT_SEGMENTS: Record<ShapeId, number> = {
+  cube: 0,
+  pyramid: 0,
+  cone: 24,
+  cylinder: 20,
+  sphere: 16,
+  polygon: 6,
 }
 
 export interface ThreeDShapeMeta {
-  shapeId: string
   primitive: ShapeId
   rotationX: number
   rotationY: number
+  rotationZ: number
   scale: number
   color: string
   label?: string
+  /** Facet/side count for cone/cylinder/sphere/polygon; unused otherwise. */
+  segments?: number
+  /** Polygon only: flat 2D outline instead of an extruded 3D prism. */
+  flat?: boolean
 }
 
-export interface ProjectedEdge {
-  x1: number
-  y1: number
-  x2: number
-  y2: number
-  /** Self-occluded by the same (convex) shape at its current rotation. */
-  dashed: boolean
-}
-
-export interface ThreeDInsertPayload {
-  primitive: ShapeId
-  rotationX: number
-  rotationY: number
-  scale: number
-  color: string
-  edges: ProjectedEdge[]
+/** What's stored in a zone rectangle's `customData.threeDZone` — the shape
+ * config plus per-edge color overrides painted in on-board 3D mode. There's
+ * no separate "shapeId" — the zone IS one Excalidraw element, so its own
+ * `element.id` is the identity. */
+export interface ThreeDZone extends ThreeDShapeMeta {
+  /** Edge index (stable within a given primitive/segments/flat — see
+   * buildEdgeTopology's iteration order) → color override. */
+  edgeColors?: Record<number, string>
 }
 
 // Small, familiar whiteboard-marker set — reused by the formula and shape
@@ -47,21 +56,65 @@ export interface Point {
   y: number
 }
 
-export interface ShapeEdge extends Point {
-  elementId: string
-  shapeId: string
-  x1: number
-  y1: number
-  x2: number
-  y2: number
+export interface ZoneRect {
+  x: number
+  y: number
+  width: number
+  height: number
+  angle: number
 }
 
-function readThreeDShape(element: ExcalidrawElement): ThreeDShapeMeta | undefined {
-  return (element as unknown as { customData?: { threeDShape?: ThreeDShapeMeta } }).customData?.threeDShape
+export function readThreeDZone(element: ExcalidrawElement): ThreeDZone | undefined {
+  return (element as unknown as { customData?: { threeDZone?: ThreeDZone } }).customData?.threeDZone
 }
 
-function readLinePoints(element: ExcalidrawElement): [number, number][] | undefined {
-  return (element as unknown as { points?: [number, number][] }).points
+export function getZoneRect(element: ExcalidrawElement): ZoneRect {
+  return { x: element.x, y: element.y, width: element.width, height: element.height, angle: element.angle }
+}
+
+/** All zone (rectangle) elements currently on the board, paired with their
+ * parsed config. */
+export function getAllZones(elements: readonly ExcalidrawElement[]): { element: ExcalidrawElement; zone: ThreeDZone; rect: ZoneRect }[] {
+  const result: { element: ExcalidrawElement; zone: ThreeDZone; rect: ZoneRect }[] = []
+  for (const el of elements) {
+    if (el.isDeleted || el.type !== 'rectangle') continue
+    const zone = readThreeDZone(el)
+    if (!zone) continue
+    result.push({ element: el, zone, rect: getZoneRect(el) })
+  }
+  return result
+}
+
+/** Excalidraw rotates every element in place around its own bounding-box
+ * center (`x + width/2`, `y + height/2`) by `element.angle`. Used to turn a
+ * point expressed in a zone's own unrotated local frame into an absolute
+ * scene point (or back, with `-angle`). */
+export function rotateAroundCenter(point: Point, center: Point, angle: number): Point {
+  if (angle === 0) return point
+  const cos = Math.cos(angle)
+  const sin = Math.sin(angle)
+  const dx = point.x - center.x
+  const dy = point.y - center.y
+  return {
+    x: center.x + dx * cos - dy * sin,
+    y: center.y + dx * sin + dy * cos,
+  }
+}
+
+export type SnapRef =
+  | { kind: 'vertex'; index: number }
+  | { kind: 'midpoint'; index: number }
+  | { kind: 'centroid' }
+
+export interface SnapCandidate extends Point {
+  zoneElementId: string
+  ref: SnapRef
+}
+
+export function snapRefsEqual(a: SnapRef, b: SnapRef): boolean {
+  if (a.kind !== b.kind) return false
+  if (a.kind === 'centroid') return true
+  return a.index === (b as { index: number }).index
 }
 
 export function distanceToSegment(p: Point, a: Point, b: Point): number {
@@ -73,87 +126,8 @@ export function distanceToSegment(p: Point, a: Point, b: Point): number {
   return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy))
 }
 
-/** All wireframe edges currently on the board, as absolute segments, grouped by shapeId. */
-export function getShapeEdges(elements: readonly ExcalidrawElement[]): ShapeEdge[] {
-  const edges: ShapeEdge[] = []
-  for (const el of elements) {
-    if (el.isDeleted || el.type !== 'line') continue
-    const meta = readThreeDShape(el)
-    const points = readLinePoints(el)
-    if (!meta || !points || points.length < 2) continue
-    const start = points[0]
-    const end = points[points.length - 1]
-    edges.push({
-      elementId: el.id,
-      shapeId: meta.shapeId,
-      x1: el.x + start[0],
-      y1: el.y + start[1],
-      x2: el.x + end[0],
-      y2: el.y + end[1],
-      x: el.x + start[0],
-      y: el.y + start[1],
-    })
-  }
-  return edges
-}
-
-function dedupePoints(points: Point[], eps: number): Point[] {
-  const out: Point[] = []
-  for (const p of points) {
-    if (!out.some(q => Math.hypot(q.x - p.x, q.y - p.y) < eps)) out.push(p)
-  }
-  return out
-}
-
-/** Snap candidates for the construction mode: vertices, edge midpoints and the
- * centroid of each wireframe shape on the board. */
-export function getShapeSnapPoints(elements: readonly ExcalidrawElement[]): Point[] {
-  const byShape = new Map<string, ShapeEdge[]>()
-  for (const edge of getShapeEdges(elements)) {
-    const arr = byShape.get(edge.shapeId) ?? []
-    arr.push(edge)
-    byShape.set(edge.shapeId, arr)
-  }
-
-  const points: Point[] = []
-  for (const edges of byShape.values()) {
-    const vertices: Point[] = []
-    for (const edge of edges) {
-      vertices.push({ x: edge.x1, y: edge.y1 }, { x: edge.x2, y: edge.y2 })
-      points.push({ x: (edge.x1 + edge.x2) / 2, y: (edge.y1 + edge.y2) / 2 })
-    }
-    const unique = dedupePoints(vertices, 0.5)
-    points.push(...unique)
-    if (unique.length > 0) {
-      points.push({
-        x: unique.reduce((s, p) => s + p.x, 0) / unique.length,
-        y: unique.reduce((s, p) => s + p.y, 0) / unique.length,
-      })
-    }
-  }
-  return points
-}
-
-export function findNearestEdge(point: Point, edges: ShapeEdge[], maxScreenDistance: number, zoom: number): ShapeEdge | null {
-  let best: { edge: ShapeEdge; dist: number } | null = null
-  for (const edge of edges) {
-    const dist = distanceToSegment(point, { x: edge.x1, y: edge.y1 }, { x: edge.x2, y: edge.y2 })
-    if (!best || dist < best.dist) best = { edge, dist }
-  }
-  if (best && best.dist * zoom <= maxScreenDistance) return best.edge
-  return null
-}
-
-export function boundsOfEdges(edges: ProjectedEdge[]): { minX: number; minY: number; width: number; height: number } {
-  const xs = edges.flatMap(e => [e.x1, e.x2])
-  const ys = edges.flatMap(e => [e.y1, e.y2])
-  const minX = Math.min(...xs)
-  const minY = Math.min(...ys)
-  return { minX, minY, width: Math.max(...xs) - minX, height: Math.max(...ys) - minY }
-}
-
-export function findNearestSnapPoint(point: Point, candidates: Point[], maxScreenDistance: number, zoom: number): Point | null {
-  let best: { point: Point; dist: number } | null = null
+export function findNearestSnapPoint(point: Point, candidates: SnapCandidate[], maxScreenDistance: number, zoom: number): SnapCandidate | null {
+  let best: { point: SnapCandidate; dist: number } | null = null
   for (const candidate of candidates) {
     const dist = Math.hypot(point.x - candidate.x, point.y - candidate.y)
     if (!best || dist < best.dist) best = { point: candidate, dist }

@@ -8,8 +8,8 @@ import type { AppState, BinaryFileData, BinaryFiles, DataURL, ExcalidrawImperati
 import { useThemeCtx } from '@/app/providers/ThemeContext'
 import { GridSettingsPanel, DEFAULT_GRID_SETTINGS, type GridSettings } from './GridSettingsPanel'
 import { ElementInspector } from './ElementInspector'
-import { PRIMITIVE_LABELS, type ThreeDInsertPayload, type ThreeDShapeMeta } from './shapeGeometry'
-import type { ViewTransform } from './ShapeInteractionLayer'
+import { getZoneRect, PRIMITIVE_LABELS, readThreeDZone, type ThreeDShapeMeta, type ThreeDZone, type ZoneRect } from './shapeGeometry'
+import type { LineBinding, ViewTransform } from './ShapeInteractionLayer'
 import styles from './CallWhiteboard.module.scss'
 
 const Excalidraw = dynamic(
@@ -32,9 +32,31 @@ const ShapeInteractionLayer = dynamic(
   { ssr: false },
 )
 
+const ThreeDZoneLayer = dynamic(
+  () => import('./ThreeDZoneLayer').then(m => ({ default: m.ThreeDZoneLayer })),
+  { ssr: false },
+)
+
+const DEFAULT_ZONE_SIZE = 220
 const GRID_STORAGE_KEY = 'whiteboard:gridSettings'
 const GRID_STYLES = new Set(['squares', 'dots', 'lines', 'off'])
 const DEFAULT_ZOOM: Zoom = { value: 1 as AppState['zoom']['value'] }
+
+// Hoisted out of the component: a fresh object reference on every render for
+// props like these can make Excalidraw's own internal effects (keyed on
+// prop identity) re-fire on every unrelated re-render of this component —
+// with sceneElements now always getting a fresh array (see handleChange),
+// that turned into a real render loop, not just wasted work.
+const EXCALIDRAW_INITIAL_DATA = { appState: { viewBackgroundColor: 'transparent' } }
+const EXCALIDRAW_UI_OPTIONS = {
+  canvasActions: {
+    saveToActiveFile: false,
+    loadScene: false,
+    export: false as const,
+    toggleTheme: false,
+    changeViewBackgroundColor: false,
+  },
+}
 
 type PopoverKind = 'formula' | 'grid' | '3d' | null
 
@@ -50,16 +72,18 @@ interface EditingFormula {
 }
 
 interface EditingShape {
-  elementIds: string[]
-  meta: ThreeDShapeMeta
-  bbox: { x: number; y: number; width: number; height: number }
+  elementId: string
+  zone: ThreeDZone
 }
 
 interface InspectorTarget {
   kind: 'formula' | 'shape'
-  elementIds: string[]
+  elementId: string
   label: string
-  bbox: { x: number; y: number; width: number; height: number }
+  x: number
+  y: number
+  width: number
+  height: number
 }
 
 interface Props {
@@ -87,63 +111,54 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
   const [gridSettings, setGridSettings] = useState<GridSettings>(DEFAULT_GRID_SETTINGS)
   const [viewTransform, setViewTransform] = useState<ViewTransform>({ scrollX: 0, scrollY: 0, zoom: DEFAULT_ZOOM, offsetLeft: 0, offsetTop: 0 })
   const [constructionMode, setConstructionMode] = useState(false)
+  const [toolbarCollapsed, setToolbarCollapsed] = useState(false)
   const [sceneElements, setSceneElements] = useState<readonly ExcalidrawElement[]>([])
   const [selectedElementIds, setSelectedElementIds] = useState<Record<string, boolean>>({})
+  const [active3DZoneId, setActive3DZoneId] = useState<string | null>(null)
   const { isDark } = useThemeCtx()
+
+  // Esc exits on-board 3D mode (rotate/edge-color) for whichever zone has it.
+  useEffect(() => {
+    if (!active3DZoneId) return
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setActive3DZoneId(null)
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [active3DZoneId])
 
   const inspectorTarget = useMemo<InspectorTarget | null>(() => {
     const ids = Object.keys(selectedElementIds).filter(id => selectedElementIds[id])
-    if (ids.length === 0) return null
-    const selected = sceneElements.filter(el => ids.includes(el.id) && !el.isDeleted)
-    if (selected.length === 0) return null
+    if (ids.length !== 1) return null
+    const el = sceneElements.find(e => e.id === ids[0] && !e.isDeleted)
+    if (!el) return null
 
-    if (selected.length === 1 && selected[0].type === 'image') {
-      const el = selected[0]
+    if (el.type === 'image') {
       const customData = (el as unknown as { customData?: { formulaLatex?: string; label?: string } }).customData
-      if (typeof customData?.formulaLatex === 'string') {
-        return {
-          kind: 'formula',
-          elementIds: [el.id],
-          label: customData.label ?? 'Формула',
-          bbox: { x: el.x, y: el.y, width: el.width, height: el.height },
-        }
-      }
-      return null
+      if (typeof customData?.formulaLatex !== 'string') return null
+      return { kind: 'formula', elementId: el.id, label: customData.label ?? 'Формула', x: el.x, y: el.y, width: el.width, height: el.height }
     }
 
-    const shapeIds = new Set(
-      selected
-        .map(el => (el as unknown as { customData?: { threeDShape?: ThreeDShapeMeta } }).customData?.threeDShape?.shapeId)
-        .filter((id): id is string => !!id),
-    )
-    if (shapeIds.size !== 1) return null
-    const shapeId = [...shapeIds][0]
-    const shapeElements = sceneElements.filter(
-      el => !el.isDeleted && (el as unknown as { customData?: { threeDShape?: ThreeDShapeMeta } }).customData?.threeDShape?.shapeId === shapeId,
-    )
-    // Only show the inspector once every edge of the shape is selected —
-    // matches Excalidraw's own group-selection behavior.
-    if (!shapeElements.every(el => ids.includes(el.id))) return null
+    if (el.type === 'rectangle') {
+      const zone = readThreeDZone(el)
+      if (!zone) return null
+      return { kind: 'shape', elementId: el.id, label: zone.label ?? PRIMITIVE_LABELS[zone.primitive], x: el.x, y: el.y, width: el.width, height: el.height }
+    }
 
-    const meta = (shapeElements[0] as unknown as { customData: { threeDShape: ThreeDShapeMeta } }).customData.threeDShape
-    const xs: number[] = []
-    const ys: number[] = []
-    for (const el of shapeElements) {
-      const points = (el as unknown as { points?: [number, number][] }).points ?? [[0, 0]]
-      for (const [px, py] of points) {
-        xs.push(el.x + px)
-        ys.push(el.y + py)
-      }
-    }
-    const minX = Math.min(...xs)
-    const minY = Math.min(...ys)
-    return {
-      kind: 'shape',
-      elementIds: shapeElements.map(el => el.id),
-      label: meta.label ?? PRIMITIVE_LABELS[meta.primitive],
-      bbox: { x: minX, y: minY, width: Math.max(...xs) - minX, height: Math.max(...ys) - minY },
-    }
+    return null
   }, [sceneElements, selectedElementIds])
+
+  const handleExcalidrawApi = useCallback((api: ExcalidrawImperativeAPI) => {
+    apiRef.current = api
+    setReady(true)
+    const appState = api.getAppState()
+    setViewTransform({ scrollX: appState.scrollX, scrollY: appState.scrollY, zoom: appState.zoom, offsetLeft: appState.offsetLeft, offsetTop: appState.offsetTop })
+  }, [])
+
+  const handleScrollChange = useCallback((scrollX: number, scrollY: number, zoom: Zoom) => {
+    const appState = apiRef.current?.getAppState()
+    setViewTransform({ scrollX, scrollY, zoom, offsetLeft: appState?.offsetLeft ?? 0, offsetTop: appState?.offsetTop ?? 0 })
+  }, [])
 
   // Grid style is a per-viewer preference, not board content — kept local,
   // never broadcast to other participants.
@@ -191,7 +206,13 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
 
   const handleChange = useCallback(
     (elements: readonly ExcalidrawElement[], state: AppState, files: BinaryFiles) => {
-      setSceneElements(elements)
+      // Excalidraw can hand back the same array reference across consecutive
+      // onChange calls during a drag (e.g. resizing), mutating elements in
+      // place for performance. React bails out of a setState that's
+      // reference-equal to current state, so without a fresh reference here
+      // our own mirrored state (and everything derived from it — zone
+      // canvases, the inspector) would silently stop tracking mid-drag.
+      setSceneElements(elements.slice())
       setSelectedElementIds(state.selectedElementIds)
       if (isApplyingRemoteRef.current) return
       if (broadcastTimer.current) clearTimeout(broadcastTimer.current)
@@ -271,80 +292,129 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
     setEditingFormula(null)
   }, [editingFormula])
 
-  const handleInsertShape = useCallback(async (payload: ThreeDInsertPayload) => {
+  // Re-anchors construction lines bound to `zoneElementId` (e.g. a median
+  // snapped to one of its vertices) to that zone's current snap points —
+  // called after anything that can move those points: a panel edit, or a
+  // rotation committed live in 3D mode. Refs only resolve when the zone's
+  // primitive/segment count didn't change since the line was drawn; a stale
+  // ref is left untouched rather than guessed at.
+  const rebindLinesForZone = useCallback(async (zoneElementId: string, zone: ThreeDZone, rect: ZoneRect) => {
     if (!apiRef.current) return
-    const { convertToExcalidrawElements } = await import('@excalidraw/excalidraw')
-    const { boundsOfEdges } = await import('./shapeGeometry')
+    const { mutateElement } = await import('@excalidraw/excalidraw')
+    const { resolveSnapRef } = await import('./threeDRender')
 
-    const shapeId = editingShape?.meta.shapeId ?? crypto.randomUUID()
-    const bounds = boundsOfEdges(payload.edges)
+    for (const el of apiRef.current.getSceneElements()) {
+      if (el.type !== 'line' || el.isDeleted) continue
+      const boundTo = (el as unknown as { customData?: { boundTo?: { start: LineBinding | null; end: LineBinding | null } } }).customData?.boundTo
+      if (!boundTo) continue
+      const points = el.points as unknown as [number, number][]
+      if (!points || points.length < 2) continue
 
-    let originX: number
-    let originY: number
+      let start = { x: el.x, y: el.y }
+      let end = { x: el.x + points[points.length - 1][0], y: el.y + points[points.length - 1][1] }
+      let changed = false
+      if (boundTo.start?.zoneElementId === zoneElementId) {
+        const p = resolveSnapRef(zoneElementId, zone, rect, boundTo.start.ref)
+        if (p) { start = p; changed = true }
+      }
+      if (boundTo.end?.zoneElementId === zoneElementId) {
+        const p = resolveSnapRef(zoneElementId, zone, rect, boundTo.end.ref)
+        if (p) { end = p; changed = true }
+      }
+      if (!changed) continue
+
+      const dx = end.x - start.x
+      const dy = end.y - start.y
+      mutateElement(el, { x: start.x, y: start.y, width: Math.abs(dx), height: Math.abs(dy), points: [[0, 0], [dx, dy]] })
+    }
+  }, [])
+
+  const handleInsertShape = useCallback(async (config: ThreeDShapeMeta) => {
+    if (!apiRef.current) return
+
     if (editingShape) {
-      originX = editingShape.bbox.x + editingShape.bbox.width / 2 - bounds.width / 2
-      originY = editingShape.bbox.y + editingShape.bbox.height / 2 - bounds.height / 2
+      const { mutateElement } = await import('@excalidraw/excalidraw')
+      const el = apiRef.current.getSceneElements().find(e => e.id === editingShape.elementId)
+      if (!el) return
+      const zone: ThreeDZone = { ...config, edgeColors: editingShape.zone.edgeColors }
+      mutateElement(el, { customData: { threeDZone: zone } })
+      await rebindLinesForZone(el.id, zone, getZoneRect(el))
     } else {
+      const { convertToExcalidrawElements } = await import('@excalidraw/excalidraw')
       const { scrollX, scrollY, width: viewWidth, height: viewHeight } = apiRef.current.getAppState()
-      originX = -scrollX + viewWidth / 2 - bounds.width / 2
-      originY = -scrollY + viewHeight / 2 - bounds.height / 2
+      const x = -scrollX + viewWidth / 2 - DEFAULT_ZONE_SIZE / 2
+      const y = -scrollY + viewHeight / 2 - DEFAULT_ZONE_SIZE / 2
+      const zone: ThreeDZone = { ...config }
+      const [rectElement] = convertToExcalidrawElements([
+        {
+          type: 'rectangle',
+          x,
+          y,
+          width: DEFAULT_ZONE_SIZE,
+          height: DEFAULT_ZONE_SIZE,
+          strokeColor: '#94a3b8',
+          backgroundColor: 'transparent',
+          strokeStyle: 'dashed',
+          roughness: 0,
+          customData: { threeDZone: zone },
+        },
+      ])
+      apiRef.current.updateScene({ elements: [...apiRef.current.getSceneElements(), rectElement] })
     }
 
-    const meta: ThreeDShapeMeta = {
-      shapeId,
-      primitive: payload.primitive,
-      rotationX: payload.rotationX,
-      rotationY: payload.rotationY,
-      scale: payload.scale,
-      color: payload.color,
-      label: editingShape?.meta.label,
-    }
-
-    const newEdgeElements = convertToExcalidrawElements(
-      payload.edges.map(edge => ({
-        type: 'line' as const,
-        x: originX + (edge.x1 - bounds.minX),
-        y: originY + (edge.y1 - bounds.minY),
-        points: [[0, 0], [edge.x2 - edge.x1, edge.y2 - edge.y1]],
-        strokeColor: payload.color,
-        // Self-occluded edges (per the convex-solid classification in
-        // ThreeDPanel) are baked in as dashed at the shape's current
-        // rotation — same convention as technical/CAD hidden-line drawings.
-        strokeStyle: edge.dashed ? 'dashed' as const : 'solid' as const,
-        groupIds: [shapeId],
-        customData: { threeDShape: meta },
-      })),
-      { regenerateIds: true },
-    )
-
-    const current = apiRef.current.getSceneElements()
-    const nextElements = editingShape
-      ? [...current.filter(el => !editingShape.elementIds.includes(el.id)), ...newEdgeElements]
-      : [...current, ...newEdgeElements]
-
-    apiRef.current.updateScene({ elements: nextElements })
     setActivePopover(null)
     setEditingShape(null)
-  }, [editingShape])
+  }, [editingShape, rebindLinesForZone])
 
-  const handleInsertLine = useCallback(async (line: { x1: number; y1: number; x2: number; y2: number }) => {
+  const handleInsertLine = useCallback(async (line: { x1: number; y1: number; x2: number; y2: number; startBinding: LineBinding | null; endBinding: LineBinding | null }) => {
     if (!apiRef.current) return
     const { convertToExcalidrawElements } = await import('@excalidraw/excalidraw')
+    const dx = line.x2 - line.x1
+    const dy = line.y2 - line.y1
     const [lineElement] = convertToExcalidrawElements([
       {
         type: 'line',
         x: line.x1,
         y: line.y1,
-        points: [[0, 0], [line.x2 - line.x1, line.y2 - line.y1]],
+        width: Math.abs(dx),
+        height: Math.abs(dy),
+        points: [[0, 0], [dx, dy]],
+        roughness: 0,
+        ...(line.startBinding || line.endBinding
+          ? { customData: { boundTo: { start: line.startBinding, end: line.endBinding } } }
+          : {}),
       },
     ])
     apiRef.current.updateScene({ elements: [...apiRef.current.getSceneElements(), lineElement] })
   }, [])
 
+  const handleZoneRotationCommit = useCallback(async (zoneElementId: string, rotationX: number, rotationY: number, rotationZ: number) => {
+    if (!apiRef.current) return
+    const { mutateElement } = await import('@excalidraw/excalidraw')
+    const el = apiRef.current.getSceneElements().find(e => e.id === zoneElementId)
+    if (!el) return
+    const existing = readThreeDZone(el)
+    if (!existing) return
+    const zone: ThreeDZone = { ...existing, rotationX, rotationY, rotationZ }
+    mutateElement(el, { customData: { threeDZone: zone } })
+    await rebindLinesForZone(zoneElementId, zone, getZoneRect(el))
+  }, [rebindLinesForZone])
+
+  const handleZoneEdgeColorChange = useCallback(async (zoneElementId: string, edgeIndex: number, color: string) => {
+    if (!apiRef.current) return
+    const { mutateElement } = await import('@excalidraw/excalidraw')
+    const el = apiRef.current.getSceneElements().find(e => e.id === zoneElementId)
+    if (!el) return
+    const existing = readThreeDZone(el)
+    if (!existing) return
+    const zone: ThreeDZone = { ...existing, edgeColors: { ...existing.edgeColors, [edgeIndex]: color } }
+    mutateElement(el, { customData: { threeDZone: zone } })
+  }, [])
+
   const handleOpenInspectorEditor = useCallback(() => {
     if (!inspectorTarget) return
     if (inspectorTarget.kind === 'formula') {
-      const el = sceneElements.find(e => e.id === inspectorTarget.elementIds[0])
+      const el = sceneElements.find(e => e.id === inspectorTarget.elementId)
       const customData = (el as unknown as { customData?: { formulaLatex?: string; formulaColor?: string; label?: string } } | undefined)?.customData
       if (!el || typeof customData?.formulaLatex !== 'string') return
       setEditingShape(null)
@@ -360,11 +430,11 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
       })
       setActivePopover('formula')
     } else {
-      const first = sceneElements.find(e => e.id === inspectorTarget.elementIds[0])
-      const meta = (first as unknown as { customData?: { threeDShape?: ThreeDShapeMeta } } | undefined)?.customData?.threeDShape
-      if (!meta) return
+      const el = sceneElements.find(e => e.id === inspectorTarget.elementId)
+      const zone = el && readThreeDZone(el)
+      if (!zone) return
       setEditingFormula(null)
-      setEditingShape({ elementIds: inspectorTarget.elementIds, meta, bbox: inspectorTarget.bbox })
+      setEditingShape({ elementId: inspectorTarget.elementId, zone })
       setActivePopover('3d')
     }
   }, [inspectorTarget, sceneElements, isDark])
@@ -372,11 +442,15 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
   const handleRenameInspectorTarget = useCallback(async (newLabel: string) => {
     if (!inspectorTarget || !apiRef.current) return
     const { mutateElement } = await import('@excalidraw/excalidraw')
-    const idSet = new Set(inspectorTarget.elementIds)
-    for (const el of apiRef.current.getSceneElements()) {
-      if (!idSet.has(el.id)) continue
+    const el = apiRef.current.getSceneElements().find(e => e.id === inspectorTarget.elementId)
+    if (!el) return
+    if (inspectorTarget.kind === 'formula') {
       const customData = (el as unknown as { customData?: Record<string, unknown> }).customData ?? {}
       mutateElement(el, { customData: { ...customData, label: newLabel } })
+    } else {
+      const zone = readThreeDZone(el)
+      if (!zone) return
+      mutateElement(el, { customData: { threeDZone: { ...zone, label: newLabel } } })
     }
   }, [inspectorTarget])
 
@@ -398,30 +472,22 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
           } as React.CSSProperties}
         />
         <Excalidraw
-          excalidrawAPI={api => {
-            apiRef.current = api
-            setReady(true)
-            const appState = api.getAppState()
-            setViewTransform({ scrollX: appState.scrollX, scrollY: appState.scrollY, zoom: appState.zoom, offsetLeft: appState.offsetLeft, offsetTop: appState.offsetTop })
-          }}
+          excalidrawAPI={handleExcalidrawApi}
           onChange={handleChange}
-          onScrollChange={(scrollX, scrollY, zoom) => {
-            const appState = apiRef.current?.getAppState()
-            setViewTransform({ scrollX, scrollY, zoom, offsetLeft: appState?.offsetLeft ?? 0, offsetTop: appState?.offsetTop ?? 0 })
-          }}
-          initialData={{ appState: { viewBackgroundColor: 'transparent' } }}
+          onScrollChange={handleScrollChange}
+          initialData={EXCALIDRAW_INITIAL_DATA}
           theme={isDark ? 'dark' : 'light'}
           viewModeEnabled={false}
           isCollaborating={false}
-          UIOptions={{
-            canvasActions: {
-              saveToActiveFile: false,
-              loadScene: false,
-              export: false,
-              toggleTheme: false,
-              changeViewBackgroundColor: false,
-            },
-          }}
+          UIOptions={EXCALIDRAW_UI_OPTIONS}
+        />
+        <ThreeDZoneLayer
+          elements={sceneElements}
+          viewTransform={viewTransform}
+          active3DZoneId={active3DZoneId}
+          onRotationCommit={handleZoneRotationCommit}
+          onEdgeColorChange={handleZoneEdgeColorChange}
+          onRequestCloseZone={() => setActive3DZoneId(null)}
         />
         <ShapeInteractionLayer
           elements={sceneElements}
@@ -432,10 +498,11 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
         {inspectorTarget && (
           <ElementInspector
             label={inspectorTarget.label}
-            x={(inspectorTarget.bbox.x + viewTransform.scrollX) * viewTransform.zoom.value}
-            y={(inspectorTarget.bbox.y + viewTransform.scrollY) * viewTransform.zoom.value - 8}
+            x={(inspectorTarget.x + viewTransform.scrollX) * viewTransform.zoom.value}
+            y={(inspectorTarget.y + viewTransform.scrollY) * viewTransform.zoom.value - 8}
             onEdit={handleOpenInspectorEditor}
             onRename={handleRenameInspectorTarget}
+            onEnter3D={inspectorTarget.kind === 'shape' ? () => setActive3DZoneId(inspectorTarget.elementId) : undefined}
           />
         )}
         {/* Excalidraw has no public slot for adding a button into its own
@@ -444,58 +511,70 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
             top of the canvas, below the native toolbar, on the left. */}
         <div className={styles.formulaWrap}>
           <div className={styles.formulaButtonsRow}>
+            {!toolbarCollapsed && (
+              <>
+                <button
+                  type="button"
+                  className={`${styles.formulaButton} ${activePopover === 'formula' ? styles.formulaButtonActive : ''}`}
+                  onClick={() => {
+                    setEditingFormula(null)
+                    setEditingShape(null)
+                    setAutoOpenAi(false)
+                    setActivePopover(v => (v === 'formula' ? null : 'formula'))
+                  }}
+                  title="Формула"
+                >
+                  ∑ Формула
+                </button>
+                <button
+                  type="button"
+                  className={styles.aiMiniButton}
+                  onClick={() => {
+                    setEditingFormula(null)
+                    setEditingShape(null)
+                    setAutoOpenAi(true)
+                    setActivePopover('formula')
+                  }}
+                  title="Создать формулу с ИИ"
+                >
+                  ✨ ИИ
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.formulaButton} ${activePopover === 'grid' ? styles.formulaButtonActive : ''}`}
+                  onClick={() => setActivePopover(v => (v === 'grid' ? null : 'grid'))}
+                  title="Сетка"
+                >
+                  ▦ Сетка
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.formulaButton} ${activePopover === '3d' ? styles.formulaButtonActive : ''}`}
+                  onClick={() => {
+                    setEditingShape(null)
+                    setActivePopover(v => (v === '3d' ? null : '3d'))
+                  }}
+                  title="Фигуры"
+                >
+                  △ Фигуры
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.formulaButton} ${constructionMode ? styles.formulaButtonActive : ''}`}
+                  onClick={() => setConstructionMode(v => !v)}
+                  title="Построения: линии со снапом к вершинам/центру фигур"
+                >
+                  📐 Построения
+                </button>
+              </>
+            )}
             <button
               type="button"
-              className={`${styles.formulaButton} ${activePopover === 'formula' ? styles.formulaButtonActive : ''}`}
-              onClick={() => {
-                setEditingFormula(null)
-                setEditingShape(null)
-                setAutoOpenAi(false)
-                setActivePopover(v => (v === 'formula' ? null : 'formula'))
-              }}
-              title="Формула"
+              className={styles.collapseButton}
+              onClick={() => setToolbarCollapsed(v => !v)}
+              title={toolbarCollapsed ? 'Показать кнопки' : 'Свернуть кнопки'}
             >
-              ∑ Формула
-            </button>
-            <button
-              type="button"
-              className={styles.aiMiniButton}
-              onClick={() => {
-                setEditingFormula(null)
-                setEditingShape(null)
-                setAutoOpenAi(true)
-                setActivePopover('formula')
-              }}
-              title="Создать формулу с ИИ"
-            >
-              ✨ ИИ
-            </button>
-            <button
-              type="button"
-              className={`${styles.formulaButton} ${activePopover === 'grid' ? styles.formulaButtonActive : ''}`}
-              onClick={() => setActivePopover(v => (v === 'grid' ? null : 'grid'))}
-              title="Сетка"
-            >
-              ▦ Сетка
-            </button>
-            <button
-              type="button"
-              className={`${styles.formulaButton} ${activePopover === '3d' ? styles.formulaButtonActive : ''}`}
-              onClick={() => {
-                setEditingShape(null)
-                setActivePopover(v => (v === '3d' ? null : '3d'))
-              }}
-              title="Фигуры"
-            >
-              △ Фигуры
-            </button>
-            <button
-              type="button"
-              className={`${styles.formulaButton} ${constructionMode ? styles.formulaButtonActive : ''}`}
-              onClick={() => setConstructionMode(v => !v)}
-              title="Построения: линии со снапом к вершинам/центру фигур"
-            >
-              📐 Построения
+              {toolbarCollapsed ? '▸' : '◂'}
             </button>
           </div>
           {activePopover === 'formula' && (
@@ -528,7 +607,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
           {activePopover === '3d' && (
             <div className={styles.formulaPopover}>
               <ThreeDPanel
-                initial={editingShape?.meta}
+                initial={editingShape?.zone}
                 onInsert={handleInsertShape}
                 onClose={() => {
                   setActivePopover(null)
