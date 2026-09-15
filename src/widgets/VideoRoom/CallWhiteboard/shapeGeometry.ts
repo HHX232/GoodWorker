@@ -47,6 +47,11 @@ export interface ThreeDZone extends ThreeDShapeMeta {
   edgeColors?: Record<number, string>
   /** Medians/bisectors/etc. drawn fully inside this shape — see ConstructionLine. */
   constructionLines?: ConstructionLine[]
+  /** Edge index → arbitrary label text (e.g. a length/angle annotation),
+   * set via double-click on the edge. Rendered upright at the edge's live
+   * projected midpoint — see the note in ThreeDZoneCanvas on why the text
+   * itself doesn't tilt with the 3D rotation. */
+  edgeLabels?: Record<number, string>
 }
 
 // Small, familiar whiteboard-marker set — reused by the formula and shape
@@ -106,6 +111,10 @@ export function rotateAroundCenter(point: Point, center: Point, angle: number): 
 export type SnapRef =
   | { kind: 'vertex'; index: number }
   | { kind: 'midpoint'; index: number }
+  /** Center of a flat face — a cube's side, a pyramid's triangular face, a
+   * cone/cylinder's base cap. Lets a construction line be a "plane"/side
+   * median instead of only vertex/edge-midpoint/solid-centroid. */
+  | { kind: 'faceCenter'; index: number }
   | { kind: 'centroid' }
 
 export interface SnapCandidate extends Point {

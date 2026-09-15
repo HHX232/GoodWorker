@@ -21,6 +21,7 @@ interface Props {
   interactive: boolean
   onRotationCommit: (zoneElementId: string, rotationX: number, rotationY: number, rotationZ: number) => void
   onEdgeColorChange: (zoneElementId: string, edgeIndex: number, color: string) => void
+  onEdgeLabelChange: (zoneElementId: string, edgeIndex: number, text: string) => void
   onLineColorChange: (zoneElementId: string, lineId: string, color: string) => void
   onLineDelete: (zoneElementId: string, lineId: string) => void
   onSelectZone: (zoneElementId: string) => void
@@ -28,7 +29,7 @@ interface Props {
   onResizeZoneTo: (zoneElementId: string, width: number, height: number) => void
 }
 
-export function ThreeDZoneLayer({ elements, viewTransform, interactive, onRotationCommit, onEdgeColorChange, onLineColorChange, onLineDelete, onSelectZone, onMoveZoneTo, onResizeZoneTo }: Props) {
+export function ThreeDZoneLayer({ elements, viewTransform, interactive, onRotationCommit, onEdgeColorChange, onEdgeLabelChange, onLineColorChange, onLineDelete, onSelectZone, onMoveZoneTo, onResizeZoneTo }: Props) {
   const zones = useMemo(() => getAllZones(elements), [elements])
   const flatViewTransform = { scrollX: viewTransform.scrollX, scrollY: viewTransform.scrollY, zoom: viewTransform.zoom.value }
 
@@ -43,6 +44,7 @@ export function ThreeDZoneLayer({ elements, viewTransform, interactive, onRotati
           interactive={interactive}
           onRotationCommit={(x, y, z) => onRotationCommit(element.id, x, y, z)}
           onEdgeColorChange={(edgeIndex, color) => onEdgeColorChange(element.id, edgeIndex, color)}
+          onEdgeLabelChange={(edgeIndex, text) => onEdgeLabelChange(element.id, edgeIndex, text)}
           onLineColorChange={(lineId, color) => onLineColorChange(element.id, lineId, color)}
           onLineDelete={lineId => onLineDelete(element.id, lineId)}
           onSelect={() => onSelectZone(element.id)}

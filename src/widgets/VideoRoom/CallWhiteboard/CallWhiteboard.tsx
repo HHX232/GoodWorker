@@ -418,6 +418,20 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
     mutateElement(el, { customData: { threeDZone: zone } })
   }, [])
 
+  const handleZoneEdgeLabelChange = useCallback(async (zoneElementId: string, edgeIndex: number, text: string) => {
+    if (!apiRef.current) return
+    const { mutateElement } = await import('@excalidraw/excalidraw')
+    const el = apiRef.current.getSceneElements().find(e => e.id === zoneElementId)
+    if (!el) return
+    const existing = readThreeDZone(el)
+    if (!existing) return
+    const edgeLabels = { ...existing.edgeLabels }
+    if (text) edgeLabels[edgeIndex] = text
+    else delete edgeLabels[edgeIndex]
+    const zone: ThreeDZone = { ...existing, edgeLabels }
+    mutateElement(el, { customData: { threeDZone: zone } })
+  }, [])
+
   const handleInsertZoneLine = useCallback(async (zoneElementId: string, startRef: SnapRef, endRef: SnapRef) => {
     if (!apiRef.current) return
     const { mutateElement } = await import('@excalidraw/excalidraw')
@@ -563,6 +577,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
           interactive={activeToolType === 'selection' || activeToolType === 'hand'}
           onRotationCommit={handleZoneRotationCommit}
           onEdgeColorChange={handleZoneEdgeColorChange}
+          onEdgeLabelChange={handleZoneEdgeLabelChange}
           onLineColorChange={handleZoneLineColorChange}
           onLineDelete={handleZoneLineDelete}
           onSelectZone={handleSelectZone}

@@ -58,19 +58,22 @@
 }
 
 .colorPopover {
-  // Fixed to the viewport (not the zone) on purpose — it's a sibling of
-  // .zone now, not a child, so it's immune to that element's own transform
-  // and to it re-rendering on every board change.
+  // Pinned to a fixed spot on the left edge of the screen instead of near
+  // the cursor — anchoring it to the click point made it hard to hit a
+  // swatch without the popover itself moving/covering the target first.
   position: fixed;
   z-index: 20;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
+  flex-direction: column;
   gap: 4px;
-  padding: 5px 6px;
+  padding: 6px 5px;
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   box-shadow: 0 6px 16px rgba(15, 23, 42, 0.2);
-  transform: translate(-50%, -110%);
   pointer-events: auto;
 }
 
@@ -107,6 +110,47 @@
   }
 }
 
+.edgeLabel {
+  // Positioned imperatively (left/top set directly on the DOM node from
+  // ThreeDZoneCanvas, not via React state) so it can track a live rotation
+  // drag every frame without a re-render per frame.
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #1e1e1e;
+  white-space: nowrap;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.labelInput {
+  position: fixed;
+  z-index: 20;
+  transform: translate(-50%, -50%);
+  min-width: 90px;
+  max-width: 220px;
+  padding: 4px 8px;
+  font-size: 13px;
+  border: 1px solid #94a3b8;
+  border-radius: 6px;
+  background: #fff;
+  color: #1e1e1e;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.2);
+  pointer-events: auto;
+
+  &:focus {
+    outline: none;
+    border-color: #1971c2;
+  }
+}
+
 // ── Dark theme ────────────────────────────────────────────────────────────────
 :global(html.theme-dark), :global(html.pomodoro-dark) {
   .moveHandle, .resizeHandle {
@@ -122,5 +166,10 @@
   }
   .popoverSwatch:hover {
     border-color: rgba(255, 255, 255, 0.3);
+  }
+  .edgeLabel, .labelInput {
+    background: #1a1826;
+    border-color: rgba(255, 255, 255, 0.16);
+    color: rgba(255, 255, 255, 0.85);
   }
 }

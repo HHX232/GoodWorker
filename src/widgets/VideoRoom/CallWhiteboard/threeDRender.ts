@@ -128,6 +128,115 @@ export function buildEdgeTopology(geometry: THREE.BufferGeometry): EdgeTopology[
   return topology
 }
 
+export interface FaceTopology {
+  center: THREE.Vector3
+  normal: THREE.Vector3
+}
+
+/**
+ * Groups the geometry's source triangles into flat faces (a cube's side, a
+ * pyramid's triangular face, a cone/cylinder's base cap, one segment of a
+ * curved lateral surface) so "center of a face" can be a construction-line
+ * snap point alongside vertices/edge-midpoints/solid-centroid. Two adjacent
+ * triangles merge into the same face when they share an edge and their
+ * normals agree within CREASE_ANGLE_THRESHOLD (the same test that decides a
+ * visible "crease" edge) — union-find over triangle adjacency, so an N-gon
+ * base fanned into N triangles from its center still merges into one face.
+ */
+export function buildFaceTopology(geometry: THREE.BufferGeometry): FaceTopology[] {
+  const index = geometry.index
+  const position = geometry.attributes.position
+  if (!index) return []
+
+  const indexArray = index.array
+  const triCount = indexArray.length / 3
+
+  const weldedId = new Map<string, number>()
+  const weldedPosition = new Map<number, THREE.Vector3>()
+  const weldOf = new Int32Array(position.count)
+  const v = new THREE.Vector3()
+  for (let i = 0; i < position.count; i++) {
+    v.fromBufferAttribute(position, i)
+    const key = `${v.x.toFixed(4)}_${v.y.toFixed(4)}_${v.z.toFixed(4)}`
+    let id = weldedId.get(key)
+    if (id === undefined) {
+      id = weldedId.size
+      weldedId.set(key, id)
+      weldedPosition.set(id, v.clone())
+    }
+    weldOf[i] = id
+  }
+
+  const vA = new THREE.Vector3()
+  const vB = new THREE.Vector3()
+  const vC = new THREE.Vector3()
+  const normals: THREE.Vector3[] = []
+  const triVerts: [number, number, number][] = []
+  for (let t = 0; t < triCount; t++) {
+    const ia = indexArray[t * 3]
+    const ib = indexArray[t * 3 + 1]
+    const ic = indexArray[t * 3 + 2]
+    vA.fromBufferAttribute(position, ia)
+    vB.fromBufferAttribute(position, ib)
+    vC.fromBufferAttribute(position, ic)
+    normals.push(new THREE.Vector3().subVectors(vC, vB).cross(vA.clone().sub(vB)).normalize())
+    triVerts.push([ia, ib, ic])
+  }
+
+  const edgeToTris = new Map<string, number[]>()
+  for (let t = 0; t < triCount; t++) {
+    const [ia, ib, ic] = triVerts[t]
+    const corners: [number, number][] = [[ia, ib], [ib, ic], [ic, ia]]
+    for (const [p, q] of corners) {
+      const a = weldOf[p]
+      const b = weldOf[q]
+      const key = a < b ? `${a}_${b}` : `${b}_${a}`
+      const entry = edgeToTris.get(key)
+      if (entry) entry.push(t)
+      else edgeToTris.set(key, [t])
+    }
+  }
+
+  const parent = Array.from({ length: triCount }, (_, i) => i)
+  const find = (i: number): number => {
+    while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i] }
+    return i
+  }
+  const union = (a: number, b: number) => {
+    const ra = find(a)
+    const rb = find(b)
+    if (ra !== rb) parent[ra] = rb
+  }
+  for (const tris of edgeToTris.values()) {
+    for (let i = 1; i < tris.length; i++) {
+      if (normals[tris[0]].angleTo(normals[tris[i]]) <= CREASE_ANGLE_THRESHOLD) union(tris[0], tris[i])
+    }
+  }
+
+  const groups = new Map<number, number[]>()
+  for (let t = 0; t < triCount; t++) {
+    const root = find(t)
+    const g = groups.get(root)
+    if (g) g.push(t)
+    else groups.set(root, [t])
+  }
+
+  const faces: FaceTopology[] = []
+  for (const tris of groups.values()) {
+    const vertIds = new Set<number>()
+    const normalSum = new THREE.Vector3()
+    for (const t of tris) {
+      for (const vi of triVerts[t]) vertIds.add(weldOf[vi])
+      normalSum.add(normals[t])
+    }
+    const center = new THREE.Vector3()
+    for (const id of vertIds) center.add(weldedPosition.get(id)!)
+    center.multiplyScalar(1 / vertIds.size)
+    faces.push({ center, normal: normalSum.normalize() })
+  }
+  return faces
+}
+
 export interface ClassifiedEdge {
   v1: THREE.Vector3
   v2: THREE.Vector3
@@ -230,6 +339,7 @@ export function getLocalSnapPoints(topology: EdgeTopology[]): LocalSnapPoints {
 export function computeZoneSnapCandidates(elementId: string, zone: ThreeDZone, rect: ZoneRect): SnapCandidate[] {
   const geometry = buildGeometry(zone.primitive, zone.segments ?? DEFAULT_SEGMENTS[zone.primitive], zone.flat ?? false)
   const topology = buildEdgeTopology(geometry)
+  const faces = buildFaceTopology(geometry)
   geometry.dispose()
   const { vertices, midpoints, centroid } = getLocalSnapPoints(topology)
 
@@ -249,6 +359,7 @@ export function computeZoneSnapCandidates(elementId: string, zone: ThreeDZone, r
   const candidates: SnapCandidate[] = []
   vertices.forEach((v, index) => candidates.push({ ...toScene(v), zoneElementId: elementId, ref: { kind: 'vertex', index } }))
   midpoints.forEach((v, index) => candidates.push({ ...toScene(v), zoneElementId: elementId, ref: { kind: 'midpoint', index } }))
+  faces.forEach((f, index) => candidates.push({ ...toScene(f.center), zoneElementId: elementId, ref: { kind: 'faceCenter', index } }))
   if (centroid) candidates.push({ ...toScene(centroid), zoneElementId: elementId, ref: { kind: 'centroid' } })
   return candidates
 }
@@ -265,7 +376,8 @@ export function resolveSnapRef(elementId: string, zone: ThreeDZone, rect: ZoneRe
  * used inside a zone's own live scene (construction lines embedded in it),
  * where the topology is already sitting in a ref and rebuilding it from
  * scratch on every rotation frame would be wasteful. */
-export function resolveLocalSnapPoint(topology: EdgeTopology[], ref: SnapRef): THREE.Vector3 | null {
+export function resolveLocalSnapPoint(topology: EdgeTopology[], faces: FaceTopology[], ref: SnapRef): THREE.Vector3 | null {
+  if (ref.kind === 'faceCenter') return faces[ref.index]?.center ?? null
   const { vertices, midpoints, centroid } = getLocalSnapPoints(topology)
   if (ref.kind === 'vertex') return vertices[ref.index] ?? null
   if (ref.kind === 'midpoint') return midpoints[ref.index] ?? null

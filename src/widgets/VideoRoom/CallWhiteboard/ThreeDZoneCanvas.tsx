@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { distanceToSegment, INK_PALETTE, type ConstructionLine, type ThreeDZone, type ZoneRect } from './shapeGeometry'
-import { buildDashDotPositions, buildEdgeTopology, buildGeometry, classifyEdges, createFramingCamera, projectPoint, resolveLocalSnapPoint, type ClassifiedEdge, type EdgeTopology } from './threeDRender'
+import { buildDashDotPositions, buildEdgeTopology, buildFaceTopology, buildGeometry, classifyEdges, createFramingCamera, projectPoint, resolveLocalSnapPoint, type ClassifiedEdge, type EdgeTopology, type FaceTopology } from './threeDRender'
 import styles from './ThreeDZoneCanvas.module.scss'
 
 interface ViewTransform {
@@ -21,6 +21,7 @@ interface Props {
   interactive: boolean
   onRotationCommit: (rotationX: number, rotationY: number, rotationZ: number) => void
   onEdgeColorChange: (edgeIndex: number, color: string) => void
+  onEdgeLabelChange: (edgeIndex: number, text: string) => void
   onLineColorChange: (lineId: string, color: string) => void
   onLineDelete: (lineId: string) => void
   onSelect: () => void
@@ -35,12 +36,12 @@ function colorFor(edgeIndex: number, zone: ThreeDZone): THREE.Color {
   return new THREE.Color(zone.edgeColors?.[edgeIndex] ?? zone.color)
 }
 
-function buildConstructionGeometry(topology: EdgeTopology[], lines: ConstructionLine[]): { positions: number[]; colors: number[] } {
+function buildConstructionGeometry(topology: EdgeTopology[], faces: FaceTopology[], lines: ConstructionLine[]): { positions: number[]; colors: number[] } {
   const positions: number[] = []
   const colors: number[] = []
   for (const line of lines) {
-    const p1 = resolveLocalSnapPoint(topology, line.startRef)
-    const p2 = resolveLocalSnapPoint(topology, line.endRef)
+    const p1 = resolveLocalSnapPoint(topology, faces, line.startRef)
+    const p2 = resolveLocalSnapPoint(topology, faces, line.endRef)
     if (!p1 || !p2) continue
     const segPositions = buildDashDotPositions(p1, p2)
     positions.push(...segPositions)
@@ -51,10 +52,17 @@ function buildConstructionGeometry(topology: EdgeTopology[], lines: Construction
 }
 
 type Picker =
-  | { kind: 'edge'; edgeIndex: number; clientX: number; clientY: number }
-  | { kind: 'line'; lineId: string; clientX: number; clientY: number }
+  | { kind: 'edge'; edgeIndex: number }
+  | { kind: 'line'; lineId: string }
 
-export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRotationCommit, onEdgeColorChange, onLineColorChange, onLineDelete, onSelect, onMoveTo, onResizeTo }: Props) {
+interface EditingLabel {
+  edgeIndex: number
+  text: string
+  clientX: number
+  clientY: number
+}
+
+export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRotationCommit, onEdgeColorChange, onEdgeLabelChange, onLineColorChange, onLineDelete, onSelect, onMoveTo, onResizeTo }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<THREE.Scene | null>(null)
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
@@ -64,18 +72,31 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
   const dashedLineRef = useRef<THREE.LineSegments | null>(null)
   const constructionLineRef = useRef<THREE.LineSegments | null>(null)
   const edgeTopologyRef = useRef<EdgeTopology[]>([])
+  const faceTopologyRef = useRef<FaceTopology[]>([])
   const classifiedRef = useRef<ClassifiedEdge[]>([])
   const rotationRef = useRef({ x: zone.rotationX, y: zone.rotationY, z: zone.rotationZ })
   const dragRef = useRef<{ active: boolean; moved: boolean; lastX: number; lastY: number }>({ active: false, moved: false, lastX: 0, lastY: 0 })
   const moveDragRef = useRef<{ startClientX: number; startClientY: number; startX: number; startY: number } | null>(null)
   const resizeDragRef = useRef<{ startClientX: number; startClientY: number; startWidth: number; startHeight: number } | null>(null)
+  // Edge-label DOM nodes, keyed by edge index — positioned imperatively (not
+  // via React state) from updateVisualization so a live rotation drag moves
+  // them every frame without a setState per frame. Labels stay upright (no
+  // CSS rotate to match the edge's projected angle) so they're always
+  // legible regardless of the shape's current rotation; only their (left,
+  // top) tracks the edge's live projected midpoint.
+  const labelElRefs = useRef<Map<number, HTMLDivElement>>(new Map())
 
-  // clientX/clientY (raw viewport coords), not zone-local ones — rendered
-  // with position:fixed below so it's fully decoupled from the zone's own
-  // transform. It was drifting with the cursor because its local coordinates
-  // were being recomputed relative to a container that re-renders on nearly
-  // every pointer move (the zone tracks viewTransform on every board change).
+  // The zone's DOM box (.zone/.canvasHolder) is sized in CSS to rect.width/
+  // height * zoom — the renderer/camera must render at that same pixel size
+  // (not the unzoomed rect.width/height), otherwise three.js's own inline
+  // canvas style fights the container size: the shape looked "too small" at
+  // high zoom and "too big" at low zoom because the canvas was always
+  // rendered at a fixed rect.width×rect.height regardless of zoom.
+  const canvasWidth = rect.width * viewTransform.zoom
+  const canvasHeight = rect.height * viewTransform.zoom
+
   const [picker, setPicker] = useState<Picker | null>(null)
+  const [editingLabel, setEditingLabel] = useState<EditingLabel | null>(null)
 
   const render = useCallback(() => {
     if (rendererRef.current && sceneRef.current && cameraRef.current) {
@@ -123,8 +144,21 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
     dashedLine.geometry = dashedGeometry
     dashedLine.computeLineDistances()
 
+    const group = groupRef.current
+    const camera = cameraRef.current
+    if (group && camera) {
+      for (const [edgeIndex, el] of labelElRefs.current) {
+        const edge = edgeTopologyRef.current[edgeIndex]
+        if (!edge) continue
+        const mid = edge.v1.clone().add(edge.v2).multiplyScalar(0.5)
+        const pos = projectPoint(mid, group, camera, canvasWidth, canvasHeight)
+        el.style.left = `${pos.x}px`
+        el.style.top = `${pos.y}px`
+      }
+    }
+
     applyColors()
-  }, [applyColors])
+  }, [applyColors, canvasWidth, canvasHeight])
 
   // Scene setup once — container captured locally (see ThreeDPanel's note on
   // why: React 18 dev StrictMode mounts/cleans up/mounts this effect once to
@@ -133,10 +167,10 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
     const container = containerRef.current
     if (!container) return
     const scene = new THREE.Scene()
-    const camera = createFramingCamera(rect.width, rect.height)
+    const camera = createFramingCamera(canvasWidth, canvasHeight)
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true })
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-    renderer.setSize(rect.width, rect.height)
+    renderer.setSize(canvasWidth, canvasHeight)
     container.appendChild(renderer.domElement)
 
     const group = new THREE.Group()
@@ -188,6 +222,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
 
     const geometry = buildGeometry(zone.primitive, zone.segments ?? 0, zone.flat ?? false)
     edgeTopologyRef.current = buildEdgeTopology(geometry)
+    faceTopologyRef.current = buildFaceTopology(geometry)
     geometry.dispose()
 
     const solidLine = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ vertexColors: true }))
@@ -215,7 +250,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
       constructionLineRef.current.geometry.dispose()
       ;(constructionLineRef.current.material as THREE.Material).dispose()
     }
-    const { positions, colors } = buildConstructionGeometry(edgeTopologyRef.current, zone.constructionLines ?? [])
+    const { positions, colors } = buildConstructionGeometry(edgeTopologyRef.current, faceTopologyRef.current, zone.constructionLines ?? [])
     const geometry = new THREE.BufferGeometry()
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
     geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
@@ -246,16 +281,18 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
   }, [zone.scale, render])
 
   // Resize with the zone's on-board size (our own resize handle, or an edit
-  // through the panel).
+  // through the panel) AND with the board's zoom — the rendered pixel size
+  // must track zoom too, or the shape drifts out of proportion with its
+  // zone's outline as the user zooms the whiteboard in/out.
   useEffect(() => {
     const renderer = rendererRef.current
     const camera = cameraRef.current
     if (!renderer || !camera) return
-    renderer.setSize(rect.width, rect.height)
-    camera.aspect = Math.max(rect.width, 1) / Math.max(rect.height, 1)
+    renderer.setSize(canvasWidth, canvasHeight)
+    camera.aspect = Math.max(canvasWidth, 1) / Math.max(canvasHeight, 1)
     camera.updateProjectionMatrix()
-    render()
-  }, [rect.width, rect.height, render])
+    updateVisualization()
+  }, [canvasWidth, canvasHeight, updateVisualization])
 
   // Returns the closest edge within the pick threshold, plus its distance —
   // distance is needed by the caller to arbitrate against a construction
@@ -271,8 +308,8 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
     let bestDist = Infinity
     for (let index = 0; index < classifiedRef.current.length; index++) {
       const edge = classifiedRef.current[index]
-      const p1 = projectPoint(edge.v1, group, camera, rect.width, rect.height)
-      const p2 = projectPoint(edge.v2, group, camera, rect.width, rect.height)
+      const p1 = projectPoint(edge.v1, group, camera, canvasWidth, canvasHeight)
+      const p2 = projectPoint(edge.v2, group, camera, canvasWidth, canvasHeight)
       const dist = distanceToSegment({ x: localX, y: localY }, p1, p2)
       if (dist < bestDist) {
         bestDist = dist
@@ -280,7 +317,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
       }
     }
     return bestIndex !== -1 && bestDist <= PICK_THRESHOLD_PX ? { index: bestIndex, dist: bestDist } : null
-  }, [rect.width, rect.height])
+  }, [canvasWidth, canvasHeight])
 
   const pickConstructionLine = useCallback((localX: number, localY: number): { id: string; dist: number } | null => {
     const group = groupRef.current
@@ -289,11 +326,11 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
     let bestId: string | null = null
     let bestDist = Infinity
     for (const line of zone.constructionLines) {
-      const p1 = resolveLocalSnapPoint(edgeTopologyRef.current, line.startRef)
-      const p2 = resolveLocalSnapPoint(edgeTopologyRef.current, line.endRef)
+      const p1 = resolveLocalSnapPoint(edgeTopologyRef.current, faceTopologyRef.current, line.startRef)
+      const p2 = resolveLocalSnapPoint(edgeTopologyRef.current, faceTopologyRef.current, line.endRef)
       if (!p1 || !p2) continue
-      const s1 = projectPoint(p1, group, camera, rect.width, rect.height)
-      const s2 = projectPoint(p2, group, camera, rect.width, rect.height)
+      const s1 = projectPoint(p1, group, camera, canvasWidth, canvasHeight)
+      const s2 = projectPoint(p2, group, camera, canvasWidth, canvasHeight)
       const dist = distanceToSegment({ x: localX, y: localY }, s1, s2)
       if (dist < bestDist) {
         bestDist = dist
@@ -301,7 +338,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
       }
     }
     return bestId !== null && bestDist <= PICK_THRESHOLD_PX ? { id: bestId, dist: bestDist } : null
-  }, [rect.width, rect.height, zone.constructionLines])
+  }, [canvasWidth, canvasHeight, zone.constructionLines])
 
   // Rotate is the default gesture on the shape body — no mode to enter first.
   const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
@@ -346,13 +383,33 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
     const edgeHit = pickEdge(localX, localY)
     const lineHit = pickConstructionLine(localX, localY)
     if (lineHit && (!edgeHit || lineHit.dist <= edgeHit.dist)) {
-      setPicker({ kind: 'line', lineId: lineHit.id, clientX: e.clientX, clientY: e.clientY })
+      setPicker({ kind: 'line', lineId: lineHit.id })
     } else if (edgeHit) {
-      setPicker({ kind: 'edge', edgeIndex: edgeHit.index, clientX: e.clientX, clientY: e.clientY })
+      setPicker({ kind: 'edge', edgeIndex: edgeHit.index })
     } else {
       setPicker(null)
     }
   }, [onRotationCommit, pickEdge, pickConstructionLine])
+
+  // Double-click an edge to write an arbitrary label on it (length, angle
+  // name, anything) — positioned where the user clicked, like the recolor
+  // popup used to be, since this one *is* a short-lived text-entry gesture
+  // tied to that exact spot rather than a persistent menu.
+  const handleDoubleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const box = e.currentTarget.getBoundingClientRect()
+    const localX = e.clientX - box.left
+    const localY = e.clientY - box.top
+    const edgeHit = pickEdge(localX, localY)
+    if (!edgeHit) return
+    setPicker(null)
+    setEditingLabel({ edgeIndex: edgeHit.index, text: zone.edgeLabels?.[edgeHit.index] ?? '', clientX: e.clientX, clientY: e.clientY })
+  }, [pickEdge, zone.edgeLabels])
+
+  const commitEditingLabel = useCallback(() => {
+    if (!editingLabel) return
+    onEdgeLabelChange(editingLabel.edgeIndex, editingLabel.text.trim())
+    setEditingLabel(null)
+  }, [editingLabel, onEdgeLabelChange])
 
   // Move handle: click selects the zone (surfaces the rename/edit inspector),
   // drag moves it. Delta is tracked from the drag's own start, not
@@ -415,7 +472,21 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
           onPointerMove={interactive ? handlePointerMove : undefined}
           onPointerUp={interactive ? handlePointerUp : undefined}
           onPointerLeave={interactive ? handlePointerUp : undefined}
+          onDoubleClick={interactive ? handleDoubleClick : undefined}
         />
+        {zone.edgeLabels && Object.entries(zone.edgeLabels).map(([key, text]) => (
+          <div
+            key={key}
+            ref={el => {
+              const idx = Number(key)
+              if (el) labelElRefs.current.set(idx, el)
+              else labelElRefs.current.delete(idx)
+            }}
+            className={styles.edgeLabel}
+          >
+            {text}
+          </div>
+        ))}
         <button
           type="button"
           className={styles.moveHandle}
@@ -438,7 +509,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
         </button>
       </div>
       {picker && (
-        <div className={styles.colorPopover} style={{ left: picker.clientX, top: picker.clientY }}>
+        <div className={styles.colorPopover}>
           {INK_PALETTE.map(swatch => (
             <button
               key={swatch}
@@ -467,6 +538,24 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
             </button>
           )}
         </div>
+      )}
+      {editingLabel && (
+        <input
+          type="text"
+          autoFocus
+          className={styles.labelInput}
+          style={{ left: editingLabel.clientX, top: editingLabel.clientY }}
+          value={editingLabel.text}
+          placeholder="Текст на ребре"
+          onChange={e => setEditingLabel(prev => (prev ? { ...prev, text: e.target.value } : prev))}
+          onClick={e => e.stopPropagation()}
+          onPointerDown={e => e.stopPropagation()}
+          onKeyDown={e => {
+            if (e.key === 'Enter') commitEditingLabel()
+            else if (e.key === 'Escape') setEditingLabel(null)
+          }}
+          onBlur={commitEditingLabel}
+        />
       )}
     </>
   )
