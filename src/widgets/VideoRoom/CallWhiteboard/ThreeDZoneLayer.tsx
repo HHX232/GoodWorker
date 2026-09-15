@@ -16,13 +16,14 @@ export interface ViewTransform {
 interface Props {
   elements: readonly ExcalidrawElement[]
   viewTransform: ViewTransform
-  active3DZoneId: string | null
   onRotationCommit: (zoneElementId: string, rotationX: number, rotationY: number, rotationZ: number) => void
   onEdgeColorChange: (zoneElementId: string, edgeIndex: number, color: string) => void
-  onRequestCloseZone: () => void
+  onSelectZone: (zoneElementId: string) => void
+  onMoveZoneTo: (zoneElementId: string, x: number, y: number) => void
+  onResizeZoneTo: (zoneElementId: string, width: number, height: number) => void
 }
 
-export function ThreeDZoneLayer({ elements, viewTransform, active3DZoneId, onRotationCommit, onEdgeColorChange, onRequestCloseZone }: Props) {
+export function ThreeDZoneLayer({ elements, viewTransform, onRotationCommit, onEdgeColorChange, onSelectZone, onMoveZoneTo, onResizeZoneTo }: Props) {
   const zones = useMemo(() => getAllZones(elements), [elements])
   const flatViewTransform = { scrollX: viewTransform.scrollX, scrollY: viewTransform.scrollY, zoom: viewTransform.zoom.value }
 
@@ -34,10 +35,11 @@ export function ThreeDZoneLayer({ elements, viewTransform, active3DZoneId, onRot
           rect={rect}
           zone={zone}
           viewTransform={flatViewTransform}
-          active={active3DZoneId === element.id}
           onRotationCommit={(x, y, z) => onRotationCommit(element.id, x, y, z)}
           onEdgeColorChange={(edgeIndex, color) => onEdgeColorChange(element.id, edgeIndex, color)}
-          onRequestClose={onRequestCloseZone}
+          onSelect={() => onSelectZone(element.id)}
+          onMoveTo={(x, y) => onMoveZoneTo(element.id, x, y)}
+          onResizeTo={(w, h) => onResizeZoneTo(element.id, w, h)}
         />
       ))}
     </div>

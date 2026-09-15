@@ -114,18 +114,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
   const [toolbarCollapsed, setToolbarCollapsed] = useState(false)
   const [sceneElements, setSceneElements] = useState<readonly ExcalidrawElement[]>([])
   const [selectedElementIds, setSelectedElementIds] = useState<Record<string, boolean>>({})
-  const [active3DZoneId, setActive3DZoneId] = useState<string | null>(null)
   const { isDark } = useThemeCtx()
-
-  // Esc exits on-board 3D mode (rotate/edge-color) for whichever zone has it.
-  useEffect(() => {
-    if (!active3DZoneId) return
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setActive3DZoneId(null)
-    }
-    window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
-  }, [active3DZoneId])
 
   const inspectorTarget = useMemo<InspectorTarget | null>(() => {
     const ids = Object.keys(selectedElementIds).filter(id => selectedElementIds[id])
@@ -214,6 +203,19 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
       // canvases, the inspector) would silently stop tracking mid-drag.
       setSceneElements(elements.slice())
       setSelectedElementIds(state.selectedElementIds)
+      // onScrollChange alone missed pure zoom changes (e.g. the zoom-%
+      // control, not a scroll/pan gesture) — zone canvases kept the stale
+      // zoom and drifted away from their shapes. appState here always has
+      // the current scroll/zoom regardless of what triggered this onChange,
+      // so mirror it on every change instead of relying on a narrower event.
+      setViewTransform(prev => {
+        if (
+          prev.scrollX === state.scrollX && prev.scrollY === state.scrollY
+          && prev.zoom.value === state.zoom.value
+          && prev.offsetLeft === state.offsetLeft && prev.offsetTop === state.offsetTop
+        ) return prev
+        return { scrollX: state.scrollX, scrollY: state.scrollY, zoom: state.zoom, offsetLeft: state.offsetLeft, offsetTop: state.offsetTop }
+      })
       if (isApplyingRemoteRef.current) return
       if (broadcastTimer.current) clearTimeout(broadcastTimer.current)
       broadcastTimer.current = setTimeout(() => {
@@ -411,6 +413,30 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
     mutateElement(el, { customData: { threeDZone: zone } })
   }, [])
 
+  // Clicking the zone's move handle (not dragging it) surfaces the rename/
+  // edit inspector — the zone body itself no longer passes clicks through to
+  // Excalidraw's own hit-testing, since it's now always grabbing drags to
+  // rotate the shape.
+  const handleSelectZone = useCallback((zoneElementId: string) => {
+    apiRef.current?.updateScene({ appState: { selectedElementIds: { [zoneElementId]: true } } })
+  }, [])
+
+  const handleMoveZoneTo = useCallback(async (zoneElementId: string, x: number, y: number) => {
+    if (!apiRef.current) return
+    const { mutateElement } = await import('@excalidraw/excalidraw')
+    const el = apiRef.current.getSceneElements().find(e => e.id === zoneElementId)
+    if (!el) return
+    mutateElement(el, { x, y })
+  }, [])
+
+  const handleResizeZoneTo = useCallback(async (zoneElementId: string, width: number, height: number) => {
+    if (!apiRef.current) return
+    const { mutateElement } = await import('@excalidraw/excalidraw')
+    const el = apiRef.current.getSceneElements().find(e => e.id === zoneElementId)
+    if (!el) return
+    mutateElement(el, { width, height })
+  }, [])
+
   const handleOpenInspectorEditor = useCallback(() => {
     if (!inspectorTarget) return
     if (inspectorTarget.kind === 'formula') {
@@ -484,10 +510,11 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
         <ThreeDZoneLayer
           elements={sceneElements}
           viewTransform={viewTransform}
-          active3DZoneId={active3DZoneId}
           onRotationCommit={handleZoneRotationCommit}
           onEdgeColorChange={handleZoneEdgeColorChange}
-          onRequestCloseZone={() => setActive3DZoneId(null)}
+          onSelectZone={handleSelectZone}
+          onMoveZoneTo={handleMoveZoneTo}
+          onResizeZoneTo={handleResizeZoneTo}
         />
         <ShapeInteractionLayer
           elements={sceneElements}
@@ -502,7 +529,6 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
             y={(inspectorTarget.y + viewTransform.scrollY) * viewTransform.zoom.value - 8}
             onEdit={handleOpenInspectorEditor}
             onRename={handleRenameInspectorTarget}
-            onEnter3D={inspectorTarget.kind === 'shape' ? () => setActive3DZoneId(inspectorTarget.elementId) : undefined}
           />
         )}
         {/* Excalidraw has no public slot for adding a button into its own

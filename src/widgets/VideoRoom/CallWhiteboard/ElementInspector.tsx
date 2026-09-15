@@ -9,11 +9,9 @@ interface Props {
   y: number
   onEdit: () => void
   onRename: (newLabel: string) => void
-  /** Shapes only — enters the on-board 3D rotate/edge-color mode for this zone. */
-  onEnter3D?: () => void
 }
 
-export function ElementInspector({ label, x, y, onEdit, onRename, onEnter3D }: Props) {
+export function ElementInspector({ label, x, y, onEdit, onRename }: Props) {
   const [renaming, setRenaming] = useState(false)
   const [draft, setDraft] = useState(label)
 
@@ -53,11 +51,6 @@ export function ElementInspector({ label, x, y, onEdit, onRename, onEnter3D }: P
       <button type="button" className={styles.editButton} onClick={onEdit} title="Открыть редактор">
         ✎
       </button>
-      {onEnter3D && (
-        <button type="button" className={styles.editButton} onClick={onEnter3D} title="Вращать в 3D">
-          🔄
-        </button>
-      )}
     </div>
   )
 }

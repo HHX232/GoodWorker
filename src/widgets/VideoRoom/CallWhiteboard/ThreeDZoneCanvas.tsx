@@ -16,19 +16,21 @@ interface Props {
   rect: ZoneRect
   zone: ThreeDZone
   viewTransform: ViewTransform
-  active: boolean
   onRotationCommit: (rotationX: number, rotationY: number, rotationZ: number) => void
   onEdgeColorChange: (edgeIndex: number, color: string) => void
-  onRequestClose: () => void
+  onSelect: () => void
+  onMoveTo: (x: number, y: number) => void
+  onResizeTo: (width: number, height: number) => void
 }
 
 const PICK_THRESHOLD_PX = 8
+const MIN_ZONE_SIZE = 60
 
 function colorFor(edgeIndex: number, zone: ThreeDZone): THREE.Color {
   return new THREE.Color(zone.edgeColors?.[edgeIndex] ?? zone.color)
 }
 
-export function ThreeDZoneCanvas({ rect, zone, viewTransform, active, onRotationCommit, onEdgeColorChange, onRequestClose }: Props) {
+export function ThreeDZoneCanvas({ rect, zone, viewTransform, onRotationCommit, onEdgeColorChange, onSelect, onMoveTo, onResizeTo }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<THREE.Scene | null>(null)
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
@@ -40,6 +42,8 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, active, onRotation
   const classifiedRef = useRef<ClassifiedEdge[]>([])
   const rotationRef = useRef({ x: zone.rotationX, y: zone.rotationY, z: zone.rotationZ })
   const dragRef = useRef<{ active: boolean; moved: boolean; lastX: number; lastY: number }>({ active: false, moved: false, lastX: 0, lastY: 0 })
+  const moveDragRef = useRef<{ startClientX: number; startClientY: number; startX: number; startY: number } | null>(null)
+  const resizeDragRef = useRef<{ startClientX: number; startClientY: number; startWidth: number; startHeight: number } | null>(null)
 
   const [colorPicker, setColorPicker] = useState<{ edgeIndex: number; x: number; y: number } | null>(null)
 
@@ -185,7 +189,8 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, active, onRotation
     render()
   }, [zone.scale, render])
 
-  // Resize with the zone's on-board size (native Excalidraw resize handle).
+  // Resize with the zone's on-board size (our own resize handle, or an edit
+  // through the panel).
   useEffect(() => {
     const renderer = rendererRef.current
     const camera = cameraRef.current
@@ -215,6 +220,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, active, onRotation
     return bestIndex !== -1 && bestDist <= PICK_THRESHOLD_PX ? bestIndex : null
   }, [rect.width, rect.height])
 
+  // Rotate is the default gesture on the shape body — no mode to enter first.
   const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     dragRef.current = { active: true, moved: false, lastX: e.clientX, lastY: e.clientY }
     e.currentTarget.setPointerCapture(e.pointerId)
@@ -247,16 +253,59 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, active, onRotation
       onRotationCommit(rotationRef.current.x, rotationRef.current.y, rotationRef.current.z)
       return
     }
+    // A plain click (no drag): pick an edge to recolor, fixed at the click
+    // point — nothing below should move this popover once it's open.
     const box = e.currentTarget.getBoundingClientRect()
     const localX = e.clientX - box.left
     const localY = e.clientY - box.top
     const edgeIndex = pickEdge(localX, localY)
-    if (edgeIndex !== null) {
-      setColorPicker({ edgeIndex, x: localX, y: localY })
-    } else {
-      setColorPicker(null)
-    }
+    setColorPicker(edgeIndex !== null ? { edgeIndex, x: localX, y: localY } : null)
   }, [onRotationCommit, pickEdge])
+
+  // Move handle: click selects the zone (surfaces the rename/edit inspector),
+  // drag moves it. Delta is tracked from the drag's own start, not
+  // accumulated per-frame, so it can't drift.
+  const handleMoveDown = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
+    e.stopPropagation()
+    moveDragRef.current = { startClientX: e.clientX, startClientY: e.clientY, startX: rect.x, startY: rect.y }
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }, [rect.x, rect.y])
+
+  const handleMoveMove = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
+    const drag = moveDragRef.current
+    if (!drag) return
+    const dx = (e.clientX - drag.startClientX) / viewTransform.zoom
+    const dy = (e.clientY - drag.startClientY) / viewTransform.zoom
+    onMoveTo(drag.startX + dx, drag.startY + dy)
+  }, [onMoveTo, viewTransform.zoom])
+
+  const handleMoveUp = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
+    const wasDrag = moveDragRef.current && (e.clientX !== moveDragRef.current.startClientX || e.clientY !== moveDragRef.current.startClientY)
+    moveDragRef.current = null
+    try { e.currentTarget.releasePointerCapture(e.pointerId) } catch {}
+    if (!wasDrag) onSelect()
+  }, [onSelect])
+
+  // Resize handle: uniform scale, driven by horizontal drag distance.
+  const handleResizeDown = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
+    e.stopPropagation()
+    resizeDragRef.current = { startClientX: e.clientX, startClientY: e.clientY, startWidth: rect.width, startHeight: rect.height }
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }, [rect.width, rect.height])
+
+  const handleResizeMove = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
+    const drag = resizeDragRef.current
+    if (!drag) return
+    const dx = (e.clientX - drag.startClientX) / viewTransform.zoom
+    const nextWidth = Math.max(MIN_ZONE_SIZE, drag.startWidth + dx)
+    const scaleFactor = nextWidth / drag.startWidth
+    onResizeTo(nextWidth, Math.max(MIN_ZONE_SIZE, drag.startHeight * scaleFactor))
+  }, [onResizeTo, viewTransform.zoom])
+
+  const handleResizeUp = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
+    resizeDragRef.current = null
+    try { e.currentTarget.releasePointerCapture(e.pointerId) } catch {}
+  }, [])
 
   const left = (rect.x + viewTransform.scrollX) * viewTransform.zoom
   const top = (rect.y + viewTransform.scrollY) * viewTransform.zoom
@@ -264,42 +313,51 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, active, onRotation
   const height = rect.height * viewTransform.zoom
 
   return (
-    <div
-      className={styles.zone}
-      data-active={active || undefined}
-      style={{ left, top, width, height, transform: `rotate(${rect.angle}rad)` }}
-    >
+    <div className={styles.zone} style={{ left, top, width, height, transform: `rotate(${rect.angle}rad)` }}>
       <div
         ref={containerRef}
         className={styles.canvasHolder}
-        onPointerDown={active ? handlePointerDown : undefined}
-        onPointerMove={active ? handlePointerMove : undefined}
-        onPointerUp={active ? handlePointerUp : undefined}
-        onPointerLeave={active ? handlePointerUp : undefined}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
       />
-      {active && (
-        <>
-          <button type="button" className={styles.closeButton} onClick={onRequestClose} title="Выйти из 3D-режима">
-            ✕
-          </button>
-          {colorPicker && (
-            <div className={styles.colorPopover} style={{ left: colorPicker.x, top: colorPicker.y }}>
-              {INK_PALETTE.map(swatch => (
-                <button
-                  key={swatch}
-                  type="button"
-                  className={styles.popoverSwatch}
-                  style={{ '--swatch-color': swatch } as React.CSSProperties}
-                  onClick={() => {
-                    onEdgeColorChange(colorPicker.edgeIndex, swatch)
-                    setColorPicker(null)
-                  }}
-                  title={swatch}
-                />
-              ))}
-            </div>
-          )}
-        </>
+      <button
+        type="button"
+        className={styles.moveHandle}
+        onPointerDown={handleMoveDown}
+        onPointerMove={handleMoveMove}
+        onPointerUp={handleMoveUp}
+        title="Перетащите — переместить фигуру. Клик — выделить."
+      >
+        ✥
+      </button>
+      <button
+        type="button"
+        className={styles.resizeHandle}
+        onPointerDown={handleResizeDown}
+        onPointerMove={handleResizeMove}
+        onPointerUp={handleResizeUp}
+        title="Перетащите — изменить размер"
+      >
+        ⤡
+      </button>
+      {colorPicker && (
+        <div className={styles.colorPopover} style={{ left: colorPicker.x, top: colorPicker.y }}>
+          {INK_PALETTE.map(swatch => (
+            <button
+              key={swatch}
+              type="button"
+              className={styles.popoverSwatch}
+              style={{ '--swatch-color': swatch } as React.CSSProperties}
+              onClick={() => {
+                onEdgeColorChange(colorPicker.edgeIndex, swatch)
+                setColorPicker(null)
+              }}
+              title={swatch}
+            />
+          ))}
+        </div>
       )}
     </div>
   )

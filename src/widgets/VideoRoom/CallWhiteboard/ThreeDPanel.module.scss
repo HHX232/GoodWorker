@@ -4,6 +4,11 @@
   gap: 10px;
   width: 280px;
   max-width: calc(100vw - 32px);
+  // The panel floats near the top of the board and can otherwise run off
+  // the bottom of the viewport once segments/roll/flat controls are all
+  // showing — scroll internally instead of overflowing.
+  max-height: calc(100vh - 96px);
+  overflow-y: auto;
   padding: 14px;
   background: #fff;
   border: 1px solid #e2e8f0;
