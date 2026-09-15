@@ -16,14 +16,19 @@ export interface ViewTransform {
 interface Props {
   elements: readonly ExcalidrawElement[]
   viewTransform: ViewTransform
+  /** False while a drawing tool (not selection/hand) is active — zones stop
+   * grabbing drags so that tool can be used directly over the shape. */
+  interactive: boolean
   onRotationCommit: (zoneElementId: string, rotationX: number, rotationY: number, rotationZ: number) => void
   onEdgeColorChange: (zoneElementId: string, edgeIndex: number, color: string) => void
+  onLineColorChange: (zoneElementId: string, lineId: string, color: string) => void
+  onLineDelete: (zoneElementId: string, lineId: string) => void
   onSelectZone: (zoneElementId: string) => void
   onMoveZoneTo: (zoneElementId: string, x: number, y: number) => void
   onResizeZoneTo: (zoneElementId: string, width: number, height: number) => void
 }
 
-export function ThreeDZoneLayer({ elements, viewTransform, onRotationCommit, onEdgeColorChange, onSelectZone, onMoveZoneTo, onResizeZoneTo }: Props) {
+export function ThreeDZoneLayer({ elements, viewTransform, interactive, onRotationCommit, onEdgeColorChange, onLineColorChange, onLineDelete, onSelectZone, onMoveZoneTo, onResizeZoneTo }: Props) {
   const zones = useMemo(() => getAllZones(elements), [elements])
   const flatViewTransform = { scrollX: viewTransform.scrollX, scrollY: viewTransform.scrollY, zoom: viewTransform.zoom.value }
 
@@ -35,8 +40,11 @@ export function ThreeDZoneLayer({ elements, viewTransform, onRotationCommit, onE
           rect={rect}
           zone={zone}
           viewTransform={flatViewTransform}
+          interactive={interactive}
           onRotationCommit={(x, y, z) => onRotationCommit(element.id, x, y, z)}
           onEdgeColorChange={(edgeIndex, color) => onEdgeColorChange(element.id, edgeIndex, color)}
+          onLineColorChange={(lineId, color) => onLineColorChange(element.id, lineId, color)}
+          onLineDelete={lineId => onLineDelete(element.id, lineId)}
           onSelect={() => onSelectZone(element.id)}
           onMoveTo={(x, y) => onMoveZoneTo(element.id, x, y)}
           onResizeTo={(w, h) => onResizeZoneTo(element.id, w, h)}

@@ -45,6 +45,8 @@ export interface ThreeDZone extends ThreeDShapeMeta {
   /** Edge index (stable within a given primitive/segments/flat — see
    * buildEdgeTopology's iteration order) → color override. */
   edgeColors?: Record<number, string>
+  /** Medians/bisectors/etc. drawn fully inside this shape — see ConstructionLine. */
+  constructionLines?: ConstructionLine[]
 }
 
 // Small, familiar whiteboard-marker set — reused by the formula and shape
@@ -115,6 +117,19 @@ export function snapRefsEqual(a: SnapRef, b: SnapRef): boolean {
   if (a.kind !== b.kind) return false
   if (a.kind === 'centroid') return true
   return a.index === (b as { index: number }).index
+}
+
+/** A median/bisector/diagonal drawn with both ends snapped inside the same
+ * shape — lives entirely in that zone's own three.js scene (as a child of
+ * the same rotating/scaling group the shape's edges are in) instead of as a
+ * separate Excalidraw element, so it rotates and zooms with the shape for
+ * free with no rebind step. A line that leaves the shape's bounds stays the
+ * old way — a plain Excalidraw `line` bound via `customData.boundTo`. */
+export interface ConstructionLine {
+  id: string
+  startRef: SnapRef
+  endRef: SnapRef
+  color: string
 }
 
 export function distanceToSegment(p: Point, a: Point, b: Point): number {

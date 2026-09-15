@@ -260,3 +260,41 @@ export function resolveSnapRef(elementId: string, zone: ThreeDZone, rect: ZoneRe
   const candidates = computeZoneSnapCandidates(elementId, zone, rect)
   return candidates.find(c => c.ref.kind === ref.kind && (ref.kind === 'centroid' || (c.ref as { index: number }).index === (ref as { index: number }).index)) ?? null
 }
+
+/** Resolve a snap ref against an already-built topology's local points —
+ * used inside a zone's own live scene (construction lines embedded in it),
+ * where the topology is already sitting in a ref and rebuilding it from
+ * scratch on every rotation frame would be wasteful. */
+export function resolveLocalSnapPoint(topology: EdgeTopology[], ref: SnapRef): THREE.Vector3 | null {
+  const { vertices, midpoints, centroid } = getLocalSnapPoints(topology)
+  if (ref.kind === 'vertex') return vertices[ref.index] ?? null
+  if (ref.kind === 'midpoint') return midpoints[ref.index] ?? null
+  return centroid
+}
+
+/** Positions for a dash-dot line from `p1` to `p2` (technical-drawing
+ * convention for medians/axes/symmetry lines) — three.js's own dashed
+ * material only repeats one uniform dash+gap, so this builds the
+ * dash/gap/dot/gap pattern by hand as a series of short disconnected
+ * segments for a plain LineSegments geometry. */
+export function buildDashDotPositions(p1: THREE.Vector3, p2: THREE.Vector3, dashLen = 0.12, dotLen = 0.02, gapLen = 0.06): number[] {
+  const dir = p2.clone().sub(p1)
+  const totalLen = dir.length()
+  if (totalLen < 1e-6) return []
+  dir.normalize()
+  const positions: number[] = []
+  let t = 0
+  let isDash = true
+  const a = new THREE.Vector3()
+  const b = new THREE.Vector3()
+  while (t < totalLen) {
+    const segLen = isDash ? dashLen : dotLen
+    const segEnd = Math.min(t + segLen, totalLen)
+    a.copy(p1).addScaledVector(dir, t)
+    b.copy(p1).addScaledVector(dir, segEnd)
+    positions.push(a.x, a.y, a.z, b.x, b.y, b.z)
+    t = segEnd + gapLen
+    isDash = !isDash
+  }
+  return positions
+}

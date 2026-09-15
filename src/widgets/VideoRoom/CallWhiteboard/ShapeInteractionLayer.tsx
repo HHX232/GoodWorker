@@ -26,6 +26,9 @@ interface Props {
   viewTransform: ViewTransform
   constructionMode: boolean
   onInsertLine: (line: { x1: number; y1: number; x2: number; y2: number; startBinding: LineBinding | null; endBinding: LineBinding | null }) => void
+  /** Both ends snapped inside the SAME shape — rendered inside that zone's
+   * own three.js scene instead of as a separate Excalidraw element. */
+  onInsertZoneLine: (zoneElementId: string, startRef: SnapRef, endRef: SnapRef) => void
 }
 
 const SNAP_PX = 16
@@ -37,7 +40,7 @@ interface DrawState {
   snapped: SnapCandidate | null
 }
 
-export function ShapeInteractionLayer({ elements, viewTransform, constructionMode, onInsertLine }: Props) {
+export function ShapeInteractionLayer({ elements, viewTransform, constructionMode, onInsertLine, onInsertZoneLine }: Props) {
   const [drawState, setDrawState] = useState<DrawState | null>(null)
 
   const toScene = useCallback((clientX: number, clientY: number): Point =>
@@ -85,19 +88,24 @@ export function ShapeInteractionLayer({ elements, viewTransform, constructionMod
     if (drawState) {
       const end = drawState.snapped ?? drawState.current
       if (Math.hypot(end.x - drawState.start.x, end.y - drawState.start.y) > 2) {
-        onInsertLine({
-          x1: drawState.start.x,
-          y1: drawState.start.y,
-          x2: end.x,
-          y2: end.y,
-          startBinding: drawState.startSnap ? { zoneElementId: drawState.startSnap.zoneElementId, ref: drawState.startSnap.ref } : null,
-          endBinding: drawState.snapped ? { zoneElementId: drawState.snapped.zoneElementId, ref: drawState.snapped.ref } : null,
-        })
+        const sameZone = drawState.startSnap && drawState.snapped && drawState.startSnap.zoneElementId === drawState.snapped.zoneElementId
+        if (sameZone && drawState.startSnap && drawState.snapped) {
+          onInsertZoneLine(drawState.startSnap.zoneElementId, drawState.startSnap.ref, drawState.snapped.ref)
+        } else {
+          onInsertLine({
+            x1: drawState.start.x,
+            y1: drawState.start.y,
+            x2: end.x,
+            y2: end.y,
+            startBinding: drawState.startSnap ? { zoneElementId: drawState.startSnap.zoneElementId, ref: drawState.startSnap.ref } : null,
+            endBinding: drawState.snapped ? { zoneElementId: drawState.snapped.zoneElementId, ref: drawState.snapped.ref } : null,
+          })
+        }
       }
     }
     setDrawState(null)
     try { e.currentTarget.releasePointerCapture(e.pointerId) } catch {}
-  }, [drawState, onInsertLine])
+  }, [drawState, onInsertLine, onInsertZoneLine])
 
   const drawScreen = drawState && {
     a: toScreen(drawState.start),

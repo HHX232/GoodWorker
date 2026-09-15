@@ -7,12 +7,18 @@
 .canvasHolder {
   width: 100%;
   height: 100%;
-  pointer-events: auto;
-  cursor: grab;
+  pointer-events: none;
   touch-action: none;
 
-  &:active {
-    cursor: grabbing;
+  // Only grabs drags (rotate/edge-pick) while the selection or hand tool is
+  // active — any drawing tool needs to reach Excalidraw underneath instead.
+  &[data-interactive] {
+    pointer-events: auto;
+    cursor: grab;
+
+    &:active {
+      cursor: grabbing;
+    }
   }
 }
 
@@ -52,7 +58,11 @@
 }
 
 .colorPopover {
-  position: absolute;
+  // Fixed to the viewport (not the zone) on purpose — it's a sibling of
+  // .zone now, not a child, so it's immune to that element's own transform
+  // and to it re-rendering on every board change.
+  position: fixed;
+  z-index: 20;
   display: flex;
   gap: 4px;
   padding: 5px 6px;
@@ -75,6 +85,25 @@
 
   &:hover {
     border-color: #cbd5e1;
+  }
+}
+
+.popoverDelete {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 2px;
+
+  &:hover {
+    background: #fee2e2;
   }
 }
 

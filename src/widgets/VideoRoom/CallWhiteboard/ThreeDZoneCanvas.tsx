@@ -2,8 +2,8 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
-import { distanceToSegment, INK_PALETTE, type ThreeDZone, type ZoneRect } from './shapeGeometry'
-import { buildEdgeTopology, buildGeometry, classifyEdges, createFramingCamera, projectPoint, type ClassifiedEdge, type EdgeTopology } from './threeDRender'
+import { distanceToSegment, INK_PALETTE, type ConstructionLine, type ThreeDZone, type ZoneRect } from './shapeGeometry'
+import { buildDashDotPositions, buildEdgeTopology, buildGeometry, classifyEdges, createFramingCamera, projectPoint, resolveLocalSnapPoint, type ClassifiedEdge, type EdgeTopology } from './threeDRender'
 import styles from './ThreeDZoneCanvas.module.scss'
 
 interface ViewTransform {
@@ -16,8 +16,13 @@ interface Props {
   rect: ZoneRect
   zone: ThreeDZone
   viewTransform: ViewTransform
+  /** False while a drawing tool is active — lets clicks through to Excalidraw
+   * so it can draw directly over the shape instead of us grabbing the drag. */
+  interactive: boolean
   onRotationCommit: (rotationX: number, rotationY: number, rotationZ: number) => void
   onEdgeColorChange: (edgeIndex: number, color: string) => void
+  onLineColorChange: (lineId: string, color: string) => void
+  onLineDelete: (lineId: string) => void
   onSelect: () => void
   onMoveTo: (x: number, y: number) => void
   onResizeTo: (width: number, height: number) => void
@@ -30,7 +35,26 @@ function colorFor(edgeIndex: number, zone: ThreeDZone): THREE.Color {
   return new THREE.Color(zone.edgeColors?.[edgeIndex] ?? zone.color)
 }
 
-export function ThreeDZoneCanvas({ rect, zone, viewTransform, onRotationCommit, onEdgeColorChange, onSelect, onMoveTo, onResizeTo }: Props) {
+function buildConstructionGeometry(topology: EdgeTopology[], lines: ConstructionLine[]): { positions: number[]; colors: number[] } {
+  const positions: number[] = []
+  const colors: number[] = []
+  for (const line of lines) {
+    const p1 = resolveLocalSnapPoint(topology, line.startRef)
+    const p2 = resolveLocalSnapPoint(topology, line.endRef)
+    if (!p1 || !p2) continue
+    const segPositions = buildDashDotPositions(p1, p2)
+    positions.push(...segPositions)
+    const c = new THREE.Color(line.color)
+    for (let i = 0; i < segPositions.length / 3; i++) colors.push(c.r, c.g, c.b)
+  }
+  return { positions, colors }
+}
+
+type Picker =
+  | { kind: 'edge'; edgeIndex: number; clientX: number; clientY: number }
+  | { kind: 'line'; lineId: string; clientX: number; clientY: number }
+
+export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRotationCommit, onEdgeColorChange, onLineColorChange, onLineDelete, onSelect, onMoveTo, onResizeTo }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<THREE.Scene | null>(null)
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
@@ -38,6 +62,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, onRotationCommit, 
   const groupRef = useRef<THREE.Group | null>(null)
   const solidLineRef = useRef<THREE.LineSegments | null>(null)
   const dashedLineRef = useRef<THREE.LineSegments | null>(null)
+  const constructionLineRef = useRef<THREE.LineSegments | null>(null)
   const edgeTopologyRef = useRef<EdgeTopology[]>([])
   const classifiedRef = useRef<ClassifiedEdge[]>([])
   const rotationRef = useRef({ x: zone.rotationX, y: zone.rotationY, z: zone.rotationZ })
@@ -45,7 +70,12 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, onRotationCommit, 
   const moveDragRef = useRef<{ startClientX: number; startClientY: number; startX: number; startY: number } | null>(null)
   const resizeDragRef = useRef<{ startClientX: number; startClientY: number; startWidth: number; startHeight: number } | null>(null)
 
-  const [colorPicker, setColorPicker] = useState<{ edgeIndex: number; x: number; y: number } | null>(null)
+  // clientX/clientY (raw viewport coords), not zone-local ones — rendered
+  // with position:fixed below so it's fully decoupled from the zone's own
+  // transform. It was drifting with the cursor because its local coordinates
+  // were being recomputed relative to a container that re-renders on nearly
+  // every pointer move (the zone tracks viewTransform on every board change).
+  const [picker, setPicker] = useState<Picker | null>(null)
 
   const render = useCallback(() => {
     if (rendererRef.current && sceneRef.current && cameraRef.current) {
@@ -124,6 +154,8 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, onRotationCommit, 
       ;(solidLineRef.current?.material as THREE.Material | undefined)?.dispose()
       dashedLineRef.current?.geometry.dispose()
       ;(dashedLineRef.current?.material as THREE.Material | undefined)?.dispose()
+      constructionLineRef.current?.geometry.dispose()
+      ;(constructionLineRef.current?.material as THREE.Material | undefined)?.dispose()
       renderer.dispose()
       renderer.domElement.remove()
       sceneRef.current = null
@@ -132,6 +164,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, onRotationCommit, 
       groupRef.current = null
       solidLineRef.current = null
       dashedLineRef.current = null
+      constructionLineRef.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -169,6 +202,29 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, onRotationCommit, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zone.primitive, zone.segments, zone.flat])
 
+  // Construction lines (medians/bisectors drawn fully inside this shape) —
+  // children of the same group as the shape's own edges, so they rotate and
+  // scale with it automatically during a live drag, no rebind-on-commit
+  // needed. Rebuilt when the lines themselves change, or when the topology
+  // they're anchored to does (primitive/segments/flat).
+  useEffect(() => {
+    const group = groupRef.current
+    if (!group) return
+    if (constructionLineRef.current) {
+      group.remove(constructionLineRef.current)
+      constructionLineRef.current.geometry.dispose()
+      ;(constructionLineRef.current.material as THREE.Material).dispose()
+    }
+    const { positions, colors } = buildConstructionGeometry(edgeTopologyRef.current, zone.constructionLines ?? [])
+    const geometry = new THREE.BufferGeometry()
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
+    const line = new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({ vertexColors: true }))
+    group.add(line)
+    constructionLineRef.current = line
+    render()
+  }, [zone.primitive, zone.segments, zone.flat, zone.constructionLines, render])
+
   // Colors changed (base or per-edge overrides) without a topology rebuild.
   useEffect(() => {
     applyColors()
@@ -201,7 +257,13 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, onRotationCommit, 
     render()
   }, [rect.width, rect.height, render])
 
-  const pickEdge = useCallback((localX: number, localY: number): number | null => {
+  // Returns the closest edge within the pick threshold, plus its distance —
+  // distance is needed by the caller to arbitrate against a construction
+  // line that might be even closer to the same click (see handlePointerUp;
+  // a fixed "edges always win" priority made lines effectively unselectable
+  // whenever they ran near an actual edge, which is common for medians in
+  // small/dense primitives).
+  const pickEdge = useCallback((localX: number, localY: number): { index: number; dist: number } | null => {
     const group = groupRef.current
     const camera = cameraRef.current
     if (!group || !camera) return null
@@ -217,14 +279,35 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, onRotationCommit, 
         bestIndex = index
       }
     }
-    return bestIndex !== -1 && bestDist <= PICK_THRESHOLD_PX ? bestIndex : null
+    return bestIndex !== -1 && bestDist <= PICK_THRESHOLD_PX ? { index: bestIndex, dist: bestDist } : null
   }, [rect.width, rect.height])
+
+  const pickConstructionLine = useCallback((localX: number, localY: number): { id: string; dist: number } | null => {
+    const group = groupRef.current
+    const camera = cameraRef.current
+    if (!group || !camera || !zone.constructionLines?.length) return null
+    let bestId: string | null = null
+    let bestDist = Infinity
+    for (const line of zone.constructionLines) {
+      const p1 = resolveLocalSnapPoint(edgeTopologyRef.current, line.startRef)
+      const p2 = resolveLocalSnapPoint(edgeTopologyRef.current, line.endRef)
+      if (!p1 || !p2) continue
+      const s1 = projectPoint(p1, group, camera, rect.width, rect.height)
+      const s2 = projectPoint(p2, group, camera, rect.width, rect.height)
+      const dist = distanceToSegment({ x: localX, y: localY }, s1, s2)
+      if (dist < bestDist) {
+        bestDist = dist
+        bestId = line.id
+      }
+    }
+    return bestId !== null && bestDist <= PICK_THRESHOLD_PX ? { id: bestId, dist: bestDist } : null
+  }, [rect.width, rect.height, zone.constructionLines])
 
   // Rotate is the default gesture on the shape body — no mode to enter first.
   const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     dragRef.current = { active: true, moved: false, lastX: e.clientX, lastY: e.clientY }
     e.currentTarget.setPointerCapture(e.pointerId)
-    setColorPicker(null)
+    setPicker(null)
   }, [])
 
   const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
@@ -253,14 +336,23 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, onRotationCommit, 
       onRotationCommit(rotationRef.current.x, rotationRef.current.y, rotationRef.current.z)
       return
     }
-    // A plain click (no drag): pick an edge to recolor, fixed at the click
-    // point — nothing below should move this popover once it's open.
+    // A plain click (no drag): pick whichever of an edge or a construction
+    // line is actually closer to the click, not "edge always wins" — a
+    // median often runs close to a real edge in a small/dense primitive, and
+    // a fixed edge-first priority made it practically unselectable there.
     const box = e.currentTarget.getBoundingClientRect()
     const localX = e.clientX - box.left
     const localY = e.clientY - box.top
-    const edgeIndex = pickEdge(localX, localY)
-    setColorPicker(edgeIndex !== null ? { edgeIndex, x: localX, y: localY } : null)
-  }, [onRotationCommit, pickEdge])
+    const edgeHit = pickEdge(localX, localY)
+    const lineHit = pickConstructionLine(localX, localY)
+    if (lineHit && (!edgeHit || lineHit.dist <= edgeHit.dist)) {
+      setPicker({ kind: 'line', lineId: lineHit.id, clientX: e.clientX, clientY: e.clientY })
+    } else if (edgeHit) {
+      setPicker({ kind: 'edge', edgeIndex: edgeHit.index, clientX: e.clientX, clientY: e.clientY })
+    } else {
+      setPicker(null)
+    }
+  }, [onRotationCommit, pickEdge, pickConstructionLine])
 
   // Move handle: click selects the zone (surfaces the rename/edit inspector),
   // drag moves it. Delta is tracked from the drag's own start, not
@@ -313,37 +405,40 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, onRotationCommit, 
   const height = rect.height * viewTransform.zoom
 
   return (
-    <div className={styles.zone} style={{ left, top, width, height, transform: `rotate(${rect.angle}rad)` }}>
-      <div
-        ref={containerRef}
-        className={styles.canvasHolder}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerLeave={handlePointerUp}
-      />
-      <button
-        type="button"
-        className={styles.moveHandle}
-        onPointerDown={handleMoveDown}
-        onPointerMove={handleMoveMove}
-        onPointerUp={handleMoveUp}
-        title="Перетащите — переместить фигуру. Клик — выделить."
-      >
-        ✥
-      </button>
-      <button
-        type="button"
-        className={styles.resizeHandle}
-        onPointerDown={handleResizeDown}
-        onPointerMove={handleResizeMove}
-        onPointerUp={handleResizeUp}
-        title="Перетащите — изменить размер"
-      >
-        ⤡
-      </button>
-      {colorPicker && (
-        <div className={styles.colorPopover} style={{ left: colorPicker.x, top: colorPicker.y }}>
+    <>
+      <div className={styles.zone} style={{ left, top, width, height, transform: `rotate(${rect.angle}rad)` }}>
+        <div
+          ref={containerRef}
+          className={styles.canvasHolder}
+          data-interactive={interactive || undefined}
+          onPointerDown={interactive ? handlePointerDown : undefined}
+          onPointerMove={interactive ? handlePointerMove : undefined}
+          onPointerUp={interactive ? handlePointerUp : undefined}
+          onPointerLeave={interactive ? handlePointerUp : undefined}
+        />
+        <button
+          type="button"
+          className={styles.moveHandle}
+          onPointerDown={handleMoveDown}
+          onPointerMove={handleMoveMove}
+          onPointerUp={handleMoveUp}
+          title="Перетащите — переместить фигуру. Клик — выделить."
+        >
+          ✥
+        </button>
+        <button
+          type="button"
+          className={styles.resizeHandle}
+          onPointerDown={handleResizeDown}
+          onPointerMove={handleResizeMove}
+          onPointerUp={handleResizeUp}
+          title="Перетащите — изменить размер"
+        >
+          ⤡
+        </button>
+      </div>
+      {picker && (
+        <div className={styles.colorPopover} style={{ left: picker.clientX, top: picker.clientY }}>
           {INK_PALETTE.map(swatch => (
             <button
               key={swatch}
@@ -351,14 +446,28 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, onRotationCommit, 
               className={styles.popoverSwatch}
               style={{ '--swatch-color': swatch } as React.CSSProperties}
               onClick={() => {
-                onEdgeColorChange(colorPicker.edgeIndex, swatch)
-                setColorPicker(null)
+                if (picker.kind === 'edge') onEdgeColorChange(picker.edgeIndex, swatch)
+                else onLineColorChange(picker.lineId, swatch)
+                setPicker(null)
               }}
               title={swatch}
             />
           ))}
+          {picker.kind === 'line' && (
+            <button
+              type="button"
+              className={styles.popoverDelete}
+              onClick={() => {
+                onLineDelete(picker.lineId)
+                setPicker(null)
+              }}
+              title="Удалить линию"
+            >
+              🗑
+            </button>
+          )}
         </div>
       )}
-    </div>
+    </>
   )
 }

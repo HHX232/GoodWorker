@@ -8,7 +8,7 @@ import type { AppState, BinaryFileData, BinaryFiles, DataURL, ExcalidrawImperati
 import { useThemeCtx } from '@/app/providers/ThemeContext'
 import { GridSettingsPanel, DEFAULT_GRID_SETTINGS, type GridSettings } from './GridSettingsPanel'
 import { ElementInspector } from './ElementInspector'
-import { getZoneRect, PRIMITIVE_LABELS, readThreeDZone, type ThreeDShapeMeta, type ThreeDZone, type ZoneRect } from './shapeGeometry'
+import { getZoneRect, PRIMITIVE_LABELS, readThreeDZone, type SnapRef, type ThreeDShapeMeta, type ThreeDZone, type ZoneRect } from './shapeGeometry'
 import type { LineBinding, ViewTransform } from './ShapeInteractionLayer'
 import styles from './CallWhiteboard.module.scss'
 
@@ -114,6 +114,9 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
   const [toolbarCollapsed, setToolbarCollapsed] = useState(false)
   const [sceneElements, setSceneElements] = useState<readonly ExcalidrawElement[]>([])
   const [selectedElementIds, setSelectedElementIds] = useState<Record<string, boolean>>({})
+  // Selection/hand tool → zones keep grabbing drags for rotate/edge-pick.
+  // Any drawing tool → zones let clicks through so it can draw over the shape.
+  const [activeToolType, setActiveToolType] = useState<AppState['activeTool']['type']>('selection')
   const { isDark } = useThemeCtx()
 
   const inspectorTarget = useMemo<InspectorTarget | null>(() => {
@@ -142,6 +145,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
     setReady(true)
     const appState = api.getAppState()
     setViewTransform({ scrollX: appState.scrollX, scrollY: appState.scrollY, zoom: appState.zoom, offsetLeft: appState.offsetLeft, offsetTop: appState.offsetTop })
+    setActiveToolType(appState.activeTool.type)
   }, [])
 
   const handleScrollChange = useCallback((scrollX: number, scrollY: number, zoom: Zoom) => {
@@ -203,6 +207,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
       // canvases, the inspector) would silently stop tracking mid-drag.
       setSceneElements(elements.slice())
       setSelectedElementIds(state.selectedElementIds)
+      setActiveToolType(prev => (prev === state.activeTool.type ? prev : state.activeTool.type))
       // onScrollChange alone missed pure zoom changes (e.g. the zoom-%
       // control, not a scroll/pan gesture) — zone canvases kept the stale
       // zoom and drifted away from their shapes. appState here always has
@@ -413,6 +418,51 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
     mutateElement(el, { customData: { threeDZone: zone } })
   }, [])
 
+  const handleInsertZoneLine = useCallback(async (zoneElementId: string, startRef: SnapRef, endRef: SnapRef) => {
+    if (!apiRef.current) return
+    const { mutateElement } = await import('@excalidraw/excalidraw')
+    const el = apiRef.current.getSceneElements().find(e => e.id === zoneElementId)
+    if (!el) return
+    const existing = readThreeDZone(el)
+    if (!existing) return
+    const zone: ThreeDZone = {
+      ...existing,
+      constructionLines: [
+        ...(existing.constructionLines ?? []),
+        { id: crypto.randomUUID(), startRef, endRef, color: existing.color },
+      ],
+    }
+    mutateElement(el, { customData: { threeDZone: zone } })
+  }, [])
+
+  const handleZoneLineColorChange = useCallback(async (zoneElementId: string, lineId: string, color: string) => {
+    if (!apiRef.current) return
+    const { mutateElement } = await import('@excalidraw/excalidraw')
+    const el = apiRef.current.getSceneElements().find(e => e.id === zoneElementId)
+    if (!el) return
+    const existing = readThreeDZone(el)
+    if (!existing) return
+    const zone: ThreeDZone = {
+      ...existing,
+      constructionLines: (existing.constructionLines ?? []).map(line => (line.id === lineId ? { ...line, color } : line)),
+    }
+    mutateElement(el, { customData: { threeDZone: zone } })
+  }, [])
+
+  const handleZoneLineDelete = useCallback(async (zoneElementId: string, lineId: string) => {
+    if (!apiRef.current) return
+    const { mutateElement } = await import('@excalidraw/excalidraw')
+    const el = apiRef.current.getSceneElements().find(e => e.id === zoneElementId)
+    if (!el) return
+    const existing = readThreeDZone(el)
+    if (!existing) return
+    const zone: ThreeDZone = {
+      ...existing,
+      constructionLines: (existing.constructionLines ?? []).filter(line => line.id !== lineId),
+    }
+    mutateElement(el, { customData: { threeDZone: zone } })
+  }, [])
+
   // Clicking the zone's move handle (not dragging it) surfaces the rename/
   // edit inspector — the zone body itself no longer passes clicks through to
   // Excalidraw's own hit-testing, since it's now always grabbing drags to
@@ -510,8 +560,11 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
         <ThreeDZoneLayer
           elements={sceneElements}
           viewTransform={viewTransform}
+          interactive={activeToolType === 'selection' || activeToolType === 'hand'}
           onRotationCommit={handleZoneRotationCommit}
           onEdgeColorChange={handleZoneEdgeColorChange}
+          onLineColorChange={handleZoneLineColorChange}
+          onLineDelete={handleZoneLineDelete}
           onSelectZone={handleSelectZone}
           onMoveZoneTo={handleMoveZoneTo}
           onResizeZoneTo={handleResizeZoneTo}
@@ -521,6 +574,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
           viewTransform={viewTransform}
           constructionMode={constructionMode}
           onInsertLine={handleInsertLine}
+          onInsertZoneLine={handleInsertZoneLine}
         />
         {inspectorTarget && (
           <ElementInspector
