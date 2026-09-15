@@ -1,7 +1,6 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
-import { isBillableEvent, type BillableCalendarEvent } from '@/shared/helpers/calendar/eventBilling'
 
 async function resolveTeacherId(req: NextRequest, sessionId: string, sessionRole: string): Promise<string | null> {
   const tid = req.nextUrl.searchParams.get('teacherId') ?? sessionId
@@ -31,7 +30,7 @@ export async function GET(req: NextRequest) {
   const teacherId = await resolveTeacherId(req, id, role)
   if (!teacherId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const [teacher, conferences, categoryLinks, unpaidBookings] = await Promise.all([
+  const [teacher, conferences, categoryLinks] = await Promise.all([
     prisma.teacher.findUnique({ where: { id: teacherId }, select: { calendar: true } }),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (prisma.conference.findMany as any)({
@@ -56,15 +55,6 @@ export async function GET(req: NextRequest) {
       },
     }),
     prisma.teacherCategory.findMany({ where: { teacherId }, select: { categoryId: true } }),
-    // Students with at least one confirmed-but-unpaid service booking — drives the
-    // "payment due" badge on calendar events (see PaymentReminderModal). This is
-    // ONE of several sources of a billable lesson — see isBillableEvent for the rest
-    // (manually scheduled / repeated calendar events, and video calls tied to a service).
-    prisma.serviceBooking.findMany({
-      where: { status: 'CONFIRMED', paidAt: null, service: { teacherId } },
-      select: { studentId: true },
-      distinct: ['studentId'],
-    }),
   ])
 
   const calendarData = teacher?.calendar as { events?: unknown[]; tasks?: unknown[] } | null
@@ -110,19 +100,10 @@ export async function GET(req: NextRequest) {
       }
     })
 
-  // Union of every "unpaid billable lesson" source: confirmed ServiceBookings,
-  // plus any billable event in the merged calendar (manually created, repeated,
-  // or a video call tied to a service) that isn't marked paid yet.
-  const pendingFromBookings = unpaidBookings.map(b => b.studentId)
-  const pendingFromEvents = [...storedEvents, ...conferenceEvents]
-    .filter((e): e is BillableCalendarEvent => isBillableEvent(e as BillableCalendarEvent) && !(e as BillableCalendarEvent).paid)
-    .map(e => e.studentId!)
-
   return NextResponse.json({
     events: [...storedEvents, ...conferenceEvents],
     tasks: calendarData?.tasks ?? [],
     categoryIds: categoryLinks.map(l => l.categoryId),
-    studentsWithPendingPayment: [...new Set([...pendingFromBookings, ...pendingFromEvents])],
   })
 }
 

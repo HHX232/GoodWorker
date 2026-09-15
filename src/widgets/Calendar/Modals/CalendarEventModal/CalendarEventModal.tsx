@@ -1,6 +1,7 @@
 'use client'
 
 import {EVENT_COLORS, formatDateRu} from '@/shared/helpers/calendar/calendar.helpers'
+import {isBillableEvent} from '@/shared/helpers/calendar/eventBilling'
 import {CalendarEvent} from '@/shared/types/Calendar/calendar.types'
 import {useLocale, useTranslations} from 'next-intl'
 import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
@@ -14,7 +15,6 @@ interface CalendarEventModalProps {
   onEdit: (event: CalendarEvent) => void
   onDelete: (id: string) => void
   onConfirm?: (id: string) => void
-  paymentDueStudentIds?: Set<string>
   onViewPayment?: (studentId: string) => void
 }
 
@@ -23,7 +23,7 @@ function timeToMins(t: string): number {
   return h * 60 + (m || 0)
 }
 
-export function CalendarEventModal({event, onClose, onEdit, onDelete, onConfirm, paymentDueStudentIds, onViewPayment}: CalendarEventModalProps) {
+export function CalendarEventModal({event, onClose, onEdit, onDelete, onConfirm, onViewPayment}: CalendarEventModalProps) {
   const t = useTranslations('calendar.eventModal')
   const locale = useLocale()
   const intlLocale = locale === 'ru' ? 'ru-RU' : 'en-US'
@@ -31,7 +31,8 @@ export function CalendarEventModal({event, onClose, onEdit, onDelete, onConfirm,
 
   if (!event) return null
 
-  const paymentDue = !!event.studentId && !!paymentDueStudentIds?.has(event.studentId)
+  // This event's own service/price — not "does this student owe money anywhere".
+  const paymentDue = isBillableEvent(event) && !event.paid
 
   const colors = EVENT_COLORS[event.color] ?? EVENT_COLORS.purple
 

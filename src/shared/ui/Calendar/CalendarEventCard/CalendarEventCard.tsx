@@ -1,6 +1,7 @@
 'use client'
 
 import {EVENT_COLORS, getEventHeight, getEventTop} from '@/shared/helpers/calendar/calendar.helpers'
+import {isBillableEvent} from '@/shared/helpers/calendar/eventBilling'
 import {CalendarEvent} from '@/shared/types/Calendar/calendar.types'
 import {useRef, useState} from 'react'
 import styles from './CalendarEventCard.module.scss'
@@ -15,18 +16,18 @@ interface CalendarEventCardProps {
   onDragStart?: (event: CalendarEvent, grabOffsetY: number) => void
   isDragging?: boolean
   suppressClickRef?: React.MutableRefObject<string | null>
-  /** Student ids with an unpaid confirmed service booking — shows the payment-due badge. */
-  paymentDueStudentIds?: Set<string>
 }
 
 const OVERLAP_OFFSET_PX = 10   // horizontal shift per column
 const OVERLAP_WIDTH_SHRINK = 14 // px to shrink width per additional column
 
 export function CalendarEventCard({
-  event, onClick, col = 0, cols = 1, onDragStart, isDragging, suppressClickRef, paymentDueStudentIds,
+  event, onClick, col = 0, cols = 1, onDragStart, isDragging, suppressClickRef,
 }: CalendarEventCardProps) {
   const [hovered, setHovered] = useState(false)
-  const paymentDue = !!event.studentId && !!paymentDueStudentIds?.has(event.studentId)
+  // This event's own service/price, not "does this student owe money anywhere" —
+  // a payment badge on every lesson a student ever attends is not useful.
+  const paymentDue = isBillableEvent(event) && !event.paid
   const draggable = !isDragging && event.status !== 'completed' && event.status !== 'cancelled'
   const colors = EVENT_COLORS[event.color] ?? EVENT_COLORS.purple
   const top = getEventTop(event.startTime)

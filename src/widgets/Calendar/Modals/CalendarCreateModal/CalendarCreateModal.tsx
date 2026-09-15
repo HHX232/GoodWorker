@@ -90,6 +90,7 @@ export function CalendarCreateModal({
   const [generatingPlan, setGeneratingPlan] = useState(false)
   const [studentFieldError, setStudentFieldError] = useState(false)
   const [subjectFieldError, setSubjectFieldError] = useState(false)
+  const [serviceFieldError, setServiceFieldError] = useState(false)
   const [planModalOpen, setPlanModalOpen] = useState(false)
   const [autoSummary, setAutoSummary] = useState('')
   const [repeatEnabled, setRepeatEnabled] = useState(false)
@@ -105,6 +106,7 @@ export function CalendarCreateModal({
     if (!isOpen) { setTab('event'); return }
     setStudentFieldError(false)
     setSubjectFieldError(false)
+    setServiceFieldError(false)
     setPlanModalOpen(false)
     setGeneratingPlan(false)
     setRepeatEnabled(false)
@@ -196,6 +198,11 @@ export function CalendarCreateModal({
   const handleSave = () => {
     if (!form.title.trim()) {
       document.getElementById('ce-title')?.focus()
+      return
+    }
+    if (tab === 'event' && teacherServices && teacherServices.length > 0 && !selectedServiceId) {
+      setServiceFieldError(true)
+      toast.error(t('serviceRequired'))
       return
     }
     const svc = teacherServices?.find(s => s.id === selectedServiceId)
@@ -554,17 +561,15 @@ export function CalendarCreateModal({
 
         {teacherServices && teacherServices.length > 0 && (
           <div className={styles.field}>
-            <label className={styles.label}>{t('serviceLabel')}</label>
+            <label className={styles.label}>{t('serviceLabel')} *</label>
             <SelectUI
+              error={serviceFieldError}
               value={selectedServiceId}
-              onChange={setSelectedServiceId}
-              options={[
-                {value: '', label: t('noService')},
-                ...teacherServices.map(s => ({
-                  value: s.id,
-                  label: `${s.title} — ${s.price.toLocaleString()} ₽ / ${s.duration} мин`,
-                })),
-              ]}
+              onChange={(v) => { setSelectedServiceId(v); setServiceFieldError(false) }}
+              options={teacherServices.map(s => ({
+                value: s.id,
+                label: `${s.title} — ${s.price.toLocaleString()} ${s.currency ?? '₽'} / ${s.duration} мин`,
+              }))}
             />
           </div>
         )}

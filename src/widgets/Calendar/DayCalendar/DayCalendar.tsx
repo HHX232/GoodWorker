@@ -43,7 +43,6 @@ interface DayCalendarProps {
   onTaskToggle: (taskId: string) => void
   onTaskSave: (task: CalendarTask) => void
   onEventUpdate?: (event: CalendarEvent) => void
-  paymentDueStudentIds?: Set<string>
 }
 
 export function DayCalendar({
@@ -55,7 +54,6 @@ export function DayCalendar({
   onTaskToggle,
   onTaskSave,
   onEventUpdate,
-  paymentDueStudentIds,
 }: DayCalendarProps) {
   const t = useTranslations('calendar')
   const tTask = useTranslations('calendar.taskModal')
@@ -294,7 +292,6 @@ export function DayCalendar({
                 onDragStart={handleCardDragStart}
                 isDragging={dragState?.event.id === event.id}
                 suppressClickRef={suppressClickRef}
-                paymentDueStudentIds={paymentDueStudentIds}
               />
             ))}
 
