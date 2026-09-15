@@ -52,6 +52,16 @@ export interface ThreeDZone extends ThreeDShapeMeta {
    * projected midpoint — see the note in ThreeDZoneCanvas on why the text
    * itself doesn't tilt with the 3D rotation. */
   edgeLabels?: Record<number, string>
+  /** Vertex index → a small "mark this corner" semicircle shown there, set
+   * by clicking directly on a vertex — double-click to add/edit its text
+   * (e.g. an angle value). Presence of a key is what makes the mark
+   * visible; deleting it (not just clearing the label) removes it. */
+  vertexMarks?: Record<number, VertexMark>
+}
+
+export interface VertexMark {
+  color: string
+  label?: string
 }
 
 // Small, familiar whiteboard-marker set — reused by the formula and shape

@@ -432,6 +432,46 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
     mutateElement(el, { customData: { threeDZone: zone } })
   }, [])
 
+  // Setting a color is also how a vertex mark gets created — the first
+  // click on a bare vertex calls this with the zone's own color before
+  // showing the recolor popover, so "click a corner" and "recolor an
+  // existing mark" are the same code path.
+  const handleZoneVertexColorChange = useCallback(async (zoneElementId: string, vertexIndex: number, color: string) => {
+    if (!apiRef.current) return
+    const { mutateElement } = await import('@excalidraw/excalidraw')
+    const el = apiRef.current.getSceneElements().find(e => e.id === zoneElementId)
+    if (!el) return
+    const existing = readThreeDZone(el)
+    if (!existing) return
+    const zone: ThreeDZone = { ...existing, vertexMarks: { ...existing.vertexMarks, [vertexIndex]: { ...existing.vertexMarks?.[vertexIndex], color } } }
+    mutateElement(el, { customData: { threeDZone: zone } })
+  }, [])
+
+  const handleZoneVertexLabelChange = useCallback(async (zoneElementId: string, vertexIndex: number, text: string) => {
+    if (!apiRef.current) return
+    const { mutateElement } = await import('@excalidraw/excalidraw')
+    const el = apiRef.current.getSceneElements().find(e => e.id === zoneElementId)
+    if (!el) return
+    const existing = readThreeDZone(el)
+    if (!existing) return
+    const existingMark = existing.vertexMarks?.[vertexIndex]
+    const zone: ThreeDZone = { ...existing, vertexMarks: { ...existing.vertexMarks, [vertexIndex]: { color: existingMark?.color ?? existing.color, label: text || undefined } } }
+    mutateElement(el, { customData: { threeDZone: zone } })
+  }, [])
+
+  const handleZoneVertexMarkDelete = useCallback(async (zoneElementId: string, vertexIndex: number) => {
+    if (!apiRef.current) return
+    const { mutateElement } = await import('@excalidraw/excalidraw')
+    const el = apiRef.current.getSceneElements().find(e => e.id === zoneElementId)
+    if (!el) return
+    const existing = readThreeDZone(el)
+    if (!existing) return
+    const vertexMarks = { ...existing.vertexMarks }
+    delete vertexMarks[vertexIndex]
+    const zone: ThreeDZone = { ...existing, vertexMarks }
+    mutateElement(el, { customData: { threeDZone: zone } })
+  }, [])
+
   const handleInsertZoneLine = useCallback(async (zoneElementId: string, startRef: SnapRef, endRef: SnapRef) => {
     if (!apiRef.current) return
     const { mutateElement } = await import('@excalidraw/excalidraw')
@@ -578,6 +618,9 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
           onRotationCommit={handleZoneRotationCommit}
           onEdgeColorChange={handleZoneEdgeColorChange}
           onEdgeLabelChange={handleZoneEdgeLabelChange}
+          onVertexColorChange={handleZoneVertexColorChange}
+          onVertexLabelChange={handleZoneVertexLabelChange}
+          onVertexMarkDelete={handleZoneVertexMarkDelete}
           onLineColorChange={handleZoneLineColorChange}
           onLineDelete={handleZoneLineDelete}
           onSelectZone={handleSelectZone}

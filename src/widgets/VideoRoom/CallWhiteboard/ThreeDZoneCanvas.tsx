@@ -2,8 +2,8 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
-import { distanceToSegment, INK_PALETTE, type ConstructionLine, type ThreeDZone, type ZoneRect } from './shapeGeometry'
-import { buildDashDotPositions, buildEdgeTopology, buildFaceTopology, buildGeometry, classifyEdges, createFramingCamera, projectPoint, resolveLocalSnapPoint, type ClassifiedEdge, type EdgeTopology, type FaceTopology } from './threeDRender'
+import { distanceToSegment, INK_PALETTE, type ConstructionLine, type ThreeDZone, type VertexMark, type ZoneRect } from './shapeGeometry'
+import { buildDashDotPositions, buildEdgeTopology, buildFaceTopology, buildGeometry, classifyEdges, createFramingCamera, getLocalSnapPoints, projectPoint, resolveLocalSnapPoint, type ClassifiedEdge, type EdgeTopology, type FaceTopology } from './threeDRender'
 import styles from './ThreeDZoneCanvas.module.scss'
 
 interface ViewTransform {
@@ -22,6 +22,9 @@ interface Props {
   onRotationCommit: (rotationX: number, rotationY: number, rotationZ: number) => void
   onEdgeColorChange: (edgeIndex: number, color: string) => void
   onEdgeLabelChange: (edgeIndex: number, text: string) => void
+  onVertexColorChange: (vertexIndex: number, color: string) => void
+  onVertexLabelChange: (vertexIndex: number, text: string) => void
+  onVertexMarkDelete: (vertexIndex: number) => void
   onLineColorChange: (lineId: string, color: string) => void
   onLineDelete: (lineId: string) => void
   onSelect: () => void
@@ -30,6 +33,7 @@ interface Props {
 }
 
 const PICK_THRESHOLD_PX = 8
+const VERTEX_PICK_THRESHOLD_PX = 10
 const MIN_ZONE_SIZE = 60
 
 function colorFor(edgeIndex: number, zone: ThreeDZone): THREE.Color {
@@ -54,15 +58,20 @@ function buildConstructionGeometry(topology: EdgeTopology[], faces: FaceTopology
 type Picker =
   | { kind: 'edge'; edgeIndex: number }
   | { kind: 'line'; lineId: string }
+  | { kind: 'vertex'; vertexIndex: number }
+
+type EditingLabelTarget =
+  | { kind: 'edge'; edgeIndex: number }
+  | { kind: 'vertex'; vertexIndex: number }
 
 interface EditingLabel {
-  edgeIndex: number
+  target: EditingLabelTarget
   text: string
   clientX: number
   clientY: number
 }
 
-export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRotationCommit, onEdgeColorChange, onEdgeLabelChange, onLineColorChange, onLineDelete, onSelect, onMoveTo, onResizeTo }: Props) {
+export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRotationCommit, onEdgeColorChange, onEdgeLabelChange, onVertexColorChange, onVertexLabelChange, onVertexMarkDelete, onLineColorChange, onLineDelete, onSelect, onMoveTo, onResizeTo }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<THREE.Scene | null>(null)
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
@@ -85,6 +94,12 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
   // legible regardless of the shape's current rotation; only their (left,
   // top) tracks the edge's live projected midpoint.
   const labelElRefs = useRef<Map<number, HTMLDivElement>>(new Map())
+  // Vertex-mark ("angle mark") DOM nodes, keyed by vertex index — position
+  // tracked the same way as edge labels; the small semicircle icon inside
+  // each is additionally rotated to point away from the shape's centroid
+  // (found via a querySelector on this same node in updateVisualization),
+  // so it visually nestles into the corner instead of always facing one way.
+  const vertexMarkElRefs = useRef<Map<number, HTMLDivElement>>(new Map())
 
   // The zone's DOM box (.zone/.canvasHolder) is sized in CSS to rect.width/
   // height * zoom — the renderer/camera must render at that same pixel size
@@ -154,6 +169,23 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
         const pos = projectPoint(mid, group, camera, canvasWidth, canvasHeight)
         el.style.left = `${pos.x}px`
         el.style.top = `${pos.y}px`
+      }
+
+      if (vertexMarkElRefs.current.size > 0) {
+        const { vertices, centroid } = getLocalSnapPoints(edgeTopologyRef.current)
+        const centroidPos = centroid ? projectPoint(centroid, group, camera, canvasWidth, canvasHeight) : null
+        for (const [vertexIndex, el] of vertexMarkElRefs.current) {
+          const vertex = vertices[vertexIndex]
+          if (!vertex) continue
+          const pos = projectPoint(vertex, group, camera, canvasWidth, canvasHeight)
+          el.style.left = `${pos.x}px`
+          el.style.top = `${pos.y}px`
+          const svg = el.querySelector('svg')
+          if (svg && centroidPos) {
+            const angleDeg = Math.atan2(pos.y - centroidPos.y, pos.x - centroidPos.x) * (180 / Math.PI)
+            ;(svg as unknown as HTMLElement).style.transform = `rotate(${angleDeg}deg)`
+          }
+        }
       }
     }
 
@@ -340,6 +372,24 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
     return bestId !== null && bestDist <= PICK_THRESHOLD_PX ? { id: bestId, dist: bestDist } : null
   }, [canvasWidth, canvasHeight, zone.constructionLines])
 
+  const pickVertex = useCallback((localX: number, localY: number): { index: number; dist: number } | null => {
+    const group = groupRef.current
+    const camera = cameraRef.current
+    if (!group || !camera) return null
+    const { vertices } = getLocalSnapPoints(edgeTopologyRef.current)
+    let bestIndex = -1
+    let bestDist = Infinity
+    for (let index = 0; index < vertices.length; index++) {
+      const p = projectPoint(vertices[index], group, camera, canvasWidth, canvasHeight)
+      const dist = Math.hypot(localX - p.x, localY - p.y)
+      if (dist < bestDist) {
+        bestDist = dist
+        bestIndex = index
+      }
+    }
+    return bestIndex !== -1 && bestDist <= VERTEX_PICK_THRESHOLD_PX ? { index: bestIndex, dist: bestDist } : null
+  }, [canvasWidth, canvasHeight])
+
   // Rotate is the default gesture on the shape body — no mode to enter first.
   const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     dragRef.current = { active: true, moved: false, lastX: e.clientX, lastY: e.clientY }
@@ -373,43 +423,59 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
       onRotationCommit(rotationRef.current.x, rotationRef.current.y, rotationRef.current.z)
       return
     }
-    // A plain click (no drag): pick whichever of an edge or a construction
-    // line is actually closer to the click, not "edge always wins" — a
-    // median often runs close to a real edge in a small/dense primitive, and
-    // a fixed edge-first priority made it practically unselectable there.
+    // A plain click (no drag): pick whichever of a vertex, a construction
+    // line, or an edge is actually closest to the click, not a fixed
+    // priority order — a median often runs close to a real edge in a
+    // small/dense primitive, and a fixed priority made the loser
+    // practically unselectable there. Vertices are checked too so clicking
+    // a corner marks/selects it instead of the edge that happens to pass
+    // through it.
     const box = e.currentTarget.getBoundingClientRect()
     const localX = e.clientX - box.left
     const localY = e.clientY - box.top
     const edgeHit = pickEdge(localX, localY)
     const lineHit = pickConstructionLine(localX, localY)
-    if (lineHit && (!edgeHit || lineHit.dist <= edgeHit.dist)) {
+    const vertexHit = pickVertex(localX, localY)
+    if (vertexHit && (!lineHit || vertexHit.dist <= lineHit.dist) && (!edgeHit || vertexHit.dist <= edgeHit.dist)) {
+      if (!zone.vertexMarks?.[vertexHit.index]) onVertexColorChange(vertexHit.index, zone.color)
+      setPicker({ kind: 'vertex', vertexIndex: vertexHit.index })
+    } else if (lineHit && (!edgeHit || lineHit.dist <= edgeHit.dist)) {
       setPicker({ kind: 'line', lineId: lineHit.id })
     } else if (edgeHit) {
       setPicker({ kind: 'edge', edgeIndex: edgeHit.index })
     } else {
       setPicker(null)
     }
-  }, [onRotationCommit, pickEdge, pickConstructionLine])
+  }, [onRotationCommit, pickEdge, pickConstructionLine, pickVertex, onVertexColorChange, zone.vertexMarks, zone.color])
 
-  // Double-click an edge to write an arbitrary label on it (length, angle
-  // name, anything) — positioned where the user clicked, like the recolor
-  // popup used to be, since this one *is* a short-lived text-entry gesture
-  // tied to that exact spot rather than a persistent menu.
+  // Double-click an edge or a vertex mark to write an arbitrary label on it
+  // (length, angle value, anything) — positioned where the user clicked,
+  // like the recolor popup used to be, since this one *is* a short-lived
+  // text-entry gesture tied to that exact spot rather than a persistent
+  // menu. A vertex with no mark yet gets one created on the spot, so
+  // double-clicking a bare corner both marks and labels it in one gesture.
   const handleDoubleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const box = e.currentTarget.getBoundingClientRect()
     const localX = e.clientX - box.left
     const localY = e.clientY - box.top
+    const vertexHit = pickVertex(localX, localY)
     const edgeHit = pickEdge(localX, localY)
-    if (!edgeHit) return
     setPicker(null)
-    setEditingLabel({ edgeIndex: edgeHit.index, text: zone.edgeLabels?.[edgeHit.index] ?? '', clientX: e.clientX, clientY: e.clientY })
-  }, [pickEdge, zone.edgeLabels])
+    if (vertexHit && (!edgeHit || vertexHit.dist <= edgeHit.dist)) {
+      if (!zone.vertexMarks?.[vertexHit.index]) onVertexColorChange(vertexHit.index, zone.color)
+      setEditingLabel({ target: { kind: 'vertex', vertexIndex: vertexHit.index }, text: zone.vertexMarks?.[vertexHit.index]?.label ?? '', clientX: e.clientX, clientY: e.clientY })
+    } else if (edgeHit) {
+      setEditingLabel({ target: { kind: 'edge', edgeIndex: edgeHit.index }, text: zone.edgeLabels?.[edgeHit.index] ?? '', clientX: e.clientX, clientY: e.clientY })
+    }
+  }, [pickVertex, pickEdge, zone.vertexMarks, zone.edgeLabels, zone.color, onVertexColorChange])
 
   const commitEditingLabel = useCallback(() => {
     if (!editingLabel) return
-    onEdgeLabelChange(editingLabel.edgeIndex, editingLabel.text.trim())
+    const text = editingLabel.text.trim()
+    if (editingLabel.target.kind === 'edge') onEdgeLabelChange(editingLabel.target.edgeIndex, text)
+    else onVertexLabelChange(editingLabel.target.vertexIndex, text)
     setEditingLabel(null)
-  }, [editingLabel, onEdgeLabelChange])
+  }, [editingLabel, onEdgeLabelChange, onVertexLabelChange])
 
   // Move handle: click selects the zone (surfaces the rename/edit inspector),
   // drag moves it. Delta is tracked from the drag's own start, not
@@ -487,6 +553,23 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
             {text}
           </div>
         ))}
+        {zone.vertexMarks && Object.entries(zone.vertexMarks).map(([key, mark]: [string, VertexMark]) => (
+          <div
+            key={key}
+            ref={el => {
+              const idx = Number(key)
+              if (el) vertexMarkElRefs.current.set(idx, el)
+              else vertexMarkElRefs.current.delete(idx)
+            }}
+            className={styles.vertexMark}
+            style={{ color: mark.color }}
+          >
+            <svg className={styles.vertexMarkIcon} viewBox="-7 -7 14 14" width="14" height="14">
+              <path d="M 0 -6 A 6 6 0 0 1 0 6" fill="none" stroke="currentColor" strokeWidth="1.5" />
+            </svg>
+            {mark.label && <span className={styles.vertexMarkLabel}>{mark.label}</span>}
+          </div>
+        ))}
         <button
           type="button"
           className={styles.moveHandle}
@@ -518,21 +601,23 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
               style={{ '--swatch-color': swatch } as React.CSSProperties}
               onClick={() => {
                 if (picker.kind === 'edge') onEdgeColorChange(picker.edgeIndex, swatch)
+                else if (picker.kind === 'vertex') onVertexColorChange(picker.vertexIndex, swatch)
                 else onLineColorChange(picker.lineId, swatch)
                 setPicker(null)
               }}
               title={swatch}
             />
           ))}
-          {picker.kind === 'line' && (
+          {(picker.kind === 'line' || picker.kind === 'vertex') && (
             <button
               type="button"
               className={styles.popoverDelete}
               onClick={() => {
-                onLineDelete(picker.lineId)
+                if (picker.kind === 'line') onLineDelete(picker.lineId)
+                else if (picker.kind === 'vertex') onVertexMarkDelete(picker.vertexIndex)
                 setPicker(null)
               }}
-              title="Удалить линию"
+              title={picker.kind === 'line' ? 'Удалить линию' : 'Удалить отметку'}
             >
               🗑
             </button>
@@ -546,7 +631,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
           className={styles.labelInput}
           style={{ left: editingLabel.clientX, top: editingLabel.clientY }}
           value={editingLabel.text}
-          placeholder="Текст на ребре"
+          placeholder={editingLabel.target.kind === 'edge' ? 'Текст на ребре' : 'Текст на угле'}
           onChange={e => setEditingLabel(prev => (prev ? { ...prev, text: e.target.value } : prev))}
           onClick={e => e.stopPropagation()}
           onPointerDown={e => e.stopPropagation()}
