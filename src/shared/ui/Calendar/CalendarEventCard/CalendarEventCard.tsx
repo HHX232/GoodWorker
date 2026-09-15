@@ -1,8 +1,8 @@
 'use client'
 
 import {EVENT_COLORS, getEventHeight, getEventTop} from '@/shared/helpers/calendar/calendar.helpers'
-import {isBillableEvent} from '@/shared/helpers/calendar/eventBilling'
 import {CalendarEvent} from '@/shared/types/Calendar/calendar.types'
+import {useTranslations} from 'next-intl'
 import {useRef, useState} from 'react'
 import styles from './CalendarEventCard.module.scss'
 
@@ -16,18 +16,18 @@ interface CalendarEventCardProps {
   onDragStart?: (event: CalendarEvent, grabOffsetY: number) => void
   isDragging?: boolean
   suppressClickRef?: React.MutableRefObject<string | null>
+  /** True only on this student's "checkpoint" lesson per their reminder cadence — see GET /api/teacher/calendar. */
+  paymentDue?: boolean
 }
 
 const OVERLAP_OFFSET_PX = 10   // horizontal shift per column
 const OVERLAP_WIDTH_SHRINK = 14 // px to shrink width per additional column
 
 export function CalendarEventCard({
-  event, onClick, col = 0, cols = 1, onDragStart, isDragging, suppressClickRef,
+  event, onClick, col = 0, cols = 1, onDragStart, isDragging, suppressClickRef, paymentDue = false,
 }: CalendarEventCardProps) {
+  const t = useTranslations('calendar.eventModal')
   const [hovered, setHovered] = useState(false)
-  // This event's own service/price, not "does this student owe money anywhere" —
-  // a payment badge on every lesson a student ever attends is not useful.
-  const paymentDue = isBillableEvent(event) && !event.paid
   const draggable = !isDragging && event.status !== 'completed' && event.status !== 'cancelled'
   const colors = EVENT_COLORS[event.color] ?? EVENT_COLORS.purple
   const top = getEventTop(event.startTime)
@@ -110,7 +110,7 @@ export function CalendarEventCard({
         <div className={styles.warningBadge}>!</div>
       )}
       {paymentDue && (
-        <div className={styles.paymentBadge} title="Payment due after this meeting">
+        <div className={styles.paymentBadge} title={t('paymentDueBadge')}>
           <svg width='9' height='9' viewBox='0 0 24 24' fill='none' stroke='#fff' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
             <path d='M12 3c-3 3-8 3.5-8 3.5s-.5 8 8 14.5c8.5-6.5 8-14.5 8-14.5S15 6 12 3z' />
             <path d='M12 9v6M9.5 11.5h5' />

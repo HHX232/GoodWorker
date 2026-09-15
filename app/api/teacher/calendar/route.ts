@@ -1,6 +1,7 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
+import { isBillableEvent, type BillableCalendarEvent } from '@/shared/helpers/calendar/eventBilling'
 
 async function resolveTeacherId(req: NextRequest, sessionId: string, sessionRole: string): Promise<string | null> {
   const tid = req.nextUrl.searchParams.get('teacherId') ?? sessionId
@@ -30,7 +31,7 @@ export async function GET(req: NextRequest) {
   const teacherId = await resolveTeacherId(req, id, role)
   if (!teacherId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const [teacher, conferences, categoryLinks] = await Promise.all([
+  const [teacher, conferences, categoryLinks, reminderSettings] = await Promise.all([
     prisma.teacher.findUnique({ where: { id: teacherId }, select: { calendar: true } }),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (prisma.conference.findMany as any)({
@@ -55,6 +56,7 @@ export async function GET(req: NextRequest) {
       },
     }),
     prisma.teacherCategory.findMany({ where: { teacherId }, select: { categoryId: true } }),
+    prisma.paymentReminderSetting.findMany({ where: { teacherId }, select: { studentId: true, everyNLessons: true } }),
   ])
 
   const calendarData = teacher?.calendar as { events?: unknown[]; tasks?: unknown[] } | null
@@ -100,10 +102,30 @@ export async function GET(req: NextRequest) {
       }
     })
 
+  const allEvents = [...storedEvents, ...conferenceEvents] as BillableCalendarEvent[]
+
+  // Payment badge shows only on "checkpoint" lessons — the 1st, 2nd, 3rd... Nth
+  // still-unpaid lesson for that student (oldest first), per the teacher's
+  // "remind every N lessons" setting — not on every unpaid lesson (a student
+  // with 8 unpaid lessons and N=4 gets exactly 2 badges, not 8). Recomputed
+  // fresh from "currently still unpaid" each request, so marking one paid
+  // shifts the checkpoint to what's now the Nth unpaid lesson.
+  const paymentDueEventIds: string[] = []
+  for (const setting of reminderSettings) {
+    if (setting.everyNLessons <= 0) continue
+    const unpaidForStudent = allEvents
+      .filter(e => isBillableEvent(e) && e.studentId === setting.studentId && !e.paid)
+      .sort((a, b) => (a.date + a.startTime).localeCompare(b.date + b.startTime))
+    for (let i = 0; i < unpaidForStudent.length; i++) {
+      if ((i + 1) % setting.everyNLessons === 0) paymentDueEventIds.push(unpaidForStudent[i].id)
+    }
+  }
+
   return NextResponse.json({
-    events: [...storedEvents, ...conferenceEvents],
+    events: allEvents,
     tasks: calendarData?.tasks ?? [],
     categoryIds: categoryLinks.map(l => l.categoryId),
+    paymentDueEventIds,
   })
 }
 

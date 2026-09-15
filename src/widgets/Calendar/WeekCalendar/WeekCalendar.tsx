@@ -42,9 +42,10 @@ interface WeekCalendarProps {
   onEventClick: (event: CalendarEvent) => void
   onCellClick: (date: string, startTime: string, endTime: string) => void
   onEventUpdate?: (event: CalendarEvent) => void
+  paymentDueEventIds?: Set<string>
 }
 
-export function WeekCalendar({weekDays, events, onEventClick, onCellClick, onEventUpdate}: WeekCalendarProps) {
+export function WeekCalendar({weekDays, events, onEventClick, onCellClick, onEventUpdate, paymentDueEventIds}: WeekCalendarProps) {
   const t = useTranslations('calendar')
   const locale = useLocale()
   const intlLocale = locale === 'ru' ? 'ru-RU' : 'en-US'
@@ -282,6 +283,7 @@ export function WeekCalendar({weekDays, events, onEventClick, onCellClick, onEve
                     onDragStart={handleCardDragStart}
                     isDragging={dragState?.event.id === event.id}
                     suppressClickRef={suppressClickRef}
+                    paymentDue={paymentDueEventIds?.has(event.id) ?? false}
                   />
                 ))}
 

@@ -1,11 +1,10 @@
 'use client'
 
 import {EVENT_COLORS, formatDateRu} from '@/shared/helpers/calendar/calendar.helpers'
-import {isBillableEvent} from '@/shared/helpers/calendar/eventBilling'
 import {CalendarEvent} from '@/shared/types/Calendar/calendar.types'
 import {useLocale, useTranslations} from 'next-intl'
 import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
-import { FEATURED_CURRENCIES, formatConverted } from '@/shared/utils/currencyConverter'
+import { FEATURED_CURRENCIES, convertBetween, formatConverted } from '@/shared/utils/currencyConverter'
 import { useState } from 'react'
 import styles from './CalendarEventModal.module.scss'
 
@@ -16,6 +15,8 @@ interface CalendarEventModalProps {
   onDelete: (id: string) => void
   onConfirm?: (id: string) => void
   onViewPayment?: (studentId: string) => void
+  /** Ids of "checkpoint" lessons per the student's reminder cadence — see GET /api/teacher/calendar. */
+  paymentDueEventIds?: Set<string>
 }
 
 function timeToMins(t: string): number {
@@ -23,7 +24,7 @@ function timeToMins(t: string): number {
   return h * 60 + (m || 0)
 }
 
-export function CalendarEventModal({event, onClose, onEdit, onDelete, onConfirm, onViewPayment}: CalendarEventModalProps) {
+export function CalendarEventModal({event, onClose, onEdit, onDelete, onConfirm, onViewPayment, paymentDueEventIds}: CalendarEventModalProps) {
   const t = useTranslations('calendar.eventModal')
   const locale = useLocale()
   const intlLocale = locale === 'ru' ? 'ru-RU' : 'en-US'
@@ -31,8 +32,7 @@ export function CalendarEventModal({event, onClose, onEdit, onDelete, onConfirm,
 
   if (!event) return null
 
-  // This event's own service/price — not "does this student owe money anywhere".
-  const paymentDue = isBillableEvent(event) && !event.paid
+  const paymentDue = paymentDueEventIds?.has(event.id) ?? false
 
   const colors = EVENT_COLORS[event.color] ?? EVENT_COLORS.purple
 
@@ -129,9 +129,16 @@ export function CalendarEventModal({event, onClose, onEdit, onDelete, onConfirm,
             </span>
           </InfoRow>
         )}
-        {meetingCost != null && (
+        {meetingCost != null && (() => {
+          // formatConverted takes a RUB amount — convert the event's own
+          // currency into RUB first, otherwise a BYN price gets displayed as
+          // if it were RUB (156 BYN showing up as "≈5.62 BYN" in its own row).
+          const costCurrency = event.serviceCurrency ?? 'RUB'
+          const meetingCostInRub = convertBetween(meetingCost, costCurrency, 'RUB')
+          const conversionTargets = FEATURED_CURRENCIES.filter(c => c.code !== costCurrency)
+          return (
           <InfoRow icon={<RubIcon />} label={t('costLabel')}>
-            <span style={{fontWeight: 700, marginRight: 8}}>{meetingCost.toLocaleString()} {event.serviceCurrency ?? '₽'}</span>
+            <span style={{fontWeight: 700, marginRight: 8}}>{meetingCost.toLocaleString()} {costCurrency}</span>
             {event.serviceTitle && (
               <span style={{fontSize: 11, color: '#9CA3AF', marginRight: 8}}>
                 ({event.serviceTitle})
@@ -152,18 +159,19 @@ export function CalendarEventModal({event, onClose, onEdit, onDelete, onConfirm,
               </svg>
               {showTooltip && (
                 <div className={styles.currencyTooltip}>
-                  {FEATURED_CURRENCIES.slice(0, 8).map(c => (
+                  {conversionTargets.slice(0, 8).map(c => (
                     <div key={c.code} className={styles.currencyRow}>
                       <span>{c.flag}</span>
                       <span>{c.code}</span>
-                      <span style={{marginLeft: 'auto', fontWeight: 600}}>{formatConverted(meetingCost, c)}</span>
+                      <span style={{marginLeft: 'auto', fontWeight: 600}}>{formatConverted(meetingCostInRub, c)}</span>
                     </div>
                   ))}
                 </div>
               )}
             </span>
           </InfoRow>
-        )}
+          )
+        })()}
         {event.description && (
           <div className={styles.descBlock}>
             <span className={styles.descLabel}>{t('descLabel')}</span>

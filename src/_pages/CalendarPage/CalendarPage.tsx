@@ -64,6 +64,7 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
   const [teacherServices, setTeacherServices] = useState<{id: string; title: string; price: number; duration: number; currency?: string}[]>([])
   const [teacherCategoryIds, setTeacherCategoryIds] = useState<string[]>([])
   const [studentModalId, setStudentModalId] = useState<string | null>(null)
+  const [paymentDueEventIds, setPaymentDueEventIds] = useState<Set<string>>(new Set())
 
   interface HomeworkCalendarItem {
     id: string
@@ -86,6 +87,7 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
         if (Array.isArray(d.events) && d.events.length > 0) setEvents(d.events)
         if (Array.isArray(d.tasks) && d.tasks.length > 0) setTasks(d.tasks)
         if (Array.isArray(d.categoryIds)) setTeacherCategoryIds(d.categoryIds)
+        if (Array.isArray(d.paymentDueEventIds)) setPaymentDueEventIds(new Set(d.paymentDueEventIds))
       })
       .catch(() => {})
 
@@ -300,6 +302,7 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
             onEventClick={(event) => selectEvent(event.id)}
             onCellClick={(date, startTime, endTime) => openCreateModal({date, startTime, endTime})}
             onEventUpdate={updateEvent}
+            paymentDueEventIds={paymentDueEventIds}
           />
         )}
         {view === 'day' && (
@@ -312,6 +315,7 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
             onEventClick={(event) => selectEvent(event.id)}
             onCellClick={(date, startTime, endTime) => openCreateModal({date, startTime, endTime})}
             onEventUpdate={updateEvent}
+            paymentDueEventIds={paymentDueEventIds}
           />
         )}
         {view === 'month' && (
@@ -337,6 +341,7 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
           selectEvent(null)
         }}
         onViewPayment={(studentId) => { selectEvent(null); setStudentModalId(studentId) }}
+        paymentDueEventIds={paymentDueEventIds}
       />
 
       <PaymentReminderModal
