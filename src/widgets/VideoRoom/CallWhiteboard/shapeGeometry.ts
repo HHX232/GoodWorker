@@ -178,6 +178,9 @@ export interface ConstructionLine {
   startRef: SnapRef
   endRef: SnapRef
   color: string
+  /** Arbitrary label text (e.g. a length), set via double-click on the
+   * line — same mechanism as edge/angle-mark labels. */
+  label?: string
 }
 
 export function distanceToSegment(p: Point, a: Point, b: Point): number {

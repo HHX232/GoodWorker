@@ -28,13 +28,14 @@ interface Props {
   onVertexMarkLabelChange: (zoneElementId: string, faceIndex: number, edgeIndexA: number, edgeIndexB: number, text: string) => void
   onVertexMarkDelete: (zoneElementId: string, faceIndex: number, edgeIndexA: number, edgeIndexB: number) => void
   onLineColorChange: (zoneElementId: string, lineId: string, color: string) => void
+  onLineLabelChange: (zoneElementId: string, lineId: string, text: string) => void
   onLineDelete: (zoneElementId: string, lineId: string) => void
   onSelectZone: (zoneElementId: string) => void
   onMoveZoneTo: (zoneElementId: string, x: number, y: number) => void
   onResizeZoneTo: (zoneElementId: string, width: number, height: number) => void
 }
 
-export function ThreeDZoneLayer({ elements, viewTransform, interactive, angleMode, onRotationCommit, onEdgeColorChange, onEdgeLabelChange, onVertexMarkUpsert, onVertexMarkLabelChange, onVertexMarkDelete, onLineColorChange, onLineDelete, onSelectZone, onMoveZoneTo, onResizeZoneTo }: Props) {
+export function ThreeDZoneLayer({ elements, viewTransform, interactive, angleMode, onRotationCommit, onEdgeColorChange, onEdgeLabelChange, onVertexMarkUpsert, onVertexMarkLabelChange, onVertexMarkDelete, onLineColorChange, onLineLabelChange, onLineDelete, onSelectZone, onMoveZoneTo, onResizeZoneTo }: Props) {
   const zones = useMemo(() => getAllZones(elements), [elements])
   const flatViewTransform = { scrollX: viewTransform.scrollX, scrollY: viewTransform.scrollY, zoom: viewTransform.zoom.value }
 
@@ -55,6 +56,7 @@ export function ThreeDZoneLayer({ elements, viewTransform, interactive, angleMod
           onVertexMarkLabelChange={(faceIndex, edgeIndexA, edgeIndexB, text) => onVertexMarkLabelChange(element.id, faceIndex, edgeIndexA, edgeIndexB, text)}
           onVertexMarkDelete={(faceIndex, edgeIndexA, edgeIndexB) => onVertexMarkDelete(element.id, faceIndex, edgeIndexA, edgeIndexB)}
           onLineColorChange={(lineId, color) => onLineColorChange(element.id, lineId, color)}
+          onLineLabelChange={(lineId, text) => onLineLabelChange(element.id, lineId, text)}
           onLineDelete={lineId => onLineDelete(element.id, lineId)}
           onSelect={() => onSelectZone(element.id)}
           onMoveTo={(x, y) => onMoveZoneTo(element.id, x, y)}

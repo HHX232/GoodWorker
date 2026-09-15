@@ -171,7 +171,8 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
       if (!raw) return
       const parsed = JSON.parse(raw)
       if (parsed && typeof parsed.cellSize === 'number' && GRID_STYLES.has(parsed.style)) {
-        setGridSettings({ style: parsed.style, cellSize: parsed.cellSize })
+        const transparency = typeof parsed.transparency === 'number' ? parsed.transparency : DEFAULT_GRID_SETTINGS.transparency
+        setGridSettings({ style: parsed.style, cellSize: parsed.cellSize, transparency })
       }
     } catch {}
   }, [])
@@ -182,7 +183,17 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
     } catch {}
   }, [gridSettings])
 
-  // Apply remote elements when they arrive
+  // Apply remote elements when they arrive. Also cancels any broadcast
+  // already scheduled by handleChange — on a fresh mount (e.g. after the
+  // call UI minimizes/restores the whiteboard, destroying and recreating
+  // this component), Excalidraw's own first onChange fires with an EMPTY
+  // scene before this effect gets to run, scheduling a 400ms broadcast of
+  // that empty state. Normally that gets cleared by the next onChange, but
+  // the one this effect's own updateScene triggers returns early (via
+  // isApplyingRemoteRef) before it reaches its clearTimeout — so without
+  // this, the stale empty-scene broadcast fires ~400ms later regardless,
+  // wiping the board for every participant even though it was just
+  // correctly restored.
   useEffect(() => {
     if (!remoteElements || !apiRef.current || !ready) return
     const remoteMap = new Map(remoteElements.map(e => [e.id, e]))
@@ -191,6 +202,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
     for (const el of current) {
       if (!remoteMap.has(el.id)) merged.push(el)
     }
+    if (broadcastTimer.current) clearTimeout(broadcastTimer.current)
     isApplyingRemoteRef.current = true
     apiRef.current.updateScene({ elements: merged })
     setTimeout(() => { isApplyingRemoteRef.current = false }, 0)
@@ -522,6 +534,20 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
     mutateElement(el, { customData: { threeDZone: zone } })
   }, [])
 
+  const handleZoneLineLabelChange = useCallback(async (zoneElementId: string, lineId: string, text: string) => {
+    if (!apiRef.current) return
+    const { mutateElement } = await import('@excalidraw/excalidraw')
+    const el = apiRef.current.getSceneElements().find(e => e.id === zoneElementId)
+    if (!el) return
+    const existing = readThreeDZone(el)
+    if (!existing) return
+    const zone: ThreeDZone = {
+      ...existing,
+      constructionLines: (existing.constructionLines ?? []).map(line => (line.id === lineId ? { ...line, label: text || undefined } : line)),
+    }
+    mutateElement(el, { customData: { threeDZone: zone } })
+  }, [])
+
   const handleZoneLineDelete = useCallback(async (zoneElementId: string, lineId: string) => {
     if (!apiRef.current) return
     const { mutateElement } = await import('@excalidraw/excalidraw')
@@ -618,6 +644,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
             '--grid-size': `${gridSettings.cellSize * viewTransform.zoom.value}px`,
             '--grid-offset-x': `${viewTransform.scrollX * viewTransform.zoom.value}px`,
             '--grid-offset-y': `${viewTransform.scrollY * viewTransform.zoom.value}px`,
+            '--grid-opacity': 1 - gridSettings.transparency / 100,
           } as React.CSSProperties}
         />
         <Excalidraw
@@ -642,6 +669,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
           onVertexMarkLabelChange={handleZoneVertexMarkLabelChange}
           onVertexMarkDelete={handleZoneVertexMarkDelete}
           onLineColorChange={handleZoneLineColorChange}
+          onLineLabelChange={handleZoneLineLabelChange}
           onLineDelete={handleZoneLineDelete}
           onSelectZone={handleSelectZone}
           onMoveZoneTo={handleMoveZoneTo}

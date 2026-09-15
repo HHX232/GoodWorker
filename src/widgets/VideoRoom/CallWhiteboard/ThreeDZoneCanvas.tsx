@@ -31,6 +31,7 @@ interface Props {
   onVertexMarkLabelChange: (faceIndex: number, edgeIndexA: number, edgeIndexB: number, text: string) => void
   onVertexMarkDelete: (faceIndex: number, edgeIndexA: number, edgeIndexB: number) => void
   onLineColorChange: (lineId: string, color: string) => void
+  onLineLabelChange: (lineId: string, text: string) => void
   onLineDelete: (lineId: string) => void
   onSelect: () => void
   onMoveTo: (x: number, y: number) => void
@@ -105,6 +106,7 @@ type Picker =
 type EditingLabelTarget =
   | { kind: 'edge'; edgeIndex: number }
   | { kind: 'vertex'; faceIndex: number; edgeIndexA: number; edgeIndexB: number }
+  | { kind: 'line'; lineId: string }
 
 interface EditingLabel {
   target: EditingLabelTarget
@@ -113,7 +115,7 @@ interface EditingLabel {
   clientY: number
 }
 
-export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angleMode, onRotationCommit, onEdgeColorChange, onEdgeLabelChange, onVertexMarkUpsert, onVertexMarkLabelChange, onVertexMarkDelete, onLineColorChange, onLineDelete, onSelect, onMoveTo, onResizeTo }: Props) {
+export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angleMode, onRotationCommit, onEdgeColorChange, onEdgeLabelChange, onVertexMarkUpsert, onVertexMarkLabelChange, onVertexMarkDelete, onLineColorChange, onLineLabelChange, onLineDelete, onSelect, onMoveTo, onResizeTo }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<THREE.Scene | null>(null)
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
@@ -140,6 +142,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
   // only their (left, top) tracks the live projected anchor.
   const labelElRefs = useRef<Map<number, HTMLDivElement>>(new Map())
   const angleLabelElRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+  const lineLabelElRefs = useRef<Map<string, HTMLDivElement>>(new Map())
 
   // The zone's DOM box (.zone/.canvasHolder) is sized in CSS to rect.width/
   // height * zoom — the renderer/camera must render at that same pixel size
@@ -217,10 +220,21 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
         el.style.left = `${pos.x}px`
         el.style.top = `${pos.y}px`
       }
+      for (const [lineId, el] of lineLabelElRefs.current) {
+        const line = zone.constructionLines?.find(l => l.id === lineId)
+        if (!line) continue
+        const p1 = resolveLocalSnapPoint(edgeTopologyRef.current, faceTopologyRef.current, line.startRef)
+        const p2 = resolveLocalSnapPoint(edgeTopologyRef.current, faceTopologyRef.current, line.endRef)
+        if (!p1 || !p2) continue
+        const mid = p1.clone().add(p2).multiplyScalar(0.5)
+        const pos = projectPoint(mid, group, camera, canvasWidth, canvasHeight)
+        el.style.left = `${pos.x}px`
+        el.style.top = `${pos.y}px`
+      }
     }
 
     applyColors()
-  }, [applyColors, canvasWidth, canvasHeight])
+  }, [applyColors, canvasWidth, canvasHeight, zone.constructionLines])
 
   // Scene setup once — container captured locally (see ThreeDPanel's note on
   // why: React 18 dev StrictMode mounts/cleans up/mounts this effect once to
@@ -561,39 +575,65 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
     }
   }, [onRotationCommit, pickEdge, pickConstructionLine, pickAngleMark, angleMode, pickFaceVertex, onVertexMarkUpsert, zone.vertexMarks, zone.color])
 
-  // Double-click an edge or an angle mark to write an arbitrary label on it
-  // (length, angle value, anything) — positioned where the user clicked,
-  // like the recolor popup used to be, since this one *is* a short-lived
-  // text-entry gesture tied to that exact spot rather than a persistent
-  // menu. Works regardless of angleMode — double-clicking a freshly-created
-  // mark (angle mode having just upserted it on the matching single click)
-  // labels it in the same gesture.
+  // Double-click an edge, an angle mark, or a construction line to write an
+  // arbitrary label on it (length, angle value, anything) — positioned
+  // where the user clicked, like the recolor popup used to be, since this
+  // one *is* a short-lived text-entry gesture tied to that exact spot
+  // rather than a persistent menu. Works regardless of angleMode — double-
+  // clicking a freshly-created mark (angle mode having just upserted it on
+  // the matching single click) labels it in the same gesture. Whichever of
+  // the three is actually closest to the click wins, same "closest, not
+  // fixed priority" rule as the single-click picker below.
   const handleDoubleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const box = e.currentTarget.getBoundingClientRect()
     const localX = e.clientX - box.left
     const localY = e.clientY - box.top
     const angleHit = pickAngleMark(localX, localY)
+    const lineHit = pickConstructionLine(localX, localY)
     const edgeHit = pickEdge(localX, localY)
     setPicker(null)
-    if (angleHit && (!edgeHit || angleHit.dist <= edgeHit.dist)) {
-      setEditingLabel({
-        target: { kind: 'vertex', faceIndex: angleHit.mark.faceIndex, edgeIndexA: angleHit.mark.edgeIndexA, edgeIndexB: angleHit.mark.edgeIndexB },
-        text: angleHit.mark.label ?? '',
-        clientX: e.clientX,
-        clientY: e.clientY,
+
+    const candidates: { dist: number; open: () => void }[] = []
+    if (angleHit) {
+      candidates.push({
+        dist: angleHit.dist,
+        open: () => setEditingLabel({
+          target: { kind: 'vertex', faceIndex: angleHit.mark.faceIndex, edgeIndexA: angleHit.mark.edgeIndexA, edgeIndexB: angleHit.mark.edgeIndexB },
+          text: angleHit.mark.label ?? '',
+          clientX: e.clientX,
+          clientY: e.clientY,
+        }),
       })
-    } else if (edgeHit) {
-      setEditingLabel({ target: { kind: 'edge', edgeIndex: edgeHit.index }, text: zone.edgeLabels?.[edgeHit.index] ?? '', clientX: e.clientX, clientY: e.clientY })
     }
-  }, [pickAngleMark, pickEdge, zone.edgeLabels])
+    if (lineHit) {
+      candidates.push({
+        dist: lineHit.dist,
+        open: () => setEditingLabel({
+          target: { kind: 'line', lineId: lineHit.id },
+          text: zone.constructionLines?.find(l => l.id === lineHit.id)?.label ?? '',
+          clientX: e.clientX,
+          clientY: e.clientY,
+        }),
+      })
+    }
+    if (edgeHit) {
+      candidates.push({
+        dist: edgeHit.dist,
+        open: () => setEditingLabel({ target: { kind: 'edge', edgeIndex: edgeHit.index }, text: zone.edgeLabels?.[edgeHit.index] ?? '', clientX: e.clientX, clientY: e.clientY }),
+      })
+    }
+    candidates.sort((a, b) => a.dist - b.dist)
+    candidates[0]?.open()
+  }, [pickAngleMark, pickConstructionLine, pickEdge, zone.constructionLines, zone.edgeLabels])
 
   const commitEditingLabel = useCallback(() => {
     if (!editingLabel) return
     const text = editingLabel.text.trim()
     if (editingLabel.target.kind === 'edge') onEdgeLabelChange(editingLabel.target.edgeIndex, text)
+    else if (editingLabel.target.kind === 'line') onLineLabelChange(editingLabel.target.lineId, text)
     else onVertexMarkLabelChange(editingLabel.target.faceIndex, editingLabel.target.edgeIndexA, editingLabel.target.edgeIndexB, text)
     setEditingLabel(null)
-  }, [editingLabel, onEdgeLabelChange, onVertexMarkLabelChange])
+  }, [editingLabel, onEdgeLabelChange, onLineLabelChange, onVertexMarkLabelChange])
 
   // Move handle: click selects the zone (surfaces the rename/edit inspector),
   // drag moves it. Delta is tracked from the drag's own start, not
@@ -684,6 +724,18 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
             {mark.label}
           </div>
         ))}
+        {zone.constructionLines?.filter(line => line.label).map(line => (
+          <div
+            key={line.id}
+            ref={el => {
+              if (el) lineLabelElRefs.current.set(line.id, el)
+              else lineLabelElRefs.current.delete(line.id)
+            }}
+            className={styles.edgeLabel}
+          >
+            {line.label}
+          </div>
+        ))}
         <button
           type="button"
           className={styles.moveHandle}
@@ -745,7 +797,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
           className={styles.labelInput}
           style={{ left: editingLabel.clientX, top: editingLabel.clientY }}
           value={editingLabel.text}
-          placeholder={editingLabel.target.kind === 'edge' ? 'Текст на ребре' : 'Текст на угле'}
+          placeholder={editingLabel.target.kind === 'edge' ? 'Текст на ребре' : editingLabel.target.kind === 'line' ? 'Текст на линии' : 'Текст на угле'}
           onChange={e => setEditingLabel(prev => (prev ? { ...prev, text: e.target.value } : prev))}
           onClick={e => e.stopPropagation()}
           onPointerDown={e => e.stopPropagation()}
