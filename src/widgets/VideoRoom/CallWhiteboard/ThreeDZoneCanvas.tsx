@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { distanceToSegment, INK_PALETTE, type ConstructionLine, type ThreeDZone, type VertexMark, type ZoneRect } from './shapeGeometry'
-import { buildDashDotPositions, buildEdgeTopology, buildFaceTopology, buildGeometry, classifyEdges, createFramingCamera, getLocalSnapPoints, projectPoint, resolveLocalSnapPoint, type ClassifiedEdge, type EdgeTopology, type FaceTopology } from './threeDRender'
+import { buildAngleArcPoints, buildDashDotPositions, buildEdgeTopology, buildFaceTopology, buildGeometry, classifyEdges, createFramingCamera, findFaceEdgesAtVertex, projectPoint, resolveLocalSnapPoint, type ClassifiedEdge, type EdgeTopology, type FaceTopology } from './threeDRender'
 import styles from './ThreeDZoneCanvas.module.scss'
 
 interface ViewTransform {
@@ -19,12 +19,17 @@ interface Props {
   /** False while a drawing tool is active — lets clicks through to Excalidraw
    * so it can draw directly over the shape instead of us grabbing the drag. */
   interactive: boolean
+  /** "∠ Угол" tool active — a plain click raycasts to find which FACE was
+   * clicked and which of its corners is nearest, creating/selecting the
+   * angle mark there. Off, plain clicks fall back to the normal edge/line/
+   * existing-angle-mark picking (rotate-drag works in both cases). */
+  angleMode: boolean
   onRotationCommit: (rotationX: number, rotationY: number, rotationZ: number) => void
   onEdgeColorChange: (edgeIndex: number, color: string) => void
   onEdgeLabelChange: (edgeIndex: number, text: string) => void
-  onVertexColorChange: (vertexIndex: number, color: string) => void
-  onVertexLabelChange: (vertexIndex: number, text: string) => void
-  onVertexMarkDelete: (vertexIndex: number) => void
+  onVertexMarkUpsert: (faceIndex: number, edgeIndexA: number, edgeIndexB: number, color: string) => void
+  onVertexMarkLabelChange: (faceIndex: number, edgeIndexA: number, edgeIndexB: number, text: string) => void
+  onVertexMarkDelete: (faceIndex: number, edgeIndexA: number, edgeIndexB: number) => void
   onLineColorChange: (lineId: string, color: string) => void
   onLineDelete: (lineId: string) => void
   onSelect: () => void
@@ -33,11 +38,16 @@ interface Props {
 }
 
 const PICK_THRESHOLD_PX = 8
-const VERTEX_PICK_THRESHOLD_PX = 10
+const ANGLE_PICK_THRESHOLD_PX = 12
 const MIN_ZONE_SIZE = 60
 
 function colorFor(edgeIndex: number, zone: ThreeDZone): THREE.Color {
   return new THREE.Color(zone.edgeColors?.[edgeIndex] ?? zone.color)
+}
+
+function findVertexMark(marks: VertexMark[] | undefined, faceIndex: number, edgeIndexA: number, edgeIndexB: number): VertexMark | undefined {
+  return marks?.find(m => m.faceIndex === faceIndex
+    && ((m.edgeIndexA === edgeIndexA && m.edgeIndexB === edgeIndexB) || (m.edgeIndexA === edgeIndexB && m.edgeIndexB === edgeIndexA)))
 }
 
 function buildConstructionGeometry(topology: EdgeTopology[], faces: FaceTopology[], lines: ConstructionLine[]): { positions: number[]; colors: number[] } {
@@ -55,14 +65,46 @@ function buildConstructionGeometry(topology: EdgeTopology[], faces: FaceTopology
   return { positions, colors }
 }
 
+/** Angle-mark arcs: for each mark, finds the vertex its two edges share,
+ * builds a small arc INSIDE that face's plane between them, and records the
+ * arc's middle point (in `arcMidpoints`, keyed by mark.id) as the anchor
+ * used for hit-testing and label placement. */
+function buildAngleMarksGeometry(topology: EdgeTopology[], faces: FaceTopology[], marks: VertexMark[]): { positions: number[]; colors: number[]; arcMidpoints: Map<string, THREE.Vector3> } {
+  const positions: number[] = []
+  const colors: number[] = []
+  const arcMidpoints = new Map<string, THREE.Vector3>()
+  for (const mark of marks) {
+    const face = faces[mark.faceIndex]
+    const edgeA = topology[mark.edgeIndexA]
+    const edgeB = topology[mark.edgeIndexB]
+    if (!face || !edgeA || !edgeB) continue
+    const sharedVertex = [edgeA.v1, edgeA.v2].find(p => [edgeB.v1, edgeB.v2].some(q => q.distanceTo(p) < 0.01))
+    if (!sharedVertex) continue
+    const otherA = edgeA.v1.distanceTo(sharedVertex) < 0.01 ? edgeA.v2 : edgeA.v1
+    const otherB = edgeB.v1.distanceTo(sharedVertex) < 0.01 ? edgeB.v2 : edgeB.v1
+    const dirA = otherA.clone().sub(sharedVertex).normalize()
+    const dirB = otherB.clone().sub(sharedVertex).normalize()
+    const radius = Math.min(0.35, Math.max(0.08, Math.min(otherA.distanceTo(sharedVertex), otherB.distanceTo(sharedVertex)) * 0.3))
+    const points = buildAngleArcPoints(sharedVertex, dirA, dirB, face.normal, radius)
+    if (points.length < 2) continue
+    const c = new THREE.Color(mark.color)
+    for (let i = 0; i < points.length - 1; i++) {
+      positions.push(points[i].x, points[i].y, points[i].z, points[i + 1].x, points[i + 1].y, points[i + 1].z)
+      colors.push(c.r, c.g, c.b, c.r, c.g, c.b)
+    }
+    arcMidpoints.set(mark.id, points[Math.floor(points.length / 2)])
+  }
+  return { positions, colors, arcMidpoints }
+}
+
 type Picker =
   | { kind: 'edge'; edgeIndex: number }
   | { kind: 'line'; lineId: string }
-  | { kind: 'vertex'; vertexIndex: number }
+  | { kind: 'vertex'; faceIndex: number; edgeIndexA: number; edgeIndexB: number }
 
 type EditingLabelTarget =
   | { kind: 'edge'; edgeIndex: number }
-  | { kind: 'vertex'; vertexIndex: number }
+  | { kind: 'vertex'; faceIndex: number; edgeIndexA: number; edgeIndexB: number }
 
 interface EditingLabel {
   target: EditingLabelTarget
@@ -71,7 +113,7 @@ interface EditingLabel {
   clientY: number
 }
 
-export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRotationCommit, onEdgeColorChange, onEdgeLabelChange, onVertexColorChange, onVertexLabelChange, onVertexMarkDelete, onLineColorChange, onLineDelete, onSelect, onMoveTo, onResizeTo }: Props) {
+export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angleMode, onRotationCommit, onEdgeColorChange, onEdgeLabelChange, onVertexMarkUpsert, onVertexMarkLabelChange, onVertexMarkDelete, onLineColorChange, onLineDelete, onSelect, onMoveTo, onResizeTo }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<THREE.Scene | null>(null)
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
@@ -80,26 +122,24 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
   const solidLineRef = useRef<THREE.LineSegments | null>(null)
   const dashedLineRef = useRef<THREE.LineSegments | null>(null)
   const constructionLineRef = useRef<THREE.LineSegments | null>(null)
+  const angleMarkLineRef = useRef<THREE.LineSegments | null>(null)
+  const raycastMeshRef = useRef<THREE.Mesh | null>(null)
+  const raycasterRef = useRef(new THREE.Raycaster())
   const edgeTopologyRef = useRef<EdgeTopology[]>([])
   const faceTopologyRef = useRef<FaceTopology[]>([])
   const classifiedRef = useRef<ClassifiedEdge[]>([])
+  const arcMidpointsRef = useRef<Map<string, THREE.Vector3>>(new Map())
   const rotationRef = useRef({ x: zone.rotationX, y: zone.rotationY, z: zone.rotationZ })
   const dragRef = useRef<{ active: boolean; moved: boolean; lastX: number; lastY: number }>({ active: false, moved: false, lastX: 0, lastY: 0 })
   const moveDragRef = useRef<{ startClientX: number; startClientY: number; startX: number; startY: number } | null>(null)
   const resizeDragRef = useRef<{ startClientX: number; startClientY: number; startWidth: number; startHeight: number } | null>(null)
-  // Edge-label DOM nodes, keyed by edge index — positioned imperatively (not
-  // via React state) from updateVisualization so a live rotation drag moves
-  // them every frame without a setState per frame. Labels stay upright (no
-  // CSS rotate to match the edge's projected angle) so they're always
-  // legible regardless of the shape's current rotation; only their (left,
-  // top) tracks the edge's live projected midpoint.
+  // Edge/angle-mark label DOM nodes — positioned imperatively (not via React
+  // state) from updateVisualization so a live rotation drag moves them every
+  // frame without a setState per frame. Labels stay upright (no CSS rotate)
+  // so they're always legible regardless of the shape's current rotation;
+  // only their (left, top) tracks the live projected anchor.
   const labelElRefs = useRef<Map<number, HTMLDivElement>>(new Map())
-  // Vertex-mark ("angle mark") DOM nodes, keyed by vertex index — position
-  // tracked the same way as edge labels; the small semicircle icon inside
-  // each is additionally rotated to point away from the shape's centroid
-  // (found via a querySelector on this same node in updateVisualization),
-  // so it visually nestles into the corner instead of always facing one way.
-  const vertexMarkElRefs = useRef<Map<number, HTMLDivElement>>(new Map())
+  const angleLabelElRefs = useRef<Map<string, HTMLDivElement>>(new Map())
 
   // The zone's DOM box (.zone/.canvasHolder) is sized in CSS to rect.width/
   // height * zoom — the renderer/camera must render at that same pixel size
@@ -170,22 +210,12 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
         el.style.left = `${pos.x}px`
         el.style.top = `${pos.y}px`
       }
-
-      if (vertexMarkElRefs.current.size > 0) {
-        const { vertices, centroid } = getLocalSnapPoints(edgeTopologyRef.current)
-        const centroidPos = centroid ? projectPoint(centroid, group, camera, canvasWidth, canvasHeight) : null
-        for (const [vertexIndex, el] of vertexMarkElRefs.current) {
-          const vertex = vertices[vertexIndex]
-          if (!vertex) continue
-          const pos = projectPoint(vertex, group, camera, canvasWidth, canvasHeight)
-          el.style.left = `${pos.x}px`
-          el.style.top = `${pos.y}px`
-          const svg = el.querySelector('svg')
-          if (svg && centroidPos) {
-            const angleDeg = Math.atan2(pos.y - centroidPos.y, pos.x - centroidPos.x) * (180 / Math.PI)
-            ;(svg as unknown as HTMLElement).style.transform = `rotate(${angleDeg}deg)`
-          }
-        }
+      for (const [markId, el] of angleLabelElRefs.current) {
+        const mid = arcMidpointsRef.current.get(markId)
+        if (!mid) continue
+        const pos = projectPoint(mid, group, camera, canvasWidth, canvasHeight)
+        el.style.left = `${pos.x}px`
+        el.style.top = `${pos.y}px`
       }
     }
 
@@ -222,6 +252,10 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
       ;(dashedLineRef.current?.material as THREE.Material | undefined)?.dispose()
       constructionLineRef.current?.geometry.dispose()
       ;(constructionLineRef.current?.material as THREE.Material | undefined)?.dispose()
+      angleMarkLineRef.current?.geometry.dispose()
+      ;(angleMarkLineRef.current?.material as THREE.Material | undefined)?.dispose()
+      raycastMeshRef.current?.geometry.dispose()
+      ;(raycastMeshRef.current?.material as THREE.Material | undefined)?.dispose()
       renderer.dispose()
       renderer.domElement.remove()
       sceneRef.current = null
@@ -231,12 +265,16 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
       solidLineRef.current = null
       dashedLineRef.current = null
       constructionLineRef.current = null
+      angleMarkLineRef.current = null
+      raycastMeshRef.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Rebuild topology + the two line meshes when the primitive/segments/flat
-  // change. vertexColors so each edge can carry its own override color.
+  // Rebuild topology + the two line meshes + the invisible raycast mesh
+  // (used only to hit-test "which face was clicked" for angle marks) when
+  // the primitive/segments/flat change. vertexColors so each edge can carry
+  // its own override color.
   useEffect(() => {
     const group = groupRef.current
     if (!group) return
@@ -251,11 +289,22 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
       dashedLineRef.current.geometry.dispose()
       ;(dashedLineRef.current.material as THREE.Material).dispose()
     }
+    if (raycastMeshRef.current) {
+      group.remove(raycastMeshRef.current)
+      raycastMeshRef.current.geometry.dispose()
+      ;(raycastMeshRef.current.material as THREE.Material).dispose()
+    }
 
     const geometry = buildGeometry(zone.primitive, zone.segments ?? 0, zone.flat ?? false)
     edgeTopologyRef.current = buildEdgeTopology(geometry)
     faceTopologyRef.current = buildFaceTopology(geometry)
-    geometry.dispose()
+
+    // Fully transparent but still `visible` (Raycaster skips invisible
+    // objects) — exists purely so pickFaceVertex can hit-test "which
+    // triangle/face did the user click", never actually painted.
+    const raycastMesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }))
+    group.add(raycastMesh)
+    raycastMeshRef.current = raycastMesh
 
     const solidLine = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ vertexColors: true }))
     group.add(solidLine)
@@ -291,6 +340,29 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
     constructionLineRef.current = line
     render()
   }, [zone.primitive, zone.segments, zone.flat, zone.constructionLines, render])
+
+  // Angle marks — small arcs living inside a face between the two edges
+  // meeting at one of its corners (see buildAngleMarksGeometry). Same
+  // rotate-for-free pattern as construction lines.
+  useEffect(() => {
+    const group = groupRef.current
+    if (!group) return
+    if (angleMarkLineRef.current) {
+      group.remove(angleMarkLineRef.current)
+      angleMarkLineRef.current.geometry.dispose()
+      ;(angleMarkLineRef.current.material as THREE.Material).dispose()
+    }
+    const { positions, colors, arcMidpoints } = buildAngleMarksGeometry(edgeTopologyRef.current, faceTopologyRef.current, zone.vertexMarks ?? [])
+    arcMidpointsRef.current = arcMidpoints
+    const geometry = new THREE.BufferGeometry()
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
+    const line = new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({ vertexColors: true }))
+    group.add(line)
+    angleMarkLineRef.current = line
+    updateVisualization()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zone.primitive, zone.segments, zone.flat, zone.vertexMarks])
 
   // Colors changed (base or per-edge overrides) without a topology rebuild.
   useEffect(() => {
@@ -372,22 +444,54 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
     return bestId !== null && bestDist <= PICK_THRESHOLD_PX ? { id: bestId, dist: bestDist } : null
   }, [canvasWidth, canvasHeight, zone.constructionLines])
 
-  const pickVertex = useCallback((localX: number, localY: number): { index: number; dist: number } | null => {
+  // Hit-tests EXISTING angle marks by their arc's midpoint — lets an already
+  // -placed mark be recolored/deleted/labeled without re-entering angle
+  // mode, same precedent as construction lines (creation needs the
+  // dedicated mode/tool, editing an existing one doesn't).
+  const pickAngleMark = useCallback((localX: number, localY: number): { mark: VertexMark; dist: number } | null => {
     const group = groupRef.current
     const camera = cameraRef.current
-    if (!group || !camera) return null
-    const { vertices } = getLocalSnapPoints(edgeTopologyRef.current)
-    let bestIndex = -1
-    let bestDist = Infinity
-    for (let index = 0; index < vertices.length; index++) {
-      const p = projectPoint(vertices[index], group, camera, canvasWidth, canvasHeight)
+    if (!group || !camera || !zone.vertexMarks?.length) return null
+    let best: { mark: VertexMark; dist: number } | null = null
+    for (const mark of zone.vertexMarks) {
+      const mid = arcMidpointsRef.current.get(mark.id)
+      if (!mid) continue
+      const p = projectPoint(mid, group, camera, canvasWidth, canvasHeight)
       const dist = Math.hypot(localX - p.x, localY - p.y)
-      if (dist < bestDist) {
-        bestDist = dist
-        bestIndex = index
-      }
+      if (!best || dist < best.dist) best = { mark, dist }
     }
-    return bestIndex !== -1 && bestDist <= VERTEX_PICK_THRESHOLD_PX ? { index: bestIndex, dist: bestDist } : null
+    return best && best.dist <= ANGLE_PICK_THRESHOLD_PX ? best : null
+  }, [canvasWidth, canvasHeight, zone.vertexMarks])
+
+  // Angle-mode picking: raycasts to find which FACE was clicked, then the
+  // nearest of that face's own corners, then the two edges of the face
+  // meeting there — the (face, corner) pair an angle mark needs, since a
+  // bare vertex alone is ambiguous (several faces can share it).
+  const pickFaceVertex = useCallback((localX: number, localY: number): { faceIndex: number; edgeIndexA: number; edgeIndexB: number } | null => {
+    const group = groupRef.current
+    const camera = cameraRef.current
+    const mesh = raycastMeshRef.current
+    if (!group || !camera || !mesh) return null
+    const ndcX = (localX / canvasWidth) * 2 - 1
+    const ndcY = -(localY / canvasHeight) * 2 + 1
+    raycasterRef.current.setFromCamera(new THREE.Vector2(ndcX, ndcY), camera)
+    const hits = raycasterRef.current.intersectObject(mesh, false)
+    const triIndex = hits[0]?.faceIndex
+    if (triIndex === undefined || triIndex === null) return null
+    const faces = faceTopologyRef.current
+    const faceIndex = faces.findIndex(f => f.triangleIndices.includes(triIndex))
+    if (faceIndex === -1) return null
+    const face = faces[faceIndex]
+    const hitLocal = group.worldToLocal(hits[0].point.clone())
+    let bestVertex: THREE.Vector3 | null = null
+    let bestDist = Infinity
+    for (const v of face.vertices) {
+      const d = v.distanceTo(hitLocal)
+      if (d < bestDist) { bestDist = d; bestVertex = v }
+    }
+    if (!bestVertex) return null
+    const pair = findFaceEdgesAtVertex(edgeTopologyRef.current, face, bestVertex)
+    return pair ? { faceIndex, edgeIndexA: pair[0], edgeIndexB: pair[1] } : null
   }, [canvasWidth, canvasHeight])
 
   // Rotate is the default gesture on the shape body — no mode to enter first.
@@ -423,22 +527,31 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
       onRotationCommit(rotationRef.current.x, rotationRef.current.y, rotationRef.current.z)
       return
     }
-    // A plain click (no drag): pick whichever of a vertex, a construction
-    // line, or an edge is actually closest to the click, not a fixed
-    // priority order — a median often runs close to a real edge in a
-    // small/dense primitive, and a fixed priority made the loser
-    // practically unselectable there. Vertices are checked too so clicking
-    // a corner marks/selects it instead of the edge that happens to pass
-    // through it.
     const box = e.currentTarget.getBoundingClientRect()
     const localX = e.clientX - box.left
     const localY = e.clientY - box.top
+
+    // The "∠ Угол" tool takes over plain clicks entirely: pick a face+
+    // corner and create/select its mark, ignoring edges/lines underneath.
+    if (angleMode) {
+      const hit = pickFaceVertex(localX, localY)
+      if (!hit) { setPicker(null); return }
+      const existing = findVertexMark(zone.vertexMarks, hit.faceIndex, hit.edgeIndexA, hit.edgeIndexB)
+      onVertexMarkUpsert(hit.faceIndex, hit.edgeIndexA, hit.edgeIndexB, existing?.color ?? zone.color)
+      setPicker({ kind: 'vertex', faceIndex: hit.faceIndex, edgeIndexA: hit.edgeIndexA, edgeIndexB: hit.edgeIndexB })
+      return
+    }
+
+    // A plain click (no drag): pick whichever of an existing angle mark, a
+    // construction line, or an edge is actually closest to the click, not a
+    // fixed priority order — a median often runs close to a real edge in a
+    // small/dense primitive, and a fixed priority made the loser
+    // practically unselectable there.
     const edgeHit = pickEdge(localX, localY)
     const lineHit = pickConstructionLine(localX, localY)
-    const vertexHit = pickVertex(localX, localY)
-    if (vertexHit && (!lineHit || vertexHit.dist <= lineHit.dist) && (!edgeHit || vertexHit.dist <= edgeHit.dist)) {
-      if (!zone.vertexMarks?.[vertexHit.index]) onVertexColorChange(vertexHit.index, zone.color)
-      setPicker({ kind: 'vertex', vertexIndex: vertexHit.index })
+    const angleHit = pickAngleMark(localX, localY)
+    if (angleHit && (!lineHit || angleHit.dist <= lineHit.dist) && (!edgeHit || angleHit.dist <= edgeHit.dist)) {
+      setPicker({ kind: 'vertex', faceIndex: angleHit.mark.faceIndex, edgeIndexA: angleHit.mark.edgeIndexA, edgeIndexB: angleHit.mark.edgeIndexB })
     } else if (lineHit && (!edgeHit || lineHit.dist <= edgeHit.dist)) {
       setPicker({ kind: 'line', lineId: lineHit.id })
     } else if (edgeHit) {
@@ -446,36 +559,41 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
     } else {
       setPicker(null)
     }
-  }, [onRotationCommit, pickEdge, pickConstructionLine, pickVertex, onVertexColorChange, zone.vertexMarks, zone.color])
+  }, [onRotationCommit, pickEdge, pickConstructionLine, pickAngleMark, angleMode, pickFaceVertex, onVertexMarkUpsert, zone.vertexMarks, zone.color])
 
-  // Double-click an edge or a vertex mark to write an arbitrary label on it
+  // Double-click an edge or an angle mark to write an arbitrary label on it
   // (length, angle value, anything) — positioned where the user clicked,
   // like the recolor popup used to be, since this one *is* a short-lived
   // text-entry gesture tied to that exact spot rather than a persistent
-  // menu. A vertex with no mark yet gets one created on the spot, so
-  // double-clicking a bare corner both marks and labels it in one gesture.
+  // menu. Works regardless of angleMode — double-clicking a freshly-created
+  // mark (angle mode having just upserted it on the matching single click)
+  // labels it in the same gesture.
   const handleDoubleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const box = e.currentTarget.getBoundingClientRect()
     const localX = e.clientX - box.left
     const localY = e.clientY - box.top
-    const vertexHit = pickVertex(localX, localY)
+    const angleHit = pickAngleMark(localX, localY)
     const edgeHit = pickEdge(localX, localY)
     setPicker(null)
-    if (vertexHit && (!edgeHit || vertexHit.dist <= edgeHit.dist)) {
-      if (!zone.vertexMarks?.[vertexHit.index]) onVertexColorChange(vertexHit.index, zone.color)
-      setEditingLabel({ target: { kind: 'vertex', vertexIndex: vertexHit.index }, text: zone.vertexMarks?.[vertexHit.index]?.label ?? '', clientX: e.clientX, clientY: e.clientY })
+    if (angleHit && (!edgeHit || angleHit.dist <= edgeHit.dist)) {
+      setEditingLabel({
+        target: { kind: 'vertex', faceIndex: angleHit.mark.faceIndex, edgeIndexA: angleHit.mark.edgeIndexA, edgeIndexB: angleHit.mark.edgeIndexB },
+        text: angleHit.mark.label ?? '',
+        clientX: e.clientX,
+        clientY: e.clientY,
+      })
     } else if (edgeHit) {
       setEditingLabel({ target: { kind: 'edge', edgeIndex: edgeHit.index }, text: zone.edgeLabels?.[edgeHit.index] ?? '', clientX: e.clientX, clientY: e.clientY })
     }
-  }, [pickVertex, pickEdge, zone.vertexMarks, zone.edgeLabels, zone.color, onVertexColorChange])
+  }, [pickAngleMark, pickEdge, zone.edgeLabels])
 
   const commitEditingLabel = useCallback(() => {
     if (!editingLabel) return
     const text = editingLabel.text.trim()
     if (editingLabel.target.kind === 'edge') onEdgeLabelChange(editingLabel.target.edgeIndex, text)
-    else onVertexLabelChange(editingLabel.target.vertexIndex, text)
+    else onVertexMarkLabelChange(editingLabel.target.faceIndex, editingLabel.target.edgeIndexA, editingLabel.target.edgeIndexB, text)
     setEditingLabel(null)
-  }, [editingLabel, onEdgeLabelChange, onVertexLabelChange])
+  }, [editingLabel, onEdgeLabelChange, onVertexMarkLabelChange])
 
   // Move handle: click selects the zone (surfaces the rename/edit inspector),
   // drag moves it. Delta is tracked from the drag's own start, not
@@ -534,6 +652,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
           ref={containerRef}
           className={styles.canvasHolder}
           data-interactive={interactive || undefined}
+          data-angle-mode={(interactive && angleMode) || undefined}
           onPointerDown={interactive ? handlePointerDown : undefined}
           onPointerMove={interactive ? handlePointerMove : undefined}
           onPointerUp={interactive ? handlePointerUp : undefined}
@@ -553,21 +672,16 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
             {text}
           </div>
         ))}
-        {zone.vertexMarks && Object.entries(zone.vertexMarks).map(([key, mark]: [string, VertexMark]) => (
+        {zone.vertexMarks?.filter(mark => mark.label).map(mark => (
           <div
-            key={key}
+            key={mark.id}
             ref={el => {
-              const idx = Number(key)
-              if (el) vertexMarkElRefs.current.set(idx, el)
-              else vertexMarkElRefs.current.delete(idx)
+              if (el) angleLabelElRefs.current.set(mark.id, el)
+              else angleLabelElRefs.current.delete(mark.id)
             }}
-            className={styles.vertexMark}
-            style={{ color: mark.color }}
+            className={styles.edgeLabel}
           >
-            <svg className={styles.vertexMarkIcon} viewBox="-7 -7 14 14" width="14" height="14">
-              <path d="M 0 -6 A 6 6 0 0 1 0 6" fill="none" stroke="currentColor" strokeWidth="1.5" />
-            </svg>
-            {mark.label && <span className={styles.vertexMarkLabel}>{mark.label}</span>}
+            {mark.label}
           </div>
         ))}
         <button
@@ -601,7 +715,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
               style={{ '--swatch-color': swatch } as React.CSSProperties}
               onClick={() => {
                 if (picker.kind === 'edge') onEdgeColorChange(picker.edgeIndex, swatch)
-                else if (picker.kind === 'vertex') onVertexColorChange(picker.vertexIndex, swatch)
+                else if (picker.kind === 'vertex') onVertexMarkUpsert(picker.faceIndex, picker.edgeIndexA, picker.edgeIndexB, swatch)
                 else onLineColorChange(picker.lineId, swatch)
                 setPicker(null)
               }}
@@ -614,7 +728,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, onRot
               className={styles.popoverDelete}
               onClick={() => {
                 if (picker.kind === 'line') onLineDelete(picker.lineId)
-                else if (picker.kind === 'vertex') onVertexMarkDelete(picker.vertexIndex)
+                else if (picker.kind === 'vertex') onVertexMarkDelete(picker.faceIndex, picker.edgeIndexA, picker.edgeIndexB)
                 setPicker(null)
               }}
               title={picker.kind === 'line' ? 'Удалить линию' : 'Удалить отметку'}

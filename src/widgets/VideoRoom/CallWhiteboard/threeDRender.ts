@@ -131,6 +131,14 @@ export function buildEdgeTopology(geometry: THREE.BufferGeometry): EdgeTopology[
 export interface FaceTopology {
   center: THREE.Vector3
   normal: THREE.Vector3
+  /** Local-space positions of every vertex bounding this face — used to
+   * test "does this face touch vertex V" by position match, and to resolve
+   * an angle mark's corner (see findFaceEdgesAtVertex). */
+  vertices: THREE.Vector3[]
+  /** Source-geometry triangle indices belonging to this face — lets a
+   * raycast hit (which reports a triangle index) be mapped back to its
+   * face, for "which face did the user click" hit-testing. */
+  triangleIndices: number[]
 }
 
 /**
@@ -232,9 +240,57 @@ export function buildFaceTopology(geometry: THREE.BufferGeometry): FaceTopology[
     const center = new THREE.Vector3()
     for (const id of vertIds) center.add(weldedPosition.get(id)!)
     center.multiplyScalar(1 / vertIds.size)
-    faces.push({ center, normal: normalSum.normalize() })
+    const vertices = Array.from(vertIds, id => weldedPosition.get(id)!)
+    faces.push({ center, normal: normalSum.normalize(), vertices, triangleIndices: tris })
   }
   return faces
+}
+
+/**
+ * Given a face and a vertex on its boundary, finds the two edges (indices
+ * into `topology`) that meet at that vertex WITHIN this face — the pair an
+ * angle mark's arc spans. Only edges with BOTH endpoints among the face's
+ * own vertices qualify, which is what excludes a vertex's other edges that
+ * belong to a different face (e.g. a cone's rim vertex also has an edge up
+ * to the apex, on the lateral face, not the base). Internal "spoke" edges
+ * of a triangulated N-gon face never appear in `topology` to begin with —
+ * two triangles fanned from the same coplanar face have a 0° angle between
+ * their normals, so buildEdgeTopology's crease test already drops them.
+ */
+export function findFaceEdgesAtVertex(topology: EdgeTopology[], face: FaceTopology, vertexPos: THREE.Vector3, epsilon = 0.01): [number, number] | null {
+  const touching: number[] = []
+  for (let i = 0; i < topology.length; i++) {
+    const edge = topology[i]
+    const touchesV1 = edge.v1.distanceTo(vertexPos) < epsilon
+    const touchesV2 = edge.v2.distanceTo(vertexPos) < epsilon
+    if (!touchesV1 && !touchesV2) continue
+    const other = touchesV1 ? edge.v2 : edge.v1
+    if (face.vertices.some(fv => fv.distanceTo(other) < epsilon)) touching.push(i)
+  }
+  return touching.length >= 2 ? [touching[0], touching[1]] : null
+}
+
+/** Points (vertex → …→ vertex, A-to-B ordered) tracing a small angle-mark
+ * arc: from `dirA` curving toward `dirB` (both unit vectors from `vertex`,
+ * both lying in the face's plane) around `axis` (the face normal), at
+ * `radius`. The caller turns consecutive points into LineSegments position
+ * pairs, and can also read off e.g. the middle point as the arc's anchor
+ * for hit-testing/label placement. */
+export function buildAngleArcPoints(vertex: THREE.Vector3, dirA: THREE.Vector3, dirB: THREE.Vector3, axis: THREE.Vector3, radius: number, segments = 10): THREE.Vector3[] {
+  const angle = dirA.angleTo(dirB)
+  if (angle < 1e-4) return []
+  // Right-hand rule: rotating dirA by +angle around (dirA × dirB) lands
+  // exactly on dirB. `axis` (the face normal) may point either way relative
+  // to that, so match its sign via the dot product rather than guessing.
+  const cross = dirA.clone().cross(dirB)
+  const sign = cross.dot(axis) >= 0 ? 1 : -1
+  const points: THREE.Vector3[] = [vertex.clone().addScaledVector(dirA, radius)]
+  for (let i = 1; i <= segments; i++) {
+    const t = (i / segments) * angle * sign
+    const dir = dirA.clone().applyAxisAngle(axis, t)
+    points.push(vertex.clone().addScaledVector(dir, radius))
+  }
+  return points
 }
 
 export interface ClassifiedEdge {

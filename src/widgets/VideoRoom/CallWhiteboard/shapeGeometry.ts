@@ -52,14 +52,27 @@ export interface ThreeDZone extends ThreeDShapeMeta {
    * projected midpoint — see the note in ThreeDZoneCanvas on why the text
    * itself doesn't tilt with the 3D rotation. */
   edgeLabels?: Record<number, string>
-  /** Vertex index → a small "mark this corner" semicircle shown there, set
-   * by clicking directly on a vertex — double-click to add/edit its text
-   * (e.g. an angle value). Presence of a key is what makes the mark
-   * visible; deleting it (not just clearing the label) removes it. */
-  vertexMarks?: Record<number, VertexMark>
+  /** Angle marks — small arcs drawn INSIDE a specific face, between the two
+   * edges that meet at one of its corners (see VertexMark). Created with
+   * the dedicated "∠ Угол" tool, which requires picking both the face and
+   * the corner (a bare vertex isn't enough — several faces can share it,
+   * e.g. a cube corner touches 3). */
+  vertexMarks?: VertexMark[]
 }
 
+/** One angle mark: the arc lives inside `faceIndex`, spanning from
+ * `edgeIndexA` to `edgeIndexB` at the vertex those two edges share (edge
+ * indices are stable within a given primitive/segments/flat — see
+ * buildEdgeTopology's iteration order). The (faceIndex, edgeIndexA,
+ * edgeIndexB) triple is the mark's real identity — `id` only exists for a
+ * stable React key, operations (recolor/label/delete) match by the triple
+ * so a freshly-created mark can be addressed before its mutateElement
+ * round-trip lands. */
 export interface VertexMark {
+  id: string
+  faceIndex: number
+  edgeIndexA: number
+  edgeIndexB: number
   color: string
   label?: string
 }

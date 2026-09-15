@@ -19,12 +19,14 @@ interface Props {
   /** False while a drawing tool (not selection/hand) is active — zones stop
    * grabbing drags so that tool can be used directly over the shape. */
   interactive: boolean
+  /** "∠ Угол" tool active — see ThreeDZoneCanvas's angleMode prop. */
+  angleMode: boolean
   onRotationCommit: (zoneElementId: string, rotationX: number, rotationY: number, rotationZ: number) => void
   onEdgeColorChange: (zoneElementId: string, edgeIndex: number, color: string) => void
   onEdgeLabelChange: (zoneElementId: string, edgeIndex: number, text: string) => void
-  onVertexColorChange: (zoneElementId: string, vertexIndex: number, color: string) => void
-  onVertexLabelChange: (zoneElementId: string, vertexIndex: number, text: string) => void
-  onVertexMarkDelete: (zoneElementId: string, vertexIndex: number) => void
+  onVertexMarkUpsert: (zoneElementId: string, faceIndex: number, edgeIndexA: number, edgeIndexB: number, color: string) => void
+  onVertexMarkLabelChange: (zoneElementId: string, faceIndex: number, edgeIndexA: number, edgeIndexB: number, text: string) => void
+  onVertexMarkDelete: (zoneElementId: string, faceIndex: number, edgeIndexA: number, edgeIndexB: number) => void
   onLineColorChange: (zoneElementId: string, lineId: string, color: string) => void
   onLineDelete: (zoneElementId: string, lineId: string) => void
   onSelectZone: (zoneElementId: string) => void
@@ -32,7 +34,7 @@ interface Props {
   onResizeZoneTo: (zoneElementId: string, width: number, height: number) => void
 }
 
-export function ThreeDZoneLayer({ elements, viewTransform, interactive, onRotationCommit, onEdgeColorChange, onEdgeLabelChange, onVertexColorChange, onVertexLabelChange, onVertexMarkDelete, onLineColorChange, onLineDelete, onSelectZone, onMoveZoneTo, onResizeZoneTo }: Props) {
+export function ThreeDZoneLayer({ elements, viewTransform, interactive, angleMode, onRotationCommit, onEdgeColorChange, onEdgeLabelChange, onVertexMarkUpsert, onVertexMarkLabelChange, onVertexMarkDelete, onLineColorChange, onLineDelete, onSelectZone, onMoveZoneTo, onResizeZoneTo }: Props) {
   const zones = useMemo(() => getAllZones(elements), [elements])
   const flatViewTransform = { scrollX: viewTransform.scrollX, scrollY: viewTransform.scrollY, zoom: viewTransform.zoom.value }
 
@@ -45,12 +47,13 @@ export function ThreeDZoneLayer({ elements, viewTransform, interactive, onRotati
           zone={zone}
           viewTransform={flatViewTransform}
           interactive={interactive}
+          angleMode={angleMode}
           onRotationCommit={(x, y, z) => onRotationCommit(element.id, x, y, z)}
           onEdgeColorChange={(edgeIndex, color) => onEdgeColorChange(element.id, edgeIndex, color)}
           onEdgeLabelChange={(edgeIndex, text) => onEdgeLabelChange(element.id, edgeIndex, text)}
-          onVertexColorChange={(vertexIndex, color) => onVertexColorChange(element.id, vertexIndex, color)}
-          onVertexLabelChange={(vertexIndex, text) => onVertexLabelChange(element.id, vertexIndex, text)}
-          onVertexMarkDelete={vertexIndex => onVertexMarkDelete(element.id, vertexIndex)}
+          onVertexMarkUpsert={(faceIndex, edgeIndexA, edgeIndexB, color) => onVertexMarkUpsert(element.id, faceIndex, edgeIndexA, edgeIndexB, color)}
+          onVertexMarkLabelChange={(faceIndex, edgeIndexA, edgeIndexB, text) => onVertexMarkLabelChange(element.id, faceIndex, edgeIndexA, edgeIndexB, text)}
+          onVertexMarkDelete={(faceIndex, edgeIndexA, edgeIndexB) => onVertexMarkDelete(element.id, faceIndex, edgeIndexA, edgeIndexB)}
           onLineColorChange={(lineId, color) => onLineColorChange(element.id, lineId, color)}
           onLineDelete={lineId => onLineDelete(element.id, lineId)}
           onSelect={() => onSelectZone(element.id)}

@@ -20,6 +20,12 @@
       cursor: grabbing;
     }
   }
+
+  // "∠ Угол" tool active — a plain click picks a face+corner instead of
+  // rotating, so a crosshair reads better than the grab hand.
+  &[data-angle-mode] {
+    cursor: crosshair;
+  }
 }
 
 .moveHandle, .resizeHandle {
@@ -130,37 +136,6 @@
   text-overflow: ellipsis;
 }
 
-.vertexMark {
-  // Positioned imperatively, same as .edgeLabel — the icon inside is
-  // additionally rotated (also set imperatively, via a direct style write
-  // on the <svg>) to point away from the shape's centroid, so it nestles
-  // into the corner instead of always facing one fixed way.
-  position: absolute;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-  gap: 3px;
-}
-
-.vertexMarkIcon {
-  flex-shrink: 0;
-}
-
-.vertexMarkLabel {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
-  padding: 1px 5px;
-  font-size: 12px;
-  line-height: 1.4;
-  color: #1e1e1e;
-  white-space: nowrap;
-  max-width: 160px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .labelInput {
   position: fixed;
   z-index: 20;
@@ -198,7 +173,7 @@
   .popoverSwatch:hover {
     border-color: rgba(255, 255, 255, 0.3);
   }
-  .edgeLabel, .labelInput, .vertexMarkLabel {
+  .edgeLabel, .labelInput {
     background: #1a1826;
     border-color: rgba(255, 255, 255, 0.16);
     color: rgba(255, 255, 255, 0.85);

@@ -58,6 +58,15 @@ const EXCALIDRAW_UI_OPTIONS = {
   },
 }
 
+// Identity for a vertex mark is the (faceIndex, edgeIndexA, edgeIndexB)
+// triple, not its `id` — a freshly-created mark can be addressed this way
+// before its mutateElement round-trip lands, and matching is order-
+// independent since the two edges could resolve either way.
+function findVertexMarkIndex(marks: ThreeDZone['vertexMarks'], faceIndex: number, edgeIndexA: number, edgeIndexB: number): number {
+  return (marks ?? []).findIndex(m => m.faceIndex === faceIndex
+    && ((m.edgeIndexA === edgeIndexA && m.edgeIndexB === edgeIndexB) || (m.edgeIndexA === edgeIndexB && m.edgeIndexB === edgeIndexA)))
+}
+
 type PopoverKind = 'formula' | 'grid' | '3d' | null
 
 interface EditingFormula {
@@ -111,6 +120,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
   const [gridSettings, setGridSettings] = useState<GridSettings>(DEFAULT_GRID_SETTINGS)
   const [viewTransform, setViewTransform] = useState<ViewTransform>({ scrollX: 0, scrollY: 0, zoom: DEFAULT_ZOOM, offsetLeft: 0, offsetTop: 0 })
   const [constructionMode, setConstructionMode] = useState(false)
+  const [angleMode, setAngleMode] = useState(false)
   const [toolbarCollapsed, setToolbarCollapsed] = useState(false)
   const [sceneElements, setSceneElements] = useState<readonly ExcalidrawElement[]>([])
   const [selectedElementIds, setSelectedElementIds] = useState<Record<string, boolean>>({})
@@ -432,43 +442,52 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
     mutateElement(el, { customData: { threeDZone: zone } })
   }, [])
 
-  // Setting a color is also how a vertex mark gets created — the first
-  // click on a bare vertex calls this with the zone's own color before
-  // showing the recolor popover, so "click a corner" and "recolor an
+  // Setting a color is also how a mark gets created — clicking a bare
+  // corner in angle mode calls this with the zone's own color before
+  // showing the recolor popover, so "mark a corner" and "recolor an
   // existing mark" are the same code path.
-  const handleZoneVertexColorChange = useCallback(async (zoneElementId: string, vertexIndex: number, color: string) => {
+  const handleZoneVertexMarkUpsert = useCallback(async (zoneElementId: string, faceIndex: number, edgeIndexA: number, edgeIndexB: number, color: string) => {
     if (!apiRef.current) return
     const { mutateElement } = await import('@excalidraw/excalidraw')
     const el = apiRef.current.getSceneElements().find(e => e.id === zoneElementId)
     if (!el) return
     const existing = readThreeDZone(el)
     if (!existing) return
-    const zone: ThreeDZone = { ...existing, vertexMarks: { ...existing.vertexMarks, [vertexIndex]: { ...existing.vertexMarks?.[vertexIndex], color } } }
+    const marks = [...(existing.vertexMarks ?? [])]
+    const idx = findVertexMarkIndex(marks, faceIndex, edgeIndexA, edgeIndexB)
+    if (idx === -1) marks.push({ id: crypto.randomUUID(), faceIndex, edgeIndexA, edgeIndexB, color })
+    else marks[idx] = { ...marks[idx], color }
+    const zone: ThreeDZone = { ...existing, vertexMarks: marks }
     mutateElement(el, { customData: { threeDZone: zone } })
   }, [])
 
-  const handleZoneVertexLabelChange = useCallback(async (zoneElementId: string, vertexIndex: number, text: string) => {
+  const handleZoneVertexMarkLabelChange = useCallback(async (zoneElementId: string, faceIndex: number, edgeIndexA: number, edgeIndexB: number, text: string) => {
     if (!apiRef.current) return
     const { mutateElement } = await import('@excalidraw/excalidraw')
     const el = apiRef.current.getSceneElements().find(e => e.id === zoneElementId)
     if (!el) return
     const existing = readThreeDZone(el)
     if (!existing) return
-    const existingMark = existing.vertexMarks?.[vertexIndex]
-    const zone: ThreeDZone = { ...existing, vertexMarks: { ...existing.vertexMarks, [vertexIndex]: { color: existingMark?.color ?? existing.color, label: text || undefined } } }
+    const marks = [...(existing.vertexMarks ?? [])]
+    const idx = findVertexMarkIndex(marks, faceIndex, edgeIndexA, edgeIndexB)
+    if (idx === -1) marks.push({ id: crypto.randomUUID(), faceIndex, edgeIndexA, edgeIndexB, color: existing.color, label: text || undefined })
+    else marks[idx] = { ...marks[idx], label: text || undefined }
+    const zone: ThreeDZone = { ...existing, vertexMarks: marks }
     mutateElement(el, { customData: { threeDZone: zone } })
   }, [])
 
-  const handleZoneVertexMarkDelete = useCallback(async (zoneElementId: string, vertexIndex: number) => {
+  const handleZoneVertexMarkDelete = useCallback(async (zoneElementId: string, faceIndex: number, edgeIndexA: number, edgeIndexB: number) => {
     if (!apiRef.current) return
     const { mutateElement } = await import('@excalidraw/excalidraw')
     const el = apiRef.current.getSceneElements().find(e => e.id === zoneElementId)
     if (!el) return
     const existing = readThreeDZone(el)
     if (!existing) return
-    const vertexMarks = { ...existing.vertexMarks }
-    delete vertexMarks[vertexIndex]
-    const zone: ThreeDZone = { ...existing, vertexMarks }
+    const idx = findVertexMarkIndex(existing.vertexMarks, faceIndex, edgeIndexA, edgeIndexB)
+    if (idx === -1) return
+    const marks = [...(existing.vertexMarks ?? [])]
+    marks.splice(idx, 1)
+    const zone: ThreeDZone = { ...existing, vertexMarks: marks }
     mutateElement(el, { customData: { threeDZone: zone } })
   }, [])
 
@@ -615,11 +634,12 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
           elements={sceneElements}
           viewTransform={viewTransform}
           interactive={activeToolType === 'selection' || activeToolType === 'hand'}
+          angleMode={angleMode}
           onRotationCommit={handleZoneRotationCommit}
           onEdgeColorChange={handleZoneEdgeColorChange}
           onEdgeLabelChange={handleZoneEdgeLabelChange}
-          onVertexColorChange={handleZoneVertexColorChange}
-          onVertexLabelChange={handleZoneVertexLabelChange}
+          onVertexMarkUpsert={handleZoneVertexMarkUpsert}
+          onVertexMarkLabelChange={handleZoneVertexMarkLabelChange}
           onVertexMarkDelete={handleZoneVertexMarkDelete}
           onLineColorChange={handleZoneLineColorChange}
           onLineDelete={handleZoneLineDelete}
@@ -699,10 +719,24 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
                 <button
                   type="button"
                   className={`${styles.formulaButton} ${constructionMode ? styles.formulaButtonActive : ''}`}
-                  onClick={() => setConstructionMode(v => !v)}
+                  onClick={() => {
+                    setAngleMode(false)
+                    setConstructionMode(v => !v)
+                  }}
                   title="Построения: линии со снапом к вершинам/центру фигур"
                 >
                   📐 Построения
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.formulaButton} ${angleMode ? styles.formulaButtonActive : ''}`}
+                  onClick={() => {
+                    setConstructionMode(false)
+                    setAngleMode(v => !v)
+                  }}
+                  title="Угол: отметьте грань и угол на ней — клик по фигуре добавит дугу между двумя сторонами этого угла"
+                >
+                  ∠ Угол
                 </button>
               </>
             )}
