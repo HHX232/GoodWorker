@@ -204,6 +204,46 @@
   color: #fff;
 }
 
+.recordSectionTitle {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #999;
+  margin: 4px 0 10px;
+}
+
+.recordItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #EEF2FF;
+  border: 0.5px solid #D7DEFB;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  color: #534AB7;
+  transition: background 0.15s;
+
+  &:hover { background: #E1E7FE; }
+
+  svg { flex-shrink: 0; opacity: 0.6; }
+}
+
+.recordItemPast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #F7F7F9;
+  border: 0.5px solid #ECECF0;
+  opacity: 0.75;
+}
+
 .footer {
   display: flex;
   align-items: center;
@@ -241,6 +281,9 @@
   .itemTitle { color: #e8eaf0; }
   .itemMeta { color: rgba(255, 255, 255, 0.3); }
   .itemPrice { color: #e8eaf0; }
+  .recordSectionTitle { color: rgba(255, 255, 255, 0.3); }
+  .recordItem { background: rgba(83, 74, 183, 0.12); border-color: rgba(165, 180, 252, 0.25); color: #a5b4fc; &:hover { background: rgba(83, 74, 183, 0.2); } }
+  .recordItemPast { background: rgba(255, 255, 255, 0.03); border-color: rgba(255, 255, 255, 0.06); }
   .footer { border-top-color: rgba(255, 255, 255, 0.07); }
   .totalLabel { color: rgba(255, 255, 255, 0.3); }
   .totalValue { color: #e8eaf0; }

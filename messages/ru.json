@@ -1612,6 +1612,11 @@
       "totalOwed": "Итого к оплате",
       "tabPayment": "Оплата",
       "tabCreateBooking": "Создать запись",
+      "tabRecords": "Активные записи",
+      "upcomingRecords": "Запланировано",
+      "pastRecords": "Прошедшие (последние 10)",
+      "noUpcomingRecords": "Нет запланированных занятий",
+      "noPastRecords": "Прошедших занятий пока нет",
       "createBookingHint": "Записать {name} на новое занятие.",
       "createBookingBtn": "Создать запись"
     }

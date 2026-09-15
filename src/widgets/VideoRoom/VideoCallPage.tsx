@@ -233,8 +233,10 @@ useEffect(() => {
   const broadcastChunkedRef = useRef<((msg: object) => void) | null>(null)
   const whiteboardElementsRef = useRef<any[] | null>(null)
   useEffect(() => { whiteboardElementsRef.current = whiteboardElements }, [whiteboardElements])
-  // Tracks previous testIsMain value so we only reload camera on hide/stop, not on initial mount
+  // Tracks previous testIsMain/layout values so we only reload camera on an
+  // actual transition, not on initial mount
   const testWasMainRef = useRef(false)
+  const layoutWasRef = useRef<Layout>(layout)
   // Bumped after reloadCamera() settles from a whiteboard/test main-slot transition, forcing
   // useTranscription to build a fresh SpeechRecognition instance (see mediaResetKey doc there).
   const [srResetKey, setSrResetKey] = useState(0)
@@ -525,12 +527,15 @@ useEffect(() => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [participantCount])
 
-  // ── Reload camera whenever the test/whiteboard tile enters or leaves the main slot ──
+  // ── Reload camera whenever the test/whiteboard tile enters/leaves the main slot, OR the layout mode changes ──
   // Fires after React paints new DOM. The local <video> element is looked up by id
   // (see attachVideoWithRetry) and gets recreated in a differently-sized container
-  // on EITHER transition, which detaches the live track — so both directions need
-  // a reload, not just leaving (testWasMainRef guards the initial mount, where
-  // testIsMain is already false and no transition actually happened).
+  // on ANY of these transitions — a whiteboard/test main-slot change, or switching
+  // between pip/split/grid (renderVideo renders a structurally different tree per
+  // layout, so React remounts the tile instead of just resizing it) — which detaches
+  // the live track. Both testIsMain directions and every layout change need a
+  // reload (the *WasRef guards only skip the initial mount, where nothing actually
+  // transitioned yet).
   // On some webcam/mic combo devices, stopping+restarting the camera track here also
   // hiccups the OS audio-capture device the browser's SpeechRecognition (subtitles/
   // конспект) is reading from — and once that happens, restarting the SAME SR instance
@@ -538,8 +543,10 @@ useEffect(() => {
   const testIsMainForEffect = callTest !== null && mainSpeaker === '__test__'
   useEffect(() => {
     const wasMain = testWasMainRef.current
+    const wasLayout = layoutWasRef.current
     testWasMainRef.current = testIsMainForEffect
-    if (wasMain !== testIsMainForEffect) {
+    layoutWasRef.current = layout
+    if (wasMain !== testIsMainForEffect || wasLayout !== layout) {
       // Slight delay so React finishes mounting video elements before reload
       const t = setTimeout(async () => {
         await reloadCamera()
@@ -548,7 +555,7 @@ useEffect(() => {
       return () => clearTimeout(t)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [testIsMainForEffect])
+  }, [testIsMainForEffect, layout])
 
   // ── Auto-join (with room limit check) ─────────────────────────────────────
   useEffect(() => {

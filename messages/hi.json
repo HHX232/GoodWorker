@@ -2627,6 +2627,11 @@
       "totalOwed": "कुल देय राशि",
       "tabPayment": "भुगतान",
       "tabCreateBooking": "रिकॉर्ड बनाएं",
+      "tabRecords": "सक्रिय रिकॉर्ड",
+      "upcomingRecords": "आगामी",
+      "pastRecords": "पिछले (अंतिम 10)",
+      "noUpcomingRecords": "कोई आगामी पाठ नहीं",
+      "noPastRecords": "अभी तक कोई पिछला पाठ नहीं",
       "createBookingHint": "{name} के लिए नया पाठ बुक करें।",
       "createBookingBtn": "रिकॉर्ड बनाएं"
     }

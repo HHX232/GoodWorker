@@ -1612,6 +1612,11 @@
       "totalOwed": "Total owed",
       "tabPayment": "Payment",
       "tabCreateBooking": "Create booking",
+      "tabRecords": "Records",
+      "upcomingRecords": "Upcoming",
+      "pastRecords": "Past (last 10)",
+      "noUpcomingRecords": "No upcoming lessons",
+      "noPastRecords": "No past lessons yet",
       "createBookingHint": "Book a new lesson for {name}.",
       "createBookingBtn": "Create booking"
     }

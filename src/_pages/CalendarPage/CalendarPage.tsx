@@ -346,10 +346,15 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
 
       <PaymentReminderModal
         student={students.find(s => s.id === studentModalId) ?? null}
+        studentEvents={events.filter(e => e.studentId === studentModalId)}
         onClose={() => setStudentModalId(null)}
         onCreateBooking={(studentId) => {
           setStudentModalId(null)
           openCreateModal({initialStudentId: studentId})
+        }}
+        onEditEvent={(eventId) => {
+          setStudentModalId(null)
+          openCreateModal({editEventId: eventId})
         }}
       />
 

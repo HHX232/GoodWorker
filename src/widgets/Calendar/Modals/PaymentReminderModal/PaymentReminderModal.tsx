@@ -1,8 +1,8 @@
 'use client'
 
 import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
-import { CalendarStudent } from '@/shared/types/Calendar/calendar.types'
-import { useTranslations } from 'next-intl'
+import { CalendarEvent, CalendarStudent } from '@/shared/types/Calendar/calendar.types'
+import { useLocale, useTranslations } from 'next-intl'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import styles from './PaymentReminderModal.module.scss'
@@ -24,7 +24,13 @@ interface Summary {
   unpaidCount: number
 }
 
-type Tab = 'payment' | 'create'
+type Tab = 'payment' | 'create' | 'records'
+
+function pad(n: number) { return String(n).padStart(2, '0') }
+
+function isUpcoming(e: CalendarEvent, todayStr: string, nowTimeStr: string): boolean {
+  return e.date > todayStr || (e.date === todayStr && e.startTime >= nowTimeStr)
+}
 
 const NAME_MAX = 30
 function truncateName(name: string): string {
@@ -47,12 +53,16 @@ function StudentMiniHeader({ student }: { student: CalendarStudent }) {
 
 interface PaymentReminderModalProps {
   student: CalendarStudent | null
+  studentEvents?: CalendarEvent[]
   onClose: () => void
   onCreateBooking: (studentId: string) => void
+  onEditEvent?: (eventId: string) => void
 }
 
-export function PaymentReminderModal({ student, onClose, onCreateBooking }: PaymentReminderModalProps) {
+export function PaymentReminderModal({ student, studentEvents = [], onClose, onCreateBooking, onEditEvent }: PaymentReminderModalProps) {
   const t = useTranslations('calendar.paymentReminder')
+  const locale = useLocale()
+  const intlLocale = locale === 'ru' ? 'ru-RU' : 'en-US'
   const [tab, setTab] = useState<Tab>('payment')
   const [summary, setSummary] = useState<Summary | null>(null)
   const [loading, setLoading] = useState(false)
@@ -78,6 +88,23 @@ export function PaymentReminderModal({ student, onClose, onCreateBooking }: Paym
   useEffect(() => { if (student) setTab('payment') }, [student])
 
   if (!student) return null
+
+  const now = new Date()
+  const todayStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+  const nowTimeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}`
+  const activeEvents = studentEvents.filter(e => e.status !== 'cancelled')
+  const upcomingEvents = activeEvents
+    .filter(e => isUpcoming(e, todayStr, nowTimeStr))
+    .sort((a, b) => (a.date + a.startTime).localeCompare(b.date + b.startTime))
+  const pastEvents = activeEvents
+    .filter(e => !isUpcoming(e, todayStr, nowTimeStr))
+    .sort((a, b) => (b.date + b.startTime).localeCompare(a.date + a.startTime))
+    .slice(0, 10)
+
+  const formatEventDate = (dateStr: string) => {
+    const [y, m, d] = dateStr.split('-').map(Number)
+    return new Date(y, m - 1, d).toLocaleDateString(intlLocale, { day: 'numeric', month: 'short' })
+  }
 
   const saveSetting = async () => {
     setSavingSetting(true)
@@ -125,6 +152,12 @@ export function PaymentReminderModal({ student, onClose, onCreateBooking }: Paym
           onClick={() => setTab('payment')}
         >
           {t('tabPayment')}
+        </button>
+        <button
+          className={`${styles.tabBtn} ${tab === 'records' ? styles.tabBtnActive : ''}`}
+          onClick={() => setTab('records')}
+        >
+          {t('tabRecords')}
         </button>
         <button
           className={`${styles.tabBtn} ${tab === 'create' ? styles.tabBtnActive : ''}`}
@@ -192,6 +225,57 @@ export function PaymentReminderModal({ student, onClose, onCreateBooking }: Paym
           <button className={styles.saveBtn} onClick={() => onCreateBooking(student.id)}>
             {t('createBookingBtn')}
           </button>
+        </div>
+      )}
+
+      {tab === 'records' && (
+        <div className={styles.body}>
+          <p className={styles.recordSectionTitle}>{t('upcomingRecords')}</p>
+          {upcomingEvents.length === 0 ? (
+            <div className={styles.empty}>{t('noUpcomingRecords')}</div>
+          ) : (
+            <div className={styles.list}>
+              {upcomingEvents.map(e => (
+                <button
+                  key={e.id}
+                  type="button"
+                  className={styles.recordItem}
+                  onClick={() => onEditEvent?.(e.id)}
+                >
+                  <div className={styles.itemInfo}>
+                    <span className={styles.itemTitle}>{e.title}</span>
+                    <span className={styles.itemMeta}>
+                      {formatEventDate(e.date)} · {e.startTime}–{e.endTime}
+                    </span>
+                  </div>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                    <path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4z" />
+                  </svg>
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className={styles.divider} />
+
+          <p className={styles.recordSectionTitle}>{t('pastRecords')}</p>
+          {pastEvents.length === 0 ? (
+            <div className={styles.empty}>{t('noPastRecords')}</div>
+          ) : (
+            <div className={styles.list}>
+              {pastEvents.map(e => (
+                <div key={e.id} className={styles.recordItemPast}>
+                  <div className={styles.itemInfo}>
+                    <span className={styles.itemTitle}>{e.title}</span>
+                    <span className={styles.itemMeta}>
+                      {formatEventDate(e.date)} · {e.startTime}–{e.endTime}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

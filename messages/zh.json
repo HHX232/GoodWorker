@@ -2628,6 +2628,11 @@
       "totalOwed": "应付总额",
       "tabPayment": "付款",
       "tabCreateBooking": "创建预约",
+      "tabRecords": "有效预约",
+      "upcomingRecords": "即将到来",
+      "pastRecords": "过去（最近10个）",
+      "noUpcomingRecords": "暂无即将到来的课程",
+      "noPastRecords": "暂无过去的课程",
       "createBookingHint": "为 {name} 预约新课程。",
       "createBookingBtn": "创建预约"
     }
