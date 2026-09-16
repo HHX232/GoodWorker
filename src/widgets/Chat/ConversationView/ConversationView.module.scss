@@ -117,6 +117,101 @@
   margin-bottom: 8px;
 }
 
+.hiddenFileInput {
+  display: none;
+}
+
+.attachmentPreview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  background: #F7F7FB;
+  border: 1px solid #EBEBEB;
+  border-radius: 12px;
+}
+
+.attachmentPreviewImg {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.attachmentPreviewIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: #EBEBF3;
+  color: #534AB7;
+  flex-shrink: 0;
+}
+
+.attachmentPreviewName {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  color: #111118;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attachmentPreviewRemove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #8A8A9A;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover:not(:disabled) { background: #EBEBF3; color: #d64545; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.recordingBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  margin-bottom: 8px;
+  background: rgba(214, 69, 69, 0.08);
+  border-radius: 12px;
+  font-size: 12.5px;
+  color: #d64545;
+}
+
+.recordingDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d64545;
+  flex-shrink: 0;
+  animation: recordingPulse 1.2s ease-in-out infinite;
+}
+
+.recordingTime {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+@keyframes recordingPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
 .composerRow {
   display: flex;
   align-items: flex-end;
@@ -159,6 +254,15 @@
   transition: background 0.15s, color 0.15s;
 
   &:hover { background: #F1F1F6; color: #534AB7; }
+
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+.iconBtnRecording {
+  background: rgba(214, 69, 69, 0.12);
+  color: #d64545;
+
+  &:hover { background: rgba(214, 69, 69, 0.18); color: #d64545; }
 }
 
 .sendBtn {
@@ -204,5 +308,30 @@
     color: rgba(255, 255, 255, 0.4);
     &:hover { background: rgba(129, 140, 248, 0.14); color: #a5b4fc; }
   }
+  .iconBtnRecording {
+    background: rgba(248, 113, 113, 0.16);
+    color: #f87171;
+    &:hover { background: rgba(248, 113, 113, 0.22); color: #f87171; }
+  }
   .sendBtn { background: #4c47a8; &:hover:not(:disabled) { background: #5a54c2; } }
+
+  .attachmentPreview {
+    background: #23263a;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+  .attachmentPreviewIcon {
+    background: rgba(129, 140, 248, 0.14);
+    color: #a5b4fc;
+  }
+  .attachmentPreviewName { color: #e8eaf0; }
+  .attachmentPreviewRemove {
+    color: rgba(255, 255, 255, 0.4);
+    &:hover:not(:disabled) { background: rgba(248, 113, 113, 0.16); color: #f87171; }
+  }
+
+  .recordingBar {
+    background: rgba(248, 113, 113, 0.12);
+    color: #f87171;
+  }
+  .recordingDot { background: #f87171; }
 }

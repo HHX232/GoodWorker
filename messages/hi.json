@@ -2830,6 +2830,15 @@
     "attach": "फ़ाइल संलग्न करें",
     "voice": "वॉइस संदेश",
     "send": "भेजें",
-    "sendError": "संदेश भेजने में विफल"
+    "sendError": "संदेश भेजने में विफल",
+    "attachTooBig": "फ़ाइल बहुत बड़ी है — सीमा 10 एमबी",
+    "attachUploadError": "अटैचमेंट अपलोड करने में विफल",
+    "micDenied": "माइक्रोफ़ोन तक पहुंच नहीं है — ब्राउज़र सेटिंग्स में अनुमति दें",
+    "stopRecording": "रिकॉर्डिंग बंद करें",
+    "recordingIndicator": "वॉइस संदेश रिकॉर्ड हो रहा है…",
+    "removeAttachment": "अटैचमेंट हटाएं",
+    "voiceMessageName": "वॉइस संदेश",
+    "downloadAttachment": "डाउनलोड करें",
+    "imageAttachmentAlt": "छवि"
   }
 }

@@ -2831,6 +2831,15 @@
     "attach": "添加附件",
     "voice": "语音消息",
     "send": "发送",
-    "sendError": "发送消息失败"
+    "sendError": "发送消息失败",
+    "attachTooBig": "文件过大 — 限制为 10 MB",
+    "attachUploadError": "附件上传失败",
+    "micDenied": "无法访问麦克风 — 请在浏览器设置中允许访问",
+    "stopRecording": "停止录音",
+    "recordingIndicator": "正在录制语音消息…",
+    "removeAttachment": "移除附件",
+    "voiceMessageName": "语音消息",
+    "downloadAttachment": "下载",
+    "imageAttachmentAlt": "图片"
   }
 }

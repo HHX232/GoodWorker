@@ -44,17 +44,85 @@ function EventIcon() {
   )
 }
 
+function DownloadIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3v13m0 0l-4-4m4 4l4-4M4 21h16" />
+    </svg>
+  )
+}
+
+/** `1.2 MB` / `340 KB` / `812 B` — mirrors `formatSize` in `InfoFileListEditor`. */
+function formatAttachmentSize(bytes: number | null | undefined): string {
+  if (!bytes || bytes <= 0) return ''
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
 /**
  * Dispatches a single `ChatMessage` to the bubble variant matching its type.
- * Only the `text` variant is fully implemented here — `attachmentType` and
- * `eventType` messages render a minimal, non-crashing placeholder; tickets
- * 04 (attachments) and 05 (event cards) replace those branches with real
- * previews/cards without changing this component's props.
+ * `text` and `attachmentType` (ticket 04 — image preview / audio player /
+ * file-with-download) are fully implemented; `eventType` messages still
+ * render the minimal, non-crashing placeholder left for ticket 05 to
+ * replace with real cards, without changing this component's props.
  */
 export function MessageBubble({ message, isMine }: MessageBubbleProps) {
   const t = useTranslations('chat')
   const locale = useLocale()
   const time = formatTime(message.createdAt, locale)
+
+  /** Real rendering for `attachmentType` — image thumbnail, audio player, or a
+   * generic file row with a download link — plus any caption text sent
+   * alongside the attachment. */
+  function renderAttachment(): ReactNode {
+    const type = message.attachmentType ?? ''
+    const url = message.attachmentUrl
+    const name = message.attachmentName || t('attachmentMessage')
+
+    let attachmentNode: ReactNode
+    if (type.startsWith('image/') && url) {
+      attachmentNode = (
+        <a href={url} target="_blank" rel="noopener noreferrer" className={styles.imageLink}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={url} alt={message.attachmentName || t('imageAttachmentAlt')} className={styles.imageAttachment} />
+        </a>
+      )
+    } else if (type.startsWith('audio/') && url) {
+      attachmentNode = <audio controls src={url} className={styles.audioAttachment} />
+
+    } else {
+      const sizeLabel = formatAttachmentSize(message.attachmentSize)
+      attachmentNode = (
+        <a
+          href={url || '#'}
+          target="_blank"
+          rel="noopener noreferrer"
+          download={message.attachmentName || undefined}
+          className={styles.fileAttachment}
+          aria-label={t('downloadAttachment')}
+        >
+          <span className={styles.fileAttachmentIcon}>
+            <AttachmentIcon />
+          </span>
+          <span className={styles.fileAttachmentInfo}>
+            <span className={styles.fileAttachmentName}>{name}</span>
+            {sizeLabel && <span className={styles.fileAttachmentSize}>{sizeLabel}</span>}
+          </span>
+          <span className={styles.fileAttachmentDownload}>
+            <DownloadIcon />
+          </span>
+        </a>
+      )
+    }
+
+    return (
+      <span className={styles.attachmentContent}>
+        {attachmentNode}
+        {message.text && <span className={styles.text}>{message.text}</span>}
+      </span>
+    )
+  }
 
   let body: ReactNode
   if (message.eventType) {
@@ -65,12 +133,7 @@ export function MessageBubble({ message, isMine }: MessageBubbleProps) {
       </span>
     )
   } else if (message.attachmentType) {
-    body = (
-      <span className={styles.placeholderContent}>
-        <AttachmentIcon />
-        {message.attachmentName || t('attachmentMessage')}
-      </span>
-    )
+    body = renderAttachment()
   } else {
     body = <span className={styles.text}>{message.text}</span>
   }

@@ -3004,6 +3004,15 @@
     "attach": "Attach a file",
     "voice": "Voice message",
     "send": "Send",
-    "sendError": "Failed to send message"
+    "sendError": "Failed to send message",
+    "attachTooBig": "File is too large — 10 MB limit",
+    "attachUploadError": "Failed to upload attachment",
+    "micDenied": "No access to the microphone — allow it in your browser settings",
+    "stopRecording": "Stop recording",
+    "recordingIndicator": "Recording voice message…",
+    "removeAttachment": "Remove attachment",
+    "voiceMessageName": "Voice message",
+    "downloadAttachment": "Download",
+    "imageAttachmentAlt": "Image"
   }
 }

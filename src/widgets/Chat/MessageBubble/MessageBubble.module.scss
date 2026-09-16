@@ -47,6 +47,90 @@
   opacity: 0.85;
 }
 
+.attachmentContent {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.imageLink {
+  display: block;
+  line-height: 0;
+}
+
+.imageAttachment {
+  display: block;
+  max-width: 240px;
+  max-height: 240px;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  object-fit: cover;
+  cursor: zoom-in;
+}
+
+.audioAttachment {
+  display: block;
+  max-width: 260px;
+  width: 100%;
+  height: 36px;
+}
+
+.fileAttachment {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 180px;
+  max-width: 260px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.06);
+  color: inherit;
+  text-decoration: none;
+  transition: background 0.15s;
+
+  &:hover { background: rgba(0, 0, 0, 0.1); }
+}
+
+.fileAttachmentIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
+}
+
+.fileAttachmentInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fileAttachmentName {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fileAttachmentSize {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.fileAttachmentDownload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+
 .time {
   position: absolute;
   right: 14px;
@@ -59,4 +143,10 @@
 :global(html.theme-dark), :global(html.pomodoro-dark) {
   .bubbleMine { background: #4c47a8; color: #fff; }
   .bubbleOther { background: #23263a; color: #e8eaf0; }
+
+  .fileAttachment {
+    background: rgba(255, 255, 255, 0.1);
+    &:hover { background: rgba(255, 255, 255, 0.16); }
+  }
+  .fileAttachmentIcon { background: rgba(255, 255, 255, 0.12); }
 }
