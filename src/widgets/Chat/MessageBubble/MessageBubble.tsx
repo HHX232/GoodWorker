@@ -1,6 +1,7 @@
 'use client'
 
 import type { ChatMessage } from '@/shared/types/Chat/chat.types'
+import { ChatAttachIcon, ChatDownloadIcon, ChatEventIcon } from '@/widgets/Chat/icons'
 import { useLocale, useTranslations } from 'next-intl'
 import type { ReactNode } from 'react'
 import styles from './MessageBubble.module.scss'
@@ -25,31 +26,6 @@ function formatTime(iso: string, locale: string): string {
     console.error('[MessageBubble] formatTime failed', { iso, locale, error: e })
     return ''
   }
-}
-
-function AttachmentIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
-    </svg>
-  )
-}
-
-function EventIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="4" width="18" height="18" rx="2" />
-      <path d="M16 2v4M8 2v4M3 10h18" />
-    </svg>
-  )
-}
-
-function DownloadIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 3v13m0 0l-4-4m4 4l4-4M4 21h16" />
-    </svg>
-  )
 }
 
 /** `1.2 MB` / `340 KB` / `812 B` — mirrors `formatSize` in `InfoFileListEditor`. */
@@ -103,14 +79,14 @@ export function MessageBubble({ message, isMine }: MessageBubbleProps) {
           aria-label={t('downloadAttachment')}
         >
           <span className={styles.fileAttachmentIcon}>
-            <AttachmentIcon />
+            <ChatAttachIcon size={16} strokeWidth={2} />
           </span>
           <span className={styles.fileAttachmentInfo}>
             <span className={styles.fileAttachmentName}>{name}</span>
             {sizeLabel && <span className={styles.fileAttachmentSize}>{sizeLabel}</span>}
           </span>
           <span className={styles.fileAttachmentDownload}>
-            <DownloadIcon />
+            <ChatDownloadIcon size={14} strokeWidth={2} />
           </span>
         </a>
       )
@@ -128,7 +104,7 @@ export function MessageBubble({ message, isMine }: MessageBubbleProps) {
   if (message.eventType) {
     body = (
       <span className={styles.placeholderContent}>
-        <EventIcon />
+        <ChatEventIcon size={16} strokeWidth={2} />
         {t('eventMessage')}
       </span>
     )

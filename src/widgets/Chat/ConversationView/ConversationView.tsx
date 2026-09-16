@@ -1,6 +1,15 @@
 'use client'
 
 import { MessageBubble } from '@/widgets/Chat/MessageBubble/MessageBubble'
+import {
+  ChatBackIcon,
+  ChatAttachIcon,
+  ChatMicIcon,
+  ChatStopIcon,
+  ChatCloseIcon,
+  ChatBubbleIcon,
+  ChatSendIcon,
+} from '@/widgets/Chat/icons'
 import type { ChatMessage, ConversationSummary } from '@/shared/types/Chat/chat.types'
 import { getAvatarColor } from '@/shared/ui/User/UserHeaderCard/UserHeaderCard'
 import { compressImageForUpload } from '@/shared/helpers/compressImageForUpload'
@@ -40,64 +49,6 @@ interface PendingAttachment {
   name: string
   size: number
   mimeType: string
-}
-
-function BackIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M15 18l-6-6 6-6" />
-    </svg>
-  )
-}
-
-function SendIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 2L11 13" />
-      <path d="M22 2l-7 20-4-9-9-4 20-7z" />
-    </svg>
-  )
-}
-
-function PaperclipIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
-    </svg>
-  )
-}
-
-function MicIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="9" y="2" width="6" height="12" rx="3" />
-      <path d="M5 10v1a7 7 0 0014 0v-1M12 18v4M8 22h8" />
-    </svg>
-  )
-}
-
-function StopIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-      <rect x="5" y="5" width="14" height="14" rx="2" />
-    </svg>
-  )
-}
-
-function CloseIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18 6L6 18M6 6l12 12" />
-    </svg>
-  )
-}
-
-function ChatPlaceholderIcon() {
-  return (
-    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
-    </svg>
-  )
 }
 
 /** Merges a freshly-fetched page of messages into the existing list, deduped by id. */
@@ -506,7 +457,7 @@ export function ConversationView({ conversation, onBack }: ConversationViewProps
     <div className={styles.root}>
       <div className={styles.header}>
         <button type="button" className={styles.backBtn} onClick={onBack} aria-label={t('back')}>
-          <BackIcon />
+          <ChatBackIcon size={18} strokeWidth={2} />
         </button>
         <div
           className={styles.avatar}
@@ -528,7 +479,7 @@ export function ConversationView({ conversation, onBack }: ConversationViewProps
 
         {!loading && !loadError && messages.length === 0 && (
           <div className={styles.emptyState}>
-            <ChatPlaceholderIcon />
+            <ChatBubbleIcon size={34} strokeWidth={1.5} />
             <p>{t('conversationEmpty')}</p>
           </div>
         )}
@@ -550,7 +501,7 @@ export function ConversationView({ conversation, onBack }: ConversationViewProps
               <img src={pendingAttachment.previewUrl} alt="" className={styles.attachmentPreviewImg} />
             ) : (
               <span className={styles.attachmentPreviewIcon}>
-                <PaperclipIcon />
+                <ChatAttachIcon size={18} strokeWidth={2} />
               </span>
             )}
             <span className={styles.attachmentPreviewName} title={pendingAttachment.name}>
@@ -563,7 +514,7 @@ export function ConversationView({ conversation, onBack }: ConversationViewProps
               aria-label={t('removeAttachment')}
               disabled={sending}
             >
-              <CloseIcon />
+              <ChatCloseIcon size={14} strokeWidth={2} />
             </button>
           </div>
         )}
@@ -601,7 +552,7 @@ export function ConversationView({ conversation, onBack }: ConversationViewProps
             onClick={handleAttachClick}
             disabled={sending || preparingAttachment || recording}
           >
-            <PaperclipIcon />
+            <ChatAttachIcon size={18} strokeWidth={2} />
           </button>
           <button
             type="button"
@@ -610,7 +561,11 @@ export function ConversationView({ conversation, onBack }: ConversationViewProps
             onClick={handleMicClick}
             disabled={sending || preparingAttachment}
           >
-            {recording ? <StopIcon /> : <MicIcon />}
+            {recording ? (
+              <ChatStopIcon size={14} fill="currentColor" stroke="none" />
+            ) : (
+              <ChatMicIcon size={18} strokeWidth={2} />
+            )}
           </button>
           <button
             type="button"
@@ -619,7 +574,7 @@ export function ConversationView({ conversation, onBack }: ConversationViewProps
             disabled={!canSend}
             onClick={handleSend}
           >
-            <SendIcon />
+            <ChatSendIcon size={18} strokeWidth={2} />
           </button>
         </div>
       </div>
