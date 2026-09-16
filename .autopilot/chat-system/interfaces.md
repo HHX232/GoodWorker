@@ -174,3 +174,132 @@ messages GET/POST и на read PATCH, отсутствие сессии → 401 
 
 *(субагенты допишут сюда экспортируемые компоненты/пропсы, которыми
 пользуются точки входа T06)*
+
+### Каркас страницы (тикет T02) — готово
+
+Страница: `app/chats/page.tsx` (top-level роут `/chats`, вне `(forTeachers)`/`(forStudents)` —
+по конвенции `app/call`/`app/game`, доступных обеим ролям одним и тем же
+файлом). Server component: `auth()` → редирект на `/login`, если сессии нет;
+роль не разруливается на уровне страницы — `GET /api/chat/conversations`
+сам возвращает диалоги нужной стороны по роли из сессии (ADMIN трактуется
+как TEACHER, как и везде в чате). Рендерит `<ChatShell />` без пропсов.
+
+Компонент: `src/widgets/Chat/ChatShell/ChatShell.tsx` (клиентский, `'use client'`).
+Сам фетчит `GET /api/chat/conversations` на маунте (`fetch` + `useEffect`,
+без SWR — в проекте её нет), хранит `conversations`, `loading`, `loadError`,
+`selectedId` (id выбранного диалога) в локальном состоянии. Считает `mobileView`
+как `selectedConversation ? 'conversation' : 'list'` и прокидывает его в
+`data-mobile-view` на корневом контейнере — вся адаптивная логика (какая
+панель видна на &lt;768px) живёт в CSS по этому атрибуту, JS ничего не скрывает
+напрямую.
+
+```ts
+export interface ChatShellProps {
+  /**
+   * Рендерит правую панель для выбранного диалога. Не передан (или вернул
+   * falsy) → ChatShell сам показывает плейсхолдер "выбери диалог слева"
+   * (диалог не выбран) либо мини-плейсхолдер с шапкой/именем собеседника
+   * и кнопкой "назад" (диалог выбран, но слот ещё не занят — это состояние,
+   * в котором ChatShell живёт в T02 сам по себе). Тикет 03 передаёт сюда
+   * реальный компонент диалога.
+   */
+  renderConversation?: (slot: ChatConversationSlotProps) => React.ReactNode
+}
+
+export interface ChatConversationSlotProps {
+  conversation: ConversationSummary   // из @/shared/types/Chat/chat.types — выбранный диалог целиком
+  onBack: () => void                  // сбрасывает selectedId → на мобиле возвращает к списку; на десктопе можно не использовать (там обе колонки видны всегда)
+}
+```
+
+Использование тикетом 03 (пример):
+```tsx
+<ChatShell
+  renderConversation={({ conversation, onBack }) => (
+    <ChatWidget conversation={conversation} onBack={onBack} />
+  )}
+/>
+```
+
+Важно про `onBack`: ChatShell не рендерит "назад" сам, когда слот занят —
+это ответственность компонента, который тикет 03 передаёт в `renderConversation`
+(нужно показать кнопку "назад" только на &lt;768px, см. `.backBtn` в
+`ChatShell.module.scss` как образец — `display:none` по умолчанию,
+`display:flex` в `@media (max-width: 768px)`).
+
+`ChatShell` не читает query-параметры (`?with=…`) — глубокая ссылка из
+`ChatEntryPoints` (T06) на конкретный диалог в T02 не реализована (не входило
+в критерии приёмки тикета). Если T06 или другой тикет захочет это добавить,
+самый чистый путь — новый опциональный проп у `ChatShellProps` (например
+`initialOtherId?: string`), который после первой успешной загрузки списка
+ищет диалог с этим `otherId` и, если не находит, дергает
+`POST /api/chat/conversations` для get-or-create — контракт `ChatShell`
+не заморожен настолько, чтобы это было ломающим изменением.
+
+Тип данных: `src/shared/types/Chat/chat.types.ts` — клиентское зеркало
+`ConversationSummary` из `src/shared/lib/chat/access.ts`, но с датами как
+`string` (ISO), а не `Date` — ровно то, что реально приходит в браузер после
+`fetch(...).then(r => r.json())`. Импортировать типы для клиентских
+компонентов чата отсюда, не из `access.ts` (тот файл серверный — тянет
+Prisma/`auth()`, и его `Date`-поля не совпадают с фактическим JSON).
+
+Список диалогов: `src/widgets/Chat/ConversationList/ConversationList.tsx` +
+`.module.scss`. Пропсы:
+```ts
+export interface ConversationListProps {
+  conversations: ConversationSummary[]
+  loading: boolean
+  loadError?: boolean
+  selectedConversationId: string | null
+  onSelect: (conversation: ConversationSummary) => void
+}
+```
+Мгновенный клиентский фильтр по `otherName` (case-insensitive `includes`),
+без похода на сервер. Три текстовых состояния независимы: `t('loading')` —
+идёт фетч; `t('loadError')` — фетч упал; `t('empty')` — `conversations.length === 0`
+(диалогов нет вообще); `t('noResults')` — диалоги есть, но фильтр ничего не
+нашёл. Превью последнего сообщения: `eventType` → `t('eventMessage')`,
+иначе `text`, иначе `attachmentType` → `t('attachmentMessage')`, иначе (нет
+`lastMessage`) → `t('noMessages')`. Аватар — `otherAvatarUrl` через
+`next/image` с `unoptimized` (не полагаемся на `remotePatterns` в
+`next.config` — домен S3/аватарок туда не заведён, а падать из-за этого
+нельзя), иначе цветной кружок с инициалом через переиспользуемый
+`getAvatarColor(name)` из `@/shared/ui/User/UserHeaderCard/UserHeaderCard`
+(тот же хэш-по-имени, что уже красит аватары в остальном приложении).
+
+Каркас/адаптив: `src/widgets/Chat/ChatShell/ChatShell.module.scss`. Контейнер
+`.container` — `width/height: 100%; max-width: 2200px; max-height: 1400px`,
+центрирован во `.page` (flex center, `background:#EEEFF8`, светлая тема),
+рамка + `box-shadow`; на десктопе grid `minmax(280px, 360px) 1fr` (список
+всегда рядом с диалогом). На `max-width: 768px` — grid схлопывается в одну
+колонку, `[data-mobile-view='list']`/`[data-mobile-view='conversation']`
+на `.container` показывают ровно одну из панелей на всю ширину/высоту
+(не сжатые колонки — вторая панель `display:none`). Тёмная тема —
+`:global(html.theme-dark), :global(html.pomodoro-dark)` в конце файла,
+токены палитры взяты из `src/widgets/Dashboard/StudentTeachersSidebar/` и
+`PaymentReminderModal` (акцент `#534AB7`/тёмный `#818cf8`, тёмный фон
+карточек `#1a1c24`, тёмный фон страницы `#12141f`).
+
+i18n: новый namespace `chat` в `messages/{en,hi,ru,zh}.json` (title,
+searchPlaceholder, loading, loadError, empty, noResults, noMessages,
+attachmentMessage, eventMessage, back, emptyPlaceholder, selectedPlaceholder)
++ `PageTitles.chats`. Тикет 03/04/05 добавляют свои ключи в тот же
+namespace `chat` (composer, вложения, карточки событий и т.п.) — не создавать
+отдельный namespace ради этого.
+
+Проверено (curl + Puppeteer поверх `npm run dev`, сид-аккаунты
+`teacher@seed.dev`/`student@seed.dev`/`teachervip@seed.dev`): без сессии
+`/chats` → 307 на `/login`; обе роли получают реальный список (создан и
+проверен диалог teacher↔student через `POST /api/chat/conversations` +
+`POST .../messages`, виден `lastMessage`/`unreadCount` в UI обеих сторон);
+`teachervip@seed.dev` (без `TeacherStudent`) видит `t('empty')`
+("Диалогов пока нет"); поиск — мгновенный (без сетевых запросов), кириллица
+регистронезависимо, несуществующее имя → `t('noResults')`; на десктопе
+(1400px) обе панели видны одновременно, контейнер не превышает 2200×1400
+даже на 2600×1600 (реально замерено — 2200×1400, отцентрирован); на 390px
+выбор диалога скрывает список и показывает диалог на всю ширину, кнопка
+"назад" возвращает к списку; 1440px и 360px — без горизонтального скролла
+от компонентов чата (на 360px есть существующий не связанный с чатом
+оффсет в 4px от `Header` при длинном имени пользователя — воспроизводится
+и на других роутах без чата, вне зоны этого тикета); тёмная тема
+(`html.theme-dark`) переключает фон/цвета контейнера и списка.

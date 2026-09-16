@@ -1730,7 +1730,8 @@
     "teacherPublicProfile": "Профиль преподавателя",
     "calendar": "Календарь",
     "editTest": "Редактировать тест",
-    "forgotPassword": "Восстановление пароля"
+    "forgotPassword": "Восстановление пароля",
+    "chats": "Чаты"
   },
   "feedback": {
     "pageTitle": "Обратная связь",
@@ -2981,5 +2982,19 @@
     "assignBtn": "Назначить ДЗ",
     "empty": "Нет домашних заданий",
     "gradeSaved": "Оценка сохранена"
+  },
+  "chat": {
+    "title": "Чаты",
+    "searchPlaceholder": "Поиск по имени",
+    "loading": "Загрузка...",
+    "loadError": "Не удалось загрузить чаты",
+    "empty": "Диалогов пока нет",
+    "noResults": "Ничего не найдено",
+    "noMessages": "Нет сообщений",
+    "attachmentMessage": "Вложение",
+    "eventMessage": "Событие",
+    "back": "Назад",
+    "emptyPlaceholder": "Выберите диалог слева, чтобы начать переписку",
+    "selectedPlaceholder": "Диалог с {name}"
   }
 }

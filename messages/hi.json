@@ -1473,7 +1473,8 @@
     "teacherPublicProfile": "शिक्षक प्रोफ़ाइल",
     "calendar": "कैलेंडर",
     "editTest": "परीक्षण संपादित करें",
-    "forgotPassword": "पासवर्ड रीसेट करें"
+    "forgotPassword": "पासवर्ड रीसेट करें",
+    "chats": "चैट"
   },
   "feedback": {
     "pageTitle": "प्रतिक्रिया",
@@ -2807,5 +2808,19 @@
     "assignBtn": "गृहकार्य दें",
     "empty": "कोई गृहकार्य नहीं",
     "gradeSaved": "अंक सहेजा गया"
+  },
+  "chat": {
+    "title": "चैट",
+    "searchPlaceholder": "नाम से खोजें...",
+    "loading": "लोड हो रहा है...",
+    "loadError": "चैट लोड करने में विफल",
+    "empty": "अभी तक कोई बातचीत नहीं",
+    "noResults": "कोई परिणाम नहीं",
+    "noMessages": "कोई संदेश नहीं",
+    "attachmentMessage": "अटैचमेंट",
+    "eventMessage": "इवेंट",
+    "back": "वापस",
+    "emptyPlaceholder": "चैट शुरू करने के लिए बाईं ओर से एक बातचीत चुनें",
+    "selectedPlaceholder": "{name} के साथ बातचीत"
   }
 }

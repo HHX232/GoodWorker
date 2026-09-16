@@ -1730,7 +1730,8 @@
     "teacherPublicProfile": "Teacher Profile",
     "calendar": "Calendar",
     "editTest": "Edit Test",
-    "forgotPassword": "Reset Password"
+    "forgotPassword": "Reset Password",
+    "chats": "Chats"
   },
   "feedback": {
     "pageTitle": "Feedback",
@@ -2981,5 +2982,19 @@
     "assignBtn": "Assign homework",
     "empty": "No homework assignments",
     "gradeSaved": "Grade saved"
+  },
+  "chat": {
+    "title": "Chats",
+    "searchPlaceholder": "Search by name...",
+    "loading": "Loading...",
+    "loadError": "Failed to load chats",
+    "empty": "No conversations yet",
+    "noResults": "No results",
+    "noMessages": "No messages",
+    "attachmentMessage": "Attachment",
+    "eventMessage": "Event",
+    "back": "Back",
+    "emptyPlaceholder": "Select a conversation on the left to start chatting",
+    "selectedPlaceholder": "Conversation with {name}"
   }
 }

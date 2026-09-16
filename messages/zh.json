@@ -1474,7 +1474,8 @@
     "teacherPublicProfile": "教师主页",
     "calendar": "日历",
     "editTest": "编辑测试",
-    "forgotPassword": "重置密码"
+    "forgotPassword": "重置密码",
+    "chats": "聊天"
   },
   "feedback": {
     "pageTitle": "反馈",
@@ -2808,5 +2809,19 @@
     "assignBtn": "布置作业",
     "empty": "没有作业",
     "gradeSaved": "评分已保存"
+  },
+  "chat": {
+    "title": "聊天",
+    "searchPlaceholder": "按姓名搜索...",
+    "loading": "加载中...",
+    "loadError": "加载聊天失败",
+    "empty": "暂无对话",
+    "noResults": "未找到结果",
+    "noMessages": "暂无消息",
+    "attachmentMessage": "附件",
+    "eventMessage": "事件",
+    "back": "返回",
+    "emptyPlaceholder": "从左侧选择一个对话开始聊天",
+    "selectedPlaceholder": "与{name}的对话"
   }
 }
