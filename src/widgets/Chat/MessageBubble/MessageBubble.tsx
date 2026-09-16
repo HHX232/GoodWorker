@@ -1,7 +1,8 @@
 'use client'
 
 import type { ChatMessage } from '@/shared/types/Chat/chat.types'
-import { ChatAttachIcon, ChatDownloadIcon, ChatEventIcon } from '@/widgets/Chat/icons'
+import { EventCard } from '@/widgets/Chat/EventCard/EventCard'
+import { ChatAttachIcon, ChatDownloadIcon } from '@/widgets/Chat/icons'
 import { useLocale, useTranslations } from 'next-intl'
 import type { ReactNode } from 'react'
 import styles from './MessageBubble.module.scss'
@@ -39,9 +40,10 @@ function formatAttachmentSize(bytes: number | null | undefined): string {
 /**
  * Dispatches a single `ChatMessage` to the bubble variant matching its type.
  * `text` and `attachmentType` (ticket 04 — image preview / audio player /
- * file-with-download) are fully implemented; `eventType` messages still
- * render the minimal, non-crashing placeholder left for ticket 05 to
- * replace with real cards, without changing this component's props.
+ * file-with-download) render the usual bubble shell; `eventType` (ticket 05,
+ * R13–R15) renders `EventCard` instead of a bubble entirely — a visibly
+ * different shape (icon + title + description card), not just different
+ * bubble contents. None of this changes `MessageBubbleProps`.
  */
 export function MessageBubble({ message, isMine }: MessageBubbleProps) {
   const t = useTranslations('chat')
@@ -100,19 +102,20 @@ export function MessageBubble({ message, isMine }: MessageBubbleProps) {
     )
   }
 
-  let body: ReactNode
+  // Event messages (R13–R15) render as a distinct card — icon, title,
+  // description, and (HOMEWORK_ASSIGNED only) a link — not the text/attachment
+  // bubble shell, so they read visibly differently from a regular message.
   if (message.eventType) {
-    body = (
-      <span className={styles.placeholderContent}>
-        <ChatEventIcon size={16} strokeWidth={2} />
-        {t('eventMessage')}
-      </span>
+    return (
+      <div className={`${styles.row} ${isMine ? styles.rowMine : styles.rowOther}`}>
+        <EventCard message={message} />
+      </div>
     )
-  } else if (message.attachmentType) {
-    body = renderAttachment()
-  } else {
-    body = <span className={styles.text}>{message.text}</span>
   }
+
+  const body: ReactNode = message.attachmentType
+    ? renderAttachment()
+    : <span className={styles.text}>{message.text}</span>
 
   return (
     <div className={`${styles.row} ${isMine ? styles.rowMine : styles.rowOther}`}>

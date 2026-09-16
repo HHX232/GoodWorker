@@ -2839,6 +2839,16 @@
     "removeAttachment": "अटैचमेंट हटाएं",
     "voiceMessageName": "वॉइस संदेश",
     "downloadAttachment": "डाउनलोड करें",
-    "imageAttachmentAlt": "छवि"
+    "imageAttachmentAlt": "छवि",
+    "eventCard": {
+      "homeworkTitle": "नया होमवर्क असाइनमेंट",
+      "homeworkDescriptionDue": "“{title}” · नियत तिथि {due}",
+      "homeworkDescriptionNoDue": "“{title}”",
+      "homeworkLink": "असाइनमेंट खोलें",
+      "serviceTitle": "व्यक्तिगत प्रस्ताव",
+      "serviceDescription": "“{title}” — {price} {currency}",
+      "paymentTitle": "भुगतान अनुस्मारक",
+      "paymentDescription": "अवैतनिक पाठ: {count} · कुल: {totals}"
+    }
   }
 }

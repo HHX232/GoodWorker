@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../auth'
 import { createNotification, NOTIFICATION_TYPES } from '@/shared/lib/notifications'
 import { tplHomeworkAssigned } from '@/shared/lib/notificationTemplates'
+import { postEventCard } from '@/shared/lib/chat/access'
 
 export async function POST(req: NextRequest) {
   try {
@@ -78,6 +79,24 @@ export async function POST(req: NextRequest) {
             assignmentId: a.id,
           },
         })
+      )
+    )
+
+    // Chat event card (R13) — same payload as the notification above, plus
+    // title/dueAt so MessageBubble/EventCard can render without another fetch.
+    await Promise.allSettled(
+      homework.assignments.map((a: { studentId: string; id: string }) =>
+        postEventCard({
+          teacherId: session.user.id,
+          studentId: a.studentId,
+          eventType: 'HOMEWORK_ASSIGNED',
+          payload: {
+            homeworkId: homework.id,
+            assignmentId: a.id,
+            title: homework.title,
+            dueAt: homework.dueAt?.toISOString() ?? null,
+          },
+        }).catch(e => console.error('[POST /api/homework] postEventCard failed', e))
       )
     )
 

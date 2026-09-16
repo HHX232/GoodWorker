@@ -3013,6 +3013,16 @@
     "removeAttachment": "Remove attachment",
     "voiceMessageName": "Voice message",
     "downloadAttachment": "Download",
-    "imageAttachmentAlt": "Image"
+    "imageAttachmentAlt": "Image",
+    "eventCard": {
+      "homeworkTitle": "New homework assignment",
+      "homeworkDescriptionDue": "“{title}” · due {due}",
+      "homeworkDescriptionNoDue": "“{title}”",
+      "homeworkLink": "Open assignment",
+      "serviceTitle": "Personal offer",
+      "serviceDescription": "“{title}” — {price} {currency}",
+      "paymentTitle": "Payment reminder",
+      "paymentDescription": "Unpaid lessons: {count} · Total: {totals}"
+    }
   }
 }

@@ -1,6 +1,7 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { createNotification } from '@/shared/lib/notifications'
 import { tplPersonalService } from '@/shared/lib/notificationTemplates'
+import { postEventCard } from '@/shared/lib/chat/access'
 import { localizeService, enrichServiceWithAI } from '@/lib/postAI'
 import { hasAIProvider } from '@/lib/openrouter'
 import { NextRequest, NextResponse } from 'next/server'
@@ -148,6 +149,19 @@ export async function POST(req: NextRequest) {
         },
         studentId: targetStudentId,
       })
+
+      // Chat event card (R14) — same payload as the notification above.
+      await postEventCard({
+        teacherId: session.user.id,
+        studentId: targetStudentId,
+        eventType: 'PERSONAL_SERVICE',
+        payload: {
+          serviceId: service.id,
+          serviceTitle: title,
+          price: Number(price),
+          currency: svcCurrency,
+        },
+      }).catch(e => console.error('[POST /api/services] postEventCard failed', e))
     }
 
     return NextResponse.json({ service }, { status: 201 })

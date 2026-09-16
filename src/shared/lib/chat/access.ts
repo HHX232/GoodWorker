@@ -97,6 +97,58 @@ export async function requireOwnedConversation(
   return { response: NextResponse.json({ error: STATUS_MESSAGE[result.status] }, { status: result.status }) }
 }
 
+/** `eventType` values a chat message can carry (R13–R15, ticket 05). */
+export const CHAT_EVENT_TYPES = ['HOMEWORK_ASSIGNED', 'PERSONAL_SERVICE', 'PAYMENT_REMINDER'] as const
+export type ChatEventType = (typeof CHAT_EVENT_TYPES)[number]
+
+export interface PostEventCardInput {
+  teacherId: string
+  studentId: string
+  eventType: ChatEventType
+  /** Same data already sent to the sibling `Notification` for this event — plus
+   * whatever extra fields the card needs to render without another fetch. */
+  payload: Record<string, unknown>
+}
+
+/**
+ * Ticket 05 (R13–R15): three existing teacher-initiated moments (homework
+ * assigned, personal service offered, payment reminder checkpoint) each grow
+ * a fourth side effect — a companion `ChatMessage` next to the `Notification`
+ * they already create. All three call sites (`app/api/homework/route.ts`,
+ * `app/api/services/route.ts`, and tg-bot's raw-SQL equivalent in
+ * `tg-bot/src/db.ts`) only pass a `{teacherId, studentId}` pair and a
+ * payload — the get-or-create dialog lookup (same `upsert` the
+ * `POST /conversations` route uses) stays hidden in here, per the
+ * `event-cards` module boundary in `interfaces.md`.
+ * `senderRole` is always `TEACHER`: these are teacher-side actions, surfaced
+ * to the student's side of the conversation (so they count toward the
+ * student's `unreadCount`, same as a real teacher message would).
+ * Best-effort by design — callers wrap this in `.catch()`/`Promise.allSettled`
+ * so a chat hiccup never fails the request that created the underlying event.
+ */
+export async function postEventCard({ teacherId, studentId, eventType, payload }: PostEventCardInput): Promise<void> {
+  const conversation = await prisma.conversation.upsert({
+    where: { teacherId_studentId: { teacherId, studentId } },
+    create: { teacherId, studentId },
+    update: {},
+  })
+
+  await prisma.$transaction([
+    prisma.chatMessage.create({
+      data: {
+        conversationId: conversation.id,
+        senderRole: 'TEACHER',
+        eventType,
+        eventPayload: JSON.parse(JSON.stringify(payload)),
+      },
+    }),
+    prisma.conversation.update({
+      where: { id: conversation.id },
+      data: { lastMessageAt: new Date() },
+    }),
+  ])
+}
+
 export interface ConversationSummary {
   id: string
   otherId: string
