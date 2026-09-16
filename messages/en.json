@@ -3016,13 +3016,13 @@
     "imageAttachmentAlt": "Image",
     "eventCard": {
       "homeworkTitle": "New homework assignment",
-      "homeworkDescriptionDue": "“{title}” · due {due}",
       "homeworkDescriptionNoDue": "“{title}”",
       "homeworkLink": "Open assignment",
       "serviceTitle": "Personal offer",
-      "serviceDescription": "“{title}” — {price} {currency}",
+      "serviceDescription": "“{title}”",
       "paymentTitle": "Payment reminder",
-      "paymentDescription": "Unpaid lessons: {count} · Total: {totals}"
+      "paymentDescription": "Unpaid lessons: {count}",
+      "new": "New"
     }
   }
 }

@@ -3016,13 +3016,13 @@
     "imageAttachmentAlt": "Изображение",
     "eventCard": {
       "homeworkTitle": "Новое домашнее задание",
-      "homeworkDescriptionDue": "«{title}» · срок сдачи {due}",
       "homeworkDescriptionNoDue": "«{title}»",
       "homeworkLink": "Открыть задание",
       "serviceTitle": "Персональное предложение",
-      "serviceDescription": "«{title}» — {price} {currency}",
+      "serviceDescription": "«{title}»",
       "paymentTitle": "Напоминание об оплате",
-      "paymentDescription": "Неоплаченных занятий: {count} · Сумма: {totals}"
+      "paymentDescription": "Неоплаченных занятий: {count}",
+      "new": "Новое"
     }
   }
 }

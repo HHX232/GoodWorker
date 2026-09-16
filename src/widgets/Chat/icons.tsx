@@ -21,4 +21,7 @@ export {
   Search as ChatSearchIcon,
   Send as ChatSendIcon,
   Calendar as ChatEventIcon,
+  BookOpen as ChatHomeworkIcon,
+  Gift as ChatServiceIcon,
+  Wallet as ChatPaymentIcon,
 } from 'lucide-react'

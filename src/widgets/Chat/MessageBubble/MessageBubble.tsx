@@ -108,7 +108,7 @@ export function MessageBubble({ message, isMine }: MessageBubbleProps) {
   if (message.eventType) {
     return (
       <div className={`${styles.row} ${isMine ? styles.rowMine : styles.rowOther}`}>
-        <EventCard message={message} />
+        <EventCard message={message} isMine={isMine} />
       </div>
     )
   }

@@ -2843,13 +2843,13 @@
     "imageAttachmentAlt": "图片",
     "eventCard": {
       "homeworkTitle": "新家庭作业",
-      "homeworkDescriptionDue": "《{title}》· 截止日期 {due}",
       "homeworkDescriptionNoDue": "《{title}》",
       "homeworkLink": "打开作业",
       "serviceTitle": "个人报价",
-      "serviceDescription": "《{title}》— {price} {currency}",
+      "serviceDescription": "《{title}》",
       "paymentTitle": "付款提醒",
-      "paymentDescription": "未付课时：{count} · 总计：{totals}"
+      "paymentDescription": "未付课时：{count}",
+      "new": "新"
     }
   }
 }

@@ -2842,13 +2842,13 @@
     "imageAttachmentAlt": "छवि",
     "eventCard": {
       "homeworkTitle": "नया होमवर्क असाइनमेंट",
-      "homeworkDescriptionDue": "“{title}” · नियत तिथि {due}",
       "homeworkDescriptionNoDue": "“{title}”",
       "homeworkLink": "असाइनमेंट खोलें",
       "serviceTitle": "व्यक्तिगत प्रस्ताव",
-      "serviceDescription": "“{title}” — {price} {currency}",
+      "serviceDescription": "“{title}”",
       "paymentTitle": "भुगतान अनुस्मारक",
-      "paymentDescription": "अवैतनिक पाठ: {count} · कुल: {totals}"
+      "paymentDescription": "अवैतनिक पाठ: {count}",
+      "new": "नया"
     }
   }
 }
