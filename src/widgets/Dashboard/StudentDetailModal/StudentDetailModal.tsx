@@ -7,6 +7,7 @@ import {formatGradeLabel} from '@/shared/lib/formatGrade'
 import { DateTimePickerField } from '@/shared/ui/Calendar/DateTimePickerField'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import styles from './StudentDetailModal.module.scss'
 
@@ -79,10 +80,13 @@ export function StudentDetailModal({
   studentId, studentName, studentNameTransliterated, studentInitials, avatarColor, avatarTextColor, subject, teacherId, onClose,
 }: Props) {
   const t = useTranslations('dashboard')
+  const tChat = useTranslations('chat')
   const locale = useLocale()
+  const router = useRouter()
   const displayName = getDisplayName(studentName, locale, studentNameTransliterated)
   const [tab, setTab] = useState<Tab>('meetings')
   const [offerOpen, setOfferOpen] = useState(false)
+  const [chatLoading, setChatLoading] = useState(false)
   const [student, setStudent] = useState<StudentData | null>(null)
   const [errors, setErrors] = useState<ErrorItem[]>([])
   const [meetings, setMeetings] = useState<Meeting[]>([])
@@ -201,6 +205,32 @@ export function StudentDetailModal({
     }
   }
 
+  // Get-or-create the conversation before navigating so the teacher lands on
+  // /chats with the conversation already in the list, instead of a page that
+  // then has to figure out who to talk to (ChatShell doesn't read query
+  // params yet — see .autopilot/chat-system/interfaces.md, "Контракт ChatWidget").
+  const goToChat = async () => {
+    if (chatLoading) return
+    setChatLoading(true)
+    try {
+      const res = await fetch('/api/chat/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ otherId: studentId }),
+      })
+      const data = await res.json().catch(() => null)
+      if (res.ok && data?.conversation?.id) {
+        router.push(`/chats?conversationId=${data.conversation.id}`)
+      } else {
+        router.push('/chats')
+      }
+    } catch {
+      router.push('/chats')
+    } finally {
+      setChatLoading(false)
+    }
+  }
+
   return (
     <>
     {teacherId && (
@@ -233,6 +263,12 @@ export function StudentDetailModal({
             </div>
           </div>
           <div className={styles.headerActions}>
+            <button className={styles.chatBtn} onClick={goToChat} disabled={chatLoading}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+              </svg>
+              {tChat('goToChat')}
+            </button>
             {teacherId && (
               <button className={styles.offerBtn} onClick={() => setOfferOpen(true)}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">

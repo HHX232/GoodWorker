@@ -2985,6 +2985,8 @@
   },
   "chat": {
     "title": "Chats",
+    "goToChat": "Go to chat",
+    "goToChats": "Go to chats",
     "searchPlaceholder": "Search by name...",
     "loading": "Loading...",
     "loadError": "Failed to load chats",

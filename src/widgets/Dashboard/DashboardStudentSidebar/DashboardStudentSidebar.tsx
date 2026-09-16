@@ -75,6 +75,10 @@ export function DashboardStudentSidebar({ teacherId }: Props) {
   const [search, setSearch] = useState('')
   const [activeSubject, setActiveSubject] = useState('All')
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
+  // otherId (studentId) -> unreadCount, from GET /api/chat/conversations.
+  // Polled independently of the student list — chat activity changes far
+  // more often than the roster itself.
+  const [unreadByStudent, setUnreadByStudent] = useState<Record<string, number>>({})
 
   useEffect(() => {
     Promise.all([
@@ -84,6 +88,26 @@ export function DashboardStudentSidebar({ teacherId }: Props) {
       if (Array.isArray(studentsData.students)) setStudents(studentsData.students)
       if (Array.isArray(calData.events)) setEvents(calData.events)
     }).catch(() => {}).finally(() => setLoading(false))
+  }, [teacherId])
+
+  useEffect(() => {
+    let cancelled = false
+    const fetchUnread = () => {
+      fetch('/api/chat/conversations')
+        .then(r => r.json())
+        .then(data => {
+          if (cancelled || !Array.isArray(data.conversations)) return
+          const map: Record<string, number> = {}
+          for (const c of data.conversations) {
+            if (c.unreadCount > 0) map[c.otherId] = c.unreadCount
+          }
+          setUnreadByStudent(map)
+        })
+        .catch(() => {})
+    }
+    fetchUnread()
+    const interval = setInterval(fetchUnread, 15_000)
+    return () => { cancelled = true; clearInterval(interval) }
   }, [teacherId])
 
   const subjects = useMemo(() => {
@@ -165,8 +189,13 @@ export function DashboardStudentSidebar({ teacherId }: Props) {
             ? `${nextLesson.time} · ${nextLesson.diff === 0 ? t('today') : nextLesson.diff === 1 ? t('tomorrow') : nextLesson.date}`
             : null
 
+          const unread = unreadByStudent[student.id] ?? 0
+
           return (
             <div key={student.id} className={styles.card} onClick={() => setSelectedStudent(student)}>
+              {unread > 0 && (
+                <span className={styles.unreadBadge}>{unread > 99 ? '99+' : unread}</span>
+              )}
               <div className={styles.cardTop}>
                 <div
                   className={styles.avatar}

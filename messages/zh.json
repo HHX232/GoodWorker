@@ -2812,6 +2812,8 @@
   },
   "chat": {
     "title": "聊天",
+    "goToChat": "前往聊天",
+    "goToChats": "前往聊天列表",
     "searchPlaceholder": "按姓名搜索...",
     "loading": "加载中...",
     "loadError": "加载聊天失败",

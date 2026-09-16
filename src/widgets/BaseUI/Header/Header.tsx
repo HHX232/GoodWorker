@@ -3,6 +3,7 @@ import { LangSwitcher } from '../LangSwitcher/LangSwitcher'
 import { ProfilePreview } from '@/widgets/ProfilePreview/ProfilePreview'
 import { HeaderSearch } from './HeaderSearch'
 import { NotificationBell } from './NotificationBell'
+import { ChatHeaderIcon } from './ChatHeaderIcon'
 import { PomodoroButton } from '@/widgets/Pomodoro/PomodoroButton'
 import { NavProgress } from '@/shared/ui/NavProgress/NavProgress'
 import Link from 'next/link'
@@ -80,6 +81,7 @@ function Header() {
           <PomodoroButton />
           <LangSwitcher />
           <NotificationBell />
+          <ChatHeaderIcon />
           <ProfilePreview />
         </div>
       </div>

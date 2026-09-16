@@ -2811,6 +2811,8 @@
   },
   "chat": {
     "title": "चैट",
+    "goToChat": "चैट पर जाएं",
+    "goToChats": "चैट्स पर जाएं",
     "searchPlaceholder": "नाम से खोजें...",
     "loading": "लोड हो रहा है...",
     "loadError": "चैट लोड करने में विफल",

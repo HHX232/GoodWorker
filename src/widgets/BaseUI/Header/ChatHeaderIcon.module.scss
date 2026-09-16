@@ -1,0 +1,71 @@
+// Mirrors NotificationBell.module.scss's .btn/.badge so the two icons read
+// as one pair in the header — see that file for the source of these tokens.
+
+.btn {
+  position: relative;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: none;
+  background: #f5f5f7;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #141416;
+  text-decoration: none;
+  transition: background 0.15s;
+
+  &:hover {
+    background: #eaeaee;
+  }
+}
+
+.badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 100px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+}
+
+// ─── Pomodoro dark theme ──────────────────────────────────────────────────────
+:global(html.pomodoro-dark) {
+  .btn {
+    background: #1a1d26;
+    color: #9ca3af;
+    &:hover { background: #22263a; }
+  }
+  .badge { border-color: #12141c; }
+}
+
+// ─── Global dark theme ────────────────────────────────────────────────────────
+:global(html.theme-dark) {
+  .btn {
+    background: rgba(255,255,255,0.06);
+    color: #9ca3af;
+    &:hover { background: rgba(255,255,255,0.1); }
+  }
+  .badge { border-color: #111318; }
+}
+
+// ─── VIP page dark theme ──────────────────────────────────────────────────────
+:global(html.vip-dark) {
+  .btn {
+    background: rgba(255,255,255,0.06);
+    color: #9ca3af;
+    &:hover { background: rgba(255,255,255,0.1); }
+  }
+  .badge { border-color: #0e0f11; }
+}

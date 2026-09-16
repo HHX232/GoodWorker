@@ -113,6 +113,32 @@
   }
 }
 
+.chatBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #534AB7;
+  background: transparent;
+  color: #534AB7;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: #534AB7;
+    color: #fff;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+    pointer-events: none;
+  }
+}
+
 .closeBtn {
   background: none;
   border: none;
@@ -534,6 +560,7 @@
   .studentSubject { color: #a5b4fc; }
   .studentEmail { color: rgba(255,255,255,0.25); }
   .offerBtn { border-color: rgba(129,140,248,0.4); color: #a5b4fc; &:hover { background: #534AB7; border-color: #534AB7; color: #fff; } }
+  .chatBtn { border-color: rgba(129,140,248,0.4); color: #a5b4fc; &:hover { background: #534AB7; border-color: #534AB7; color: #fff; } }
   .closeBtn { color: rgba(255,255,255,0.2); &:hover { color: rgba(255,255,255,0.6); } }
 
   .tabs { border-color: rgba(255,255,255,0.07); }

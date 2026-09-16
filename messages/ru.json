@@ -2985,6 +2985,8 @@
   },
   "chat": {
     "title": "Чаты",
+    "goToChat": "Перейти в чат",
+    "goToChats": "Перейти в чаты",
     "searchPlaceholder": "Поиск по имени",
     "loading": "Загрузка...",
     "loadError": "Не удалось загрузить чаты",
