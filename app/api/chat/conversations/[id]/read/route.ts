@@ -1,6 +1,6 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
-import { getChatSessionUser, getOwnedConversation, otherRole } from '@/shared/lib/chat/access'
+import { getChatSessionUser, otherRole, requireOwnedConversation } from '@/shared/lib/chat/access'
 
 interface Params {
   params: Promise<{ id: string }>
@@ -15,9 +15,8 @@ export async function PATCH(_req: NextRequest, { params }: Params) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { id } = await params
-    const conversation = await getOwnedConversation(id, user)
-    if (conversation === null) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-    if (conversation === 'forbidden') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const guard = await requireOwnedConversation(id, user)
+    if (guard.response) return guard.response
 
     const result = await prisma.chatMessage.updateMany({
       where: { conversationId: id, senderRole: otherRole(user.role), isRead: false },

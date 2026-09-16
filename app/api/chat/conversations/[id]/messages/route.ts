@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import {
   MAX_ATTACHMENT_BYTES,
   getChatSessionUser,
-  getOwnedConversation,
+  requireOwnedConversation,
 } from '@/shared/lib/chat/access'
 
 interface Params {
@@ -23,9 +23,8 @@ export async function GET(req: NextRequest, { params }: Params) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { id } = await params
-    const conversation = await getOwnedConversation(id, user)
-    if (conversation === null) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-    if (conversation === 'forbidden') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const guard = await requireOwnedConversation(id, user)
+    if (guard.response) return guard.response
 
     const limitParam = parseInt(req.nextUrl.searchParams.get('limit') ?? '', 10)
     const limit = Number.isFinite(limitParam) && limitParam > 0 ? Math.min(limitParam, MAX_LIMIT) : DEFAULT_LIMIT
@@ -70,9 +69,8 @@ export async function POST(req: NextRequest, { params }: Params) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { id } = await params
-    const conversation = await getOwnedConversation(id, user)
-    if (conversation === null) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-    if (conversation === 'forbidden') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const guard = await requireOwnedConversation(id, user)
+    if (guard.response) return guard.response
 
     const body = await req.json().catch(() => ({}))
     const text = typeof body?.text === 'string' ? body.text.trim() : ''

@@ -1,6 +1,6 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { NextResponse } from 'next/server'
-import { getChatSessionUser, otherRole } from '@/shared/lib/chat/access'
+import { conversationWhereForUser, getChatSessionUser, otherRole } from '@/shared/lib/chat/access'
 
 // GET /api/chat/unread-count — total unread messages across all of the current
 // user's dialogs (R04.1 badge next to the header bell icon).
@@ -13,7 +13,7 @@ export async function GET() {
       where: {
         isRead: false,
         senderRole: otherRole(user.role),
-        conversation: user.role === 'TEACHER' ? { teacherId: user.id } : { studentId: user.id },
+        conversation: conversationWhereForUser(user),
       },
     })
 

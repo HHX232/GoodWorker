@@ -2,6 +2,8 @@ import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import {
   buildConversationSummary,
+  conversationIdsForPair,
+  conversationWhereForUser,
   getChatSessionUser,
   hasTeacherStudentLink,
 } from '@/shared/lib/chat/access'
@@ -15,7 +17,7 @@ export async function GET() {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const conversations = await prisma.conversation.findMany({
-      where: user.role === 'TEACHER' ? { teacherId: user.id } : { studentId: user.id },
+      where: conversationWhereForUser(user),
       orderBy: { lastMessageAt: 'desc' },
     })
 
@@ -42,8 +44,7 @@ export async function POST(req: NextRequest) {
     const otherId = typeof body?.otherId === 'string' ? body.otherId : null
     if (!otherId) return NextResponse.json({ error: 'otherId required' }, { status: 400 })
 
-    const teacherId = user.role === 'TEACHER' ? user.id : otherId
-    const studentId = user.role === 'TEACHER' ? otherId : user.id
+    const { teacherId, studentId } = conversationIdsForPair(user, otherId)
 
     if (!(await hasTeacherStudentLink(teacherId, studentId))) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })

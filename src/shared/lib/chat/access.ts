@@ -1,5 +1,6 @@
 import { prisma } from '@/shared/prisma/prisma'
 import type { Conversation, Role } from '@prisma/client'
+import { NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
 
 /** 10 MB — server-side mirror of the client attachment cap (R16). */
@@ -33,6 +34,26 @@ export function otherRole(role: ChatRole): ChatRole {
   return role === 'TEACHER' ? 'STUDENT' : 'TEACHER'
 }
 
+/**
+ * Which `Conversation` column is "mine" vs "the other side's" for a given
+ * role — the one fact every list/lookup/count query below needs, so it's
+ * computed in exactly one place instead of a `role === 'TEACHER' ? ... : ...`
+ * repeated at each call site.
+ */
+export function fieldsForRole(role: ChatRole): { mine: 'teacherId' | 'studentId'; other: 'teacherId' | 'studentId' } {
+  return role === 'TEACHER' ? { mine: 'teacherId', other: 'studentId' } : { mine: 'studentId', other: 'teacherId' }
+}
+
+/** Prisma `where` fragment selecting every conversation that belongs to this user. */
+export function conversationWhereForUser(user: ChatSessionUser): { teacherId: string } | { studentId: string } {
+  return user.role === 'TEACHER' ? { teacherId: user.id } : { studentId: user.id }
+}
+
+/** The `{teacherId, studentId}` pair for a conversation between the current user and `otherId`. */
+export function conversationIdsForPair(user: ChatSessionUser, otherId: string): { teacherId: string; studentId: string } {
+  return user.role === 'TEACHER' ? { teacherId: user.id, studentId: otherId } : { teacherId: otherId, studentId: user.id }
+}
+
 export async function hasTeacherStudentLink(teacherId: string, studentId: string): Promise<boolean> {
   const link = await prisma.teacherStudent.findUnique({
     where: { teacherId_studentId: { teacherId, studentId } },
@@ -40,22 +61,40 @@ export async function hasTeacherStudentLink(teacherId: string, studentId: string
   return !!link
 }
 
+type OwnedConversationResult =
+  | { ok: true; conversation: Conversation }
+  | { ok: false; status: 404 | 403 }
+
 /**
  * Loads a conversation and verifies the current user is one of its two
- * sides. Returns `null` if the conversation does not exist at all (→ 404),
- * and `'forbidden'` if it exists but belongs to someone else (→ 403) — the
- * seam every message/read route needs before touching a conversation.
+ * sides. A discriminated result (`ok: true/false`) rather than a bare
+ * `null | 'forbidden'` sentinel — a typo in a string literal can't silently
+ * pass as "found" this way; TypeScript forces the `ok` check first.
  */
-export async function getOwnedConversation(
+async function getOwnedConversation(conversationId: string, user: ChatSessionUser): Promise<OwnedConversationResult> {
+  const conversation = await prisma.conversation.findUnique({ where: { id: conversationId } })
+  if (!conversation) return { ok: false, status: 404 }
+  const { mine } = fieldsForRole(user.role)
+  const ownsIt = conversation[mine] === user.id
+  return ownsIt ? { ok: true, conversation } : { ok: false, status: 403 }
+}
+
+const STATUS_MESSAGE: Record<404 | 403, string> = { 404: 'Not found', 403: 'Forbidden' }
+
+/**
+ * One-call guard for every route that operates on an existing conversation:
+ * returns the conversation when the current user owns it, or an
+ * already-built `NextResponse` (404/403) to return as-is otherwise — the
+ * caller does a single check instead of duplicating the not-found/forbidden
+ * branching itself.
+ */
+export async function requireOwnedConversation(
   conversationId: string,
   user: ChatSessionUser
-): Promise<Conversation | null | 'forbidden'> {
-  const conversation = await prisma.conversation.findUnique({ where: { id: conversationId } })
-  if (!conversation) return null
-  const ownsIt =
-    (user.role === 'TEACHER' && conversation.teacherId === user.id) ||
-    (user.role === 'STUDENT' && conversation.studentId === user.id)
-  return ownsIt ? conversation : 'forbidden'
+): Promise<{ conversation: Conversation; response?: undefined } | { conversation?: undefined; response: NextResponse }> {
+  const result = await getOwnedConversation(conversationId, user)
+  if (result.ok) return { conversation: result.conversation }
+  return { response: NextResponse.json({ error: STATUS_MESSAGE[result.status] }, { status: result.status }) }
 }
 
 export interface ConversationSummary {
@@ -81,9 +120,10 @@ export async function buildConversationSummary(
   meRole: ChatRole
 ): Promise<ConversationSummary> {
   const isTeacher = meRole === 'TEACHER'
-  const otherId = isTeacher ? conversation.studentId : conversation.teacherId
+  const { other } = fieldsForRole(meRole)
+  const otherId = conversation[other]
 
-  const [other, lastMessage, unreadCount] = await Promise.all([
+  const [otherParty, lastMessage, unreadCount] = await Promise.all([
     isTeacher
       ? prisma.student.findUnique({ where: { id: otherId }, select: { id: true, name: true, avatarUrl: true } })
       : prisma.teacher.findUnique({ where: { id: otherId }, select: { id: true, name: true, avatarUrl: true } }),
@@ -100,8 +140,8 @@ export async function buildConversationSummary(
   return {
     id: conversation.id,
     otherId,
-    otherName: other?.name ?? '',
-    otherAvatarUrl: other?.avatarUrl ?? null,
+    otherName: otherParty?.name ?? '',
+    otherAvatarUrl: otherParty?.avatarUrl ?? null,
     createdAt: conversation.createdAt,
     lastMessageAt: conversation.lastMessageAt,
     lastMessage,
