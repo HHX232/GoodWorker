@@ -34,7 +34,8 @@ function formatListTime(iso: string, locale: string): string {
   try {
     if (sameDay) return date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
     return date.toLocaleDateString(locale, { day: '2-digit', month: '2-digit' })
-  } catch {
+  } catch (e) {
+    console.error('[ConversationList] formatListTime failed', { iso, locale, error: e })
     return ''
   }
 }
