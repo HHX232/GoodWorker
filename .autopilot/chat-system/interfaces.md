@@ -303,3 +303,55 @@ namespace `chat` (composer, вложения, карточки событий и
 оффсет в 4px от `Header` при длинном имени пользователя — воспроизводится
 и на других роутах без чата, вне зоны этого тикета); тёмная тема
 (`html.theme-dark`) переключает фон/цвета контейнера и списка.
+
+### ChatEntryPoints (тикет T06) — готово
+
+Четыре точки входа, все тонкие обвязки существующих компонентов (см. таблицу
+границ выше), без правки `ChatShell`/`ConversationList`/`app/chats/page.tsx`.
+
+1. `StudentDetailModal.tsx` — кнопка `chat.goToChat` в `headerActions`, рядом
+   с `offerBtn`. По клику сама вызывает `POST /api/chat/conversations
+   {otherId: studentId}` (get-or-create), затем `router.push`.
+2. `DashboardStudentSidebar.tsx` — бейдж `.unreadBadge` в правом верхнем углу
+   `.card`, источник — `GET /api/chat/conversations`, отфильтрованный по
+   `otherId === student.id`, поле `unreadCount`; поллинг раз в 15с, бейдж не
+   рендерится при `unreadCount === 0` (или отсутствии диалога).
+3. `DashboardCenter.tsx` — `Link` `chat.goToChats` → `/chats` сразу после
+   `.statsMerged`, рендерится только при `isOwner`.
+4. `Header.tsx` — новый компонент `ChatHeaderIcon`
+   (`src/widgets/BaseUI/Header/ChatHeaderIcon.tsx` + `.module.scss`),
+   вставлен в разметке сразу после `<NotificationBell />`. Паттерн 1:1 с
+   `NotificationBell` (тот же `useSession` гейт, тот же `.btn`/`.badge`
+   визуальный контракт), источник — `GET /api/chat/unread-count`, поллинг
+   раз в 15с (у `NotificationBell` — раз в 60с, разная частота — по спеке
+   этого тикета). Работает одинаково для `TEACHER`/`ADMIN` и `STUDENT`
+   сессий — эндпоинт сам скопирован по роли.
+
+Переход на конкретный диалог: `StudentDetailModal` после get-or-create ведёт
+на `/chats?conversationId=<id>` — параметр пока ничего не делает, т.к.
+`ChatShell` его не читает (см. выше, "не входило в критерии Т02"). Это
+**предложение на будущее**, не реализация: страница `ChatShell` могла бы
+принять проп вида `initialConversationId?: string` (или переиспользовать
+предложенный в Т02 `initialOtherId?: string`) и после первой загрузки списка
+искать/выбирать диалог с этим id — сама реализация вне зоны Т06.
+
+Проверено curl'ом поверх `npm run dev` (сид-аккаунты
+`teacher@seed.dev`/`student@seed.dev`): `POST /api/chat/conversations
+{otherId}` из кнопки модалки идемпотентен (два вызова подряд — один и тот же
+id); после отправки сообщения от `student@seed.dev` `GET
+/api/chat/conversations`, отфильтрованный по `otherId`, и `GET
+/api/chat/unread-count` для `teacher@seed.dev` синхронно показывают одно и
+то же непрочитанное количество (оба источника — те же, что использует
+бейдж сайдбара и иконка хедера); `PATCH .../read` обнуляет оба сразу; `GET
+/api/chat/unread-count` для `student@seed.dev` после сообщения от учителя
+тоже растёт — эндпоинт симметричен по роли. `/chats` в момент проверки
+отдавал 500 (падает на `renderConversation`, передаваемом функцией из
+серверного `app/chats/page.tsx` в клиентский `ChatShell` — незавершённая
+параллельная работа тикета T03 над этим файлом, не в зоне T06), поэтому
+клик по кнопке в `StudentDetailModal` проверен только на уровне
+эндпоинта, которым он пользуется, а не сквозным рендером `/chats`.
+Owner-гейт кнопки в `DashboardCenter` проверен и негативно: `<a
+href="/chats">` есть в HTML `/teacher-profile` (владелец), но отсутствует
+в HTML `/users/{teacherId}` под сессией стороннего `student@seed.dev`
+(не-владелец) — единственное совпадение по тексту там было вхождение
+JSON-словаря переводов, а не отрендеренный элемент.
