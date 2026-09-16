@@ -1,0 +1,208 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  flex-shrink: 0;
+}
+
+.backBtn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: #534AB7;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+
+  &:hover { background: rgba(83, 74, 183, 0.08); }
+
+  @media (max-width: 768px) {
+    display: flex;
+  }
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.headerName {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #111118;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px;
+
+  &::-webkit-scrollbar { width: 3px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: #E0E0E0; border-radius: 2px; }
+}
+
+.stateMsg {
+  margin: auto;
+  text-align: center;
+  color: #ABABAB;
+  font-size: 13px;
+  padding: 32px 12px;
+}
+
+.emptyState {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  color: #ABABAB;
+
+  svg { opacity: 0.45; }
+
+  p {
+    margin: 0;
+    font-size: 13.5px;
+    max-width: 260px;
+    line-height: 1.5;
+  }
+}
+
+.composer {
+  flex-shrink: 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.07);
+  padding: 12px 16px;
+}
+
+.sendError {
+  color: #d64545;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.composerRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.textarea {
+  flex: 1;
+  min-width: 0;
+  resize: none;
+  border: 1px solid #EBEBEB;
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  font-family: inherit;
+  color: #111118;
+  background: #F7F7FB;
+  outline: none;
+  line-height: 1.4;
+  max-height: 120px;
+  transition: border-color 0.15s, background 0.15s;
+
+  &::placeholder { color: #ABABAB; }
+  &:focus { border-color: #534AB7; background: #fff; }
+  &:disabled { opacity: 0.7; }
+}
+
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  color: #8A8A9A;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover { background: #F1F1F6; color: #534AB7; }
+}
+
+.sendBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: none;
+  background: #534AB7;
+  color: #fff;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, opacity 0.15s;
+
+  &:hover:not(:disabled) { background: #453ea0; }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .header { border-bottom-color: rgba(255, 255, 255, 0.07); }
+  .backBtn { color: #a5b4fc; &:hover { background: rgba(129, 140, 248, 0.12); } }
+  .headerName { color: #e8eaf0; }
+  .list {
+    &::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); }
+  }
+  .stateMsg { color: rgba(255, 255, 255, 0.3); }
+  .emptyState { color: rgba(255, 255, 255, 0.3); }
+  .composer { border-top-color: rgba(255, 255, 255, 0.07); }
+  .textarea {
+    background: #23263a;
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #e8eaf0;
+    &::placeholder { color: rgba(255, 255, 255, 0.25); }
+    &:focus { border-color: #818cf8; background: #1a1c24; }
+  }
+  .iconBtn {
+    color: rgba(255, 255, 255, 0.4);
+    &:hover { background: rgba(129, 140, 248, 0.14); color: #a5b4fc; }
+  }
+  .sendBtn { background: #4c47a8; &:hover:not(:disabled) { background: #5a54c2; } }
+}

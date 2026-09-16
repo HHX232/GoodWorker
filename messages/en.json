@@ -2997,6 +2997,13 @@
     "eventMessage": "Event",
     "back": "Back",
     "emptyPlaceholder": "Select a conversation on the left to start chatting",
-    "selectedPlaceholder": "Conversation with {name}"
+    "selectedPlaceholder": "Conversation with {name}",
+    "conversationLoadError": "Failed to load messages",
+    "conversationEmpty": "Write the first message to start the conversation",
+    "composerPlaceholder": "Write a message...",
+    "attach": "Attach a file",
+    "voice": "Voice message",
+    "send": "Send",
+    "sendError": "Failed to send message"
   }
 }

@@ -304,6 +304,96 @@ namespace `chat` (composer, вложения, карточки событий и
 и на других роутах без чата, вне зоны этого тикета); тёмная тема
 (`html.theme-dark`) переключает фон/цвета контейнера и списка.
 
+### Диалог: сообщения, композер, поллинг (тикет T03) — готово
+
+Компоненты: `src/widgets/Chat/ConversationView/ConversationView.tsx` + `.module.scss`,
+`src/widgets/Chat/MessageBubble/MessageBubble.tsx` + `.module.scss`. Подключены в
+`renderConversation` `ChatShell` через новый клиентский компонент-обёртку
+`src/widgets/Chat/ChatPage/ChatPage.tsx` (`'use client'`), которую теперь рендерит
+`app/chats/page.tsx` — серверный компонент не может передать замыкание
+(`renderConversation`) напрямую клиентскому `ChatShell` (React бросает "Functions
+cannot be passed directly to Client Components"), поэтому композиция `ChatShell` +
+`ConversationView` целиком живёт на клиентской стороне границы.
+
+```ts
+export interface ConversationViewProps {
+  conversation: ConversationSummary   // из @/shared/types/Chat/chat.types
+  onBack: () => void
+}
+
+export interface MessageBubbleProps {
+  message: ChatMessage                // из @/shared/types/Chat/chat.types — новый тип, добавлен этим тикетом
+  isMine: boolean                     // true, если message.senderRole === роль текущей сессии
+}
+```
+
+`ChatMessage` (клиентское зеркало Prisma-модели `ChatMessage`, как реально приходит в
+браузер) добавлен в `src/shared/types/Chat/chat.types.ts` рядом с `ConversationSummary`
+— `createdAt` как ISO-строка, `senderRole` сужен до `"TEACHER" | "STUDENT"`.
+
+Поведение `ConversationView`:
+- При смене `conversation.id` — сброс состояния, `GET .../messages` (без `before`,
+  дефолтные 30 последних, сервер уже отдаёт по возрастанию). Три состояния:
+  `t('loading')`, `t('conversationLoadError')`, `t('conversationEmpty')` (пустой
+  диалог — приглашение написать первым, иконка + текст, не пустой экран).
+- Отправка — `POST .../messages {text}`, кнопка/textarea блокируются на время
+  запроса (`sending`), повторный клик/двойной Enter не дублирует (проверено — один
+  результат при двух быстрых Enter подряд). Оптимистичной вставки нет — сообщение
+  добавляется в список только после 200 от сервера, дедуп по `id` на случай гонки с
+  поллингом.
+- Композер: `textarea` (авто-рост до 120px) → кнопка-скрепка (`aria-label=t('attach')`,
+  без обработчика) → кнопка ГС (`aria-label=t('voice')`, без обработчика) → кнопка
+  отправки (`disabled`, пока `draft.trim()` пуст или идёт отправка). `Enter` —
+  отправка, `Shift+Enter` — перенос строки (`\n` остаётся в `textarea`, не отправляется).
+- Поллинг: `setInterval` 3000мс; на каждом тике, если `document.visibilityState !==
+  'visible'`, запрос вообще не отправляется (проверено — 0 запросов `.../messages` за
+  3.5с со скрытой вкладкой); иначе `GET .../messages` (последние 30) + мердж по `id` в
+  существующий список + `PATCH .../read` (best-effort, не блокирует UI, гасит бейдж
+  непрочитанных у `ChatEntryPoints`/T06). То же `PATCH .../read` дергается один раз при
+  открытии диалога.
+- Автоскролл к последнему сообщению при каждом изменении списка/смене диалога.
+- Роль "своё/чужое" сообщение — `useSession()` (`next-auth/react`), `role === 'STUDENT'
+  ? 'STUDENT' : 'TEACHER'` (тот же ADMIN→TEACHER маппинг, что на сервере); пока сессия в
+  статусе `loading`, список сообщений тоже считается загружающимся (иначе было бы
+  кратковременное мигание стороны пузыря).
+
+`MessageBubble` — диспетчер по `message.eventType` → `message.attachmentType` → `text`:
+только текстовый вариант отрисован полностью (пузырь, время, перенос строк);
+`attachmentType` рендерит `attachmentName || t('attachmentMessage')` с иконкой скрепки;
+`eventType` рендерит `t('eventMessage')` с иконкой календаря — обе заглушки не падают и
+переживут замену тикетами 04/05 без изменения `MessageBubbleProps`.
+
+i18n: новые ключи в существующем namespace `chat` (все 4 локали) —
+`conversationLoadError`, `conversationEmpty`, `composerPlaceholder`, `attach`, `voice`,
+`send`, `sendError`; переиспользует уже существующие `loading`/`back`/
+`attachmentMessage`/`eventMessage` из T02.
+
+Стили — `ConversationView.module.scss`/`MessageBubble.module.scss`, палитра 1:1 с
+`ChatShell`/`ConversationList` (акцент `#534AB7`/тёмный `#818cf8`, тёмный фон карточек
+`#1a1c24`), тёмная тема — тот же `:global(html.theme-dark), :global(html.pomodoro-dark)`
+паттерн.
+
+Проверено (curl + Puppeteer поверх `npm run dev`, `teacher@seed.dev`/`student@seed.dev`,
+раздельные incognito browser context на роль — общий puppeteer-контекст иначе делит
+cookie-хранилище между вкладками и путает сессии): реальная история грузится и растёт в
+обе стороны через поллинг (учитель отправляет → студент видит новое сообщение в течение
+одного 3-секундного тика без перезагрузки, и наоборот); пустой ввод → кнопка отправки
+`disabled`; два быстрых `Enter` подряд с одинаковым текстом → одно сообщение в истории,
+не два; `Shift+Enter` оставляет `\n` в `textarea`, `Enter` отправляет и чистит поле;
+композер в DOM в порядке `textarea → [Прикрепить файл] → [Голосовое сообщение] →
+[Отправить]`; скрытая вкладка (`document.visibilityState` форсирован в `'hidden'`) — 0
+запросов `GET .../messages` за 3.5с; пустой диалог (замокан пустой `messages: []` через
+request-interception, т.к. у сид-пары `teacher@seed.dev`/`student@seed.dev` реальная
+история уже непустая) показывает `t('conversationEmpty')`, не пустой экран;
+`MessageBubble` не падает на сообщениях с `attachmentType`/`eventType` (проверено
+моками всех трёх веток), в обеих темах (`html.theme-dark`) фон/цвета переключаются
+корректно (скриншоты light/dark сверены визуально); консоль браузера чистая на всех
+прогонах (0 `console.error`/`pageerror`). До фикса `app/chats/page.tsx` (серверный)
+падал с 500 при прямой передаче `renderConversation` инлайн-функцией клиентскому
+`ChatShell` (тот же 500, что зафиксировал в своём отчёте T06 ниже как "незавершённая
+параллельная работа T03") — решено вынесением композиции `ChatShell` + `ConversationView`
+в новый клиентский `ChatPage.tsx`.
+
 ### ChatEntryPoints (тикет T06) — готово
 
 Четыре точки входа, все тонкие обвязки существующих компонентов (см. таблицу

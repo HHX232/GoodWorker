@@ -2824,6 +2824,13 @@
     "eventMessage": "事件",
     "back": "返回",
     "emptyPlaceholder": "从左侧选择一个对话开始聊天",
-    "selectedPlaceholder": "与{name}的对话"
+    "selectedPlaceholder": "与{name}的对话",
+    "conversationLoadError": "加载消息失败",
+    "conversationEmpty": "发送第一条消息开始对话",
+    "composerPlaceholder": "输入消息...",
+    "attach": "添加附件",
+    "voice": "语音消息",
+    "send": "发送",
+    "sendError": "发送消息失败"
   }
 }

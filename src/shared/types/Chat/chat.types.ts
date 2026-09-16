@@ -11,8 +11,22 @@
 // drifting out of sync.
 
 import type { ConversationSummary as ServerConversationSummary } from '@/shared/lib/chat/access'
+import type { ChatMessage as PrismaChatMessage } from '@prisma/client'
 
 export type ChatRole = 'TEACHER' | 'STUDENT'
+
+/**
+ * Client-side mirror of the `ChatMessage` Prisma model, exactly as it comes
+ * back from `GET/POST /api/chat/conversations/[id]/messages` (see
+ * "Контракт API chat/data" in interfaces.md) — `createdAt` travels as an ISO
+ * string over JSON instead of the `Date` object Prisma holds server-side,
+ * and `senderRole` narrows from the wider Prisma `Role` enum to the two
+ * roles that actually send chat messages.
+ */
+export type ChatMessage = Omit<PrismaChatMessage, 'createdAt' | 'senderRole'> & {
+  senderRole: ChatRole
+  createdAt: string
+}
 
 type ServerLastMessage = NonNullable<ServerConversationSummary['lastMessage']>
 

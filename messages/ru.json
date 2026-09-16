@@ -2997,6 +2997,13 @@
     "eventMessage": "Событие",
     "back": "Назад",
     "emptyPlaceholder": "Выберите диалог слева, чтобы начать переписку",
-    "selectedPlaceholder": "Диалог с {name}"
+    "selectedPlaceholder": "Диалог с {name}",
+    "conversationLoadError": "Не удалось загрузить сообщения",
+    "conversationEmpty": "Напишите первым, чтобы начать переписку",
+    "composerPlaceholder": "Напишите сообщение...",
+    "attach": "Прикрепить файл",
+    "voice": "Голосовое сообщение",
+    "send": "Отправить",
+    "sendError": "Не удалось отправить сообщение"
   }
 }

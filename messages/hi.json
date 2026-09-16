@@ -2823,6 +2823,13 @@
     "eventMessage": "इवेंट",
     "back": "वापस",
     "emptyPlaceholder": "चैट शुरू करने के लिए बाईं ओर से एक बातचीत चुनें",
-    "selectedPlaceholder": "{name} के साथ बातचीत"
+    "selectedPlaceholder": "{name} के साथ बातचीत",
+    "conversationLoadError": "संदेश लोड करने में विफल",
+    "conversationEmpty": "बातचीत शुरू करने के लिए पहला संदेश लिखें",
+    "composerPlaceholder": "संदेश लिखें...",
+    "attach": "फ़ाइल संलग्न करें",
+    "voice": "वॉइस संदेश",
+    "send": "भेजें",
+    "sendError": "संदेश भेजने में विफल"
   }
 }
