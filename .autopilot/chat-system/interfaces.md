@@ -236,6 +236,10 @@ export interface ChatConversationSlotProps {
 `POST /api/chat/conversations` для get-or-create — контракт `ChatShell`
 не заморожен настолько, чтобы это было ломающим изменением.
 
+**Обновление (T03, после ревью D01):** реализовано — см.
+`initialConversationId?: string` в `ChatShellProps` и раздел
+"`?conversationId=` deep link" ниже в блоке T03.
+
 Тип данных: `src/shared/types/Chat/chat.types.ts` — клиентское зеркало
 `ConversationSummary` из `src/shared/lib/chat/access.ts`, но с датами как
 `string` (ISO), а не `Date` — ровно то, что реально приходит в браузер после
@@ -393,6 +397,40 @@ request-interception, т.к. у сид-пары `teacher@seed.dev`/`student@seed
 `ChatShell` (тот же 500, что зафиксировал в своём отчёте T06 ниже как "незавершённая
 параллельная работа T03") — решено вынесением композиции `ChatShell` + `ConversationView`
 в новый клиентский `ChatPage.tsx`.
+
+#### `?conversationId=` deep link (закрывает D01)
+
+`ChatEntryPoints`/T06's `StudentDetailModal` кнопка «Перейти в чат» делает
+get-or-create и ведёт на `/chats?conversationId=<id>`; до этой правки
+`ChatPage`/`ChatShell` параметр игнорировали, и пользователь попадал на
+голый список вместо нужного диалога (D01 в манифесте).
+
+Реализация: `ChatShellProps` получил новый опциональный проп
+`initialConversationId?: string` — ровно тот, что был предложен ещё в T02
+(см. "Обновление (T03...)" выше). `ChatShell` применяет его один раз
+(`useRef` guard, не перезатирает выбор пользователя при повторных ререндерах)
+сразу после первой успешной загрузки `GET /api/chat/conversations`: ищет в
+полученном списке диалог с этим `id` и, если находит, выставляет его
+`selectedId` — тем же путём, что обычный клик по элементу списка. Если
+диалога с таким `id` нет (например, только что созданный диалог, а список
+успел загрузиться раньше, или id битый/чужой) — тихо остаётся в состоянии
+"выбери диалог слева", без ошибки и без похода в `POST /api/chat/conversations`
+(в отличие от предложения из T02 про `initialOtherId` — здесь диалог уже
+гарантированно создан вызывающей стороной, повторный get-or-create не нужен).
+
+`src/widgets/Chat/ChatPage/ChatPage.tsx` читает `?conversationId=` через
+`useSearchParams()` (`next/navigation`) во внутреннем `ChatPageInner`,
+обёрнутом в `<Suspense fallback={null}>` (Next.js требует Suspense-границу
+над `useSearchParams()`), и прокидывает значение как `initialConversationId`
+в `ChatShell`.
+
+Проверено (curl + Puppeteer поверх `npm run dev`, `teacher@seed.dev`):
+`POST /api/chat/conversations {otherId}` создаёт/находит диалог → переход на
+`/chats?conversationId=<этот id>` сразу показывает диалог с Алисой Смирновой
+(шапка + история + textarea в DOM), без клика по списку; переход на
+`/chats?conversationId=не-существует` не падает (0 `console.error`/
+`pageerror`) и остаётся на списке (плейсхолдер "Выберите диалог слева",
+`textarea` в DOM отсутствует).
 
 ### ChatEntryPoints (тикет T06) — готово
 

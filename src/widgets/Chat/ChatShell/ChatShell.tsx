@@ -3,7 +3,7 @@
 import { ConversationList } from '@/widgets/Chat/ConversationList/ConversationList'
 import type { ConversationSummary } from '@/shared/types/Chat/chat.types'
 import { useTranslations } from 'next-intl'
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import styles from './ChatShell.module.scss'
 
 /**
@@ -25,6 +25,16 @@ export interface ChatShellProps {
    * real implementation here.
    */
   renderConversation?: (slot: ChatConversationSlotProps) => ReactNode
+  /**
+   * Pre-selects a conversation by id once the list finishes its first load —
+   * backs the `/chats?conversationId=<id>` deep link `ChatEntryPoints` (T06)
+   * navigates to after a get-or-create. Applied at most once (a later change
+   * to this prop doesn't re-steal the user's own selection). If no
+   * conversation with this id turns up in the list (e.g. it was just created
+   * and the list hasn't caught up), this is a no-op — falls back to the
+   * ordinary "select a conversation" state instead of crashing.
+   */
+  initialConversationId?: string
 }
 
 function BackIcon() {
@@ -35,12 +45,13 @@ function BackIcon() {
   )
 }
 
-export function ChatShell({ renderConversation }: ChatShellProps) {
+export function ChatShell({ renderConversation, initialConversationId }: ChatShellProps) {
   const t = useTranslations('chat')
   const [conversations, setConversations] = useState<ConversationSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const appliedInitialSelection = useRef(false)
 
   useEffect(() => {
     let cancelled = false
@@ -55,6 +66,11 @@ export function ChatShell({ renderConversation }: ChatShellProps) {
       .then(data => {
         if (cancelled) return
         setConversations(data.conversations)
+        if (!appliedInitialSelection.current && initialConversationId) {
+          appliedInitialSelection.current = true
+          const match = data.conversations.find(c => c.id === initialConversationId)
+          if (match) setSelectedId(match.id)
+        }
       })
       .catch(() => {
         if (!cancelled) setLoadError(true)
@@ -66,7 +82,7 @@ export function ChatShell({ renderConversation }: ChatShellProps) {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [initialConversationId])
 
   const selectedConversation = useMemo(
     () => conversations.find(c => c.id === selectedId) ?? null,

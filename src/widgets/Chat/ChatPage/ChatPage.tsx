@@ -2,6 +2,30 @@
 
 import { ChatShell } from '@/widgets/Chat/ChatShell/ChatShell'
 import { ConversationView } from '@/widgets/Chat/ConversationView/ConversationView'
+import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
+
+/**
+ * Reads `?conversationId=<id>` (set by `ChatEntryPoints`, e.g.
+ * `StudentDetailModal`'s "Перейти в чат" button, after its own
+ * get-or-create) and hands it to `ChatShell` as `initialConversationId` so
+ * the deep link opens straight into that dialog instead of the bare list.
+ * Split out from `ChatPage` because `useSearchParams()` requires a
+ * `<Suspense>` boundary above it.
+ */
+function ChatPageInner() {
+  const searchParams = useSearchParams()
+  const conversationId = searchParams.get('conversationId') ?? undefined
+
+  return (
+    <ChatShell
+      initialConversationId={conversationId}
+      renderConversation={({ conversation, onBack }) => (
+        <ConversationView conversation={conversation} onBack={onBack} />
+      )}
+    />
+  )
+}
 
 /**
  * Thin client-side composition root for the `/chats` page. Exists only
@@ -13,10 +37,8 @@ import { ConversationView } from '@/widgets/Chat/ConversationView/ConversationVi
  */
 export function ChatPage() {
   return (
-    <ChatShell
-      renderConversation={({ conversation, onBack }) => (
-        <ConversationView conversation={conversation} onBack={onBack} />
-      )}
-    />
+    <Suspense fallback={null}>
+      <ChatPageInner />
+    </Suspense>
   )
 }
