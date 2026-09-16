@@ -15,6 +15,7 @@ const PAGE_LIMIT = 12
 async function getInitialTeachers() {
   const [teachers, total] = await Promise.all([
     prisma.teacher.findMany({
+      where: {isBanned: false},
       take: PAGE_LIMIT,
       orderBy: [{isVip: 'desc'}, {createdAt: 'desc'}],
       select: {
@@ -56,7 +57,7 @@ async function getInitialTeachers() {
         services: {select: {price: true, currency: true}, orderBy: {price: 'asc'}, take: 1}
       }
     }),
-    prisma.teacher.count()
+    prisma.teacher.count({where: {isBanned: false}})
   ])
 
   return {

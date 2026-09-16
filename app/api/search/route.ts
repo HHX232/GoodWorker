@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
         select: {id: true, title: true, teacher: {select: {name: true}}}
       }),
       prisma.teacher.findMany({
-        where: {name: {contains: q, mode: 'insensitive'}},
+        where: {name: {contains: q, mode: 'insensitive'}, isBanned: false},
         take: LIMIT,
         orderBy: {createdAt: 'desc'},
         select: {id: true, name: true, avatarUrl: true}

@@ -84,6 +84,11 @@ export async function POST(req: NextRequest, {params}: RouteParams) {
     const session = await auth()
     if (!session?.user?.id) return NextResponse.json({error: 'Unauthorized'}, {status: 401})
 
+    const authorBan = session.user.role === 'STUDENT'
+      ? await prisma.student.findUnique({where: {id: session.user.id}, select: {isBanned: true}})
+      : await prisma.teacher.findUnique({where: {id: session.user.id}, select: {isBanned: true}})
+    if (authorBan?.isBanned) return NextResponse.json({error: 'Banned accounts cannot post comments'}, {status: 403})
+
     const form = await req.formData()
 
     const text = form.get('text')

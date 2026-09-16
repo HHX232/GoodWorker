@@ -48,8 +48,14 @@ export async function POST(req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: 'text is required' }, { status: 400 })
     }
 
-    const teacher = await prisma.teacher.findUnique({ where: { id: teacherId }, select: { id: true } })
+    const teacher = await prisma.teacher.findUnique({ where: { id: teacherId }, select: { id: true, isBanned: true } })
     if (!teacher) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    if (teacher.isBanned) return NextResponse.json({ error: 'Teacher is banned' }, { status: 403 })
+
+    const author = session.user.role === 'STUDENT'
+      ? await prisma.student.findUnique({ where: { id: session.user.id }, select: { isBanned: true } })
+      : await prisma.teacher.findUnique({ where: { id: session.user.id }, select: { isBanned: true } })
+    if (author?.isBanned) return NextResponse.json({ error: 'Banned accounts cannot post reviews' }, { status: 403 })
 
     const review = await prisma.teacherReview.upsert({
       where: { teacherId_authorId: { teacherId, authorId: session.user.id } },

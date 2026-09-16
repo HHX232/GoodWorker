@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
     const minPrice = minPriceParam ? Number(minPriceParam) : null
     const sort = searchParams.get('sort') ?? 'default'
 
-    const where: Prisma.TeacherWhereInput = {}
+    const where: Prisma.TeacherWhereInput = {isBanned: false}
 
     if (search) {
       where.name = {contains: search, mode: 'insensitive'}
