@@ -108,8 +108,20 @@ model Teacher {
   referralCode        String?             @unique
   paymentReminderSettings PaymentReminderSetting[]
   conversationsAsTeacher Conversation[]
+  whiteboardTemplates     WhiteboardTemplate[]
 
   @@index([isVip, createdAt])
+}
+
+model WhiteboardTemplate {
+  id        String   @id @default(uuid())
+  teacherId String
+  name      String
+  snapshot  Json
+  createdAt DateTime @default(now())
+  teacher   Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@index([teacherId, createdAt])
 }
 
 model TeacherExperience {

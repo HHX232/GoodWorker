@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
+import { toast } from 'sonner'
 import '@excalidraw/excalidraw/index.css'
 import type { ExcalidrawElement, FileId } from '@excalidraw/excalidraw/element/types'
 import type { AppState, BinaryFileData, BinaryFiles, DataURL, ExcalidrawImperativeAPI, Zoom } from '@excalidraw/excalidraw/types'
@@ -37,6 +38,11 @@ const ThreeDZoneLayer = dynamic(
   { ssr: false },
 )
 
+const TemplatesModal = dynamic(
+  () => import('./TemplatesModal').then(m => ({ default: m.TemplatesModal })),
+  { ssr: false },
+)
+
 const DEFAULT_ZONE_SIZE = 220
 const GRID_STORAGE_KEY = 'whiteboard:gridSettings'
 const GRID_STYLES = new Set(['squares', 'dots', 'lines', 'off'])
@@ -65,6 +71,22 @@ const EXCALIDRAW_UI_OPTIONS = {
 function findVertexMarkIndex(marks: ThreeDZone['vertexMarks'], faceIndex: number, edgeIndexA: number, edgeIndexB: number): number {
   return (marks ?? []).findIndex(m => m.faceIndex === faceIndex
     && ((m.edgeIndexA === edgeIndexA && m.edgeIndexB === edgeIndexB) || (m.edgeIndexA === edgeIndexB && m.edgeIndexB === edgeIndexA)))
+}
+
+async function postTemplateSnapshot(name: string, elements: readonly ExcalidrawElement[]): Promise<boolean> {
+  const nonDeleted = elements.filter(el => !el.isDeleted)
+  if (nonDeleted.length === 0) return false
+  try {
+    const res = await fetch('/api/whiteboard/templates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, snapshot: nonDeleted }),
+    })
+    return res.ok
+  } catch (err) {
+    console.error('[CallWhiteboard] save template failed:', err)
+    return false
+  }
 }
 
 type PopoverKind = 'formula' | 'grid' | '3d' | null
@@ -129,6 +151,13 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
   // Any drawing tool → zones let clicks through so it can draw over the shape.
   const [activeToolType, setActiveToolType] = useState<AppState['activeTool']['type']>('selection')
   const [popoverPos, setPopoverPos] = useState<{ top: number; left: number } | null>(null)
+  const [templatesModalOpen, setTemplatesModalOpen] = useState(false)
+  const [creatingTemplateName, setCreatingTemplateName] = useState<string | null>(null)
+  const [savingTemplate, setSavingTemplate] = useState(false)
+  // Mirrors creatingTemplateName/sceneElements for the unmount-time auto-save
+  // effect below, which can't rely on stale closures over state.
+  const creatingTemplateRef = useRef<string | null>(null)
+  const sceneElementsRef = useRef<readonly ExcalidrawElement[]>([])
   const { isDark } = useThemeCtx()
 
   // The popover (formula/grid/shape panels) used to be positioned via plain
@@ -250,6 +279,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
       // our own mirrored state (and everything derived from it — zone
       // canvases, the inspector) would silently stop tracking mid-drag.
       setSceneElements(elements.slice())
+      sceneElementsRef.current = elements
       setSelectedElementIds(state.selectedElementIds)
       setActiveToolType(prev => (prev === state.activeTool.type ? prev : state.activeTool.type))
       // onScrollChange alone missed pure zoom changes (e.g. the zoom-%
@@ -651,6 +681,54 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
     }
   }, [inspectorTarget])
 
+  const handleApplyTemplate = useCallback((templateElements: ExcalidrawElement[]) => {
+    if (!apiRef.current) return
+    // Mark every currently-visible element deleted (rather than just
+    // omitting it) so the tombstone rides along in the next onChange/
+    // broadcast — other participants' own "apply remote elements" merge
+    // only drops an id it sees explicitly deleted; a smaller array with no
+    // tombstones would just look like a partial update to them and they'd
+    // keep their own copies of the old content.
+    const tombstoned = apiRef.current.getSceneElements().map(el => ({ ...el, isDeleted: true }))
+    apiRef.current.updateScene({ elements: [...tombstoned, ...templateElements] })
+    apiRef.current.scrollToContent(templateElements, { fitToContent: true, animate: false })
+    setTemplatesModalOpen(false)
+  }, [])
+
+  const handleStartCreateTemplate = useCallback((name: string) => {
+    setCreatingTemplateName(name)
+    setTemplatesModalOpen(false)
+  }, [])
+
+  const handleSaveTemplate = useCallback(async () => {
+    if (!creatingTemplateName || savingTemplate) return
+    setSavingTemplate(true)
+    const ok = await postTemplateSnapshot(creatingTemplateName, sceneElementsRef.current)
+    setSavingTemplate(false)
+    if (ok) {
+      toast.success('Шаблон сохранён')
+      setCreatingTemplateName(null)
+    } else {
+      toast.error('Не удалось сохранить шаблон — доска пуста или произошла ошибка')
+    }
+  }, [creatingTemplateName, savingTemplate])
+
+  useEffect(() => {
+    creatingTemplateRef.current = creatingTemplateName
+  }, [creatingTemplateName])
+
+  // Best-effort auto-save: if the user started creating a template, drew
+  // something, but closed the whiteboard/call without clicking "Сохранить
+  // шаблон", save it for them on unmount rather than silently losing it —
+  // but only if they actually drew something (never save an empty template).
+  useEffect(() => {
+    return () => {
+      if (creatingTemplateRef.current) {
+        postTemplateSnapshot(creatingTemplateRef.current, sceneElementsRef.current)
+      }
+    }
+  }, [])
+
   return (
     <div className={styles.root}>
       <div className={styles.canvas}>
@@ -839,6 +917,38 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
             </div>
           )}
         </div>
+        {/* Right-side counterpart to .formulaWrap — same "float over the
+            canvas, below Excalidraw's own toolbar" reasoning, mirrored to
+            the right edge since the left side is already crowded. */}
+        <div className={styles.templatesWrap}>
+          <button
+            type="button"
+            className={styles.templatesButton}
+            onClick={() => setTemplatesModalOpen(true)}
+            title="Шаблоны доски"
+          >
+            {'Шаблоны'.split('').map((ch, i) => <span key={i}>{ch}</span>)}
+          </button>
+          {creatingTemplateName && (
+            <button
+              type="button"
+              className={styles.saveTemplateButton}
+              onClick={handleSaveTemplate}
+              disabled={savingTemplate}
+              title="Сохранить нарисованное как новый шаблон"
+            >
+              {savingTemplate ? '…' : '💾 Сохранить шаблон'}
+            </button>
+          )}
+        </div>
+        {templatesModalOpen && (
+          <TemplatesModal
+            hasContent={sceneElements.some(el => !el.isDeleted)}
+            onApply={handleApplyTemplate}
+            onStartCreate={handleStartCreateTemplate}
+            onClose={() => setTemplatesModalOpen(false)}
+          />
+        )}
       </div>
     </div>
   )
