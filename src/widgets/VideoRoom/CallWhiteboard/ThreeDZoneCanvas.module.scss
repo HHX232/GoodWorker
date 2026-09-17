@@ -28,6 +28,21 @@
   }
 }
 
+.highlightSvg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.highlightLine {
+  stroke: #1971c2;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 2 5;
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.9));
+}
+
 .moveHandle, .resizeHandle {
   position: absolute;
   width: 24px;
@@ -177,5 +192,8 @@
     background: #1a1826;
     border-color: rgba(255, 255, 255, 0.16);
     color: rgba(255, 255, 255, 0.85);
+  }
+  .highlightLine {
+    stroke: #4dabf7;
   }
 }

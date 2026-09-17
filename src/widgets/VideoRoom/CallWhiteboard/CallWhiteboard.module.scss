@@ -85,10 +85,18 @@
 }
 
 .formulaPopover {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  z-index: 10;
+  // Fixed to the viewport, at a position measured in JS (CallWhiteboard.tsx)
+  // from the toolbar's own screen position — .root and the call page's own
+  // .tile ancestor both clip overflow, so a tall panel (the shape picker)
+  // got cut off or ended up hidden behind the call's bottom controlbar with
+  // no z-index able to fix it, since that's overflow clipping, not a
+  // stacking order problem. A max-height + scroll is a second safety net
+  // for short viewports where even the fixed position leaves too little
+  // room below the toolbar.
+  position: fixed;
+  z-index: 60;
+  max-height: calc(100vh - 84px);
+  overflow-y: auto;
 }
 
 .canvas {
@@ -106,6 +114,12 @@
     height: 100% !important;
     position: relative;
     z-index: 1;
+  }
+  // Excalidraw's own hamburger (scene menu: export/save/theme/…) — not
+  // useful in a lesson context and there's no UIOptions flag for it, only
+  // per-item toggles inside the menu itself.
+  :global(.main-menu-trigger) {
+    display: none;
   }
 }
 

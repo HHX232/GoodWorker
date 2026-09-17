@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import '@excalidraw/excalidraw/index.css'
 import type { ExcalidrawElement, FileId } from '@excalidraw/excalidraw/element/types'
@@ -106,6 +106,7 @@ interface Props {
 
 export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomName, isVip, isAdmin }: Props) {
   const apiRef = useRef<ExcalidrawImperativeAPI | null>(null)
+  const formulaWrapRef = useRef<HTMLDivElement>(null)
   const broadcastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastBroadcast = useRef<readonly ExcalidrawElement[]>([])
   // Track which file IDs have already been sent to avoid re-broadcasting unchanged images
@@ -127,7 +128,28 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
   // Selection/hand tool → zones keep grabbing drags for rotate/edge-pick.
   // Any drawing tool → zones let clicks through so it can draw over the shape.
   const [activeToolType, setActiveToolType] = useState<AppState['activeTool']['type']>('selection')
+  const [popoverPos, setPopoverPos] = useState<{ top: number; left: number } | null>(null)
   const { isDark } = useThemeCtx()
+
+  // The popover (formula/grid/shape panels) used to be positioned via plain
+  // CSS relative to the toolbar row, inside two ancestors that both clip
+  // overflow (.root and the call page's own .tile) — a tall panel like the
+  // shape picker got cut off, or ended up hidden behind the call's bottom
+  // controlbar, with no amount of z-index able to fix it since overflow
+  // clipping isn't a stacking question. Measuring the toolbar's real screen
+  // position and rendering the popover `position: fixed` (in CallWhiteboard
+  // .module.scss) escapes both ancestors entirely, same technique already
+  // used for the in-canvas edge/line color popovers.
+  useLayoutEffect(() => {
+    if (!activePopover) return
+    const measure = () => {
+      const rect = formulaWrapRef.current?.getBoundingClientRect()
+      if (rect) setPopoverPos({ top: rect.bottom + 6, left: rect.left })
+    }
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [activePopover])
 
   const inspectorTarget = useMemo<InspectorTarget | null>(() => {
     const ids = Object.keys(selectedElementIds).filter(id => selectedElementIds[id])
@@ -695,7 +717,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
             left-side toolbar Island, and the top-right slot (renderTopRightUI)
             collides with the call's video preview tile — so this floats on
             top of the canvas, below the native toolbar, on the left. */}
-        <div className={styles.formulaWrap}>
+        <div className={styles.formulaWrap} ref={formulaWrapRef}>
           <div className={styles.formulaButtonsRow}>
             {!toolbarCollapsed && (
               <>
@@ -778,7 +800,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
             </button>
           </div>
           {activePopover === 'formula' && (
-            <div className={styles.formulaPopover}>
+            <div className={styles.formulaPopover} style={popoverPos ? { top: popoverPos.top, left: popoverPos.left } : undefined}>
               <FormulaKeyboard
                 initialLatex={editingFormula?.latex}
                 initialColor={editingFormula?.color}
@@ -796,7 +818,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
             </div>
           )}
           {activePopover === 'grid' && (
-            <div className={styles.formulaPopover}>
+            <div className={styles.formulaPopover} style={popoverPos ? { top: popoverPos.top, left: popoverPos.left } : undefined}>
               <GridSettingsPanel
                 settings={gridSettings}
                 onChange={setGridSettings}
@@ -805,7 +827,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
             </div>
           )}
           {activePopover === '3d' && (
-            <div className={styles.formulaPopover}>
+            <div className={styles.formulaPopover} style={popoverPos ? { top: popoverPos.top, left: popoverPos.left } : undefined}>
               <ThreeDPanel
                 initial={editingShape?.zone}
                 onInsert={handleInsertShape}

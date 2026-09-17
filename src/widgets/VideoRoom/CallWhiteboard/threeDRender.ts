@@ -6,7 +6,7 @@
 // code into the SSR bundle. Everything that needs this file is already
 // mounted behind a `dynamic(..., { ssr: false })` boundary.
 import * as THREE from 'three'
-import { DEFAULT_SEGMENTS, rotateAroundCenter, type EdgeSegmentCandidate, type Point, type ShapeId, type SnapCandidate, type SnapRef, type ThreeDZone, type ZoneRect } from './shapeGeometry'
+import { DEFAULT_SEGMENTS, rotateAroundCenter, type ConstructionLine, type EdgeSegmentCandidate, type LineSegmentCandidate, type Point, type ShapeId, type SnapCandidate, type SnapRef, type ThreeDZone, type ZoneRect } from './shapeGeometry'
 
 export const CREASE_ANGLE_THRESHOLD = THREE.MathUtils.degToRad(1)
 // A shape's own surface is what can hide part of its own edges (no other
@@ -423,6 +423,21 @@ export function computeZoneSnapCandidates(elementId: string, zone: ThreeDZone, r
   midpoints.forEach((v, index) => candidates.push({ ...toScene(v), zoneElementId: elementId, ref: { kind: 'midpoint', index } }))
   faces.forEach((f, index) => candidates.push({ ...toScene(f.center), zoneElementId: elementId, ref: { kind: 'faceCenter', index } }))
   if (centroid) candidates.push({ ...toScene(centroid), zoneElementId: elementId, ref: { kind: 'centroid' } })
+
+  // Existing construction lines are magnet points too — a new line "connects
+  // to" another one at its endpoints (reusing that line's OWN ref directly,
+  // the same point identity, not a linePoint wrapping it) or its midpoint
+  // (linePoint at t=0.5, the natural equivalent of a shape edge's midpoint
+  // for a user-drawn line).
+  const lines = zone.constructionLines ?? []
+  for (const line of lines) {
+    const p1 = resolveLocalSnapPoint(topology, faces, lines, line.startRef)
+    const p2 = resolveLocalSnapPoint(topology, faces, lines, line.endRef)
+    if (!p1 || !p2) continue
+    candidates.push({ ...toScene(p1), zoneElementId: elementId, ref: line.startRef })
+    candidates.push({ ...toScene(p2), zoneElementId: elementId, ref: line.endRef })
+    candidates.push({ ...toScene(p1.clone().lerp(p2, 0.5)), zoneElementId: elementId, ref: { kind: 'linePoint', lineId: line.id, t: 0.5 } })
+  }
   return candidates
 }
 
@@ -442,6 +457,27 @@ export function computeZoneEdgeSegments(elementId: string, zone: ThreeDZone, rec
   }))
 }
 
+/** Every EXISTING construction line of one zone, as a segment in absolute
+ * scene coordinates — lets a new construction line snap onto/slide along an
+ * already-drawn one, the "connect constructions to each other" feature. */
+export function computeZoneLineSegments(elementId: string, zone: ThreeDZone, rect: ZoneRect): LineSegmentCandidate[] {
+  const lines = zone.constructionLines ?? []
+  if (!lines.length) return []
+  const geometry = buildGeometry(zone.primitive, zone.segments ?? DEFAULT_SEGMENTS[zone.primitive], zone.flat ?? false)
+  const topology = buildEdgeTopology(geometry)
+  const faces = buildFaceTopology(geometry)
+  geometry.dispose()
+  const toScene = buildZoneProjector(zone, rect)
+  const segments: LineSegmentCandidate[] = []
+  for (const line of lines) {
+    const p1 = resolveLocalSnapPoint(topology, faces, lines, line.startRef)
+    const p2 = resolveLocalSnapPoint(topology, faces, lines, line.endRef)
+    if (!p1 || !p2) continue
+    segments.push({ zoneElementId: elementId, lineId: line.id, a: toScene(p1), b: toScene(p2) })
+  }
+  return segments
+}
+
 /** Resolve one specific snap ref (e.g. "vertex 2") to its current absolute
  * scene position — used to re-anchor a construction line bound to this zone
  * after the zone's rotation/primitive/etc. changes. `edgePoint` is resolved
@@ -456,6 +492,19 @@ export function resolveSnapRef(elementId: string, zone: ThreeDZone, rect: ZoneRe
     if (!edge) return null
     return buildZoneProjector(zone, rect)(edge.v1.clone().lerp(edge.v2, ref.t))
   }
+  if (ref.kind === 'linePoint') {
+    const lines = zone.constructionLines ?? []
+    const line = lines.find(l => l.id === ref.lineId)
+    if (!line) return null
+    const geometry = buildGeometry(zone.primitive, zone.segments ?? DEFAULT_SEGMENTS[zone.primitive], zone.flat ?? false)
+    const topology = buildEdgeTopology(geometry)
+    const faces = buildFaceTopology(geometry)
+    geometry.dispose()
+    const p1 = resolveLocalSnapPoint(topology, faces, lines, line.startRef)
+    const p2 = resolveLocalSnapPoint(topology, faces, lines, line.endRef)
+    if (!p1 || !p2) return null
+    return buildZoneProjector(zone, rect)(p1.clone().lerp(p2, ref.t))
+  }
   const candidates = computeZoneSnapCandidates(elementId, zone, rect)
   return candidates.find(c => c.ref.kind === ref.kind && (ref.kind === 'centroid' || (c.ref as { index: number }).index === (ref as { index: number }).index)) ?? null
 }
@@ -463,12 +512,24 @@ export function resolveSnapRef(elementId: string, zone: ThreeDZone, rect: ZoneRe
 /** Resolve a snap ref against an already-built topology's local points —
  * used inside a zone's own live scene (construction lines embedded in it),
  * where the topology is already sitting in a ref and rebuilding it from
- * scratch on every rotation frame would be wasteful. */
-export function resolveLocalSnapPoint(topology: EdgeTopology[], faces: FaceTopology[], ref: SnapRef): THREE.Vector3 | null {
+ * scratch on every rotation frame would be wasteful. `linePoint` resolves
+ * recursively through `lines` (an existing construction line's own
+ * endpoints can themselves reference another line), guarded by `depth`
+ * against a pathological cycle. */
+export function resolveLocalSnapPoint(topology: EdgeTopology[], faces: FaceTopology[], lines: ConstructionLine[], ref: SnapRef, depth = 0): THREE.Vector3 | null {
   if (ref.kind === 'faceCenter') return faces[ref.index]?.center ?? null
   if (ref.kind === 'edgePoint') {
     const edge = topology[ref.edgeIndex]
     return edge ? edge.v1.clone().lerp(edge.v2, ref.t) : null
+  }
+  if (ref.kind === 'linePoint') {
+    if (depth > 8) return null
+    const line = lines.find(l => l.id === ref.lineId)
+    if (!line) return null
+    const p1 = resolveLocalSnapPoint(topology, faces, lines, line.startRef, depth + 1)
+    const p2 = resolveLocalSnapPoint(topology, faces, lines, line.endRef, depth + 1)
+    if (!p1 || !p2) return null
+    return p1.clone().lerp(p2, ref.t)
   }
   const { vertices, midpoints, centroid } = getLocalSnapPoints(topology)
   if (ref.kind === 'vertex') return vertices[ref.index] ?? null

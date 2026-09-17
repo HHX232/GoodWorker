@@ -143,6 +143,15 @@ export type SnapRef =
    * "slide" anywhere along an edge and still stay glued to it (re-resolved
    * from edgeIndex+t) after the shape rotates, moves, or is resized. */
   | { kind: 'edgePoint'; edgeIndex: number; t: number }
+  /** An arbitrary point along an EXISTING construction line (`t` 0..1, from
+   * its startRef to endRef) — lets one construction line be built starting
+   * or ending on another one, the same "slide anywhere, not just the
+   * endpoints" idea as edgePoint but for user-drawn lines instead of the
+   * shape's own edges. Resolved recursively (the referenced line's own
+   * endpoints can themselves be a vertex/edgePoint/linePoint/…), so chains
+   * of constructions-on-constructions work; see resolveLocalSnapPoint's
+   * depth guard against cycles. */
+  | { kind: 'linePoint'; lineId: string; t: number }
   | { kind: 'centroid' }
 
 export interface SnapCandidate extends Point {
@@ -160,10 +169,21 @@ export interface EdgeSegmentCandidate {
   b: Point
 }
 
+/** One EXISTING construction line in absolute scene coordinates — the same
+ * idea as EdgeSegmentCandidate but for user-drawn lines, so a new line can
+ * snap onto/slide along an already-drawn one. */
+export interface LineSegmentCandidate {
+  zoneElementId: string
+  lineId: string
+  a: Point
+  b: Point
+}
+
 export function snapRefsEqual(a: SnapRef, b: SnapRef): boolean {
   if (a.kind !== b.kind) return false
   if (a.kind === 'centroid') return true
   if (a.kind === 'edgePoint') return a.edgeIndex === (b as { edgeIndex: number }).edgeIndex && Math.abs(a.t - (b as { t: number }).t) < 1e-6
+  if (a.kind === 'linePoint') return a.lineId === (b as { lineId: string }).lineId && Math.abs(a.t - (b as { t: number }).t) < 1e-6
   return a.index === (b as { index: number }).index
 }
 
@@ -223,6 +243,21 @@ export function findNearestEdgePoint(point: Point, segments: EdgeSegmentCandidat
     const { point: proj, t, dist } = projectPointToSegment(point, seg.a, seg.b)
     if (!best || dist < best.dist) {
       best = { candidate: { x: proj.x, y: proj.y, zoneElementId: seg.zoneElementId, ref: { kind: 'edgePoint', edgeIndex: seg.edgeIndex, t } }, dist }
+    }
+  }
+  if (best && best.dist * zoom <= maxScreenDistance) return best.candidate
+  return null
+}
+
+/** Like findNearestEdgePoint but for sliding along an EXISTING construction
+ * line instead of a shape edge — the "connect constructions to each other"
+ * half of the snap system. */
+export function findNearestLinePoint(point: Point, segments: LineSegmentCandidate[], maxScreenDistance: number, zoom: number): SnapCandidate | null {
+  let best: { candidate: SnapCandidate; dist: number } | null = null
+  for (const seg of segments) {
+    const { point: proj, t, dist } = projectPointToSegment(point, seg.a, seg.b)
+    if (!best || dist < best.dist) {
+      best = { candidate: { x: proj.x, y: proj.y, zoneElementId: seg.zoneElementId, ref: { kind: 'linePoint', lineId: seg.lineId, t } }, dist }
     }
   }
   if (best && best.dist * zoom <= maxScreenDistance) return best.candidate

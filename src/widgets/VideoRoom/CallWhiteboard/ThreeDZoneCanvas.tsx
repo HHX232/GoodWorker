@@ -55,8 +55,8 @@ function buildConstructionGeometry(topology: EdgeTopology[], faces: FaceTopology
   const positions: number[] = []
   const colors: number[] = []
   for (const line of lines) {
-    const p1 = resolveLocalSnapPoint(topology, faces, line.startRef)
-    const p2 = resolveLocalSnapPoint(topology, faces, line.endRef)
+    const p1 = resolveLocalSnapPoint(topology, faces, lines, line.startRef)
+    const p2 = resolveLocalSnapPoint(topology, faces, lines, line.endRef)
     if (!p1 || !p2) continue
     const segPositions = buildDashDotPositions(p1, p2)
     positions.push(...segPositions)
@@ -69,11 +69,13 @@ function buildConstructionGeometry(topology: EdgeTopology[], faces: FaceTopology
 /** Angle-mark arcs: for each mark, finds the vertex its two edges share,
  * builds a small arc INSIDE that face's plane between them, and records the
  * arc's middle point (in `arcMidpoints`, keyed by mark.id) as the anchor
- * used for hit-testing and label placement. */
-function buildAngleMarksGeometry(topology: EdgeTopology[], faces: FaceTopology[], marks: VertexMark[]): { positions: number[]; colors: number[]; arcMidpoints: Map<string, THREE.Vector3> } {
+ * used for hit-testing/label placement, plus its two endpoints (in
+ * `arcEndpoints`) used to draw the "selected" highlight chord. */
+function buildAngleMarksGeometry(topology: EdgeTopology[], faces: FaceTopology[], marks: VertexMark[]): { positions: number[]; colors: number[]; arcMidpoints: Map<string, THREE.Vector3>; arcEndpoints: Map<string, [THREE.Vector3, THREE.Vector3]> } {
   const positions: number[] = []
   const colors: number[] = []
   const arcMidpoints = new Map<string, THREE.Vector3>()
+  const arcEndpoints = new Map<string, [THREE.Vector3, THREE.Vector3]>()
   for (const mark of marks) {
     const face = faces[mark.faceIndex]
     const edgeA = topology[mark.edgeIndexA]
@@ -94,8 +96,9 @@ function buildAngleMarksGeometry(topology: EdgeTopology[], faces: FaceTopology[]
       colors.push(c.r, c.g, c.b, c.r, c.g, c.b)
     }
     arcMidpoints.set(mark.id, points[Math.floor(points.length / 2)])
+    arcEndpoints.set(mark.id, [points[0], points[points.length - 1]])
   }
-  return { positions, colors, arcMidpoints }
+  return { positions, colors, arcMidpoints, arcEndpoints }
 }
 
 type Picker =
@@ -131,6 +134,8 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
   const faceTopologyRef = useRef<FaceTopology[]>([])
   const classifiedRef = useRef<ClassifiedEdge[]>([])
   const arcMidpointsRef = useRef<Map<string, THREE.Vector3>>(new Map())
+  const arcEndpointsRef = useRef<Map<string, [THREE.Vector3, THREE.Vector3]>>(new Map())
+  const highlightLineRef = useRef<SVGLineElement>(null)
   const rotationRef = useRef({ x: zone.rotationX, y: zone.rotationY, z: zone.rotationZ })
   const dragRef = useRef<{ active: boolean; moved: boolean; lastX: number; lastY: number }>({ active: false, moved: false, lastX: 0, lastY: 0 })
   const moveDragRef = useRef<{ startClientX: number; startClientY: number; startX: number; startY: number } | null>(null)
@@ -155,6 +160,30 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
 
   const [picker, setPicker] = useState<Picker | null>(null)
   const [editingLabel, setEditingLabel] = useState<EditingLabel | null>(null)
+
+  // Delete/Backspace deletes the currently-selected line or angle mark —
+  // edges are intrinsic to the shape (only recolorable, never deleted), so
+  // this only fires for 'line'/'vertex' picks, matching the popover's own
+  // delete button being shown only for those two kinds. Ignored while
+  // typing in the label input (that input closes the picker before it
+  // opens anyway, but the DOM-focus check guards it defensively too).
+  useEffect(() => {
+    if (!picker) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Delete' && e.key !== 'Backspace') return
+      const target = e.target as HTMLElement | null
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return
+      if (picker.kind === 'line') {
+        onLineDelete(picker.lineId)
+        setPicker(null)
+      } else if (picker.kind === 'vertex') {
+        onVertexMarkDelete(picker.faceIndex, picker.edgeIndexA, picker.edgeIndexB)
+        setPicker(null)
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [picker, onLineDelete, onVertexMarkDelete])
 
   const render = useCallback(() => {
     if (rendererRef.current && sceneRef.current && cameraRef.current) {
@@ -223,18 +252,59 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
       for (const [lineId, el] of lineLabelElRefs.current) {
         const line = zone.constructionLines?.find(l => l.id === lineId)
         if (!line) continue
-        const p1 = resolveLocalSnapPoint(edgeTopologyRef.current, faceTopologyRef.current, line.startRef)
-        const p2 = resolveLocalSnapPoint(edgeTopologyRef.current, faceTopologyRef.current, line.endRef)
+        const p1 = resolveLocalSnapPoint(edgeTopologyRef.current, faceTopologyRef.current, zone.constructionLines ?? [], line.startRef)
+        const p2 = resolveLocalSnapPoint(edgeTopologyRef.current, faceTopologyRef.current, zone.constructionLines ?? [], line.endRef)
         if (!p1 || !p2) continue
         const mid = p1.clone().add(p2).multiplyScalar(0.5)
         const pos = projectPoint(mid, group, camera, canvasWidth, canvasHeight)
         el.style.left = `${pos.x}px`
         el.style.top = `${pos.y}px`
       }
+
+      // Highlight chord for whatever's currently selected (the picker
+      // popover alone gave no visual feedback on the shape itself about
+      // *which* edge/line/angle got picked — this draws a bright dashed
+      // line over it, live-tracking rotation same as everything else here).
+      const highlightEl = highlightLineRef.current
+      if (highlightEl) {
+        let ends: [THREE.Vector3, THREE.Vector3] | null = null
+        if (picker?.kind === 'edge') {
+          const edge = classifiedRef.current[picker.edgeIndex]
+          if (edge) ends = [edge.v1, edge.v2]
+        } else if (picker?.kind === 'line') {
+          const line = zone.constructionLines?.find(l => l.id === picker.lineId)
+          if (line) {
+            const p1 = resolveLocalSnapPoint(edgeTopologyRef.current, faceTopologyRef.current, zone.constructionLines ?? [], line.startRef)
+            const p2 = resolveLocalSnapPoint(edgeTopologyRef.current, faceTopologyRef.current, zone.constructionLines ?? [], line.endRef)
+            if (p1 && p2) ends = [p1, p2]
+          }
+        } else if (picker?.kind === 'vertex') {
+          const mark = findVertexMark(zone.vertexMarks, picker.faceIndex, picker.edgeIndexA, picker.edgeIndexB)
+          if (mark) ends = arcEndpointsRef.current.get(mark.id) ?? null
+        }
+        if (ends) {
+          const p1 = projectPoint(ends[0], group, camera, canvasWidth, canvasHeight)
+          const p2 = projectPoint(ends[1], group, camera, canvasWidth, canvasHeight)
+          highlightEl.setAttribute('x1', String(p1.x))
+          highlightEl.setAttribute('y1', String(p1.y))
+          highlightEl.setAttribute('x2', String(p2.x))
+          highlightEl.setAttribute('y2', String(p2.y))
+          highlightEl.style.display = ''
+        } else {
+          highlightEl.style.display = 'none'
+        }
+      }
     }
 
     applyColors()
-  }, [applyColors, canvasWidth, canvasHeight, zone.constructionLines])
+  }, [applyColors, canvasWidth, canvasHeight, zone.constructionLines, zone.vertexMarks, picker])
+
+  // Selecting/deselecting doesn't itself trigger a rotation frame or topology
+  // rebuild, so the highlight chord above needs its own nudge to appear (or
+  // disappear) immediately when `picker` changes.
+  useEffect(() => {
+    updateVisualization()
+  }, [picker, updateVisualization])
 
   // Scene setup once — container captured locally (see ThreeDPanel's note on
   // why: React 18 dev StrictMode mounts/cleans up/mounts this effect once to
@@ -366,8 +436,9 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
       angleMarkLineRef.current.geometry.dispose()
       ;(angleMarkLineRef.current.material as THREE.Material).dispose()
     }
-    const { positions, colors, arcMidpoints } = buildAngleMarksGeometry(edgeTopologyRef.current, faceTopologyRef.current, zone.vertexMarks ?? [])
+    const { positions, colors, arcMidpoints, arcEndpoints } = buildAngleMarksGeometry(edgeTopologyRef.current, faceTopologyRef.current, zone.vertexMarks ?? [])
     arcMidpointsRef.current = arcMidpoints
+    arcEndpointsRef.current = arcEndpoints
     const geometry = new THREE.BufferGeometry()
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
     geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
@@ -444,8 +515,8 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
     let bestId: string | null = null
     let bestDist = Infinity
     for (const line of zone.constructionLines) {
-      const p1 = resolveLocalSnapPoint(edgeTopologyRef.current, faceTopologyRef.current, line.startRef)
-      const p2 = resolveLocalSnapPoint(edgeTopologyRef.current, faceTopologyRef.current, line.endRef)
+      const p1 = resolveLocalSnapPoint(edgeTopologyRef.current, faceTopologyRef.current, zone.constructionLines, line.startRef)
+      const p2 = resolveLocalSnapPoint(edgeTopologyRef.current, faceTopologyRef.current, zone.constructionLines, line.endRef)
       if (!p1 || !p2) continue
       const s1 = projectPoint(p1, group, camera, canvasWidth, canvasHeight)
       const s2 = projectPoint(p2, group, camera, canvasWidth, canvasHeight)
@@ -533,6 +604,13 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
   }, [updateVisualization])
 
   const handlePointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    // Also wired to onPointerLeave (so a rotate-drag still commits if the
+    // cursor drifts off the canvas mid-drag) — but pointerleave fires for
+    // any hover-away too, with no press involved. Without this guard, just
+    // moving the mouse off the shape after a plain click re-ran the "plain
+    // click" picking logic at the (now outside) cursor position, finding
+    // nothing and silently closing whatever popover was open.
+    if (!dragRef.current.active) return
     const wasDragging = dragRef.current.moved
     dragRef.current.active = false
     try { e.currentTarget.releasePointerCapture(e.pointerId) } catch {}
@@ -699,6 +777,9 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
           onPointerLeave={interactive ? handlePointerUp : undefined}
           onDoubleClick={interactive ? handleDoubleClick : undefined}
         />
+        <svg className={styles.highlightSvg} width={width} height={height}>
+          <line ref={highlightLineRef} className={styles.highlightLine} style={{ display: 'none' }} />
+        </svg>
         {zone.edgeLabels && Object.entries(zone.edgeLabels).map(([key, text]) => (
           <div
             key={key}
