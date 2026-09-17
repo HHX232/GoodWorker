@@ -99,6 +99,15 @@
 }
 
 .link {
+  // The global `a { display: contents; ... }` reset (`main.scss`) strips an
+  // anchor's own box entirely — without overriding `display` here, `.link`'s
+  // background/padding/border-radius below have nothing to paint on, and
+  // the text falls back to plain white-on-card-white. `inline-flex`
+  // restores a normal box; `.link`'s own `color`/`background` already beat
+  // the reset's `color: inherit`/`background-color: transparent` on
+  // specificity (class beats element selector), just not `display`.
+  display: inline-flex;
+  align-items: center;
   align-self: flex-start;
   margin-top: 3px;
   padding: 6px 11px;
