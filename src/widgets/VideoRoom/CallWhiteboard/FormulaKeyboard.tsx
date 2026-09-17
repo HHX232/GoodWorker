@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import 'mathlive/static.css'
 import { useThemeCtx } from '@/app/providers/ThemeContext'
@@ -35,6 +36,7 @@ interface Props {
 }
 
 export function FormulaKeyboard({ initialLatex, initialColor, onInsert, onClose, roomName, isVip, isAdmin, autoOpenAi }: Props) {
+  const t = useTranslations('whiteboard.formulaKeyboard')
   const { isDark } = useThemeCtx()
   const containerRef = useRef<HTMLDivElement>(null)
   const fieldRef = useRef<{ value: string; focus: () => void } | null>(null)
@@ -51,11 +53,11 @@ export function FormulaKeyboard({ initialLatex, initialColor, onInsert, onClose,
   useEffect(() => {
     if (!autoOpenAi) return
     if (!canUseAi) {
-      toast.error('Генерация формул ИИ доступна только для VIP')
+      toast.error(t('aiVipOnly'))
       return
     }
     setAiOpen(true)
-  }, [autoOpenAi, canUseAi])
+  }, [autoOpenAi, canUseAi, t])
 
   useEffect(() => {
     let field: HTMLElement & { value: string; focus: () => void }
@@ -124,11 +126,11 @@ export function FormulaKeyboard({ initialLatex, initialColor, onInsert, onClose,
 
   const handleAiToggle = useCallback(() => {
     if (!canUseAi) {
-      toast.error('Генерация формул ИИ доступна только для VIP')
+      toast.error(t('aiVipOnly'))
       return
     }
     setAiOpen(v => !v)
-  }, [canUseAi])
+  }, [canUseAi, t])
 
   const handleGenerate = useCallback(async () => {
     const description = aiPrompt.trim()
@@ -150,19 +152,19 @@ export function FormulaKeyboard({ initialLatex, initialColor, onInsert, onClose,
       setAiPrompt('')
     } catch (err) {
       console.error('[FormulaKeyboard] AI generate failed:', err)
-      toast.error('Не удалось сгенерировать формулу')
+      toast.error(t('generateFailed'))
     } finally {
       setGenerating(false)
     }
-  }, [aiPrompt, generating, roomName])
+  }, [aiPrompt, generating, roomName, t])
 
   const handlePhotoToggle = useCallback(() => {
     if (!canUseAi) {
-      toast.error('Распознавание формул с фото доступно только для VIP')
+      toast.error(t('photoVipOnly'))
       return
     }
     setPhotoModalOpen(true)
-  }, [canUseAi])
+  }, [canUseAi, t])
 
   const handlePhotoRecognized = useCallback((latex: string) => {
     if (fieldRef.current) {
@@ -179,11 +181,11 @@ export function FormulaKeyboard({ initialLatex, initialColor, onInsert, onClose,
       <div className={styles.aiRow}>
         <button type="button" className={styles.aiToggle} onClick={handleAiToggle}>
           <SparklesIcon />
-          Создать формулу с ИИ
+          {t('createWithAi')}
           {!canUseAi && <span className={styles.vipBadge}>VIP</span>}
         </button>
         <button type="button" className={styles.aiToggle} onClick={handlePhotoToggle}>
-          📷 Фото → формула
+          📷 {t('photoToFormula')}
           {!canUseAi && <span className={styles.vipBadge}>VIP</span>}
         </button>
       </div>
@@ -204,7 +206,7 @@ export function FormulaKeyboard({ initialLatex, initialColor, onInsert, onClose,
               e.stopPropagation()
               if (e.key === 'Enter') handleGenerate()
             }}
-            placeholder="Опишите формулу…"
+            placeholder={t('descriptionPlaceholder')}
             maxLength={200}
             autoFocus
           />
@@ -214,12 +216,12 @@ export function FormulaKeyboard({ initialLatex, initialColor, onInsert, onClose,
             onClick={handleGenerate}
             disabled={!aiPrompt.trim() || generating}
           >
-            {generating ? '…' : 'Сгенерировать'}
+            {generating ? '…' : t('generate')}
           </button>
         </div>
       )}
 
-      {!ready && <div className={styles.loading}>Загрузка клавиатуры формул…</div>}
+      {!ready && <div className={styles.loading}>{t('loadingKeyboard')}</div>}
       <div className={styles.colorRow}>
         {INK_PALETTE.map(swatch => (
           <button
@@ -234,7 +236,7 @@ export function FormulaKeyboard({ initialLatex, initialColor, onInsert, onClose,
       </div>
       <div className={styles.actions}>
         <button type="button" className={styles.cancel} onClick={onClose}>
-          Отмена
+          {t('cancel')}
         </button>
         <button
           type="button"
@@ -242,7 +244,7 @@ export function FormulaKeyboard({ initialLatex, initialColor, onInsert, onClose,
           onClick={handleInsert}
           disabled={isEmpty || inserting}
         >
-          {inserting ? 'Вставка…' : 'Вставить на доску'}
+          {inserting ? t('inserting') : t('insert')}
         </button>
       </div>
     </div>

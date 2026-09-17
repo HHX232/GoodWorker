@@ -3038,5 +3038,126 @@
       "meetingDescription": "«{title}»",
       "new": "Новое"
     }
+  },
+  "whiteboard": {
+    "formulaLabel": "Формула",
+    "templateSaved": "Шаблон сохранён",
+    "templateSaveFailed": "Не удалось сохранить шаблон — доска пуста или произошла ошибка",
+    "loadingBoard": "Загрузка доски…",
+    "toolbar": {
+      "formula": "Формула",
+      "ai": "ИИ",
+      "createFormulaAi": "Создать формулу с ИИ",
+      "grid": "Сетка",
+      "shapes": "Фигуры",
+      "constructions": "Построения",
+      "constructionsTitle": "Построения: линии со снапом к вершинам/центру фигур",
+      "angle": "Угол",
+      "angleTitle": "Угол: отметьте грань и угол на ней — клик по фигуре добавит дугу между двумя сторонами этого угла",
+      "collapse": "Свернуть кнопки",
+      "expand": "Показать кнопки",
+      "templates": "Шаблоны",
+      "templatesTitle": "Шаблоны доски",
+      "saveTemplate": "Сохранить шаблон",
+      "saveTemplateTitle": "Сохранить нарисованное как новый шаблон"
+    },
+    "elementInspector": {
+      "renameHint": "Двойной клик — переименовать",
+      "openEditor": "Открыть редактор"
+    },
+    "formulaKeyboard": {
+      "aiVipOnly": "Генерация формул ИИ доступна только для VIP",
+      "photoVipOnly": "Распознавание формул с фото доступно только для VIP",
+      "generateFailed": "Не удалось сгенерировать формулу",
+      "createWithAi": "Создать формулу с ИИ",
+      "photoToFormula": "Фото → формула",
+      "descriptionPlaceholder": "Опишите формулу…",
+      "generate": "Сгенерировать",
+      "loadingKeyboard": "Загрузка клавиатуры формул…",
+      "cancel": "Отмена",
+      "inserting": "Вставка…",
+      "insert": "Вставить на доску"
+    },
+    "formulaPhoto": {
+      "needImage": "Нужен файл изображения (фото формулы)",
+      "recognizeFailed": "Не удалось распознать формулу",
+      "title": "Фото → формула",
+      "dropzoneHint": "Выберите фото формулы или перетащите сюда",
+      "previewAlt": "Превью фото формулы",
+      "chooseAnother": "Выбрать другое фото",
+      "multipleHint": "На фото несколько формул — выберите нужную:",
+      "descriptionPlaceholder": "Уточните, какую формулу взять (необязательно)",
+      "compressing": "Сжатие…",
+      "recognizing": "Распознавание…",
+      "recognize": "Распознать",
+      "cancel": "Отмена"
+    },
+    "grid": {
+      "off": "Выкл",
+      "squares": "Клетка",
+      "dots": "Точки",
+      "lines": "Линейка",
+      "title": "Сетка доски",
+      "cellSize": "Размер ячейки",
+      "transparency": "Прозрачность",
+      "done": "Готово"
+    },
+    "shapes": {
+      "cube": "Куб",
+      "pyramid": "Пирамида",
+      "cone": "Конус",
+      "cylinder": "Цилиндр",
+      "sphere": "Сфера",
+      "polygon": "Многоугольник"
+    },
+    "shapePanel": {
+      "title": "Фигуры",
+      "flat2d": "Плоская фигура (2D)",
+      "rotateHint": "Потяните фигуру, чтобы повернуть — скрытые рёбра идут пунктиром",
+      "scale": "Масштаб",
+      "rotationZ": "Поворот (ось Z)",
+      "cornerCount": "Число углов",
+      "visibleEdges": "Видимые рёбра"
+    },
+    "zoneCanvas": {
+      "moveHint": "Перетащите — переместить фигуру. Клик — выделить.",
+      "resizeHint": "Перетащите — изменить размер",
+      "deleteLine": "Удалить линию",
+      "deleteMark": "Удалить отметку",
+      "edgeLabelPlaceholder": "Текст на ребре",
+      "lineLabelPlaceholder": "Текст на линии",
+      "angleLabelPlaceholder": "Текст на угле"
+    },
+    "templates": {
+      "defaultName": "Шаблон от {date}",
+      "teacherOnly": "Доступно только преподавателю",
+      "confirmDelete": "Удалить этот шаблон?",
+      "deleteFailed": "Не удалось удалить шаблон",
+      "systemTab": "Системные",
+      "ownTab": "Мои шаблоны",
+      "close": "Закрыть",
+      "createCard": "+ Создать шаблон",
+      "loading": "Загрузка…",
+      "empty": "Пока нет сохранённых шаблонов",
+      "deleteTitle": "Удалить шаблон",
+      "confirmReplace": "Заменить текущее содержимое доски шаблоном? Это действие нельзя отменить.",
+      "cancel": "Отмена",
+      "replace": "Заменить",
+      "nameLabel": "Название шаблона",
+      "start": "Начать",
+      "given": "Дано:",
+      "solution": "Решение:",
+      "answer": "Ответ:",
+      "systemTemplates": {
+        "coordinate-plane": "Координатная плоскость",
+        "number-line": "Числовая прямая",
+        "unit-circle": "Единичная окружность",
+        "triangle": "Треугольник с углами",
+        "axes-3d": "Оси XYZ (3D)",
+        "table": "Таблица",
+        "venn-diagram": "Диаграмма Венна",
+        "given-solution-answer": "Дано / Решение / Ответ"
+      }
+    }
   }
 }

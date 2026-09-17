@@ -3038,5 +3038,126 @@
       "meetingDescription": "“{title}”",
       "new": "New"
     }
+  },
+  "whiteboard": {
+    "formulaLabel": "Formula",
+    "templateSaved": "Template saved",
+    "templateSaveFailed": "Couldn't save the template — the board is empty or something went wrong",
+    "loadingBoard": "Loading board…",
+    "toolbar": {
+      "formula": "Formula",
+      "ai": "AI",
+      "createFormulaAi": "Create a formula with AI",
+      "grid": "Grid",
+      "shapes": "Shapes",
+      "constructions": "Constructions",
+      "constructionsTitle": "Constructions: lines that snap to a shape's vertices/center",
+      "angle": "Angle",
+      "angleTitle": "Angle: pick a face and a corner on it — clicking the shape adds an arc between that corner's two sides",
+      "collapse": "Collapse buttons",
+      "expand": "Show buttons",
+      "templates": "Templates",
+      "templatesTitle": "Board templates",
+      "saveTemplate": "Save template",
+      "saveTemplateTitle": "Save what's drawn as a new template"
+    },
+    "elementInspector": {
+      "renameHint": "Double-click to rename",
+      "openEditor": "Open editor"
+    },
+    "formulaKeyboard": {
+      "aiVipOnly": "AI formula generation is available to VIP only",
+      "photoVipOnly": "Photo formula recognition is available to VIP only",
+      "generateFailed": "Couldn't generate the formula",
+      "createWithAi": "Create a formula with AI",
+      "photoToFormula": "Photo → formula",
+      "descriptionPlaceholder": "Describe the formula…",
+      "generate": "Generate",
+      "loadingKeyboard": "Loading formula keyboard…",
+      "cancel": "Cancel",
+      "inserting": "Inserting…",
+      "insert": "Insert onto board"
+    },
+    "formulaPhoto": {
+      "needImage": "An image file is needed (a photo of the formula)",
+      "recognizeFailed": "Couldn't recognize the formula",
+      "title": "Photo → formula",
+      "dropzoneHint": "Choose a photo of the formula or drag it here",
+      "previewAlt": "Formula photo preview",
+      "chooseAnother": "Choose another photo",
+      "multipleHint": "The photo has several formulas — pick the one you need:",
+      "descriptionPlaceholder": "Clarify which formula to use (optional)",
+      "compressing": "Compressing…",
+      "recognizing": "Recognizing…",
+      "recognize": "Recognize",
+      "cancel": "Cancel"
+    },
+    "grid": {
+      "off": "Off",
+      "squares": "Squares",
+      "dots": "Dots",
+      "lines": "Ruled",
+      "title": "Board grid",
+      "cellSize": "Cell size",
+      "transparency": "Transparency",
+      "done": "Done"
+    },
+    "shapes": {
+      "cube": "Cube",
+      "pyramid": "Pyramid",
+      "cone": "Cone",
+      "cylinder": "Cylinder",
+      "sphere": "Sphere",
+      "polygon": "Polygon"
+    },
+    "shapePanel": {
+      "title": "Shapes",
+      "flat2d": "Flat shape (2D)",
+      "rotateHint": "Drag the shape to rotate it — hidden edges are dashed",
+      "scale": "Scale",
+      "rotationZ": "Rotation (Z axis)",
+      "cornerCount": "Corner count",
+      "visibleEdges": "Visible edges"
+    },
+    "zoneCanvas": {
+      "moveHint": "Drag to move the shape. Click to select.",
+      "resizeHint": "Drag to resize",
+      "deleteLine": "Delete line",
+      "deleteMark": "Delete mark",
+      "edgeLabelPlaceholder": "Text on the edge",
+      "lineLabelPlaceholder": "Text on the line",
+      "angleLabelPlaceholder": "Text on the angle"
+    },
+    "templates": {
+      "defaultName": "Template from {date}",
+      "teacherOnly": "Available to teachers only",
+      "confirmDelete": "Delete this template?",
+      "deleteFailed": "Couldn't delete the template",
+      "systemTab": "System",
+      "ownTab": "My templates",
+      "close": "Close",
+      "createCard": "+ Create template",
+      "loading": "Loading…",
+      "empty": "No saved templates yet",
+      "deleteTitle": "Delete template",
+      "confirmReplace": "Replace the board's current content with this template? This can't be undone.",
+      "cancel": "Cancel",
+      "replace": "Replace",
+      "nameLabel": "Template name",
+      "start": "Start",
+      "given": "Given:",
+      "solution": "Solution:",
+      "answer": "Answer:",
+      "systemTemplates": {
+        "coordinate-plane": "Coordinate plane",
+        "number-line": "Number line",
+        "unit-circle": "Unit circle",
+        "triangle": "Triangle with angles",
+        "axes-3d": "XYZ axes (3D)",
+        "table": "Table",
+        "venn-diagram": "Venn diagram",
+        "given-solution-answer": "Given / Solution / Answer"
+      }
+    }
   }
 }

@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react'
 import type { ExcalidrawElement } from '@excalidraw/excalidraw/element/types'
 import type { Zoom } from '@excalidraw/excalidraw/types'
-import { getAllZones } from './shapeGeometry'
+import { getAllZones, type ZoneSelection } from './shapeGeometry'
 import { ThreeDZoneCanvas } from './ThreeDZoneCanvas'
 import styles from './ThreeDZoneLayer.module.scss'
 
@@ -30,12 +30,13 @@ interface Props {
   onLineColorChange: (zoneElementId: string, lineId: string, color: string) => void
   onLineLabelChange: (zoneElementId: string, lineId: string, text: string) => void
   onLineDelete: (zoneElementId: string, lineId: string) => void
+  onSelectionChange: (zoneElementId: string, target: ZoneSelection | null) => void
   onSelectZone: (zoneElementId: string) => void
   onMoveZoneTo: (zoneElementId: string, x: number, y: number) => void
   onResizeZoneTo: (zoneElementId: string, width: number, height: number) => void
 }
 
-export function ThreeDZoneLayer({ elements, viewTransform, interactive, angleMode, onRotationCommit, onEdgeColorChange, onEdgeLabelChange, onVertexMarkUpsert, onVertexMarkLabelChange, onVertexMarkDelete, onLineColorChange, onLineLabelChange, onLineDelete, onSelectZone, onMoveZoneTo, onResizeZoneTo }: Props) {
+export function ThreeDZoneLayer({ elements, viewTransform, interactive, angleMode, onRotationCommit, onEdgeColorChange, onEdgeLabelChange, onVertexMarkUpsert, onVertexMarkLabelChange, onVertexMarkDelete, onLineColorChange, onLineLabelChange, onLineDelete, onSelectionChange, onSelectZone, onMoveZoneTo, onResizeZoneTo }: Props) {
   const zones = useMemo(() => getAllZones(elements), [elements])
   const flatViewTransform = { scrollX: viewTransform.scrollX, scrollY: viewTransform.scrollY, zoom: viewTransform.zoom.value }
 
@@ -58,6 +59,7 @@ export function ThreeDZoneLayer({ elements, viewTransform, interactive, angleMod
           onLineColorChange={(lineId, color) => onLineColorChange(element.id, lineId, color)}
           onLineLabelChange={(lineId, text) => onLineLabelChange(element.id, lineId, text)}
           onLineDelete={lineId => onLineDelete(element.id, lineId)}
+          onSelectionChange={target => onSelectionChange(element.id, target)}
           onSelect={() => onSelectZone(element.id)}
           onMoveTo={(x, y) => onMoveZoneTo(element.id, x, y)}
           onResizeTo={(w, h) => onResizeZoneTo(element.id, w, h)}

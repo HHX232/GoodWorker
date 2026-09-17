@@ -36,11 +36,11 @@
 }
 
 .highlightLine {
-  stroke: #1971c2;
-  stroke-width: 3;
+  stroke: #d9480f;
+  stroke-width: 5;
   stroke-linecap: round;
-  stroke-dasharray: 2 5;
-  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.9));
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.9));
 }
 
 .moveHandle, .resizeHandle {
@@ -194,6 +194,7 @@
     color: rgba(255, 255, 255, 0.85);
   }
   .highlightLine {
-    stroke: #4dabf7;
+    stroke: #f76707;
+    filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.6));
   }
 }

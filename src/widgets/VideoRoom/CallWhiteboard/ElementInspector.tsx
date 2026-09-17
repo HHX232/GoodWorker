@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import styles from './ElementInspector.module.scss'
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export function ElementInspector({ label, x, y, onEdit, onRename }: Props) {
+  const t = useTranslations('whiteboard.elementInspector')
   const [renaming, setRenaming] = useState(false)
   const [draft, setDraft] = useState(label)
 
@@ -44,11 +46,11 @@ export function ElementInspector({ label, x, y, onEdit, onRename }: Props) {
           }}
         />
       ) : (
-        <span className={styles.name} onDoubleClick={() => setRenaming(true)} title="Двойной клик — переименовать">
+        <span className={styles.name} onDoubleClick={() => setRenaming(true)} title={t('renameHint')}>
           {label}
         </span>
       )}
-      <button type="button" className={styles.editButton} onClick={onEdit} title="Открыть редактор">
+      <button type="button" className={styles.editButton} onClick={onEdit} title={t('openEditor')}>
         ✎
       </button>
     </div>

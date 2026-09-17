@@ -2,15 +2,6 @@ import type { ExcalidrawElement } from '@excalidraw/excalidraw/element/types'
 
 export type ShapeId = 'cube' | 'pyramid' | 'cone' | 'cylinder' | 'sphere' | 'polygon'
 
-export const PRIMITIVE_LABELS: Record<ShapeId, string> = {
-  cube: 'Куб',
-  pyramid: 'Пирамида',
-  cone: 'Конус',
-  cylinder: 'Цилиндр',
-  sphere: 'Сфера',
-  polygon: 'Многоугольник',
-}
-
 // Primitives whose facet/side count is user-adjustable ("visible edges" for
 // the round ones; the defining N for the polygon).
 export const SEGMENT_ADJUSTABLE: ReadonlySet<ShapeId> = new Set(['cone', 'cylinder', 'sphere', 'polygon'])
@@ -58,7 +49,19 @@ export interface ThreeDZone extends ThreeDShapeMeta {
    * the corner (a bare vertex isn't enough — several faces can share it,
    * e.g. a cube corner touches 3). */
   vertexMarks?: VertexMark[]
+  /** Which edge/line/angle is currently picked — synced through the same
+   * customData broadcast as everything else so a single click highlights
+   * that edge/line/angle bold for EVERY call participant, not just locally
+   * (useful for a teacher pointing something out to a student). Recoloring
+   * still uses its own local popover state; this only drives the shared
+   * highlight overlay. */
+  selection?: ZoneSelection | null
 }
+
+export type ZoneSelection =
+  | { kind: 'edge'; edgeIndex: number }
+  | { kind: 'line'; lineId: string }
+  | { kind: 'vertex'; faceIndex: number; edgeIndexA: number; edgeIndexB: number }
 
 /** One angle mark: the arc lives inside `faceIndex`, spanning from
  * `edgeIndexA` to `edgeIndexB` at the vertex those two edges share (edge
@@ -80,6 +83,20 @@ export interface VertexMark {
 // Small, familiar whiteboard-marker set — reused by the formula and shape
 // color pickers so both feel like the same tool.
 export const INK_PALETTE = ['#1e1e1e', '#e03131', '#2f9e44', '#1971c2', '#f08c00', '#9c36b5', '#ececec', '#868e96']
+
+/** The palette's two "ink"/"paper" ends only make sense relative to the
+ * CURRENT board background, not as fixed colors — a shape's default black
+ * edges (picked while the board was light) go nearly invisible if the call
+ * later switches to dark theme, since nothing about a saved zone re-derives
+ * its color from the live theme on its own. Used at render time everywhere
+ * a zone's stored color reaches the screen (edges, construction lines,
+ * angle marks) so old and new shapes alike stay legible in both themes,
+ * without silently overriding any OTHER explicitly-picked palette color. */
+export function themedColor(color: string, isDark: boolean): string {
+  if (isDark && color.toLowerCase() === '#1e1e1e') return '#ececec'
+  if (!isDark && color.toLowerCase() === '#ececec') return '#1e1e1e'
+  return color
+}
 
 export interface Point {
   x: number

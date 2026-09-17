@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { useTranslations } from 'next-intl'
 import styles from './GridSettingsPanel.module.scss'
 
 export type GridStyle = 'squares' | 'dots' | 'lines' | 'off'
@@ -14,12 +15,7 @@ export interface GridSettings {
 
 export const DEFAULT_GRID_SETTINGS: GridSettings = { style: 'off', cellSize: 24, transparency: 0 }
 
-const STYLE_OPTIONS: { value: GridStyle; label: string }[] = [
-  { value: 'off', label: 'Выкл' },
-  { value: 'squares', label: 'Клетка' },
-  { value: 'dots', label: 'Точки' },
-  { value: 'lines', label: 'Линейка' },
-]
+const STYLE_OPTIONS: GridStyle[] = ['off', 'squares', 'dots', 'lines']
 
 interface Props {
   settings: GridSettings
@@ -28,24 +24,25 @@ interface Props {
 }
 
 export function GridSettingsPanel({ settings, onChange, onClose }: Props) {
+  const t = useTranslations('whiteboard.grid')
   return (
     <div className={styles.panel}>
-      <div className={styles.title}>Сетка доски</div>
+      <div className={styles.title}>{t('title')}</div>
       <div className={styles.styleRow}>
-        {STYLE_OPTIONS.map(opt => (
+        {STYLE_OPTIONS.map(value => (
           <button
-            key={opt.value}
+            key={value}
             type="button"
-            className={`${styles.styleButton} ${settings.style === opt.value ? styles.styleButtonActive : ''}`}
-            onClick={() => onChange({ ...settings, style: opt.value })}
+            className={`${styles.styleButton} ${settings.style === value ? styles.styleButtonActive : ''}`}
+            onClick={() => onChange({ ...settings, style: value })}
           >
-            <span className={styles.swatch} data-swatch={opt.value} aria-hidden="true" />
-            {opt.label}
+            <span className={styles.swatch} data-swatch={value} aria-hidden="true" />
+            {t(value)}
           </button>
         ))}
       </div>
       <label className={styles.sizeRow}>
-        <span className={styles.sizeLabel}>Размер ячейки</span>
+        <span className={styles.sizeLabel}>{t('cellSize')}</span>
         <input
           className={styles.slider}
           type="range"
@@ -59,7 +56,7 @@ export function GridSettingsPanel({ settings, onChange, onClose }: Props) {
         <span className={styles.sizeValue}>{settings.cellSize}px</span>
       </label>
       <label className={styles.sizeRow}>
-        <span className={styles.sizeLabel}>Прозрачность</span>
+        <span className={styles.sizeLabel}>{t('transparency')}</span>
         <input
           className={styles.slider}
           type="range"
@@ -74,7 +71,7 @@ export function GridSettingsPanel({ settings, onChange, onClose }: Props) {
       </label>
       <div className={styles.actions}>
         <button type="button" className={styles.close} onClick={onClose}>
-          Готово
+          {t('done')}
         </button>
       </div>
     </div>

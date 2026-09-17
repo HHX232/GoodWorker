@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useCallback, useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { compressImageForUpload } from '@/shared/helpers/compressImageForUpload'
 import styles from './FormulaPhotoModal.module.scss'
@@ -14,6 +15,7 @@ interface Props {
 type Status = 'idle' | 'compressing' | 'recognizing'
 
 export function FormulaPhotoModal({ roomName, onRecognized, onClose }: Props) {
+  const t = useTranslations('whiteboard.formulaPhoto')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [file, setFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -33,12 +35,12 @@ export function FormulaPhotoModal({ roomName, onRecognized, onClose }: Props) {
       return
     }
     if (!picked.type.startsWith('image/')) {
-      setError('Нужен файл изображения (фото формулы)')
+      setError(t('needImage'))
       return
     }
     setFile(picked)
     setPreviewUrl(URL.createObjectURL(picked))
-  }, [previewUrl])
+  }, [previewUrl, t])
 
   const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
@@ -62,30 +64,30 @@ export function FormulaPhotoModal({ roomName, onRecognized, onClose }: Props) {
 
       const res = await fetch('/api/whiteboard/formula-photo', { method: 'POST', body })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Не удалось распознать формулу')
+      if (!res.ok) throw new Error(data.error ?? t('recognizeFailed'))
 
       if (data.needsClarification) {
         setCandidates(data.candidates)
         return
       }
-      if (!data.latex) throw new Error('Не удалось распознать формулу')
+      if (!data.latex) throw new Error(t('recognizeFailed'))
       onRecognized(data.latex)
     } catch (err) {
       console.error('[FormulaPhotoModal] recognize failed:', err)
-      const message = err instanceof Error ? err.message : 'Не удалось распознать формулу'
+      const message = err instanceof Error ? err.message : t('recognizeFailed')
       setError(message)
       toast.error(message)
     } finally {
       setStatus('idle')
     }
-  }, [file, status, roomName, description, onRecognized])
+  }, [file, status, roomName, description, onRecognized, t])
 
   const busy = status !== 'idle'
 
   return (
     <div className={styles.backdrop} onClick={onClose}>
       <div className={styles.modal} onClick={e => e.stopPropagation()}>
-        <div className={styles.title}>Фото → формула</div>
+        <div className={styles.title}>{t('title')}</div>
 
         {!previewUrl ? (
           <div
@@ -96,7 +98,7 @@ export function FormulaPhotoModal({ roomName, onRecognized, onClose }: Props) {
             onDrop={handleDrop}
           >
             <span className={styles.dropzoneIcon}>📷</span>
-            <span>Выберите фото формулы или перетащите сюда</span>
+            <span>{t('dropzoneHint')}</span>
             <input
               ref={fileInputRef}
               type="file"
@@ -108,8 +110,8 @@ export function FormulaPhotoModal({ roomName, onRecognized, onClose }: Props) {
         ) : (
           <div className={styles.previewWrap}>
             {/* eslint-disable-next-line @next/next/no-img-element -- transient local object URL preview, not a served asset */}
-            <img src={previewUrl} alt="Превью фото формулы" className={styles.preview} />
-            <button type="button" className={styles.previewClear} onClick={() => pickFile(null)} disabled={busy} title="Выбрать другое фото">
+            <img src={previewUrl} alt={t('previewAlt')} className={styles.preview} />
+            <button type="button" className={styles.previewClear} onClick={() => pickFile(null)} disabled={busy} title={t('chooseAnother')}>
               ✕
             </button>
           </div>
@@ -117,7 +119,7 @@ export function FormulaPhotoModal({ roomName, onRecognized, onClose }: Props) {
 
         {candidates ? (
           <div className={styles.candidates}>
-            <div className={styles.candidatesHint}>На фото несколько формул — выберите нужную:</div>
+            <div className={styles.candidatesHint}>{t('multipleHint')}</div>
             {candidates.map((latex, i) => (
               <button key={i} type="button" className={styles.candidateItem} onClick={() => onRecognized(latex)}>
                 {latex}
@@ -130,7 +132,7 @@ export function FormulaPhotoModal({ roomName, onRecognized, onClose }: Props) {
             value={description}
             onChange={e => setDescription(e.target.value)}
             onKeyDown={e => e.stopPropagation()}
-            placeholder="Уточните, какую формулу взять (необязательно)"
+            placeholder={t('descriptionPlaceholder')}
             maxLength={300}
             disabled={busy}
           />
@@ -140,11 +142,11 @@ export function FormulaPhotoModal({ roomName, onRecognized, onClose }: Props) {
 
         <div className={styles.actions}>
           <button type="button" className={styles.cancel} onClick={onClose}>
-            Отмена
+            {t('cancel')}
           </button>
           {!candidates && (
             <button type="button" className={styles.recognize} onClick={handleRecognize} disabled={!file || busy}>
-              {status === 'compressing' ? 'Сжатие…' : status === 'recognizing' ? 'Распознавание…' : 'Распознать'}
+              {status === 'compressing' ? t('compressing') : status === 'recognizing' ? t('recognizing') : t('recognize')}
             </button>
           )}
         </div>

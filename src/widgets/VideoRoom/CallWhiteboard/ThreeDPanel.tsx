@@ -2,12 +2,13 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
+import { useTranslations } from 'next-intl'
 import { useThemeCtx } from '@/app/providers/ThemeContext'
 import {
   DEFAULT_SEGMENTS,
   INK_PALETTE,
-  PRIMITIVE_LABELS,
   SEGMENT_ADJUSTABLE,
+  themedColor,
   type ShapeId,
   type ThreeDShapeMeta,
 } from './shapeGeometry'
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export function ThreeDPanel({ initial, onInsert, onClose }: Props) {
+  const t = useTranslations('whiteboard')
   const { isDark } = useThemeCtx()
   const containerRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<THREE.Scene | null>(null)
@@ -146,16 +148,21 @@ export function ThreeDPanel({ initial, onInsert, onClose }: Props) {
     edgeTopologyRef.current = buildEdgeTopology(geometry)
     geometry.dispose()
 
-    const solidLine = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color }))
+    // themedColor here, not on the `color` state itself — `color` is what
+    // gets saved into the shape (and shown as the active swatch), this only
+    // affects how it's actually drawn so an existing shape edited while the
+    // board happens to be in the other theme doesn't preview as invisible.
+    const displayColor = themedColor(color, isDark)
+    const solidLine = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: displayColor }))
     group.add(solidLine)
     solidLineRef.current = solidLine
 
-    const dashedLine = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineDashedMaterial({ color, dashSize: 0.07, gapSize: 0.06 }))
+    const dashedLine = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineDashedMaterial({ color: displayColor, dashSize: 0.07, gapSize: 0.06 }))
     group.add(dashedLine)
     dashedLineRef.current = dashedLine
 
     updateVisualization()
-  }, [primitive, segments, flat, color, updateVisualization])
+  }, [primitive, segments, flat, color, isDark, updateVisualization])
 
   // Apply scale changes without rebuilding the mesh — uniform scale doesn't
   // change which faces point toward the camera, so visibility stays as-is.
@@ -223,7 +230,7 @@ export function ThreeDPanel({ initial, onInsert, onClose }: Props) {
 
   return (
     <div className={styles.panel}>
-      <div className={styles.title}>Фигуры</div>
+      <div className={styles.title}>{t('shapePanel.title')}</div>
       <div className={styles.shapeRow}>
         {SHAPE_OPTIONS.map(value => (
           <button
@@ -232,14 +239,14 @@ export function ThreeDPanel({ initial, onInsert, onClose }: Props) {
             className={`${styles.shapeButton} ${primitive === value ? styles.shapeButtonActive : ''}`}
             onClick={() => handlePrimitiveSelect(value)}
           >
-            {PRIMITIVE_LABELS[value]}
+            {t(`shapes.${value}`)}
           </button>
         ))}
       </div>
       {primitive === 'polygon' && (
         <label className={styles.flatToggle}>
           <input type="checkbox" checked={flat} onChange={e => setFlat(e.target.checked)} />
-          Плоская фигура (2D)
+          {t('shapePanel.flat2d')}
         </label>
       )}
       <div
@@ -250,9 +257,9 @@ export function ThreeDPanel({ initial, onInsert, onClose }: Props) {
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
       />
-      <div className={styles.hint}>Потяните фигуру, чтобы повернуть — скрытые рёбра идут пунктиром</div>
+      <div className={styles.hint}>{t('shapePanel.rotateHint')}</div>
       <label className={styles.scaleRow}>
-        <span className={styles.scaleLabel}>Масштаб</span>
+        <span className={styles.scaleLabel}>{t('shapePanel.scale')}</span>
         <input
           className={styles.slider}
           type="range"
@@ -264,7 +271,7 @@ export function ThreeDPanel({ initial, onInsert, onClose }: Props) {
         />
       </label>
       <label className={styles.scaleRow}>
-        <span className={styles.scaleLabel}>Поворот (ось Z)</span>
+        <span className={styles.scaleLabel}>{t('shapePanel.rotationZ')}</span>
         <input
           className={styles.slider}
           type="range"
@@ -277,7 +284,7 @@ export function ThreeDPanel({ initial, onInsert, onClose }: Props) {
       </label>
       {showSegments && (
         <label className={styles.scaleRow}>
-          <span className={styles.scaleLabel}>{primitive === 'polygon' ? 'Число углов' : 'Видимые рёбра'}</span>
+          <span className={styles.scaleLabel}>{primitive === 'polygon' ? t('shapePanel.cornerCount') : t('shapePanel.visibleEdges')}</span>
           <input
             className={styles.slider}
             type="range"
@@ -304,10 +311,10 @@ export function ThreeDPanel({ initial, onInsert, onClose }: Props) {
       </div>
       <div className={styles.actions}>
         <button type="button" className={styles.cancel} onClick={onClose}>
-          Отмена
+          {t('formulaKeyboard.cancel')}
         </button>
         <button type="button" className={styles.insert} onClick={handleInsert}>
-          Вставить на доску
+          {t('formulaKeyboard.insert')}
         </button>
       </div>
     </div>

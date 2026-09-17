@@ -49,26 +49,27 @@ interface DrawState {
   snapped: SnapCandidate | null
 }
 
-/** Resolves the live draw-cursor position against magnet points first (with
- * hysteresis via `prevSnap`), then falls back to sliding along whichever of
- * the nearest shape edge or nearest EXISTING construction line is actually
- * closer (so one construction can be built starting/ending on another, not
- * just on the shape itself), then to a free unbound point. */
+/** Resolves the live draw-cursor position against magnet points, the
+ * nearest shape edge, and the nearest EXISTING construction line (so one
+ * construction can be built starting/ending on another, not just on the
+ * shape itself) — with hysteresis via `prevSnap` — and picks whichever
+ * candidate is actually closest to the cursor, rather than letting a magnet
+ * within its (larger) capture radius always win even when an edge or line
+ * sits right under the cursor and a vertex/midpoint is only incidentally
+ * nearby. Falls back to a free unbound point if nothing is in range. */
 function resolveDrawPoint(point: Point, prevSnap: SnapCandidate | null, snapPoints: SnapCandidate[], edgeSegments: EdgeSegmentCandidate[], lineSegments: LineSegmentCandidate[], zoom: number): SnapCandidate | null {
   if (prevSnap && prevSnap.ref.kind !== 'edgePoint' && prevSnap.ref.kind !== 'linePoint') {
     const stillNear = Math.hypot(point.x - prevSnap.x, point.y - prevSnap.y) * zoom <= MAGNET_RELEASE_PX
     if (stillNear) return prevSnap
   }
   const magnet = findNearestSnapPoint(point, snapPoints, MAGNET_CAPTURE_PX, zoom)
-  if (magnet) return magnet
   const edgeSlide = findNearestEdgePoint(point, edgeSegments, EDGE_SNAP_PX, zoom)
   const lineSlide = findNearestLinePoint(point, lineSegments, EDGE_SNAP_PX, zoom)
-  if (edgeSlide && lineSlide) {
-    const dEdge = Math.hypot(point.x - edgeSlide.x, point.y - edgeSlide.y)
-    const dLine = Math.hypot(point.x - lineSlide.x, point.y - lineSlide.y)
-    return dLine < dEdge ? lineSlide : edgeSlide
-  }
-  return edgeSlide ?? lineSlide ?? null
+  const candidates = [magnet, edgeSlide, lineSlide].filter((c): c is SnapCandidate => c !== null)
+  if (candidates.length === 0) return null
+  return candidates.reduce((best, c) => (
+    Math.hypot(point.x - c.x, point.y - c.y) < Math.hypot(point.x - best.x, point.y - best.y) ? c : best
+  ))
 }
 
 export function ShapeInteractionLayer({ elements, viewTransform, constructionMode, onInsertLine, onInsertZoneLine }: Props) {

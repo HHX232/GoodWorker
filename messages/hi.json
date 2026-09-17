@@ -2864,5 +2864,126 @@
       "meetingDescription": "“{title}”",
       "new": "नया"
     }
+  },
+  "whiteboard": {
+    "formulaLabel": "सूत्र",
+    "templateSaved": "टेम्पलेट सहेजा गया",
+    "templateSaveFailed": "टेम्पलेट सहेजने में विफल — बोर्ड खाली है या कोई त्रुटि हुई",
+    "loadingBoard": "बोर्ड लोड हो रहा है…",
+    "toolbar": {
+      "formula": "सूत्र",
+      "ai": "AI",
+      "createFormulaAi": "AI से सूत्र बनाएं",
+      "grid": "ग्रिड",
+      "shapes": "आकृतियाँ",
+      "constructions": "रचनाएँ",
+      "constructionsTitle": "रचनाएँ: शीर्षों/केंद्र से स्नैप होने वाली रेखाएँ",
+      "angle": "कोण",
+      "angleTitle": "कोण: एक फलक और उसका कोना चुनें — आकृति पर क्लिक करने से उस कोने की दोनों भुजाओं के बीच चाप जुड़ेगा",
+      "collapse": "बटन छुपाएँ",
+      "expand": "बटन दिखाएँ",
+      "templates": "टेम्पलेट",
+      "templatesTitle": "बोर्ड टेम्पलेट",
+      "saveTemplate": "टेम्पलेट सहेजें",
+      "saveTemplateTitle": "बनाई गई चीज़ को नए टेम्पलेट के रूप में सहेजें"
+    },
+    "elementInspector": {
+      "renameHint": "नाम बदलने के लिए डबल-क्लिक करें",
+      "openEditor": "संपादक खोलें"
+    },
+    "formulaKeyboard": {
+      "aiVipOnly": "AI सूत्र निर्माण केवल VIP के लिए उपलब्ध है",
+      "photoVipOnly": "फोटो से सूत्र पहचान केवल VIP के लिए उपलब्ध है",
+      "generateFailed": "सूत्र बनाने में विफल",
+      "createWithAi": "AI से सूत्र बनाएं",
+      "photoToFormula": "फोटो → सूत्र",
+      "descriptionPlaceholder": "सूत्र का वर्णन करें…",
+      "generate": "बनाएं",
+      "loadingKeyboard": "सूत्र कीबोर्ड लोड हो रहा है…",
+      "cancel": "रद्द करें",
+      "inserting": "जोड़ा जा रहा है…",
+      "insert": "बोर्ड पर जोड़ें"
+    },
+    "formulaPhoto": {
+      "needImage": "एक छवि फ़ाइल चाहिए (सूत्र की फोटो)",
+      "recognizeFailed": "सूत्र पहचानने में विफल",
+      "title": "फोटो → सूत्र",
+      "dropzoneHint": "सूत्र की फोटो चुनें या यहाँ खींचें",
+      "previewAlt": "सूत्र फोटो पूर्वावलोकन",
+      "chooseAnother": "दूसरी फोटो चुनें",
+      "multipleHint": "फोटो में कई सूत्र हैं — सही वाला चुनें:",
+      "descriptionPlaceholder": "स्पष्ट करें कौन सा सूत्र लेना है (वैकल्पिक)",
+      "compressing": "संपीड़ित हो रहा है…",
+      "recognizing": "पहचाना जा रहा है…",
+      "recognize": "पहचानें",
+      "cancel": "रद्द करें"
+    },
+    "grid": {
+      "off": "बंद",
+      "squares": "वर्ग",
+      "dots": "बिंदु",
+      "lines": "रेखाएँ",
+      "title": "बोर्ड ग्रिड",
+      "cellSize": "सेल आकार",
+      "transparency": "पारदर्शिता",
+      "done": "हो गया"
+    },
+    "shapes": {
+      "cube": "घन",
+      "pyramid": "पिरामिड",
+      "cone": "शंकु",
+      "cylinder": "बेलन",
+      "sphere": "गोला",
+      "polygon": "बहुभुज"
+    },
+    "shapePanel": {
+      "title": "आकृतियाँ",
+      "flat2d": "समतल आकृति (2D)",
+      "rotateHint": "घुमाने के लिए आकृति खींचें — छिपे हुए किनारे बिंदीदार हैं",
+      "scale": "स्केल",
+      "rotationZ": "घुमाव (Z अक्ष)",
+      "cornerCount": "कोनों की संख्या",
+      "visibleEdges": "दिखने वाले किनारे"
+    },
+    "zoneCanvas": {
+      "moveHint": "आकृति ले जाने के लिए खींचें। चुनने के लिए क्लिक करें।",
+      "resizeHint": "आकार बदलने के लिए खींचें",
+      "deleteLine": "रेखा हटाएं",
+      "deleteMark": "चिह्न हटाएं",
+      "edgeLabelPlaceholder": "किनारे पर टेक्स्ट",
+      "lineLabelPlaceholder": "रेखा पर टेक्स्ट",
+      "angleLabelPlaceholder": "कोण पर टेक्स्ट"
+    },
+    "templates": {
+      "defaultName": "{date} का टेम्पलेट",
+      "teacherOnly": "केवल शिक्षकों के लिए उपलब्ध",
+      "confirmDelete": "इस टेम्पलेट को हटाएं?",
+      "deleteFailed": "टेम्पलेट हटाने में विफल",
+      "systemTab": "सिस्टम",
+      "ownTab": "मेरे टेम्पलेट",
+      "close": "बंद करें",
+      "createCard": "+ टेम्पलेट बनाएं",
+      "loading": "लोड हो रहा है…",
+      "empty": "अभी तक कोई सहेजा गया टेम्पलेट नहीं",
+      "deleteTitle": "टेम्पलेट हटाएं",
+      "confirmReplace": "बोर्ड की मौजूदा सामग्री को इस टेम्पलेट से बदलें? इसे पूर्ववत नहीं किया जा सकता।",
+      "cancel": "रद्द करें",
+      "replace": "बदलें",
+      "nameLabel": "टेम्पलेट का नाम",
+      "start": "शुरू करें",
+      "given": "दिया गया:",
+      "solution": "हल:",
+      "answer": "उत्तर:",
+      "systemTemplates": {
+        "coordinate-plane": "निर्देशांक तल",
+        "number-line": "संख्या रेखा",
+        "unit-circle": "इकाई वृत्त",
+        "triangle": "कोणों वाला त्रिभुज",
+        "axes-3d": "XYZ अक्ष (3D)",
+        "table": "तालिका",
+        "venn-diagram": "वेन आरेख",
+        "given-solution-answer": "दिया गया / हल / उत्तर"
+      }
+    }
   }
 }

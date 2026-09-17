@@ -2865,5 +2865,126 @@
       "meetingDescription": "《{title}》",
       "new": "新"
     }
+  },
+  "whiteboard": {
+    "formulaLabel": "公式",
+    "templateSaved": "模板已保存",
+    "templateSaveFailed": "保存模板失败——白板为空或发生错误",
+    "loadingBoard": "白板加载中…",
+    "toolbar": {
+      "formula": "公式",
+      "ai": "AI",
+      "createFormulaAi": "用AI生成公式",
+      "grid": "网格",
+      "shapes": "图形",
+      "constructions": "辅助线",
+      "constructionsTitle": "辅助线：吸附到图形顶点/中心的线",
+      "angle": "角",
+      "angleTitle": "角：选择一个面及其角——点击图形会在该角两条边之间添加弧线",
+      "collapse": "收起按钮",
+      "expand": "显示按钮",
+      "templates": "模板",
+      "templatesTitle": "白板模板",
+      "saveTemplate": "保存模板",
+      "saveTemplateTitle": "将当前绘制内容保存为新模板"
+    },
+    "elementInspector": {
+      "renameHint": "双击重命名",
+      "openEditor": "打开编辑器"
+    },
+    "formulaKeyboard": {
+      "aiVipOnly": "AI公式生成仅限VIP使用",
+      "photoVipOnly": "照片公式识别仅限VIP使用",
+      "generateFailed": "生成公式失败",
+      "createWithAi": "用AI生成公式",
+      "photoToFormula": "照片→公式",
+      "descriptionPlaceholder": "描述公式…",
+      "generate": "生成",
+      "loadingKeyboard": "公式键盘加载中…",
+      "cancel": "取消",
+      "inserting": "插入中…",
+      "insert": "插入到白板"
+    },
+    "formulaPhoto": {
+      "needImage": "需要图片文件（公式照片）",
+      "recognizeFailed": "识别公式失败",
+      "title": "照片→公式",
+      "dropzoneHint": "选择公式照片或拖到此处",
+      "previewAlt": "公式照片预览",
+      "chooseAnother": "选择其他照片",
+      "multipleHint": "照片中有多个公式——请选择需要的：",
+      "descriptionPlaceholder": "说明需要哪个公式（可选）",
+      "compressing": "压缩中…",
+      "recognizing": "识别中…",
+      "recognize": "识别",
+      "cancel": "取消"
+    },
+    "grid": {
+      "off": "关闭",
+      "squares": "方格",
+      "dots": "点阵",
+      "lines": "横线",
+      "title": "白板网格",
+      "cellSize": "格子大小",
+      "transparency": "透明度",
+      "done": "完成"
+    },
+    "shapes": {
+      "cube": "立方体",
+      "pyramid": "棱锥",
+      "cone": "圆锥",
+      "cylinder": "圆柱",
+      "sphere": "球体",
+      "polygon": "多边形"
+    },
+    "shapePanel": {
+      "title": "图形",
+      "flat2d": "平面图形（2D）",
+      "rotateHint": "拖动图形旋转——虚线为隐藏边",
+      "scale": "缩放",
+      "rotationZ": "旋转（Z轴）",
+      "cornerCount": "角数",
+      "visibleEdges": "可见边数"
+    },
+    "zoneCanvas": {
+      "moveHint": "拖动以移动图形。点击以选中。",
+      "resizeHint": "拖动以调整大小",
+      "deleteLine": "删除线段",
+      "deleteMark": "删除标记",
+      "edgeLabelPlaceholder": "边上的文字",
+      "lineLabelPlaceholder": "线上的文字",
+      "angleLabelPlaceholder": "角上的文字"
+    },
+    "templates": {
+      "defaultName": "来自{date}的模板",
+      "teacherOnly": "仅教师可用",
+      "confirmDelete": "删除此模板？",
+      "deleteFailed": "删除模板失败",
+      "systemTab": "系统模板",
+      "ownTab": "我的模板",
+      "close": "关闭",
+      "createCard": "+ 创建模板",
+      "loading": "加载中…",
+      "empty": "还没有已保存的模板",
+      "deleteTitle": "删除模板",
+      "confirmReplace": "用此模板替换白板当前内容？此操作无法撤销。",
+      "cancel": "取消",
+      "replace": "替换",
+      "nameLabel": "模板名称",
+      "start": "开始",
+      "given": "已知：",
+      "solution": "解：",
+      "answer": "答：",
+      "systemTemplates": {
+        "coordinate-plane": "坐标平面",
+        "number-line": "数轴",
+        "unit-circle": "单位圆",
+        "triangle": "带角度标注的三角形",
+        "axes-3d": "XYZ坐标轴（3D）",
+        "table": "表格",
+        "venn-diagram": "维恩图",
+        "given-solution-answer": "已知／解／答"
+      }
+    }
   }
 }

@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
+import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import '@excalidraw/excalidraw/index.css'
 import type { ExcalidrawElement, FileId } from '@excalidraw/excalidraw/element/types'
@@ -9,13 +10,21 @@ import type { AppState, BinaryFileData, BinaryFiles, DataURL, ExcalidrawImperati
 import { useThemeCtx } from '@/app/providers/ThemeContext'
 import { GridSettingsPanel, DEFAULT_GRID_SETTINGS, type GridSettings } from './GridSettingsPanel'
 import { ElementInspector } from './ElementInspector'
-import { getZoneRect, PRIMITIVE_LABELS, readThreeDZone, type SnapRef, type ThreeDShapeMeta, type ThreeDZone, type ZoneRect } from './shapeGeometry'
+import { getZoneRect, readThreeDZone, type SnapRef, type ThreeDShapeMeta, type ThreeDZone, type ZoneRect, type ZoneSelection } from './shapeGeometry'
 import type { LineBinding, ViewTransform } from './ShapeInteractionLayer'
 import styles from './CallWhiteboard.module.scss'
 
+// A named component (not an inline arrow function) so useTranslations works
+// inside it the same as any other rendered component — next/dynamic's
+// `loading` callback still gets mounted through the normal React tree.
+function ExcalidrawLoading() {
+  const t = useTranslations('whiteboard')
+  return <div className={styles.loading}>{t('loadingBoard')}</div>
+}
+
 const Excalidraw = dynamic(
   () => import('@excalidraw/excalidraw').then(m => ({ default: m.Excalidraw })),
-  { ssr: false, loading: () => <div className={styles.loading}>Загрузка доски…</div> },
+  { ssr: false, loading: () => <ExcalidrawLoading /> },
 )
 
 const FormulaKeyboard = dynamic(
@@ -159,6 +168,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
   const creatingTemplateRef = useRef<string | null>(null)
   const sceneElementsRef = useRef<readonly ExcalidrawElement[]>([])
   const { isDark } = useThemeCtx()
+  const t = useTranslations('whiteboard')
 
   // The popover (formula/grid/shape panels) used to be positioned via plain
   // CSS relative to the toolbar row, inside two ancestors that both clip
@@ -189,17 +199,17 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
     if (el.type === 'image') {
       const customData = (el as unknown as { customData?: { formulaLatex?: string; label?: string } }).customData
       if (typeof customData?.formulaLatex !== 'string') return null
-      return { kind: 'formula', elementId: el.id, label: customData.label ?? 'Формула', x: el.x, y: el.y, width: el.width, height: el.height }
+      return { kind: 'formula', elementId: el.id, label: customData.label ?? t('formulaLabel'), x: el.x, y: el.y, width: el.width, height: el.height }
     }
 
     if (el.type === 'rectangle') {
       const zone = readThreeDZone(el)
       if (!zone) return null
-      return { kind: 'shape', elementId: el.id, label: zone.label ?? PRIMITIVE_LABELS[zone.primitive], x: el.x, y: el.y, width: el.width, height: el.height }
+      return { kind: 'shape', elementId: el.id, label: zone.label ?? t(`shapes.${zone.primitive}`), x: el.x, y: el.y, width: el.width, height: el.height }
     }
 
     return null
-  }, [sceneElements, selectedElementIds])
+  }, [sceneElements, selectedElementIds, t])
 
   const handleExcalidrawApi = useCallback((api: ExcalidrawImperativeAPI) => {
     apiRef.current = api
@@ -614,6 +624,18 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
     mutateElement(el, { customData: { threeDZone: zone } })
   }, [])
 
+  const handleZoneSelectionChange = useCallback(async (zoneElementId: string, target: ZoneSelection | null) => {
+    if (!apiRef.current) return
+    const { mutateElement } = await import('@excalidraw/excalidraw')
+    const el = apiRef.current.getSceneElements().find(e => e.id === zoneElementId)
+    if (!el) return
+    const existing = readThreeDZone(el)
+    if (!existing) return
+    if ((existing.selection ?? null) === target) return
+    const zone: ThreeDZone = { ...existing, selection: target }
+    mutateElement(el, { customData: { threeDZone: zone } })
+  }, [])
+
   // Clicking the zone's move handle (not dragging it) surfaces the rename/
   // edit inspector — the zone body itself no longer passes clicks through to
   // Excalidraw's own hit-testing, since it's now always grabbing drags to
@@ -706,12 +728,12 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
     const ok = await postTemplateSnapshot(creatingTemplateName, sceneElementsRef.current)
     setSavingTemplate(false)
     if (ok) {
-      toast.success('Шаблон сохранён')
+      toast.success(t('templateSaved'))
       setCreatingTemplateName(null)
     } else {
-      toast.error('Не удалось сохранить шаблон — доска пуста или произошла ошибка')
+      toast.error(t('templateSaveFailed'))
     }
-  }, [creatingTemplateName, savingTemplate])
+  }, [creatingTemplateName, savingTemplate, t])
 
   useEffect(() => {
     creatingTemplateRef.current = creatingTemplateName
@@ -771,6 +793,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
           onLineColorChange={handleZoneLineColorChange}
           onLineLabelChange={handleZoneLineLabelChange}
           onLineDelete={handleZoneLineDelete}
+          onSelectionChange={handleZoneSelectionChange}
           onSelectZone={handleSelectZone}
           onMoveZoneTo={handleMoveZoneTo}
           onResizeZoneTo={handleResizeZoneTo}
@@ -808,9 +831,9 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
                     setAutoOpenAi(false)
                     setActivePopover(v => (v === 'formula' ? null : 'formula'))
                   }}
-                  title="Формула"
+                  title={t('toolbar.formula')}
                 >
-                  ∑ Формула
+                  ∑ {t('toolbar.formula')}
                 </button>
                 <button
                   type="button"
@@ -821,17 +844,17 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
                     setAutoOpenAi(true)
                     setActivePopover('formula')
                   }}
-                  title="Создать формулу с ИИ"
+                  title={t('toolbar.createFormulaAi')}
                 >
-                  ✨ ИИ
+                  ✨ {t('toolbar.ai')}
                 </button>
                 <button
                   type="button"
                   className={`${styles.formulaButton} ${activePopover === 'grid' ? styles.formulaButtonActive : ''}`}
                   onClick={() => setActivePopover(v => (v === 'grid' ? null : 'grid'))}
-                  title="Сетка"
+                  title={t('toolbar.grid')}
                 >
-                  ▦ Сетка
+                  ▦ {t('toolbar.grid')}
                 </button>
                 <button
                   type="button"
@@ -840,9 +863,9 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
                     setEditingShape(null)
                     setActivePopover(v => (v === '3d' ? null : '3d'))
                   }}
-                  title="Фигуры"
+                  title={t('toolbar.shapes')}
                 >
-                  △ Фигуры
+                  △ {t('toolbar.shapes')}
                 </button>
                 <button
                   type="button"
@@ -851,9 +874,9 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
                     setAngleMode(false)
                     setConstructionMode(v => !v)
                   }}
-                  title="Построения: линии со снапом к вершинам/центру фигур"
+                  title={t('toolbar.constructionsTitle')}
                 >
-                  📐 Построения
+                  📐 {t('toolbar.constructions')}
                 </button>
                 <button
                   type="button"
@@ -862,9 +885,9 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
                     setConstructionMode(false)
                     setAngleMode(v => !v)
                   }}
-                  title="Угол: отметьте грань и угол на ней — клик по фигуре добавит дугу между двумя сторонами этого угла"
+                  title={t('toolbar.angleTitle')}
                 >
-                  ∠ Угол
+                  ∠ {t('toolbar.angle')}
                 </button>
               </>
             )}
@@ -872,7 +895,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
               type="button"
               className={styles.collapseButton}
               onClick={() => setToolbarCollapsed(v => !v)}
-              title={toolbarCollapsed ? 'Показать кнопки' : 'Свернуть кнопки'}
+              title={toolbarCollapsed ? t('toolbar.expand') : t('toolbar.collapse')}
             >
               {toolbarCollapsed ? '▸' : '◂'}
             </button>
@@ -925,9 +948,9 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
             type="button"
             className={styles.templatesButton}
             onClick={() => setTemplatesModalOpen(true)}
-            title="Шаблоны доски"
+            title={t('toolbar.templatesTitle')}
           >
-            {'Шаблоны'.split('').map((ch, i) => <span key={i}>{ch}</span>)}
+            {t('toolbar.templates').split('').map((ch, i) => <span key={i}>{ch}</span>)}
           </button>
           {creatingTemplateName && (
             <button
@@ -935,9 +958,9 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
               className={styles.saveTemplateButton}
               onClick={handleSaveTemplate}
               disabled={savingTemplate}
-              title="Сохранить нарисованное как новый шаблон"
+              title={t('toolbar.saveTemplateTitle')}
             >
-              {savingTemplate ? '…' : '💾 Сохранить шаблон'}
+              {savingTemplate ? '…' : `💾 ${t('toolbar.saveTemplate')}`}
             </button>
           )}
         </div>
