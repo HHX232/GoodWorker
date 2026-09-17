@@ -90,6 +90,29 @@ export function ChatShell({ renderConversation, initialConversationId }: ChatShe
 
   const mobileView = selectedConversation ? 'conversation' : 'list'
 
+  // `.page`'s height is "100vh minus the site header" — hardcoding that
+  // offset as a fixed 83px (matching the header's single-row desktop height)
+  // silently breaks the moment the header wraps to a second row, which it
+  // does under ~600px width (search/nav collapsing under the logo row):
+  // `.page` then claims more height than is actually left under the header,
+  // pushing the composer below the viewport with no way to reach it (found
+  // via a real 375px-viewport check — textarea rendered 45px past the
+  // bottom edge). Measuring the real header live removes the guess entirely
+  // and keeps working if the header's own height changes for any reason.
+  useEffect(() => {
+    const header = document.querySelector('header')
+    if (!header) return
+
+    const applyHeight = () => {
+      document.documentElement.style.setProperty('--chat-header-height', `${header.getBoundingClientRect().height}px`)
+    }
+    applyHeight()
+
+    const observer = new ResizeObserver(applyHeight)
+    observer.observe(header)
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <div className={styles.page}>
       <div className={styles.container} data-mobile-view={mobileView}>

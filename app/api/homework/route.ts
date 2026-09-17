@@ -82,8 +82,25 @@ export async function POST(req: NextRequest) {
       )
     )
 
+    // Content-type breakdown ("3 texts, 2 tests") for the chat card — counted
+    // from the same block array the homework editor/viewer already renders,
+    // no separate schema field for this (Homework.content has none, see
+    // shared PostBlockType shape).
+    const blocks: Array<{ type?: string }> = Array.isArray((content as { blocks?: unknown[] })?.blocks)
+      ? (content as { blocks: Array<{ type?: string }> }).blocks
+      : []
+    const countByType = (type: string) => blocks.filter(b => b?.type === type).length
+    const contentCounts = {
+      text: countByType('TEXT'),
+      media: countByType('MEDIA'),
+      audio: countByType('AUDIO'),
+      test: countByType('TEST_LINK') + countByType('MINI_TEST'),
+      files: countByType('FILE_LIST'),
+    }
+
     // Chat event card (R13) — same payload as the notification above, plus
-    // title/dueAt so MessageBubble/EventCard can render without another fetch.
+    // sendAt/dueAt/contentCounts so MessageBubble/EventCard can render the
+    // access window and content summary without another fetch.
     await Promise.allSettled(
       homework.assignments.map((a: { studentId: string; id: string }) =>
         postEventCard({
@@ -94,7 +111,9 @@ export async function POST(req: NextRequest) {
             homeworkId: homework.id,
             assignmentId: a.id,
             title: homework.title,
+            sendAt: homework.sendAt?.toISOString() ?? null,
             dueAt: homework.dueAt?.toISOString() ?? null,
+            contentCounts,
           },
         }).catch(e => console.error('[POST /api/homework] postEventCard failed', e))
       )

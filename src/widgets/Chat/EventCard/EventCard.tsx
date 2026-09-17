@@ -1,13 +1,13 @@
 'use client'
 
 import type { ChatMessage } from '@/shared/types/Chat/chat.types'
-import { ChatEventIcon, ChatHomeworkIcon, ChatPaymentIcon, ChatServiceIcon } from '@/widgets/Chat/icons'
+import { ChatEventIcon, ChatHomeworkIcon, ChatMeetingIcon, ChatPaymentIcon, ChatServiceIcon } from '@/widgets/Chat/icons'
 import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import type { ComponentType, ReactNode } from 'react'
 import styles from './EventCard.module.scss'
 
-type EventKind = 'homework' | 'service' | 'payment' | 'unknown'
+type EventKind = 'homework' | 'service' | 'payment' | 'meeting' | 'unknown'
 
 /** One accent per event type — the card's only "status" signal besides the
  * unread dot, so each type stays visually findable in a scrolling history
@@ -16,12 +16,14 @@ const KIND_BY_EVENT_TYPE: Record<string, EventKind> = {
   HOMEWORK_ASSIGNED: 'homework',
   PERSONAL_SERVICE: 'service',
   PAYMENT_REMINDER: 'payment',
+  MEETING_SCHEDULED: 'meeting',
 }
 
 const ICON_BY_KIND: Record<EventKind, ComponentType<{ size?: number; strokeWidth?: number }>> = {
   homework: ChatHomeworkIcon,
   service: ChatServiceIcon,
   payment: ChatPaymentIcon,
+  meeting: ChatMeetingIcon,
   unknown: ChatEventIcon,
 }
 
@@ -34,11 +36,21 @@ export interface EventCardProps {
   isMine: boolean
 }
 
+interface HomeworkContentCounts {
+  text?: number
+  media?: number
+  audio?: number
+  test?: number
+  files?: number
+}
+
 interface HomeworkAssignedPayload {
   homeworkId?: string
   assignmentId?: string
   title?: string
+  sendAt?: string | null
   dueAt?: string | null
+  contentCounts?: HomeworkContentCounts
 }
 
 interface PersonalServicePayload {
@@ -46,6 +58,7 @@ interface PersonalServicePayload {
   serviceTitle?: string
   price?: number
   currency?: string
+  teacherId?: string
 }
 
 interface PaymentReminderTotal {
@@ -57,6 +70,13 @@ interface PaymentReminderPayload {
   teacherName?: string
   unpaidCount?: number
   totals?: PaymentReminderTotal[]
+}
+
+interface MeetingScheduledPayload {
+  teacherName?: string
+  title?: string
+  scheduledAt?: string
+  roomName?: string
 }
 
 function formatSentTime(iso: string, locale: string): string {
@@ -93,6 +113,28 @@ function formatTotals(totals: PaymentReminderTotal[] | undefined): string {
   return parts.length > 0 ? parts.join(' + ') : '0'
 }
 
+/** `Текст: 3 · Тест: 2` — only the non-zero counts, labels from `chat.eventCard.*`
+ * so each locale names its own content types (deliberately not grammatically
+ * pluralized per count — "3 текста" vs "5 текстов" needs full Russian plural
+ * rules; a stable "Label: N" reads correctly in every language instead). */
+function formatContentCounts(
+  counts: HomeworkContentCounts | undefined,
+  t: ReturnType<typeof useTranslations>
+): string | null {
+  if (!counts) return null
+  const order: Array<[keyof HomeworkContentCounts, string]> = [
+    ['text', 'eventCard.contentText'],
+    ['test', 'eventCard.contentTest'],
+    ['media', 'eventCard.contentMedia'],
+    ['audio', 'eventCard.contentAudio'],
+    ['files', 'eventCard.contentFiles'],
+  ]
+  const parts = order
+    .filter(([key]) => (counts[key] ?? 0) > 0)
+    .map(([key, labelKey]) => `${t(labelKey)}: ${counts[key]}`)
+  return parts.length > 0 ? parts.join(' · ') : null
+}
+
 /**
  * Renders a `ChatMessage` with a non-empty `eventType` as a distinct card —
  * icon + title + short description, an optional info chip (due date / price /
@@ -118,10 +160,20 @@ export function EventCard({ message, isMine }: EventCardProps) {
 
   if (message.eventType === 'HOMEWORK_ASSIGNED') {
     const p = payload as HomeworkAssignedPayload
+    const from = formatDueDate(p.sendAt, locale)
     const due = formatDueDate(p.dueAt, locale)
     title = t('eventCard.homeworkTitle')
-    description = t('eventCard.homeworkDescriptionNoDue', { title: p.title ?? '' })
-    if (due) chip = due
+    let accessLine: string | null = null
+    if (from && due) accessLine = t('eventCard.homeworkAccessRange', { from, due })
+    else if (due) accessLine = t('eventCard.homeworkDueOnly', { due })
+    else if (from) accessLine = t('eventCard.homeworkAccessFromOnly', { from })
+    description = (
+      <>
+        {t('eventCard.homeworkDescriptionNoDue', { title: p.title ?? '' })}
+        {accessLine && <><br />{accessLine}</>}
+      </>
+    )
+    chip = formatContentCounts(p.contentCounts, t)
     if (p.assignmentId) {
       link = (
         <Link href={`/homework/${p.assignmentId}`} className={styles.link}>
@@ -134,11 +186,24 @@ export function EventCard({ message, isMine }: EventCardProps) {
     title = t('eventCard.serviceTitle')
     description = t('eventCard.serviceDescription', { title: p.serviceTitle ?? '' })
     if (typeof p.price === 'number') chip = `${p.price} ${p.currency ?? ''}`.trim()
+    if (p.teacherId) {
+      link = (
+        <Link href={`/users/${p.teacherId}?openService=${p.serviceId ?? ''}`} className={styles.link}>
+          {t('eventCard.serviceLink')}
+        </Link>
+      )
+    }
   } else if (message.eventType === 'PAYMENT_REMINDER') {
     const p = payload as PaymentReminderPayload
     title = t('eventCard.paymentTitle')
     description = t('eventCard.paymentDescription', { count: p.unpaidCount ?? 0 })
     chip = formatTotals(p.totals)
+  } else if (message.eventType === 'MEETING_SCHEDULED') {
+    const p = payload as MeetingScheduledPayload
+    const when = formatDueDate(p.scheduledAt, locale)
+    title = t('eventCard.meetingTitle')
+    description = t('eventCard.meetingDescription', { title: p.title ?? '' })
+    if (when) chip = when
   } else {
     // Unknown/future eventType — same non-crashing fallback ticket 03 shipped
     // for every eventType, kept here so a value this card doesn't know about

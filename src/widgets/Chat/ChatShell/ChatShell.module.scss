@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: calc(100vh - 83px);
+  height: calc(100vh - var(--chat-header-height, 83px));
   background: #EEEFF8;
   box-sizing: border-box;
   padding: 24px;
@@ -10,7 +10,7 @@
 
   @media (max-width: 768px) {
     height: auto;
-    min-height: calc(100vh - 83px);
+    min-height: calc(100vh - var(--chat-header-height, 83px));
     padding: 0;
   }
 }
@@ -34,8 +34,8 @@
     border-radius: 0;
     border: none;
     box-shadow: none;
-    height: calc(100vh - 83px);
-    min-height: calc(100vh - 83px);
+    height: calc(100vh - var(--chat-header-height, 83px));
+    min-height: calc(100vh - var(--chat-header-height, 83px));
   }
 
   &[data-mobile-view='list'] {

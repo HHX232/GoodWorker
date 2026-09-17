@@ -98,7 +98,7 @@ export async function requireOwnedConversation(
 }
 
 /** `eventType` values a chat message can carry (R13–R15, ticket 05). */
-export const CHAT_EVENT_TYPES = ['HOMEWORK_ASSIGNED', 'PERSONAL_SERVICE', 'PAYMENT_REMINDER'] as const
+export const CHAT_EVENT_TYPES = ['HOMEWORK_ASSIGNED', 'PERSONAL_SERVICE', 'PAYMENT_REMINDER', 'MEETING_SCHEDULED'] as const
 export type ChatEventType = (typeof CHAT_EVENT_TYPES)[number]
 
 export interface PostEventCardInput {

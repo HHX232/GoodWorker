@@ -12,7 +12,7 @@ import Card from '@/shared/ui/Posts/Card/Card'
 import { RoadMapPreview } from '@/shared/ui/RoadMap/RoadMapPreview/RoadMapPreview'
 import { useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import styles from './DashboardCenter.module.scss'
@@ -140,6 +140,25 @@ export function DashboardCenter({ statsId, studentCount, callCount, totalHours, 
   const canBook = !isOwner && session?.user?.role === 'STUDENT'
   const blockedFromBooking = !isOwner && !!session?.user && session.user.role !== 'STUDENT'
 
+  // Unread chat count for the 4th stats-strip item — only the profile owner
+  // sees the strip's owner-only items (stats links, chat entry), so this
+  // mirrors ChatHeaderIcon's own 15s poll rather than sharing state with it
+  // (different component tree, no shared store for this in the project).
+  const [unreadChats, setUnreadChats] = useState(0)
+  useEffect(() => {
+    if (!isOwner) return
+    let cancelled = false
+    const fetchUnread = () => {
+      fetch('/api/chat/unread-count')
+        .then(r => (r.ok ? r.json() : null))
+        .then(data => { if (!cancelled && data) setUnreadChats(data.count ?? 0) })
+        .catch(() => {})
+    }
+    fetchUnread()
+    const interval = setInterval(fetchUnread, 15000)
+    return () => { cancelled = true; clearInterval(interval) }
+  }, [isOwner])
+
   async function handleDeletePost(id: string) {
     if (!window.confirm(t('deleteConfirm'))) return
     const tid = toast.loading(t('loading'))
@@ -204,6 +223,23 @@ export function DashboardCenter({ statsId, studentCount, callCount, totalHours, 
       if (Array.isArray(svcData.services)) setServices(svcData.services)
     }).catch(() => {}).finally(() => setLoading(false))
   }, [statsId, locale])
+
+  // Deep link from the chat's personal-service event card
+  // (`/users/[teacherId]?openService=[serviceId]`) — auto-opens the booking
+  // modal for that service once the list has loaded, instead of leaving the
+  // student to hunt for it in the tab. Guarded to fire once: `services`
+  // reloads on locale change too, and this must not re-pop the modal then.
+  const openedFromQueryRef = useRef(false)
+  useEffect(() => {
+    if (openedFromQueryRef.current || !canBook || services.length === 0) return
+    const serviceId = new URLSearchParams(window.location.search).get('openService')
+    if (!serviceId) return
+    const match = services.find(s => s.id === serviceId)
+    if (match) {
+      openedFromQueryRef.current = true
+      setBookingService(match)
+    }
+  }, [services, canBook])
 
   const TABS: { key: Tab; label: string }[] = [
     { key: 'all',      label: t('tabAll') },
@@ -293,14 +329,22 @@ export function DashboardCenter({ statsId, studentCount, callCount, totalHours, 
             </div>
           )
         ))}
-      </div>
 
-      {isOwner && (
-        <Link href="/chats" className={styles.goToChatsBtn}>
-          <ChatBubbleIcon size={15} strokeWidth={2} />
-          {tChat('goToChats')}
-        </Link>
-      )}
+        {/* 4th item — chats entry, same shape as the stats above (icon tile +
+            value + label), value is the unread count instead of a stat. */}
+        {isOwner && (
+          <Link href="/chats" className={`${styles.statsItem} ${styles.statsItemLink}`}>
+            <div className={styles.statsSep} />
+            <div className={styles.statsItemIcon} style={{ background: '#EDE9FE' }}>
+              <ChatBubbleIcon size={15} strokeWidth={2} color="#534AB7" />
+            </div>
+            <div>
+              <div className={styles.statsItemValue}>{unreadChats}</div>
+              <div className={styles.statsItemLabel}>{tChat('dashboardStatsLabel')}</div>
+            </div>
+          </Link>
+        )}
+      </div>
 
       {/* Video zone — visible for owner only */}
       {isOwner && <VideoZone ownerName={ownerName} />}

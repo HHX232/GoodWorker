@@ -3,8 +3,9 @@
 import type { ChatMessage } from '@/shared/types/Chat/chat.types'
 import { EventCard } from '@/widgets/Chat/EventCard/EventCard'
 import { ChatAttachIcon, ChatDownloadIcon } from '@/widgets/Chat/icons'
+import { VoiceMessagePlayer } from '@/widgets/Chat/VoiceMessagePlayer/VoiceMessagePlayer'
 import { useLocale, useTranslations } from 'next-intl'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import styles from './MessageBubble.module.scss'
 
 /**
@@ -49,26 +50,37 @@ export function MessageBubble({ message, isMine }: MessageBubbleProps) {
   const t = useTranslations('chat')
   const locale = useLocale()
   const time = formatTime(message.createdAt, locale)
+  const [imageLoaded, setImageLoaded] = useState(false)
 
-  /** Real rendering for `attachmentType` — image thumbnail, audio player, or a
-   * generic file row with a download link — plus any caption text sent
-   * alongside the attachment. */
+  /** Real rendering for `attachmentType` — image thumbnail, waveform voice
+   * player, or a generic file row with a download link — plus any caption
+   * text sent alongside the attachment. */
   function renderAttachment(): ReactNode {
     const type = message.attachmentType ?? ''
     const url = message.attachmentUrl
     const name = message.attachmentName || t('attachmentMessage')
+    const fileClass = `${styles.fileAttachment} ${isMine ? styles.fileAttachmentMine : styles.fileAttachmentOther}`
 
     let attachmentNode: ReactNode
     if (type.startsWith('image/') && url) {
       attachmentNode = (
         <a href={url} target="_blank" rel="noopener noreferrer" className={styles.imageLink}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={url} alt={message.attachmentName || t('imageAttachmentAlt')} className={styles.imageAttachment} />
+          <span className={styles.imageFrame}>
+            {!imageLoaded && <span className={styles.imageSkeleton} aria-hidden="true" />}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={url}
+              alt={message.attachmentName || t('imageAttachmentAlt')}
+              className={styles.imageAttachment}
+              style={{ opacity: imageLoaded ? 1 : 0 }}
+              onLoad={() => setImageLoaded(true)}
+              onError={() => setImageLoaded(true)}
+            />
+          </span>
         </a>
       )
     } else if (type.startsWith('audio/') && url) {
-      attachmentNode = <audio controls src={url} className={styles.audioAttachment} />
-
+      attachmentNode = <VoiceMessagePlayer url={url} isMine={isMine} />
     } else {
       const sizeLabel = formatAttachmentSize(message.attachmentSize)
       attachmentNode = (
@@ -77,7 +89,7 @@ export function MessageBubble({ message, isMine }: MessageBubbleProps) {
           target="_blank"
           rel="noopener noreferrer"
           download={message.attachmentName || undefined}
-          className={styles.fileAttachment}
+          className={fileClass}
           aria-label={t('downloadAttachment')}
         >
           <span className={styles.fileAttachmentIcon}>

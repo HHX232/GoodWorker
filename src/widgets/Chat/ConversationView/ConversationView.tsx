@@ -37,10 +37,16 @@ const TEXTAREA_MAX_HEIGHT = 120
 // (ticket 01) — checked here too so the client never even attempts an upload
 // it knows the server will reject with "Attachment exceeds 10MB limit".
 const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024
+// Sending N files as N separate ChatMessage rows (schema models one
+// attachment per message, see interfaces.md) — cap how many one click can
+// queue so a careless multi-select doesn't fire off fifty uploads at once.
+const MAX_ATTACHMENTS_PER_SEND = 10
 
 type PendingAttachmentKind = 'image' | 'file'
 
 interface PendingAttachment {
+  /** Client-only id (staging list key / removal target) — never sent to the server. */
+  id: string
   kind: PendingAttachmentKind
   /** Already compressed (for images) — this is exactly what gets uploaded. */
   file: File
@@ -104,7 +110,7 @@ export function ConversationView({ conversation, onBack }: ConversationViewProps
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState(false)
 
-  const [pendingAttachment, setPendingAttachment] = useState<PendingAttachment | null>(null)
+  const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([])
   const [preparingAttachment, setPreparingAttachment] = useState(false)
   const [recording, setRecording] = useState(false)
   const [recordingSeconds, setRecordingSeconds] = useState(0)
@@ -112,7 +118,7 @@ export function ConversationView({ conversation, onBack }: ConversationViewProps
   const listRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const pendingAttachmentRef = useRef<PendingAttachment | null>(null)
+  const pendingAttachmentsRef = useRef<PendingAttachment[]>([])
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const recordedChunksRef = useRef<Blob[]>([])
   const recordingStreamRef = useRef<MediaStream | null>(null)
@@ -121,13 +127,21 @@ export function ConversationView({ conversation, onBack }: ConversationViewProps
   const loading = historyLoading || sessionStatus === 'loading'
 
   useEffect(() => {
-    pendingAttachmentRef.current = pendingAttachment
-  }, [pendingAttachment])
+    pendingAttachmentsRef.current = pendingAttachments
+  }, [pendingAttachments])
 
-  const clearPendingAttachment = useCallback(() => {
-    setPendingAttachment(prev => {
-      if (prev?.previewUrl) URL.revokeObjectURL(prev.previewUrl)
-      return null
+  const clearPendingAttachments = useCallback(() => {
+    setPendingAttachments(prev => {
+      prev.forEach(a => { if (a.previewUrl) URL.revokeObjectURL(a.previewUrl) })
+      return []
+    })
+  }, [])
+
+  const removePendingAttachment = useCallback((id: string) => {
+    setPendingAttachments(prev => {
+      const target = prev.find(a => a.id === id)
+      if (target?.previewUrl) URL.revokeObjectURL(target.previewUrl)
+      return prev.filter(a => a.id !== id)
     })
   }, [])
 
@@ -141,8 +155,8 @@ export function ConversationView({ conversation, onBack }: ConversationViewProps
     setMessages([])
     setDraft('')
     setSendError(false)
-    if (pendingAttachmentRef.current?.previewUrl) URL.revokeObjectURL(pendingAttachmentRef.current.previewUrl)
-    setPendingAttachment(null)
+    pendingAttachmentsRef.current.forEach(a => { if (a.previewUrl) URL.revokeObjectURL(a.previewUrl) })
+    setPendingAttachments([])
 
     fetch(`/api/chat/conversations/${conversation.id}/messages`)
       .then(res => {
@@ -223,19 +237,10 @@ export function ConversationView({ conversation, onBack }: ConversationViewProps
     el.style.height = `${Math.min(el.scrollHeight, TEXTAREA_MAX_HEIGHT)}px`
   }, [draft])
 
-  const canSend = (draft.trim().length > 0 || !!pendingAttachment) && !sending && !preparingAttachment
+  const canSend = (draft.trim().length > 0 || pendingAttachments.length > 0) && !sending && !preparingAttachment
 
-  const handleSend = useCallback(() => {
-    const text = draft.trim()
-    if (!text && !pendingAttachment) return
-    if (sending) return
-
-    const attachment = pendingAttachment
-
-    setSending(true)
-    setSendError(false)
-
-    const doSend = async (): Promise<{ message: ChatMessage }> => {
+  const postOneMessage = useCallback(
+    async (text: string | undefined, attachment: PendingAttachment | undefined): Promise<ChatMessage> => {
       let attachmentUrl: string | undefined
       let attachmentSize: number | undefined
 
@@ -272,14 +277,48 @@ export function ConversationView({ conversation, onBack }: ConversationViewProps
         }),
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      return res.json() as Promise<{ message: ChatMessage }>
+      const data = (await res.json()) as { message: ChatMessage }
+      return data.message
+    },
+    [conversation.id, t]
+  )
+
+  const handleSend = useCallback(() => {
+    const text = draft.trim()
+    const attachments = pendingAttachments
+    if (!text && attachments.length === 0) return
+    if (sending) return
+
+    setSending(true)
+    setSendError(false)
+
+    // One ChatMessage per attachment (the schema models a single attachment
+    // per message) — sent in order, not in parallel, so history stays
+    // chronological and one slow upload doesn't race another. The typed
+    // caption, if any, rides along with the first attachment (matches the
+    // pre-existing single-attachment behavior exactly); a caption with zero
+    // attachments is just its own text message.
+    const doSend = async (): Promise<ChatMessage[]> => {
+      const sent: ChatMessage[] = []
+      if (attachments.length === 0) {
+        sent.push(await postOneMessage(text, undefined))
+        return sent
+      }
+      for (let i = 0; i < attachments.length; i++) {
+        sent.push(await postOneMessage(i === 0 ? text : undefined, attachments[i]))
+      }
+      return sent
     }
 
     doSend()
-      .then(data => {
-        setMessages(prev => (prev.some(m => m.id === data.message.id) ? prev : [...prev, data.message]))
+      .then(sentMessages => {
+        setMessages(prev => {
+          const byId = new Map(prev.map(m => [m.id, m]))
+          for (const m of sentMessages) byId.set(m.id, m)
+          return Array.from(byId.values()).sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+        })
         setDraft('')
-        clearPendingAttachment()
+        clearPendingAttachments()
       })
       .catch(e => {
         if ((e as Error).message !== 'attachment-too-big') {
@@ -288,7 +327,7 @@ export function ConversationView({ conversation, onBack }: ConversationViewProps
         }
       })
       .finally(() => setSending(false))
-  }, [draft, sending, pendingAttachment, conversation.id, t, clearPendingAttachment])
+  }, [draft, sending, pendingAttachments, postOneMessage, clearPendingAttachments])
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -307,52 +346,63 @@ export function ConversationView({ conversation, onBack }: ConversationViewProps
 
   const handleFileSelected = useCallback(
     async (e: ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0]
+      const files = Array.from(e.target.files ?? [])
       e.target.value = ''
-      if (!file) return
+      if (files.length === 0) return
 
-      const isImage = file.type.startsWith('image/')
+      const room = MAX_ATTACHMENTS_PER_SEND - pendingAttachmentsRef.current.length
+      const toProcess = files.slice(0, Math.max(0, room))
+      if (files.length > toProcess.length) toast.error(t('tooManyAttachments', { max: MAX_ATTACHMENTS_PER_SEND }))
+
       setPreparingAttachment(true)
+      let oversized = false
+      const prepared: PendingAttachment[] = []
       try {
-        if (isImage) {
-          const compressed = await compressImageForUpload(file)
-          if (compressed.size > MAX_ATTACHMENT_BYTES) {
-            toast.error(t('attachTooBig'))
-            return
+        for (const file of toProcess) {
+          const isImage = file.type.startsWith('image/')
+          try {
+            if (isImage) {
+              const compressed = await compressImageForUpload(file)
+              if (compressed.size > MAX_ATTACHMENT_BYTES) {
+                oversized = true
+                continue
+              }
+              prepared.push({
+                id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                kind: 'image',
+                file: compressed,
+                previewUrl: URL.createObjectURL(compressed),
+                name: file.name,
+                size: compressed.size,
+                mimeType: compressed.type,
+              })
+            } else {
+              if (file.size > MAX_ATTACHMENT_BYTES) {
+                oversized = true
+                continue
+              }
+              prepared.push({
+                id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                kind: 'file',
+                file,
+                previewUrl: null,
+                name: file.name,
+                size: file.size,
+                mimeType: file.type || 'application/octet-stream',
+              })
+            }
+          } catch (err) {
+            console.error('[ConversationView] attachment prep failed', err)
+            toast.error(t('attachUploadError'))
           }
-          const previewUrl = URL.createObjectURL(compressed)
-          clearPendingAttachment()
-          setPendingAttachment({
-            kind: 'image',
-            file: compressed,
-            previewUrl,
-            name: file.name,
-            size: compressed.size,
-            mimeType: compressed.type,
-          })
-        } else {
-          if (file.size > MAX_ATTACHMENT_BYTES) {
-            toast.error(t('attachTooBig'))
-            return
-          }
-          clearPendingAttachment()
-          setPendingAttachment({
-            kind: 'file',
-            file,
-            previewUrl: null,
-            name: file.name,
-            size: file.size,
-            mimeType: file.type || 'application/octet-stream',
-          })
         }
-      } catch (err) {
-        console.error('[ConversationView] attachment prep failed', err)
-        toast.error(t('attachUploadError'))
+        if (oversized) toast.error(t('attachTooBig'))
+        if (prepared.length > 0) setPendingAttachments(prev => [...prev, ...prepared])
       } finally {
         setPreparingAttachment(false)
       }
     },
-    [t, clearPendingAttachment]
+    [t]
   )
 
   const sendVoiceMessage = useCallback(
@@ -494,28 +544,32 @@ export function ConversationView({ conversation, onBack }: ConversationViewProps
       <div className={styles.composer}>
         {sendError && <div className={styles.sendError}>{t('sendError')}</div>}
 
-        {pendingAttachment && (
-          <div className={styles.attachmentPreview}>
-            {pendingAttachment.kind === 'image' && pendingAttachment.previewUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={pendingAttachment.previewUrl} alt="" className={styles.attachmentPreviewImg} />
-            ) : (
-              <span className={styles.attachmentPreviewIcon}>
-                <ChatAttachIcon size={18} strokeWidth={2} />
-              </span>
-            )}
-            <span className={styles.attachmentPreviewName} title={pendingAttachment.name}>
-              {pendingAttachment.name}
-            </span>
-            <button
-              type="button"
-              className={styles.attachmentPreviewRemove}
-              onClick={clearPendingAttachment}
-              aria-label={t('removeAttachment')}
-              disabled={sending}
-            >
-              <ChatCloseIcon size={14} strokeWidth={2} />
-            </button>
+        {pendingAttachments.length > 0 && (
+          <div className={styles.attachmentPreviewRow}>
+            {pendingAttachments.map(attachment => (
+              <div key={attachment.id} className={styles.attachmentPreview}>
+                {attachment.kind === 'image' && attachment.previewUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={attachment.previewUrl} alt="" className={styles.attachmentPreviewImg} />
+                ) : (
+                  <span className={styles.attachmentPreviewIcon}>
+                    <ChatAttachIcon size={18} strokeWidth={2} />
+                  </span>
+                )}
+                <span className={styles.attachmentPreviewName} title={attachment.name}>
+                  {attachment.name}
+                </span>
+                <button
+                  type="button"
+                  className={styles.attachmentPreviewRemove}
+                  onClick={() => removePendingAttachment(attachment.id)}
+                  aria-label={t('removeAttachment')}
+                  disabled={sending}
+                >
+                  <ChatCloseIcon size={14} strokeWidth={2} />
+                </button>
+              </div>
+            ))}
           </div>
         )}
 
@@ -531,6 +585,7 @@ export function ConversationView({ conversation, onBack }: ConversationViewProps
           <input
             ref={fileInputRef}
             type="file"
+            multiple
             className={styles.hiddenFileInput}
             onChange={handleFileSelected}
             tabIndex={-1}

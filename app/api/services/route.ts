@@ -150,7 +150,10 @@ export async function POST(req: NextRequest) {
         studentId: targetStudentId,
       })
 
-      // Chat event card (R14) — same payload as the notification above.
+      // Chat event card (R14) — same payload as the notification above, plus
+      // teacherId so EventCard can link straight to the booking flow
+      // (/users/[teacherId]?openService=[serviceId] — there's no standalone
+      // /services/[id] page, booking happens inline on the profile).
       await postEventCard({
         teacherId: session.user.id,
         studentId: targetStudentId,
@@ -160,6 +163,7 @@ export async function POST(req: NextRequest) {
           serviceTitle: title,
           price: Number(price),
           currency: svcCurrency,
+          teacherId: session.user.id,
         },
       }).catch(e => console.error('[POST /api/services] postEventCard failed', e))
     }

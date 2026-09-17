@@ -149,6 +149,16 @@ export const TYPE_CONFIG: Record<string, TypeConfig> = {
     actionLabel: 'Join call',
     getHref: (p) => p.roomId ? `/call/${p.roomId}` : (p.roomLink as string | null) ?? null,
   },
+  MEETING_SCHEDULED: {
+    color: '#0ea5e9',
+    bg: '#f0f9ff',
+    icon: (
+      <svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.2' strokeLinecap='round' strokeLinejoin='round'>
+        <rect x='3' y='4' width='18' height='18' rx='2' /><line x1='16' y1='2' x2='16' y2='6' /><line x1='8' y1='2' x2='8' y2='6' /><line x1='3' y1='10' x2='21' y2='10' />
+      </svg>
+    ),
+    getHref: (p) => p.roomName ? `/call/${p.roomName}` : null,
+  },
   PERSONAL_SERVICE: {
     color: '#FF7A00',
     bg: '#fff7ed',

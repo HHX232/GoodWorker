@@ -27,6 +27,8 @@ export const NOTIFICATION_TYPES = {
   SERVICE_BOOKING: 'SERVICE_BOOKING',
   // A friend registered via this user's referral link — free VIP granted
   REFERRAL_REWARD: 'REFERRAL_REWARD',
+  // Teacher scheduled a video call/meeting with this student
+  MEETING_SCHEDULED: 'MEETING_SCHEDULED',
 } as const
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[keyof typeof NOTIFICATION_TYPES]
@@ -51,6 +53,7 @@ export const DEFAULT_SUBSCRIPTIONS: Record<string, NotificationType[]> = {
     NOTIFICATION_TYPES.VIDEO_CALL_INVITE,
     NOTIFICATION_TYPES.SYSTEM,
     NOTIFICATION_TYPES.REFERRAL_REWARD,
+    NOTIFICATION_TYPES.MEETING_SCHEDULED,
   ],
   ADMIN: Object.values(NOTIFICATION_TYPES) as NotificationType[],
 }

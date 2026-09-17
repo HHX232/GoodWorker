@@ -24,4 +24,5 @@ export {
   BookOpen as ChatHomeworkIcon,
   Gift as ChatServiceIcon,
   Wallet as ChatPaymentIcon,
+  Video as ChatMeetingIcon,
 } from 'lucide-react'

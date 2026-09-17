@@ -110,6 +110,27 @@ export function tplPersonalService(
   )
 }
 
+export function tplMeetingScheduled(
+  teacherName: string,
+  title: string,
+  whenFormatted: string,
+): NotifContent {
+  return mk(
+    {
+      ru: 'Новая встреча',
+      en: 'New meeting',
+      hi: 'नई मीटिंग',
+      zh: '新的会议',
+    },
+    {
+      ru: `${teacherName} назначил(а) встречу «${title}» — ${whenFormatted}`,
+      en: `${teacherName} scheduled a meeting «${title}» — ${whenFormatted}`,
+      hi: `${teacherName} ने «${title}» मीटिंग शेड्यूल की — ${whenFormatted}`,
+      zh: `${teacherName} 安排了会议《${title}》— ${whenFormatted}`,
+    },
+  )
+}
+
 export function tplComplaintReplied(): NotifContent {
   return mk(
     {

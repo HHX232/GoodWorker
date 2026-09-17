@@ -50,22 +50,48 @@
   line-height: 0;
 }
 
+.imageFrame {
+  position: relative;
+  display: block;
+  min-width: 160px;
+  min-height: 120px;
+  max-width: 240px;
+  max-height: 240px;
+  border-radius: 10px;
+  overflow: hidden;
+  // Distinct frame so the image reads as its own element rather than
+  // floating loose inside the bubble — matches the "attachment has its own
+  // background" treatment given to file/voice attachments below.
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.imageSkeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    rgba(0, 0, 0, 0.06) 30%,
+    rgba(0, 0, 0, 0.1) 50%,
+    rgba(0, 0, 0, 0.06) 70%
+  );
+  background-size: 200% 100%;
+  animation: imageSkeletonShimmer 1.3s ease-in-out infinite;
+}
+
+@keyframes imageSkeletonShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 .imageAttachment {
   display: block;
   max-width: 240px;
   max-height: 240px;
   width: 100%;
   height: auto;
-  border-radius: 10px;
   object-fit: cover;
   cursor: zoom-in;
-}
-
-.audioAttachment {
-  display: block;
-  max-width: 260px;
-  width: 100%;
-  height: 36px;
+  transition: opacity 0.2s ease;
 }
 
 .fileAttachment {
@@ -76,12 +102,26 @@
   max-width: 260px;
   padding: 8px 10px;
   border-radius: 12px;
-  background: rgba(0, 0, 0, 0.06);
   color: inherit;
   text-decoration: none;
   transition: background 0.15s;
+}
 
-  &:hover { background: rgba(0, 0, 0, 0.1); }
+// Distinct, theme-stable backgrounds instead of a same-color tint of
+// whatever bubble the attachment happens to sit in (previously
+// rgba(0,0,0,0.06) on `.bubbleOther`'s own near-white background — nearly
+// invisible). `.fileAttachmentOther` sits on the light `.bubbleOther`
+// bubble, `.fileAttachmentMine` on the solid-purple `.bubbleMine` one.
+.fileAttachmentOther {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  &:hover { background: #fafafa; }
+}
+
+.fileAttachmentMine {
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  &:hover { background: rgba(255, 255, 255, 0.22); }
 }
 
 .fileAttachmentIcon {
@@ -91,8 +131,14 @@
   width: 30px;
   height: 30px;
   border-radius: 8px;
-  background: rgba(0, 0, 0, 0.08);
+  background: rgba(83, 74, 183, 0.1);
+  color: #534AB7;
   flex-shrink: 0;
+}
+
+.fileAttachmentMine .fileAttachmentIcon {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
 }
 
 .fileAttachmentInfo {
@@ -136,9 +182,27 @@
   .bubbleMine { background: #4c47a8; color: #fff; }
   .bubbleOther { background: #23263a; color: #e8eaf0; }
 
-  .fileAttachment {
-    background: rgba(255, 255, 255, 0.1);
-    &:hover { background: rgba(255, 255, 255, 0.16); }
+  .imageFrame { background: rgba(255, 255, 255, 0.06); }
+  .imageSkeleton {
+    background: linear-gradient(
+      100deg,
+      rgba(255, 255, 255, 0.05) 30%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0.05) 70%
+    );
+    background-size: 200% 100%;
   }
-  .fileAttachmentIcon { background: rgba(255, 255, 255, 0.12); }
+
+  .fileAttachmentOther {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.1);
+    &:hover { background: rgba(255, 255, 255, 0.13); }
+  }
+  .fileAttachmentMine {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.2);
+    &:hover { background: rgba(255, 255, 255, 0.2); }
+  }
+  .fileAttachmentIcon { background: rgba(129, 140, 248, 0.16); color: #a5b4fc; }
+  .fileAttachmentMine .fileAttachmentIcon { background: rgba(255, 255, 255, 0.18); color: #fff; }
 }

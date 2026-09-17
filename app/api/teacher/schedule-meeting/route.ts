@@ -1,4 +1,7 @@
 import { prisma } from '@/shared/prisma/prisma'
+import { createNotification } from '@/shared/lib/notifications'
+import { tplMeetingScheduled } from '@/shared/lib/notificationTemplates'
+import { postEventCard } from '@/shared/lib/chat/access'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
 
@@ -74,6 +77,39 @@ export async function POST(req: NextRequest) {
         },
       },
     })
+
+    // Notification + chat event card — same pattern as homework/personal-service
+    // (createNotification + postEventCard side by side, both best-effort so a
+    // notification/chat hiccup never fails the meeting creation itself, which
+    // already succeeded above).
+    const whenFormatted = meetingTime.toLocaleString('ru-RU', {
+      day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit',
+    })
+    const teacherName = session.user.name ?? 'Преподаватель'
+
+    createNotification({
+      type: 'MEETING_SCHEDULED',
+      ...tplMeetingScheduled(teacherName, title.trim(), whenFormatted),
+      payload: {
+        conferenceId: conference.id,
+        roomName: conference.roomName,
+        title: title.trim(),
+        scheduledAt: meetingTime.toISOString(),
+      },
+      studentId,
+    }).catch(e => console.error('[POST /api/teacher/schedule-meeting] createNotification failed', e))
+
+    postEventCard({
+      teacherId,
+      studentId,
+      eventType: 'MEETING_SCHEDULED',
+      payload: {
+        teacherName,
+        title: title.trim(),
+        scheduledAt: meetingTime.toISOString(),
+        roomName: conference.roomName,
+      },
+    }).catch(e => console.error('[POST /api/teacher/schedule-meeting] postEventCard failed', e))
 
     return NextResponse.json({ id: conference.id, roomName: conference.roomName })
   } catch (e: any) {
