@@ -1,0 +1,259 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.45);
+  padding: 16px;
+}
+
+.modal {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 400px;
+  max-width: 100%;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  padding: 18px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.28);
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 140px;
+  padding: 16px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 10px;
+  color: #64748b;
+  font-size: 13px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    border-color: #94a3b8;
+    background: #f8fafc;
+  }
+}
+
+.dropzoneActive {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.dropzoneIcon {
+  font-size: 28px;
+}
+
+.fileInput {
+  display: none;
+}
+
+.previewWrap {
+  position: relative;
+  align-self: center;
+}
+
+.preview {
+  max-width: 100%;
+  max-height: 240px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  display: block;
+}
+
+.previewClear {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #475569;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
+
+  &:hover {
+    background: #f1f5f9;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.descriptionInput {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #1e293b;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &::placeholder {
+    color: #94a3b8;
+  }
+
+  &:focus {
+    border-color: #2563eb;
+    background: #fff;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+.candidates {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.candidatesHint {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.candidateItem {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #1e293b;
+  font-size: 13px;
+  font-family: ui-monospace, monospace;
+  text-align: left;
+  cursor: pointer;
+  overflow-wrap: break-word;
+
+  &:hover {
+    border-color: #2563eb;
+    background: #eff6ff;
+  }
+}
+
+.error {
+  font-size: 12px;
+  color: #dc2626;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.cancel, .recognize {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: opacity 0.15s ease;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.cancel {
+  background: transparent;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+.recognize {
+  background: #2563eb;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+}
+
+// ── Dark theme ────────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .modal {
+    background: #1a1826;
+  }
+  .title {
+    color: #e8eaf0;
+  }
+  .dropzone {
+    border-color: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.6);
+
+    &:hover {
+      border-color: rgba(255, 255, 255, 0.35);
+      background: rgba(255, 255, 255, 0.04);
+    }
+  }
+  .dropzoneActive {
+    border-color: #818cf8;
+    background: rgba(129, 140, 248, 0.12);
+  }
+  .preview {
+    border-color: rgba(255, 255, 255, 0.16);
+  }
+  .previewClear {
+    background: #241f36;
+    border-color: rgba(255, 255, 255, 0.16);
+    color: rgba(255, 255, 255, 0.8);
+
+    &:hover { background: rgba(255, 255, 255, 0.1); }
+  }
+  .descriptionInput {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.16);
+    color: #e8eaf0;
+
+    &:focus {
+      border-color: #818cf8;
+    }
+  }
+  .candidatesHint {
+    color: rgba(255, 255, 255, 0.6);
+  }
+  .candidateItem {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.16);
+    color: #e8eaf0;
+
+    &:hover {
+      border-color: #818cf8;
+      background: rgba(129, 140, 248, 0.12);
+    }
+  }
+  .cancel {
+    border-color: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.8);
+  }
+}

@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import 'mathlive/static.css'
 import { useThemeCtx } from '@/app/providers/ThemeContext'
+import { FormulaPhotoModal } from './FormulaPhotoModal'
 import { INK_PALETTE } from './shapeGeometry'
 import styles from './FormulaKeyboard.module.scss'
 
@@ -44,6 +45,7 @@ export function FormulaKeyboard({ initialLatex, initialColor, onInsert, onClose,
   const [aiPrompt, setAiPrompt] = useState('')
   const [generating, setGenerating] = useState(false)
   const [color, setColor] = useState(initialColor ?? (isDark ? '#ececec' : '#1e1e1e'))
+  const [photoModalOpen, setPhotoModalOpen] = useState(false)
   const canUseAi = !!isVip || !!isAdmin
 
   useEffect(() => {
@@ -154,6 +156,22 @@ export function FormulaKeyboard({ initialLatex, initialColor, onInsert, onClose,
     }
   }, [aiPrompt, generating, roomName])
 
+  const handlePhotoToggle = useCallback(() => {
+    if (!canUseAi) {
+      toast.error('Распознавание формул с фото доступно только для VIP')
+      return
+    }
+    setPhotoModalOpen(true)
+  }, [canUseAi])
+
+  const handlePhotoRecognized = useCallback((latex: string) => {
+    if (fieldRef.current) {
+      fieldRef.current.value = latex
+      setIsEmpty(!latex.trim())
+    }
+    setPhotoModalOpen(false)
+  }, [])
+
   return (
     <div className={styles.panel}>
       <div className={styles.field} ref={containerRef} />
@@ -164,7 +182,18 @@ export function FormulaKeyboard({ initialLatex, initialColor, onInsert, onClose,
           Создать формулу с ИИ
           {!canUseAi && <span className={styles.vipBadge}>VIP</span>}
         </button>
+        <button type="button" className={styles.aiToggle} onClick={handlePhotoToggle}>
+          📷 Фото → формула
+          {!canUseAi && <span className={styles.vipBadge}>VIP</span>}
+        </button>
       </div>
+      {photoModalOpen && (
+        <FormulaPhotoModal
+          roomName={roomName}
+          onRecognized={handlePhotoRecognized}
+          onClose={() => setPhotoModalOpen(false)}
+        />
+      )}
       {aiOpen && (
         <div className={styles.aiPanel}>
           <input
