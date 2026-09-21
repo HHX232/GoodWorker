@@ -41,6 +41,28 @@ interface Props {
 const MAGNET_CAPTURE_PX = 16
 const MAGNET_RELEASE_PX = 26
 const EDGE_SNAP_PX = 13
+// How much the previous magnet point gets to "cheat" its own distance by
+// when competing against a fresh candidate — enough to stay locked through
+// small jitter, not enough to trap the cursor. Two magnet points can sit
+// closer together on screen than MAGNET_RELEASE_PX itself (e.g. two cube
+// vertices ~25px apart under some rotations, barely under the 26px release
+// radius) — an unconditional "stay within release radius" rule then kept
+// the FIRST one captured even once the cursor was sitting right on top of
+// the second, since the check only measured distance back to the first.
+const STICKINESS_BONUS_PX = 8
+// How much a magnet point gets to "cheat" its own distance by against an
+// edge/line candidate. A shape edge (or a construction line) is a
+// CONTINUOUS segment that passes right through its own vertex/midpoint, so
+// for any cursor position that isn't perfectly radially aligned with that
+// point, the segment's nearest point is geometrically closer than the
+// discrete point itself (Pythagoras: hypotenuse > leg) — a pure "closest
+// wins" comparison between them then has the edge win almost everywhere
+// except a razor-thin approach angle, so the magnet basically never fires
+// and the cursor just slides continuously along the edge instead. This
+// bonus gives the magnet real "gravity" within a reasonable margin, while
+// staying small enough that a cursor clearly further along a line (not
+// near its vertex end) still reaches the line, not the vertex.
+const MAGNET_PREFERENCE_PX = 10
 
 interface DrawState {
   start: Point
@@ -52,35 +74,53 @@ interface DrawState {
 /** Resolves the live draw-cursor position against magnet points, the
  * nearest shape edge, and the nearest EXISTING construction line (so one
  * construction can be built starting/ending on another, not just on the
- * shape itself) — with hysteresis via `prevSnap` — and picks whichever
- * candidate is actually closest to the cursor, rather than letting a magnet
- * within its (larger) capture radius always win even when an edge or line
- * sits right under the cursor and a vertex/midpoint is only incidentally
- * nearby. Falls back to a free unbound point if nothing is in range. */
+ * shape itself) — with hysteresis via `prevSnap`. Each candidate competes
+ * by an "effective" distance rather than raw distance: magnet gets a
+ * preference bonus (see MAGNET_PREFERENCE_PX) so it reliably wins near its
+ * own point despite the edge/line passing through that exact point always
+ * being geometrically a little closer off-axis, and the previous magnet
+ * gets a smaller stickiness bonus. Falls back to a free unbound point if
+ * nothing is in range. */
 function resolveDrawPoint(point: Point, prevSnap: SnapCandidate | null, snapPoints: SnapCandidate[], edgeSegments: EdgeSegmentCandidate[], lineSegments: LineSegmentCandidate[], zoom: number): SnapCandidate | null {
-  if (prevSnap && prevSnap.ref.kind !== 'edgePoint' && prevSnap.ref.kind !== 'linePoint') {
-    const stillNear = Math.hypot(point.x - prevSnap.x, point.y - prevSnap.y) * zoom <= MAGNET_RELEASE_PX
-    if (stillNear) return prevSnap
-  }
   const magnet = findNearestSnapPoint(point, snapPoints, MAGNET_CAPTURE_PX, zoom)
   const edgeSlide = findNearestEdgePoint(point, edgeSegments, EDGE_SNAP_PX, zoom)
   const lineSlide = findNearestLinePoint(point, lineSegments, EDGE_SNAP_PX, zoom)
-  const candidates = [magnet, edgeSlide, lineSlide].filter((c): c is SnapCandidate => c !== null)
-  if (candidates.length === 0) return null
+
+  const weighted: { candidate: SnapCandidate; effectiveDist: number }[] = []
+  if (magnet) {
+    const dist = Math.hypot(point.x - magnet.x, point.y - magnet.y)
+    weighted.push({ candidate: magnet, effectiveDist: Math.max(0, dist - MAGNET_PREFERENCE_PX / zoom) })
+  }
+  if (edgeSlide) weighted.push({ candidate: edgeSlide, effectiveDist: Math.hypot(point.x - edgeSlide.x, point.y - edgeSlide.y) })
+  if (lineSlide) weighted.push({ candidate: lineSlide, effectiveDist: Math.hypot(point.x - lineSlide.x, point.y - lineSlide.y) })
+
+  // The previous magnet point stays in the running (a "sticky" candidate)
+  // as long as the cursor is still within its release radius, but it has
+  // to keep WINNING by effective distance (with its own, smaller bonus for
+  // the stay-put feel), not win automatically. An unconditional "still
+  // within release radius, so stay" rule broke down when two magnet points
+  // sat closer together on screen than the release radius itself (e.g. two
+  // cube vertices ~25px apart under some rotations, just under the 26px
+  // release radius) — the cursor got captured by the first one it passed
+  // near and couldn't reach the second even while sitting right on it,
+  // since the check only ever measured distance back to the first.
+  if (prevSnap && prevSnap.ref.kind !== 'edgePoint' && prevSnap.ref.kind !== 'linePoint') {
+    const dist = Math.hypot(point.x - prevSnap.x, point.y - prevSnap.y)
+    if (dist * zoom <= MAGNET_RELEASE_PX) {
+      weighted.push({ candidate: prevSnap, effectiveDist: Math.max(0, dist - STICKINESS_BONUS_PX / zoom) })
+    }
+  }
+
+  if (weighted.length === 0) return null
   // A vertex/midpoint sits exactly ON its own edge, so `magnet` and
   // `edgeSlide` land on the same physical point there — but each is computed
   // through a different code path (a discrete candidate list vs. a
   // continuous segment projection), so floating-point noise alone can make
-  // one appear a fraction of a unit "closer" than the other. Without this
-  // slack, that coin flip silently downgraded a real vertex snap into an
-  // edgePoint-at-t≈0 snap, which then lost the magnet's hysteresis (the
-  // stillNear check above excludes edgePoint/linePoint on purpose) — so a
-  // point that visually looked snapped stopped feeling sticky, especially
-  // on a second approach after the cursor had wandered off and back.
+  // one appear a fraction of a unit "closer" than the other; TIE_EPSILON
+  // keeps that coin flip from mattering (magnet is listed first, so it wins
+  // ties/near-ties outright).
   const TIE_EPSILON = 1e-3
-  return candidates.reduce((best, c) => (
-    Math.hypot(point.x - c.x, point.y - c.y) < Math.hypot(point.x - best.x, point.y - best.y) - TIE_EPSILON ? c : best
-  ))
+  return weighted.reduce((best, c) => (c.effectiveDist < best.effectiveDist - TIE_EPSILON ? c : best)).candidate
 }
 
 export function ShapeInteractionLayer({ elements, viewTransform, constructionMode, onInsertLine, onInsertZoneLine }: Props) {

@@ -53,6 +53,11 @@ const TemplatesModal = dynamic(
 )
 
 const DEFAULT_ZONE_SIZE = 220
+// Reserved space below a toolbar popover's own measured bottom edge — the
+// call page's controlbar isn't something we can measure directly (its
+// height/markup belongs to VideoCallPage, out of scope here), so this is a
+// generous fixed guess wide enough to comfortably clear it.
+const CONTROLBAR_CLEARANCE_PX = 140
 const GRID_STORAGE_KEY = 'whiteboard:gridSettings'
 const GRID_STYLES = new Set(['squares', 'dots', 'lines', 'off'])
 const DEFAULT_ZOOM: Zoom = { value: 1 as AppState['zoom']['value'] }
@@ -159,7 +164,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
   // Selection/hand tool → zones keep grabbing drags for rotate/edge-pick.
   // Any drawing tool → zones let clicks through so it can draw over the shape.
   const [activeToolType, setActiveToolType] = useState<AppState['activeTool']['type']>('selection')
-  const [popoverPos, setPopoverPos] = useState<{ top: number; left: number } | null>(null)
+  const [popoverPos, setPopoverPos] = useState<{ top: number; left: number; maxHeight: number } | null>(null)
   const [templatesModalOpen, setTemplatesModalOpen] = useState(false)
   const [creatingTemplateName, setCreatingTemplateName] = useState<string | null>(null)
   const [savingTemplate, setSavingTemplate] = useState(false)
@@ -179,11 +184,26 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
   // position and rendering the popover `position: fixed` (in CallWhiteboard
   // .module.scss) escapes both ancestors entirely, same technique already
   // used for the in-canvas edge/line color popovers.
+  //
+  // maxHeight is computed here too, not as a flat `calc(100vh - Npx)` in
+  // CSS — that assumed the popover always starts near the very top of the
+  // viewport, so a fixed subtrahend was "room below the toolbar". Once
+  // popoverPos.top itself moved (a taller call layout, a narrower window
+  // wrapping the shape picker's buttons onto a 3rd row, etc.), the flat CSS
+  // constant no longer related to where the popover actually starts, and it
+  // could still stretch past the bottom of the viewport — straight onto the
+  // call's controlbar — even though a max-height rule was technically in
+  // place. Deriving it from the real measured top keeps the popover's own
+  // bottom edge pinned a fixed CONTROLBAR_CLEARANCE_PX above the viewport
+  // bottom regardless of where it started.
   useLayoutEffect(() => {
     if (!activePopover) return
     const measure = () => {
       const rect = formulaWrapRef.current?.getBoundingClientRect()
-      if (rect) setPopoverPos({ top: rect.bottom + 6, left: rect.left })
+      if (!rect) return
+      const top = rect.bottom + 6
+      const maxHeight = Math.max(120, window.innerHeight - top - CONTROLBAR_CLEARANCE_PX)
+      setPopoverPos({ top, left: rect.left, maxHeight })
     }
     measure()
     window.addEventListener('resize', measure)
@@ -901,7 +921,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
             </button>
           </div>
           {activePopover === 'formula' && (
-            <div className={styles.formulaPopover} style={popoverPos ? { top: popoverPos.top, left: popoverPos.left } : undefined}>
+            <div className={styles.formulaPopover} style={popoverPos ? { top: popoverPos.top, left: popoverPos.left, maxHeight: popoverPos.maxHeight } : undefined}>
               <FormulaKeyboard
                 initialLatex={editingFormula?.latex}
                 initialColor={editingFormula?.color}
@@ -919,7 +939,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
             </div>
           )}
           {activePopover === 'grid' && (
-            <div className={styles.formulaPopover} style={popoverPos ? { top: popoverPos.top, left: popoverPos.left } : undefined}>
+            <div className={styles.formulaPopover} style={popoverPos ? { top: popoverPos.top, left: popoverPos.left, maxHeight: popoverPos.maxHeight } : undefined}>
               <GridSettingsPanel
                 settings={gridSettings}
                 onChange={setGridSettings}
@@ -928,7 +948,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
             </div>
           )}
           {activePopover === '3d' && (
-            <div className={styles.formulaPopover} style={popoverPos ? { top: popoverPos.top, left: popoverPos.left } : undefined}>
+            <div className={styles.formulaPopover} style={popoverPos ? { top: popoverPos.top, left: popoverPos.left, maxHeight: popoverPos.maxHeight } : undefined}>
               <ThreeDPanel
                 initial={editingShape?.zone}
                 onInsert={handleInsertShape}

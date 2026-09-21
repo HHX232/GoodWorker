@@ -46,6 +46,7 @@ interface Props {
 
 const PICK_THRESHOLD_PX = 8
 const ANGLE_PICK_THRESHOLD_PX = 12
+const ANGLE_VERTEX_PICK_PX = 22
 const MIN_ZONE_SIZE = 60
 
 function colorFor(edgeIndex: number, zone: ThreeDZone, isDark: boolean): THREE.Color {
@@ -591,13 +592,19 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
     return best && best.dist <= ANGLE_PICK_THRESHOLD_PX ? best : null
   }, [canvasWidth, canvasHeight, zone.vertexMarks])
 
-  // Angle-mode picking: finds whichever "arm" (a shape edge or a
-  // construction line) is screen-closest to the click, then — among every
-  // other arm sharing an endpoint with it — whichever of THOSE is closest,
-  // so the two arms actually nearest the click become the angle. Works for
-  // any combination of edge/line arms, not just two shape edges meeting at
-  // one of the shape's own corners (the old face-raycast approach could
-  // only ever pick 2 of a corner's edges, never a construction line).
+  // Angle-mode picking, in two steps: find the junction (a point where 2+
+  // arms — shape edges and/or construction lines — meet) nearest the
+  // click, then pick whichever two of ITS arms point in the directions
+  // closest to the click's own direction from that junction. Picking by
+  // angle-from-junction, not by which arm's segment is nearest the click,
+  // is what makes this symmetric between edges and construction lines: an
+  // earlier "nearest arm, then a partner sharing its endpoint" version
+  // structurally favored edges at any vertex where several converge (a
+  // cube corner has 3) — with 3 candidate edges and only 1 line, some edge
+  // was very often marginally closer to the click than the line even when
+  // the user was clearly aiming between the line and an edge. Angle from
+  // the junction doesn't have that bias: it only asks which wedge the
+  // click fell into.
   const buildArmCandidates = useCallback((): { arm: AngleArm; p1: THREE.Vector3; p2: THREE.Vector3 }[] => {
     const topology = edgeTopologyRef.current
     const faces = faceTopologyRef.current
@@ -615,19 +622,47 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
     const group = groupRef.current
     const camera = cameraRef.current
     if (!group || !camera) return null
-    const candidates = buildArmCandidates().map(c => {
-      const s1 = projectPoint(c.p1, group, camera, canvasWidth, canvasHeight)
-      const s2 = projectPoint(c.p2, group, camera, canvasWidth, canvasHeight)
-      return { ...c, s1, s2, dist: distanceToSegment({ x: localX, y: localY }, s1, s2) }
-    })
-    candidates.sort((a, b) => a.dist - b.dist)
-    const nearest = candidates[0]
-    if (!nearest || nearest.dist > PICK_THRESHOLD_PX) return null
-    const distToP1 = Math.hypot(localX - nearest.s1.x, localY - nearest.s1.y)
-    const distToP2 = Math.hypot(localX - nearest.s2.x, localY - nearest.s2.y)
-    const sharedPoint = distToP1 <= distToP2 ? nearest.p1 : nearest.p2
-    const second = candidates.find(c => c !== nearest && (c.p1.distanceTo(sharedPoint) < 0.01 || c.p2.distanceTo(sharedPoint) < 0.01))
-    return second ? { armA: nearest.arm, armB: second.arm } : null
+    const arms = buildArmCandidates()
+    if (arms.length === 0) return null
+
+    // Every arm endpoint is a junction candidate — dedupe by 3D position
+    // (an endpoint shared by several arms should only be considered once).
+    const junctions: THREE.Vector3[] = []
+    for (const arm of arms) {
+      for (const p of [arm.p1, arm.p2]) {
+        if (!junctions.some(j => j.distanceTo(p) < 0.01)) junctions.push(p)
+      }
+    }
+
+    let nearestJunction: { point: THREE.Vector3; screen: { x: number; y: number }; dist: number } | null = null
+    for (const j of junctions) {
+      const screen = projectPoint(j, group, camera, canvasWidth, canvasHeight)
+      const dist = Math.hypot(localX - screen.x, localY - screen.y)
+      if (!nearestJunction || dist < nearestJunction.dist) nearestJunction = { point: j, screen, dist }
+    }
+    if (!nearestJunction || nearestJunction.dist > ANGLE_VERTEX_PICK_PX) return null
+
+    // Every arm touching that junction, as a direction (screen angle,
+    // pointing away from the junction toward its far end).
+    const armsAtJunction = arms
+      .map(arm => {
+        const atP1 = arm.p1.distanceTo(nearestJunction!.point) < 0.01
+        const atP2 = arm.p2.distanceTo(nearestJunction!.point) < 0.01
+        if (!atP1 && !atP2) return null
+        const farScreen = projectPoint(atP1 ? arm.p2 : arm.p1, group, camera, canvasWidth, canvasHeight)
+        const angle = Math.atan2(farScreen.y - nearestJunction!.screen.y, farScreen.x - nearestJunction!.screen.x)
+        return { arm: arm.arm, angle }
+      })
+      .filter((x): x is { arm: AngleArm; angle: number } => x !== null)
+    if (armsAtJunction.length < 2) return null
+
+    const clickAngle = Math.atan2(localY - nearestJunction.screen.y, localX - nearestJunction.screen.x)
+    const angleDiff = (a: number, b: number) => {
+      const d = Math.abs(a - b) % (Math.PI * 2)
+      return d > Math.PI ? Math.PI * 2 - d : d
+    }
+    const byClosestDirection = [...armsAtJunction].sort((a, b) => angleDiff(a.angle, clickAngle) - angleDiff(b.angle, clickAngle))
+    return { armA: byClosestDirection[0].arm, armB: byClosestDirection[1].arm }
   }, [buildArmCandidates, canvasWidth, canvasHeight])
 
   // Rotate is the default gesture on the shape body — no mode to enter first.
