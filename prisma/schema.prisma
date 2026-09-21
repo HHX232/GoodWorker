@@ -60,6 +60,8 @@ model Student {
   referralCode           String?          @unique
   paymentReminderSettings PaymentReminderSetting[]
   conversationsAsStudent Conversation[]
+  balanceCents           Int              @default(0)
+  walletTransactions     WalletTransaction[]
 }
 
 model Teacher {
@@ -109,6 +111,8 @@ model Teacher {
   paymentReminderSettings PaymentReminderSetting[]
   conversationsAsTeacher Conversation[]
   whiteboardTemplates     WhiteboardTemplate[]
+  balanceCents            Int                 @default(0)
+  walletTransactions      WalletTransaction[]
 
   @@index([isVip, createdAt])
 }
@@ -835,6 +839,32 @@ enum Role {
   STUDENT
   TEACHER
   ADMIN
+}
+
+enum WalletTransactionType {
+  DEPOSIT
+  AI_DEBIT
+}
+
+/// Money ledger for the AI-usage wallet — separate from VipTransaction, which
+/// records VIP-days grants (promo/referral/deposit-bonus), not money.
+model WalletTransaction {
+  id                String                @id @default(uuid())
+  teacherId         String?
+  studentId         String?
+  userRole          Role
+  type              WalletTransactionType
+  amountCents       Int
+  balanceAfterCents Int
+  endpoint          String?
+  shortfallCents    Int?
+  description       String
+  createdAt         DateTime              @default(now())
+  teacher           Teacher?              @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  student           Student?              @relation(fields: [studentId], references: [id], onDelete: SetNull)
+
+  @@index([teacherId, createdAt])
+  @@index([studentId, createdAt])
 }
 
 enum PromoRewardType {

@@ -9,6 +9,19 @@ const TIMEOUT_MS  = 120_000
 
 type Provider = 'deepseek' | 'openrouter'
 
+// Real per-call token usage, captured from DeepSeek's final SSE chunk
+// (`stream_options: {include_usage: true}`) — the input to wallet/pricing.ts's
+// computeCostCents(). null when the provider didn't return usage at all (the
+// free OpenRouter fallback, or a malformed/missing usage field) — callers
+// then treat the call's cost as $0, never guess.
+export type AIUsage = {
+  promptCacheHitTokens: number
+  promptCacheMissTokens: number
+  completionTokens: number
+} | null
+
+export type AIResult = { content: string; usage: AIUsage }
+
 function getProvider(): Provider {
   return process.env.DEEPSEEK_API_KEY ? 'deepseek' : 'openrouter'
 }
@@ -33,6 +46,7 @@ function buildRequest(systemPrompt: string, userPrompt: string, opts: { temperat
         ...(opts.maxTokens ? { max_tokens: opts.maxTokens } : {}),
         response_format: { type: 'json_object' },
         stream: true,
+        stream_options: { include_usage: true },
       }),
     }
   }
@@ -89,6 +103,7 @@ function buildVisionRequest(
       ...(opts.maxTokens ? { max_tokens: opts.maxTokens } : {}),
       response_format: { type: 'json_object' },
       stream: true,
+      stream_options: { include_usage: true },
     }),
   }
 }
@@ -97,7 +112,7 @@ export async function callAI(
   systemPrompt: string,
   userPrompt: string,
   opts: { temperature?: number; maxTokens?: number } = {},
-): Promise<string> {
+): Promise<AIResult> {
   const provider = getProvider()
   if (provider === 'deepseek' && !process.env.DEEPSEEK_API_KEY) throw new Error('DEEPSEEK_API_KEY is not set')
   if (provider === 'openrouter' && !process.env.OPENROUTER_API_KEY) throw new Error('OPENROUTER_API_KEY is not set')
@@ -106,7 +121,10 @@ export async function callAI(
   const promptPreview = userPrompt.slice(0, 120).replace(/\n/g, ' ')
   console.log(`[AI] provider=${provider} prompt="${promptPreview}..."`)
 
-  return sendChatRequest(endpoint, headers, body, provider)
+  const result = await sendChatRequest(endpoint, headers, body, provider)
+  // The free OpenRouter fallback isn't asked for usage and its cost is
+  // unknown/uncharged either way — never surface a stray usage value for it.
+  return provider === 'deepseek' ? result : { content: result.content, usage: null }
 }
 
 // DeepSeek-only: the free OpenRouter fallback model has no vision support, so
@@ -116,7 +134,7 @@ export async function callVisionAI(
   images: VisionImage[],
   userPrompt: string,
   opts: { temperature?: number; maxTokens?: number } = {},
-): Promise<string> {
+): Promise<AIResult> {
   if (!process.env.DEEPSEEK_API_KEY) throw new Error('DEEPSEEK_API_KEY is not set — photo analysis requires the DeepSeek vision model')
 
   const { endpoint, headers, body } = buildVisionRequest(systemPrompt, images, userPrompt, opts)
@@ -125,7 +143,7 @@ export async function callVisionAI(
   return sendChatRequest(endpoint, headers, body, 'deepseek-vision')
 }
 
-async function sendChatRequest(endpoint: string, headers: Record<string, string>, body: string, providerLabel: string): Promise<string> {
+async function sendChatRequest(endpoint: string, headers: Record<string, string>, body: string, providerLabel: string): Promise<AIResult> {
   for (let attempt = 0; attempt < 3; attempt++) {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(new Error(`AI timed out after ${TIMEOUT_MS / 1000}s`)), TIMEOUT_MS)
@@ -157,11 +175,11 @@ async function sendChatRequest(endpoint: string, headers: Record<string, string>
     }
 
     try {
-      const content = await readStream(res)
+      const { content, usage } = await readStream(res)
       clearTimeout(timer)
       if (!content) throw new Error(`${providerLabel} returned empty content`)
       console.log(`[AI] ok attempt=${attempt + 1} ms=${Date.now() - t0} chars=${content.length}`)
-      return content
+      return { content, usage }
     } catch (err) {
       clearTimeout(timer)
       const msg = (err as Error).message ?? ''
@@ -177,11 +195,12 @@ async function sendChatRequest(endpoint: string, headers: Record<string, string>
   throw new Error(`${providerLabel}: all retries exhausted`)
 }
 
-async function readStream(res: Response): Promise<string> {
+async function readStream(res: Response): Promise<AIResult> {
   const reader = res.body!.getReader()
   const decoder = new TextDecoder()
   let content = ''
   let buf = ''
+  let usage: AIUsage = null
 
   while (true) {
     const { done, value } = await reader.read()
@@ -194,17 +213,31 @@ async function readStream(res: Response): Promise<string> {
     for (const line of lines) {
       if (!line.startsWith('data: ')) continue
       const data = line.slice(6).trim()
-      if (data === '[DONE]') return content
+      if (data === '[DONE]') return { content, usage }
       try {
         const parsed = JSON.parse(data)
         content += parsed.choices?.[0]?.delta?.content ?? ''
+        // Final SSE chunk (from stream_options.include_usage) carries a
+        // `usage` object instead of a `choices[].delta` — DeepSeek splits
+        // prompt tokens into cache hit/miss; when it doesn't, the whole
+        // prompt_tokens counts as cache-miss (worse case, never cheaper
+        // than reality).
+        if (parsed.usage) {
+          const u = parsed.usage
+          const hit = typeof u.prompt_cache_hit_tokens === 'number' ? u.prompt_cache_hit_tokens : 0
+          const miss = typeof u.prompt_cache_miss_tokens === 'number'
+            ? u.prompt_cache_miss_tokens
+            : (typeof u.prompt_tokens === 'number' ? u.prompt_tokens : 0)
+          const completion = typeof u.completion_tokens === 'number' ? u.completion_tokens : 0
+          usage = { promptCacheHitTokens: hit, promptCacheMissTokens: miss, completionTokens: completion }
+        }
       } catch {
         // ignore malformed SSE chunks
       }
     }
   }
 
-  return content
+  return { content, usage }
 }
 
 function sleep(ms: number) {
