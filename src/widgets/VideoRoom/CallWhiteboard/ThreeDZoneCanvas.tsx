@@ -182,27 +182,32 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
     onSelectionChange(target)
   }, [onSelectionChange])
 
-  // Delete/Backspace/Esc deletes the currently-selected line or angle mark —
+  // Delete/Backspace deletes the currently-selected line or angle mark —
   // edges are intrinsic to the shape (only recolorable, never deleted), so
   // this only fires for 'line'/'vertex' picks, matching the popover's own
-  // delete button being shown only for those two kinds; Esc additionally
-  // just deselects an edge pick (nothing to delete there, but it should
-  // still clear on Esc same as any other selection). Ignored while typing
-  // in the label input (that input closes the picker before it opens
-  // anyway, but the DOM-focus check guards it defensively too).
+  // delete button being shown only for those two kinds. Escape ALWAYS just
+  // deselects, for any picker kind — it's the same key used to dismiss the
+  // recolor popover that opens right after a click creates a new line or
+  // angle mark, so treating it as delete-equivalent silently destroyed
+  // whatever the user had just drawn the moment they closed that popover.
+  // Ignored while typing in the label input (that input closes the picker
+  // before it opens anyway, but the DOM-focus check guards it defensively
+  // too).
   useEffect(() => {
     if (!picker) return
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Delete' && e.key !== 'Backspace' && e.key !== 'Escape') return
       const target = e.target as HTMLElement | null
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return
+      if (e.key === 'Escape') {
+        setPicker(null)
+        return
+      }
       if (picker.kind === 'line') {
         onLineDelete(picker.lineId)
         setPicker(null)
       } else if (picker.kind === 'vertex') {
         onVertexMarkDelete(picker.armA, picker.armB)
-        setPicker(null)
-      } else if (e.key === 'Escape') {
         setPicker(null)
       }
     }
