@@ -292,16 +292,23 @@ export function resolveAngleGeometry(topology: EdgeTopology[], faces: FaceTopolo
  * for hit-testing/label placement. */
 export function buildAngleArcPoints(vertex: THREE.Vector3, dirA: THREE.Vector3, dirB: THREE.Vector3, axis: THREE.Vector3, radius: number, segments = 10): THREE.Vector3[] {
   const angle = dirA.angleTo(dirB)
-  if (angle < 1e-4) return []
+  if (angle < 1e-4 || angle > Math.PI - 1e-4) return []
   // Right-hand rule: rotating dirA by +angle around (dirA × dirB) lands
   // exactly on dirB. `axis` (the face normal) may point either way relative
   // to that, so match its sign via the dot product rather than guessing.
   const cross = dirA.clone().cross(dirB)
   const sign = cross.dot(axis) >= 0 ? 1 : -1
+  // applyAxisAngle needs a UNIT axis — dirA × dirB has length sin(angle),
+  // which is 1 only when the two arms happen to meet at exactly 90°; at any
+  // other angle the un-normalized cross fed straight into applyAxisAngle
+  // under-/over-rotates, so the arc's far end lands off dirB instead of on
+  // it (the more so the further the real angle is from 90°) — the mark
+  // visibly failed to reach the second arm it's supposed to sit between.
+  const rotationAxis = cross.normalize()
   const points: THREE.Vector3[] = [vertex.clone().addScaledVector(dirA, radius)]
   for (let i = 1; i <= segments; i++) {
     const t = (i / segments) * angle * sign
-    const dir = dirA.clone().applyAxisAngle(axis, t)
+    const dir = dirA.clone().applyAxisAngle(rotationAxis, t)
     points.push(vertex.clone().addScaledVector(dir, radius))
   }
   return points
