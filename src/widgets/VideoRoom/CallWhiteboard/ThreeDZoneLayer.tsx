@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react'
 import type { ExcalidrawElement } from '@excalidraw/excalidraw/element/types'
 import type { Zoom } from '@excalidraw/excalidraw/types'
-import { getAllZones, type ZoneSelection } from './shapeGeometry'
+import { getAllZones, type AngleArm, type ZoneSelection } from './shapeGeometry'
 import { ThreeDZoneCanvas } from './ThreeDZoneCanvas'
 import styles from './ThreeDZoneLayer.module.scss'
 
@@ -24,9 +24,9 @@ interface Props {
   onRotationCommit: (zoneElementId: string, rotationX: number, rotationY: number, rotationZ: number) => void
   onEdgeColorChange: (zoneElementId: string, edgeIndex: number, color: string) => void
   onEdgeLabelChange: (zoneElementId: string, edgeIndex: number, text: string) => void
-  onVertexMarkUpsert: (zoneElementId: string, faceIndex: number, edgeIndexA: number, edgeIndexB: number, color: string) => void
-  onVertexMarkLabelChange: (zoneElementId: string, faceIndex: number, edgeIndexA: number, edgeIndexB: number, text: string) => void
-  onVertexMarkDelete: (zoneElementId: string, faceIndex: number, edgeIndexA: number, edgeIndexB: number) => void
+  onVertexMarkUpsert: (zoneElementId: string, armA: AngleArm, armB: AngleArm, color: string) => void
+  onVertexMarkLabelChange: (zoneElementId: string, armA: AngleArm, armB: AngleArm, text: string) => void
+  onVertexMarkDelete: (zoneElementId: string, armA: AngleArm, armB: AngleArm) => void
   onLineColorChange: (zoneElementId: string, lineId: string, color: string) => void
   onLineLabelChange: (zoneElementId: string, lineId: string, text: string) => void
   onLineDelete: (zoneElementId: string, lineId: string) => void
@@ -53,9 +53,9 @@ export function ThreeDZoneLayer({ elements, viewTransform, interactive, angleMod
           onRotationCommit={(x, y, z) => onRotationCommit(element.id, x, y, z)}
           onEdgeColorChange={(edgeIndex, color) => onEdgeColorChange(element.id, edgeIndex, color)}
           onEdgeLabelChange={(edgeIndex, text) => onEdgeLabelChange(element.id, edgeIndex, text)}
-          onVertexMarkUpsert={(faceIndex, edgeIndexA, edgeIndexB, color) => onVertexMarkUpsert(element.id, faceIndex, edgeIndexA, edgeIndexB, color)}
-          onVertexMarkLabelChange={(faceIndex, edgeIndexA, edgeIndexB, text) => onVertexMarkLabelChange(element.id, faceIndex, edgeIndexA, edgeIndexB, text)}
-          onVertexMarkDelete={(faceIndex, edgeIndexA, edgeIndexB) => onVertexMarkDelete(element.id, faceIndex, edgeIndexA, edgeIndexB)}
+          onVertexMarkUpsert={(armA, armB, color) => onVertexMarkUpsert(element.id, armA, armB, color)}
+          onVertexMarkLabelChange={(armA, armB, text) => onVertexMarkLabelChange(element.id, armA, armB, text)}
+          onVertexMarkDelete={(armA, armB) => onVertexMarkDelete(element.id, armA, armB)}
           onLineColorChange={(lineId, color) => onLineColorChange(element.id, lineId, color)}
           onLineLabelChange={(lineId, text) => onLineLabelChange(element.id, lineId, text)}
           onLineDelete={lineId => onLineDelete(element.id, lineId)}

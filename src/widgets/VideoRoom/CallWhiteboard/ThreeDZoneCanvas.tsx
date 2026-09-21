@@ -4,8 +4,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { useTranslations } from 'next-intl'
 import { useThemeCtx } from '@/app/providers/ThemeContext'
-import { distanceToSegment, INK_PALETTE, themedColor, type ConstructionLine, type ThreeDZone, type VertexMark, type ZoneRect, type ZoneSelection } from './shapeGeometry'
-import { buildAngleArcPoints, buildDashDotPositions, buildEdgeTopology, buildFaceTopology, buildGeometry, classifyEdges, createFramingCamera, findFaceEdgesAtVertex, projectPoint, resolveLocalSnapPoint, type ClassifiedEdge, type EdgeTopology, type FaceTopology } from './threeDRender'
+import { angleArmsEqual, distanceToSegment, INK_PALETTE, themedColor, type AngleArm, type ConstructionLine, type ThreeDZone, type VertexMark, type ZoneRect, type ZoneSelection } from './shapeGeometry'
+import { BASE_CAMERA_DISTANCE, buildAngleArcPoints, buildDashDotPositions, buildEdgeTopology, buildFaceTopology, buildGeometry, classifyEdges, createFramingCamera, projectPoint, resolveAngleGeometry, resolveArmEndpoints, resolveLocalSnapPoint, type ClassifiedEdge, type EdgeTopology, type FaceTopology } from './threeDRender'
 import styles from './ThreeDZoneCanvas.module.scss'
 
 interface ViewTransform {
@@ -21,17 +21,18 @@ interface Props {
   /** False while a drawing tool is active — lets clicks through to Excalidraw
    * so it can draw directly over the shape instead of us grabbing the drag. */
   interactive: boolean
-  /** "∠ Угол" tool active — a plain click raycasts to find which FACE was
-   * clicked and which of its corners is nearest, creating/selecting the
-   * angle mark there. Off, plain clicks fall back to the normal edge/line/
-   * existing-angle-mark picking (rotate-drag works in both cases). */
+  /** "∠ Угол" tool active — a plain click finds whichever two arms (a
+   * shape edge and/or a construction line) sharing an endpoint are closest
+   * to the click, creating/selecting the angle mark there. Off, plain
+   * clicks fall back to the normal edge/line/existing-angle-mark picking
+   * (rotate-drag works in both cases). */
   angleMode: boolean
   onRotationCommit: (rotationX: number, rotationY: number, rotationZ: number) => void
   onEdgeColorChange: (edgeIndex: number, color: string) => void
   onEdgeLabelChange: (edgeIndex: number, text: string) => void
-  onVertexMarkUpsert: (faceIndex: number, edgeIndexA: number, edgeIndexB: number, color: string) => void
-  onVertexMarkLabelChange: (faceIndex: number, edgeIndexA: number, edgeIndexB: number, text: string) => void
-  onVertexMarkDelete: (faceIndex: number, edgeIndexA: number, edgeIndexB: number) => void
+  onVertexMarkUpsert: (armA: AngleArm, armB: AngleArm, color: string) => void
+  onVertexMarkLabelChange: (armA: AngleArm, armB: AngleArm, text: string) => void
+  onVertexMarkDelete: (armA: AngleArm, armB: AngleArm) => void
   onLineColorChange: (lineId: string, color: string) => void
   onLineLabelChange: (lineId: string, text: string) => void
   onLineDelete: (lineId: string) => void
@@ -51,9 +52,9 @@ function colorFor(edgeIndex: number, zone: ThreeDZone, isDark: boolean): THREE.C
   return new THREE.Color(themedColor(zone.edgeColors?.[edgeIndex] ?? zone.color, isDark))
 }
 
-function findVertexMark(marks: VertexMark[] | undefined, faceIndex: number, edgeIndexA: number, edgeIndexB: number): VertexMark | undefined {
-  return marks?.find(m => m.faceIndex === faceIndex
-    && ((m.edgeIndexA === edgeIndexA && m.edgeIndexB === edgeIndexB) || (m.edgeIndexA === edgeIndexB && m.edgeIndexB === edgeIndexA)))
+function findVertexMark(marks: VertexMark[] | undefined, armA: AngleArm, armB: AngleArm): VertexMark | undefined {
+  return marks?.find(m => (angleArmsEqual(m.armA, armA) && angleArmsEqual(m.armB, armB))
+    || (angleArmsEqual(m.armA, armB) && angleArmsEqual(m.armB, armA)))
 }
 
 function buildConstructionGeometry(topology: EdgeTopology[], faces: FaceTopology[], lines: ConstructionLine[], isDark: boolean): { positions: number[]; colors: number[] } {
@@ -71,30 +72,29 @@ function buildConstructionGeometry(topology: EdgeTopology[], faces: FaceTopology
   return { positions, colors }
 }
 
-/** Angle-mark arcs: for each mark, finds the vertex its two edges share,
- * builds a small arc INSIDE that face's plane between them, and records the
- * arc's middle point (in `arcMidpoints`, keyed by mark.id) as the anchor
- * used for hit-testing/label placement, plus its two endpoints (in
- * `arcEndpoints`) used to draw the "selected" highlight chord. */
-function buildAngleMarksGeometry(topology: EdgeTopology[], faces: FaceTopology[], marks: VertexMark[], isDark: boolean): { positions: number[]; colors: number[]; arcMidpoints: Map<string, THREE.Vector3>; arcEndpoints: Map<string, [THREE.Vector3, THREE.Vector3]>; arcPoints: Map<string, THREE.Vector3[]> } {
+/** Angle-mark arcs: for each mark, finds the vertex its two arms (edges
+ * and/or construction lines) share, builds a small arc between them in the
+ * plane their two directions naturally span, and records the arc's middle
+ * point (in `arcMidpoints`, keyed by mark.id) as the anchor used for
+ * hit-testing/label placement, plus its two endpoints (in `arcEndpoints`)
+ * and full point list (in `arcPoints`, used for the bold selection
+ * highlight, which traces the arc rather than a straight chord). */
+function buildAngleMarksGeometry(topology: EdgeTopology[], faces: FaceTopology[], lines: ConstructionLine[], marks: VertexMark[], isDark: boolean): { positions: number[]; colors: number[]; arcMidpoints: Map<string, THREE.Vector3>; arcEndpoints: Map<string, [THREE.Vector3, THREE.Vector3]>; arcPoints: Map<string, THREE.Vector3[]> } {
   const positions: number[] = []
   const colors: number[] = []
   const arcMidpoints = new Map<string, THREE.Vector3>()
   const arcEndpoints = new Map<string, [THREE.Vector3, THREE.Vector3]>()
   const arcPoints = new Map<string, THREE.Vector3[]>()
   for (const mark of marks) {
-    const face = faces[mark.faceIndex]
-    const edgeA = topology[mark.edgeIndexA]
-    const edgeB = topology[mark.edgeIndexB]
-    if (!face || !edgeA || !edgeB) continue
-    const sharedVertex = [edgeA.v1, edgeA.v2].find(p => [edgeB.v1, edgeB.v2].some(q => q.distanceTo(p) < 0.01))
-    if (!sharedVertex) continue
-    const otherA = edgeA.v1.distanceTo(sharedVertex) < 0.01 ? edgeA.v2 : edgeA.v1
-    const otherB = edgeB.v1.distanceTo(sharedVertex) < 0.01 ? edgeB.v2 : edgeB.v1
-    const dirA = otherA.clone().sub(sharedVertex).normalize()
-    const dirB = otherB.clone().sub(sharedVertex).normalize()
-    const radius = Math.min(0.35, Math.max(0.08, Math.min(otherA.distanceTo(sharedVertex), otherB.distanceTo(sharedVertex)) * 0.3))
-    const points = buildAngleArcPoints(sharedVertex, dirA, dirB, face.normal, radius)
+    const geometry = resolveAngleGeometry(topology, faces, lines, mark.armA, mark.armB)
+    if (!geometry) continue
+    const { vertex, dirA, dirB } = geometry
+    const endsA = resolveArmEndpoints(topology, faces, lines, mark.armA)
+    const endsB = resolveArmEndpoints(topology, faces, lines, mark.armB)
+    const armLenA = endsA ? Math.max(endsA[0].distanceTo(vertex), endsA[1].distanceTo(vertex)) : 1
+    const armLenB = endsB ? Math.max(endsB[0].distanceTo(vertex), endsB[1].distanceTo(vertex)) : 1
+    const radius = Math.min(0.35, Math.max(0.08, Math.min(armLenA, armLenB) * 0.3))
+    const points = buildAngleArcPoints(vertex, dirA, dirB, dirA.clone().cross(dirB), radius)
     if (points.length < 2) continue
     const c = new THREE.Color(themedColor(mark.color, isDark))
     for (let i = 0; i < points.length - 1; i++) {
@@ -112,7 +112,7 @@ type Picker = ZoneSelection
 
 type EditingLabelTarget =
   | { kind: 'edge'; edgeIndex: number }
-  | { kind: 'vertex'; faceIndex: number; edgeIndexA: number; edgeIndexB: number }
+  | { kind: 'vertex'; armA: AngleArm; armB: AngleArm }
   | { kind: 'line'; lineId: string }
 
 interface EditingLabel {
@@ -134,8 +134,6 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
   const dashedLineRef = useRef<THREE.LineSegments | null>(null)
   const constructionLineRef = useRef<THREE.LineSegments | null>(null)
   const angleMarkLineRef = useRef<THREE.LineSegments | null>(null)
-  const raycastMeshRef = useRef<THREE.Mesh | null>(null)
-  const raycasterRef = useRef(new THREE.Raycaster())
   const edgeTopologyRef = useRef<EdgeTopology[]>([])
   const faceTopologyRef = useRef<FaceTopology[]>([])
   const classifiedRef = useRef<ClassifiedEdge[]>([])
@@ -143,6 +141,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
   const arcEndpointsRef = useRef<Map<string, [THREE.Vector3, THREE.Vector3]>>(new Map())
   const arcPointsRef = useRef<Map<string, THREE.Vector3[]>>(new Map())
   const highlightPolylineRef = useRef<SVGPolylineElement>(null)
+  const hoverPreviewPolylineRef = useRef<SVGPolylineElement>(null)
   const rotationRef = useRef({ x: zone.rotationX, y: zone.rotationY, z: zone.rotationZ })
   const dragRef = useRef<{ active: boolean; moved: boolean; lastX: number; lastY: number }>({ active: false, moved: false, lastX: 0, lastY: 0 })
   const moveDragRef = useRef<{ startClientX: number; startClientY: number; startX: number; startY: number } | null>(null)
@@ -167,6 +166,11 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
 
   const [picker, setPickerState] = useState<Picker | null>(null)
   const [editingLabel, setEditingLabel] = useState<EditingLabel | null>(null)
+  // Angle-tool hover preview — the same picking as a click, but
+  // non-committing and purely local (not synced — it's exactly what THIS
+  // viewer is currently pointing at, not something to show other
+  // participants); drives the semi-transparent bold arc preview.
+  const [hoverAngleTarget, setHoverAngleTarget] = useState<{ armA: AngleArm; armB: AngleArm } | null>(null)
 
   // Drives both the local recolor popover (picker) and the shared
   // bold-highlight everyone in the call sees (onSelectionChange, persisted
@@ -195,7 +199,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
         onLineDelete(picker.lineId)
         setPicker(null)
       } else if (picker.kind === 'vertex') {
-        onVertexMarkDelete(picker.faceIndex, picker.edgeIndexA, picker.edgeIndexB)
+        onVertexMarkDelete(picker.armA, picker.armB)
         setPicker(null)
       } else if (e.key === 'Escape') {
         setPicker(null)
@@ -303,7 +307,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
             if (p1 && p2) points = [p1, p2]
           }
         } else if (selection?.kind === 'vertex') {
-          const mark = findVertexMark(zone.vertexMarks, selection.faceIndex, selection.edgeIndexA, selection.edgeIndexB)
+          const mark = findVertexMark(zone.vertexMarks, selection.armA, selection.armB)
           if (mark) points = arcPointsRef.current.get(mark.id) ?? null
         }
         if (points && points.length >= 2) {
@@ -314,14 +318,44 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
           highlightEl.style.display = 'none'
         }
       }
+
+      // Semi-transparent preview of where a click would place a NEW angle
+      // mark, while the angle tool is hovering (not yet clicked) — purely
+      // local, see hoverAngleTarget's own comment.
+      const previewEl = hoverPreviewPolylineRef.current
+      if (previewEl) {
+        let previewPoints: THREE.Vector3[] | null = null
+        if (hoverAngleTarget) {
+          const lines = zone.constructionLines ?? []
+          const geom = resolveAngleGeometry(edgeTopologyRef.current, faceTopologyRef.current, lines, hoverAngleTarget.armA, hoverAngleTarget.armB)
+          if (geom) {
+            const endsA = resolveArmEndpoints(edgeTopologyRef.current, faceTopologyRef.current, lines, hoverAngleTarget.armA)
+            const endsB = resolveArmEndpoints(edgeTopologyRef.current, faceTopologyRef.current, lines, hoverAngleTarget.armB)
+            const armLenA = endsA ? Math.max(endsA[0].distanceTo(geom.vertex), endsA[1].distanceTo(geom.vertex)) : 1
+            const armLenB = endsB ? Math.max(endsB[0].distanceTo(geom.vertex), endsB[1].distanceTo(geom.vertex)) : 1
+            const radius = Math.min(0.35, Math.max(0.08, Math.min(armLenA, armLenB) * 0.3))
+            const points = buildAngleArcPoints(geom.vertex, geom.dirA, geom.dirB, geom.dirA.clone().cross(geom.dirB), radius)
+            if (points.length >= 2) previewPoints = points
+          }
+        }
+        if (previewPoints) {
+          const projected = previewPoints.map(p => projectPoint(p, group, camera, canvasWidth, canvasHeight))
+          previewEl.setAttribute('points', projected.map(p => `${p.x},${p.y}`).join(' '))
+          previewEl.style.display = ''
+        } else {
+          previewEl.style.display = 'none'
+        }
+      }
     }
 
     applyColors()
-  }, [applyColors, canvasWidth, canvasHeight, zone.constructionLines, zone.vertexMarks, zone.selection])
+  }, [applyColors, canvasWidth, canvasHeight, zone.constructionLines, zone.vertexMarks, zone.selection, hoverAngleTarget])
 
-  // Selecting/deselecting doesn't itself trigger a rotation frame or topology
-  // rebuild, so the highlight above needs its own nudge to appear (or
-  // disappear) immediately when the selection changes.
+  // Selecting/deselecting (or hovering with the angle tool) doesn't itself
+  // trigger a rotation frame or topology rebuild, so the highlight/preview
+  // above needs its own nudge to appear (or disappear) immediately —
+  // updateVisualization's own identity already changes with hoverAngleTarget
+  // too (see its dependency array), so this re-fires for both.
   useEffect(() => {
     updateVisualization()
   }, [zone.selection, updateVisualization])
@@ -333,7 +367,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
     const container = containerRef.current
     if (!container) return
     const scene = new THREE.Scene()
-    const camera = createFramingCamera(canvasWidth, canvasHeight)
+    const camera = createFramingCamera(canvasWidth, canvasHeight, zone.scale)
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true })
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.setSize(canvasWidth, canvasHeight)
@@ -358,8 +392,6 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
       ;(constructionLineRef.current?.material as THREE.Material | undefined)?.dispose()
       angleMarkLineRef.current?.geometry.dispose()
       ;(angleMarkLineRef.current?.material as THREE.Material | undefined)?.dispose()
-      raycastMeshRef.current?.geometry.dispose()
-      ;(raycastMeshRef.current?.material as THREE.Material | undefined)?.dispose()
       renderer.dispose()
       renderer.domElement.remove()
       sceneRef.current = null
@@ -370,15 +402,12 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
       dashedLineRef.current = null
       constructionLineRef.current = null
       angleMarkLineRef.current = null
-      raycastMeshRef.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Rebuild topology + the two line meshes + the invisible raycast mesh
-  // (used only to hit-test "which face was clicked" for angle marks) when
-  // the primitive/segments/flat change. vertexColors so each edge can carry
-  // its own override color.
+  // Rebuild topology + the two line meshes when the primitive/segments/flat
+  // change. vertexColors so each edge can carry its own override color.
   useEffect(() => {
     const group = groupRef.current
     if (!group) return
@@ -393,22 +422,10 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
       dashedLineRef.current.geometry.dispose()
       ;(dashedLineRef.current.material as THREE.Material).dispose()
     }
-    if (raycastMeshRef.current) {
-      group.remove(raycastMeshRef.current)
-      raycastMeshRef.current.geometry.dispose()
-      ;(raycastMeshRef.current.material as THREE.Material).dispose()
-    }
-
     const geometry = buildGeometry(zone.primitive, zone.segments ?? 0, zone.flat ?? false)
     edgeTopologyRef.current = buildEdgeTopology(geometry)
     faceTopologyRef.current = buildFaceTopology(geometry)
-
-    // Fully transparent but still `visible` (Raycaster skips invisible
-    // objects) — exists purely so pickFaceVertex can hit-test "which
-    // triangle/face did the user click", never actually painted.
-    const raycastMesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }))
-    group.add(raycastMesh)
-    raycastMeshRef.current = raycastMesh
+    geometry.dispose()
 
     const solidLine = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ vertexColors: true }))
     group.add(solidLine)
@@ -445,9 +462,10 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
     render()
   }, [zone.primitive, zone.segments, zone.flat, zone.constructionLines, isDark, render])
 
-  // Angle marks — small arcs living inside a face between the two edges
-  // meeting at one of its corners (see buildAngleMarksGeometry). Same
-  // rotate-for-free pattern as construction lines.
+  // Angle marks — small arcs between two arms (a shape edge and/or a
+  // construction line) meeting at a shared point (see
+  // buildAngleMarksGeometry). Same rotate-for-free pattern as construction
+  // lines; also rebuilt when a construction line an arm references moves.
   useEffect(() => {
     const group = groupRef.current
     if (!group) return
@@ -456,7 +474,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
       angleMarkLineRef.current.geometry.dispose()
       ;(angleMarkLineRef.current.material as THREE.Material).dispose()
     }
-    const { positions, colors, arcMidpoints, arcEndpoints, arcPoints } = buildAngleMarksGeometry(edgeTopologyRef.current, faceTopologyRef.current, zone.vertexMarks ?? [], isDark)
+    const { positions, colors, arcMidpoints, arcEndpoints, arcPoints } = buildAngleMarksGeometry(edgeTopologyRef.current, faceTopologyRef.current, zone.constructionLines ?? [], zone.vertexMarks ?? [], isDark)
     arcMidpointsRef.current = arcMidpoints
     arcEndpointsRef.current = arcEndpoints
     arcPointsRef.current = arcPoints
@@ -468,7 +486,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
     angleMarkLineRef.current = line
     updateVisualization()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [zone.primitive, zone.segments, zone.flat, zone.vertexMarks, isDark])
+  }, [zone.primitive, zone.segments, zone.flat, zone.constructionLines, zone.vertexMarks, isDark])
 
   // Colors changed (base or per-edge overrides) without a topology rebuild.
   useEffect(() => {
@@ -485,8 +503,12 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zone.rotationX, zone.rotationY, zone.rotationZ])
 
+  // Camera backs off proportionally with scale (see BASE_CAMERA_DISTANCE's
+  // comment on createFramingCamera) so a large zone.scale never clips the
+  // shape against this canvas's own bounds.
   useEffect(() => {
     groupRef.current?.scale.setScalar(zone.scale)
+    if (cameraRef.current) cameraRef.current.position.z = BASE_CAMERA_DISTANCE * Math.max(zone.scale, 0.1)
     render()
   }, [zone.scale, render])
 
@@ -569,36 +591,44 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
     return best && best.dist <= ANGLE_PICK_THRESHOLD_PX ? best : null
   }, [canvasWidth, canvasHeight, zone.vertexMarks])
 
-  // Angle-mode picking: raycasts to find which FACE was clicked, then the
-  // nearest of that face's own corners, then the two edges of the face
-  // meeting there — the (face, corner) pair an angle mark needs, since a
-  // bare vertex alone is ambiguous (several faces can share it).
-  const pickFaceVertex = useCallback((localX: number, localY: number): { faceIndex: number; edgeIndexA: number; edgeIndexB: number } | null => {
+  // Angle-mode picking: finds whichever "arm" (a shape edge or a
+  // construction line) is screen-closest to the click, then — among every
+  // other arm sharing an endpoint with it — whichever of THOSE is closest,
+  // so the two arms actually nearest the click become the angle. Works for
+  // any combination of edge/line arms, not just two shape edges meeting at
+  // one of the shape's own corners (the old face-raycast approach could
+  // only ever pick 2 of a corner's edges, never a construction line).
+  const buildArmCandidates = useCallback((): { arm: AngleArm; p1: THREE.Vector3; p2: THREE.Vector3 }[] => {
+    const topology = edgeTopologyRef.current
+    const faces = faceTopologyRef.current
+    const lines = zone.constructionLines ?? []
+    const candidates: { arm: AngleArm; p1: THREE.Vector3; p2: THREE.Vector3 }[] = []
+    topology.forEach((edge, edgeIndex) => candidates.push({ arm: { kind: 'edge', edgeIndex }, p1: edge.v1, p2: edge.v2 }))
+    for (const line of lines) {
+      const ends = resolveArmEndpoints(topology, faces, lines, { kind: 'line', lineId: line.id })
+      if (ends) candidates.push({ arm: { kind: 'line', lineId: line.id }, p1: ends[0], p2: ends[1] })
+    }
+    return candidates
+  }, [zone.constructionLines])
+
+  const pickAngleTarget = useCallback((localX: number, localY: number): { armA: AngleArm; armB: AngleArm } | null => {
     const group = groupRef.current
     const camera = cameraRef.current
-    const mesh = raycastMeshRef.current
-    if (!group || !camera || !mesh) return null
-    const ndcX = (localX / canvasWidth) * 2 - 1
-    const ndcY = -(localY / canvasHeight) * 2 + 1
-    raycasterRef.current.setFromCamera(new THREE.Vector2(ndcX, ndcY), camera)
-    const hits = raycasterRef.current.intersectObject(mesh, false)
-    const triIndex = hits[0]?.faceIndex
-    if (triIndex === undefined || triIndex === null) return null
-    const faces = faceTopologyRef.current
-    const faceIndex = faces.findIndex(f => f.triangleIndices.includes(triIndex))
-    if (faceIndex === -1) return null
-    const face = faces[faceIndex]
-    const hitLocal = group.worldToLocal(hits[0].point.clone())
-    let bestVertex: THREE.Vector3 | null = null
-    let bestDist = Infinity
-    for (const v of face.vertices) {
-      const d = v.distanceTo(hitLocal)
-      if (d < bestDist) { bestDist = d; bestVertex = v }
-    }
-    if (!bestVertex) return null
-    const pair = findFaceEdgesAtVertex(edgeTopologyRef.current, face, bestVertex)
-    return pair ? { faceIndex, edgeIndexA: pair[0], edgeIndexB: pair[1] } : null
-  }, [canvasWidth, canvasHeight])
+    if (!group || !camera) return null
+    const candidates = buildArmCandidates().map(c => {
+      const s1 = projectPoint(c.p1, group, camera, canvasWidth, canvasHeight)
+      const s2 = projectPoint(c.p2, group, camera, canvasWidth, canvasHeight)
+      return { ...c, s1, s2, dist: distanceToSegment({ x: localX, y: localY }, s1, s2) }
+    })
+    candidates.sort((a, b) => a.dist - b.dist)
+    const nearest = candidates[0]
+    if (!nearest || nearest.dist > PICK_THRESHOLD_PX) return null
+    const distToP1 = Math.hypot(localX - nearest.s1.x, localY - nearest.s1.y)
+    const distToP2 = Math.hypot(localX - nearest.s2.x, localY - nearest.s2.y)
+    const sharedPoint = distToP1 <= distToP2 ? nearest.p1 : nearest.p2
+    const second = candidates.find(c => c !== nearest && (c.p1.distanceTo(sharedPoint) < 0.01 || c.p2.distanceTo(sharedPoint) < 0.01))
+    return second ? { armA: nearest.arm, armB: second.arm } : null
+  }, [buildArmCandidates, canvasWidth, canvasHeight])
 
   // Rotate is the default gesture on the shape body — no mode to enter first.
   const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
@@ -608,6 +638,17 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
   }, [setPicker])
 
   const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    // Angle-tool hover preview — only while idle (not mid rotate-drag), so
+    // it doesn't fight the drag's own move handling below.
+    if (angleMode && !dragRef.current.active) {
+      const box = e.currentTarget.getBoundingClientRect()
+      const target = pickAngleTarget(e.clientX - box.left, e.clientY - box.top)
+      setHoverAngleTarget(prev => {
+        if (prev === target) return prev
+        if (prev && target && angleArmsEqual(prev.armA, target.armA) && angleArmsEqual(prev.armB, target.armB)) return prev
+        return target
+      })
+    }
     if (!dragRef.current.active) return
     const dx = e.clientX - dragRef.current.lastX
     const dy = e.clientY - dragRef.current.lastY
@@ -622,7 +663,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
     }
     groupRef.current?.rotation.set(rotationRef.current.x, rotationRef.current.y, rotationRef.current.z)
     updateVisualization()
-  }, [updateVisualization])
+  }, [angleMode, pickAngleTarget, updateVisualization])
 
   const handlePointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     // Also wired to onPointerLeave (so a rotate-drag still commits if the
@@ -631,6 +672,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
     // moving the mouse off the shape after a plain click re-ran the "plain
     // click" picking logic at the (now outside) cursor position, finding
     // nothing and silently closing whatever popover was open.
+    if (e.type === 'pointerleave') setHoverAngleTarget(null)
     if (!dragRef.current.active) return
     const wasDragging = dragRef.current.moved
     dragRef.current.active = false
@@ -644,14 +686,15 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
     const localX = e.clientX - box.left
     const localY = e.clientY - box.top
 
-    // The "∠ Угол" tool takes over plain clicks entirely: pick a face+
-    // corner and create/select its mark, ignoring edges/lines underneath.
+    // The "∠ Угол" tool takes over plain clicks entirely: pick whichever
+    // two arms (edges and/or construction lines) sharing an endpoint are
+    // closest to the click and create/select the angle mark there.
     if (angleMode) {
-      const hit = pickFaceVertex(localX, localY)
+      const hit = pickAngleTarget(localX, localY)
       if (!hit) { setPicker(null); return }
-      const existing = findVertexMark(zone.vertexMarks, hit.faceIndex, hit.edgeIndexA, hit.edgeIndexB)
-      onVertexMarkUpsert(hit.faceIndex, hit.edgeIndexA, hit.edgeIndexB, existing?.color ?? zone.color)
-      setPicker({ kind: 'vertex', faceIndex: hit.faceIndex, edgeIndexA: hit.edgeIndexA, edgeIndexB: hit.edgeIndexB })
+      const existing = findVertexMark(zone.vertexMarks, hit.armA, hit.armB)
+      onVertexMarkUpsert(hit.armA, hit.armB, existing?.color ?? zone.color)
+      setPicker({ kind: 'vertex', armA: hit.armA, armB: hit.armB })
       return
     }
 
@@ -664,7 +707,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
     const lineHit = pickConstructionLine(localX, localY)
     const angleHit = pickAngleMark(localX, localY)
     if (angleHit && (!lineHit || angleHit.dist <= lineHit.dist) && (!edgeHit || angleHit.dist <= edgeHit.dist)) {
-      setPicker({ kind: 'vertex', faceIndex: angleHit.mark.faceIndex, edgeIndexA: angleHit.mark.edgeIndexA, edgeIndexB: angleHit.mark.edgeIndexB })
+      setPicker({ kind: 'vertex', armA: angleHit.mark.armA, armB: angleHit.mark.armB })
     } else if (lineHit && (!edgeHit || lineHit.dist <= edgeHit.dist)) {
       setPicker({ kind: 'line', lineId: lineHit.id })
     } else if (edgeHit) {
@@ -672,7 +715,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
     } else {
       setPicker(null)
     }
-  }, [onRotationCommit, pickEdge, pickConstructionLine, pickAngleMark, angleMode, pickFaceVertex, onVertexMarkUpsert, zone.vertexMarks, zone.color, setPicker])
+  }, [onRotationCommit, pickEdge, pickConstructionLine, pickAngleMark, angleMode, pickAngleTarget, onVertexMarkUpsert, zone.vertexMarks, zone.color, setPicker])
 
   // Double-click an edge, an angle mark, or a construction line to write an
   // arbitrary label on it (length, angle value, anything) — positioned
@@ -697,7 +740,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
       candidates.push({
         dist: angleHit.dist,
         open: () => setEditingLabel({
-          target: { kind: 'vertex', faceIndex: angleHit.mark.faceIndex, edgeIndexA: angleHit.mark.edgeIndexA, edgeIndexB: angleHit.mark.edgeIndexB },
+          target: { kind: 'vertex', armA: angleHit.mark.armA, armB: angleHit.mark.armB },
           text: angleHit.mark.label ?? '',
           clientX: e.clientX,
           clientY: e.clientY,
@@ -730,7 +773,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
     const text = editingLabel.text.trim()
     if (editingLabel.target.kind === 'edge') onEdgeLabelChange(editingLabel.target.edgeIndex, text)
     else if (editingLabel.target.kind === 'line') onLineLabelChange(editingLabel.target.lineId, text)
-    else onVertexMarkLabelChange(editingLabel.target.faceIndex, editingLabel.target.edgeIndexA, editingLabel.target.edgeIndexB, text)
+    else onVertexMarkLabelChange(editingLabel.target.armA, editingLabel.target.armB, text)
     setEditingLabel(null)
   }, [editingLabel, onEdgeLabelChange, onLineLabelChange, onVertexMarkLabelChange])
 
@@ -799,6 +842,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
           onDoubleClick={interactive ? handleDoubleClick : undefined}
         />
         <svg className={styles.highlightSvg} width={width} height={height}>
+          <polyline ref={hoverPreviewPolylineRef} className={styles.hoverPreviewLine} style={{ display: 'none' }} fill="none" />
           <polyline ref={highlightPolylineRef} className={styles.highlightLine} style={{ display: 'none' }} fill="none" />
         </svg>
         {zone.edgeLabels && Object.entries(zone.edgeLabels).map(([key, text]) => (
@@ -869,7 +913,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
               style={{ '--swatch-color': swatch } as React.CSSProperties}
               onClick={() => {
                 if (picker.kind === 'edge') onEdgeColorChange(picker.edgeIndex, swatch)
-                else if (picker.kind === 'vertex') onVertexMarkUpsert(picker.faceIndex, picker.edgeIndexA, picker.edgeIndexB, swatch)
+                else if (picker.kind === 'vertex') onVertexMarkUpsert(picker.armA, picker.armB, swatch)
                 else onLineColorChange(picker.lineId, swatch)
                 setPicker(null)
               }}
@@ -882,7 +926,7 @@ export function ThreeDZoneCanvas({ rect, zone, viewTransform, interactive, angle
               className={styles.popoverDelete}
               onClick={() => {
                 if (picker.kind === 'line') onLineDelete(picker.lineId)
-                else if (picker.kind === 'vertex') onVertexMarkDelete(picker.faceIndex, picker.edgeIndexA, picker.edgeIndexB)
+                else if (picker.kind === 'vertex') onVertexMarkDelete(picker.armA, picker.armB)
                 setPicker(null)
               }}
               title={picker.kind === 'line' ? t('deleteLine') : t('deleteMark')}

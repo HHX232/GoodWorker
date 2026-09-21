@@ -44,25 +44,22 @@
         "vertexMarks": [
           {
             "id": "tmpl-vm-0",
-            "faceIndex": 0,
-            "edgeIndexA": 0,
-            "edgeIndexB": 2,
+            "armA": { "kind": "edge", "edgeIndex": 0 },
+            "armB": { "kind": "edge", "edgeIndex": 2 },
             "color": "#e03131",
             "label": "β"
           },
           {
             "id": "tmpl-vm-1",
-            "faceIndex": 0,
-            "edgeIndexA": 2,
-            "edgeIndexB": 3,
+            "armA": { "kind": "edge", "edgeIndex": 2 },
+            "armB": { "kind": "edge", "edgeIndex": 3 },
             "color": "#2f9e44",
             "label": "γ"
           },
           {
             "id": "tmpl-vm-2",
-            "faceIndex": 0,
-            "edgeIndexA": 0,
-            "edgeIndexB": 3,
+            "armA": { "kind": "edge", "edgeIndex": 0 },
+            "armB": { "kind": "edge", "edgeIndex": 3 },
             "color": "#1971c2",
             "label": "α"
           }

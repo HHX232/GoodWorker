@@ -43,11 +43,9 @@ export interface ThreeDZone extends ThreeDShapeMeta {
    * projected midpoint — see the note in ThreeDZoneCanvas on why the text
    * itself doesn't tilt with the 3D rotation. */
   edgeLabels?: Record<number, string>
-  /** Angle marks — small arcs drawn INSIDE a specific face, between the two
-   * edges that meet at one of its corners (see VertexMark). Created with
-   * the dedicated "∠ Угол" tool, which requires picking both the face and
-   * the corner (a bare vertex isn't enough — several faces can share it,
-   * e.g. a cube corner touches 3). */
+  /** Angle marks — small arcs between two "arms" (a shape edge and/or a
+   * construction line) that share an endpoint (see VertexMark). Created
+   * with the dedicated "∠ Угол" tool. */
   vertexMarks?: VertexMark[]
   /** Which edge/line/angle is currently picked — synced through the same
    * customData broadcast as everything else so a single click highlights
@@ -61,21 +59,32 @@ export interface ThreeDZone extends ThreeDShapeMeta {
 export type ZoneSelection =
   | { kind: 'edge'; edgeIndex: number }
   | { kind: 'line'; lineId: string }
-  | { kind: 'vertex'; faceIndex: number; edgeIndexA: number; edgeIndexB: number }
+  | { kind: 'vertex'; armA: AngleArm; armB: AngleArm }
 
-/** One angle mark: the arc lives inside `faceIndex`, spanning from
- * `edgeIndexA` to `edgeIndexB` at the vertex those two edges share (edge
- * indices are stable within a given primitive/segments/flat — see
- * buildEdgeTopology's iteration order). The (faceIndex, edgeIndexA,
- * edgeIndexB) triple is the mark's real identity — `id` only exists for a
- * stable React key, operations (recolor/label/delete) match by the triple
- * so a freshly-created mark can be addressed before its mutateElement
- * round-trip lands. */
+/** One side of an angle mark — either the shape's own edge, or a
+ * user-drawn construction line. Whichever endpoint the two arms of a
+ * VertexMark have in common (within a small tolerance) is the angle's
+ * vertex; the arc's plane is derived from the two arms' own directions,
+ * not a pre-existing face, so this works equally for two shape edges, two
+ * construction lines, or one of each. */
+export type AngleArm =
+  | { kind: 'edge'; edgeIndex: number }
+  | { kind: 'line'; lineId: string }
+
+export function angleArmsEqual(a: AngleArm, b: AngleArm): boolean {
+  if (a.kind !== b.kind) return false
+  return a.kind === 'edge' ? a.edgeIndex === (b as { edgeIndex: number }).edgeIndex : a.lineId === (b as { lineId: string }).lineId
+}
+
+/** One angle mark: the arc spans from `armA` to `armB` at the vertex those
+ * two arms share. The (armA, armB) pair is the mark's real identity
+ * (order-independent) — `id` only exists for a stable React key,
+ * operations (recolor/label/delete) match by the pair so a freshly-created
+ * mark can be addressed before its mutateElement round-trip lands. */
 export interface VertexMark {
   id: string
-  faceIndex: number
-  edgeIndexA: number
-  edgeIndexB: number
+  armA: AngleArm
+  armB: AngleArm
   color: string
   label?: string
 }

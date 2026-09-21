@@ -12,7 +12,7 @@ import {
   type ShapeId,
   type ThreeDShapeMeta,
 } from './shapeGeometry'
-import { buildEdgeTopology, buildGeometry, classifyEdges, splitSolidDashedPositions, type EdgeTopology } from './threeDRender'
+import { BASE_CAMERA_DISTANCE, buildEdgeTopology, buildGeometry, classifyEdges, splitSolidDashedPositions, type EdgeTopology } from './threeDRender'
 import styles from './ThreeDPanel.module.scss'
 
 const SHAPE_OPTIONS: ShapeId[] = ['cube', 'pyramid', 'cone', 'cylinder', 'sphere', 'polygon']
@@ -93,7 +93,7 @@ export function ThreeDPanel({ initial, onInsert, onClose }: Props) {
     if (!container) return
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100)
-    camera.position.set(0, 0, 4.6)
+    camera.position.set(0, 0, BASE_CAMERA_DISTANCE * Math.max(scale, 0.1))
     camera.lookAt(0, 0, 0)
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true })
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
@@ -166,8 +166,11 @@ export function ThreeDPanel({ initial, onInsert, onClose }: Props) {
 
   // Apply scale changes without rebuilding the mesh — uniform scale doesn't
   // change which faces point toward the camera, so visibility stays as-is.
+  // The camera backs off proportionally too (see BASE_CAMERA_DISTANCE's
+  // comment) so a large scale never clips against the preview's edges.
   useEffect(() => {
     groupRef.current?.scale.setScalar(scale)
+    if (cameraRef.current) cameraRef.current.position.z = BASE_CAMERA_DISTANCE * Math.max(scale, 0.1)
     render()
   }, [scale, render])
 

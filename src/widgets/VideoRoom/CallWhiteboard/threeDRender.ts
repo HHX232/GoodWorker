@@ -6,7 +6,7 @@
 // code into the SSR bundle. Everything that needs this file is already
 // mounted behind a `dynamic(..., { ssr: false })` boundary.
 import * as THREE from 'three'
-import { DEFAULT_SEGMENTS, rotateAroundCenter, type ConstructionLine, type EdgeSegmentCandidate, type LineSegmentCandidate, type Point, type ShapeId, type SnapCandidate, type SnapRef, type ThreeDZone, type ZoneRect } from './shapeGeometry'
+import { DEFAULT_SEGMENTS, rotateAroundCenter, type AngleArm, type ConstructionLine, type EdgeSegmentCandidate, type LineSegmentCandidate, type Point, type ShapeId, type SnapCandidate, type SnapRef, type ThreeDZone, type ZoneRect } from './shapeGeometry'
 
 export const CREASE_ANGLE_THRESHOLD = THREE.MathUtils.degToRad(1)
 // A shape's own surface is what can hide part of its own edges (no other
@@ -132,8 +132,8 @@ export interface FaceTopology {
   center: THREE.Vector3
   normal: THREE.Vector3
   /** Local-space positions of every vertex bounding this face — used to
-   * test "does this face touch vertex V" by position match, and to resolve
-   * an angle mark's corner (see findFaceEdgesAtVertex). */
+   * test "does this face touch vertex V" by position match (e.g. for a
+   * faceCenter construction-line snap point). */
   vertices: THREE.Vector3[]
   /** Source-geometry triangle indices belonging to this face — lets a
    * raycast hit (which reports a triangle index) be mapped back to its
@@ -246,28 +246,42 @@ export function buildFaceTopology(geometry: THREE.BufferGeometry): FaceTopology[
   return faces
 }
 
-/**
- * Given a face and a vertex on its boundary, finds the two edges (indices
- * into `topology`) that meet at that vertex WITHIN this face — the pair an
- * angle mark's arc spans. Only edges with BOTH endpoints among the face's
- * own vertices qualify, which is what excludes a vertex's other edges that
- * belong to a different face (e.g. a cone's rim vertex also has an edge up
- * to the apex, on the lateral face, not the base). Internal "spoke" edges
- * of a triangulated N-gon face never appear in `topology` to begin with —
- * two triangles fanned from the same coplanar face have a 0° angle between
- * their normals, so buildEdgeTopology's crease test already drops them.
- */
-export function findFaceEdgesAtVertex(topology: EdgeTopology[], face: FaceTopology, vertexPos: THREE.Vector3, epsilon = 0.01): [number, number] | null {
-  const touching: number[] = []
-  for (let i = 0; i < topology.length; i++) {
-    const edge = topology[i]
-    const touchesV1 = edge.v1.distanceTo(vertexPos) < epsilon
-    const touchesV2 = edge.v2.distanceTo(vertexPos) < epsilon
-    if (!touchesV1 && !touchesV2) continue
-    const other = touchesV1 ? edge.v2 : edge.v1
-    if (face.vertices.some(fv => fv.distanceTo(other) < epsilon)) touching.push(i)
+/** Resolves one angle-mark arm's two local-space endpoints — an edge's own
+ * v1/v2, or a construction line's resolved start/end (recursively, same as
+ * any other construction-line reference). */
+export function resolveArmEndpoints(topology: EdgeTopology[], faces: FaceTopology[], lines: ConstructionLine[], arm: AngleArm): [THREE.Vector3, THREE.Vector3] | null {
+  if (arm.kind === 'edge') {
+    const edge = topology[arm.edgeIndex]
+    return edge ? [edge.v1, edge.v2] : null
   }
-  return touching.length >= 2 ? [touching[0], touching[1]] : null
+  const line = lines.find(l => l.id === arm.lineId)
+  if (!line) return null
+  const p1 = resolveLocalSnapPoint(topology, faces, lines, line.startRef)
+  const p2 = resolveLocalSnapPoint(topology, faces, lines, line.endRef)
+  return p1 && p2 ? [p1, p2] : null
+}
+
+/** Given two angle-mark arms (each a shape edge and/or a construction
+ * line), finds the endpoint they share (within `epsilon`) and each arm's
+ * direction away from it — the (vertex, dirA, dirB) triple
+ * `buildAngleArcPoints` needs to draw the arc. Works for any combination
+ * of edge/line arms since it only looks at their resolved 3D endpoints, not
+ * which face (if any) they belong to. Returns null if the arms don't
+ * actually share an endpoint. */
+export function resolveAngleGeometry(topology: EdgeTopology[], faces: FaceTopology[], lines: ConstructionLine[], armA: AngleArm, armB: AngleArm, epsilon = 0.01): { vertex: THREE.Vector3; dirA: THREE.Vector3; dirB: THREE.Vector3 } | null {
+  const endsA = resolveArmEndpoints(topology, faces, lines, armA)
+  const endsB = resolveArmEndpoints(topology, faces, lines, armB)
+  if (!endsA || !endsB) return null
+  for (const a of endsA) {
+    for (const b of endsB) {
+      if (a.distanceTo(b) >= epsilon) continue
+      const farA = a === endsA[0] ? endsA[1] : endsA[0]
+      const farB = b === endsB[0] ? endsB[1] : endsB[0]
+      const vertex = a.clone().add(b).multiplyScalar(0.5)
+      return { vertex, dirA: farA.clone().sub(vertex).normalize(), dirB: farB.clone().sub(vertex).normalize() }
+    }
+  }
+  return null
 }
 
 /** Points (vertex → …→ vertex, A-to-B ordered) tracing a small angle-mark
@@ -328,12 +342,24 @@ export function splitSolidDashedPositions(classified: ClassifiedEdge[]): { solid
   return { solid, dashed }
 }
 
+// Distance (at scale 1) tuned so the largest primitive at its largest
+// extent (the pyramid/cone's base corners, ~1.39 units from the origin)
+// sits well inside the frustum with room to spare.
+export const BASE_CAMERA_DISTANCE = 4.6
+
 /** A fresh camera framing the shape consistently regardless of the target
  * rect's aspect ratio — vertical FOV fixed, `aspect` (set from rectW/rectH)
- * handles the rest, same convention `PerspectiveCamera` already uses. */
-export function createFramingCamera(rectWidth: number, rectHeight: number): THREE.PerspectiveCamera {
+ * handles the rest, same convention `PerspectiveCamera` already uses.
+ * `scale` mirrors the shape's own group.scale (its "Масштаб" slider/
+ * zone.scale) by moving the camera back proportionally — without this, the
+ * group growing while the camera stayed put clipped the shape against the
+ * viewport at the slider's upper end (any primitive, not just polygon;
+ * pyramid/cone clip earliest since they're already the widest at scale 1).
+ * Keeps the framing constant across the whole scale range instead of
+ * shrinking the safety margin as scale grows. */
+export function createFramingCamera(rectWidth: number, rectHeight: number, scale = 1): THREE.PerspectiveCamera {
   const camera = new THREE.PerspectiveCamera(40, Math.max(rectWidth, 1) / Math.max(rectHeight, 1), 0.1, 100)
-  camera.position.set(0, 0, 4.6)
+  camera.position.set(0, 0, BASE_CAMERA_DISTANCE * Math.max(scale, 0.1))
   camera.lookAt(0, 0, 0)
   return camera
 }

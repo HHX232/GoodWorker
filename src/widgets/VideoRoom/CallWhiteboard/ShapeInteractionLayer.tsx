@@ -67,8 +67,19 @@ function resolveDrawPoint(point: Point, prevSnap: SnapCandidate | null, snapPoin
   const lineSlide = findNearestLinePoint(point, lineSegments, EDGE_SNAP_PX, zoom)
   const candidates = [magnet, edgeSlide, lineSlide].filter((c): c is SnapCandidate => c !== null)
   if (candidates.length === 0) return null
+  // A vertex/midpoint sits exactly ON its own edge, so `magnet` and
+  // `edgeSlide` land on the same physical point there — but each is computed
+  // through a different code path (a discrete candidate list vs. a
+  // continuous segment projection), so floating-point noise alone can make
+  // one appear a fraction of a unit "closer" than the other. Without this
+  // slack, that coin flip silently downgraded a real vertex snap into an
+  // edgePoint-at-t≈0 snap, which then lost the magnet's hysteresis (the
+  // stillNear check above excludes edgePoint/linePoint on purpose) — so a
+  // point that visually looked snapped stopped feeling sticky, especially
+  // on a second approach after the cursor had wandered off and back.
+  const TIE_EPSILON = 1e-3
   return candidates.reduce((best, c) => (
-    Math.hypot(point.x - c.x, point.y - c.y) < Math.hypot(point.x - best.x, point.y - best.y) ? c : best
+    Math.hypot(point.x - c.x, point.y - c.y) < Math.hypot(point.x - best.x, point.y - best.y) - TIE_EPSILON ? c : best
   ))
 }
 

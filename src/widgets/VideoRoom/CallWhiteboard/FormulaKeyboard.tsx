@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
+import { Camera } from 'lucide-react'
 import { toast } from 'sonner'
 import 'mathlive/static.css'
 import { useThemeCtx } from '@/app/providers/ThemeContext'
@@ -185,7 +186,8 @@ export function FormulaKeyboard({ initialLatex, initialColor, onInsert, onClose,
           {!canUseAi && <span className={styles.vipBadge}>VIP</span>}
         </button>
         <button type="button" className={styles.aiToggle} onClick={handlePhotoToggle}>
-          📷 {t('photoToFormula')}
+          <Camera size={14} />
+          {t('photoToFormula')}
           {!canUseAi && <span className={styles.vipBadge}>VIP</span>}
         </button>
       </div>

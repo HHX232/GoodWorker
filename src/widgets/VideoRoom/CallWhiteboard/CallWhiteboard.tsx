@@ -10,7 +10,7 @@ import type { AppState, BinaryFileData, BinaryFiles, DataURL, ExcalidrawImperati
 import { useThemeCtx } from '@/app/providers/ThemeContext'
 import { GridSettingsPanel, DEFAULT_GRID_SETTINGS, type GridSettings } from './GridSettingsPanel'
 import { ElementInspector } from './ElementInspector'
-import { getZoneRect, readThreeDZone, type SnapRef, type ThreeDShapeMeta, type ThreeDZone, type ZoneRect, type ZoneSelection } from './shapeGeometry'
+import { angleArmsEqual, getZoneRect, readThreeDZone, type AngleArm, type SnapRef, type ThreeDShapeMeta, type ThreeDZone, type ZoneRect, type ZoneSelection } from './shapeGeometry'
 import type { LineBinding, ViewTransform } from './ShapeInteractionLayer'
 import styles from './CallWhiteboard.module.scss'
 
@@ -73,13 +73,13 @@ const EXCALIDRAW_UI_OPTIONS = {
   },
 }
 
-// Identity for a vertex mark is the (faceIndex, edgeIndexA, edgeIndexB)
-// triple, not its `id` — a freshly-created mark can be addressed this way
-// before its mutateElement round-trip lands, and matching is order-
-// independent since the two edges could resolve either way.
-function findVertexMarkIndex(marks: ThreeDZone['vertexMarks'], faceIndex: number, edgeIndexA: number, edgeIndexB: number): number {
-  return (marks ?? []).findIndex(m => m.faceIndex === faceIndex
-    && ((m.edgeIndexA === edgeIndexA && m.edgeIndexB === edgeIndexB) || (m.edgeIndexA === edgeIndexB && m.edgeIndexB === edgeIndexA)))
+// Identity for a vertex mark is the (armA, armB) pair, not its `id` — a
+// freshly-created mark can be addressed this way before its mutateElement
+// round-trip lands, and matching is order-independent since the two arms
+// could resolve either way.
+function findVertexMarkIndex(marks: ThreeDZone['vertexMarks'], armA: AngleArm, armB: AngleArm): number {
+  return (marks ?? []).findIndex(m => (angleArmsEqual(m.armA, armA) && angleArmsEqual(m.armB, armB))
+    || (angleArmsEqual(m.armA, armB) && angleArmsEqual(m.armB, armA)))
 }
 
 async function postTemplateSnapshot(name: string, elements: readonly ExcalidrawElement[]): Promise<boolean> {
@@ -520,7 +520,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
   // corner in angle mode calls this with the zone's own color before
   // showing the recolor popover, so "mark a corner" and "recolor an
   // existing mark" are the same code path.
-  const handleZoneVertexMarkUpsert = useCallback(async (zoneElementId: string, faceIndex: number, edgeIndexA: number, edgeIndexB: number, color: string) => {
+  const handleZoneVertexMarkUpsert = useCallback(async (zoneElementId: string, armA: AngleArm, armB: AngleArm, color: string) => {
     if (!apiRef.current) return
     const { mutateElement } = await import('@excalidraw/excalidraw')
     const el = apiRef.current.getSceneElements().find(e => e.id === zoneElementId)
@@ -528,14 +528,14 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
     const existing = readThreeDZone(el)
     if (!existing) return
     const marks = [...(existing.vertexMarks ?? [])]
-    const idx = findVertexMarkIndex(marks, faceIndex, edgeIndexA, edgeIndexB)
-    if (idx === -1) marks.push({ id: crypto.randomUUID(), faceIndex, edgeIndexA, edgeIndexB, color })
+    const idx = findVertexMarkIndex(marks, armA, armB)
+    if (idx === -1) marks.push({ id: crypto.randomUUID(), armA, armB, color })
     else marks[idx] = { ...marks[idx], color }
     const zone: ThreeDZone = { ...existing, vertexMarks: marks }
     mutateElement(el, { customData: { threeDZone: zone } })
   }, [])
 
-  const handleZoneVertexMarkLabelChange = useCallback(async (zoneElementId: string, faceIndex: number, edgeIndexA: number, edgeIndexB: number, text: string) => {
+  const handleZoneVertexMarkLabelChange = useCallback(async (zoneElementId: string, armA: AngleArm, armB: AngleArm, text: string) => {
     if (!apiRef.current) return
     const { mutateElement } = await import('@excalidraw/excalidraw')
     const el = apiRef.current.getSceneElements().find(e => e.id === zoneElementId)
@@ -543,21 +543,21 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
     const existing = readThreeDZone(el)
     if (!existing) return
     const marks = [...(existing.vertexMarks ?? [])]
-    const idx = findVertexMarkIndex(marks, faceIndex, edgeIndexA, edgeIndexB)
-    if (idx === -1) marks.push({ id: crypto.randomUUID(), faceIndex, edgeIndexA, edgeIndexB, color: existing.color, label: text || undefined })
+    const idx = findVertexMarkIndex(marks, armA, armB)
+    if (idx === -1) marks.push({ id: crypto.randomUUID(), armA, armB, color: existing.color, label: text || undefined })
     else marks[idx] = { ...marks[idx], label: text || undefined }
     const zone: ThreeDZone = { ...existing, vertexMarks: marks }
     mutateElement(el, { customData: { threeDZone: zone } })
   }, [])
 
-  const handleZoneVertexMarkDelete = useCallback(async (zoneElementId: string, faceIndex: number, edgeIndexA: number, edgeIndexB: number) => {
+  const handleZoneVertexMarkDelete = useCallback(async (zoneElementId: string, armA: AngleArm, armB: AngleArm) => {
     if (!apiRef.current) return
     const { mutateElement } = await import('@excalidraw/excalidraw')
     const el = apiRef.current.getSceneElements().find(e => e.id === zoneElementId)
     if (!el) return
     const existing = readThreeDZone(el)
     if (!existing) return
-    const idx = findVertexMarkIndex(existing.vertexMarks, faceIndex, edgeIndexA, edgeIndexB)
+    const idx = findVertexMarkIndex(existing.vertexMarks, armA, armB)
     if (idx === -1) return
     const marks = [...(existing.vertexMarks ?? [])]
     marks.splice(idx, 1)

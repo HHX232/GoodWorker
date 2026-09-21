@@ -37,10 +37,20 @@
 
 .highlightLine {
   stroke: #d9480f;
-  stroke-width: 5;
+  stroke-width: 3;
   stroke-linecap: round;
   stroke-linejoin: round;
-  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.9));
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.9));
+}
+
+// Angle-tool hover preview — where a click would place a new angle mark,
+// bold but semi-transparent so it reads as "not committed yet".
+.hoverPreviewLine {
+  stroke: #1971c2;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.45;
 }
 
 .moveHandle, .resizeHandle {
