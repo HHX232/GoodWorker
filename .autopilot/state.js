@@ -7,8 +7,8 @@ window.STATE =
   "briefFile": "2026-09-21-brief.md",
   "memoryFile": "CLAUDE.md",
   "startedAt": "2026-09-21T22:25:00+03:00",
-  "updatedAt": "2026-09-22T10:35:00+03:00",
-  "finishedAt": null,
+  "updatedAt": "2026-09-22T12:20:00+03:00",
+  "finishedAt": "2026-09-22T12:20:00+03:00",
   "stages": [
     { "id": "preflight", "status": "done",    "startedAt": "2026-09-21T22:25:00+03:00", "finishedAt": "2026-09-21T22:26:00+03:00" },
     { "id": "manifest",  "status": "done",    "startedAt": "2026-09-21T22:26:00+03:00", "finishedAt": "2026-09-21T22:30:00+03:00", "note": "25 требований, +R17 во время сборки — итого 33" },
@@ -17,7 +17,7 @@ window.STATE =
     { "id": "plan",      "status": "done",    "startedAt": "2026-09-21T23:10:00+03:00", "finishedAt": "2026-09-21T23:25:00+03:00", "note": "ярус T2, 6 тасков (05 — находка D01, 06 — уточнение R17), 3 волны" },
     { "id": "build",     "status": "done",    "startedAt": "2026-09-21T23:25:00+03:00", "finishedAt": "2026-09-22T11:55:00+03:00", "note": "6 из 6 тасков закоммичено (01–06), включая находку D01 (тикет 05) и D02 (тикет 06)" },
     { "id": "review",    "status": "done",    "startedAt": "2026-09-21T23:25:00+03:00", "finishedAt": "2026-09-22T11:55:00+03:00", "note": "поосевое ревью на каждом тикете (manifest+spec / craft), 3 блокирующие находки — все закрыты до коммита" },
-    { "id": "final",     "status": "active",  "startedAt": "2026-09-22T11:55:00+03:00" }
+    { "id": "final",     "status": "done",    "startedAt": "2026-09-22T11:55:00+03:00", "finishedAt": "2026-09-22T12:20:00+03:00", "note": "G4: слепая приёмка согласна с манифестом, дрейфа нет; память в CLAUDE.md, 6 ADR, оба self-check зелёные" }
   ],
   "requirements": { "total": 34, "done": 33, "inTicket": 0, "inSpec": 0, "placeholder": 1, "deferred": 0, "dropped": 0 },
   "tickets": [
@@ -29,7 +29,7 @@ window.STATE =
     { "id": "06", "title": "Модалка нехватки баланса на фронтенде (уточнение R17)", "requirements": ["R17","D02"], "blockedBy": ["02","03","04"], "wave": 3, "zone": ["src/widgets/Wallet/InsufficientBalanceModal/","src/widgets/VideoRoom/CallWhiteboard/FormulaKeyboard.tsx","src/widgets/VideoRoom/CallWhiteboard/FormulaPhotoModal.tsx","src/widgets/Calendar/Modals/LessonPlanModal/","src/widgets/Calendar/Modals/CalendarCreateModal/","src/widgets/Tests/PdfImportModal/","app/info-pdf-to-test/page.tsx","messages/en.json","messages/hi.json","messages/ru.json","messages/zh.json"], "status": "done", "startedAt": "2026-09-22T11:12:00+03:00", "finishedAt": "2026-09-22T11:55:00+03:00", "retries": 0, "repairs": 2, "commit": "a1b62e5", "concerns": ["ревью нашло и закрыло: модалка обрезалась transform-предком (исправлено через createPortal), клик по фону в FormulaPhotoModal закрывал родительскую модалку (исправлено stopPropagation)", "D02 — старые клиентские isVip-гейты в CalendarCreateModal/FormulaKeyboard блокировали запрос ДО бэкенда, делая 402-модалку недостижимой для целевой аудитории — гейты сняты, ревью подтвердило end-to-end"] }
   ],
   "singlePass": null,
-  "tests": null,
+  "tests": { "command": "npx tsx src/shared/lib/wallet/pricing.selfcheck.ts && (set -a; source .env; set +a; npx tsx src/shared/lib/wallet/wallet.selfcheck.ts)", "result": "12/12 + 10/10 passed" },
   "debt": { "placeholders": [], "assumptions": [], "emptyEnv": [] },
   "additions": [],
   "coverage": { "found": 2, "fixed": 2, "deferred": 0, "notes": "судьба /vip-страницы и полный периметр не-AI isVip-проверок дописаны в спецификацию; расхождений 'просил, но не покрыто' и необоснованных добавлений — не найдено" },
