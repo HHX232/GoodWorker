@@ -2,13 +2,8 @@
 
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useState } from 'react'
+import { formatCents, MAX_DEPOSIT_DOLLARS, MIN_DEPOSIT_DOLLARS, useTopUpForm, VIP_BONUS_THRESHOLD_DOLLARS } from '../useTopUpForm'
 import styles from './WalletPage.module.scss'
-
-interface BalanceResponse {
-  balanceCents: number
-  isVip: boolean
-  vipExpiresAt: string | null
-}
 
 interface TransactionItem {
   id: string
@@ -25,41 +20,13 @@ interface TransactionsResponse {
   nextCursor: string | null
 }
 
-const MIN_DEPOSIT_DOLLARS = 1
-const MAX_DEPOSIT_DOLLARS = 1000
-const VIP_BONUS_THRESHOLD_DOLLARS = 5
-
-function formatCents(cents: number): string {
-  return `$${(cents / 100).toFixed(2)}`
-}
-
 export function WalletPage() {
   const t = useTranslations('wallet')
-
-  const [balance, setBalance] = useState<BalanceResponse | null>(null)
-  const [balanceLoading, setBalanceLoading] = useState(true)
 
   const [transactions, setTransactions] = useState<TransactionItem[]>([])
   const [nextCursor, setNextCursor] = useState<string | null>(null)
   const [historyLoading, setHistoryLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
-
-  const [amount, setAmount] = useState('5')
-  const [formError, setFormError] = useState<string | null>(null)
-  const [submitting, setSubmitting] = useState(false)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
-
-  const fetchBalance = useCallback(async () => {
-    try {
-      const res = await fetch('/api/wallet/balance')
-      if (!res.ok) return
-      setBalance(await res.json())
-    } catch {
-      // ignore — panel just keeps its last known value
-    } finally {
-      setBalanceLoading(false)
-    }
-  }, [])
 
   const fetchHistory = useCallback(async (cursor?: string | null) => {
     if (cursor) setLoadingMore(true)
@@ -79,50 +46,14 @@ export function WalletPage() {
     }
   }, [])
 
-  useEffect(() => {
-    fetchBalance()
-    fetchHistory()
-  }, [fetchBalance, fetchHistory])
+  useEffect(() => { fetchHistory() }, [fetchHistory])
 
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault()
-      setFormError(null)
-      setSuccessMessage(null)
-
-      const dollars = Number(amount)
-      if (!Number.isInteger(dollars) || dollars < MIN_DEPOSIT_DOLLARS || dollars > MAX_DEPOSIT_DOLLARS) {
-        setFormError(t('form.invalidAmount', { min: MIN_DEPOSIT_DOLLARS, max: MAX_DEPOSIT_DOLLARS }))
-        return
-      }
-
-      setSubmitting(true)
-      try {
-        const res = await fetch('/api/wallet/topup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amountCents: dollars * 100 }),
-        })
-        const data = await res.json()
-        if (!res.ok) {
-          setFormError(data?.message || t('form.genericError'))
-          return
-        }
-        setBalance(prev => (prev ? { ...prev, balanceCents: data.balanceCents } : prev))
-        setSuccessMessage(
-          data.vipMonthsGranted > 0
-            ? t('form.successWithVip', { amount: dollars, months: data.vipMonthsGranted })
-            : t('form.success', { amount: dollars }),
-        )
-        fetchHistory()
-      } catch {
-        setFormError(t('form.genericError'))
-      } finally {
-        setSubmitting(false)
-      }
-    },
-    [amount, t, fetchHistory],
-  )
+  const {
+    balance, balanceLoading,
+    amount, setAmount,
+    formError, submitting, successMessage,
+    handleSubmit,
+  } = useTopUpForm(t, fetchHistory)
 
   return (
     <div className={styles.wrapper}>

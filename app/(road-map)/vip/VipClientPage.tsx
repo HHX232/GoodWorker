@@ -4,11 +4,15 @@ import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
 import { useSession } from 'next-auth/react'
+import { useTranslations } from 'next-intl'
 import {
   Tag, Video, FileText, FileUp, MessageSquare,
-  Star, ArrowRight, CheckCircle, Zap, Users, BookOpen, X, Copy, Gift,
+  Star, ArrowRight, CheckCircle, Zap, Users, BookOpen, X, Copy, Gift, Wallet, CreditCard, Sparkles,
 } from 'lucide-react'
 import Link from 'next/link'
+import {
+  formatCents, MAX_DEPOSIT_DOLLARS, MIN_DEPOSIT_DOLLARS, useTopUpForm, VIP_BONUS_THRESHOLD_DOLLARS,
+} from '@/widgets/Wallet/useTopUpForm'
 import styles from './vip.module.scss'
 
 // ── Starfield ──────────────────────────────────────────────
@@ -301,6 +305,150 @@ function ReferralCard() {
   )
 }
 
+// ── Top-up section (deposit funds AI-фичи; every $5 also grants +1 month VIP) ──
+
+const TOPUP_STEPS = [
+  {
+    icon: <Wallet size={16} />,
+    title: 'Пополните баланс',
+    desc: 'Любая сумма от $1 до $1000 — деньги сразу зачисляются на счёт.',
+  },
+  {
+    icon: <Gift size={16} />,
+    title: 'Получите VIP-бонус',
+    desc: 'Каждые $5 пополнения — это +1 месяц VIP автоматически, без доплаты сверху.',
+  },
+  {
+    icon: <Sparkles size={16} />,
+    title: 'Тратьте остаток на AI',
+    desc: 'Весь баланс доступен для AI-фич: распознавание формул, генерация тестов, планы уроков.',
+  },
+]
+
+function TopUpSection() {
+  const t = useTranslations('wallet')
+  const { status } = useSession()
+  const {
+    balance, balanceLoading,
+    amount, setAmount,
+    formError, submitting, successMessage,
+    handleSubmit,
+  } = useTopUpForm(t)
+
+  return (
+    <section>
+      <p className={styles.sectionLabel}>Баланс и VIP-бонус</p>
+
+      <motion.div
+        className={styles.mechanicBanner}
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.4 }}
+      >
+        <div className={styles.mechanicIconWrap}>
+          <Gift size={20} />
+        </div>
+        <div>
+          <p className={styles.mechanicTitle}>Пополнение баланса на $5 даёт месяц VIP</p>
+          <p className={styles.mechanicSub}>
+            Деньги идут на баланс целиком и остаются вашими — их можно тратить на AI-фичи (распознавание формул,
+            генерацию тестов, планы уроков). А VIP — бонус сверху: как только сумма пополнения достигает $5,
+            он включается автоматически. Работает на каждые $5: $10 → 2 месяца VIP, $25 → 5 месяцев VIP, и так далее.
+          </p>
+        </div>
+      </motion.div>
+
+      <div className={styles.topupSteps}>
+        {TOPUP_STEPS.map((s, i) => (
+          <motion.div
+            key={s.title}
+            className={styles.topupStepCard}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, delay: i * 0.08 }}
+          >
+            <div className={styles.getCardNum}>{s.icon}</div>
+            <div>
+              <h3 className={styles.featureTitle}>{s.title}</h3>
+              <p className={styles.featureDesc}>{s.desc}</p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      <motion.div
+        className={styles.getCard}
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+      >
+        <div className={styles.getCardHeader}>
+          <div className={styles.getCardNum}><CreditCard size={14} /></div>
+          <div>
+            <p className={styles.getCardTitle}>Пополнить баланс</p>
+            <p className={styles.getCardSub}>
+              {status === 'authenticated'
+                ? <>Текущий баланс: <strong>{balanceLoading ? '…' : formatCents(balance?.balanceCents ?? 0)}</strong></>
+                : 'Войдите в аккаунт, чтобы пополнить баланс'}
+            </p>
+          </div>
+        </div>
+        <div className={styles.getCardBody}>
+          {status === 'unauthenticated' && (
+            <p className={styles.promoHint}>
+              <Link href="/login" className={styles.freeHintLink}>Войдите в аккаунт</Link>
+              {' '}чтобы пополнить баланс и получить VIP-бонус.
+            </p>
+          )}
+
+          {status !== 'unauthenticated' && (
+            <>
+              <form onSubmit={handleSubmit} className={styles.promoRow}>
+                <div className={styles.promoInputWrap}>
+                  <span className={styles.promoIconWrap}>$</span>
+                  <input
+                    className={`${styles.promoInput} ${formError ? styles.promoInputError : ''}`}
+                    type="number"
+                    inputMode="numeric"
+                    step={1}
+                    min={MIN_DEPOSIT_DOLLARS}
+                    max={MAX_DEPOSIT_DOLLARS}
+                    aria-label="Сумма пополнения в долларах"
+                    value={amount}
+                    onChange={e => setAmount(e.target.value)}
+                  />
+                </div>
+                <button className={styles.activateBtn} type="submit" disabled={submitting}>
+                  {submitting ? <span className={styles.spinner} /> : <Wallet size={14} />}
+                  {submitting ? 'Пополняем…' : 'Пополнить'}
+                </button>
+              </form>
+              <p className={styles.promoHint}>
+                От ${VIP_BONUS_THRESHOLD_DOLLARS} — плюс месяц VIP на каждые ${VIP_BONUS_THRESHOLD_DOLLARS}.
+              </p>
+            </>
+          )}
+
+          {formError && <p className={styles.promoError}>{formError}</p>}
+
+          {successMessage && (
+            <div className={styles.successBlock}>
+              <div className={styles.successIconWrap}><CheckCircle size={20} /></div>
+              <div>
+                <div className={styles.successTitle}>Готово</div>
+                <div className={styles.successSub}>{successMessage}</div>
+              </div>
+            </div>
+          )}
+        </div>
+      </motion.div>
+    </section>
+  )
+}
+
 // ── Buy modal (placeholder: opens straight to promo activation until real checkout exists) ──
 
 function BuyModal({ open, onClose, ...promoProps }: { open: boolean; onClose: () => void } & PromoFormProps) {
@@ -457,6 +605,9 @@ export default function VipClientPage() {
       </section>
 
       <div className={styles.content}>
+
+        {/* ── Top-up (balance → VIP bonus) ── */}
+        <TopUpSection />
 
         {/* ── Features ── */}
         <section>
