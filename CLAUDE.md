@@ -222,5 +222,205 @@ ADMIN→TEACHER: сид-репетитор логинится с ролью `ADM
 ## Как здесь работает Autopilot (чат)
 
 Состояние прогона — `.autopilot/state.js`; контракты/копирайт для этой фичи и живая история тикетов — `.autopilot/chat-system/interfaces.md` (читать перед кодом), требования и их статус — `.autopilot/chat-system/manifest.md`, бриф — `.autopilot/chat-system/2026-09-15-brief.md`, тикеты — `.autopilot/chat-system/tickets/`.
-
 <!-- autopilot:chat-system:end -->
+
+<!-- autopilot:footer-variants:start -->
+
+## Футер главной страницы — `src/widgets/Footer/` (продакшн)
+
+По итогам витрины ниже выбран вариант «И1» (серые дрейфующие фигуры + блюр-панели) —
+он выделен из гитигнорной песочницы в обычный, коммитящийся виджет и подключён
+на `/` (`app/page.tsx`, рядом с `<LandingPage />`, только на главной странице,
+не в корневом layout). Ключевые отличия production-копии от версии в песочнице:
+
+- Реальные ссылки, а не `href="#"`: `/info-pdf-to-test`, `/vip`, `/teachers`,
+  `/student-calendar`, `/calendar`, `/call`, `/terms`, `/privacy` (все — уже
+  существующие роуты; `forStudents`/`forTeachers`/`videoCalls` ведут в личный
+  кабинет и для незалогиненного посетителя уводят на `/login` — это ожидаемое
+  поведение уже существующих страниц, не баг футера). Категорий две:
+  «Продукт» и «Документы» — «Поддержка»/«Компания» из макета в продакшн не
+  попали, для них нет реальных страниц (см. `.autopilot/footer-variants/interfaces.md`,
+  если понадобится восстановить, что было в макете).
+- Текст — через `next-intl`, namespace `Footer` в `messages/{en,hi,ru,zh}.json`
+  (старый `Footer`-неймспейс был мёртвым шаблонным мусором от какого-то
+  e-commerce-стартера — ни одного использования в коде; ключи полностью
+  переписаны, а не дополнены).
+- `useThreeLifecycle.ts`/`floatingShapes.ts` скопированы из
+  `experiments/footer-variants/three-d/` и `.../iterations/shared/` (те
+  версии гитигнорены — из production-кода на них нельзя ссылаться, копия
+  обязательна, не импорт).
+- Не обёрнут `next/dynamic({ssr:false})`, в отличие от версии в песочнице —
+  JSX самого компонента не трогает `window`/`canvas` (это делает только
+  `useEffect` внутри `useThreeLifecycle`), поэтому безопасно рендерится на
+  сервере: ссылки в футере видны в HTML без JS, 3D — прогрессивное улучшение
+  поверх них.
+
+## Экспериментальная песочница — варианты футера (`experiments/footer-variants`)
+
+Изолированная витрина из 12 готовых футеров GoodWorker (3 статичных + 3 с анимацией появления + 3 на raw `three` + 3 из второй волны по фидбеку на D1) для визуального выбора направления — сама витрина ни к одному реальному лендингу не подключена (победивший вариант выделен в отдельный продакшн-виджет, см. выше, а не импортируется отсюда). Соцсетей ни в одном варианте нет (у GoodWorker их нет).
+
+Смотреть: `npm run dev`, затем `http://localhost:3000/experiments/footer-variants`.
+
+Дерево:
+```
+app/experiments/footer-variants/page.tsx        серверный компонент маршрута, рендерит <Showcase />
+src/experiments/footer-variants/
+├── types.ts                                    export type FooterVariantEntry — форма записи всех трёх реестров
+├── Showcase/Showcase.tsx (+.module.scss)        'use client', собирает 3 реестра в секции + якорный nav, не знает устройства футеров
+├── static/index.ts                              export const staticVariants: FooterVariantEntry[] (s1–s3)
+├── static/StaticMinimal/                        С1 — wordmark + одна строка ссылок
+├── static/StaticMega/                           С2 — бренд-колонка + Продукт/Компания/Поддержка + копирайт-полоса
+├── static/StaticInverted/                       С3 — тёмный блок, крупный CTA-заголовок
+├── reveal/index.ts                              export const revealVariants: FooterVariantEntry[] (r1–r3)
+├── reveal/RevealStagger/                        Р1 — колонки появляются по очереди (framer-motion stagger)
+├── reveal/RevealAlternate/                      Р2 — колонки выезжают слева/справа поочерёдно
+├── reveal/RevealMask/                            Р3 — заголовок проявляется clip-path-вайпом
+├── three-d/index.ts                             export const threeDVariants: FooterVariantEntry[] (d1–d3), компоненты уже обёрнуты next/dynamic здесь
+├── three-d/useThreeLifecycle.ts                 общий хук жизненного цикла THREE.WebGLRenderer/Scene/PerspectiveCamera для всех 3D-вариантов
+├── three-d/DriftShapes/                         D1 — дрейфующие wireframe-фигуры фоном
+├── three-d/TiltCard/                            D2 — 3D-карточка наклоняется за курсором
+├── three-d/WaveSurface/                         D3 — полноширинная волновая поверхность
+├── iterations/index.ts                          export const iterationVariants: FooterVariantEntry[] (i1–i3), 3D-варианты обёрнуты next/dynamic здесь же
+├── iterations/shared/linkGroups.ts              общий набор ссылок по важности (Продукт/Поддержка/Компания/Документы), без соцсетей
+├── iterations/shared/floatingShapes.ts          вынесенная механика дрейфа фигур (та же математика, что у DriftShapes) — переиспользуют И1/И2
+├── iterations/FloatingLinks/                    И1 — серые фигуры на всю высоту футера, текст на блюр-панелях
+├── iterations/FloatingColumns/                  И2 — колонны-плашки, фигуры дрейфуют в зазорах между ними
+└── iterations/CleanLinks/                       И3 — без 3D: логотип + фраза + чистая сетка ссылок
+```
+
+Как устроено: `FooterVariantEntry = { id, label, description, Component }` (`Component` — без пропсов, рендерит готовый `<footer>`). Три реестра (`static/index.ts`, `reveal/index.ts`, `three-d/index.ts`) независимы друг от друга и каждый — единственная точка, которую трогает будущая правка: чтобы добавить/заменить/убрать вариант, редактируется только соответствующий `index.ts` (плюс папка самого компонента); `Showcase.tsx` импортирует все три массива, рендерит только непустые секции в фиксированном порядке (Статика → Появление → 3D) и строит якорную навигацию из `variant.id`/`variant.label` — сам `Showcase` не редактируется ради нового варианта.
+
+Подводные камни:
+- `.gitignore` (корень) содержит `/app/experiments/` и `/src/experiments/` — весь этот код невидим для git (`git status --porcelain` не показывает ни одного файла отсюда); коммитить в это дерево бессмысленно, пока эти две строки не убраны из `.gitignore`.
+- 3D-компоненты (`DriftShapes`, `TiltCard`, `WaveSurface`) импортируются в `three-d/index.ts` через `next/dynamic(() => import(...), { ssr: false })` — они трогают `window`/`canvas`/`WebGLRenderer` напрямую и не могут рендериться на сервере; `Showcase` об этой обёртке не знает.
+- `three-d/useThreeLifecycle.ts` — общий хук: создаёт рендерер/сцену/камеру один раз в `try/catch` (провал → `failed: true`, компонент сам рисует текстовую заглушку того же размера вместо канваса), держит `IntersectionObserver` (rAF на паузу вне вьюпорта, продолжение не с нуля при возврате), `matchMedia('(prefers-reduced-motion: reduce)')` с живым `change`-слушателем (при `reduce` — один статичный кадр, без цикла), `webglcontextlost` → `failed: true`, `ResizeObserver`, и на unmount чистит всё (`dispose()` геометрий/материалов через traverse, `renderer.dispose()`/`forceContextLoss()`). Новый 3D-вариант должен вызывать `useThreeLifecycle(containerRef, { init, animate, onResize, ...cameraOpts })` и отдавать в `init`/`animate` только логику своей сцены (пример использования — `three-d/DriftShapes/DriftShapes.tsx`), не писать цикл рендера заново.
+- Автотестов нет и не планируется — чисто визуальный UI для сравнения, верификация только через `npm run dev` + браузер.
+- Все ссылки внутри футеров — `href="#"`, копирайт-текст условный (категории ссылок, © GoodWorker) — макет для визуального сравнения, не рабочая навигация и не финальные тексты поддержки/юридических документов. Соцсетей нигде нет — их специально убрали из первой волны вариантов, узнав, что у GoodWorker их нет.
+- Вторая волна (`iterations/`) использует более богатый набор ссылок (`shared/linkGroups.ts`, ~20 ссылок в 4 категориях по важности) — первая волна (`static/`, `reveal/`, `three-d/`) осталась на прежнем, более скромном наборе ссылок на колонку; если понадобится единообразие, придётся сознательно перенести `linkGroups` и туда.
+- Глобальный сброс `src/shared/scss/main.scss` — `a { display: contents; ... }` — снимает у `<a>` собственный бокс на уровне всего приложения (не только этой песочницы). Любой список ссылок здесь (`.col a`, `.links a`, `.navLink` в `Showcase`) обязан сам вернуть `display` (`block` в flex-column, `inline-flex` в строке) — без этого ссылки колонки визуально сливаются в одну строку текста без пробелов между ними. Уже исправлено во всех 12 вариантах и в навигации витрины; тот же приём, что и в `src/widgets/Chat/EventCard/EventCard.module.scss` `.link` — если добавляешь новый вариант с ссылками, не забудь про это же свойство.
+- Сборка (Lightning CSS в Turbopack, весь проект, не только эта песочница) молча удаляет из скомпилированного CSS **оба** объявления, если в одном правиле написать и `backdrop-filter`, и ручной `-webkit-backdrop-filter` с тем же значением — без ошибки сборки, эффект просто не работает. Писать только `backdrop-filter` без ручного webkit-дубликата (см. `iterations/FloatingLinks/FloatingLinks.module.scss` `.panel`, и рабочий пример без дубликата — `Showcase.module.scss` `.nav`).
+
+## Как здесь работает Autopilot (варианты футера)
+
+Состояние прогона — `.autopilot/state.js`; контракты — `.autopilot/footer-variants/interfaces.md` (читать перед кодом), требования и их статус — `.autopilot/footer-variants/manifest.md`, бриф — `.autopilot/footer-variants/2026-09-17-brief.md`. Тикетов четыре, ярус T1: 01 — каркас витрины и статика, 02 — появление, 03 — 3D, 04 — вторая волна по фидбеку на D1 (3 новых варианта + чистка соцсетей во всех предыдущих). Прогон не коммитится в git — вся песочница гитигнорена по прямому запросу заказчика.
+<!-- autopilot:footer-variants:end -->
+
+<!-- autopilot:wallet-balance:start -->
+
+## Баланс/кошелёк вместо прямой покупки VIP — `src/shared/lib/wallet/`
+
+7 платных AI-эндпоинтов раньше были заперты за `isVip`; теперь доступ решает баланс в центах
+(mock-пополнение, без реального платёжного провайдера) — списывается реальная себестоимость
+вызова DeepSeek + наценка, а VIP-статус (лимит участников звонка, VIP-посты, `/vip`-страница,
+промокоды/рефералка) живёт отдельно и балансом не завязан: обнулённый баланс не трогает
+`isVip`/`vipExpiresAt`.
+
+### Ключевые файлы
+
+`src/shared/lib/wallet/pricing.ts` — чистый движок цены, без Prisma и сайд-эффектов:
+`isPeak(at: Date): boolean`, `computeCostCents(usage: AIUsage, at: Date): number`,
+`estimateMaxCostCents(endpoint: string, promptChars: number, at: Date): number` (таблица
+`OUTPUT_TOKEN_CEILING` по строковым ключам путей 7 эндпоинтов).
+`src/shared/lib/wallet/wallet.ts` — весь доступ к балансу/леджеру: `getWalletSessionUser()`
+(своя копия ADMIN→TEACHER, НЕ импортируется из `chat/access.ts` — кошелёк не зависит от чата),
+`getBalanceCents(user)`, `preflightCheck(user, maxCostCents)` (кидает `InsufficientBalanceError`),
+`chargeForAICall(user, endpoint, usage, at)`, `depositMock(user, amountCents)` (кидает
+`InvalidDepositAmountError`), `listTransactions(user, cursor?, limit?)`,
+`insufficientBalanceResponse(err)` — общий билдер 402-тела.
+`app/api/wallet/{balance,topup,transactions}/route.ts` — HTTP кошелька.
+`src/widgets/Wallet/{WalletBadge,WalletPage,InsufficientBalanceModal}/` — бейдж в
+`Header.tsx`, страница `/wallet` (`app/wallet/page.tsx`), модалка нехватки средств
+(`createPortal` в `#modal_portal`, тот же портал что `ModalWindowDefault`/`ModalImageZoom`).
+`src/lib/openrouter.ts` — `callAI`/`callVisionAI` теперь возвращают `Promise<{content, usage}>`
+(`AIResult`); тип `AIUsage` объявлен здесь, `pricing.ts` его импортирует (не наоборот).
+`prisma/schema.prisma` — модель `WalletTransaction` (enum `WalletTransactionType:
+DEPOSIT|AI_DEBIT`, отдельная от `VipTransaction` — та про VIP-дни, не про деньги), поле
+`balanceCents` на `Teacher`/`Student`; миграция
+`prisma/migrations/20260921195642_wallet_balance/`.
+7 платных эндпоинтов: `app/api/whiteboard/formula-ai/route.ts`,
+`app/api/whiteboard/formula-photo/route.ts`, `app/api/pdf-to-test/photos/route.ts`,
+`app/api/pdf-to-test/route.ts`, `app/api/tests/import-pdf/route.ts`,
+`app/api/teacher/lesson-plan/route.ts`, `app/api/teacher/lesson-plan/revise/route.ts`.
+6 фронтенд-точек перехвата 402: `src/widgets/VideoRoom/CallWhiteboard/FormulaKeyboard.tsx`,
+`.../FormulaPhotoModal.tsx`, `src/widgets/Calendar/Modals/LessonPlanModal/LessonPlanModal.tsx`,
+`.../CalendarCreateModal/CalendarCreateModal.tsx`, `src/widgets/Tests/PdfImportModal/PdfImportModal.tsx`,
+`app/info-pdf-to-test/page.tsx`.
+
+### Архитектура
+
+Поток на каждом платном эндпоинте: **preflight** (`preflightCheck` против
+`estimateMaxCostCents`, ДО вызова AI-провайдера — заведомо неаффордный запрос не долетает до
+DeepSeek) → `callAI`/`callVisionAI` → `parseJSON` ответа → **charge** (`chargeForAICall` с
+реальным `usage` от провайдера) СТРОГО после успешного парсинга, не сразу после AI-вызова.
+Себестоимость — из таблицы ставок DeepSeek `$/1M tokens` (non-peak/peak × hit/miss/out) в
+`pricing.ts`, наценка сверху через `AI_MARKUP_PERCENT`; `isPeak(at)` — UTC 01:00–04:00 или
+06:00–10:00, Пн–Пт (китайские праздники не учтены, известное ограничение).
+
+Плательщик за `formula-ai`/`formula-photo` — владелец комнаты (`room.ownerId`/`ownerRole`
+через локальный `roomOwnerWalletUser(room)`), не тот, кто нажал кнопку. Остальные 5 — текущий
+`session.user` через `getWalletSessionUser()`. `lesson-plan`/`lesson-plan/revise` — ADMIN
+по-прежнему бесплатен (preflight/charge пропускаются целиком), дословно как было при VIP-гейте.
+
+`pdf-to-test`/`tests/import-pdf`: тариф на лимит страниц/формата (VIP 50 стр./любой формат,
+не-VIP 5 стр./только PDF) НЕ меняется — списание накладывается поверх того, что тариф уже
+разрешил обработать. Гостевой путь `pdf-to-test` (`isGuest`) вообще не обращается к `wallet`-модулю.
+
+402-контракт (одинаков во всех 7 эндпоинтов): `{error: 'INSUFFICIENT_BALANCE', message,
+neededCents, availableCents}`, HTTP 402, всегда до вызова AI. Собирается через
+`insufficientBalanceResponse()` в `formula-ai`/`formula-photo`/`pdf-to-test/photos`/
+`lesson-plan`/`lesson-plan/revise`; в `pdf-to-test` и `tests/import-pdf` тело собрано вручную
+(вне зоны соответствующего тикета — сознательно не унифицировано, см. интерфейсы фичи).
+
+### Соглашения
+
+Единственное место, которое считает себестоимость — `pricing.ts`; никакой другой файл цену не
+пересчитывает сам. Списание — строго после успешного `parseJSON`, не после голого `callAI`
+(см. «Подводные камни» — это не всегда соблюдалось с первого раза). Строковые ключи эндпоинтов
+в `estimateMaxCostCents`/`OUTPUT_TOKEN_CEILING` (`'whiteboard/formula-ai'` и т.п.) должны
+буквально совпадать между `pricing.ts` и route-хендлерами. `VipTransaction` не переиспользуется
+под деньги — леджер денег только `WalletTransaction`. `isVip`/`vipExpiresAt`-проверки вне этих
+7 эндпоинтов эта фича не трогает.
+
+### Окружение
+
+`AI_MARKUP_PERCENT` — процент наценки сверх себестоимости DeepSeek (`pricing.ts`
+`markupMultiplier()`); отсутствует или не число → `0%` (без наценки), не ошибка. Значение (даже
+пустое) — в `.env.example`.
+
+### Подводные камни
+
+TOCTOU-гонка при обнулении баланса: первая версия `chargeForAICall` делала `getBalanceCents`
+(отдельное чтение), затем безусловный `updateMany({balanceCents: 0})` — окно гонки, куда мог
+влезть конкурентный `depositMock` и быть затёрт обнулением. Исправлено `zeroIfBelowCost` — один
+атомарный SQL (`WITH locked AS (SELECT ... FOR UPDATE) UPDATE ... RETURNING`, через
+`$queryRawUnsafe`), перепроверяющий `balanceCents < cost` в момент самой записи; вокруг
+decrement+zeroIfBelowCost — ограниченный retry (`MAX_ATTEMPTS=5`), помечен `ponytail:`-
+комментарием с путём апгрейда до `SERIALIZABLE`-транзакции.
+
+Клиентские VIP-гейты, независимые от бэкенда: `FormulaKeyboard.tsx` и
+`CalendarCreateModal.tsx` блокировали запрос ДО обращения к API по старому `isVip`, не зная,
+что бэкенд-гейт уже снят — 2 из 7 эндпоинтов были физически недостижимы для не-VIP
+пользователя с деньгами на балансе. Найдено и снято отдельно, позже основной замены гейтов —
+при переносе/добавлении платных AI-фич искать такие гейты не только в `route.ts`.
+
+«Списание только после успешного `parseJSON`» не сразу соблюдено везде: в первой версии
+`formula-photo/route.ts` `chargeForAICall` стоял ДО `parseJSON`, так что невалидный JSON от
+провайдера всё равно списал бы баланс; найдено ревью, перенесено после парсинга (тот же
+порядок, что в остальных 4 эндпоинтах).
+
+Смена сигнатуры `callAI`/`callVisionAI` на `{content, usage}` ломает компиляцию мест ВНЕ
+периметра этой фичи: `src/lib/postAI.ts`, `src/shared/lib/gemini.ts`,
+`app/api/calendar/google/import/route.ts`, `app/api/check-answer/route.ts`,
+`app/api/tests/generate-title/route.ts`, `scripts/ingest-curriculum.ts` — адаптированы
+отдельно (механическая правка вызова под новую сигнатуру, без биллинга этих мест).
+
+Self-check скрипты — не тест-раннер, `npx tsx`, `pricing.selfcheck.ts` чистый (без БД):
+```bash
+npx tsx src/shared/lib/wallet/pricing.selfcheck.ts
+```
+`wallet.selfcheck.ts` реально бьёт по dev БД (создаёт и удаляет одноразовую `Teacher`-строку,
+сид-аккаунты не трогает), нужен `DATABASE_URL`:
+```bash
+set -a; source .env; set +a && npx tsx src/shared/lib/wallet/wallet.selfcheck.ts
+```
+<!-- autopilot:wallet-balance:end -->
