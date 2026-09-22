@@ -3,7 +3,6 @@ import { callAI, parseJSON } from '@/lib/openrouter'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
 import { chargeForAICall, InsufficientBalanceError, insufficientBalanceResponse, preflightCheck, WalletUser } from '@/shared/lib/wallet/wallet'
-import { estimateMaxCostCents } from '@/shared/lib/wallet/pricing'
 
 const ENDPOINT = 'whiteboard/formula-ai'
 
@@ -38,7 +37,7 @@ export async function POST(req: NextRequest) {
     const payer = roomOwnerWalletUser(room)
     const at = new Date()
     try {
-      await preflightCheck(payer, estimateMaxCostCents(ENDPOINT, desc.length, at))
+      await preflightCheck(payer, ENDPOINT, desc.length, at)
     } catch (e) {
       if (e instanceof InsufficientBalanceError) return insufficientBalanceResponse(e)
       throw e
@@ -50,11 +49,11 @@ export async function POST(req: NextRequest) {
     // Reached only once the AI's response parsed as valid JSON — real tokens
     // were spent even if `latex` turns out empty, so the charge happens here,
     // before that empty-result check (same order as formula-photo/pdf-to-test/photos).
-    await chargeForAICall(payer, ENDPOINT, usage, at)
+    const { costCents: chargedCents } = await chargeForAICall(payer, ENDPOINT, usage, at)
 
     if (!latex?.trim()) throw new Error('empty latex')
 
-    return NextResponse.json({ latex })
+    return NextResponse.json({ latex, chargedCents })
   } catch (error) {
     console.error('[POST /api/whiteboard/formula-ai]', error)
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal error' }, { status: 500 })

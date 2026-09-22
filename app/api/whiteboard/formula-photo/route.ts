@@ -3,7 +3,6 @@ import { AIUsage, callVisionAI, parseJSON } from '@/lib/openrouter'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
 import { chargeForAICall, InsufficientBalanceError, insufficientBalanceResponse, preflightCheck, WalletUser } from '@/shared/lib/wallet/wallet'
-import { estimateMaxCostCents } from '@/shared/lib/wallet/pricing'
 
 export const maxDuration = 60
 
@@ -64,7 +63,7 @@ export async function POST(req: NextRequest) {
 
     const at = new Date()
     try {
-      await preflightCheck(payer, estimateMaxCostCents(ENDPOINT, userPrompt.length, at))
+      await preflightCheck(payer, ENDPOINT, userPrompt.length, at)
     } catch (e) {
       if (e instanceof InsufficientBalanceError) return insufficientBalanceResponse(e)
       throw e
@@ -84,17 +83,17 @@ export async function POST(req: NextRequest) {
     // Only reached once the AI's response parsed as valid JSON — an invalid/
     // malformed response never reaches here (parseJSON throws, caught by the
     // outer try/catch below, no charge).
-    await chargeForAICall(payer, ENDPOINT, usage, at)
+    const { costCents: chargedCents } = await chargeForAICall(payer, ENDPOINT, usage, at)
 
     if (parsed.needsClarification) {
       const candidates = (parsed.candidates ?? []).filter((c): c is string => typeof c === 'string' && c.trim().length > 0)
       if (candidates.length === 0) return NextResponse.json({ error: 'Не удалось распознать формулу — уточните описание' }, { status: 422 })
-      return NextResponse.json({ needsClarification: true, candidates })
+      return NextResponse.json({ needsClarification: true, candidates, chargedCents })
     }
 
     if (!parsed.latex?.trim()) return NextResponse.json({ error: 'Не удалось распознать формулу' }, { status: 422 })
 
-    return NextResponse.json({ latex: parsed.latex })
+    return NextResponse.json({ latex: parsed.latex, chargedCents })
   } catch (error) {
     console.error('[POST /api/whiteboard/formula-photo]', error)
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal error' }, { status: 500 })

@@ -5,7 +5,6 @@ import { resolveVip } from '@/lib/vipStatus'
 import { kindOf, extOf, MAX_PHOTOS } from '@/shared/constants/pdfImport'
 import { nanoid } from 'nanoid'
 import { getWalletSessionUser, preflightCheck, chargeForAICall, InsufficientBalanceError, type WalletUser } from '@/shared/lib/wallet/wallet'
-import { estimateMaxCostCents } from '@/shared/lib/wallet/pricing'
 
 const VIP_PAGE_LIMIT = 50
 const FREE_PAGE_LIMIT = 5
@@ -351,15 +350,14 @@ export async function POST(req: NextRequest) {
     // All image blocks embedded inside pdf/doc files (prepended before AI blocks)
     const embeddedImageBlocks = results.flatMap((r) => r.imageBlocks)
 
-    // ── Balance check (ADMIN stays free, same as the existing VIP gate) ──
-    // Existing pageLimit/format checks above already decided this request is
-    // allowed; billing is layered on top, never instead (see G02).
-    const walletUser: WalletUser | null = isAdmin ? null : await getWalletSessionUser()
+    // ── Balance check — ADMIN pays like everyone else (billing has no role
+    // exceptions; the pageLimit/format checks above are the only place ADMIN
+    // still gets special treatment). ──
+    const walletUser: WalletUser | null = await getWalletSessionUser()
     if (walletUser) {
       const promptChars = combinedContent.length + imageFiles.length * VISION_PROMPT_CHARS_PER_PHOTO
-      const maxCostCents = estimateMaxCostCents('tests/import-pdf', promptChars, new Date())
       try {
-        await preflightCheck(walletUser, maxCostCents)
+        await preflightCheck(walletUser, 'tests/import-pdf', promptChars, new Date())
       } catch (e) {
         if (e instanceof InsufficientBalanceError) {
           return NextResponse.json(
@@ -429,11 +427,12 @@ export async function POST(req: NextRequest) {
     // Charge only after every AI call above succeeded (R03.1) — any thrown
     // error returns before this line, so a failed call never reaches the
     // wallet. One aggregated charge across all chunks/vision for this request.
+    let chargedCents = 0
     if (walletUser) {
-      await chargeForAICall(walletUser, 'tests/import-pdf', sumUsage(usages), new Date())
+      chargedCents = (await chargeForAICall(walletUser, 'tests/import-pdf', sumUsage(usages), new Date())).costCents
     }
 
-    return NextResponse.json({ blocks, pageCount: totalPages, isVip: privileged })
+    return NextResponse.json({ blocks, pageCount: totalPages, isVip: privileged, chargedCents })
   } catch (error) {
     console.error('[POST /api/tests/import-pdf]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

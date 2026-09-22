@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
 import { callVisionAI, parseJSON } from '@/lib/openrouter'
 import { chargeForAICall, getWalletSessionUser, InsufficientBalanceError, insufficientBalanceResponse, preflightCheck } from '@/shared/lib/wallet/wallet'
-import { estimateMaxCostCents } from '@/shared/lib/wallet/pricing'
 
 export const maxDuration = 60
 
@@ -93,13 +92,14 @@ Rules:
 
   const at = new Date()
   try {
-    await preflightCheck(payer, estimateMaxCostCents(ENDPOINT, aiPrompt.length, at))
+    await preflightCheck(payer, ENDPOINT, aiPrompt.length, at)
   } catch (e) {
     if (e instanceof InsufficientBalanceError) return insufficientBalanceResponse(e)
     throw e
   }
 
   let parsed: { title?: string; questions?: unknown[] }
+  let chargedCents = 0
   try {
     const { content: raw, usage } = await callVisionAI(
       'You are an educational test parser with vision. Return ONLY valid JSON without markdown.',
@@ -108,7 +108,7 @@ Rules:
       { temperature: 0.1 },
     )
     parsed = parseJSON<{ title?: string; questions?: unknown[] }>(raw)
-    await chargeForAICall(payer, ENDPOINT, usage, at)
+    chargedCents = (await chargeForAICall(payer, ENDPOINT, usage, at)).costCents
   } catch (e) {
     console.error(`[pdf-to-test/photos] ${userEmail}: AI error:`, e)
     return NextResponse.json({ error: 'Ошибка анализа фото' }, { status: 500 })
@@ -130,5 +130,6 @@ Rules:
     guestLimit: null,
     unlimited: true,
     totalChars: 0,
+    chargedCents,
   })
 }

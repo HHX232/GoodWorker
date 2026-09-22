@@ -4,8 +4,7 @@ import { CATEGORY_ROOT_SLUG_TO_SUBJECT } from '@/lib/curriculumSubjects'
 import { getCurriculumContextForPrompt } from '@/lib/curriculumContext'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
-import { chargeForAICall, InsufficientBalanceError, insufficientBalanceResponse, preflightCheck } from '@/shared/lib/wallet/wallet'
-import { estimateMaxCostCents } from '@/shared/lib/wallet/pricing'
+import { chargeForAICall, getWalletSessionUser, InsufficientBalanceError, insufficientBalanceResponse, preflightCheck } from '@/shared/lib/wallet/wallet'
 
 const ENDPOINT = 'teacher/lesson-plan'
 
@@ -82,7 +81,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({error: 'Unauthorized'}, {status: 401})
     }
     const teacherId = session.user.id
-    const isAdmin = role === 'ADMIN'
 
     const {studentId, categoryId, additionalNotes} = await req.json() as LessonPlanRequestBody
     if (!studentId) {
@@ -194,11 +192,11 @@ ${additionalNotes.trim()}` : ''}`
 
     const systemPrompt = curriculumBlock ? `${SYSTEM_PROMPT}\n\n${curriculumBlock}` : SYSTEM_PROMPT
 
-    const payer = {id: teacherId, role: 'TEACHER' as const}
+    const payer = await getWalletSessionUser()
     const at = new Date()
-    if (!isAdmin) {
+    if (payer) {
       try {
-        await preflightCheck(payer, estimateMaxCostCents(ENDPOINT, systemPrompt.length + userPrompt.length, at))
+        await preflightCheck(payer, ENDPOINT, systemPrompt.length + userPrompt.length, at)
       } catch (e) {
         if (e instanceof InsufficientBalanceError) return insufficientBalanceResponse(e)
         throw e
@@ -214,7 +212,7 @@ ${additionalNotes.trim()}` : ''}`
       upcomingSteps: {title: string; description: string}[]
     }>(raw)
 
-    if (!isAdmin) await chargeForAICall(payer, ENDPOINT, usage, at)
+    const chargedCents = payer ? (await chargeForAICall(payer, ENDPOINT, usage, at)).costCents : 0
 
     return NextResponse.json({
       subject: subject || plan.subject || 'Общий урок',
@@ -222,7 +220,8 @@ ${additionalNotes.trim()}` : ''}`
       reviewSteps: plan.reviewSteps ?? [],
       activeSteps: plan.activeSteps ?? [],
       upcomingSteps: plan.upcomingSteps ?? [],
-      generatedAt: new Date().toISOString()
+      generatedAt: new Date().toISOString(),
+      chargedCents,
     })
   } catch (error) {
     console.error('[POST /api/teacher/lesson-plan]', error)

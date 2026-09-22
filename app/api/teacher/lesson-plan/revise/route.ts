@@ -1,8 +1,7 @@
 import { callAI, parseJSON } from '@/lib/openrouter'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../../auth'
-import { chargeForAICall, InsufficientBalanceError, insufficientBalanceResponse, preflightCheck } from '@/shared/lib/wallet/wallet'
-import { estimateMaxCostCents } from '@/shared/lib/wallet/pricing'
+import { chargeForAICall, getWalletSessionUser, InsufficientBalanceError, insufficientBalanceResponse, preflightCheck } from '@/shared/lib/wallet/wallet'
 
 const ENDPOINT = 'teacher/lesson-plan/revise'
 
@@ -44,8 +43,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({error: 'Unauthorized'}, {status: 401})
     }
 
-    const isAdmin = role === 'ADMIN'
-
     const {plan, instructions} = await req.json() as ReviseRequestBody
     if (!plan) {
       return NextResponse.json({error: 'plan required'}, {status: 400})
@@ -60,11 +57,11 @@ ${JSON.stringify({reviewSteps: plan.reviewSteps, activeSteps: plan.activeSteps, 
 Пожелание учителя:
 ${instructions.trim()}`
 
-    const payer = {id: session.user.id, role: 'TEACHER' as const}
+    const payer = await getWalletSessionUser()
     const at = new Date()
-    if (!isAdmin) {
+    if (payer) {
       try {
-        await preflightCheck(payer, estimateMaxCostCents(ENDPOINT, SYSTEM_PROMPT.length + userPrompt.length, at))
+        await preflightCheck(payer, ENDPOINT, SYSTEM_PROMPT.length + userPrompt.length, at)
       } catch (e) {
         if (e instanceof InsufficientBalanceError) return insufficientBalanceResponse(e)
         throw e
@@ -78,7 +75,7 @@ ${instructions.trim()}`
       upcomingSteps: {title: string; description: string}[]
     }>(raw)
 
-    if (!isAdmin) await chargeForAICall(payer, ENDPOINT, usage, at)
+    const chargedCents = payer ? (await chargeForAICall(payer, ENDPOINT, usage, at)).costCents : 0
 
     return NextResponse.json({
       subject: plan.subject,
@@ -87,6 +84,7 @@ ${instructions.trim()}`
       activeSteps: revised.activeSteps ?? plan.activeSteps,
       upcomingSteps: revised.upcomingSteps ?? plan.upcomingSteps,
       generatedAt: plan.generatedAt,
+      chargedCents,
     })
   } catch (error) {
     console.error('[POST /api/teacher/lesson-plan/revise]', error)

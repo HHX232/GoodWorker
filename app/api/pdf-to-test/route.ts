@@ -3,7 +3,6 @@ import { auth } from '../../../auth'
 import { callAI, parseJSON, type AIUsage } from '@/lib/openrouter'
 import { resolveVip } from '@/lib/vipStatus'
 import { getWalletSessionUser, preflightCheck, chargeForAICall, InsufficientBalanceError, type WalletUser } from '@/shared/lib/wallet/wallet'
-import { estimateMaxCostCents } from '@/shared/lib/wallet/pricing'
 
 const PDF_SERVICE = process.env.PDF_SERVICE_URL ?? 'http://localhost:3001'
 
@@ -175,9 +174,8 @@ ${truncated}`
   if (!isGuest) {
     walletUser = await getWalletSessionUser()
     if (walletUser) {
-      const maxCostCents = estimateMaxCostCents('pdf-to-test', aiPrompt.length, new Date())
       try {
-        await preflightCheck(walletUser, maxCostCents)
+        await preflightCheck(walletUser, 'pdf-to-test', aiPrompt.length, new Date())
       } catch (e) {
         if (e instanceof InsufficientBalanceError) {
           return NextResponse.json(
@@ -213,8 +211,9 @@ ${truncated}`
 
   // Charge only after a successful AI response (R03.1) — a thrown error above
   // returns before this line, so a failed call never reaches the wallet.
+  let chargedCents = 0
   if (walletUser) {
-    await chargeForAICall(walletUser, 'pdf-to-test', usage, new Date())
+    chargedCents = (await chargeForAICall(walletUser, 'pdf-to-test', usage, new Date())).costCents
   }
 
   console.log(`[pdf-to-test] "${fileName}": done — ${(parsed.questions ?? []).length} question(s) generated`)
@@ -230,5 +229,6 @@ ${truncated}`
     unlimited,
     totalChars: docText.length,
     truncated: docText.length > maxChars,
+    chargedCents,
   })
 }
