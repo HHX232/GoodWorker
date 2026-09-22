@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
-import { callAI, callVisionAI, parseJSON } from '@/lib/openrouter'
+import { callAI, callVisionAI, parseJSON, type AIUsage } from '@/lib/openrouter'
 import { resolveVip } from '@/lib/vipStatus'
 import { kindOf, extOf, MAX_PHOTOS } from '@/shared/constants/pdfImport'
 import { nanoid } from 'nanoid'
+import { getWalletSessionUser, preflightCheck, chargeForAICall, InsufficientBalanceError, type WalletUser } from '@/shared/lib/wallet/wallet'
+import { estimateMaxCostCents } from '@/shared/lib/wallet/pricing'
 
 const VIP_PAGE_LIMIT = 50
 const FREE_PAGE_LIMIT = 5
+const CHUNK_SIZE = 40_000
+// ponytail: rough per-photo padding for the preflight upper bound only — the
+// vision model's real cost comes from image tokens, not chars, and this repo
+// has no char-equivalent for that yet. Actual charge always uses real usage
+// from the provider response, so this only affects how conservative the
+// pre-call estimate is, never the amount actually billed.
+const VISION_PROMPT_CHARS_PER_PHOTO = 4000
 
 const EXT_TO_IMAGE_MIME: Record<string, string> = {
   jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif',
@@ -170,7 +179,7 @@ Return ONLY a valid JSON object {"blocks":[...]}:
 ]}`
 }
 
-async function extractBlocksFromImages(files: File[]): Promise<unknown[]> {
+async function extractBlocksFromImages(files: File[]): Promise<{ blocks: unknown[]; usage: AIUsage }> {
   const images: { mimeType: string; base64: string }[] = []
   for (const file of files) {
     const buf = Buffer.from(await file.arrayBuffer())
@@ -178,14 +187,30 @@ async function extractBlocksFromImages(files: File[]): Promise<unknown[]> {
     images.push({ mimeType, base64: buf.toString('base64') })
   }
 
-  const raw = await callVisionAI(
+  const { content, usage } = await callVisionAI(
     'You are an expert educational test generator with vision. Return ONLY valid JSON, no markdown.',
     images,
     buildVisionPrompt(images.length),
     { temperature: 0.2 },
   )
-  const parsed = parseJSON<{ blocks: unknown[] }>(raw)
-  return normalizeBlocks(parsed.blocks ?? [])
+  const parsed = parseJSON<{ blocks: unknown[] }>(content)
+  return { blocks: normalizeBlocks(parsed.blocks ?? []), usage }
+}
+
+/** Merges usage from several AI calls into one for a single wallet charge — a
+ * `null` entry (no usage reported, e.g. openrouter fallback) contributes $0
+ * and is skipped, not treated as poisoning the whole sum. */
+function sumUsage(list: AIUsage[]): AIUsage {
+  const known = list.filter((u): u is NonNullable<AIUsage> => u !== null)
+  if (known.length === 0) return null
+  return known.reduce(
+    (acc, u) => ({
+      promptCacheHitTokens: acc.promptCacheHitTokens + u.promptCacheHitTokens,
+      promptCacheMissTokens: acc.promptCacheMissTokens + u.promptCacheMissTokens,
+      completionTokens: acc.completionTokens + u.completionTokens,
+    }),
+    { promptCacheHitTokens: 0, promptCacheMissTokens: 0, completionTokens: 0 },
+  )
 }
 
 // ─── AI prompt ────────────────────────────────────────────────────────────────
@@ -326,10 +351,36 @@ export async function POST(req: NextRequest) {
     // All image blocks embedded inside pdf/doc files (prepended before AI blocks)
     const embeddedImageBlocks = results.flatMap((r) => r.imageBlocks)
 
+    // ── Balance check (ADMIN stays free, same as the existing VIP gate) ──
+    // Existing pageLimit/format checks above already decided this request is
+    // allowed; billing is layered on top, never instead (see G02).
+    const walletUser: WalletUser | null = isAdmin ? null : await getWalletSessionUser()
+    if (walletUser) {
+      const promptChars = combinedContent.length + imageFiles.length * VISION_PROMPT_CHARS_PER_PHOTO
+      const maxCostCents = estimateMaxCostCents('tests/import-pdf', promptChars, new Date())
+      try {
+        await preflightCheck(walletUser, maxCostCents)
+      } catch (e) {
+        if (e instanceof InsufficientBalanceError) {
+          return NextResponse.json(
+            {
+              error: 'INSUFFICIENT_BALANCE',
+              message: `Недостаточно средств: нужно ещё $${(e.neededCents / 100).toFixed(2)}`,
+              neededCents: e.neededCents,
+              availableCents: e.availableCents,
+            },
+            { status: 402 },
+          )
+        }
+        throw e
+      }
+    }
+
+    const usages: AIUsage[] = []
+
     let aiBlocks: unknown[] = []
     if (combinedContent.trim()) {
       const isUnlimited = isAdmin || isVip
-      const CHUNK_SIZE = 40_000
       const SYSTEM = 'You are an expert educational test generator. Return ONLY valid JSON, no markdown.'
 
       if (isUnlimited && combinedContent.length > CHUNK_SIZE) {
@@ -339,15 +390,17 @@ export async function POST(req: NextRequest) {
         console.log(`[import-pdf] VIP/ADMIN: ${toProcess.length} chunk(s)`)
         for (let i = 0; i < toProcess.length; i++) {
           console.log(`[import-pdf] AI chunk ${i + 1}/${toProcess.length}: asking...`)
-          const raw = await callAI(SYSTEM, buildPrompt(toProcess[i], i, toProcess.length, docLikeFiles.length), { temperature: 0.2 })
-          const parsed = parseJSON<{ blocks: unknown[] }>(raw)
+          const { content, usage } = await callAI(SYSTEM, buildPrompt(toProcess[i], i, toProcess.length, docLikeFiles.length), { temperature: 0.2 })
+          usages.push(usage)
+          const parsed = parseJSON<{ blocks: unknown[] }>(content)
           aiBlocks.push(...normalizeBlocks(parsed.blocks ?? []))
           console.log(`[import-pdf] AI chunk ${i + 1}/${toProcess.length}: ${parsed.blocks?.length ?? 0} block(s)`)
         }
       } else {
         console.log(`[import-pdf] AI: asking for blocks from ${combinedContent.length} char(s)...`)
-        const raw = await callAI(SYSTEM, buildPrompt(combinedContent.slice(0, CHUNK_SIZE), 0, 1, docLikeFiles.length), { temperature: 0.2 })
-        const parsed = parseJSON<{ blocks: unknown[] }>(raw)
+        const { content, usage } = await callAI(SYSTEM, buildPrompt(combinedContent.slice(0, CHUNK_SIZE), 0, 1, docLikeFiles.length), { temperature: 0.2 })
+        usages.push(usage)
+        const parsed = parseJSON<{ blocks: unknown[] }>(content)
         aiBlocks = normalizeBlocks(parsed.blocks ?? [])
         console.log(`[import-pdf] AI: ${aiBlocks.length} block(s) generated`)
       }
@@ -358,7 +411,9 @@ export async function POST(req: NextRequest) {
     if (imageFiles.length > 0) {
       try {
         console.log(`[import-pdf] vision AI: analyzing ${imageFiles.length} photo(s)...`)
-        visionBlocks = await extractBlocksFromImages(imageFiles)
+        const result = await extractBlocksFromImages(imageFiles)
+        visionBlocks = result.blocks
+        usages.push(result.usage)
         console.log(`[import-pdf] vision AI: ${visionBlocks.length} block(s) generated`)
       } catch (err) {
         console.error('[import-pdf] vision AI error:', err)
@@ -370,6 +425,13 @@ export async function POST(req: NextRequest) {
     const blocks = [...embeddedImageBlocks, ...aiBlocks, ...visionBlocks]
 
     console.log(`[import-pdf] done — ${blocks.length} block(s) total, ${totalPages} page(s)`)
+
+    // Charge only after every AI call above succeeded (R03.1) — any thrown
+    // error returns before this line, so a failed call never reaches the
+    // wallet. One aggregated charge across all chunks/vision for this request.
+    if (walletUser) {
+      await chargeForAICall(walletUser, 'tests/import-pdf', sumUsage(usages), new Date())
+    }
 
     return NextResponse.json({ blocks, pageCount: totalPages, isVip: privileged })
   } catch (error) {

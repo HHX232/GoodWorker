@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../auth'
-import { callAI, parseJSON } from '@/lib/openrouter'
+import { callAI, parseJSON, type AIUsage } from '@/lib/openrouter'
 import { resolveVip } from '@/lib/vipStatus'
+import { getWalletSessionUser, preflightCheck, chargeForAICall, InsufficientBalanceError, type WalletUser } from '@/shared/lib/wallet/wallet'
+import { estimateMaxCostCents } from '@/shared/lib/wallet/pricing'
 
 const PDF_SERVICE = process.env.PDF_SERVICE_URL ?? 'http://localhost:3001'
 
@@ -166,18 +168,53 @@ Rules:
 Document text:
 ${truncated}`
 
+  // ── Balance check (logged-in users only — guest stays free, see G03) ──
+  // Tariff logic above (format/page-limit gates) already decided this
+  // request is allowed; billing is layered on top of that, never instead.
+  let walletUser: WalletUser | null = null
+  if (!isGuest) {
+    walletUser = await getWalletSessionUser()
+    if (walletUser) {
+      const maxCostCents = estimateMaxCostCents('pdf-to-test', aiPrompt.length, new Date())
+      try {
+        await preflightCheck(walletUser, maxCostCents)
+      } catch (e) {
+        if (e instanceof InsufficientBalanceError) {
+          return NextResponse.json(
+            {
+              error: 'INSUFFICIENT_BALANCE',
+              message: `Недостаточно средств: нужно ещё $${(e.neededCents / 100).toFixed(2)}`,
+              neededCents: e.neededCents,
+              availableCents: e.availableCents,
+            },
+            { status: 402 },
+          )
+        }
+        throw e
+      }
+    }
+  }
+
   let parsed: { title?: string; questions?: unknown[] }
+  let usage: AIUsage = null
   try {
     console.log(`[pdf-to-test] "${fileName}": asking AI for up to ${maxQ} questions (${truncated.length} chars)`)
-    const raw = await callAI(
+    const result = await callAI(
       'You are an educational test parser. Return ONLY valid JSON without markdown.',
       aiPrompt,
       { temperature: 0.1 },
     )
-    parsed = parseJSON<{ title?: string; questions?: unknown[] }>(raw)
+    usage = result.usage
+    parsed = parseJSON<{ title?: string; questions?: unknown[] }>(result.content)
   } catch (e) {
     console.error(`[pdf-to-test] "${fileName}": AI error:`, e)
     return NextResponse.json({ error: 'Ошибка анализа вопросов' }, { status: 500 })
+  }
+
+  // Charge only after a successful AI response (R03.1) — a thrown error above
+  // returns before this line, so a failed call never reaches the wallet.
+  if (walletUser) {
+    await chargeForAICall(walletUser, 'pdf-to-test', usage, new Date())
   }
 
   console.log(`[pdf-to-test] "${fileName}": done — ${(parsed.questions ?? []).length} question(s) generated`)
