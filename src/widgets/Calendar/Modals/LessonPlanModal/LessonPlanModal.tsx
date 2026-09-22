@@ -7,6 +7,7 @@ import {useTranslations} from 'next-intl'
 import {useEffect, useState} from 'react'
 import {toast} from 'sonner'
 import {InsufficientBalanceModal} from '@/widgets/Wallet/InsufficientBalanceModal/InsufficientBalanceModal'
+import {formatCents} from '@/widgets/Wallet/useTopUpForm'
 import styles from './LessonPlanModal.module.scss'
 
 interface LessonPlanModalProps {
@@ -84,6 +85,9 @@ export function LessonPlanModal({isOpen, onClose, plan, onSave}: LessonPlanModal
           return
         }
         throw new Error(data.error ?? 'failed')
+      }
+      if (data.chargedCents > 0) {
+        toast.success(t('chargedToast', {amount: formatCents(data.chargedCents)}))
       }
       setSteps(planToSteps(data as LessonPlan))
       setDirty(true)

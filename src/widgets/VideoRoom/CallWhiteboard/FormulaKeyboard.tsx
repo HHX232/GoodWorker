@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import 'mathlive/static.css'
 import { useThemeCtx } from '@/app/providers/ThemeContext'
 import { InsufficientBalanceModal } from '@/widgets/Wallet/InsufficientBalanceModal/InsufficientBalanceModal'
+import { formatCents } from '@/widgets/Wallet/useTopUpForm'
 import { FormulaPhotoModal } from './FormulaPhotoModal'
 import { INK_PALETTE } from './shapeGeometry'
 import styles from './FormulaKeyboard.module.scss'
@@ -146,6 +147,9 @@ export function FormulaKeyboard({ initialLatex, initialColor, onInsert, onClose,
           return
         }
         throw new Error(data.error ?? 'Failed')
+      }
+      if (data.chargedCents > 0) {
+        toast.success(t('chargedToast', { amount: formatCents(data.chargedCents) }))
       }
       if (fieldRef.current) {
         fieldRef.current.value = data.latex

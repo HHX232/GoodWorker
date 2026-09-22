@@ -1331,6 +1331,7 @@
     "morePairs": "+{n} और...",
     "errMaxPhotos": "एक बार में अधिकतम {n} फ़ोटो अपलोड की जा सकती हैं",
     "errOneDocAtATime": "नि:शुल्क योजना में DOCX/TXT/RTF/ODT — एक बार में केवल एक फ़ाइल",
+    "chargedToast": "{amount} काट लिए गए",
     "dropSubVip": "PDF, DOCX, TXT, RTF, ODT — कितनी भी · फ़ोटो (JPG/PNG/WEBP/GIF/HEIC) — {n} तक",
     "errImagesVipOnly": "फ़ोटो अपलोड केवल VIP के लिए उपलब्ध है"
   },
@@ -2372,7 +2373,7 @@
     "limits_auth_v": "20 प्रश्न तक · PDF + DOCX, TXT, RTF, ODT",
     "limits_vip_label": "VIP",
     "limits_vip_v": "प्रश्नों की कोई सीमा नहीं · सभी प्रारूप",
-    "limits_vip_price": "कीमत जल्द आ रही है",
+    "limits_vip_price": "VIP — ${amount} से (बैलेंस टॉप-अप करें)",
     "limits_vip_buy": "VIP खरीदें",
     "faq_title": "मुख्य बातें संक्षेप में",
     "faq1_q": "और चित्र और सूत्र?",
@@ -2449,6 +2450,7 @@
     "drop_overlay_sub": "PDF · DOCX · TXT · RTF · ODT",
     "modal_result_save_error": "टेस्ट सहेजने में विफल — फिर से प्रयास करें",
     "modal_result_save_success": "टेस्ट आपकी प्रोफ़ाइल में सहेजा गया",
+    "modal_charged_toast": "{amount} काट लिए गए",
     "modal_result_save_teachers_only": "केवल शिक्षक खाते ही प्रोफ़ाइल में टेस्ट सहेज सकते हैं",
     "modal_result_saving": "सहेजा जा रहा है…"
   },
@@ -2606,7 +2608,8 @@
       "aiEditPlaceholder": "अपने बदलाव लिखें...",
       "aiEditSubmit": "भेजें",
       "aiEditLoading": "लागू किया जा रहा है...",
-      "aiEditError": "बदलाव लागू नहीं हो सके"
+      "aiEditError": "बदलाव लागू नहीं हो सके",
+      "chargedToast": "{amount} काट लिए गए"
     },
     "eventModal": {
       "paymentDueBadge": "इस मीटिंग के बाद भुगतान करना होगा",
@@ -2896,6 +2899,7 @@
       "aiVipOnly": "AI सूत्र निर्माण केवल VIP के लिए उपलब्ध है",
       "photoVipOnly": "फोटो से सूत्र पहचान केवल VIP के लिए उपलब्ध है",
       "generateFailed": "सूत्र बनाने में विफल",
+      "chargedToast": "{amount} काट लिए गए",
       "createWithAi": "AI से सूत्र बनाएं",
       "photoToFormula": "फोटो → सूत्र",
       "descriptionPlaceholder": "सूत्र का वर्णन करें…",
@@ -2908,6 +2912,7 @@
     "formulaPhoto": {
       "needImage": "एक छवि फ़ाइल चाहिए (सूत्र की फोटो)",
       "recognizeFailed": "सूत्र पहचानने में विफल",
+      "chargedToast": "{amount} काट लिए गए",
       "title": "फोटो → सूत्र",
       "dropzoneHint": "सूत्र की फोटो चुनें या यहाँ खींचें",
       "previewAlt": "सूत्र फोटो पूर्वावलोकन",

@@ -14,6 +14,7 @@ import {LessonPlanModal} from '@/widgets/Calendar/Modals/LessonPlanModal/LessonP
 import {CategorySelect, getCategoryPath, useCategories} from '@/shared/ui/inputs/CategorySelect/CategorySelect'
 import {SelectUI} from '@/shared/ui/inputs/SelectUI/SelectUI'
 import {InsufficientBalanceModal} from '@/widgets/Wallet/InsufficientBalanceModal/InsufficientBalanceModal'
+import {formatCents} from '@/widgets/Wallet/useTopUpForm'
 
 type Tab = 'event' | 'note' | 'homework'
 
@@ -185,6 +186,9 @@ export function CalendarCreateModal({
           return
         }
         throw new Error(data.error ?? 'Failed to generate plan')
+      }
+      if (data.chargedCents > 0) {
+        toast.success(tPlan('chargedToast', {amount: formatCents(data.chargedCents)}))
       }
       const plan: LessonPlan = data
       setLessonPlan(plan)

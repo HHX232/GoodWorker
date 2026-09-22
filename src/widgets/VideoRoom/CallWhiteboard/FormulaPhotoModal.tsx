@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { compressImageForUpload } from '@/shared/helpers/compressImageForUpload'
 import { InsufficientBalanceModal } from '@/widgets/Wallet/InsufficientBalanceModal/InsufficientBalanceModal'
+import { formatCents } from '@/widgets/Wallet/useTopUpForm'
 import styles from './FormulaPhotoModal.module.scss'
 
 interface Props {
@@ -72,6 +73,10 @@ export function FormulaPhotoModal({ roomName, onRecognized, onClose }: Props) {
           return
         }
         throw new Error(data.error ?? t('recognizeFailed'))
+      }
+
+      if (data.chargedCents > 0) {
+        toast.success(t('chargedToast', { amount: formatCents(data.chargedCents) }))
       }
 
       if (data.needsClarification) {

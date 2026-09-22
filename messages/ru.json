@@ -1593,7 +1593,8 @@
       "aiEditPlaceholder": "Введите желаемые изменения...",
       "aiEditSubmit": "Отправить",
       "aiEditLoading": "Применяем...",
-      "aiEditError": "Не удалось применить изменения"
+      "aiEditError": "Не удалось применить изменения",
+      "chargedToast": "Списано {amount}"
     },
     "paymentReminder": {
       "eyebrow": "Оплата",
@@ -1692,6 +1693,7 @@
     "morePairs": "+{n} ещё...",
     "errMaxPhotos": "Можно загрузить не больше {n} фото за раз",
     "errOneDocAtATime": "На бесплатном тарифе DOCX, TXT, RTF и ODT — только один файл за раз",
+    "chargedToast": "Списано {amount}",
     "dropSubVip": "PDF, DOCX, TXT, RTF, ODT — сколько угодно · Фото (JPG/PNG/WEBP/GIF/HEIC) — до {n} шт.",
     "errImagesVipOnly": "Загрузка фото доступна только VIP"
   },
@@ -2629,7 +2631,7 @@
     "limits_auth_v": "до 20 вопросов · PDF + DOCX, TXT, RTF, ODT",
     "limits_vip_label": "VIP",
     "limits_vip_v": "Без лимита на вопросы · все форматы",
-    "limits_vip_price": "Цена скоро",
+    "limits_vip_price": "VIP — от ${amount} (пополнение баланса)",
     "limits_vip_buy": "Купить VIP",
     "faq_title": "Коротко о главном",
     "faq1_q": "А картинки и формулы?",
@@ -2706,6 +2708,7 @@
     "drop_overlay_sub": "PDF · DOCX · TXT · RTF · ODT",
     "modal_result_save_error": "Не удалось сохранить тест — попробуйте ещё раз",
     "modal_result_save_success": "Тест сохранён в профиль",
+    "modal_charged_toast": "Списано {amount}",
     "modal_result_save_teachers_only": "Сохранять тесты в профиль могут только аккаунты репетиторов",
     "modal_result_saving": "Сохранение…"
   },
@@ -3070,6 +3073,7 @@
       "aiVipOnly": "Генерация формул ИИ доступна только для VIP",
       "photoVipOnly": "Распознавание формул с фото доступно только для VIP",
       "generateFailed": "Не удалось сгенерировать формулу",
+      "chargedToast": "Списано {amount}",
       "createWithAi": "Создать формулу с ИИ",
       "photoToFormula": "Фото → формула",
       "descriptionPlaceholder": "Опишите формулу…",
@@ -3082,6 +3086,7 @@
     "formulaPhoto": {
       "needImage": "Нужен файл изображения (фото формулы)",
       "recognizeFailed": "Не удалось распознать формулу",
+      "chargedToast": "Списано {amount}",
       "title": "Фото → формула",
       "dropzoneHint": "Выберите фото формулы или перетащите сюда",
       "previewAlt": "Превью фото формулы",

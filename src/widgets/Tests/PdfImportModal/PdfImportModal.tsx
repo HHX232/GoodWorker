@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { useSession } from 'next-auth/react'
+import { toast } from 'sonner'
 import { DOC_EXTENSIONS, IMAGE_EXTENSIONS, MAX_PHOTOS, isHeic, kindOf } from '@/shared/constants/pdfImport'
 import { convertHeicFiles } from '@/shared/lib/heicConvert'
 import { InsufficientBalanceModal } from '@/widgets/Wallet/InsufficientBalanceModal/InsufficientBalanceModal'
+import { formatCents } from '@/widgets/Wallet/useTopUpForm'
 import styles from './PdfImportModal.module.scss'
 
 // ─── Types ────────────────────────────────────────────────
@@ -248,6 +250,10 @@ export function PdfImportModal({ onClose, onImport }: PdfImportModalProps) {
         }
         setStep('error')
         return
+      }
+
+      if (data.chargedCents > 0) {
+        toast.success(t('chargedToast', { amount: formatCents(data.chargedCents) }))
       }
 
       setProcessingStep(t('step3'))

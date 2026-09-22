@@ -1593,7 +1593,8 @@
       "aiEditPlaceholder": "Describe the changes you want...",
       "aiEditSubmit": "Send",
       "aiEditLoading": "Applying...",
-      "aiEditError": "Failed to apply changes"
+      "aiEditError": "Failed to apply changes",
+      "chargedToast": "Charged {amount}"
     },
     "paymentReminder": {
       "eyebrow": "Payment",
@@ -1692,6 +1693,7 @@
     "morePairs": "+{n} more...",
     "errMaxPhotos": "You can upload up to {n} photos at a time",
     "errOneDocAtATime": "On the free plan, DOCX/TXT/RTF/ODT — only one file at a time",
+    "chargedToast": "Charged {amount}",
     "dropSubVip": "PDF, DOCX, TXT, RTF, ODT — any number · Photos (JPG/PNG/WEBP/GIF/HEIC) — up to {n}",
     "errImagesVipOnly": "Photo upload is available for VIP only"
   },
@@ -2629,7 +2631,7 @@
     "limits_auth_v": "up to 20 questions · PDF + DOCX, TXT, RTF, ODT",
     "limits_vip_label": "VIP",
     "limits_vip_v": "No question limit · all formats",
-    "limits_vip_price": "Price coming soon",
+    "limits_vip_price": "VIP — from ${amount} (top up your balance)",
     "limits_vip_buy": "Get VIP",
     "faq_title": "Quick answers",
     "faq1_q": "What about images and formulas?",
@@ -2706,6 +2708,7 @@
     "drop_overlay_sub": "PDF · DOCX · TXT · RTF · ODT",
     "modal_result_save_error": "Failed to save the test — try again",
     "modal_result_save_success": "Test saved to your profile",
+    "modal_charged_toast": "Charged {amount}",
     "modal_result_save_teachers_only": "Only tutor accounts can save tests to a profile",
     "modal_result_saving": "Saving…"
   },
@@ -3070,6 +3073,7 @@
       "aiVipOnly": "AI formula generation is available to VIP only",
       "photoVipOnly": "Photo formula recognition is available to VIP only",
       "generateFailed": "Couldn't generate the formula",
+      "chargedToast": "Charged {amount}",
       "createWithAi": "Create a formula with AI",
       "photoToFormula": "Photo → formula",
       "descriptionPlaceholder": "Describe the formula…",
@@ -3082,6 +3086,7 @@
     "formulaPhoto": {
       "needImage": "An image file is needed (a photo of the formula)",
       "recognizeFailed": "Couldn't recognize the formula",
+      "chargedToast": "Charged {amount}",
       "title": "Photo → formula",
       "dropzoneHint": "Choose a photo of the formula or drag it here",
       "previewAlt": "Formula photo preview",

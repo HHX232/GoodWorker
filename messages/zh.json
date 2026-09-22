@@ -1332,6 +1332,7 @@
     "morePairs": "+{n}更多...",
     "errMaxPhotos": "一次最多上传{n}张照片",
     "errOneDocAtATime": "免费版 DOCX/TXT/RTF/ODT 一次只能上传一个文件",
+    "chargedToast": "已扣费 {amount}",
     "dropSubVip": "PDF、DOCX、TXT、RTF、ODT — 数量不限 · 照片（JPG/PNG/WEBP/GIF/HEIC）— 最多{n}张",
     "errImagesVipOnly": "仅VIP可上传照片"
   },
@@ -2373,7 +2374,7 @@
     "limits_auth_v": "最多 20 道题 · 支持 PDF + DOCX、TXT、RTF、ODT",
     "limits_vip_label": "VIP",
     "limits_vip_v": "题目数量不限 · 支持所有格式",
-    "limits_vip_price": "价格即将公布",
+    "limits_vip_price": "VIP — 低至 ${amount}（充值余额）",
     "limits_vip_buy": "购买 VIP",
     "faq_title": "常见问题速览",
     "faq1_q": "图片和公式怎么处理?",
@@ -2450,6 +2451,7 @@
     "drop_overlay_sub": "PDF · DOCX · TXT · RTF · ODT",
     "modal_result_save_error": "保存测试失败，请重试",
     "modal_result_save_success": "测试已保存到您的个人资料",
+    "modal_charged_toast": "已扣费 {amount}",
     "modal_result_save_teachers_only": "只有教师账号才能将测试保存到个人资料",
     "modal_result_saving": "保存中…"
   },
@@ -2607,7 +2609,8 @@
       "aiEditPlaceholder": "输入您想要的修改...",
       "aiEditSubmit": "发送",
       "aiEditLoading": "正在应用...",
-      "aiEditError": "应用修改失败"
+      "aiEditError": "应用修改失败",
+      "chargedToast": "已扣费 {amount}"
     },
     "eventModal": {
       "paymentDueBadge": "此次会面后需要付款",
@@ -2897,6 +2900,7 @@
       "aiVipOnly": "AI公式生成仅限VIP使用",
       "photoVipOnly": "照片公式识别仅限VIP使用",
       "generateFailed": "生成公式失败",
+      "chargedToast": "已扣费 {amount}",
       "createWithAi": "用AI生成公式",
       "photoToFormula": "照片→公式",
       "descriptionPlaceholder": "描述公式…",
@@ -2909,6 +2913,7 @@
     "formulaPhoto": {
       "needImage": "需要图片文件（公式照片）",
       "recognizeFailed": "识别公式失败",
+      "chargedToast": "已扣费 {amount}",
       "title": "照片→公式",
       "dropzoneHint": "选择公式照片或拖到此处",
       "previewAlt": "公式照片预览",

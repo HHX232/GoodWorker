@@ -11,6 +11,7 @@ import { pushDataLayerEvent } from '@/shared/lib/analytics'
 import { convertHeicFiles } from '@/shared/lib/heicConvert'
 import { isHeic } from '@/shared/constants/pdfImport'
 import { InsufficientBalanceModal } from '@/widgets/Wallet/InsufficientBalanceModal/InsufficientBalanceModal'
+import { formatCents, VIP_BONUS_THRESHOLD_DOLLARS } from '@/widgets/Wallet/useTopUpForm'
 
 // ── CSS (ported from ForNewDesign/prototypes/v3-lab.html — hero H4 · steps S3 · errs E1 — with
 //    the lab panel, unused hero/steps/errs variants and blueprint hero stripped out) ──────────
@@ -1387,7 +1388,7 @@ function LimitsSection() {
               {t('limits_vip_label')}
             </div>
             <p className="tier__v">{t('limits_vip_v')}</p>
-            <p className="tier__price tier__price--soon">{t('limits_vip_price')}</p>
+            <p className="tier__price tier__price--soon">{t('limits_vip_price', { amount: VIP_BONUS_THRESHOLD_DOLLARS })}</p>
             <Link className="btn btn--solid tier__buy" href="/vip">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="M3 8l4 3 5-6 5 6 4-3-2 11H5z"/></svg>
               {t('limits_vip_buy')}
@@ -1599,6 +1600,9 @@ function UploadModal({ modalOpen, onClose, pendingFiles, isLoggedIn }: {
 
       setProgress(100)
       setResult(data as TestResult)
+      if (data.chargedCents > 0) {
+        toast.success(t('modal_charged_toast', { amount: formatCents(data.chargedCents) }))
+      }
       pushDataLayerEvent('pdf_to_test_created', {
         is_guest: (data as TestResult).isGuest,
         question_count: (data as TestResult).questions?.length ?? 0,
@@ -1675,6 +1679,9 @@ function UploadModal({ modalOpen, onClose, pendingFiles, isLoggedIn }: {
 
       setProgress(100)
       setResult(data as TestResult)
+      if (data.chargedCents > 0) {
+        toast.success(t('modal_charged_toast', { amount: formatCents(data.chargedCents) }))
+      }
       pushDataLayerEvent('pdf_to_test_created', {
         is_guest: (data as TestResult).isGuest,
         question_count: (data as TestResult).questions?.length ?? 0,
