@@ -1,9 +1,18 @@
 import { prisma } from '@/shared/prisma/prisma'
-import { callVisionAI, parseJSON } from '@/lib/openrouter'
+import { AIUsage, callVisionAI, parseJSON } from '@/lib/openrouter'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
+import { chargeForAICall, InsufficientBalanceError, insufficientBalanceResponse, preflightCheck, WalletUser } from '@/shared/lib/wallet/wallet'
+import { estimateMaxCostCents } from '@/shared/lib/wallet/pricing'
 
 export const maxDuration = 60
+
+const ENDPOINT = 'whiteboard/formula-photo'
+
+/** Billing falls on the room owner, not whoever clicked the button on the board — same subject the old VIP check used. */
+function roomOwnerWalletUser(room: { ownerId: string; ownerRole: string }): WalletUser {
+  return { id: room.ownerId, role: room.ownerRole === 'STUDENT' ? 'STUDENT' : 'TEACHER' }
+}
 
 const MAX_PHOTO_SIZE = 15 * 1024 * 1024 // DeepSeek caps at 32 MiB, base64 inflates ~33%
 const ALLOWED_MIMES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
@@ -29,19 +38,9 @@ export async function POST(req: NextRequest) {
     })
     if (!room) return NextResponse.json({ error: 'Room not found' }, { status: 404 })
 
-    // Same VIP gate as the text-to-formula AI route — room owner's VIP
-    // status, not the caller's (a student in a teacher's room shouldn't be
-    // blocked by their own VIP status, and vice versa).
-    let isVip = false
-    if (room.ownerRole === 'TEACHER') {
-      const teacher = await prisma.teacher.findUnique({
-        where: { id: room.ownerId },
-        select: { isVip: true, vipExpiresAt: true },
-      })
-      isVip = teacher?.isVip === true && (teacher.vipExpiresAt === null || teacher.vipExpiresAt > new Date())
-    }
-    const isAdmin = session.user.role === 'ADMIN'
-    if (!isVip && !isAdmin) return NextResponse.json({ error: 'VIP only' }, { status: 403 })
+    // Billed to the room owner, not the caller — a student in a teacher's
+    // room shouldn't be charged for the teacher's own balance, and vice versa.
+    const payer = roomOwnerWalletUser(room)
 
     const photo = formData.get('photo')
     if (!(photo instanceof Blob)) return NextResponse.json({ error: 'photo required' }, { status: 400 })
@@ -63,15 +62,29 @@ export async function POST(req: NextRequest) {
 Если на фото НЕСКОЛЬКО формул (или часть решения из нескольких строк) и по описанию нельзя однозначно понять, какую нужно распознать — верни JSON вида:
 {"needsClarification": true, "candidates": ["<latex1>", "<latex2>", "..."]}`
 
-    let raw: string
+    const at = new Date()
     try {
-      raw = await callVisionAI(systemPrompt, [{ mimeType: photo.type, base64 }], userPrompt, { temperature: 0.1 })
+      await preflightCheck(payer, estimateMaxCostCents(ENDPOINT, userPrompt.length, at))
+    } catch (e) {
+      if (e instanceof InsufficientBalanceError) return insufficientBalanceResponse(e)
+      throw e
+    }
+
+    let raw: string
+    let usage: AIUsage
+    try {
+      ;({ content: raw, usage } = await callVisionAI(systemPrompt, [{ mimeType: photo.type, base64 }], userPrompt, { temperature: 0.1 }))
     } catch (e) {
       console.error('[POST /api/whiteboard/formula-photo] vision AI error:', e)
       return NextResponse.json({ error: 'Не удалось распознать фото' }, { status: 500 })
     }
 
     const parsed = parseJSON<{ latex?: string; needsClarification?: boolean; candidates?: string[] }>(raw)
+
+    // Only reached once the AI's response parsed as valid JSON — an invalid/
+    // malformed response never reaches here (parseJSON throws, caught by the
+    // outer try/catch below, no charge).
+    await chargeForAICall(payer, ENDPOINT, usage, at)
 
     if (parsed.needsClarification) {
       const candidates = (parsed.candidates ?? []).filter((c): c is string => typeof c === 'string' && c.trim().length > 0)

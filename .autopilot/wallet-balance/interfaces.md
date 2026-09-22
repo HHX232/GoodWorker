@@ -121,6 +121,10 @@ HTTP 402, до вызова AI-провайдера (preflight) — провай
    параллельных списаниях, и что неуспешный AI-вызов (исключение до `chargeForAICall`)
    вообще не трогает баланс.
 
+### Дополнение из тикета 02
+
+`src/shared/lib/wallet/wallet.ts` экспортирует `insufficientBalanceResponse(err: InsufficientBalanceError): NextResponse` — строит стандартное тело 402-ответа `{error:"INSUFFICIENT_BALANCE", message, neededCents, availableCents}`. Все 5 эндпоинтов тикета 02 (и любой будущий платный эндпоинт) должны вызывать именно её вместо ручной сборки объекта.
+
 ## Что построено (заполняется тикетами по ходу)
 
 ### Тикет 01 — схема, ценообразование, кошелёк-движок, HTTP-контракт

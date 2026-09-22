@@ -2,6 +2,7 @@ import { prisma } from '@/shared/prisma/prisma'
 import type { AIUsage } from '@/lib/openrouter'
 import { auth } from '../../../../auth'
 import { computeCostCents } from './pricing'
+import { NextResponse } from 'next/server'
 
 export type WalletRole = 'TEACHER' | 'STUDENT'
 export interface WalletUser {
@@ -44,6 +45,23 @@ export class InsufficientBalanceError extends Error {
     this.neededCents = neededCents
     this.availableCents = availableCents
   }
+}
+
+/**
+ * The one 402 body shape all 7 AI-billed routes use on `InsufficientBalanceError`
+ * (R14i contract, see interfaces.md) — a single place so the 5 route handlers
+ * don't each hand-roll the same object.
+ */
+export function insufficientBalanceResponse(err: InsufficientBalanceError): NextResponse {
+  return NextResponse.json(
+    {
+      error: 'INSUFFICIENT_BALANCE',
+      message: `Недостаточно средств: нужно ещё $${(err.neededCents / 100).toFixed(2)}`,
+      neededCents: err.neededCents,
+      availableCents: err.availableCents,
+    },
+    { status: 402 },
+  )
 }
 
 /**

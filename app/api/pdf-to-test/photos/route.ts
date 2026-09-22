@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
 import { callVisionAI, parseJSON } from '@/lib/openrouter'
-import { resolveVip } from '@/lib/vipStatus'
+import { chargeForAICall, getWalletSessionUser, InsufficientBalanceError, insufficientBalanceResponse, preflightCheck } from '@/shared/lib/wallet/wallet'
+import { estimateMaxCostCents } from '@/shared/lib/wallet/pricing'
 
 export const maxDuration = 60
 
+const ENDPOINT = 'pdf-to-test/photos'
+
 const MAX_PHOTOS = 10
 const MAX_PHOTO_SIZE = 15 * 1024 * 1024 // 15 MB per photo (DeepSeek caps at 32 MiB, base64 inflates ~33%)
-const MAX_QUESTIONS = 60 // VIP-only feature — same ceiling as the "unlimited" PDF mode
+const MAX_QUESTIONS = 60 // same ceiling as the "unlimited" PDF mode
 
 const ALLOWED_MIMES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
 
@@ -24,12 +27,12 @@ async function handlePhotos(req: NextRequest) {
   const session = await auth()
   const userEmail = session?.user?.email ?? null
   if (!userEmail) {
-    return NextResponse.json({ error: 'Загрузка фото доступна только зарегистрированным VIP пользователям', vipRequired: true }, { status: 403 })
+    return NextResponse.json({ error: 'Загрузка фото доступна только зарегистрированным пользователям' }, { status: 401 })
   }
 
-  const isVip = await resolveVip(userEmail)
-  if (!isVip) {
-    return NextResponse.json({ error: 'Загрузка фото доступна только VIP пользователям', vipRequired: true }, { status: 403 })
+  const payer = await getWalletSessionUser()
+  if (!payer) {
+    return NextResponse.json({ error: 'Загрузка фото доступна только зарегистрированным пользователям' }, { status: 401 })
   }
 
   let formData: FormData
@@ -88,15 +91,24 @@ Rules:
 - Keep question/option text clean (strip leading "A)", "1." numbering etc.)
 - If a photo is blurry or partially unreadable, use what you can still make out and ignore the rest`
 
+  const at = new Date()
+  try {
+    await preflightCheck(payer, estimateMaxCostCents(ENDPOINT, aiPrompt.length, at))
+  } catch (e) {
+    if (e instanceof InsufficientBalanceError) return insufficientBalanceResponse(e)
+    throw e
+  }
+
   let parsed: { title?: string; questions?: unknown[] }
   try {
-    const raw = await callVisionAI(
+    const { content: raw, usage } = await callVisionAI(
       'You are an educational test parser with vision. Return ONLY valid JSON without markdown.',
       images,
       aiPrompt,
       { temperature: 0.1 },
     )
     parsed = parseJSON<{ title?: string; questions?: unknown[] }>(raw)
+    await chargeForAICall(payer, ENDPOINT, usage, at)
   } catch (e) {
     console.error(`[pdf-to-test/photos] ${userEmail}: AI error:`, e)
     return NextResponse.json({ error: 'Ошибка анализа фото' }, { status: 500 })

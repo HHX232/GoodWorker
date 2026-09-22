@@ -4,6 +4,10 @@ import { CATEGORY_ROOT_SLUG_TO_SUBJECT } from '@/lib/curriculumSubjects'
 import { getCurriculumContextForPrompt } from '@/lib/curriculumContext'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
+import { chargeForAICall, InsufficientBalanceError, insufficientBalanceResponse, preflightCheck } from '@/shared/lib/wallet/wallet'
+import { estimateMaxCostCents } from '@/shared/lib/wallet/pricing'
+
+const ENDPOINT = 'teacher/lesson-plan'
 
 const SYSTEM_PROMPT = `Ты — опытный ассистент репетитора. Тебе дают историю ученика (ошибки, результаты тестов, пройденные шаги курса) и предмет урока.
 Твоя задача — составить черновой план следующего занятия.
@@ -78,15 +82,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({error: 'Unauthorized'}, {status: 401})
     }
     const teacherId = session.user.id
-
-    const teacher = await prisma.teacher.findUnique({
-      where: {id: teacherId},
-      select: {isVip: true, vipExpiresAt: true}
-    })
-    const isVip = teacher?.isVip === true && (teacher.vipExpiresAt === null || teacher.vipExpiresAt > new Date())
-    if (role !== 'ADMIN' && !isVip) {
-      return NextResponse.json({error: 'VIP only'}, {status: 403})
-    }
+    const isAdmin = role === 'ADMIN'
 
     const {studentId, categoryId, additionalNotes} = await req.json() as LessonPlanRequestBody
     if (!studentId) {
@@ -197,7 +193,19 @@ ${roadmapBlock}${additionalNotes?.trim() ? `
 ${additionalNotes.trim()}` : ''}`
 
     const systemPrompt = curriculumBlock ? `${SYSTEM_PROMPT}\n\n${curriculumBlock}` : SYSTEM_PROMPT
-    const raw = await callAI(systemPrompt, userPrompt, {temperature: 0.3})
+
+    const payer = {id: teacherId, role: 'TEACHER' as const}
+    const at = new Date()
+    if (!isAdmin) {
+      try {
+        await preflightCheck(payer, estimateMaxCostCents(ENDPOINT, systemPrompt.length + userPrompt.length, at))
+      } catch (e) {
+        if (e instanceof InsufficientBalanceError) return insufficientBalanceResponse(e)
+        throw e
+      }
+    }
+
+    const {content: raw, usage} = await callAI(systemPrompt, userPrompt, {temperature: 0.3})
     const plan = parseJSON<{
       subject: string
       summary: string
@@ -205,6 +213,8 @@ ${additionalNotes.trim()}` : ''}`
       activeSteps: {title: string; description: string}[]
       upcomingSteps: {title: string; description: string}[]
     }>(raw)
+
+    if (!isAdmin) await chargeForAICall(payer, ENDPOINT, usage, at)
 
     return NextResponse.json({
       subject: subject || plan.subject || 'Общий урок',

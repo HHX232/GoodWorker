@@ -1,7 +1,10 @@
-import { prisma } from '@/shared/prisma/prisma'
 import { callAI, parseJSON } from '@/lib/openrouter'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../../auth'
+import { chargeForAICall, InsufficientBalanceError, insufficientBalanceResponse, preflightCheck } from '@/shared/lib/wallet/wallet'
+import { estimateMaxCostCents } from '@/shared/lib/wallet/pricing'
+
+const ENDPOINT = 'teacher/lesson-plan/revise'
 
 const SYSTEM_PROMPT = `Ты помогаешь репетитору доработать уже готовый план урока по его пожеланию.
 Тебе дают текущий план (JSON) и текст пожелания учителя.
@@ -41,14 +44,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({error: 'Unauthorized'}, {status: 401})
     }
 
-    const teacher = await prisma.teacher.findUnique({
-      where: {id: session.user.id},
-      select: {isVip: true, vipExpiresAt: true}
-    })
-    const isVip = teacher?.isVip === true && (teacher.vipExpiresAt === null || teacher.vipExpiresAt > new Date())
-    if (role !== 'ADMIN' && !isVip) {
-      return NextResponse.json({error: 'VIP only'}, {status: 403})
-    }
+    const isAdmin = role === 'ADMIN'
 
     const {plan, instructions} = await req.json() as ReviseRequestBody
     if (!plan) {
@@ -64,12 +60,25 @@ ${JSON.stringify({reviewSteps: plan.reviewSteps, activeSteps: plan.activeSteps, 
 Пожелание учителя:
 ${instructions.trim()}`
 
-    const raw = await callAI(SYSTEM_PROMPT, userPrompt, {temperature: 0.3})
+    const payer = {id: session.user.id, role: 'TEACHER' as const}
+    const at = new Date()
+    if (!isAdmin) {
+      try {
+        await preflightCheck(payer, estimateMaxCostCents(ENDPOINT, SYSTEM_PROMPT.length + userPrompt.length, at))
+      } catch (e) {
+        if (e instanceof InsufficientBalanceError) return insufficientBalanceResponse(e)
+        throw e
+      }
+    }
+
+    const {content: raw, usage} = await callAI(SYSTEM_PROMPT, userPrompt, {temperature: 0.3})
     const revised = parseJSON<{
       reviewSteps: {title: string; description: string; status?: string; recommendation?: string}[]
       activeSteps: {title: string; description: string}[]
       upcomingSteps: {title: string; description: string}[]
     }>(raw)
+
+    if (!isAdmin) await chargeForAICall(payer, ENDPOINT, usage, at)
 
     return NextResponse.json({
       subject: plan.subject,
