@@ -68,7 +68,7 @@ export async function analyzeTranscriptErrors(
 
   const prompt = `Список категорий для классификации ошибок:\n${categoriesBlock}\n\n=== УЧАСТНИКИ ===\n${participantsBlock}\n\n=== ТРАНСКРИПТ ===\n${transcript}`
 
-  const raw = await callAI(SYSTEM_INSTRUCTION, prompt, { temperature: 0.2 })
+  const { content: raw } = await callAI(SYSTEM_INSTRUCTION, prompt, { temperature: 0.2 })
 
   let parsed: DetectedError[]
   try {

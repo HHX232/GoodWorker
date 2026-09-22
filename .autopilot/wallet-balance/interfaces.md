@@ -173,6 +173,111 @@ HTTP 402, до вызова AI-провайдера (preflight) — провай
   `ponytail:`-комментарием с путём апгрейда до `SERIALIZABLE`-транзакции, если это когда-нибудь
   реально сработает.
 
+### Тикет 03 — списание поверх тарифов `pdf-to-test` и `tests/import-pdf`
+
+Сигнатуры не разошлись с планом — уточнения по реализации:
+
+- `pdf-to-test`: гостевой путь (`isGuest`) не тронут вообще — ни импорта `wallet`-модуля
+  на этой ветке, ни обращения к нему. Для залогиненного preflight считается по
+  `estimateMaxCostCents('pdf-to-test', aiPrompt.length, at)` **после** извлечения текста
+  (когда уже известна длина промпта), но до вызова `callAI` — так преflight не блокирует
+  бесплатный шаг извлечения текста микросервисом. Списание — одно, после успешного
+  `callAI`, из `result.usage`. Владелец счёта — `getWalletSessionUser()` (VIP-статус тут
+  не даёт бесплатного AI, в отличие от `tests/import-pdf` — pdf-to-test и раньше не имел
+  admin-бесплатной ветки, поэтому ADMIN здесь тоже платит; подтверждено живым тестом ниже).
+- `tests/import-pdf`: `walletUser = isAdmin ? null : await getWalletSessionUser()` —
+  ADMIN пропускает биллинг целиком, как и раньше пропускал VIP-гейт. Один преflight
+  перед всей AI-секцией (учитывает и текстовые чанки, и фото — `promptChars =
+  combinedContent.length + imageFiles.length * VISION_PROMPT_CHARS_PER_PHOTO`,
+  `VISION_PROMPT_CHARS_PER_PHOTO=4000` как грубая консервативная поправка на vision,
+  помечено `ponytail:`). Все вызовы `callAI` (по чанкам) и `callVisionAI` (фото) собирают
+  `usage` в массив; локальный хелпер `sumUsage()` в этом файле схлопывает их в один
+  `AIUsage` перед единственным вызовом `chargeForAICall` — одно списание на весь запрос,
+  а не по чанку. `CHUNK_SIZE` вынесен из локального блока в константу модуля (использовался
+  и в новом preflight-расчёте, и в существующей логике чанкинга).
+- Оба файла: 402-контракт `{error:"INSUFFICIENT_BALANCE", message, neededCents,
+  availableCents}` собран вручную в каждом файле (не общий хелпер — вне зоны тикета трогать
+  нечего, дублирование двух мест признано меньшим злом, чем шарить код между чужими зонами).
+
+**Живая проверка (`npm run dev` + сид-логины), все PASS:**
+1. Гость, `pdf-to-test`, маленький PDF → 200, как раньше, без обращения к wallet.
+2. `teacher@seed.dev` (роль в сессии `ADMIN`, баланс 0) → `pdf-to-test` → 402
+   `INSUFFICIENT_BALANCE` (у `pdf-to-test` нет admin-бесплатной ветки — ожидаемо).
+3. `teacher@seed.dev`, `tests/import-pdf`, тот же PDF → 200 (ADMIN бесплатен, как и был) —
+   подтверждает, что ADMIN-бесплатность `tests/import-pdf` не сломана.
+4. `teachervip@seed.dev` (настоящая роль `TEACHER`, не ADMIN, баланс 0) → `tests/import-pdf`
+   → 402 `INSUFFICIENT_BALANCE`.
+5. После `POST /api/wallet/topup {amountCents:200}` — оба (`teacher@seed.dev` на
+   `pdf-to-test`, `teachervip@seed.dev` на `tests/import-pdf`) → 200, баланс 200→199,
+   `GET /api/wallet/transactions` показывает `AI_DEBIT` с правильным `endpoint`.
+
+### Тикет 04 — UI кошелька (бейдж, страница, история)
+
+Контракт API использован буквально, без отклонений от тикета 01. Одна деталь, полезная
+для дальнейшей работы: `GET /api/wallet/transactions` уже отдаёт человекочитаемый текст
+в поле `description` (например `"Списание за: План урока"`, `"Пополнение баланса на $12.00"`) —
+`wallet.ts`'s `HUMAN_ENDPOINT_DESCRIPTION` формирует его на бэкенде при записи в леджер.
+UI (`WalletPage.tsx`) поэтому просто рендерит `item.description` как есть, без своей
+карты `endpoint → подпись` на фронтенде — дублировать её не пришлось.
+
+Построено: `src/widgets/Wallet/WalletBadge/{WalletBadge.tsx,WalletBadge.module.scss}` (в `Header.tsx`,
+рядом с `ChatHeaderIcon`), `app/wallet/page.tsx` + `src/widgets/Wallet/WalletPage/{WalletPage.tsx,WalletPage.module.scss}`,
+namespace `wallet` + `PageTitles.wallet` во всех 4 `messages/*.json`. Живьём проверено (`npm run dev`
++ логин `teacher@seed.dev`): бейдж/страница читают `GET /api/wallet/balance`, форма шлёт
+`POST /api/wallet/topup` (проверены `$3`→`vipMonthsGranted:0`, `$12`→`vipMonthsGranted:2` +
+продление `vipExpiresAt`, сумма `>$1000`→400 `INVALID_AMOUNT`), история — `GET /api/wallet/transactions`
+с курсором; без сессии `/api/wallet/balance` → 401, `/wallet` → редирект на `/login`.
+
+### Тикет 02 — замена VIP-гейта на балансовый (5 эндпоинтов)
+
+Сигнатуры не разошлись с тикетом 01 — использованы буквально `preflightCheck(user, maxCostCents)`,
+`chargeForAICall(user, endpoint, usage, at)`, `InsufficientBalanceError{neededCents,
+availableCents}`, `getWalletSessionUser()`, `estimateMaxCostCents(endpoint, promptChars, at)` с
+теми же строковыми ключами эндпоинтов, что в `pricing.ts` (`'whiteboard/formula-ai'`,
+`'whiteboard/formula-photo'`, `'pdf-to-test/photos'`, `'teacher/lesson-plan'`,
+`'teacher/lesson-plan/revise'`).
+
+- `formula-ai`/`formula-photo`: старая проверка `!isVip(room.owner) && !isAdmin` убрана целиком —
+  включая caller-side `isAdmin`-обход (в старом коде это был `session.user.role === 'ADMIN'` **того,
+  кто нажал кнопку**, а не владельца комнаты; по таблице спеки «Стало» для этих двух эндпоинтов
+  admin-исключения нет вообще). Платёж всегда с владельца комнаты: локальный хелпер
+  `roomOwnerWalletUser(room)` строит `WalletUser` напрямую из `room.ownerId`/`room.ownerRole`
+  (`STUDENT` → `STUDENT`, иначе `TEACHER`) — это НЕ копия `getWalletSessionUser()` (та читает
+  сессию текущего пользователя, а платит владелец комнаты, часто не тот, кто вызвал API), но тот же
+  ADMIN→TEACHER принцип: `ownerRole` из `Role`-enum (`STUDENT|TEACHER|ADMIN`) сворачивается к
+  двум ролям кошелька. Живой прогон это подтвердил: комната, которой владеет ADMIN-аккаунт
+  (`teacher@seed.dev`), при нулевом балансе всё равно получила 402 — старого admin-обхода для
+  формул больше нет.
+- `pdf-to-test/photos`: старый гейт был не `!isVip && !isAdmin`, а отдельный `resolveVip(email)`
+  (403 `{vipRequired:true}` дважды — на отсутствие сессии и на не-VIP). Оба заменены на
+  `getWalletSessionUser()` (401 без `vipRequired`, раз VIP тут больше не при чём) +
+  `preflightCheck`/`chargeForAICall` с текущим пользователем как плательщиком. Никакого
+  ADMIN-исключения у этого эндпоинта не было и не появилось — ADMIN платит как TEACHER (через
+  `getWalletSessionUser`'s ADMIN→TEACHER маппинг), это не противоречит тикету: приёмочные критерии
+  просили admin-исключение только для двух lesson-plan-эндпоинтов.
+- `lesson-plan`/`lesson-plan/revise`: `isAdmin` считается один раз из `session.user.role`, `payer =
+  {id: teacherId, role: 'TEACHER' as const}` (локальный литерал, не вызов `getWalletSessionUser()`
+  — роль тут уже гарантированно TEACHER/ADMIN по проверке чуть выше, второй сетевой запрос к сессии
+  не нужен). `preflightCheck`/`chargeForAICall` пропускаются целиком, если `isAdmin` — сохранена
+  бесплатность ADMIN дословно как в спеке.
+- Место списания во всех 5 файлах — **после** успешного `parseJSON(raw)`, не сразу после
+  `callAI`/`callVisionAI`. Нашлась и исправлена находка ревью: в первой версии `formula-photo`
+  `chargeForAICall` стоял ДО `parseJSON`, из-за чего невалидный JSON от провайдера всё равно списал
+  бы баланс — перенесено на после успешного парсинга (тот же порядок, что в остальных 4 файлах),
+  живым прогоном подтверждено, что списание срабатывает и для валидного, но «пустого» результата
+  (422 «не удалось распознать» после валидного JSON — тоже платный вызов, деньги реально потрачены
+  на токены), но не для сетевых/парсинг-ошибок (не проверено прицельно инъекцией битого JSON —
+  логическая гарантия та же `try/catch`-граница, что уже используется в остальных 4 файлах).
+- `estimateMaxCostCents` вызывается с длиной текстового промпта (`desc.length` /
+  `userPrompt.length` / `systemPrompt.length + userPrompt.length`) как консервативной оценкой
+  входных токенов — для двух vision-эндпоинтов (`formula-photo`, `pdf-to-test/photos`) в оценку
+  идёт только длина текстового промпта, без токенов самого изображения (в `pricing.ts` нет модели
+  оценки токенов по картинке — вне периметра тикета 02, зона `pricing.ts` не редактировалась).
+- 402-тело всюду собрано вручную по контракту `interfaces.md` (`{error: 'INSUFFICIENT_BALANCE',
+  message, neededCents, availableCents}`), не через отдельный shared-хелпер — дублирование в 5
+  местах, три строки каждое, сознательно не выносилось в общий модуль (вне зоны тикета — 5
+  route-хендлеров, не `wallet.ts`).
+
 **Важное для тикетов 02/03:** смена сигнатуры `callAI`/`callVisionAI` на `{content, usage}` ломает
 компиляцию не только у 7 эндпоинтов этого брифа, но и у нескольких вызывающих мест ВНЕ периметра
 брифа, которые спецификация не упоминала: `src/lib/postAI.ts`, `src/shared/lib/gemini.ts`,

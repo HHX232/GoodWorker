@@ -67,7 +67,7 @@ ${content}
 
 Return ONLY a valid JSON object: {"title": "..."}`
 
-    const raw = await callAI(
+    const { content: raw } = await callAI(
       'You are a concise, expert namer of educational test/quiz titles. Return ONLY valid JSON, no markdown.',
       prompt,
       { temperature: 0.6, maxTokens: 60 },

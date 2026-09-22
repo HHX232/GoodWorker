@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const raw = await callAI(
+    const { content: raw } = await callAI(
       'You are a lenient educational quiz checker. Return ONLY valid JSON, no markdown.',
       `Check if the student's answer is essentially correct.
 Be LENIENT: accept typos, synonyms, different word forms, abbreviations, and partially correct phrasing.

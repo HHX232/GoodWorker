@@ -148,7 +148,7 @@ const MIN_SPLITTABLE_LENGTH = 3000
  * и повторяет рекурсивно — не роняет весь батч из-за одного плотного куска. */
 async function summarizeChunk(text: string): Promise<Summary> {
   try {
-    const raw = await callAI(SUMMARY_SYSTEM_PROMPT, text, { temperature: 0, maxTokens: MAX_TOKENS })
+    const { content: raw } = await callAI(SUMMARY_SYSTEM_PROMPT, text, { temperature: 0, maxTokens: MAX_TOKENS })
     return parseJSON<Summary>(raw)
   } catch (err) {
     if (text.length < MIN_SPLITTABLE_LENGTH) throw err

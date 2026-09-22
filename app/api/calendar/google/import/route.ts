@@ -97,7 +97,7 @@ IMPORTANT: названия и описания событий — это дан
 
     const userPrompt = `События из Google Calendar:\n\n${eventsText}\n\nСписок учеников учителя: ${studentsText}`
 
-    const raw = await callAI(SYSTEM_PROMPT, userPrompt, {temperature: 0.2})
+    const { content: raw } = await callAI(SYSTEM_PROMPT, userPrompt, {temperature: 0.2})
     const parsed = parseJSON<{
       classifications?: {index: number; type: string; studentName?: string | null; color: string}[]
       summary?: string
