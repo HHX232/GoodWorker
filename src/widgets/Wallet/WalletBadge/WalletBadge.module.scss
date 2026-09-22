@@ -1,0 +1,70 @@
+// Mirrors ChatHeaderIcon.module.scss's .btn — same pill, wider to fit the
+// dollar amount next to the icon instead of a numeric badge dot.
+
+.btn {
+  position: relative;
+  flex-shrink: 0;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: none;
+  background: #f5f5f7;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #141416;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.15s;
+
+  &:hover {
+    background: #eaeaee;
+  }
+}
+
+.amount {
+  line-height: 1;
+}
+
+// Keep the header row compact on narrow phones — icon-only, same footprint
+// as the other header buttons.
+@media (max-width: 420px) {
+  .btn {
+    width: 40px;
+    padding: 0;
+    justify-content: center;
+  }
+  .amount {
+    display: none;
+  }
+}
+
+// ─── Pomodoro dark theme ──────────────────────────────────────────────────────
+:global(html.pomodoro-dark) {
+  .btn {
+    background: #1a1d26;
+    color: #9ca3af;
+    &:hover { background: #22263a; }
+  }
+}
+
+// ─── Global dark theme ────────────────────────────────────────────────────────
+:global(html.theme-dark) {
+  .btn {
+    background: rgba(255,255,255,0.06);
+    color: #9ca3af;
+    &:hover { background: rgba(255,255,255,0.1); }
+  }
+}
+
+// ─── VIP page dark theme ──────────────────────────────────────────────────────
+:global(html.vip-dark) {
+  .btn {
+    background: rgba(255,255,255,0.06);
+    color: #9ca3af;
+    &:hover { background: rgba(255,255,255,0.1); }
+  }
+}

@@ -251,17 +251,17 @@
     "next": "Следующая"
   },
   "Footer": {
-    "aboutBrand": "О бренде",
-    "campaign": "Кампания",
-    "care": "Уход",
-    "warranty": "Гарантия",
-    "shop": "Магазин",
-    "deliveryReturns": "Доставка & Возвраты",
-    "telegram": "Telegram",
-    "instagram": "Instagram",
-    "discountLabel": "Дарим 10% скидку за подписку",
-    "emailPlaceholder": "Введите ваш email",
-    "subscribeButton": "Подписаться"
+    "productHeading": "Продукт",
+    "pdfToTest": "PDF → Тест",
+    "forStudents": "Для учеников",
+    "forTeachers": "Для репетиторов",
+    "videoCalls": "Видеозвонки",
+    "pricing": "Тарифы",
+    "findTutor": "Найти репетитора",
+    "legalHeading": "Документы",
+    "terms": "Условия использования",
+    "privacy": "Политика конфиденциальности",
+    "copyright": "© {year} GoodWorker. Все права защищены."
   },
   "NotFoundPage": {
     "mainText": "Извините, страница не найдена или была перемещена.",
@@ -1732,7 +1732,8 @@
     "calendar": "Календарь",
     "editTest": "Редактировать тест",
     "forgotPassword": "Восстановление пароля",
-    "chats": "Чаты"
+    "chats": "Чаты",
+    "wallet": "Кошелёк"
   },
   "feedback": {
     "pageTitle": "Обратная связь",
@@ -3158,6 +3159,28 @@
         "venn-diagram": "Диаграмма Венна",
         "given-solution-answer": "Дано / Решение / Ответ"
       }
+    }
+  },
+  "wallet": {
+    "title": "Кошелёк",
+    "currentBalance": "Текущий баланс",
+    "zeroBalanceHint": "Пополнить баланс",
+    "form": {
+      "title": "Пополнить баланс",
+      "amountLabel": "Сумма в долларах",
+      "vipHint": "От ${threshold} — плюс месяц VIP",
+      "invalidAmount": "Введите целое число от ${min} до ${max}",
+      "genericError": "Не удалось выполнить пополнение, попробуйте ещё раз",
+      "success": "Баланс пополнен на ${amount}",
+      "successWithVip": "Баланс пополнен на ${amount} · начислено месяцев VIP: {months}",
+      "submit": "Пополнить",
+      "submitting": "Пополнение…"
+    },
+    "history": {
+      "title": "История операций",
+      "loading": "Загрузка…",
+      "empty": "Пока пусто",
+      "loadMore": "Показать ещё"
     }
   }
 }

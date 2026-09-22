@@ -251,17 +251,17 @@
     "next": "下一页"
   },
   "Footer": {
-    "aboutBrand": "关于品牌",
-    "campaign": "活动",
-    "care": "保养",
-    "warranty": "保修",
-    "shop": "商店",
-    "deliveryReturns": "配送与退货",
-    "telegram": "Telegram",
-    "instagram": "Instagram",
-    "discountLabel": "订阅可享 10% 折扣",
-    "emailPlaceholder": "输入邮箱",
-    "subscribeButton": "订阅"
+    "productHeading": "产品",
+    "pdfToTest": "PDF → 测试",
+    "forStudents": "面向学生",
+    "forTeachers": "面向导师",
+    "videoCalls": "视频通话",
+    "pricing": "价格",
+    "findTutor": "寻找导师",
+    "legalHeading": "文档",
+    "terms": "使用条款",
+    "privacy": "隐私政策",
+    "copyright": "© {year} GoodWorker. 保留所有权利。"
   },
   "NotFoundPage": {
     "mainText": "抱歉，页面未找到或已被移动。",
@@ -1476,7 +1476,8 @@
     "calendar": "日历",
     "editTest": "编辑测试",
     "forgotPassword": "重置密码",
-    "chats": "聊天"
+    "chats": "聊天",
+    "wallet": "钱包"
   },
   "feedback": {
     "pageTitle": "反馈",
@@ -2985,6 +2986,28 @@
         "venn-diagram": "维恩图",
         "given-solution-answer": "已知／解／答"
       }
+    }
+  },
+  "wallet": {
+    "title": "钱包",
+    "currentBalance": "当前余额",
+    "zeroBalanceHint": "充值余额",
+    "form": {
+      "title": "充值余额",
+      "amountLabel": "金额（美元）",
+      "vipHint": "充值满 ${threshold} 美元即可获得一个月 VIP",
+      "invalidAmount": "请输入 ${min} 到 ${max} 之间的整数",
+      "genericError": "充值失败，请重试",
+      "success": "已充值 ${amount}",
+      "successWithVip": "已充值 ${amount} · 获得 VIP 月数：{months}",
+      "submit": "充值",
+      "submitting": "充值中…"
+    },
+    "history": {
+      "title": "交易记录",
+      "loading": "加载中…",
+      "empty": "暂无记录",
+      "loadMore": "查看更多"
     }
   }
 }

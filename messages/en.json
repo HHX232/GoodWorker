@@ -251,17 +251,17 @@
     "next": "Next"
   },
   "Footer": {
-    "aboutBrand": "About the brand",
-    "campaign": "Campaign",
-    "care": "Care",
-    "warranty": "Warranty",
-    "shop": "Shop",
-    "deliveryReturns": "Delivery & Returns",
-    "telegram": "Telegram",
-    "instagram": "Instagram",
-    "discountLabel": "Get 10% off with subscription",
-    "emailPlaceholder": "Enter your email",
-    "subscribeButton": "Subscribe"
+    "productHeading": "Product",
+    "pdfToTest": "PDF → Test",
+    "forStudents": "For students",
+    "forTeachers": "For tutors",
+    "videoCalls": "Video calls",
+    "pricing": "Pricing",
+    "findTutor": "Find a tutor",
+    "legalHeading": "Legal",
+    "terms": "Terms of service",
+    "privacy": "Privacy policy",
+    "copyright": "© {year} GoodWorker. All rights reserved."
   },
   "NotFoundPage": {
     "mainText": "Sorry, the page was not found or has been moved.",
@@ -1732,7 +1732,8 @@
     "calendar": "Calendar",
     "editTest": "Edit Test",
     "forgotPassword": "Reset Password",
-    "chats": "Chats"
+    "chats": "Chats",
+    "wallet": "Wallet"
   },
   "feedback": {
     "pageTitle": "Feedback",
@@ -3158,6 +3159,28 @@
         "venn-diagram": "Venn diagram",
         "given-solution-answer": "Given / Solution / Answer"
       }
+    }
+  },
+  "wallet": {
+    "title": "Wallet",
+    "currentBalance": "Current balance",
+    "zeroBalanceHint": "Top up your balance",
+    "form": {
+      "title": "Top up balance",
+      "amountLabel": "Amount in dollars",
+      "vipHint": "${threshold}+ grants a month of VIP",
+      "invalidAmount": "Enter a whole number between ${min} and ${max}",
+      "genericError": "Couldn't complete the top-up, please try again",
+      "success": "Balance topped up by ${amount}",
+      "successWithVip": "Balance topped up by ${amount} · VIP months granted: {months}",
+      "submit": "Top up",
+      "submitting": "Topping up…"
+    },
+    "history": {
+      "title": "Transaction history",
+      "loading": "Loading…",
+      "empty": "Nothing here yet",
+      "loadMore": "Show more"
     }
   }
 }

@@ -255,17 +255,17 @@
     "next": "अगला"
   },
   "Footer": {
-    "aboutBrand": "ब्रांड के बारे में",
-    "campaign": "अभियान",
-    "care": "देखभाल",
-    "warranty": "वारंटी",
-    "shop": "दुकान",
-    "deliveryReturns": "डिलीवरी और वापसी",
-    "telegram": "Telegram",
-    "instagram": "Instagram",
-    "discountLabel": "सब्सक्रिप्शन पर 10% छूट पाएं",
-    "emailPlaceholder": "अपना ईमेल दर्ज करें",
-    "subscribeButton": "सब्सक्राइब करें"
+    "productHeading": "उत्पाद",
+    "pdfToTest": "PDF → टेस्ट",
+    "forStudents": "छात्रों के लिए",
+    "forTeachers": "शिक्षकों के लिए",
+    "videoCalls": "वीडियो कॉल",
+    "pricing": "मूल्य",
+    "findTutor": "शिक्षक खोजें",
+    "legalHeading": "दस्तावेज़",
+    "terms": "सेवा की शर्तें",
+    "privacy": "गोपनीयता नीति",
+    "copyright": "© {year} GoodWorker. सर्वाधिकार सुरक्षित।"
   },
   "NotFoundPage": {
     "mainText": "क्षमा करें, पृष्ठ नहीं मिला या स्थानांतरित कर दिया गया है।",
@@ -1475,7 +1475,8 @@
     "calendar": "कैलेंडर",
     "editTest": "परीक्षण संपादित करें",
     "forgotPassword": "पासवर्ड रीसेट करें",
-    "chats": "चैट"
+    "chats": "चैट",
+    "wallet": "वॉलेट"
   },
   "feedback": {
     "pageTitle": "प्रतिक्रिया",
@@ -2984,6 +2985,28 @@
         "venn-diagram": "वेन आरेख",
         "given-solution-answer": "दिया गया / हल / उत्तर"
       }
+    }
+  },
+  "wallet": {
+    "title": "वॉलेट",
+    "currentBalance": "मौजूदा बैलेंस",
+    "zeroBalanceHint": "बैलेंस टॉप अप करें",
+    "form": {
+      "title": "बैलेंस टॉप अप करें",
+      "amountLabel": "राशि (डॉलर में)",
+      "vipHint": "${threshold} या उससे अधिक पर एक महीने का VIP मिलेगा",
+      "invalidAmount": "${min} से ${max} के बीच पूर्णांक दर्ज करें",
+      "genericError": "टॉप अप पूरा नहीं हो सका, कृपया फिर से कोशिश करें",
+      "success": "बैलेंस में ${amount} जोड़े गए",
+      "successWithVip": "बैलेंस में ${amount} जोड़े गए · VIP महीने मिले: {months}",
+      "submit": "टॉप अप करें",
+      "submitting": "टॉप अप हो रहा है…"
+    },
+    "history": {
+      "title": "लेन-देन का इतिहास",
+      "loading": "लोड हो रहा है…",
+      "empty": "अभी तक कुछ नहीं है",
+      "loadMore": "और दिखाएं"
     }
   }
 }
