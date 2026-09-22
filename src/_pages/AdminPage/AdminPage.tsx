@@ -835,6 +835,66 @@ function ReferralSettingsCard() {
   )
 }
 
+function WalletSettingsCard() {
+  const [markupPercent, setMarkupPercent] = useState('0')
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/admin/wallet-settings')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data) {
+          setMarkupPercent(String(data.markupPercent))
+        }
+      })
+      .finally(() => setLoading(false))
+  }, [])
+
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      const res = await fetch('/api/admin/wallet-settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ markupPercent: Number(markupPercent) }),
+      })
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error) }
+      toast.success('Настройки наценки сохранены')
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Не удалось сохранить настройки')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (loading) return <div className={styles.skeleton} />
+
+  return (
+    <div className={styles.promo_form} style={{ marginBottom: 20 }}>
+      <h3 className={styles.promo_section_title} style={{ marginBottom: 12 }}>Наценка на AI-вызовы</h3>
+
+      <div className={styles.promo_form_row}>
+        <label className={styles.notif_label}>Наценка сверх себестоимости AI, %</label>
+        <input
+          className={styles.notif_input}
+          type="number"
+          min="0"
+          max="500"
+          value={markupPercent}
+          onChange={e => setMarkupPercent(e.target.value)}
+        />
+      </div>
+
+      <div className={styles.notif_actions}>
+        <button className={styles.send_btn} onClick={handleSave} disabled={saving}>
+          {saving ? 'Сохранение…' : 'Сохранить'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function PromoCodesTab() {
   const t = useTranslations('admin')
   const [codes, setCodes] = useState<PromoCodeItem[]>([])
@@ -958,6 +1018,7 @@ function PromoCodesTab() {
   return (
     <div className={styles.tab_content}>
       <ReferralSettingsCard />
+      <WalletSettingsCard />
 
       <div className={styles.promo_header}>
         <h3 className={styles.promo_section_title}>{t('promoHeading')}</h3>

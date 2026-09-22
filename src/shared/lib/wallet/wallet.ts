@@ -1,7 +1,7 @@
 import { prisma } from '@/shared/prisma/prisma'
 import type { AIUsage } from '@/lib/openrouter'
 import { auth } from '../../../../auth'
-import { computeCostCents } from './pricing'
+import { computeCostCents, estimateMaxCostCents } from './pricing'
 import { NextResponse } from 'next/server'
 
 export type WalletRole = 'TEACHER' | 'STUDENT'
@@ -25,6 +25,27 @@ export async function getWalletSessionUser(): Promise<WalletUser | null> {
   if (role === 'TEACHER' || role === 'ADMIN') return { id, role: 'TEACHER' }
   if (role === 'STUDENT') return { id, role: 'STUDENT' }
   return null
+}
+
+/**
+ * Reads the admin-configured AI markup percent from `WalletSettings` (id
+ * `"global"`, singleton — same pattern as `getReferralSettings()` in
+ * `src/lib/referralCode.ts`). Unlike that sibling, this does NOT upsert a
+ * default row on read: `chargeForAICall`/`preflightCheck` call this on every
+ * single AI request, and there's no reason to write a row just because
+ * nobody has visited the admin panel yet — missing row simply means 0%.
+ */
+export async function getMarkupPercent(): Promise<number> {
+  const row = await prisma.walletSettings.findUnique({ where: { id: 'global' }, select: { markupPercent: true } })
+  return row?.markupPercent ?? 0
+}
+
+export async function setMarkupPercent(percent: number): Promise<void> {
+  await prisma.walletSettings.upsert({
+    where: { id: 'global' },
+    update: { markupPercent: percent },
+    create: { id: 'global', markupPercent: percent },
+  })
 }
 
 export async function getBalanceCents(user: WalletUser): Promise<number> {
@@ -69,8 +90,15 @@ export function insufficientBalanceResponse(err: InsufficientBalanceError): Next
  * `estimateMaxCostCents` upper bound, BEFORE the AI provider is called
  * (R14i.1). Not itself a lock or a guarantee against a concurrent charge
  * landing in between; that race is `chargeForAICall`'s job (R14i.2).
+ *
+ * Fetches the current admin-configured markup itself (`getMarkupPercent()`)
+ * so callers just pass their endpoint/prompt size — same reason
+ * `chargeForAICall` fetches it itself below, one less thing every route has
+ * to remember to wire up.
  */
-export async function preflightCheck(user: WalletUser, maxCostCents: number): Promise<void> {
+export async function preflightCheck(user: WalletUser, endpoint: string, promptChars: number, at: Date): Promise<void> {
+  const markupPercent = await getMarkupPercent()
+  const maxCostCents = estimateMaxCostCents(endpoint, promptChars, at, markupPercent)
   const availableCents = await getBalanceCents(user)
   if (availableCents < maxCostCents) {
     throw new InsufficientBalanceError(maxCostCents - availableCents, availableCents)
@@ -157,7 +185,8 @@ export async function chargeForAICall(
   usage: AIUsage,
   at: Date,
 ): Promise<ChargeResult> {
-  const costCents = computeCostCents(usage, at)
+  const markupPercent = await getMarkupPercent()
+  const costCents = computeCostCents(usage, at, markupPercent)
   if (costCents <= 0) {
     const balanceAfterCents = await getBalanceCents(user)
     return { costCents: 0, balanceAfterCents, shortfallCents: 0 }

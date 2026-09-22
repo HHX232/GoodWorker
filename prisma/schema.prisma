@@ -816,6 +816,12 @@ model ReferralSettings {
   updatedAt      DateTime @updatedAt
 }
 
+model WalletSettings {
+  id            String   @id @default("global")
+  markupPercent Int      @default(0)
+  updatedAt     DateTime @updatedAt
+}
+
 model VipTransaction {
   id              String          @id @default(uuid())
   teacherId       String?

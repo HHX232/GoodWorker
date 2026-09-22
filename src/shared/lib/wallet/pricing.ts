@@ -26,19 +26,20 @@ export function isPeak(at: Date): boolean {
   return (hour >= 1 && hour < 4) || (hour >= 6 && hour < 10)
 }
 
-function markupMultiplier(): number {
-  const raw = process.env.AI_MARKUP_PERCENT
-  const percent = raw ? Number(raw) : 0
-  return 1 + (Number.isFinite(percent) ? percent : 0) / 100
+function markupMultiplier(markupPercent: number): number {
+  return 1 + (Number.isFinite(markupPercent) ? markupPercent : 0) / 100
 }
 
 /**
  * Real cost of one AI call, in whole cents, always rounded UP (never in the
  * user's favor). `usage: null` means the provider didn't report token usage
  * (free OpenRouter fallback) — cost is unknowable, so it's treated as free
- * rather than guessed.
+ * rather than guessed. `markupPercent` is caller-supplied (from
+ * `getMarkupPercent()` in wallet.ts, backed by `WalletSettings`, editable
+ * from the admin panel) — this function stays a pure function with no Prisma
+ * access of its own.
  */
-export function computeCostCents(usage: AIUsage, at: Date): number {
+export function computeCostCents(usage: AIUsage, at: Date, markupPercent: number): number {
   if (usage === null) return 0
 
   const rates = isPeak(at) ? RATES.peak : RATES.nonPeak
@@ -48,7 +49,7 @@ export function computeCostCents(usage: AIUsage, at: Date): number {
       usage.completionTokens * rates.out) /
     1_000_000
 
-  return Math.ceil(dollars * 100 * markupMultiplier())
+  return Math.ceil(dollars * 100 * markupMultiplier(markupPercent))
 }
 
 // Conservative chars→tokens ratio for the preflight upper bound — fewer chars
@@ -80,9 +81,9 @@ const DEFAULT_OUTPUT_TOKEN_CEILING = 2000
  * expensive case) plus a fixed output-token ceiling for the endpoint; always
  * priced at whatever `isPeak(at)` says for the moment of the request.
  */
-export function estimateMaxCostCents(endpoint: string, promptChars: number, at: Date): number {
+export function estimateMaxCostCents(endpoint: string, promptChars: number, at: Date, markupPercent: number): number {
   const promptTokens = Math.ceil(promptChars / CHARS_PER_TOKEN_ESTIMATE)
   const outputCeiling = OUTPUT_TOKEN_CEILING[endpoint] ?? DEFAULT_OUTPUT_TOKEN_CEILING
   const usage: AIUsage = { promptCacheHitTokens: 0, promptCacheMissTokens: promptTokens, completionTokens: outputCeiling }
-  return computeCostCents(usage, at)
+  return computeCostCents(usage, at, markupPercent)
 }
