@@ -282,6 +282,37 @@ availableCents}`, `getWalletSessionUser()`, `estimateMaxCostCents(endpoint, prom
   местах, три строки каждое, сознательно не выносилось в общий модуль (вне зоны тикета — 5
   route-хендлеров, не `wallet.ts`).
 
+### Тикет 06 — модалка нехватки баланса на фронтенде
+
+Сигнатура не разошлась с планом: `InsufficientBalanceModal({neededCents, availableCents, onClose}: {neededCents: number; availableCents: number; onClose: () => void})`
+— чистый презентационный компонент, сам ничего не фетчит, разница считается внутри
+(`Math.max(0, neededCents - availableCents)`), рендерит фиксированный backdrop
+(`z-index: 1400000000` — выше любого модального слоя в проекте, включая
+`ModalWindowDefault`, т.к. может быть триггернут изнутри него) со своим текстом
+(`wallet.insufficientModal.*`) и кнопкой-`Link` на `/wallet`.
+
+Подключён точечно в шести местах, во всех — один и тот же паттерн: `res.status === 402
+&& data.error === 'INSUFFICIENT_BALANCE'` проверяется первым, до остальной обработки
+`!res.ok`, кладёт `{neededCents, availableCents}` в локальный стейт вместо текущего
+`toast.error`/`throw`/`setStep('error')`, рендерит `<InsufficientBalanceModal>` как условный
+сосед у корня компонента (никакого нового портала — использует уже открытый DOM-слой того
+компонента, в котором подключена, свой `position:fixed` перекрывает всё сам):
+`FormulaKeyboard.tsx` (`formula-ai`), `FormulaPhotoModal.tsx` (`formula-photo`),
+`LessonPlanModal.tsx` (`lesson-plan/revise`), `CalendarCreateModal.tsx`
+(`lesson-plan` генерация), `PdfImportModal.tsx` (`import-pdf`, ставит `step` обратно на
+`'upload'`), `app/info-pdf-to-test/page.tsx` — оба пути `begin()`/`beginPhotos()`
+(`pdf-to-test`/`pdf-to-test/photos`), ставят `step` обратно на `'pick'`.
+
+Живая проверка: backend-контракт подтверждён напрямую curl'ом (не через браузер — headless
+для этой сессии не поднимался) — `teacher@seed.dev` (ADMIN) с временно обнулённым
+`balanceCents` → `POST /api/pdf-to-test` вернул `402 {"error":"INSUFFICIENT_BALANCE",
+"neededCents":1,"availableCents":0}`; `teachervip@seed.dev` (TEACHER, не ADMIN) с обнулённым
+балансом → `POST /api/tests/import-pdf` вернул тот же контракт. Оба баланса восстановлены
+до исходных значений сразу после проверки (`1693`/`199` центов). Форма ответа совпала 1:1 с
+тем, что читают шесть точек перехвата — код проверен статически (`tsc --noEmit`, `eslint`
+чисто на всех тронутых файлах), браузерный клик по кнопке генерации визуально не снят
+скриншотом в этой сессии.
+
 **Важное для тикетов 02/03:** смена сигнатуры `callAI`/`callVisionAI` на `{content, usage}` ломает
 компиляцию не только у 7 эндпоинтов этого брифа, но и у нескольких вызывающих мест ВНЕ периметра
 брифа, которые спецификация не упоминала: `src/lib/postAI.ts`, `src/shared/lib/gemini.ts`,

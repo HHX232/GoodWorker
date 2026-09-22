@@ -1,0 +1,108 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  // Above every existing modal layer in the app (ModalWindowDefault's 1310000006,
+  // PdfImportModal's 1100, the whiteboard modals' 80/90) — this modal always wins
+  // since it can be triggered from inside any of them.
+  z-index: 1400000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.5);
+  padding: 16px;
+}
+
+.modal {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 380px;
+  max-width: 100%;
+  padding: 22px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.28);
+}
+
+.title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #141416;
+}
+
+.message {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #4b5563;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.cancel {
+  padding: 9px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #fff;
+  color: #141416;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: #f5f5f7;
+  }
+}
+
+.topUp {
+  padding: 9px 16px;
+  border: none;
+  border-radius: 10px;
+  background: #141416;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+
+  &:hover {
+    background: #2b2b2f;
+  }
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .modal {
+    background: #141620;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  }
+  .title {
+    color: #e8eaf0;
+  }
+  .message {
+    color: #9ea4b5;
+  }
+  .cancel {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: transparent;
+    color: #e8eaf0;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+  }
+  .topUp {
+    background: #e8eaf0;
+    color: #141620;
+
+    &:hover {
+      background: #cfd3de;
+    }
+  }
+}

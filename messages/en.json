@@ -3181,6 +3181,12 @@
       "loading": "Loading…",
       "empty": "Nothing here yet",
       "loadMore": "Show more"
+    },
+    "insufficientModal": {
+      "title": "Wallet balance is too low",
+      "message": "You're short {amount} to complete this action",
+      "topUp": "Top up balance",
+      "cancel": "Cancel"
     }
   }
 }

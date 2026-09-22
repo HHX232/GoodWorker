@@ -6,6 +6,7 @@ import {LessonPlan, LessonPlanStep} from '@/shared/types/Calendar/calendar.types
 import {useTranslations} from 'next-intl'
 import {useEffect, useState} from 'react'
 import {toast} from 'sonner'
+import {InsufficientBalanceModal} from '@/widgets/Wallet/InsufficientBalanceModal/InsufficientBalanceModal'
 import styles from './LessonPlanModal.module.scss'
 
 interface LessonPlanModalProps {
@@ -43,6 +44,7 @@ export function LessonPlanModal({isOpen, onClose, plan, onSave}: LessonPlanModal
   const [aiEditOpen, setAiEditOpen] = useState(false)
   const [aiInstructions, setAiInstructions] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
+  const [insufficientBalance, setInsufficientBalance] = useState<{neededCents: number; availableCents: number} | null>(null)
 
   useEffect(() => {
     if (plan) {
@@ -76,7 +78,13 @@ export function LessonPlanModal({isOpen, onClose, plan, onSave}: LessonPlanModal
         body: JSON.stringify({plan: currentPlan, instructions: aiInstructions.trim()}),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'failed')
+      if (!res.ok) {
+        if (res.status === 402 && data.error === 'INSUFFICIENT_BALANCE') {
+          setInsufficientBalance({neededCents: data.neededCents, availableCents: data.availableCents})
+          return
+        }
+        throw new Error(data.error ?? 'failed')
+      }
       setSteps(planToSteps(data as LessonPlan))
       setDirty(true)
       setAiEditOpen(false)
@@ -139,6 +147,13 @@ export function LessonPlanModal({isOpen, onClose, plan, onSave}: LessonPlanModal
           </div>
         )}
       </div>
+      {insufficientBalance && (
+        <InsufficientBalanceModal
+          neededCents={insufficientBalance.neededCents}
+          availableCents={insufficientBalance.availableCents}
+          onClose={() => setInsufficientBalance(null)}
+        />
+      )}
     </ModalWindowDefault>
   )
 }

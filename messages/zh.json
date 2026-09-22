@@ -3008,6 +3008,12 @@
       "loading": "加载中…",
       "empty": "暂无记录",
       "loadMore": "查看更多"
+    },
+    "insufficientModal": {
+      "title": "钱包余额不足",
+      "message": "完成此操作还差 {amount}",
+      "topUp": "充值余额",
+      "cancel": "取消"
     }
   }
 }

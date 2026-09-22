@@ -13,6 +13,7 @@ import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindo
 import {LessonPlanModal} from '@/widgets/Calendar/Modals/LessonPlanModal/LessonPlanModal'
 import {CategorySelect, getCategoryPath, useCategories} from '@/shared/ui/inputs/CategorySelect/CategorySelect'
 import {SelectUI} from '@/shared/ui/inputs/SelectUI/SelectUI'
+import {InsufficientBalanceModal} from '@/widgets/Wallet/InsufficientBalanceModal/InsufficientBalanceModal'
 
 type Tab = 'event' | 'note' | 'homework'
 
@@ -75,7 +76,6 @@ export function CalendarCreateModal({
   teacherServices,
   teacherStudents = [],
   teacherCategoryIds,
-  isVip = false,
   initialStudentId,
 }: CalendarCreateModalProps) {
   const t = useTranslations('calendar.createModal')
@@ -101,6 +101,7 @@ export function CalendarCreateModal({
   const [repeatCount, setRepeatCount] = useState(8)
   const [repeatUntil, setRepeatUntil] = useState('')
   const [additionalNotes, setAdditionalNotes] = useState('')
+  const [insufficientBalance, setInsufficientBalance] = useState<{neededCents: number; availableCents: number} | null>(null)
 
   useEffect(() => {
     if (!isOpen) { setTab('event'); return }
@@ -158,10 +159,8 @@ export function CalendarCreateModal({
       setForm((prev) => ({...prev, [key]: e.target.value}))
 
   const handleGeneratePlan = async () => {
-    if (!isVip) {
-      toast.error(tPlan('vipToast'))
-      return
-    }
+    // Billing decides access now (402 → InsufficientBalanceModal below), not client-side
+    // VIP status — any teacher should reach the endpoint, not just VIP ones.
     if (!form.studentId) {
       setStudentFieldError(true)
       toast.error(tPlan('studentRequired'))
@@ -180,7 +179,13 @@ export function CalendarCreateModal({
         body: JSON.stringify({studentId: form.studentId, categoryId: form.categoryId, additionalNotes: additionalNotes.trim() || undefined}),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Failed to generate plan')
+      if (!res.ok) {
+        if (res.status === 402 && data.error === 'INSUFFICIENT_BALANCE') {
+          setInsufficientBalance({neededCents: data.neededCents, availableCents: data.availableCents})
+          return
+        }
+        throw new Error(data.error ?? 'Failed to generate plan')
+      }
       const plan: LessonPlan = data
       setLessonPlan(plan)
       setForm((prev) => ({
@@ -588,20 +593,11 @@ export function CalendarCreateModal({
         <div className={styles.field}>
           <button
             type='button'
-            className={`${styles.planBtn} ${!isVip ? styles.planBtnLocked : ''}`}
+            className={styles.planBtn}
             onClick={handleGeneratePlan}
             disabled={generatingPlan}
           >
-            {generatingPlan ? (
-              tPlan('generating')
-            ) : (
-              <>
-                {lessonPlan ? tPlan('regenerateButton') : tPlan('button')}
-                {!isVip && (
-                  <span className={styles.vipBadge}>{tPlan('vipBadge')}</span>
-                )}
-              </>
-            )}
+            {generatingPlan ? tPlan('generating') : lessonPlan ? tPlan('regenerateButton') : tPlan('button')}
           </button>
           {lessonPlan && (
             <button
@@ -658,6 +654,13 @@ export function CalendarCreateModal({
       plan={lessonPlan}
       onSave={setLessonPlan}
     />
+    {insufficientBalance && (
+      <InsufficientBalanceModal
+        neededCents={insufficientBalance.neededCents}
+        availableCents={insufficientBalance.availableCents}
+        onClose={() => setInsufficientBalance(null)}
+      />
+    )}
     </>
   )
 }

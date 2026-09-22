@@ -6,6 +6,7 @@ import { Camera } from 'lucide-react'
 import { toast } from 'sonner'
 import 'mathlive/static.css'
 import { useThemeCtx } from '@/app/providers/ThemeContext'
+import { InsufficientBalanceModal } from '@/widgets/Wallet/InsufficientBalanceModal/InsufficientBalanceModal'
 import { FormulaPhotoModal } from './FormulaPhotoModal'
 import { INK_PALETTE } from './shapeGeometry'
 import styles from './FormulaKeyboard.module.scss'
@@ -36,7 +37,7 @@ interface Props {
   autoOpenAi?: boolean
 }
 
-export function FormulaKeyboard({ initialLatex, initialColor, onInsert, onClose, roomName, isVip, isAdmin, autoOpenAi }: Props) {
+export function FormulaKeyboard({ initialLatex, initialColor, onInsert, onClose, roomName, autoOpenAi }: Props) {
   const t = useTranslations('whiteboard.formulaKeyboard')
   const { isDark } = useThemeCtx()
   const containerRef = useRef<HTMLDivElement>(null)
@@ -49,16 +50,15 @@ export function FormulaKeyboard({ initialLatex, initialColor, onInsert, onClose,
   const [generating, setGenerating] = useState(false)
   const [color, setColor] = useState(initialColor ?? (isDark ? '#ececec' : '#1e1e1e'))
   const [photoModalOpen, setPhotoModalOpen] = useState(false)
-  const canUseAi = !!isVip || !!isAdmin
+  const [insufficientBalance, setInsufficientBalance] = useState<{ neededCents: number; availableCents: number } | null>(null)
+  // Billing decides access now (payer is the room owner, not necessarily this caller — see
+  // R17/402 handling below), not client-side VIP status — isVip/isAdmin are no longer used
+  // to gate opening the AI panel/photo modal, only INSUFFICIENT_BALANCE from the API does.
 
   useEffect(() => {
     if (!autoOpenAi) return
-    if (!canUseAi) {
-      toast.error(t('aiVipOnly'))
-      return
-    }
     setAiOpen(true)
-  }, [autoOpenAi, canUseAi, t])
+  }, [autoOpenAi])
 
   useEffect(() => {
     let field: HTMLElement & { value: string; focus: () => void }
@@ -126,12 +126,8 @@ export function FormulaKeyboard({ initialLatex, initialColor, onInsert, onClose,
   }, [inserting, onInsert, color])
 
   const handleAiToggle = useCallback(() => {
-    if (!canUseAi) {
-      toast.error(t('aiVipOnly'))
-      return
-    }
     setAiOpen(v => !v)
-  }, [canUseAi, t])
+  }, [])
 
   const handleGenerate = useCallback(async () => {
     const description = aiPrompt.trim()
@@ -144,7 +140,13 @@ export function FormulaKeyboard({ initialLatex, initialColor, onInsert, onClose,
         body: JSON.stringify({ roomName, description }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Failed')
+      if (!res.ok) {
+        if (res.status === 402 && data.error === 'INSUFFICIENT_BALANCE') {
+          setInsufficientBalance({ neededCents: data.neededCents, availableCents: data.availableCents })
+          return
+        }
+        throw new Error(data.error ?? 'Failed')
+      }
       if (fieldRef.current) {
         fieldRef.current.value = data.latex
         setIsEmpty(!data.latex?.trim())
@@ -160,12 +162,8 @@ export function FormulaKeyboard({ initialLatex, initialColor, onInsert, onClose,
   }, [aiPrompt, generating, roomName, t])
 
   const handlePhotoToggle = useCallback(() => {
-    if (!canUseAi) {
-      toast.error(t('photoVipOnly'))
-      return
-    }
     setPhotoModalOpen(true)
-  }, [canUseAi, t])
+  }, [])
 
   const handlePhotoRecognized = useCallback((latex: string) => {
     if (fieldRef.current) {
@@ -183,12 +181,10 @@ export function FormulaKeyboard({ initialLatex, initialColor, onInsert, onClose,
         <button type="button" className={styles.aiToggle} onClick={handleAiToggle}>
           <SparklesIcon />
           {t('createWithAi')}
-          {!canUseAi && <span className={styles.vipBadge}>VIP</span>}
         </button>
         <button type="button" className={styles.aiToggle} onClick={handlePhotoToggle}>
           <Camera size={14} />
           {t('photoToFormula')}
-          {!canUseAi && <span className={styles.vipBadge}>VIP</span>}
         </button>
       </div>
       {photoModalOpen && (
@@ -196,6 +192,13 @@ export function FormulaKeyboard({ initialLatex, initialColor, onInsert, onClose,
           roomName={roomName}
           onRecognized={handlePhotoRecognized}
           onClose={() => setPhotoModalOpen(false)}
+        />
+      )}
+      {insufficientBalance && (
+        <InsufficientBalanceModal
+          neededCents={insufficientBalance.neededCents}
+          availableCents={insufficientBalance.availableCents}
+          onClose={() => setInsufficientBalance(null)}
         />
       )}
       {aiOpen && (

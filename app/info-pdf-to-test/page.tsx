@@ -10,6 +10,7 @@ import { useMe } from '@/features/hooks/User/useMe'
 import { pushDataLayerEvent } from '@/shared/lib/analytics'
 import { convertHeicFiles } from '@/shared/lib/heicConvert'
 import { isHeic } from '@/shared/constants/pdfImport'
+import { InsufficientBalanceModal } from '@/widgets/Wallet/InsufficientBalanceModal/InsufficientBalanceModal'
 
 // ── CSS (ported from ForNewDesign/prototypes/v3-lab.html — hero H4 · steps S3 · errs E1 — with
 //    the lab panel, unused hero/steps/errs variants and blueprint hero stripped out) ──────────
@@ -1520,6 +1521,7 @@ function UploadModal({ modalOpen, onClose, pendingFiles, isLoggedIn }: {
   const [shake, setShake] = useState(false)
   const [isVip, setIsVip] = useState(false)
   const [removeLimit, setRemoveLimit] = useState(false)
+  const [insufficientBalance, setInsufficientBalance] = useState<{ neededCents: number; availableCents: number } | null>(null)
 
   const inputRef = useRef<HTMLInputElement>(null)
   const shellRef = useRef<HTMLDivElement>(null)
@@ -1586,6 +1588,11 @@ function UploadModal({ modalOpen, onClose, pendingFiles, isLoggedIn }: {
 
       if (!res.ok) {
         if (data.vipRequired) { setStep('vip'); return }
+        if (res.status === 402 && data.error === 'INSUFFICIENT_BALANCE') {
+          setInsufficientBalance({ neededCents: data.neededCents, availableCents: data.availableCents })
+          setStep('pick')
+          return
+        }
         fail(t('modal_error_title_default'), data.error ?? `${res.status}`)
         return
       }
@@ -1657,6 +1664,11 @@ function UploadModal({ modalOpen, onClose, pendingFiles, isLoggedIn }: {
 
       if (!res.ok) {
         if (data.vipRequired) { setStep('vip'); return }
+        if (res.status === 402 && data.error === 'INSUFFICIENT_BALANCE') {
+          setInsufficientBalance({ neededCents: data.neededCents, availableCents: data.availableCents })
+          setStep('pick')
+          return
+        }
         fail(t('modal_error_title_default'), data.error ?? `${res.status}`)
         return
       }
@@ -1939,6 +1951,13 @@ function UploadModal({ modalOpen, onClose, pendingFiles, isLoggedIn }: {
           onChange={e => { onFiles(e.target.files); e.target.value = '' }}
         />
       </div>
+      {insufficientBalance && (
+        <InsufficientBalanceModal
+          neededCents={insufficientBalance.neededCents}
+          availableCents={insufficientBalance.availableCents}
+          onClose={() => setInsufficientBalance(null)}
+        />
+      )}
     </div>
   )
 }

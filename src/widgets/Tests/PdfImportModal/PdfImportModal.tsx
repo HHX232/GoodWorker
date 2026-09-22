@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 import { useSession } from 'next-auth/react'
 import { DOC_EXTENSIONS, IMAGE_EXTENSIONS, MAX_PHOTOS, isHeic, kindOf } from '@/shared/constants/pdfImport'
 import { convertHeicFiles } from '@/shared/lib/heicConvert'
+import { InsufficientBalanceModal } from '@/widgets/Wallet/InsufficientBalanceModal/InsufficientBalanceModal'
 import styles from './PdfImportModal.module.scss'
 
 // ─── Types ────────────────────────────────────────────────
@@ -168,6 +169,7 @@ export function PdfImportModal({ onClose, onImport }: PdfImportModalProps) {
   const [totalPages, setTotalPages] = useState<number | null>(null)
   const [error, setError] = useState<ErrorState | null>(null)
   const [uploadWarning, setUploadWarning] = useState<string | null>(null)
+  const [insufficientBalance, setInsufficientBalance] = useState<{ neededCents: number; availableCents: number } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Free tier: unlimited PDFs, but only ONE doc-format (docx/txt/rtf/odt) file
@@ -228,6 +230,11 @@ export function PdfImportModal({ onClose, onImport }: PdfImportModalProps) {
       const data = await res.json()
 
       if (!res.ok) {
+        if (res.status === 402 && data.error === 'INSUFFICIENT_BALANCE') {
+          setInsufficientBalance({ neededCents: data.neededCents, availableCents: data.availableCents })
+          setStep('upload')
+          return
+        }
         if (data.error === 'PAGE_LIMIT_EXCEEDED') {
           setError({
             message: `PDF содержит ${data.pageCount} стр. Лимит для ${data.isVip ? 'VIP' : 'бесплатного'} аккаунта — ${data.limit} стр.`,
@@ -502,6 +509,13 @@ export function PdfImportModal({ onClose, onImport }: PdfImportModalProps) {
           )}
         </div>
       </div>
+      {insufficientBalance && (
+        <InsufficientBalanceModal
+          neededCents={insufficientBalance.neededCents}
+          availableCents={insufficientBalance.availableCents}
+          onClose={() => setInsufficientBalance(null)}
+        />
+      )}
     </div>
   )
 }

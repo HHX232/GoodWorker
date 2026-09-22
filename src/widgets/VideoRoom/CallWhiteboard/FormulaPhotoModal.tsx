@@ -4,6 +4,7 @@ import React, { useCallback, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { compressImageForUpload } from '@/shared/helpers/compressImageForUpload'
+import { InsufficientBalanceModal } from '@/widgets/Wallet/InsufficientBalanceModal/InsufficientBalanceModal'
 import styles from './FormulaPhotoModal.module.scss'
 
 interface Props {
@@ -24,6 +25,7 @@ export function FormulaPhotoModal({ roomName, onRecognized, onClose }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [candidates, setCandidates] = useState<string[] | null>(null)
   const [dragOver, setDragOver] = useState(false)
+  const [insufficientBalance, setInsufficientBalance] = useState<{ neededCents: number; availableCents: number } | null>(null)
 
   const pickFile = useCallback((picked: File | null) => {
     setError(null)
@@ -64,7 +66,13 @@ export function FormulaPhotoModal({ roomName, onRecognized, onClose }: Props) {
 
       const res = await fetch('/api/whiteboard/formula-photo', { method: 'POST', body })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? t('recognizeFailed'))
+      if (!res.ok) {
+        if (res.status === 402 && data.error === 'INSUFFICIENT_BALANCE') {
+          setInsufficientBalance({ neededCents: data.neededCents, availableCents: data.availableCents })
+          return
+        }
+        throw new Error(data.error ?? t('recognizeFailed'))
+      }
 
       if (data.needsClarification) {
         setCandidates(data.candidates)
@@ -151,6 +159,13 @@ export function FormulaPhotoModal({ roomName, onRecognized, onClose }: Props) {
           )}
         </div>
       </div>
+      {insufficientBalance && (
+        <InsufficientBalanceModal
+          neededCents={insufficientBalance.neededCents}
+          availableCents={insufficientBalance.availableCents}
+          onClose={() => setInsufficientBalance(null)}
+        />
+      )}
     </div>
   )
 }
