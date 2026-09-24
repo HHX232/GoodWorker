@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Кошелёк · вариант A — 3D / Дашборд</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   КОШЕЛЁК — вариант A, «3D / Дашборд»: объёмный тёмный мир,
+   техника многослойных теней + точечная сетка + красный акцент
+   из LandingPage.module.scss, карточка баланса с наклоном на курсор.
+   ============================================================ */
+
+:root{
+  --bg:#12131a;
+  --card:#1a1c26;
+  --card-2:#1f2230;
+  --ink:#f2f3f7;
+  --ink-dim:#9a9aab;
+  --ink-faint:#5c5d6e;
+  --line:rgba(255,255,255,.08);
+
+  --red:#ED0606;
+  --red-soft:rgba(237,6,6,.16);
+
+  --sans:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --ease:cubic-bezier(.19,1,.22,1);
+
+  --shadow-sm:0 1px 2px rgba(0,0,0,.5), 0 8px 22px -10px rgba(0,0,0,.6);
+  --shadow-md:0 4px 10px rgba(0,0,0,.5), 0 18px 42px -14px rgba(0,0,0,.68);
+  --shadow-red-sm:0 12px 32px -14px rgba(237,6,6,.55);
+  --shadow-red-md:0 16px 40px -14px rgba(237,6,6,.7);
+}
+
+*{ box-sizing:border-box; }
+html{ -webkit-text-size-adjust:100%; }
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at 1px 1px, rgba(255,255,255,.055) 1px, transparent 0) 0 0/24px 24px,
+    var(--bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-weight:400;
+  line-height:1.5;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+a{ color:inherit; }
+button{ font-family:inherit; }
+svg{ display:block; flex-shrink:0; }
+
+/* ---- Reveal (contract: shared/reveal-core.js) ---- */
+[data-reveal]{
+  opacity:0;
+  transform:translateY(18px);
+  transition:opacity .7s var(--ease), transform .7s var(--ease);
+}
+[data-reveal].is-in{ opacity:1; transform:none; }
+
+/* ============================================================
+   Свитчер (контракт interfaces.md, разметка дословная)
+   ============================================================ */
+nav[data-wallet-switcher]{
+  position:fixed; z-index:80;
+  right:clamp(.8rem,2vw,1.4rem); top:clamp(.8rem,2vw,1.4rem);
+  display:flex; gap:2px;
+  background:var(--card); border:1px solid var(--line); padding:4px;
+  border-radius:999px;
+  box-shadow:var(--shadow-sm);
+}
+nav[data-wallet-switcher] a{
+  font-family:var(--sans); font-size:.74rem; font-weight:600;
+  letter-spacing:.03em; text-decoration:none; color:var(--ink-dim);
+  padding:.42rem .75rem; line-height:1;
+  border-radius:999px;
+  transition:background .25s var(--ease), color .25s var(--ease);
+}
+nav[data-wallet-switcher] a:hover{ color:var(--ink); }
+nav[data-wallet-switcher] a[aria-current="page"]{ background:var(--red); color:#fff; }
+
+/* ============================================================
+   Каркас страницы
+   ============================================================ */
+.page{
+  max-width:1280px;
+  margin:0 auto;
+  padding:clamp(4.6rem,8vw,5.6rem) clamp(1.1rem,3.4vw,2.4rem) 4rem;
+}
+
+.eyebrow{
+  font-size:.78rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--red); margin:0 0 .6rem;
+}
+.page-title{
+  margin:0 0 2.4rem;
+  font-size:clamp(1.5rem,3vw,2rem);
+  font-weight:800; letter-spacing:-.01em; color:var(--ink);
+}
+
+.wallet-shell{
+  display:grid;
+  grid-template-columns: minmax(0,1.05fr) minmax(0,1fr);
+  gap:clamp(1.4rem,3vw,2.2rem);
+  align-items:start;
+}
+@media (max-width:900px){
+  .wallet-shell{ grid-template-columns:1fr; }
+}
+
+.col{ display:flex; flex-direction:column; gap:1.6rem; min-width:0; }
+
+/* ============================================================
+   Карточка баланса — платёжная карта, 3D-наклон на курсор (R02, R06.1)
+   ============================================================ */
+.card-tilt-zone{
+  perspective:1100px;
+}
+.balance-card{
+  position:relative;
+  width:100%;
+  aspect-ratio:16/9.3;
+  max-height:280px;
+  border-radius:26px;
+  padding:clamp(1.3rem,3vw,1.9rem);
+  display:flex; flex-direction:column; justify-content:space-between;
+  color:var(--ink);
+  background:
+    radial-gradient(120% 140% at 8% 0%, rgba(237,6,6,.22), transparent 55%),
+    linear-gradient(155deg, #22242f 0%, #15161e 70%, #101017 100%);
+  border:1px solid rgba(255,255,255,.09);
+  box-shadow:var(--shadow-md);
+  transform-style:preserve-3d;
+  will-change:transform;
+  transition:box-shadow .35s var(--ease), transform .12s linear;
+  overflow:hidden;
+}
+.balance-card::after{
+  /* тонкий блик поверх карты — часть «стеклянной» глубины */
+  content:"";
+  position:absolute; inset:0;
+  background:linear-gradient(115deg, rgba(255,255,255,.09) 0%, transparent 30%, transparent 70%, rgba(255,255,255,.04) 100%);
+  pointer-events:none;
+}
+.balance-card:hover{ box-shadow:0 6px 14px rgba(0,0,0,.55), 0 26px 60px -16px rgba(0,0,0,.72); }
+
+.balance-card__top{ display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; position:relative; z-index:1; }
+.balance-card__label{ font-size:.78rem; color:var(--ink-dim); letter-spacing:.04em; margin:0 0 .5rem; }
+.balance-card__sum{
+  margin:0;
+  font-size:clamp(2.5rem,5.2vw,3.4rem);
+  font-weight:900;
+  letter-spacing:-.02em;
+  line-height:1;
+  color:var(--ink);
+}
+
+/* Чип — декоративная SVG-фигура, не логотип платёжной системы */
+.chip{
+  width:44px; height:32px; border-radius:6px;
+  background:linear-gradient(155deg,#e8c46a,#b4842f);
+  position:relative; flex-shrink:0;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.2);
+}
+.chip::before, .chip::after{
+  content:""; position:absolute; left:6px; right:6px; height:1px; background:rgba(0,0,0,.28);
+}
+.chip::before{ top:10px; }
+.chip::after{ top:20px; }
+
+.balance-card__number{
+  position:relative; z-index:1;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:.14em;
+  font-size:1rem;
+  font-weight:600;
+  color:var(--ink-dim);
+  margin:0;
+}
+
+/* ============================================================
+   Предложения — сразу под балансом (R03, R03.1)
+   ============================================================ */
+.offers{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:.9rem;
+}
+@media (max-width:640px){
+  .offers{ grid-template-columns:1fr; }
+}
+
+.offer-card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:1.15rem 1.1rem 1.2rem;
+  display:flex; flex-direction:column; gap:.55rem;
+  min-width:0;
+  box-shadow:var(--shadow-sm);
+  transition:box-shadow .3s var(--ease), transform .3s var(--ease), border-color .3s var(--ease);
+}
+.offer-card:hover{
+  box-shadow:var(--shadow-md);
+  transform:translateY(-3px);
+  border-color:rgba(255,255,255,.16);
+}
+.offer-card__head{ display:flex; align-items:center; justify-content:space-between; gap:.5rem; }
+.offer-card__title{ font-size:.98rem; font-weight:700; margin:0; color:var(--ink); }
+.offer-card__badge{
+  font-size:.66rem; font-weight:700; letter-spacing:.05em;
+  color:var(--red); background:var(--red-soft);
+  padding:.22rem .5rem; border-radius:999px; white-space:nowrap;
+}
+.offer-card__text{ font-size:.82rem; line-height:1.5; color:var(--ink-dim); margin:0; flex:1; }
+.offer-card__price{ font-size:.92rem; font-weight:700; color:var(--ink); margin:0; }
+
+.offer-btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:.4rem;
+  margin-top:.2rem;
+  padding:.58rem .8rem;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.12);
+  background:var(--card-2);
+  color:var(--ink);
+  font-size:.82rem; font-weight:600;
+  text-decoration:none; cursor:pointer;
+  transition:background .25s var(--ease), border-color .25s var(--ease), box-shadow .25s var(--ease), transform .2s var(--ease);
+}
+.offer-btn:hover{ transform:translateY(-1px); border-color:rgba(255,255,255,.22); }
+.offer-btn--accent{
+  background:var(--red); border-color:var(--red); color:#fff;
+  box-shadow:var(--shadow-red-sm);
+}
+.offer-btn--accent:hover{ box-shadow:var(--shadow-red-md); background:#d90505; }
+
+/* ============================================================
+   Диаграмма — столбчатая, растёт по скроллу (R01, R05, R07)
+   ============================================================ */
+.chart-card, .list-card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:1.3rem 1.3rem 1.5rem;
+  box-shadow:var(--shadow-sm);
+}
+.chart-card__head{ display:flex; align-items:baseline; justify-content:space-between; gap:.6rem; margin-bottom:1.4rem; }
+.chart-card__title{ font-size:.92rem; font-weight:700; color:var(--ink); margin:0; }
+.chart-card__peak{ font-size:.76rem; color:var(--ink-dim); }
+.chart-card__peak strong{ color:var(--red); font-weight:700; }
+
+.chart-bars{
+  display:flex;
+  align-items:flex-end;
+  gap:clamp(.4rem,1.6vw,.9rem);
+  height:180px;
+}
+.bar{
+  flex:1;
+  min-width:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+  height:100%;
+}
+.bar__track{
+  width:100%;
+  height:100%;
+  display:flex; align-items:flex-end;
+  border-radius:8px;
+  overflow:hidden;
+}
+.bar__fill{
+  width:100%;
+  height:var(--h);
+  border-radius:8px 8px 3px 3px;
+  background:linear-gradient(180deg, #3a3d4d 0%, #26283533 100%), var(--card-2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+  transform:scaleY(0);
+  transform-origin:bottom;
+  transition:transform .85s var(--ease);
+}
+.bar--peak .bar__fill{
+  background:linear-gradient(180deg, #ff4a3d 0%, var(--red) 100%);
+  box-shadow:0 10px 26px -10px rgba(237,6,6,.55), inset 0 1px 0 rgba(255,255,255,.15);
+}
+.chart-card.is-in .bar__fill{ transform:scaleY(1); }
+.bar:nth-child(1) .bar__fill{ transition-delay:.02s; }
+.bar:nth-child(2) .bar__fill{ transition-delay:.09s; }
+.bar:nth-child(3) .bar__fill{ transition-delay:.16s; }
+.bar:nth-child(4) .bar__fill{ transition-delay:.23s; }
+.bar:nth-child(5) .bar__fill{ transition-delay:.30s; }
+.bar:nth-child(6) .bar__fill{ transition-delay:.37s; }
+.bar:nth-child(7) .bar__fill{ transition-delay:.44s; }
+
+.bar__label{ margin-top:.55rem; font-size:.72rem; color:var(--ink-faint); font-weight:600; }
+.bar__value{ margin-top:.1rem; font-size:.66rem; color:var(--ink-dim); font-variant-numeric:tabular-nums; }
+
+/* ============================================================
+   Список операций (R01.1)
+   ============================================================ */
+.list-card{ margin-top:1.6rem; }
+.list-card__title{ font-size:.92rem; font-weight:700; color:var(--ink); margin:0 0 1rem; }
+.ops-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.ops-row{
+  display:flex; align-items:center; gap:.8rem;
+  padding:.7rem 0;
+  border-top:1px solid var(--line);
+}
+.ops-row:first-child{ border-top:none; }
+.ops-row__icon{
+  width:34px; height:34px; border-radius:10px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--card-2); color:var(--ink-dim);
+}
+.ops-row__body{ min-width:0; flex:1; }
+.ops-row__title{ font-size:.86rem; font-weight:600; color:var(--ink); margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ops-row__meta{ display:flex; align-items:center; gap:.4rem; margin-top:.15rem; }
+.ops-row__date{ font-size:.74rem; color:var(--ink-faint); }
+.ops-row__status{
+  font-size:.68rem; font-weight:700; letter-spacing:.02em;
+  padding:.14rem .46rem; border-radius:999px;
+}
+.ops-row__status--paid{ color:#8fe0a8; background:rgba(143,224,168,.1); }
+.ops-row__status--pending{ color:#e0c78f; background:rgba(224,199,143,.1); }
+.ops-row__sum{ font-size:.9rem; font-weight:700; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.ops-row__sum--pos{ color:var(--red); }
+.ops-row__sum--neg{ color:var(--ink-dim); }
+
+/* ============================================================
+   Reduced motion — глобальный блок (проект-конвенция)
+   ============================================================ */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;
+    transition-delay:0s !important;
+    scroll-behavior:auto !important;
+  }
+  .balance-card{ transform:none !important; }
+}
+
+/* Узкие экраны: наклон карты в любом случае гасится JS по pointer/hover,
+   здесь только гарантируем читаемость сетки колонок предложений (R10i) */
+@media (max-width:420px){
+  .offers{ gap:.7rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- Свитчер вариантов кошелька (контракт interfaces.md) -->
+<nav data-wallet-switcher aria-label="Варианты кошелька">
+  <a data-wallet="a" href="wallet-a-3d.html">3D</a>
+  <a data-wallet="b" href="wallet-b-mono.html">Ч/Б</a>
+  <a data-wallet="c" href="wallet-c-ledger.html">Гроссбух</a>
+</nav>
+<script>
+(function(){
+  var file = location.pathname.split('/').pop();
+  var links = document.querySelectorAll('nav[data-wallet-switcher] a');
+  for (var i = 0; i < links.length; i++) {
+    if (links[i].getAttribute('href') === file) links[i].setAttribute('aria-current', 'page');
+  }
+})();
+</script>
+
+<div class="page">
+  <p class="eyebrow" data-reveal>Кошелёк</p>
+  <h1 class="page-title" data-reveal>Баланс, предложения и операции — вариант A</h1>
+
+  <div class="wallet-shell">
+
+    <!-- ============================================================
+         Левая колонка: баланс-карта + предложения
+         ============================================================ -->
+    <div class="col">
+      <div class="card-tilt-zone" data-reveal>
+        <div class="balance-card" id="balanceCard">
+          <div class="balance-card__top">
+            <div>
+              <p class="balance-card__label">Баланс</p>
+              <p class="balance-card__sum">48 200 ₽</p>
+            </div>
+            <div class="chip" aria-hidden="true"></div>
+          </div>
+          <p class="balance-card__number">•••• •••• •••• 4821</p>
+        </div>
+      </div>
+
+      <div class="offers" data-reveal>
+        <article class="offer-card">
+          <div class="offer-card__head">
+            <h3 class="offer-card__title">VIP</h3>
+            <span class="offer-card__badge">VIP 30д</span>
+          </div>
+          <p class="offer-card__text">Снимает лимиты PDF → Тест: DOCX/TXT/RTF/ODT и до 50 страниц вместо 5.</p>
+          <a href="#" class="offer-btn offer-btn--accent">Приобрести VIP</a>
+        </article>
+
+        <article class="offer-card">
+          <div class="offer-card__head">
+            <h3 class="offer-card__title">Pro план</h3>
+          </div>
+          <p class="offer-card__text">Безлимитные ученики, аналитика и экспорт расписания</p>
+          <p class="offer-card__price">990 ₽ / месяц</p>
+          <a href="#" class="offer-btn">Перейти на Pro</a>
+        </article>
+
+        <article class="offer-card">
+          <div class="offer-card__head">
+            <h3 class="offer-card__title">Личная услуга ученику</h3>
+          </div>
+          <p class="offer-card__text">Настройте разовое задание под конкретного ученика.</p>
+          <a href="#" class="offer-btn">Создать</a>
+        </article>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         Правая колонка: диаграмма + список операций
+         ============================================================ -->
+    <div class="col">
+      <section class="chart-card" data-reveal id="chartCard">
+        <div class="chart-card__head">
+          <h2 class="chart-card__title">Операции за неделю, ₽</h2>
+          <span class="chart-card__peak">пик — <strong>сб, 4 200 ₽</strong></span>
+        </div>
+        <div class="chart-bars">
+          <div class="bar"><div class="bar__track"><div class="bar__fill" style="--h:28.6%"></div></div><span class="bar__label">Пн</span><span class="bar__value">1 200</span></div>
+          <div class="bar"><div class="bar__track"><div class="bar__fill" style="--h:57.1%"></div></div><span class="bar__label">Вт</span><span class="bar__value">2 400</span></div>
+          <div class="bar"><div class="bar__track"><div class="bar__fill" style="--h:42.9%"></div></div><span class="bar__label">Ср</span><span class="bar__value">1 800</span></div>
+          <div class="bar"><div class="bar__track"><div class="bar__fill" style="--h:73.8%"></div></div><span class="bar__label">Чт</span><span class="bar__value">3 100</span></div>
+          <div class="bar"><div class="bar__track"><div class="bar__fill" style="--h:69%"></div></div><span class="bar__label">Пт</span><span class="bar__value">2 900</span></div>
+          <div class="bar bar--peak"><div class="bar__track"><div class="bar__fill" style="--h:100%"></div></div><span class="bar__label">Сб</span><span class="bar__value">4 200</span></div>
+          <div class="bar"><div class="bar__track"><div class="bar__fill" style="--h:38.1%"></div></div><span class="bar__label">Вс</span><span class="bar__value">1 600</span></div>
+        </div>
+      </section>
+
+      <section class="list-card" data-reveal>
+        <h2 class="list-card__title">Последние операции</h2>
+        <ul class="ops-list">
+          <li class="ops-row">
+            <span class="ops-row__icon" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 4.5-9 4.5-9-4.5z"/><path d="M6.5 10v5c0 1.4 2.5 3 5.5 3s5.5-1.6 5.5-3v-5"/></svg>
+            </span>
+            <div class="ops-row__body">
+              <p class="ops-row__title">Оплата урока — Иванова А.</p>
+              <div class="ops-row__meta">
+                <span class="ops-row__date">сегодня</span>
+                <span class="ops-row__status ops-row__status--paid">Оплачено</span>
+              </div>
+            </div>
+            <span class="ops-row__sum ops-row__sum--pos">+2 400 ₽</span>
+          </li>
+          <li class="ops-row">
+            <span class="ops-row__icon" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5z"/></svg>
+            </span>
+            <div class="ops-row__body">
+              <p class="ops-row__title">VIP — продление подписки</p>
+              <div class="ops-row__meta">
+                <span class="ops-row__date">вчера</span>
+                <span class="ops-row__status ops-row__status--paid">Оплачено</span>
+              </div>
+            </div>
+            <span class="ops-row__sum ops-row__sum--neg">−499 ₽</span>
+          </li>
+          <li class="ops-row">
+            <span class="ops-row__icon" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5C4 5 6 4 12 4s8 1 8 2.5v11C20 19 18 20 12 20s-8-1-8-2.5z"/><path d="M4 6.5C4 8 6 9 12 9s8-1 8-2.5"/></svg>
+            </span>
+            <div class="ops-row__body">
+              <p class="ops-row__title">Личная услуга — Петров С.</p>
+              <div class="ops-row__meta">
+                <span class="ops-row__date">2 дня назад</span>
+                <span class="ops-row__status ops-row__status--paid">Оплачено</span>
+              </div>
+            </div>
+            <span class="ops-row__sum ops-row__sum--pos">+1 800 ₽</span>
+          </li>
+          <li class="ops-row">
+            <span class="ops-row__icon" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h5"/></svg>
+            </span>
+            <div class="ops-row__body">
+              <p class="ops-row__title">Pro план — подписка</p>
+              <div class="ops-row__meta">
+                <span class="ops-row__date">5 дней назад</span>
+                <span class="ops-row__status ops-row__status--paid">Оплачено</span>
+              </div>
+            </div>
+            <span class="ops-row__sum ops-row__sum--neg">−990 ₽</span>
+          </li>
+          <li class="ops-row">
+            <span class="ops-row__icon" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 4.5-9 4.5-9-4.5z"/><path d="M6.5 10v5c0 1.4 2.5 3 5.5 3s5.5-1.6 5.5-3v-5"/></svg>
+            </span>
+            <div class="ops-row__body">
+              <p class="ops-row__title">Оплата урока — Смирнова К.</p>
+              <div class="ops-row__meta">
+                <span class="ops-row__date">6 дней назад</span>
+                <span class="ops-row__status ops-row__status--pending">Ожидает</span>
+              </div>
+            </div>
+            <span class="ops-row__sum ops-row__sum--pos">+2 400 ₽</span>
+          </li>
+        </ul>
+      </section>
+    </div>
+
+  </div>
+</div>
+
+<script src="shared/reveal-core.js" defer></script>
+<script>
+(function(){
+  'use strict';
+
+  // 3D-наклон карты баланса на курсор (R06.1, R07) — только на устройствах
+  // с точным указателем и наведением, и только без prefers-reduced-motion.
+  var card = document.getElementById('balanceCard');
+  if (!card) return;
+
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var hasHover = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (reduced || !hasHover) return;
+
+  var MAX_DEG = 9;
+
+  card.addEventListener('mousemove', function (e) {
+    var rect = card.getBoundingClientRect();
+    var px = (e.clientX - rect.left) / rect.width;  // 0..1
+    var py = (e.clientY - rect.top) / rect.height;  // 0..1
+    var rotY = (px - 0.5) * 2 * MAX_DEG;
+    var rotX = (0.5 - py) * 2 * MAX_DEG;
+    card.style.transform = 'perspective(1100px) rotateX(' + rotX.toFixed(2) + 'deg) rotateY(' + rotY.toFixed(2) + 'deg)';
+  });
+
+  card.addEventListener('mouseleave', function () {
+    card.style.transform = 'perspective(1100px) rotateX(0deg) rotateY(0deg)';
+  });
+})();
+</script>
+
+</body>
+</html>
