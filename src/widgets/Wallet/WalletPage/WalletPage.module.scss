@@ -1,234 +1,72 @@
 .wrapper {
   width: 100%;
-  max-width: 640px;
+  max-width: 1300px;
   margin: 0 auto;
   padding: 24px 16px 64px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  // Dark 3D world from ForNewDesign/prototypes/wallet-a-3d.html (--bg + dotted
+  // grid) — the page background, so the stack reads as one dark canvas under
+  // the (light) global Header rather than a light gap between it and the cards.
+  background:
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.055) 1px, transparent 0) 0 0 / 24px 24px,
+    #12131a;
+  border-radius: 0 0 28px 28px;
 }
 
 .title {
   font-size: 24px;
-  font-weight: 700;
-  margin: 0;
-  color: #141416;
-}
-
-.balanceCard,
-.formCard,
-.historyCard {
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 16px;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-.balanceCard {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.balanceLabel {
-  font-size: 13px;
-  color: #6b7280;
-}
-
-.balanceValue {
-  font-size: 36px;
   font-weight: 800;
-  color: #141416;
-  word-break: break-word;
+  letter-spacing: -0.01em;
+  margin: 0;
+  color: #f2f3f7;
 }
 
-.balanceHint {
-  font-size: 13px;
-  color: #6b7280;
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 20px;
+  align-items: start;
 }
 
-.sectionTitle {
-  font-size: 16px;
-  font-weight: 700;
-  margin: 0 0 14px;
-  color: #141416;
-}
-
-.form {
+.leftCol,
+.rightCol {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 13px;
-  color: #374151;
-}
-
-.amountInputRow {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  border: 1px solid #d1d5db;
-  border-radius: 10px;
-  padding: 0 12px;
-  max-width: 200px;
-}
-
-.currencyPrefix {
-  color: #6b7280;
-  font-weight: 600;
-}
-
-.amountInput {
-  flex: 1;
+  gap: 20px;
+  // Grid/flex items default to a content-based min-width, which lets a wide
+  // table (white-space: nowrap cells) push the whole column past its track
+  // instead of scrolling inside its own .tableWrap — this overrides that.
   min-width: 0;
-  border: none;
-  outline: none;
-  padding: 10px 0;
-  font-size: 15px;
-  font-weight: 600;
-  background: transparent;
-}
 
-.vipHint {
-  margin: 0;
-  font-size: 12px;
-  color: #6b7280;
-}
-
-.errorText {
-  margin: 0;
-  font-size: 13px;
-  color: #dc2626;
-}
-
-.successText {
-  margin: 0;
-  font-size: 13px;
-  color: #16a34a;
-}
-
-.submitBtn {
-  align-self: flex-start;
-  margin-top: 4px;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 10px;
-  background: #141416;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: default;
-  }
-
-  &:hover:not(:disabled) {
-    background: #2b2b2f;
+  > * {
+    min-width: 0;
   }
 }
 
-.muted {
-  margin: 0;
-  font-size: 14px;
-  color: #6b7280;
+@media (max-width: 860px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
 }
 
-.historyList {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.addonsPanel {
+  background: #1a1c26;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 24px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-
-.historyRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-
-  &:last-child {
-    border-bottom: none;
-  }
-}
-
-.historyMain {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.historyDescription {
-  font-size: 14px;
-  font-weight: 600;
-  color: #141416;
-  overflow-wrap: break-word;
-}
-
-.historyDate {
-  font-size: 12px;
-  color: #9ca3af;
-}
-
-.historyAmountPositive {
-  flex-shrink: 0;
-  font-size: 14px;
-  font-weight: 700;
-  color: #16a34a;
-}
-
-.historyAmountNegative {
-  flex-shrink: 0;
-  font-size: 14px;
-  font-weight: 700;
-  color: #dc2626;
-}
-
-.loadMoreBtn {
-  margin-top: 14px;
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #d1d5db;
-  border-radius: 10px;
-  background: #fff;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: default;
-  }
-
-  &:hover:not(:disabled) {
-    background: #f5f5f7;
-  }
+  gap: 20px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 8px 22px -10px rgba(0, 0, 0, 0.6);
 }
 
 @media (max-width: 480px) {
   .wrapper {
     padding: 16px 12px 48px;
     gap: 16px;
-  }
-
-  .balanceValue {
-    font-size: 28px;
-  }
-
-  .historyRow {
-    flex-wrap: wrap;
   }
 }

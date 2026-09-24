@@ -1,0 +1,193 @@
+.card {
+  // Dark 3D world (ForNewDesign/prototypes/wallet-a-3d.html): --card + --line.
+  background: #1a1c26;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 20px;
+  box-sizing: border-box;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 8px 22px -10px rgba(0, 0, 0, 0.6);
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+  color: #f2f3f7;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.viewAllBtn {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 12px;
+  font-weight: 600;
+  color: #f2f3f7;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.24);
+  }
+}
+
+.muted {
+  margin: 0;
+  font-size: 14px;
+  color: #9a9aab;
+}
+
+.tableWrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  white-space: nowrap;
+
+  th {
+    text-align: left;
+    padding: 0 12px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #5c5d6e;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  td {
+    padding: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    color: #f2f3f7;
+    vertical-align: middle;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tr:hover td {
+    background: rgba(255, 255, 255, 0.03);
+  }
+}
+
+.numeric {
+  text-align: right;
+}
+
+.dateCell {
+  color: #9a9aab;
+}
+
+.descCell {
+  max-width: 200px;
+  white-space: normal;
+  font-weight: 600;
+}
+
+.balanceCell {
+  color: #9a9aab;
+}
+
+.amountPositive {
+  font-weight: 700;
+  color: #ed0606;
+}
+
+.amountNegative {
+  font-weight: 700;
+  color: #9a9aab;
+}
+
+.badge {
+  display: inline-block;
+  max-width: 100px;
+  padding: 3px 9px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: normal;
+  text-align: center;
+}
+
+// Colors follow the reference's .ops-row__type-- variants (wallet-a-3d.html).
+.badgeDeposit {
+  background: rgba(216, 180, 106, 0.14);
+  color: #d8b46a;
+}
+
+.badgeDebit {
+  background: rgba(143, 158, 232, 0.14);
+  color: #8f9ee8;
+}
+
+.badgePromo {
+  background: rgba(127, 208, 201, 0.14);
+  color: #7fd0c9;
+}
+
+.badgePin {
+  background: rgba(224, 143, 168, 0.14);
+  color: #e08fa8;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+
+  button {
+    padding: 8px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    font-size: 13px;
+    font-weight: 600;
+    color: #f2f3f7;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    &:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.24);
+    }
+  }
+}
+
+.pageLabel {
+  font-size: 13px;
+  color: #9a9aab;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 16px;
+  }
+
+  .descCell {
+    max-width: 160px;
+  }
+}

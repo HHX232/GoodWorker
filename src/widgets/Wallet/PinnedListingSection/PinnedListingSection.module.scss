@@ -1,0 +1,274 @@
+// Split out of app/(road-map)/vip/vip.module.scss (see ticket 05) so /wallet's
+// dark 3D restyle doesn't touch the shared, still-live /vip page. Classes below
+// are the subset PinnedListingSection.tsx actually uses, recolored to the
+// wallet-a-3d.html reference tokens: --card #1a1c26, --card-2 #1f2230,
+// --red #ed0606, --ink #f2f3f7 / --ink-dim #9a9aab.
+
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #9a9aab;
+  text-transform: uppercase;
+  margin: 0 0 12px;
+}
+
+.getCard {
+  background: #1a1c26;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+}
+
+.getCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.getCardNum {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(237, 6, 6, 0.16);
+  color: #ed0606;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.addonEyebrow {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #ed0606;
+  margin-bottom: 3px;
+}
+
+.getCardTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f2f3f7;
+  margin: 0;
+}
+
+.getCardSub {
+  font-size: 12.5px;
+  color: #9a9aab;
+  margin: 2px 0 0;
+}
+
+.getCardBody {
+  padding: 20px 22px;
+}
+
+.customPreview {
+  font-size: 12.5px;
+  color: #8fe0a8;
+  margin: 0 0 14px;
+}
+
+// ── Range slider (R19) — replaces the old preset-tariff button grid.
+// Snaps to the INDEX of pricing.pinnedListingTiers, not months directly,
+// since tiers aren't evenly spaced (1,2,3,6,12).
+
+.sliderBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sliderRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  // Unstyled native range renders as light OS-chrome, out of place on this
+  // dark card — track/thumb pseudo-elements can't share a selector across
+  // engines (an unknown one invalidates the whole rule), so declared per engine.
+  input[type='range'] {
+    flex: 1;
+    appearance: none;
+    height: 20px;
+    background: transparent;
+    cursor: pointer;
+
+    &::-webkit-slider-runnable-track {
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.15);
+    }
+    &::-moz-range-track {
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    &::-webkit-slider-thumb {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      margin-top: -7px;
+      border-radius: 50%;
+      background: #ed0606;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 12px -4px rgba(237, 6, 6, 0.7);
+      transition: transform 0.12s;
+
+      &:hover {
+        transform: scale(1.1);
+      }
+    }
+    &::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #ed0606;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 12px -4px rgba(237, 6, 6, 0.7);
+      transition: transform 0.12s;
+
+      &:hover {
+        transform: scale(1.1);
+      }
+    }
+  }
+}
+
+.sliderValue {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f2f3f7;
+  white-space: nowrap;
+  min-width: 84px;
+  text-align: right;
+}
+
+.tierTicks {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.tierTick {
+  position: relative;
+  font-size: 11px;
+  font-weight: 600;
+  color: #5c5d6e;
+  text-align: center;
+  flex: 1;
+}
+
+.tierTickActive {
+  color: #f2f3f7;
+}
+
+.tierTickBest {
+  color: #ed0606;
+}
+
+.presetBadge {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #fff;
+  background: #ed0606;
+  border-radius: 999px;
+  padding: 2px 6px;
+}
+
+.priceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 6px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.priceDisplay {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f2f3f7;
+}
+
+.oldPrice {
+  font-size: 11px;
+  color: #5c5d6e;
+  text-decoration: line-through;
+  margin-right: 4px;
+}
+
+.payBtn {
+  height: 44px;
+  padding: 0 22px;
+  border-radius: 10px;
+  background: #ed0606;
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 700;
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 12px 32px -14px rgba(237, 6, 6, 0.55);
+  transition: box-shadow 0.15s, background 0.15s, transform 0.12s;
+
+  &:hover:not(:disabled) {
+    background: #d90505;
+    box-shadow: 0 16px 40px -14px rgba(237, 6, 6, 0.7);
+  }
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.65s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.promoError {
+  font-size: 12px;
+  color: #f87171;
+  margin: 10px 0 0;
+}
