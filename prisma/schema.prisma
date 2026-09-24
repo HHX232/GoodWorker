@@ -62,6 +62,9 @@ model Student {
   conversationsAsStudent Conversation[]
   balanceCents           Int              @default(0)
   walletTransactions     WalletTransaction[]
+  tutorFolderGrants      TutorFolderGrant[]
+  tutorFileGrants        TutorFileGrant[]
+  restrictedTutorFolders TutorFolder[]      @relation("TutorFolderRestrictedToStudent")
 }
 
 model Teacher {
@@ -113,6 +116,8 @@ model Teacher {
   whiteboardTemplates     WhiteboardTemplate[]
   balanceCents            Int                 @default(0)
   walletTransactions      WalletTransaction[]
+  tutorFolders            TutorFolder[]
+  tutorFiles              TutorFile[]
 
   @@index([isVip, createdAt])
 }
@@ -282,6 +287,80 @@ model ChatMessage {
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@index([conversationId, createdAt])
+}
+
+/// Tutor's own file storage — folders form a tree via `parentId`.
+/// `ancestorIds` is computed once at creation time as
+/// `[...parent.ancestorIds, parent.id]` (`[]` for a root folder) and never
+/// recomputed; there is no "move folder" operation in this build (see
+/// tutor-files interfaces.md — "Правило видимости"). It powers
+/// `canStudentSee()` (grant-on-any-ancestor lookup without a recursive
+/// query) and the max-depth check in `storage.ts`.
+/// `restrictedToStudentId` narrows an otherwise-shared folder/file to one
+/// student — used for the auto-created "учебная" per-student subfolder
+/// under a folder with `allowStudentUpload`. `null` means unrestricted.
+/// `onDelete: SetNull` (not Cascade) for `restrictedToStudentId`: deleting a
+/// student account should lift the restriction, not delete the teacher's
+/// folder.
+model TutorFolder {
+  id                    String             @id @default(uuid())
+  teacherId             String
+  parentId              String?
+  name                  String
+  allowStudentUpload    Boolean            @default(false)
+  restrictedToStudentId String?
+  ancestorIds           String[]           @default([])
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  teacher               Teacher            @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  parent                TutorFolder?       @relation("TutorFolderChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children              TutorFolder[]      @relation("TutorFolderChildren")
+  restrictedToStudent   Student?           @relation("TutorFolderRestrictedToStudent", fields: [restrictedToStudentId], references: [id], onDelete: SetNull)
+  files                 TutorFile[]
+  grants                TutorFolderGrant[]
+
+  @@index([teacherId])
+  @@index([parentId])
+}
+
+model TutorFile {
+  id             String            @id @default(uuid())
+  teacherId      String
+  folderId       String?
+  name           String
+  key            String
+  url            String
+  sizeBytes      Int
+  mimeType       String
+  uploadedByRole Role
+  uploadedById   String
+  createdAt      DateTime          @default(now())
+  teacher        Teacher           @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  folder         TutorFolder?      @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  grants         TutorFileGrant[]
+
+  @@index([teacherId])
+  @@index([folderId])
+}
+
+model TutorFolderGrant {
+  folderId  String
+  studentId String
+  grantedAt DateTime    @default(now())
+  folder    TutorFolder @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  student   Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([folderId, studentId])
+}
+
+model TutorFileGrant {
+  fileId    String
+  studentId String
+  grantedAt DateTime  @default(now())
+  file      TutorFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  student   Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([fileId, studentId])
 }
 
 model Category {
@@ -819,6 +898,10 @@ model ReferralSettings {
 model WalletSettings {
   id            String   @id @default("global")
   markupPercent Int      @default(0)
+  // Per-GB/month price for VIP tutor-file storage beyond QUOTA_BYTES
+  // (src/shared/lib/tutorFiles/storage.ts) — 0 until an admin sets it, in
+  // which case no overage billing happens (chargeStorageOverage no-ops).
+  storageOveragePriceCentsPerGbMonth Int @default(0)
   updatedAt     DateTime @updatedAt
 }
 
@@ -850,6 +933,7 @@ enum Role {
 enum WalletTransactionType {
   DEPOSIT
   AI_DEBIT
+  STORAGE_OVERAGE_DEBIT
 }
 
 /// Money ledger for the AI-usage wallet — separate from VipTransaction, which

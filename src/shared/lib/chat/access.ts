@@ -97,8 +97,18 @@ export async function requireOwnedConversation(
   return { response: NextResponse.json({ error: STATUS_MESSAGE[result.status] }, { status: result.status }) }
 }
 
-/** `eventType` values a chat message can carry (R13–R15, ticket 05). */
-export const CHAT_EVENT_TYPES = ['HOMEWORK_ASSIGNED', 'PERSONAL_SERVICE', 'PAYMENT_REMINDER', 'MEETING_SCHEDULED'] as const
+/** `eventType` values a chat message can carry (R13–R15, ticket 05).
+ * `FILE_ACCESS_GRANTED` (tutor-files ticket 03) posts when a teacher grants
+ * a student access to a folder/file — payload shape
+ * `{ itemType: 'folder' | 'file', itemName: string, teacherName: string }`,
+ * see `.autopilot/tutor-files/interfaces.md`. */
+export const CHAT_EVENT_TYPES = [
+  'HOMEWORK_ASSIGNED',
+  'PERSONAL_SERVICE',
+  'PAYMENT_REMINDER',
+  'MEETING_SCHEDULED',
+  'FILE_ACCESS_GRANTED',
+] as const
 export type ChatEventType = (typeof CHAT_EVENT_TYPES)[number]
 
 export interface PostEventCardInput {
