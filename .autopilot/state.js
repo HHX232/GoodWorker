@@ -7,8 +7,8 @@ window.STATE =
   "briefFile": "2026-09-24-brief.md",
   "memoryFile": "CLAUDE.md",
   "startedAt": "2026-09-24T21:15:04+03:00",
-  "updatedAt": "2026-09-24T21:35:58+03:00",
-  "finishedAt": null,
+  "updatedAt": "2026-09-24T21:38:42+03:00",
+  "finishedAt": "2026-09-24T21:38:42+03:00",
   "tier": "T1",
   "stages": [
     { "id": "preflight", "status": "done",   "startedAt": "2026-09-24T21:15:04+03:00", "finishedAt": "2026-09-24T21:16:00+03:00" },
@@ -18,7 +18,7 @@ window.STATE =
     { "id": "plan",      "status": "done",   "startedAt": "2026-09-24T21:21:30+03:00", "finishedAt": "2026-09-24T21:23:51+03:00", "note": "3 таска, ярус T1, волна 1 (все параллельно, независимые файлы)" },
     { "id": "build",     "status": "done",   "startedAt": "2026-09-24T21:23:51+03:00", "finishedAt": "2026-09-24T21:35:58+03:00", "note": "3 из 3 тасков готовы" },
     { "id": "review",    "status": "done",   "startedAt": "2026-09-24T21:29:12+03:00", "finishedAt": "2026-09-24T21:35:58+03:00", "note": "manifest+spec / craft по всем трём файлам + кросс-файловая сверка; 3 дозапроса (reduced-motion transition-delay A/B, выравнивание текста офферов B/C, точка в A)" },
-    { "id": "final",     "status": "pending" }
+    { "id": "final",     "status": "done", "startedAt": "2026-09-24T21:36:30+03:00", "finishedAt": "2026-09-24T21:38:42+03:00", "note": "G4: слепая приёмка (живой запуск через puppeteer) согласна с манифестом по всем 14 требованиям, дрейфа не найдено" }
   ],
   "requirements": { "total": 14, "done": 14, "inTicket": 0, "inSpec": 0, "placeholder": 0, "deferred": 0, "dropped": 0 },
   "tickets": [
@@ -37,5 +37,10 @@ window.STATE =
   ] },
   "additions": [],
   "coverage": { "found": 3, "fixed": 3, "deferred": 0, "notes": "G2: баланс-как-карта (Visa-мотив) и явная отвязка Send/Request от офферов дописаны в вариант A; анкер «как щас главная» уточнён до конкретных токенов LandingPage.module.scss" },
-  "blind": null
+  "blind": {
+    "checked": 14,
+    "agreed": 14,
+    "drift": 0,
+    "notes": "Слепая приёмка (только бриф, без спецификации/манифеста, живой запуск через puppeteer: скриншоты 1280/375px, консоль без ошибок, reduced-motion, реальный клик по свитчеру) согласна с манифестом по всем требованиям: раскладка, столбчатая диаграмма, три различных визуальных языка, анимации везде — всё «реализовано». Кнопки Send/Request/Send Again из референс-скриншота 2 отсутствуют во всех трёх — подтверждено как намеренная переформулировка по тексту брифа («под балансом... предложения»), не дрейф."
+  }
 }
