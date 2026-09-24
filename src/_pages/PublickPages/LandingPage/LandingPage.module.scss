@@ -1160,3 +1160,27 @@ $border: #ececf2;
   .teachers_head { }
   .podium_base   { }
 }
+
+// Real Excalidraw canvas doesn't size itself off a parent with no explicit
+// height (`aspect-ratio` on .video_wrap's child doesn't cascade into a
+// percentage-height default) — same override CallWhiteboard.module.scss
+// applies around its own canvas.
+.wb_canvas {
+  position: absolute;
+  inset: 0;
+
+  :global(.excalidraw) {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  // Decorative preview only — no toolbar/menu/footer/hint chrome to click,
+  // just the drawable canvas itself (shape toolbar lives in .App-top-bar,
+  // undo/redo + hamburger in .App-bottom-bar, the "click and drag..." tip
+  // in .HintViewer). Excalidraw's own stylesheet loads via a lazy chunk
+  // after this module's CSS, so an unmarked override loses the cascade tie
+  // — needs !important, same as the .excalidraw size rule above.
+  :global(.App-top-bar), :global(.App-bottom-bar), :global(.HintViewer) {
+    display: none !important;
+  }
+}

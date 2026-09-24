@@ -1,48 +1,75 @@
 'use client'
 import { useEffect, useRef } from 'react'
-import { useTranslations, useLocale } from 'next-intl'
-import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import * as THREE from 'three'
-import type { GlobeDotData } from '@/shared/types/GlobeDot.type'
 
 export default function KnowledgeGlobe() {
   const t       = useTranslations('LandingPage')
-  const locale  = useLocale()
-  const router  = useRouter()
 
   const containerRef  = useRef<HTMLDivElement>(null)
   const tooltipRef    = useRef<HTMLDivElement>(null)
   const hintRef       = useRef<HTMLDivElement>(null)
-  const labelsRef     = useRef<string[]>([])   // static fallback labels for big dots
-  const miniLabelsRef = useRef<string[]>([])
-  const dotsDataRef   = useRef<GlobeDotData[]>([])
-  const routerRef     = useRef(router)
-  routerRef.current   = router
+  // One 16-topic curriculum sequence per subject/continent, in programme order.
+  const subjectLabelsRef = useRef<string[][]>([[], [], [], [], [], [], [], []])
 
-  // Static big-dot labels — shown when API has no data for that slot
-  labelsRef.current = [
-    t('globe_l1'), t('globe_l2'), t('globe_l3'), t('globe_l4'),
-    t('globe_l5'), t('globe_l6'), t('globe_l7'), t('globe_l8'),
-    t('globe_l9'), t('globe_l10'), t('globe_l11'), t('globe_l12'),
-  ]
-  miniLabelsRef.current = [
-    t('globe_m1'),  t('globe_m2'),  t('globe_m3'),  t('globe_m4'),
-    t('globe_m5'),  t('globe_m6'),  t('globe_m7'),  t('globe_m8'),
-    t('globe_m9'),  t('globe_m10'), t('globe_m11'), t('globe_m12'),
-    t('globe_m13'), t('globe_m14'), t('globe_m15'), t('globe_m16'),
-    t('globe_m17'), t('globe_m18'), t('globe_m19'), t('globe_m20'),
-    t('globe_m21'), t('globe_m22'), t('globe_m23'), t('globe_m24'),
-    t('globe_m25'), t('globe_m26'), t('globe_m27'), t('globe_m28'),
-    t('globe_m29'), t('globe_m30'), t('globe_m31'), t('globe_m32'),
-  ]
-
-  // Prefetch globe data immediately (before useEffect)
+  // Assigned inside an effect, not during render — mutating a ref's .current
+  // directly in the render body is a React anti-pattern (can run twice under
+  // StrictMode/concurrent rendering, or read a stale value if render is
+  // interrupted). Runs before the Three.js setup effect below (React fires
+  // effects in declaration order on mount), so bandLabels there always sees
+  // the labels already populated.
   useEffect(() => {
-    fetch(`/api/landing/globe?locale=${locale}`)
-      .then(r => r.json())
-      .then((data: GlobeDotData[]) => { dotsDataRef.current = data })
-      .catch(() => {})
-  }, [locale])
+    subjectLabelsRef.current = [
+    [ // Математика
+      t('globe_math_1'), t('globe_math_2'), t('globe_math_3'), t('globe_math_4'),
+      t('globe_math_5'), t('globe_math_6'), t('globe_math_7'), t('globe_math_8'),
+      t('globe_math_9'), t('globe_math_10'), t('globe_math_11'), t('globe_math_12'),
+      t('globe_math_13'), t('globe_math_14'), t('globe_math_15'), t('globe_math_16'),
+    ],
+    [ // Русский язык
+      t('globe_rus_1'), t('globe_rus_2'), t('globe_rus_3'), t('globe_rus_4'),
+      t('globe_rus_5'), t('globe_rus_6'), t('globe_rus_7'), t('globe_rus_8'),
+      t('globe_rus_9'), t('globe_rus_10'), t('globe_rus_11'), t('globe_rus_12'),
+      t('globe_rus_13'), t('globe_rus_14'), t('globe_rus_15'), t('globe_rus_16'),
+    ],
+    [ // Физика
+      t('globe_phys_1'), t('globe_phys_2'), t('globe_phys_3'), t('globe_phys_4'),
+      t('globe_phys_5'), t('globe_phys_6'), t('globe_phys_7'), t('globe_phys_8'),
+      t('globe_phys_9'), t('globe_phys_10'), t('globe_phys_11'), t('globe_phys_12'),
+      t('globe_phys_13'), t('globe_phys_14'), t('globe_phys_15'), t('globe_phys_16'),
+    ],
+    [ // История
+      t('globe_hist_1'), t('globe_hist_2'), t('globe_hist_3'), t('globe_hist_4'),
+      t('globe_hist_5'), t('globe_hist_6'), t('globe_hist_7'), t('globe_hist_8'),
+      t('globe_hist_9'), t('globe_hist_10'), t('globe_hist_11'), t('globe_hist_12'),
+      t('globe_hist_13'), t('globe_hist_14'), t('globe_hist_15'), t('globe_hist_16'),
+    ],
+    [ // Биология
+      t('globe_bio_1'), t('globe_bio_2'), t('globe_bio_3'), t('globe_bio_4'),
+      t('globe_bio_5'), t('globe_bio_6'), t('globe_bio_7'), t('globe_bio_8'),
+      t('globe_bio_9'), t('globe_bio_10'), t('globe_bio_11'), t('globe_bio_12'),
+      t('globe_bio_13'), t('globe_bio_14'), t('globe_bio_15'), t('globe_bio_16'),
+    ],
+    [ // Химия
+      t('globe_chem_1'), t('globe_chem_2'), t('globe_chem_3'), t('globe_chem_4'),
+      t('globe_chem_5'), t('globe_chem_6'), t('globe_chem_7'), t('globe_chem_8'),
+      t('globe_chem_9'), t('globe_chem_10'), t('globe_chem_11'), t('globe_chem_12'),
+      t('globe_chem_13'), t('globe_chem_14'), t('globe_chem_15'), t('globe_chem_16'),
+    ],
+    [ // Английский язык
+      t('globe_eng_1'), t('globe_eng_2'), t('globe_eng_3'), t('globe_eng_4'),
+      t('globe_eng_5'), t('globe_eng_6'), t('globe_eng_7'), t('globe_eng_8'),
+      t('globe_eng_9'), t('globe_eng_10'), t('globe_eng_11'), t('globe_eng_12'),
+      t('globe_eng_13'), t('globe_eng_14'), t('globe_eng_15'), t('globe_eng_16'),
+    ],
+    [ // Обществознание
+      t('globe_soc_1'), t('globe_soc_2'), t('globe_soc_3'), t('globe_soc_4'),
+      t('globe_soc_5'), t('globe_soc_6'), t('globe_soc_7'), t('globe_soc_8'),
+      t('globe_soc_9'), t('globe_soc_10'), t('globe_soc_11'), t('globe_soc_12'),
+      t('globe_soc_13'), t('globe_soc_14'), t('globe_soc_15'), t('globe_soc_16'),
+    ],
+    ]
+  }, [t])
 
   useEffect(() => {
     const container = containerRef.current
@@ -60,30 +87,77 @@ export default function KnowledgeGlobe() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     container.appendChild(renderer.domElement)
 
-    const N = 44, r = 2.7
+    const r = 2.7
+    const BAND_SIZE = 16 // topics per subject
+
+    // 8 subjects = 8 "continents" — compact, well-separated clusters so one
+    // subject's dots never sit geometrically next to another subject's.
+    // Centres are a cube's vertices — mutually ≥70.5° apart, the simplest
+    // clean 8-point spread on a sphere. Each continent's own 14 dots are
+    // laid out in curriculum order along a small spiral within its cap
+    // (pushed out from the centre by CAP_R_MIN so even the earliest-in-
+    // sequence dots keep real breathing room from each other), and every
+    // edge (below) stays inside its own continent — subjects never connect.
+    const CONTINENT_CENTERS = ([1, -1] as const).flatMap(x => ([1, -1] as const).flatMap(y => ([1, -1] as const).map(z =>
+      new THREE.Vector3(x, y, z).normalize(),
+    )))
+    const NUM_SUBJECTS = CONTINENT_CENTERS.length
+    const CAP_R_MIN = 0.24, CAP_R_MAX = 0.5 // geodesic radius (rad) of a continent's cap
+    const CAP_TURN  = 1.14                  // spiral turn (rad) per point
+
     const nodePositions: THREE.Vector3[] = []
-    for (let i = 0; i < N; i++) {
-      const p = Math.acos(-1 + (2 * i) / N)
-      const t = Math.sqrt(N * Math.PI) * p
-      nodePositions.push(new THREE.Vector3(
-        r * Math.cos(t) * Math.sin(p),
-        r * Math.sin(t) * Math.sin(p),
-        r * Math.cos(p),
-      ))
-    }
+    CONTINENT_CENTERS.forEach(center => {
+      const seed = Math.abs(center.y) < 0.9 ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(1, 0, 0)
+      const u = new THREE.Vector3().crossVectors(center, seed).normalize()
+      const v = new THREE.Vector3().crossVectors(center, u)
 
-    const miniLabels = miniLabelsRef.current
-    // Big labeled dots: up to 12 evenly distributed nodes
-    const MAX_BIG = 12
-    const stride  = Math.floor(N / MAX_BIG)
-    const bigIndices = new Set(Array.from({ length: MAX_BIG }, (_, k) => k * stride + 1))
+      for (let pos = 0; pos < BAND_SIZE; pos++) {
+        const geoR   = CAP_R_MIN + (CAP_R_MAX - CAP_R_MIN) * (pos / (BAND_SIZE - 1))
+        const theta  = pos * CAP_TURN
+        const dir    = u.clone().multiplyScalar(Math.cos(theta)).addScaledVector(v, Math.sin(theta))
+        const onUnit = center.clone().multiplyScalar(Math.cos(geoR)).addScaledVector(dir, Math.sin(geoR))
+        nodePositions.push(onUnit.multiplyScalar(r))
+      }
+    })
 
-    // Mini-label mapping for remaining nodes
-    const miniLabelMap = new Map<number, string>()
-    let miniIdx = 0
-    for (let i = 0; i < N; i++) {
-      if (!bigIndices.has(i) && miniIdx < miniLabels.length) {
-        miniLabelMap.set(i, miniLabels[miniIdx++])
+    const bandLabels = subjectLabelsRef.current // [8][16]
+
+    // Position within the 16-slot band (1-indexed) that lands on each
+    // subject's 3 headline ("big") topics — the rest are regular topics.
+    const BAND_BIG_POS = [
+      [3, 10, 15], // математика
+      [7, 10, 13], // русский
+      [4, 9, 14],  // физика
+      [4, 10, 16], // история
+      [8, 10, 16], // биология
+      [2, 5, 12],  // химия
+      [4, 9, 16],  // английский
+      [6, 9, 16],  // обществознание
+    ]
+
+    // Extra prerequisite/relation edges within a subject, on top of the
+    // plain programme-order chain below — branches and convergences between
+    // topics of the SAME subject only (1-indexed positions), so a topic can
+    // connect to more than just its immediate neighbour in the sequence.
+    const BAND_EXTRA_EDGES: [number, number][][] = [
+      [[2, 5], [6, 8], [3, 10], [8, 15], [9, 11], [12, 15], [11, 13]], // математика
+      [[1, 4], [3, 14], [8, 10], [9, 11], [10, 13], [11, 13], [14, 16]], // русский
+      [[1, 3], [5, 7], [8, 10], [9, 11], [11, 13], [4, 14], [13, 16]], // физика
+      [[1, 3], [2, 6], [3, 8], [9, 11], [12, 14], [13, 15], [7, 9]], // история
+      [[1, 6], [1, 5], [7, 10], [9, 11], [13, 15], [14, 16], [2, 13]], // биология
+      [[1, 3], [2, 5], [4, 7], [5, 10], [8, 10], [12, 15], [13, 16]], // химия
+      [[2, 4], [3, 10], [6, 9], [4, 11], [9, 12], [5, 14], [7, 10]], // английский
+      [[1, 3], [4, 10], [6, 8], [10, 12], [11, 13], [9, 15], [14, 16]], // обществознание
+    ]
+
+    const nodeLabel  = new Map<number, string>()
+    const bigIndices = new Set<number>()
+    for (let band = 0; band < NUM_SUBJECTS; band++) {
+      const bigPos = new Set(BAND_BIG_POS[band])
+      for (let pos = 1; pos <= BAND_SIZE; pos++) {
+        const i = band * BAND_SIZE + (pos - 1)
+        nodeLabel.set(i, bandLabels[band][pos - 1])
+        if (bigPos.has(pos)) bigIndices.add(i)
       }
     }
 
@@ -97,41 +171,39 @@ export default function KnowledgeGlobe() {
     const geoBig    = new THREE.IcosahedronGeometry(0.16, 1)
 
     const spheres: THREE.Mesh[] = []
-    let bigCount = 0
     nodePositions.forEach((p, i) => {
       const isBig  = bigIndices.has(i)
-      const isMini = !isBig && miniLabelMap.has(i)
+      const isMini = !isBig && nodeLabel.has(i)
       const isInk  = !isBig && i % 3 === 0
       const mat = isBig ? accentMat : (isInk ? inkMat : grayMat)
       const geo = isBig ? geoBig   : (isInk ? geoMed  : geoSmall)
       const m   = new THREE.Mesh(geo, mat)
       m.position.copy(p)
 
-      // Big dots get data from API (filled in dynamically)
-      const bigDotIndex = isBig ? bigCount++ : -1
       m.userData = {
         phase: Math.random() * Math.PI * 2,
-        label: isMini ? miniLabelMap.get(i) : null,   // filled later for big dots
+        label: nodeLabel.get(i) ?? null,
         isBig,
         isMini,
-        bigDotIndex,
-        href: null as string | null,
       }
       group.add(m)
       spheres.push(m)
     })
 
-    // Рёбра — 3 ближайших соседа
-    const edgeSet = new Set<string>()
-    nodePositions.forEach((p, i) => {
-      nodePositions
-        .map((q, j) => ({ j, d: p.distanceTo(q) }))
-        .filter(x => x.j !== i)
-        .sort((a, b) => a.d - b.d)
-        .slice(0, 3)
-        .forEach(({ j }) => edgeSet.add(i < j ? `${i}-${j}` : `${j}-${i}`))
-    })
-    const edges = [...edgeSet].map(k => k.split('-').map(Number))
+    // Рёбра — программная цепочка внутри своего материка плюс несколько
+    // содержательных ветвлений/схождений (курс не строго линеен — темы
+    // пересекаются и опираются друг на друга не только по соседству).
+    // Между материками рёбер нет вообще — индексы всегда внутри одного band.
+    const edges: number[][] = []
+    for (let band = 0; band < NUM_SUBJECTS; band++) {
+      const base = band * BAND_SIZE
+      for (let pos = 0; pos < BAND_SIZE - 1; pos++) {
+        edges.push([base + pos, base + pos + 1])
+      }
+      BAND_EXTRA_EDGES[band].forEach(([a, b]) => {
+        edges.push([base + (a - 1), base + (b - 1)])
+      })
+    }
     const linePos = new Float32Array(edges.length * 6)
     edges.forEach(([a, b], k) => {
       linePos[k*6]   = nodePositions[a].x; linePos[k*6+1] = nodePositions[a].y; linePos[k*6+2] = nodePositions[a].z
@@ -150,31 +222,6 @@ export default function KnowledgeGlobe() {
     group.add(ring)
 
     scene.add(group)
-
-    // Sync big dot labels/hrefs from API data (can arrive after mount)
-    const syncBigDots = () => {
-      spheres.forEach(m => {
-        const idx = m.userData.bigDotIndex as number
-        if (idx < 0) return
-        const data = dotsDataRef.current
-        if (data.length > 0 && idx < data.length) {
-          // Real data from API — navigable
-          m.userData.label = data[idx].label
-          m.userData.href  = data[idx].href
-        } else {
-          // Fallback to the original static label; no navigation
-          m.userData.label = labelsRef.current[idx] ?? null
-          m.userData.href  = null
-        }
-      })
-    }
-
-    // Poll until data arrives (at most 3s)
-    let syncAttempts = 0
-    const syncInterval = setInterval(() => {
-      syncBigDots()
-      if (dotsDataRef.current.length > 0 || ++syncAttempts > 15) clearInterval(syncInterval)
-    }, 200)
 
     // Интерактивность
     const raycaster = new THREE.Raycaster()
@@ -199,13 +246,12 @@ export default function KnowledgeGlobe() {
       const y = (-v.y * 0.5 + 0.5) * container.clientHeight
 
       const label = state.hovered.userData.label as string | null
-      const href  = state.hovered.userData.href as string | null
 
-      tt.textContent    = href ? `↗ ${label}` : (label ?? '')
+      tt.textContent    = label ?? ''
       tt.style.left     = x + 'px'
       tt.style.top      = y + 'px'
       tt.style.display  = 'block'
-      tt.style.color    = href ? '#a78bfa' : '#fff'
+      tt.style.color    = '#fff'
       tt.style.transform = x > container.clientWidth * 0.6 ? 'translate(-100%, -50%)' : 'translate(8px, -50%)'
     }
     const hideTooltip = () => { if (tooltipRef.current) tooltipRef.current.style.display = 'none' }
@@ -240,8 +286,8 @@ export default function KnowledgeGlobe() {
         const v   = obj.position.clone().applyMatrix4(group.matrixWorld); v.project(camera)
         if (v.z < 1) {
           state.hovered = obj
-          container.style.cursor = obj.userData.href ? 'pointer' : (obj.userData.label ? 'default' : 'grab')
-          if (obj.userData.label || obj.userData.href) {
+          container.style.cursor = obj.userData.label ? 'default' : 'grab'
+          if (obj.userData.label) {
             const el = tooltipRef.current
             if (el) {
               el.style.fontSize = obj.userData.isMini ? '10px' : '12px'
@@ -257,20 +303,10 @@ export default function KnowledgeGlobe() {
     }
     const onUp = (e: PointerEvent) => {
       if (state.dragging) {
-        const dx = Math.abs(e.clientX - state.startX)
-        const dy = Math.abs(e.clientY - state.startY)
-        const isClick = dx < 5 && dy < 5
-        const target  = state.clickTarget
-
         state.dragging = false
         state.clickTarget = null
         container.style.cursor = 'grab'
         try { container.releasePointerCapture(e.pointerId) } catch {}
-
-        // Navigate on click (not drag) if dot has href
-        if (isClick && target?.userData.href) {
-          routerRef.current.push(target.userData.href as string)
-        }
       }
     }
     const onLeave = () => {
@@ -315,7 +351,6 @@ export default function KnowledgeGlobe() {
     ro.observe(container)
 
     return () => {
-      clearInterval(syncInterval)
       cancelAnimationFrame(raf); ro.disconnect()
       container.removeEventListener('pointerdown',   onDown)
       container.removeEventListener('pointermove',   onMove)
@@ -341,20 +376,6 @@ export default function KnowledgeGlobe() {
 
       {/* Three.js canvas */}
       <div ref={containerRef} style={{ position: 'absolute', inset: 0 }} />
-
-      {/* live-dot */}
-      <div style={{
-        position: 'absolute', top: 16, left: 10, pointerEvents: 'none', zIndex: 2,
-        display: 'flex', alignItems: 'center', gap: 5,
-        fontFamily: 'JetBrains Mono, monospace', fontSize: 10.5, color: '#a78bfa',
-        letterSpacing: '0.06em',
-      }}>
-        <span style={{
-          width: 6, height: 6, borderRadius: '50%', background: '#22c55e',
-          animation: 'rd_pulse 1.6s infinite', flexShrink: 0,
-        }} />
-        live
-      </div>
 
       {/* tooltip */}
       <div ref={tooltipRef} style={{

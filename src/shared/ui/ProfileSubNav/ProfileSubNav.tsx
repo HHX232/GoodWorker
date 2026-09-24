@@ -16,6 +16,7 @@ export function ProfileSubNav({ calendarHref, statisticsHref }: ProfileSubNavPro
     { label: t('sub_posts'),    href: '/posts' },
     { label: t('sub_courses'),  href: '/workflows-list' },
     { label: t('sub_support'),  href: '/feedback' },
+    { label: t('sub_vip'),      href: '/vip' },
   ]
   const ownLinks = [
     calendarHref ? { label: t('sub_calendar'), href: calendarHref } : null,

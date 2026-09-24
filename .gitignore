@@ -43,3 +43,7 @@ node_modules/
 /playwright/.auth/
 
 /src/generated/prisma
+
+# Экспериментальная песочница (design experiments) — не тянем в историю
+/app/experiments/
+/src/experiments/

@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/refs */
 'use client'
+import '@excalidraw/excalidraw/index.css'
 import { useThemeCtx } from '@/app/providers/ThemeContext'
 import { useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
@@ -8,6 +9,10 @@ import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { slugify } from '@/shared/lib/slugify'
 import { useMediaQuery } from '@/shared/hooks/useMediaQuery'
+import { angleArmsEqual, readThreeDZone, type AngleArm, type SnapRef, type ThreeDZone, type ZoneSelection } from '@/widgets/VideoRoom/CallWhiteboard/shapeGeometry'
+import type { LineBinding } from '@/widgets/VideoRoom/CallWhiteboard/ShapeInteractionLayer'
+import type { ExcalidrawElement } from '@excalidraw/excalidraw/element/types'
+import type { ExcalidrawImperativeAPI, Zoom } from '@excalidraw/excalidraw/types'
 import s from './LandingPage.module.scss'
 import TypingText from './TypingText'
 
@@ -15,6 +20,24 @@ const KnowledgeGlobe    = dynamic(() => import('./KnowledgeGlobe'),    { ssr: fa
 const ThreeShape        = dynamic(() => import('./ThreeShape'),        { ssr: false })
 const CourseFlow        = dynamic(() => import('./CourseFlow'),        { ssr: false })
 const PdfParticleAnim   = dynamic(() => import('./PdfParticleAnim'),   { ssr: false })
+
+// Same canvas + 3D-zone renderer the real call whiteboard uses (see
+// src/widgets/VideoRoom/CallWhiteboard/CallWhiteboard.tsx), lazy-loaded the
+// same way — no SSR, no bundle cost until this section scrolls into view.
+const WbExcalidraw = dynamic(
+  () => import('@excalidraw/excalidraw').then(m => ({ default: m.Excalidraw })),
+  { ssr: false },
+)
+const WbThreeDZoneLayer = dynamic(
+  () => import('@/widgets/VideoRoom/CallWhiteboard/ThreeDZoneLayer').then(m => ({ default: m.ThreeDZoneLayer })),
+  { ssr: false },
+)
+const WbShapeInteractionLayer = dynamic(
+  () => import('@/widgets/VideoRoom/CallWhiteboard/ShapeInteractionLayer').then(m => ({ default: m.ShapeInteractionLayer })),
+  { ssr: false },
+)
+const WB_INITIAL_DATA = { appState: { viewBackgroundColor: 'transparent' } }
+const WB_UI_OPTIONS = { canvasActions: { saveToActiveFile: false, loadScene: false, export: false as const, toggleTheme: false, changeViewBackgroundColor: false, clearCanvas: false } }
 
 const RED = '#ED0606'
 
@@ -432,47 +455,409 @@ function TranscriptModal({ onClose }: { onClose: () => void }) {
   )
 }
 
-function FeedTile({ name, hue, speaking, muted, floating, noLabel, style }: {
-  name: string; hue: number; speaking?: boolean; muted?: boolean; floating?: boolean; noLabel?: boolean; style?: React.CSSProperties
-}) {
-  const { isDark } = useThemeCtx()
-  const initials = name.split(' ').map(w => w[0]).slice(0, 2).join('')
-  const speakingOutline = isDark ? '1.5px solid rgba(237,6,6,0.5)' : `2.5px solid ${RED}`
+// Whiteboard preview — 3D wireframe figures + formulas + quick-formula chip
+// Same ink colors the real CallWhiteboard uses for edge highlights (see
+// shapeGeometry.ts INK_PALETTE), minus black/white/gray which don't read on
+// an already-white board.
+const WB_INK = ['#e03131', '#2f9e44', '#1971c2', '#f08c00', '#9c36b5']
+
+// Generic drag-within-container position, same physics as DraggableTile below.
+function useDragXY(initial: { x: number; y: number }, boardRef: React.RefObject<HTMLDivElement | null>, size: { w: number; h: number }) {
+  const [pos, setPos] = useState(initial)
+  const drag = useRef<{ ox: number; oy: number; px: number; py: number } | null>(null)
+
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
+    e.stopPropagation()
+    drag.current = { ox: e.clientX, oy: e.clientY, px: pos.x, py: pos.y }
+    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+  }, [pos])
+
+  const onPointerMove = useCallback((e: React.PointerEvent) => {
+    if (!drag.current) return
+    const board = boardRef.current
+    const maxX = board ? board.clientWidth - size.w : 9999
+    const maxY = board ? board.clientHeight - size.h : 9999
+    setPos({
+      x: Math.max(0, Math.min(maxX, drag.current.px + (e.clientX - drag.current.ox))),
+      y: Math.max(0, Math.min(maxY, drag.current.py + (e.clientY - drag.current.oy))),
+    })
+  }, [boardRef, size.w, size.h])
+
+  const onPointerUp = useCallback(() => { drag.current = null }, [])
+
+  return { pos, onPointerDown, onPointerMove, onPointerUp }
+}
+
+// A landing-page preview of the *real* whiteboard: same Excalidraw canvas,
+// same ThreeDZoneLayer and ShapeInteractionLayer the live call uses (all
+// lazy-loaded, same as CallWhiteboard.tsx does it), minus the AI-formula/
+// templates toolbar — nothing here calls a paid or auth-gated endpoint.
+// Zone drag/rotate/resize (ThreeDZoneLayer's own `interactive`) is always
+// on; construction-line mode is a toggle button (same "📐 Построения"
+// on/off pattern as the real toolbar) because its full-board capture div
+// would otherwise sit above every sibling in this box's shared stacking
+// context — the pyramid drag handles AND the unrelated transcript button —
+// and swallow every click for as long as it stayed mounted.
+// Identity for a vertex mark is the (armA, armB) pair, not an id — same
+// lookup CallWhiteboard.tsx uses (see its own copy of this function).
+function findVertexMarkIndex(marks: ThreeDZone['vertexMarks'], armA: AngleArm, armB: AngleArm): number {
+  return (marks ?? []).findIndex(m => (angleArmsEqual(m.armA, armA) && angleArmsEqual(m.armB, armB))
+    || (angleArmsEqual(m.armA, armB) && angleArmsEqual(m.armB, armA)))
+}
+
+const WB_ZONE_SEEDS: { x: number; y: number; w: number; h: number; primitive: 'pyramid' }[] = [
+  // Kept clear of the top-left teacher-name badge (~x14-180,y14-36) — the
+  // zone's move handle renders 12px outside its own top-left corner, so
+  // seeding the zone right at that corner put the handle right under the
+  // badge, unreachable.
+  { x: 150, y: 55, w: 140, h: 140, primitive: 'pyramid' },
+]
+
+function WhiteboardTile({ style }: { style?: React.CSSProperties }) {
+  const t = useTranslations('LandingPage')
+  const [drawMode, setDrawMode] = useState(false)
+  const boardRef = useRef<HTMLDivElement>(null)
+  const apiRef = useRef<ExcalidrawImperativeAPI | null>(null)
+  const seededRef = useRef(false)
+  const edgeCountsRef = useRef<Record<string, number>>({})
+  const [sceneElements, setSceneElements] = useState<readonly ExcalidrawElement[]>([])
+  const [viewTransform, setViewTransform] = useState({ scrollX: 0, scrollY: 0, zoom: { value: 1 } as Zoom, offsetLeft: 0, offsetTop: 0 })
+
+  // Excalidraw computes offsetLeft/offsetTop from ITS OWN container's DOM
+  // rect, but only re-measures on ITS OWN resize (ResizeObserver) — never on
+  // an ancestor's scroll. The real CallWhiteboard lives in a fixed,
+  // non-scrolling call layout where that never came up; this preview sits
+  // in a page the visitor scrolls past. A first attempt computed
+  // offsetLeft/offsetTop independently here (via boardRef's own
+  // getBoundingClientRect), which kept the live drag *preview* visually
+  // right (self-consistent with itself) but committed the final element at
+  // whatever position EXCALIDRAW's own still-stale internal offset placed
+  // it at — a second, independent copy of the same number can drift from
+  // the original by exactly enough to look right while dragging and land
+  // wrong on release. `api.refresh()` is Excalidraw's own public method for
+  // this: it re-measures its container and updates its OWN appState, so
+  // there is only ever one number, not two that can disagree.
+  const syncOffset = useCallback(() => {
+    const api = apiRef.current
+    if (!api) return
+    api.refresh()
+    const appState = api.getAppState()
+    setViewTransform(v => (v.offsetLeft === appState.offsetLeft && v.offsetTop === appState.offsetTop
+      ? v
+      : { ...v, offsetLeft: appState.offsetLeft, offsetTop: appState.offsetTop }))
+  }, [])
+
+  useEffect(() => {
+    window.addEventListener('scroll', syncOffset, true)
+    window.addEventListener('resize', syncOffset)
+    return () => {
+      window.removeEventListener('scroll', syncOffset, true)
+      window.removeEventListener('resize', syncOffset)
+    }
+  }, [syncOffset])
+
+  const handleApi = useCallback((api: ExcalidrawImperativeAPI) => {
+    apiRef.current = api
+    const appState = api.getAppState()
+    setViewTransform(v => ({ ...v, scrollX: appState.scrollX, scrollY: appState.scrollY, zoom: appState.zoom, offsetLeft: appState.offsetLeft, offsetTop: appState.offsetTop }))
+    // Deferred a tick: api.refresh() (inside syncOffset) calls setState on
+    // Excalidraw's own App component, which isn't done mounting yet at the
+    // exact moment this ref callback fires (same "not yet mounted" React
+    // warning as calling setActiveTool synchronously here would cause).
+    requestAnimationFrame(syncOffset)
+    if (seededRef.current) return
+    seededRef.current = true
+    // Reads apiRef.current (not the `api` param) once the import resolves —
+    // React 18 Strict Mode's dev-only mount→unmount→remount can hand this
+    // callback a first `api` instance that's discarded before this promise
+    // settles, so closing over that stale `api` would seed a scene nobody
+    // renders. The ref always points at whichever instance is live now.
+    Promise.all([import('@excalidraw/excalidraw'), import('@/widgets/VideoRoom/CallWhiteboard/threeDRender')]).then(([{ convertToExcalidrawElements }, { buildGeometry, buildEdgeTopology }]) => {
+      const live = apiRef.current
+      if (!live) return
+      const zoneEls = convertToExcalidrawElements(WB_ZONE_SEEDS.map(seed => ({
+        type: 'rectangle' as const,
+        x: seed.x, y: seed.y, width: seed.w, height: seed.h,
+        strokeColor: '#94a3b8', backgroundColor: 'transparent', strokeStyle: 'dashed' as const, roughness: 0,
+        // Locked so Excalidraw's own native selection/resize handles never
+        // appear on it — this rectangle is only ever moved/resized/rotated
+        // through ThreeDZoneCanvas's own move/resize buttons and rotate-drag,
+        // and fighting over two separate resize mechanisms on the same
+        // element was silently discarding whichever one lost.
+        locked: true,
+        customData: { threeDZone: { primitive: seed.primitive, rotationX: 0.45, rotationY: 0.6, rotationZ: 0, scale: 1, color: '#1e1e1e' } },
+      })))
+      zoneEls.forEach((el, i) => {
+        const seed = WB_ZONE_SEEDS[i]
+        const geometry = buildGeometry(seed.primitive, 0, false)
+        edgeCountsRef.current[el.id] = buildEdgeTopology(geometry).length
+      })
+      live.updateScene({ elements: [...live.getSceneElements(), ...zoneEls] })
+    })
+  }, [])
+
+  const handleChange = useCallback((els: readonly ExcalidrawElement[]) => setSceneElements(els), [])
+  const handleScrollChange = useCallback((scrollX: number, scrollY: number, zoom: Zoom) => {
+    setViewTransform(v => ({ ...v, scrollX, scrollY, zoom }))
+  }, [])
+
+
+  // Every ThreeDZoneLayer edit callback (rotate, recolor, label, vertex
+  // marks, construction-line edits) is "read the zone off its element,
+  // patch one field, write it back" — same shape as CallWhiteboard's own
+  // handlers, so it's centralized here once instead of repeated 9 times.
+  // mutateElement() mutates the element object in place and bumps its
+  // version, but doesn't itself push a new `elements` array reference back
+  // into this component's onChange — nothing here ever touches Excalidraw's
+  // own canvas (every gesture is routed through custom overlay buttons/divs
+  // instead), so there's no other event left to make it notice the version
+  // bump and flush. Re-handing it its own scene as a fresh array reference
+  // forces that flush immediately instead of waiting for some unrelated
+  // interaction to trigger it incidentally.
+  const notifyChange = useCallback(() => {
+    apiRef.current?.updateScene({ elements: [...apiRef.current.getSceneElements()] })
+  }, [])
+
+  // Reads `el`/the current zone AFTER the import resolves, not before —
+  // ThreeDZoneCanvas fires more than one of these in the same tick (e.g.
+  // picking a color both calls onEdgeColorChange AND, via its own setPicker
+  // closing right after, onSelectionChange(null)). Both calls schedule an
+  // `import()` microtask; reading `zone` synchronously up front captures it
+  // pre-mutation for BOTH, so whichever one's callback runs second spreads
+  // that stale snapshot and silently overwrites what the first one just
+  // wrote (clicking a swatch looked like it did nothing — the color write
+  // landed, then the trailing deselect erased it). Re-reading inside the
+  // callback means each one starts from whatever the previous one already
+  // committed, same as CallWhiteboard's own handlers do it.
+  const updateZone = useCallback((zoneElementId: string, updater: (zone: ThreeDZone) => ThreeDZone) => {
+    if (!apiRef.current) return
+    import('@excalidraw/excalidraw').then(({ mutateElement }) => {
+      const api = apiRef.current
+      const el = api?.getSceneElements().find(e => e.id === zoneElementId)
+      const zone = el && readThreeDZone(el)
+      if (!api || !el || !zone) return
+      mutateElement(el, { customData: { threeDZone: updater(zone) } })
+      notifyChange()
+    })
+  }, [notifyChange])
+
+  const handleRotationCommit = useCallback((zoneElementId: string, rotationX: number, rotationY: number, rotationZ: number) => {
+    updateZone(zoneElementId, zone => ({ ...zone, rotationX, rotationY, rotationZ }))
+  }, [updateZone])
+
+  const handleEdgeColorChange = useCallback((zoneElementId: string, edgeIndex: number, color: string) => {
+    updateZone(zoneElementId, zone => ({ ...zone, edgeColors: { ...zone.edgeColors, [edgeIndex]: color } }))
+  }, [updateZone])
+
+  const handleEdgeLabelChange = useCallback((zoneElementId: string, edgeIndex: number, text: string) => {
+    updateZone(zoneElementId, zone => {
+      const edgeLabels = { ...zone.edgeLabels }
+      if (text) edgeLabels[edgeIndex] = text
+      else delete edgeLabels[edgeIndex]
+      return { ...zone, edgeLabels }
+    })
+  }, [updateZone])
+
+  const handleVertexMarkUpsert = useCallback((zoneElementId: string, armA: AngleArm, armB: AngleArm, color: string) => {
+    updateZone(zoneElementId, zone => {
+      const marks = [...(zone.vertexMarks ?? [])]
+      const idx = findVertexMarkIndex(marks, armA, armB)
+      if (idx === -1) marks.push({ id: crypto.randomUUID(), armA, armB, color })
+      else marks[idx] = { ...marks[idx], color }
+      return { ...zone, vertexMarks: marks }
+    })
+  }, [updateZone])
+
+  const handleVertexMarkLabelChange = useCallback((zoneElementId: string, armA: AngleArm, armB: AngleArm, text: string) => {
+    updateZone(zoneElementId, zone => {
+      const marks = [...(zone.vertexMarks ?? [])]
+      const idx = findVertexMarkIndex(marks, armA, armB)
+      if (idx === -1) marks.push({ id: crypto.randomUUID(), armA, armB, color: zone.color, label: text || undefined })
+      else marks[idx] = { ...marks[idx], label: text || undefined }
+      return { ...zone, vertexMarks: marks }
+    })
+  }, [updateZone])
+
+  const handleVertexMarkDelete = useCallback((zoneElementId: string, armA: AngleArm, armB: AngleArm) => {
+    updateZone(zoneElementId, zone => {
+      const idx = findVertexMarkIndex(zone.vertexMarks, armA, armB)
+      if (idx === -1) return zone
+      const marks = [...(zone.vertexMarks ?? [])]
+      marks.splice(idx, 1)
+      return { ...zone, vertexMarks: marks }
+    })
+  }, [updateZone])
+
+  const handleLineColorChange = useCallback((zoneElementId: string, lineId: string, color: string) => {
+    updateZone(zoneElementId, zone => ({ ...zone, constructionLines: (zone.constructionLines ?? []).map(line => (line.id === lineId ? { ...line, color } : line)) }))
+  }, [updateZone])
+
+  const handleLineLabelChange = useCallback((zoneElementId: string, lineId: string, text: string) => {
+    updateZone(zoneElementId, zone => ({ ...zone, constructionLines: (zone.constructionLines ?? []).map(line => (line.id === lineId ? { ...line, label: text || undefined } : line)) }))
+  }, [updateZone])
+
+  const handleLineDelete = useCallback((zoneElementId: string, lineId: string) => {
+    updateZone(zoneElementId, zone => ({ ...zone, constructionLines: (zone.constructionLines ?? []).filter(line => line.id !== lineId) }))
+  }, [updateZone])
+
+  const handleSelectionChange = useCallback((zoneElementId: string, target: ZoneSelection | null) => {
+    updateZone(zoneElementId, zone => ((zone.selection ?? null) === target ? zone : { ...zone, selection: target }))
+  }, [updateZone])
+
+  const handleSelectZone = useCallback((zoneElementId: string) => {
+    apiRef.current?.updateScene({ appState: { selectedElementIds: { [zoneElementId]: true } } })
+  }, [])
+
+  const handleMoveZoneTo = useCallback((zoneElementId: string, x: number, y: number) => {
+    const api = apiRef.current
+    const el = api?.getSceneElements().find(e => e.id === zoneElementId)
+    if (!api || !el) return
+    import('@excalidraw/excalidraw').then(({ mutateElement }) => {
+      mutateElement(el, { x, y })
+      notifyChange()
+    })
+  }, [notifyChange])
+
+  const handleResizeZoneTo = useCallback((zoneElementId: string, width: number, height: number) => {
+    const api = apiRef.current
+    const el = api?.getSceneElements().find(e => e.id === zoneElementId)
+    if (!api || !el) return
+    import('@excalidraw/excalidraw').then(({ mutateElement }) => {
+      mutateElement(el, { width, height })
+      notifyChange()
+    })
+  }, [notifyChange])
+
+  // Same construction-line insert flow as CallWhiteboard's handleInsertZoneLine
+  // — both ends snapped inside the same shape, so it's stored on that zone's
+  // own customData and rendered by ThreeDZoneCanvas, not as a separate
+  // Excalidraw element.
+  const handleInsertZoneLine = useCallback((zoneElementId: string, startRef: SnapRef, endRef: SnapRef) => {
+    updateZone(zoneElementId, zone => ({ ...zone, constructionLines: [...(zone.constructionLines ?? []), { id: crypto.randomUUID(), startRef, endRef, color: zone.color }] }))
+  }, [updateZone])
+
+  // A construction line that isn't fully inside one shape (free end, or
+  // spans two zones) — a plain Excalidraw line, same as CallWhiteboard's
+  // handleInsertLine.
+  const handleInsertLine = useCallback((line: { x1: number; y1: number; x2: number; y2: number; startBinding: LineBinding | null; endBinding: LineBinding | null }) => {
+    const api = apiRef.current
+    if (!api) return
+    const dx = line.x2 - line.x1
+    const dy = line.y2 - line.y1
+    import('@excalidraw/excalidraw').then(({ convertToExcalidrawElements }) => {
+      const [lineElement] = convertToExcalidrawElements([{
+        type: 'line', x: line.x1, y: line.y1, width: Math.abs(dx), height: Math.abs(dy), points: [[0, 0], [dx, dy]], roughness: 0,
+        ...(line.startBinding || line.endBinding ? { customData: { boundTo: { start: line.startBinding, end: line.endBinding } } } : {}),
+      }])
+      api.updateScene({ elements: [...api.getSceneElements(), lineElement] })
+    })
+  }, [])
+
+  // Periodically bolds/colors one edge of one shape — the exact same
+  // customData.threeDZone.edgeColors mechanism a teacher's manual edge
+  // recolor writes in the real CallWhiteboard (handleZoneEdgeColorChange).
+  useEffect(() => {
+    const id = setInterval(() => {
+      const ids = Object.keys(edgeCountsRef.current)
+      if (ids.length === 0) return
+      const elementId = ids[Math.floor(Math.random() * ids.length)]
+      const edgeCount = edgeCountsRef.current[elementId]
+      if (!edgeCount) return
+      const edgeIdx = Math.floor(Math.random() * edgeCount)
+      const color = WB_INK[Math.floor(Math.random() * WB_INK.length)]
+      updateZone(elementId, zone => ({ ...zone, edgeColors: { ...zone.edgeColors, [edgeIdx]: color } }))
+    }, 1000)
+    return () => clearInterval(id)
+  }, [updateZone])
+
+  const f1 = useDragXY({ x: 18, y: 130 },  boardRef, { w: 96,  h: 28 })
+  const f2 = useDragXY({ x: 18, y: 166 },  boardRef, { w: 110, h: 22 })
+
   return (
-    <div style={{
-      position: 'relative', borderRadius: floating ? 14 : 22, overflow: 'hidden',
-      background: `linear-gradient(150deg, hsl(${hue} 55% 30%), hsl(${hue + 30} 60% 18%))`,
-      outline: speaking ? speakingOutline : (floating ? '2px solid rgba(255,255,255,0.9)' : 'none'),
-      ...style,
-    }}>
-      <div style={{
-        position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: 'rgba(255,255,255,0.92)', fontWeight: 800,
-        fontSize: floating ? 26 : 54, letterSpacing: '-0.02em',
-      }}>{initials}</div>
-      <div style={{
-        position: 'absolute', left: 0, right: 0, bottom: 0, height: '46%',
-        background: 'linear-gradient(to top, rgba(0,0,0,0.45), transparent)',
-      }} />
-      {!noLabel && (
-        <div style={{
-          position: 'absolute', left: floating ? 8 : 14, bottom: floating ? 7 : 13,
-          display: 'flex', alignItems: 'center', gap: 7, color: '#fff',
-        }}>
-          <span style={{
-            width: floating ? 13 : 16, height: floating ? 13 : 16, borderRadius: 4,
-            background: muted ? 'rgba(255,255,255,0.18)' : RED,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <svg width={floating ? 8 : 10} height={floating ? 8 : 10} viewBox="0 0 24 24" fill="#fff">
-              {muted
-                ? <path d="M19 11a7 7 0 0 1-14 0m7 7v3m-4 0h8M12 1a3 3 0 0 1 3 3v5a3 3 0 0 1-3 3 3 3 0 0 1-3-3V4a3 3 0 0 1 3-3z" />
-                : <path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V21h2v-3.1A7 7 0 0 0 19 11h-2z" />}
-            </svg>
-          </span>
-          <span style={{ fontSize: floating ? 11.5 : 14, fontWeight: 600, textShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>{name}</span>
-        </div>
-      )}
+    <div
+      ref={boardRef}
+      style={{
+        position: 'relative', overflow: 'hidden', zIndex: 0,
+        border: '1px solid #ecebf1',
+        background: 'radial-gradient(circle at 1px 1px, #e5e5ec 1px, transparent 0) 0 0 / 22px 22px #fff',
+        ...style,
+      }}
+    >
+      <div className={s.wb_canvas}>
+        <WbExcalidraw
+          excalidrawAPI={handleApi}
+          onChange={handleChange}
+          onScrollChange={handleScrollChange}
+          initialData={WB_INITIAL_DATA}
+          theme="light"
+          viewModeEnabled={false}
+          isCollaborating={false}
+          UIOptions={WB_UI_OPTIONS}
+        />
+        <WbThreeDZoneLayer
+          elements={sceneElements}
+          viewTransform={viewTransform}
+          interactive={!drawMode}
+          angleMode={false}
+          onRotationCommit={handleRotationCommit}
+          onEdgeColorChange={handleEdgeColorChange}
+          onEdgeLabelChange={handleEdgeLabelChange}
+          onVertexMarkUpsert={handleVertexMarkUpsert}
+          onVertexMarkLabelChange={handleVertexMarkLabelChange}
+          onVertexMarkDelete={handleVertexMarkDelete}
+          onLineColorChange={handleLineColorChange}
+          onLineLabelChange={handleLineLabelChange}
+          onLineDelete={handleLineDelete}
+          onSelectionChange={handleSelectionChange}
+          onSelectZone={handleSelectZone}
+          onMoveZoneTo={handleMoveZoneTo}
+          onResizeZoneTo={handleResizeZoneTo}
+        />
+        {drawMode && (
+          <WbShapeInteractionLayer
+            elements={sceneElements}
+            viewTransform={viewTransform}
+            constructionMode
+            onInsertLine={handleInsertLine}
+            onInsertZoneLine={handleInsertZoneLine}
+          />
+        )}
+      </div>
+
+      <button
+        type="button"
+        onClick={() => setDrawMode(v => !v)}
+        style={{
+          position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)', zIndex: 5,
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '7px 12px', borderRadius: 10, border: '1px solid',
+          borderColor: drawMode ? 'transparent' : '#e2e2ea',
+          background: drawMode ? 'linear-gradient(135deg, #534AB7 0%, #7C3AED 100%)' : '#fff',
+          color: drawMode ? '#fff' : '#4a4a58',
+          fontSize: 11.5, fontWeight: 700, cursor: 'pointer',
+          boxShadow: drawMode ? '0 8px 20px -8px rgba(124,58,237,0.6)' : '0 2px 8px -2px rgba(0,0,0,0.12)',
+        }}
+      >
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="m3 21 4.5-1L19.5 8A2.12 2.12 0 1 0 16.5 5L4.5 17 3 21z" /><path d="m15 6 3 3" />
+        </svg>
+        {t('video_wb_draw_btn')}
+      </button>
+
+      <div
+        {...{ onPointerDown: f1.onPointerDown, onPointerMove: f1.onPointerMove, onPointerUp: f1.onPointerUp, onPointerCancel: f1.onPointerUp }}
+        style={{
+          position: 'absolute', left: f1.pos.x, top: f1.pos.y, cursor: 'grab', touchAction: 'none', userSelect: 'none', zIndex: 2,
+          fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 18, color: '#1f1f26',
+        }}
+      >a² + b² = c²</div>
+      <div
+        {...{ onPointerDown: f2.onPointerDown, onPointerMove: f2.onPointerMove, onPointerUp: f2.onPointerUp, onPointerCancel: f2.onPointerUp }}
+        style={{
+          position: 'absolute', left: f2.pos.x, top: f2.pos.y, cursor: 'grab', touchAction: 'none', userSelect: 'none', zIndex: 2,
+          fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: 14, color: '#1f1f26',
+        }}
+      >V = 1/3 · S · h</div>
     </div>
   )
 }
@@ -604,7 +989,7 @@ function VideoSection() {
     <>
       <div className={s.section_grid}>
         <div ref={wrapRef} className={s.video_wrap}>
-          <FeedTile name={teacherName} hue={258} speaking noLabel style={{ aspectRatio: '16/10', width: '100%' }} />
+          <WhiteboardTile style={{ aspectRatio: '16/10', width: '100%', borderRadius: 22 }} />
 
           {/* Top-left: teacher name badge */}
           <div className={s.rec_badge}>
@@ -707,6 +1092,7 @@ function VideoSection() {
               [t('video_c1'), t('video_c1s')],
               [t('video_c2'), t('video_c2s')],
               [t('video_c3'), t('video_c3s')],
+              [t('video_c4'), t('video_c4s')],
             ] as [string, string][]).map(([title, sub]) => (
               <div key={title} className={s.check_item}>
                 <span className={s.check_icon}>
@@ -765,6 +1151,10 @@ function CalendarSection() {
         <p className={s.section_text} style={{ marginTop: 16 }}>
           <mark className={s.hl}>{t('cal_hl')}</mark>{' '}
           {t('cal_desc2')}
+        </p>
+        <p className={s.section_text} style={{ marginTop: 16 }}>
+          <span className={s.badge_accent} style={{ marginRight: 8 }}>{t('cal_new_badge')}</span>
+          {t('cal_new_text')}
         </p>
       </div>
       <div>
@@ -1377,11 +1767,11 @@ export default function LandingPage() {
         <Divider />
         <VideoSection />
         <Divider />
+        <CalendarSection />
+        <Divider />
         <CourseSection />
         <Divider />
         <FeaturesBlock />
-        <Divider />
-        <CalendarSection />
         <Divider />
         <TeachersBlock />
         <Divider />

@@ -432,6 +432,15 @@ export function DashboardCenter({ statsId, studentCount, callCount, totalHours, 
                     ? () => toast.error(t('teachersCannotBook'))
                     : undefined
               }
+              onClick={
+                isOwner
+                  ? () => { setEditingService(s); setServiceModalOpen(true) }
+                  : canBook
+                    ? () => setBookingService(s)
+                    : blockedFromBooking
+                      ? () => toast.error(t('teachersCannotBook'))
+                      : undefined
+              }
             />
           ))}
 
