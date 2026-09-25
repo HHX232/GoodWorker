@@ -73,6 +73,7 @@
 .who { display: flex; flex-direction: column; min-width: 0; }
 .name { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: #141416; }
 .vip { padding: 1px 6px; border-radius: 6px; background: linear-gradient(90deg, #F59E0B, #EC4899); color: #fff; font-size: 10px; font-weight: 700; }
+.adminBadge { margin-left: 4px; padding: 1px 6px; border-radius: 6px; background: #EEEDFE; color: #534AB7; font-size: 10px; font-weight: 700; }
 .email { font-size: 12px; color: #868897; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .usage { display: flex; flex-direction: column; gap: 6px; }
 .usageText { font-size: 13px; font-weight: 600; color: #141416; }
@@ -126,4 +127,5 @@
   .bar { background: rgba(255, 255, 255, 0.08); }
   .view { background: transparent; border-color: rgba(255, 255, 255, 0.12); color: #e8eaf0; &:hover { background: rgba(255, 255, 255, 0.05); } }
   .overlay { background: #14151c; }
+  .adminBadge { background: rgba(124, 116, 230, 0.2); color: #c4c0f5; }
 }

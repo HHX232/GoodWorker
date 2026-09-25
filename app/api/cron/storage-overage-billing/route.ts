@@ -1,5 +1,5 @@
 import { prisma } from '@/shared/prisma/prisma'
-import { getStorageLimits, getUsedBytes } from '@/shared/lib/tutorFiles/storage'
+import { getStorageAdminIds, getStorageLimits, getUsedBytes } from '@/shared/lib/tutorFiles/storage'
 import { GB } from '@/shared/lib/tutorFiles/constants'
 import { chargeStorageOverage, getWalletPricingSettings } from '@/shared/lib/wallet/wallet'
 import { NextRequest, NextResponse } from 'next/server'
@@ -24,6 +24,8 @@ export async function GET(req: NextRequest) {
     where: { isVip: true, OR: [{ vipExpiresAt: null }, { vipExpiresAt: { gt: now } }] },
     select: { id: true },
   })
+  // Admins are never billed — their quota is a hard cap (ADMIN_QUOTA_GB).
+  const adminIds = await getStorageAdminIds(vipTeachers.map(t => t.id))
 
   // Idempotent per calendar month (UTC): a retried or manually re-fired run
   // must not charge the same month twice.
@@ -37,7 +39,7 @@ export async function GET(req: NextRequest) {
 
   let billed = 0
   for (const teacher of vipTeachers) {
-    if (alreadyBilled.has(teacher.id)) continue
+    if (alreadyBilled.has(teacher.id) || adminIds.has(teacher.id)) continue
     const usedBytes = await getUsedBytes(teacher.id)
     if (usedBytes <= quotaBytes) continue
 

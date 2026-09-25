@@ -2140,7 +2140,9 @@
     "storageReindexHint": "Files uploaded before content search existed aren't indexed yet.",
     "storageReindex": "Index now ({n})",
     "storageReindexRunning": "Indexing… {n} left",
-    "storageReindexDone": "Indexing complete"
+    "storageReindexDone": "Indexing complete",
+    "storageAdminBadge": "Admin",
+    "storageAdminQuotaHint": "Admins get {gb} GB without VIP."
   },
   "tutorial": {
     "prev": "Back",

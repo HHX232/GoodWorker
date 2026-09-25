@@ -1,5 +1,5 @@
 import { prisma } from '@/shared/prisma/prisma'
-import { DEFAULT_MAX_FILE_MB, DEFAULT_QUOTA_GB, GB, MAX_FOLDER_DEPTH, MB } from './constants'
+import { ADMIN_QUOTA_GB, DEFAULT_MAX_FILE_MB, DEFAULT_QUOTA_GB, GB, MAX_FOLDER_DEPTH, MB } from './constants'
 
 export { MAX_FOLDER_DEPTH }
 
@@ -16,6 +16,28 @@ export async function getStorageLimits(): Promise<StorageLimits> {
   const quotaGb = row?.quotaGb ?? DEFAULT_QUOTA_GB
   const maxFileMb = row?.maxFileMb ?? DEFAULT_MAX_FILE_MB
   return { quotaGb, maxFileMb, quotaBytes: quotaGb * GB, maxFileBytes: maxFileMb * MB }
+}
+
+/** Which of these teachers are admins (their email is in AdminEmail — the same rule auth.ts uses for the ADMIN role). */
+export async function getStorageAdminIds(teacherIds: string[]): Promise<Set<string>> {
+  if (teacherIds.length === 0) return new Set()
+  const teachers = await prisma.teacher.findMany({ where: { id: { in: teacherIds } }, select: { id: true, email: true } })
+  const admins = await prisma.adminEmail.findMany({ where: { email: { in: teachers.map(t => t.email) } }, select: { email: true } })
+  const adminEmails = new Set(admins.map(a => a.email))
+  return new Set(teachers.filter(t => adminEmails.has(t.email)).map(t => t.id))
+}
+
+export async function isStorageAdmin(teacherId: string): Promise<boolean> {
+  return (await getStorageAdminIds([teacherId])).has(teacherId)
+}
+
+/**
+ * The limits for one library owner: the admin-set ones, except admins, who
+ * get ADMIN_QUOTA_GB as a hard cap (no VIP needed, never billed).
+ */
+export async function getTeacherStorageLimits(teacherId: string): Promise<StorageLimits & { isAdmin: boolean }> {
+  const [limits, isAdmin] = await Promise.all([getStorageLimits(), isStorageAdmin(teacherId)])
+  return isAdmin ? { ...limits, quotaGb: ADMIN_QUOTA_GB, quotaBytes: ADMIN_QUOTA_GB * GB, isAdmin } : { ...limits, isAdmin }
 }
 
 export class FolderDepthExceededError extends Error {

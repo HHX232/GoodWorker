@@ -4,6 +4,7 @@ import type { TutorFileRow } from './readModel'
 import { NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
 import { hasTeacherStudentLink } from '../chat/access'
+import { isStorageAdmin } from './storage'
 
 export type FilesRole = 'TEACHER' | 'STUDENT'
 
@@ -102,6 +103,11 @@ export async function isTeacherVipActive(teacherId: string): Promise<boolean> {
   const teacher = await prisma.teacher.findUnique({ where: { id: teacherId }, select: { isVip: true, vipExpiresAt: true } })
   if (!teacher?.isVip) return false
   return teacher.vipExpiresAt === null || teacher.vipExpiresAt > new Date()
+}
+
+/** Who may run the library: an active VIP tutor, or an admin (no VIP needed — see ADMIN_QUOTA_GB). */
+export async function hasStorageAccess(teacherId: string): Promise<boolean> {
+  return (await isTeacherVipActive(teacherId)) || (await isStorageAdmin(teacherId))
 }
 
 export function vipRequiredResponse(): NextResponse {

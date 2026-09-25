@@ -3,8 +3,8 @@ import { randomUUID } from 'crypto'
 import { after, NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/shared/prisma/prisma'
 import { publicUrlForKey, s3, S3_BUCKET } from '@/shared/s3/s3Client'
-import { activeGrantWhere, canStudentSee, getFilesSessionUser, isTeacherVipActive, vipRequiredResponse } from '@/shared/lib/tutorFiles/access'
-import { getStorageLimits, getUsedBytes } from '@/shared/lib/tutorFiles/storage'
+import { activeGrantWhere, canStudentSee, getFilesSessionUser, hasStorageAccess, vipRequiredResponse } from '@/shared/lib/tutorFiles/access'
+import { getStorageLimits, getTeacherStorageLimits, getUsedBytes } from '@/shared/lib/tutorFiles/storage'
 import { STORAGE_BILLING_ENABLED } from '@/shared/lib/tutorFiles/billing'
 import { postEventCard } from '@/shared/lib/chat/access'
 import { extractText, isIndexable } from '@/shared/lib/tutorFiles/extractText'
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
 
     const file = formData.get('file')
     if (!(file instanceof File)) return NextResponse.json({ error: 'file is required' }, { status: 400 })
-    const limits = await getStorageLimits()
+    const limits = await getStorageLimits() // per-file cap is the same for everyone; the quota is per owner below
     if (file.size > limits.maxFileBytes) return NextResponse.json({ error: 'FILE_TOO_LARGE', maxFileBytes: limits.maxFileBytes }, { status: 413 })
 
     const folderId = (formData.get('folderId') as string | null) || null
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     let teacherId: string
     if (user.role === 'TEACHER') {
       if (folder && folder.teacherId !== user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-      if (!(await isTeacherVipActive(user.id))) return vipRequiredResponse()
+      if (!(await hasStorageAccess(user.id))) return vipRequiredResponse()
       teacherId = user.id
     } else {
       // G03.2: a student uploads only into their own "учебная" subfolder, and
@@ -64,8 +64,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Student submissions count toward their tutor's library, like everything in it.
-    if (!STORAGE_BILLING_ENABLED && (await getUsedBytes(teacherId)) + file.size > limits.quotaBytes) {
-      return NextResponse.json({ error: 'QUOTA_EXCEEDED', quotaBytes: limits.quotaBytes }, { status: 413 })
+    // Admin libraries are always hard-capped (ADMIN_QUOTA_GB, never billed).
+    const owner = await getTeacherStorageLimits(teacherId)
+    if ((!STORAGE_BILLING_ENABLED || owner.isAdmin) && (await getUsedBytes(teacherId)) + file.size > owner.quotaBytes) {
+      return NextResponse.json({ error: 'QUOTA_EXCEEDED', quotaBytes: owner.quotaBytes }, { status: 413 })
     }
 
     const ext = extOf(file.name) || 'bin'
@@ -130,7 +132,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ file: created })
     }
     const usedBytes = await getUsedBytes(teacherId)
-    return NextResponse.json({ file: created, usedBytes, quotaBytes: limits.quotaBytes })
+    return NextResponse.json({ file: created, usedBytes, quotaBytes: owner.quotaBytes })
   } catch (e) {
     console.error('[POST /api/tutor-files/files]', e)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })

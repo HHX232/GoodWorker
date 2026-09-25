@@ -1,9 +1,9 @@
 import { prisma } from '@/shared/prisma/prisma'
 import type { TutorFolder } from '@prisma/client'
 import type { LibraryResponse } from '@/shared/types/TutorFiles/tutorFiles.types'
-import { isTeacherVipActive } from './access'
+import { hasStorageAccess } from './access'
 import { grantStudentSelect, loadOpens, submissionDeadlineFor, toFile, toFolder, toTreeNode } from './readModel'
-import { getStorageLimits } from './storage'
+import { getTeacherStorageLimits } from './storage'
 
 export type LibraryError = { status: 403 | 404; error: string }
 
@@ -16,8 +16,8 @@ export type LibraryError = { status: 403 | 404; error: string }
 export async function buildTeacherLibrary(teacherId: string, folderId: string | null): Promise<LibraryResponse | LibraryError> {
   const [allFolders, isVip, limits] = await Promise.all([
     prisma.tutorFolder.findMany({ where: { teacherId }, orderBy: { name: 'asc' } }),
-    isTeacherVipActive(teacherId),
-    getStorageLimits(),
+    hasStorageAccess(teacherId),
+    getTeacherStorageLimits(teacherId),
   ])
   const byId = new Map(allFolders.map(f => [f.id, f]))
   const current = folderId ? byId.get(folderId) : null

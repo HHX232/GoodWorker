@@ -1883,7 +1883,9 @@
     "storageReindexHint": "内容搜索上线前上传的文件尚未建立索引。",
     "storageReindex": "建立索引（{n}）",
     "storageReindexRunning": "正在索引… 剩余 {n}",
-    "storageReindexDone": "索引完成"
+    "storageReindexDone": "索引完成",
+    "storageAdminBadge": "管理员",
+    "storageAdminQuotaHint": "管理员无需 VIP，配额 {gb} GB。"
   },
   "tutorial": {
     "prev": "上一步",
