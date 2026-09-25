@@ -126,7 +126,7 @@
       background: #ed0606;
       border: none;
       cursor: pointer;
-      box-shadow: 0 4px 12px -4px rgba(237, 6, 6, 0.7);
+      box-shadow: var(--w-accent-glow-sm, 0 4px 12px -4px rgba(237, 6, 6, 0.7));
       transition: transform 0.12s;
 
       &:hover {
@@ -140,7 +140,7 @@
       background: #ed0606;
       border: none;
       cursor: pointer;
-      box-shadow: 0 4px 12px -4px rgba(237, 6, 6, 0.7);
+      box-shadow: var(--w-accent-glow-sm, 0 4px 12px -4px rgba(237, 6, 6, 0.7));
       transition: transform 0.12s;
 
       &:hover {
@@ -188,13 +188,13 @@
   border: none;
   cursor: pointer;
   white-space: nowrap;
-  box-shadow: 0 12px 32px -14px rgba(237, 6, 6, 0.55);
+  box-shadow: var(--w-accent-glow, 0 12px 32px -14px rgba(237, 6, 6, 0.55));
   transition: box-shadow 0.15s, background 0.15s, transform 0.12s;
   flex-shrink: 0;
 
   &:hover:not(:disabled) {
     background: #d90505;
-    box-shadow: 0 16px 40px -14px rgba(237, 6, 6, 0.7);
+    box-shadow: var(--w-accent-glow-hover, 0 16px 40px -14px rgba(237, 6, 6, 0.7));
   }
   &:active:not(:disabled) {
     transform: scale(0.98);

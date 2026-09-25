@@ -1,9 +1,7 @@
 .card {
   // Dark 3D world (ForNewDesign/prototypes/wallet-a-3d.html): --card/--card-2
   // gradient + red accent, replaces the old generic dark-grey gradient.
-  background:
-    radial-gradient(120% 140% at 8% 0%, rgba(237, 6, 6, 0.14), transparent 55%),
-    var(--w-hero-bg, linear-gradient(155deg, #22242f 0%, #15161e 70%, #101017 100%));
+  background: var(--w-card, #1a1c26);
   border: 1px solid rgba(var(--w-fg-rgb, 255, 255, 255), 0.09);
   border-radius: 20px;
   padding: 24px;
@@ -127,14 +125,12 @@
 
 .tileBest {
   border-color: rgba(237, 6, 6, 0.35);
-  background:
-    radial-gradient(120% 90% at 100% 0%, rgba(237, 6, 6, 0.1), transparent 65%),
-    var(--w-card, #1a1c26);
+  background: var(--w-card, #1a1c26);
 }
 
 .tileActive {
   border-color: #ed0606;
-  box-shadow: 0 0 0 3px rgba(237, 6, 6, 0.18), 0 12px 28px -14px rgba(237, 6, 6, 0.55);
+  box-shadow: 0 0 0 3px rgba(237, 6, 6, 0.15);
 }
 
 .tileCustom {
@@ -243,7 +239,7 @@
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 12px 32px -14px rgba(237, 6, 6, 0.55);
+  box-shadow: none;
   transition: box-shadow 0.15s, background 0.15s, transform 0.15s;
 
   &:disabled {
@@ -254,7 +250,7 @@
 
   &:hover:not(:disabled) {
     background: #d90505;
-    box-shadow: 0 16px 40px -14px rgba(237, 6, 6, 0.7);
+    box-shadow: none;
     transform: translateY(-1px);
   }
 }

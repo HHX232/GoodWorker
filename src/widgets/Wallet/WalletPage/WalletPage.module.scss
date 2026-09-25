@@ -9,7 +9,12 @@
   --w-page-dot: rgba(20, 20, 30, 0.06);
   --w-card: #fff;
   --w-surface: #f5f6f9;
-  --w-hero-bg: linear-gradient(155deg, #ffffff 0%, #fcfcfd 70%, #f7f7fa 100%);
+  --w-hero-bg: #fff;
+  // Flat on /wallet: no red glow under accent buttons/thumbs (the shared
+  // add-on cards keep their glow on /vip, where these tokens aren't set).
+  --w-accent-glow: none;
+  --w-accent-glow-sm: none;
+  --w-accent-glow-hover: none;
   --w-ink: #141416;
   --w-muted: #6b6f7e;
   --w-faint: #9a9eab;
@@ -31,7 +36,7 @@
   --w-page-dot: rgba(255, 255, 255, 0.055);
   --w-card: #1a1c26;
   --w-surface: #1f2230;
-  --w-hero-bg: linear-gradient(155deg, #22242f 0%, #15161e 70%, #101017 100%);
+  --w-hero-bg: #1a1c26;
   --w-ink: #f2f3f7;
   --w-muted: #9a9aab;
   --w-faint: #5c5d6e;
