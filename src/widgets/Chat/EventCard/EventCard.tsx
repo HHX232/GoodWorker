@@ -1,13 +1,13 @@
 'use client'
 
 import type { ChatMessage } from '@/shared/types/Chat/chat.types'
-import { ChatEventIcon, ChatHomeworkIcon, ChatMeetingIcon, ChatPaymentIcon, ChatServiceIcon } from '@/widgets/Chat/icons'
+import { ChatEventIcon, ChatFilesIcon, ChatHomeworkIcon, ChatMeetingIcon, ChatPaymentIcon, ChatServiceIcon } from '@/widgets/Chat/icons'
 import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import type { ComponentType, ReactNode } from 'react'
 import styles from './EventCard.module.scss'
 
-type EventKind = 'homework' | 'service' | 'payment' | 'meeting' | 'unknown'
+type EventKind = 'homework' | 'service' | 'payment' | 'meeting' | 'files' | 'unknown'
 
 /** One accent per event type — the card's only "status" signal besides the
  * unread dot, so each type stays visually findable in a scrolling history
@@ -17,6 +17,7 @@ const KIND_BY_EVENT_TYPE: Record<string, EventKind> = {
   PERSONAL_SERVICE: 'service',
   PAYMENT_REMINDER: 'payment',
   MEETING_SCHEDULED: 'meeting',
+  FILE_ACCESS_GRANTED: 'files',
 }
 
 const ICON_BY_KIND: Record<EventKind, ComponentType<{ size?: number; strokeWidth?: number }>> = {
@@ -24,6 +25,7 @@ const ICON_BY_KIND: Record<EventKind, ComponentType<{ size?: number; strokeWidth
   service: ChatServiceIcon,
   payment: ChatPaymentIcon,
   meeting: ChatMeetingIcon,
+  files: ChatFilesIcon,
   unknown: ChatEventIcon,
 }
 
@@ -77,6 +79,13 @@ interface MeetingScheduledPayload {
   title?: string
   scheduledAt?: string
   roomName?: string
+}
+
+/** interfaces.md "Контракт: уведомление ученика в чате" — written by POST /api/tutor-files/grants. */
+interface FileAccessGrantedPayload {
+  itemType?: 'folder' | 'file'
+  itemName?: string
+  teacherName?: string
 }
 
 function formatSentTime(iso: string, locale: string): string {
@@ -204,6 +213,20 @@ export function EventCard({ message, isMine }: EventCardProps) {
     title = t('eventCard.meetingTitle')
     description = t('eventCard.meetingDescription', { title: p.title ?? '' })
     if (when) chip = when
+  } else if (message.eventType === 'FILE_ACCESS_GRANTED') {
+    const p = payload as FileAccessGrantedPayload
+    title = t('eventCard.fileAccessTitle')
+    const params = { name: p.itemName ?? '', teacher: p.teacherName ?? '' }
+    description = p.itemType === 'file' ? t('eventCard.fileAccessFile', params) : t('eventCard.fileAccessFolder', params)
+    // Only the student has a Files tab showing this item; the sending
+    // tutor's own copy of the card stays link-less.
+    if (!isMine) {
+      link = (
+        <Link href="/student-profile?tab=files" className={styles.link}>
+          {t('eventCard.fileAccessLink')}
+        </Link>
+      )
+    }
   } else {
     // Unknown/future eventType — same non-crashing fallback ticket 03 shipped
     // for every eventType, kept here so a value this card doesn't know about

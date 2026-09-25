@@ -8,6 +8,7 @@ import { CreateServiceModal } from '@/widgets/Dashboard/CreateServiceModal/Creat
 import { BookServiceModal } from '@/widgets/Dashboard/BookServiceModal/BookServiceModal'
 import { VideoZone } from '@/widgets/Dashboard/VideoZone/VideoZone'
 import { ChatBubbleIcon } from '@/widgets/Chat/icons'
+import { FilesShell } from '@/widgets/Files/FilesShell/FilesShell'
 import Card from '@/shared/ui/Posts/Card/Card'
 import { RoadMapPreview } from '@/shared/ui/RoadMap/RoadMapPreview/RoadMapPreview'
 import { useSession } from 'next-auth/react'
@@ -17,7 +18,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import styles from './DashboardCenter.module.scss'
 
-type Tab = 'all' | 'roadmap' | 'posts' | 'services' | 'tests'
+type Tab = 'all' | 'roadmap' | 'posts' | 'services' | 'tests' | 'files'
 
 interface RoadmapItem {
   id: string
@@ -247,6 +248,8 @@ export function DashboardCenter({ statsId, studentCount, callCount, totalHours, 
     { key: 'roadmap',  label: t('tabRoadmap') },
     { key: 'posts',    label: t('tabPosts') },
     { key: 'tests',    label: t('tabTests') },
+    // Owner-only: the tutor's private file library (non-VIP sees the upsell inside).
+    ...(isOwner ? [{ key: 'files' as const, label: t('tabFiles') }] : []),
   ]
 
   const stats = [
@@ -363,7 +366,9 @@ export function DashboardCenter({ statsId, studentCount, callCount, totalHours, 
       </div>
 
       {/* Content */}
-      {loading ? (
+      {tab === 'files' ? (
+        <FilesShell role="teacher" />
+      ) : loading ? (
         <div className={styles.loading}>{t('loading')}</div>
       ) : (
         <div className={styles.grid} id="dashboard-content-grid">

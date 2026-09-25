@@ -1,0 +1,45 @@
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.downloadLabel {
+  @media (max-width: 480px) { display: none; }
+}
+
+.stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  background: #F4F4F8;
+}
+
+.image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #fff;
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .stage { background: #0e0f15; }
+}
