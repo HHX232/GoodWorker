@@ -1,7 +1,11 @@
 import { prisma } from '@/shared/prisma/prisma'
 import type { AIUsage } from '@/lib/openrouter'
 import { auth } from '../../../../auth'
-import { computeCostCents, estimateMaxCostCents } from './pricing'
+import {
+  computeCostCents, computeVipMonthsGranted, DEFAULT_FEATURED_POSTS_PRICE_CENTS_PER_MONTH,
+  DEFAULT_PINNED_LISTING_TIERS, DEFAULT_VIP_BONUS_TIERS, estimateMaxCostCents,
+  type PinnedListingTier, type VipBonusTier,
+} from './pricing'
 import { NextResponse } from 'next/server'
 
 export type WalletRole = 'TEACHER' | 'STUDENT'
@@ -46,6 +50,64 @@ export async function setMarkupPercent(percent: number): Promise<void> {
     update: { markupPercent: percent },
     create: { id: 'global', markupPercent: percent },
   })
+}
+
+export interface WalletPricingSettings {
+  minDepositCents: number
+  maxDepositCents: number
+  usdToBynRate: number
+  vipBonusTiers: VipBonusTier[]
+  featuredPostsPriceCentsPerMonth: number
+  pinnedListingTiers: PinnedListingTier[]
+  storageOveragePriceCentsPerGbMonth: number
+}
+
+/**
+ * Everything the /vip page needs to render prices — public (no auth), unlike
+ * `getMarkupPercent` which stays admin-only (AI cost markup is a business
+ * detail, not something to show a user). Falls back to the DEFAULT_* tables
+ * if the row doesn't exist yet or a Json column isn't a valid array
+ * (unvalidated at the DB level — same caution as `EventCard`'s
+ * `eventPayload` elsewhere in the codebase).
+ */
+export async function getWalletPricingSettings(): Promise<WalletPricingSettings> {
+  const row = await prisma.walletSettings.findUnique({
+    where: { id: 'global' },
+    select: {
+      usdToBynRate: true, vipBonusTiers: true, featuredPostsPriceCentsPerMonth: true, pinnedListingTiers: true,
+      storageOveragePriceCentsPerGbMonth: true,
+    },
+  })
+  const vipTiers = Array.isArray(row?.vipBonusTiers) ? (row.vipBonusTiers as unknown as VipBonusTier[]) : DEFAULT_VIP_BONUS_TIERS
+  const pinnedTiers = Array.isArray(row?.pinnedListingTiers) ? (row.pinnedListingTiers as unknown as PinnedListingTier[]) : DEFAULT_PINNED_LISTING_TIERS
+  return {
+    minDepositCents: MIN_DEPOSIT_CENTS,
+    maxDepositCents: MAX_DEPOSIT_CENTS,
+    usdToBynRate: row?.usdToBynRate ?? 3.2,
+    vipBonusTiers: vipTiers.length > 0 ? vipTiers : DEFAULT_VIP_BONUS_TIERS,
+    featuredPostsPriceCentsPerMonth: row?.featuredPostsPriceCentsPerMonth ?? DEFAULT_FEATURED_POSTS_PRICE_CENTS_PER_MONTH,
+    pinnedListingTiers: pinnedTiers.length > 0 ? pinnedTiers : DEFAULT_PINNED_LISTING_TIERS,
+    // 0 until an admin sets it (WalletSettings default) — chargeStorageOverage
+    // no-ops at 0, see tutor-files interfaces.md "Контракт между тикетами".
+    storageOveragePriceCentsPerGbMonth: row?.storageOveragePriceCentsPerGbMonth ?? 0,
+  }
+}
+
+export async function setWalletPricingSettings(
+  usdToBynRate: number,
+  vipBonusTiers: VipBonusTier[],
+  featuredPostsPriceCentsPerMonth: number,
+  pinnedListingTiers: PinnedListingTier[],
+  storageOveragePriceCentsPerGbMonth: number,
+): Promise<void> {
+  const data = {
+    usdToBynRate,
+    vipBonusTiers: vipBonusTiers as object,
+    featuredPostsPriceCentsPerMonth,
+    pinnedListingTiers: pinnedListingTiers as object,
+    storageOveragePriceCentsPerGbMonth,
+  }
+  await prisma.walletSettings.upsert({ where: { id: 'global' }, update: data, create: { id: 'global', ...data } })
 }
 
 export async function getBalanceCents(user: WalletUser): Promise<number> {
@@ -187,6 +249,8 @@ export async function chargeForAICall(
 ): Promise<ChargeResult> {
   const markupPercent = await getMarkupPercent()
   const costCents = computeCostCents(usage, at, markupPercent)
+  const rawCostCents = computeCostCents(usage, at, 0)
+  const totalTokens = usage === null ? null : usage.promptCacheHitTokens + usage.promptCacheMissTokens + usage.completionTokens
   if (costCents <= 0) {
     const balanceAfterCents = await getBalanceCents(user)
     return { costCents: 0, balanceAfterCents, shortfallCents: 0 }
@@ -248,6 +312,8 @@ export async function chargeForAICall(
       endpoint,
       shortfallCents: shortfallCents > 0 ? shortfallCents : null,
       description,
+      rawCostCents,
+      totalTokens,
     },
   })
 
@@ -256,7 +322,6 @@ export async function chargeForAICall(
 
 const MIN_DEPOSIT_CENTS = 100 // $1
 const MAX_DEPOSIT_CENTS = 100_000 // $1000
-const VIP_BONUS_THRESHOLD_CENTS = 500 // $5 -> +1 month VIP
 const VIP_BONUS_DAYS_PER_MONTH = 30
 
 export class InvalidDepositAmountError extends Error {
@@ -275,18 +340,21 @@ export interface DepositResult {
 /**
  * Mock deposit (R01/R09/R10.1) — there is no real payment provider yet, the
  * whole amount is treated as "paid" immediately. `>= $5` also grants VIP
- * months on top (R02/R02.1), extending `vipExpiresAt` the exact same way
- * `app/api/teacher/vip/activate/route.ts` does for promo codes: from the
- * current expiry if it's still in the future, otherwise from now. The
- * deposited amount is never reduced by the VIP bonus — the full amount stays
- * on the balance for AI calls.
+ * months on top (R02/R02.1) at an admin-configurable rate that improves for
+ * bigger deposits (`WalletSettings.vipBonusTiers`, see
+ * `computeVipMonthsGranted` in pricing.ts), extending `vipExpiresAt` the
+ * exact same way `app/api/teacher/vip/activate/route.ts` does for promo
+ * codes: from the current expiry if it's still in the future, otherwise from
+ * now. The deposited amount is never reduced by the VIP bonus — the full
+ * amount stays on the balance for AI calls.
  */
 export async function depositMock(user: WalletUser, amountCents: number): Promise<DepositResult> {
   if (!Number.isInteger(amountCents) || amountCents < MIN_DEPOSIT_CENTS || amountCents > MAX_DEPOSIT_CENTS) {
     throw new InvalidDepositAmountError(amountCents)
   }
 
-  const vipMonthsGranted = Math.floor(amountCents / VIP_BONUS_THRESHOLD_CENTS)
+  const { vipBonusTiers } = await getWalletPricingSettings()
+  const vipMonthsGranted = computeVipMonthsGranted(amountCents, vipBonusTiers)
   const now = new Date()
   const description = `Пополнение баланса на $${(amountCents / 100).toFixed(2)}`
   const isTeacher = user.role === 'TEACHER'
@@ -342,9 +410,159 @@ export async function depositMock(user: WalletUser, amountCents: number): Promis
   })
 }
 
+// ─── Teacher add-ons (featured posts, pinned listing) — discrete debits ────
+
+export type AddonKind = 'FEATURED_POSTS' | 'PINNED_LISTING'
+
+export interface PurchaseAddonResult {
+  balanceAfterCents: number
+  until: Date
+}
+
+/**
+ * Debits the wallet balance for a discrete teacher add-on and extends the
+ * matching `*Until` field (same "extend from current expiry if still
+ * active, else from now" rule as `depositMock`'s VIP bonus). Teacher-only —
+ * both add-ons are about a teacher's own posts/listing, students have
+ * neither. Unlike `chargeForAICall`, this is a plain upfront debit:
+ * insufficient balance throws `InsufficientBalanceError` and nothing is
+ * purchased — there's no already-happened AI call to reconcile against, so
+ * there's nothing to partially charge.
+ */
+export async function purchaseAddon(user: WalletUser, kind: AddonKind, months: number, priceCents: number): Promise<PurchaseAddonResult> {
+  if (user.role !== 'TEACHER') throw new Error('Addon purchases are teacher-only')
+  if (!Number.isInteger(months) || months <= 0) throw new Error('months must be a positive integer')
+  if (!Number.isInteger(priceCents) || priceCents < 0) throw new Error('priceCents must be a non-negative integer')
+
+  const now = new Date()
+  const description = kind === 'FEATURED_POSTS'
+    ? `Выделение постов на ${months} мес.`
+    : `Закрепление в списке репетиторов на ${months} мес.`
+
+  const current = kind === 'FEATURED_POSTS'
+    ? await prisma.teacher.findUnique({ where: { id: user.id }, select: { postsHighlightedUntil: true } })
+    : await prisma.teacher.findUnique({ where: { id: user.id }, select: { pinnedInListUntil: true } })
+  const currentUntil = kind === 'FEATURED_POSTS'
+    ? (current as { postsHighlightedUntil: Date | null } | null)?.postsHighlightedUntil ?? null
+    : (current as { pinnedInListUntil: Date | null } | null)?.pinnedInListUntil ?? null
+
+  const base = currentUntil && currentUntil > now ? currentUntil : now
+  const until = new Date(base.getTime() + months * VIP_BONUS_DAYS_PER_MONTH * 24 * 60 * 60 * 1000)
+  const fieldUpdate = kind === 'FEATURED_POSTS' ? { postsHighlightedUntil: until } : { pinnedInListUntil: until }
+
+  // ponytail: `until` is computed from a read before the conditional decrement
+  // below, so two concurrent purchases by the same teacher could both extend
+  // from the same base and one extension gets clobbered — the balance debit
+  // itself stays race-safe (the `updateMany` WHERE is re-checked atomically
+  // by Postgres), only the bonus-duration math has this tiny window. Upgrade
+  // path: move the read inside a row-locking transaction like
+  // `zeroIfBelowCost`, if this ever matters (a single user double-clicking).
+  const decremented = await prisma.teacher.updateMany({
+    where: { id: user.id, balanceCents: { gte: priceCents } },
+    data: { balanceCents: { decrement: priceCents }, ...fieldUpdate },
+  })
+
+  if (decremented.count === 0) {
+    const balanceCents = await getBalanceCents(user)
+    throw new InsufficientBalanceError(priceCents - balanceCents, balanceCents)
+  }
+
+  const balanceAfterCents = await getBalanceCents(user)
+
+  await prisma.walletTransaction.create({
+    data: {
+      teacherId: user.id,
+      userRole: 'TEACHER',
+      type: kind === 'FEATURED_POSTS' ? 'FEATURED_POSTS_PURCHASE' : 'PINNED_LISTING_PURCHASE',
+      amountCents: priceCents,
+      balanceAfterCents,
+      description,
+    },
+  })
+
+  return { balanceAfterCents, until }
+}
+
+/**
+ * Monthly storage-overage debit for a VIP teacher whose tutor-file storage
+ * exceeds `QUOTA_BYTES` (`tutorFiles/storage.ts`) — called by the
+ * `storage-overage-billing` cron, one teacher at a time. Unlike
+ * `purchaseAddon` (throws `InsufficientBalanceError` on a short balance),
+ * this applies the same zero-floor `chargeForAICall` uses: the cron has no
+ * user on the other end to show an error to, so it charges whatever's left
+ * and moves on rather than throwing. `priceCentsPerGb <= 0` (admin hasn't set
+ * a price yet, `WalletSettings.storageOveragePriceCentsPerGbMonth` defaults
+ * to 0) is a no-op — nothing charged, no ledger row.
+ */
+export async function chargeStorageOverage(
+  teacherId: string,
+  overageGb: number,
+  priceCentsPerGb: number,
+  at: Date,
+): Promise<ChargeResult> {
+  const user: WalletUser = { id: teacherId, role: 'TEACHER' }
+  const costCents = Math.round(overageGb * priceCentsPerGb)
+  void at // no time-of-day pricing for storage overage — kept for signature symmetry with chargeForAICall
+
+  if (costCents <= 0) {
+    return { costCents: 0, balanceAfterCents: await getBalanceCents(user), shortfallCents: 0 }
+  }
+
+  const description = `Плата за превышение лимита хранилища: ${overageGb} ГБ сверх 7 ГБ`
+  let balanceAfterCents: number | null = null
+  let shortfallCents = 0
+
+  // Two attempts, not chargeForAICall's 5 — this runs once a month from a
+  // cron, not under real-time concurrency, so a second try after a
+  // same-instant deposit race is enough; see zeroIfBelowCost's own doc for
+  // why the decrement+zero pair is race-safe on its own without a retry.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const decremented = await prisma.teacher.updateMany({
+      where: { id: teacherId, balanceCents: { gte: costCents } },
+      data: { balanceCents: { decrement: costCents } },
+    })
+    if (decremented.count === 1) {
+      balanceAfterCents = await getBalanceCents(user)
+      shortfallCents = 0
+      break
+    }
+
+    const zeroed = await zeroIfBelowCost('Teacher', teacherId, costCents)
+    if (zeroed.zeroed) {
+      shortfallCents = Math.max(costCents - zeroed.balanceBeforeCents, 0)
+      balanceAfterCents = 0
+      break
+    }
+    // Neither matched: a concurrent deposit pushed the balance back to
+    // >= cost between the two attempts above — loop once and retry the decrement.
+  }
+
+  if (balanceAfterCents === null) {
+    // ponytail: exhausted both attempts (a deposit raced in on every one) —
+    // fail open for this run, same call as chargeForAICall's MAX_ATTEMPTS
+    // exhaustion. Next month's cron run picks up any remaining overage.
+    console.warn(`[wallet] chargeStorageOverage: gave up after 2 attempts (teacher=${teacherId})`)
+    return { costCents: 0, balanceAfterCents: await getBalanceCents(user), shortfallCents: 0 }
+  }
+
+  await prisma.walletTransaction.create({
+    data: {
+      teacherId,
+      userRole: 'TEACHER',
+      type: 'STORAGE_OVERAGE_DEBIT',
+      amountCents: costCents,
+      balanceAfterCents,
+      shortfallCents: shortfallCents > 0 ? shortfallCents : null,
+      description,
+    },
+  })
+
+  return { costCents, balanceAfterCents, shortfallCents }
+}
+
 export interface WalletTransactionItem {
   id: string
-  type: 'DEPOSIT' | 'AI_DEBIT'
+  type: 'DEPOSIT' | 'AI_DEBIT' | 'FEATURED_POSTS_PURCHASE' | 'PINNED_LISTING_PURCHASE' | 'STORAGE_OVERAGE_DEBIT'
   amountCents: number
   balanceAfterCents: number
   endpoint: string | null

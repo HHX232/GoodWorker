@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/close-stale-rooms",
       "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/storage-overage-billing",
+      "schedule": "0 3 1 * *"
     }
   ]
 }

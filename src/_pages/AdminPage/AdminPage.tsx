@@ -835,8 +835,119 @@ function ReferralSettingsCard() {
   )
 }
 
+interface VipBonusTierRow {
+  minAmountCents: string
+  monthsPer500Cents: string
+}
+
+interface PinnedListingTierRow {
+  months: string
+  priceCents: string
+  oldPriceCents: string
+}
+
+// ── "?" preview popover — how a pricing block looks to the end user, plus
+// revenue per tier. These three offers (VIP top-up, featured posts, pinned
+// listing) have no metered cost behind them (unlike AI calls, see
+// WalletAnalyticsCard below) — the price IS the revenue, no COGS to net out,
+// so "выгода" here is stated as revenue per purchase, not a margin % that
+// would imply a cost that doesn't exist.
+function InfoPreviewButton({ title, children }: { title: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <span style={{ position: 'relative', display: 'inline-block' }}>
+      <button type="button" className={styles.info_btn} onClick={() => setOpen(p => !p)} aria-label={title}>?</button>
+      {open && (
+        <>
+          <button type="button" className={styles.info_backdrop} onClick={() => setOpen(false)} aria-label="Закрыть" />
+          <div className={styles.info_popover}>
+            <p className={styles.info_popover_title}>{title}</p>
+            {children}
+          </div>
+        </>
+      )}
+    </span>
+  )
+}
+
+function VipTiersPreview({ tiers }: { tiers: VipBonusTierRow[] }) {
+  const rows = tiers
+    .map(t => ({ amountCents: Number(t.minAmountCents), rate: Number(t.monthsPer500Cents) }))
+    .filter(r => Number.isFinite(r.amountCents) && Number.isFinite(r.rate) && r.amountCents > 0)
+  return (
+    <InfoPreviewButton title="Как это видит пользователь на /vip">
+      <div className={styles.info_preview_mock}>
+        {rows.slice(0, 3).map(r => (
+          <div key={r.amountCents} className={styles.info_preview_row}>
+            <span>{fmtUsd(r.amountCents)}</span>
+            <span>→ {Math.floor((r.amountCents / 500) * r.rate)} мес. VIP</span>
+          </div>
+        ))}
+      </div>
+      <table className={styles.info_revenue_table}>
+        <thead><tr><th>Пополнение</th><th>Выручка</th></tr></thead>
+        <tbody>
+          {rows.map(r => <tr key={r.amountCents}><td>{fmtUsd(r.amountCents)}</td><td>{fmtUsd(r.amountCents)}</td></tr>)}
+        </tbody>
+      </table>
+      <p className={styles.info_note}>VIP-бонус не расходует AI-токены — прямых затрат на пополнение нет, вся сумма минус эквайринг (когда подключим) — прибыль.</p>
+    </InfoPreviewButton>
+  )
+}
+
+function FeaturedPostsPreview({ priceCentsPerMonth }: { priceCentsPerMonth: number }) {
+  const months = [1, 3, 6, 12]
+  return (
+    <InfoPreviewButton title="Как это видит пользователь на /vip">
+      <div className={styles.info_preview_mock}>
+        <div className={styles.info_preview_row}><span>☑ Сделать мои посты выделенными</span></div>
+        <div className={styles.info_preview_row}><span>2 месяца</span><span>{fmtUsd(priceCentsPerMonth * 2)}</span></div>
+      </div>
+      <table className={styles.info_revenue_table}>
+        <thead><tr><th>Месяцев</th><th>Выручка</th></tr></thead>
+        <tbody>
+          {months.map(m => <tr key={m}><td>{m}</td><td>{fmtUsd(priceCentsPerMonth * m)}</td></tr>)}
+        </tbody>
+      </table>
+      <p className={styles.info_note}>Флаг на профиле, не AI-функция — прямых затрат нет, вся сумма минус эквайринг (когда подключим) — прибыль.</p>
+    </InfoPreviewButton>
+  )
+}
+
+function PinnedListingPreview({ tiers }: { tiers: PinnedListingTierRow[] }) {
+  const rows = tiers
+    .map(t => ({ months: Number(t.months), priceCents: Number(t.priceCents), oldPriceCents: t.oldPriceCents.trim() ? Number(t.oldPriceCents) : null }))
+    .filter(r => Number.isFinite(r.months) && Number.isFinite(r.priceCents) && r.months > 0)
+  const best = rows.length ? rows[rows.length - 1] : null
+  return (
+    <InfoPreviewButton title="Как это видит пользователь на /vip">
+      <div className={styles.info_preview_mock}>
+        {rows.slice(0, 3).map(r => (
+          <div key={r.months} className={styles.info_preview_row}>
+            <span>{r.months} мес. {r.months === best?.months ? '(самый выгодный)' : ''}</span>
+            <span>{r.oldPriceCents ? <s style={{ color: '#a1a1aa', marginRight: 4 }}>{fmtUsd(r.oldPriceCents)}</s> : null}{fmtUsd(r.priceCents)}</span>
+          </div>
+        ))}
+      </div>
+      <table className={styles.info_revenue_table}>
+        <thead><tr><th>Месяцев</th><th>Выручка</th></tr></thead>
+        <tbody>
+          {rows.map(r => <tr key={r.months}><td>{r.months}</td><td>{fmtUsd(r.priceCents)}</td></tr>)}
+        </tbody>
+      </table>
+      <p className={styles.info_note}>Место в списке, не AI-функция — прямых затрат нет, вся сумма минус эквайринг (когда подключим) — прибыль.</p>
+    </InfoPreviewButton>
+  )
+}
+
 function WalletSettingsCard() {
   const [markupPercent, setMarkupPercent] = useState('0')
+  const [usdToBynRate, setUsdToBynRate] = useState('3.2')
+  const [tiers, setTiers] = useState<VipBonusTierRow[]>([])
+  const [featuredPostsPrice, setFeaturedPostsPrice] = useState('300')
+  const [featuredPostsPriceByn, setFeaturedPostsPriceByn] = useState('9.60')
+  const [pinnedTiers, setPinnedTiers] = useState<PinnedListingTierRow[]>([])
+  const [storageOveragePrice, setStorageOveragePrice] = useState('0')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
@@ -846,6 +957,19 @@ function WalletSettingsCard() {
       .then(data => {
         if (data) {
           setMarkupPercent(String(data.markupPercent))
+          setUsdToBynRate(String(data.usdToBynRate))
+          setFeaturedPostsPriceByn(((data.featuredPostsPriceCentsPerMonth / 100) * data.usdToBynRate).toFixed(2))
+          setTiers((data.vipBonusTiers ?? []).map((t: { minAmountCents: number; monthsPer500Cents: number }) => ({
+            minAmountCents: String(t.minAmountCents),
+            monthsPer500Cents: String(t.monthsPer500Cents),
+          })))
+          setFeaturedPostsPrice(String(data.featuredPostsPriceCentsPerMonth))
+          setPinnedTiers((data.pinnedListingTiers ?? []).map((t: { months: number; priceCents: number; oldPriceCents?: number }) => ({
+            months: String(t.months),
+            priceCents: String(t.priceCents),
+            oldPriceCents: t.oldPriceCents !== undefined ? String(t.oldPriceCents) : '',
+          })))
+          setStorageOveragePrice(String(data.storageOveragePriceCentsPerGbMonth ?? 0))
         }
       })
       .finally(() => setLoading(false))
@@ -857,10 +981,21 @@ function WalletSettingsCard() {
       const res = await fetch('/api/admin/wallet-settings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ markupPercent: Number(markupPercent) }),
+        body: JSON.stringify({
+          markupPercent: Number(markupPercent),
+          usdToBynRate: Number(usdToBynRate),
+          vipBonusTiers: tiers.map(t => ({ minAmountCents: Number(t.minAmountCents), monthsPer500Cents: Number(t.monthsPer500Cents) })),
+          featuredPostsPriceCentsPerMonth: Number(featuredPostsPrice),
+          pinnedListingTiers: pinnedTiers.map(t => ({
+            months: Number(t.months),
+            priceCents: Number(t.priceCents),
+            ...(t.oldPriceCents.trim() ? { oldPriceCents: Number(t.oldPriceCents) } : {}),
+          })),
+          storageOveragePriceCentsPerGbMonth: Number(storageOveragePrice),
+        }),
       })
       if (!res.ok) { const d = await res.json(); throw new Error(d.error) }
-      toast.success('Настройки наценки сохранены')
+      toast.success('Настройки кошелька сохранены')
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Не удалось сохранить настройки')
     } finally {
@@ -868,11 +1003,24 @@ function WalletSettingsCard() {
     }
   }
 
+  const updateTier = (i: number, field: keyof VipBonusTierRow, value: string) => {
+    setTiers(prev => prev.map((t, idx) => idx === i ? { ...t, [field]: value } : t))
+  }
+
+  const removeTier = (i: number) => setTiers(prev => prev.filter((_, idx) => idx !== i))
+  const addTier = () => setTiers(prev => [...prev, { minAmountCents: '', monthsPer500Cents: '' }])
+
+  const updatePinnedTier = (i: number, field: keyof PinnedListingTierRow, value: string) => {
+    setPinnedTiers(prev => prev.map((t, idx) => idx === i ? { ...t, [field]: value } : t))
+  }
+  const removePinnedTier = (i: number) => setPinnedTiers(prev => prev.filter((_, idx) => idx !== i))
+  const addPinnedTier = () => setPinnedTiers(prev => [...prev, { months: '', priceCents: '', oldPriceCents: '' }])
+
   if (loading) return <div className={styles.skeleton} />
 
   return (
     <div className={styles.promo_form} style={{ marginBottom: 20 }}>
-      <h3 className={styles.promo_section_title} style={{ marginBottom: 12 }}>Наценка на AI-вызовы</h3>
+      <h3 className={styles.promo_section_title} style={{ marginBottom: 12 }}>Кошелёк и VIP-пополнение</h3>
 
       <div className={styles.promo_form_row}>
         <label className={styles.notif_label}>Наценка сверх себестоимости AI, %</label>
@@ -886,10 +1034,223 @@ function WalletSettingsCard() {
         />
       </div>
 
+      <div className={styles.promo_form_row}>
+        <label className={styles.notif_label}>Курс BYN за 1 USD <span className={styles.notif_optional}>только для отображения на /vip при русской локали — сам баланс всегда в USD-центах</span></label>
+        <input
+          className={styles.notif_input}
+          type="number"
+          step="0.01"
+          min="0.1"
+          value={usdToBynRate}
+          onChange={e => setUsdToBynRate(e.target.value)}
+        />
+      </div>
+
+      <div className={styles.promo_form_row}>
+        <label className={styles.notif_label}>
+          Ступени VIP-бонуса за пополнение <span className={styles.notif_optional}>от какой суммы — сколько месяцев VIP за каждые $5 пополнения; чем выше сумма, тем выгоднее ставка</span>
+          <VipTiersPreview tiers={tiers} />
+        </label>
+        {tiers.map((tier, i) => (
+          <div key={i} className={styles.promo_code_row} style={{ marginBottom: 6 }}>
+            <input
+              className={styles.notif_input}
+              type="number"
+              placeholder="Сумма от, ¢"
+              value={tier.minAmountCents}
+              onChange={e => updateTier(i, 'minAmountCents', e.target.value)}
+              style={{ flex: 1 }}
+            />
+            <input
+              className={styles.notif_input}
+              type="number"
+              step="0.01"
+              placeholder="Мес. за каждые $5"
+              value={tier.monthsPer500Cents}
+              onChange={e => updateTier(i, 'monthsPer500Cents', e.target.value)}
+              style={{ flex: 1 }}
+            />
+            <button className={styles.promo_delete_btn} onClick={() => removeTier(i)} title="Удалить ступень">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+              </svg>
+            </button>
+          </div>
+        ))}
+        <button className={styles.create_promo_btn} onClick={addTier} style={{ marginTop: 4 }}>+ Добавить ступень</button>
+      </div>
+
+      <div className={styles.promo_form_row}>
+        <label className={styles.notif_label}>
+          Цена «Выделить мои посты», BYN/мес
+          <FeaturedPostsPreview priceCentsPerMonth={Number(featuredPostsPrice) || 0} />
+        </label>
+        <input
+          className={styles.notif_input}
+          type="number"
+          step="0.01"
+          min="0"
+          value={featuredPostsPriceByn}
+          onChange={e => {
+            setFeaturedPostsPriceByn(e.target.value)
+            const byn = Number(e.target.value)
+            const rate = Number(usdToBynRate)
+            if (Number.isFinite(byn) && Number.isFinite(rate) && rate > 0) {
+              setFeaturedPostsPrice(String(Math.round((byn / rate) * 100)))
+            }
+          }}
+        />
+      </div>
+
+      <div className={styles.promo_form_row}>
+        <label className={styles.notif_label}>
+          Пресеты «Закрепить в списке репетиторов» <span className={styles.notif_optional}>месяцы / цена / старая цена (для зачёркивания, необязательно)</span>
+          <PinnedListingPreview tiers={pinnedTiers} />
+        </label>
+        {pinnedTiers.map((tier, i) => (
+          <div key={i} className={styles.promo_code_row} style={{ marginBottom: 6 }}>
+            <input
+              className={styles.notif_input}
+              type="number"
+              placeholder="Месяцев"
+              value={tier.months}
+              onChange={e => updatePinnedTier(i, 'months', e.target.value)}
+              style={{ flex: 1 }}
+            />
+            <input
+              className={styles.notif_input}
+              type="number"
+              placeholder="Цена, ¢"
+              value={tier.priceCents}
+              onChange={e => updatePinnedTier(i, 'priceCents', e.target.value)}
+              style={{ flex: 1 }}
+            />
+            <input
+              className={styles.notif_input}
+              type="number"
+              placeholder="Старая цена, ¢"
+              value={tier.oldPriceCents}
+              onChange={e => updatePinnedTier(i, 'oldPriceCents', e.target.value)}
+              style={{ flex: 1 }}
+            />
+            <button className={styles.promo_delete_btn} onClick={() => removePinnedTier(i)} title="Удалить пресет">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+              </svg>
+            </button>
+          </div>
+        ))}
+        <button className={styles.create_promo_btn} onClick={addPinnedTier} style={{ marginTop: 4 }}>+ Добавить пресет</button>
+      </div>
+
+      <div className={styles.promo_form_row}>
+        <label className={styles.notif_label}>
+          Плата за перелимит хранилища файлов, ¢/ГБ в мес. <span className={styles.notif_optional}>списывается ежемесячно с VIP-репетиторов сверх 7 ГБ; 0 — списание выключено</span>
+        </label>
+        <input
+          className={styles.notif_input}
+          type="number"
+          min="0"
+          value={storageOveragePrice}
+          onChange={e => setStorageOveragePrice(e.target.value)}
+        />
+      </div>
+
       <div className={styles.notif_actions}>
         <button className={styles.send_btn} onClick={handleSave} disabled={saving}>
           {saving ? 'Сохранение…' : 'Сохранить'}
         </button>
+      </div>
+    </div>
+  )
+}
+
+interface WalletAnalyticsDay { date: string; chargedCents: number; costCents: number; tokens: number }
+interface WalletAnalyticsData {
+  days: WalletAnalyticsDay[]
+  totals: { chargedCentsAllTime: number; costCentsTracked: number; tokensTracked: number; trackingSince: string | null }
+}
+
+function fmtUsd(cents: number): string {
+  return `$${(cents / 100).toFixed(2)}`
+}
+
+function TokenBarChart({ days }: { days: WalletAnalyticsDay[] }) {
+  const max = Math.max(1, ...days.map(d => d.tokens))
+  const w = 720
+  const h = 120
+  const barW = w / days.length
+  return (
+    <svg width="100%" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" style={{ display: 'block' }}>
+      {days.map((d, i) => {
+        const barH = (d.tokens / max) * (h - 4)
+        return (
+          <rect
+            key={d.date}
+            x={i * barW + 1}
+            y={h - barH}
+            width={Math.max(1, barW - 2)}
+            height={barH}
+            rx={1}
+            fill="#6366f1"
+          >
+            <title>{`${d.date}: ${d.tokens.toLocaleString('ru')} токенов`}</title>
+          </rect>
+        )
+      })}
+    </svg>
+  )
+}
+
+function WalletAnalyticsCard() {
+  const [data, setData] = useState<WalletAnalyticsData | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/admin/wallet-analytics')
+      .then(res => res.ok ? res.json() : null)
+      .then(d => { if (d) setData(d) })
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) return <div className={styles.skeleton} />
+  if (!data) return null
+
+  const margin = data.totals.chargedCentsAllTime - data.totals.costCentsTracked
+  const marginPercent = data.totals.costCentsTracked > 0 ? Math.round((margin / data.totals.chargedCentsAllTime) * 100) : null
+
+  return (
+    <div className={styles.promo_form} style={{ marginBottom: 20 }}>
+      <h3 className={styles.promo_section_title} style={{ marginBottom: 4 }}>Расход токенов и маржа</h3>
+      <p className={styles.notif_desc} style={{ marginBottom: 14 }}>
+        За последние 30 дней. {data.totals.trackingSince
+          ? `Себестоимость считается с ${new Date(data.totals.trackingSince).toLocaleDateString('ru')} — до этой даты сырая стоимость AI-вызовов не сохранялась.`
+          : 'Ещё нет ни одного списания с сохранённой себестоимостью.'}
+      </p>
+
+      <TokenBarChart days={data.days} />
+
+      <div className={styles.promo_form_row} style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', gap: 24 }}>
+        <div>
+          <div className={styles.notif_optional}>Списано с юзеров (всё время)</div>
+          <div style={{ fontSize: 18, fontWeight: 700 }}>{fmtUsd(data.totals.chargedCentsAllTime)}</div>
+        </div>
+        <div>
+          <div className={styles.notif_optional}>Реально ушло на токены (с начала учёта)</div>
+          <div style={{ fontSize: 18, fontWeight: 700 }}>{fmtUsd(data.totals.costCentsTracked)}</div>
+        </div>
+        <div>
+          <div className={styles.notif_optional}>Маржа</div>
+          <div style={{ fontSize: 18, fontWeight: 700 }}>
+            {marginPercent !== null ? `${fmtUsd(margin)} (${marginPercent}%)` : '—'}
+          </div>
+        </div>
+        <div>
+          <div className={styles.notif_optional}>Токенов обработано (с начала учёта)</div>
+          <div style={{ fontSize: 18, fontWeight: 700 }}>{data.totals.tokensTracked.toLocaleString('ru')}</div>
+        </div>
       </div>
     </div>
   )
@@ -1019,6 +1380,7 @@ function PromoCodesTab() {
     <div className={styles.tab_content}>
       <ReferralSettingsCard />
       <WalletSettingsCard />
+      <WalletAnalyticsCard />
 
       <div className={styles.promo_header}>
         <h3 className={styles.promo_section_title}>{t('promoHeading')}</h3>
