@@ -31,7 +31,7 @@ useEffect(() => {
 
         <section className={styles.section}>
           <h2 className={styles.h2}>{t('section1Title')}</h2>
-          <p dangerouslySetInnerHTML={{ __html: t('section1p1') }} />
+          <p>{t.rich('section1p1', { strong: chunks => <strong>{chunks}</strong> })}</p>
         </section>
 
         <section className={styles.section}>
@@ -82,6 +82,17 @@ useEffect(() => {
         <section className={styles.section}>
           <h2 className={styles.h2}>{t('section6Title')}</h2>
           <p>{t('section6p1')}</p>
+          {/* Wallet rules (balance, top-ups, AI debits, monthly VIP fee, add-ons,
+              promo codes, refunds) — mirrors src/shared/lib/wallet/*; keep in
+              sync when billing changes. */}
+          {(t.raw('section6blocks') as { title: string; items: string[] }[]).map(block => (
+            <div key={block.title} className={styles.subsection}>
+              <h3 className={styles.h3}>{block.title}</h3>
+              <ul className={styles.list}>
+                {block.items.map(item => <li key={item}>{item}</li>)}
+              </ul>
+            </div>
+          ))}
           <p>{t('section6p2')}</p>
         </section>
 

@@ -54,6 +54,7 @@ export default  function PrivacyPage() {
             <li dangerouslySetInnerHTML={{ __html: t('section2item3') }} />
             <li dangerouslySetInnerHTML={{ __html: t('section2item4') }} />
             <li dangerouslySetInnerHTML={{ __html: t('section2item5') }} />
+            <li>{t('section2item6')}</li>
           </ul>
         </section>
 
@@ -66,6 +67,7 @@ export default  function PrivacyPage() {
             <li>{t('section3item3')}</li>
             <li>{t('section3item4')}</li>
             <li>{t('section3item5')}</li>
+            <li>{t('section3item6')}</li>
           </ul>
         </section>
 
@@ -76,6 +78,8 @@ export default  function PrivacyPage() {
           <ul className={styles.list}>
             <li>{t('section4item1')}</li>
             <li>{t('section4item2')}</li>
+            <li>{t('section4item4')}</li>
+            <li>{t('section4item5')}</li>
             <li>{t('section4item3')}</li>
           </ul>
         </section>
@@ -91,6 +95,7 @@ export default  function PrivacyPage() {
         <section className={styles.section}>
           <h2 className={styles.h2}>{t('section6Title')}</h2>
           <p>{t('section6p1')}</p>
+          <p>{t('section6p2')}</p>
         </section>
 
         {/* 7 */}

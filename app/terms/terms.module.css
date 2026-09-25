@@ -55,6 +55,17 @@
   margin-bottom: 10px;
 }
 
+.subsection {
+  margin: 14px 0;
+}
+
+.h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0a0c12;
+  margin-bottom: 6px;
+}
+
 .section p {
   font-size: 14px;
   color: #3a3a3a;

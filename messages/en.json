@@ -2853,7 +2853,7 @@
   "PrivacyPage": {
     "back": "← Back to Home",
     "title": "Privacy Policy",
-    "updated": "Last updated: May 16, 2025",
+    "updated": "Last updated: September 25, 2026",
     "section1Title": "1. General Provisions",
     "section1p1": "This Privacy Policy describes how the GoodWorker platform collects, uses, and protects the personal data of users when they use our service.",
     "section1p2": "By using the platform, you agree to the terms of this Policy. If you do not agree with its provisions, please discontinue using the service.",
@@ -2862,7 +2862,7 @@
     "section2item2": "Profile data: profile photo, biography, specialization (for tutors), work experience documents, passport scan (if voluntarily provided).",
     "section2item3": "Activity data: lesson records, video call transcriptions, reviews, bookmarks, test results.",
     "section2item4": "Technical data: IP address, browser type, session data, login time.",
-    "section2item5": "Payment data: subscription plan transactions — payment details are processed by a payment provider and are not stored on our servers.",
+    "section2item5": "Payment data: history of balance operations (amount, operation type, date, balance after the operation), VIP and paid-service periods, promo codes used. Bank card details and other payment details are processed by the payment provider and are not stored on our servers.",
     "section3Title": "3. Purposes of Data Processing",
     "section3item1": "Providing platform functionality: lesson booking, video calls, material sharing.",
     "section3item2": "Verifying tutor identity and confirming their qualifications.",
@@ -2893,12 +2893,17 @@
     "section10Title": "10. Contact",
     "section10p1": "For questions related to personal data processing, you can contact us:",
     "section10item1": "Through the <feedbackLink>Feedback</feedbackLink> section on the platform.",
-    "section10item2": "Through the <complaintsLink>Complaints</complaintsLink> section."
+    "section10item2": "Through the <complaintsLink>Complaints</complaintsLink> section.",
+    "section2item6": "Paid feature usage data: which AI feature was called, the volume of processed data (number of tokens) and the cost of the request — to calculate debits, the monthly VIP fee and spending records.",
+    "section3item6": "Balance management: crediting top-ups and bonuses, debiting payment for features and services, calculating the monthly VIP fee, showing the operation history and handling refund requests.",
+    "section4item4": "Artificial intelligence model providers (DeepSeek, OpenRouter) — only the content of requests to AI features (text, images, documents) that you yourself submit for processing, to the extent necessary to obtain the result.",
+    "section4item5": "Cloud storage provider (Selectel S3-compatible storage) — to store uploaded files, attachments and materials.",
+    "section6p2": "Records of balance payment operations are kept for the period established by accounting and tax legislation, including after account deletion."
   },
   "TermsPage": {
     "back": "← Back to Home",
     "title": "Terms of Service",
-    "updated": "Last updated: May 16, 2025",
+    "updated": "Last updated: September 25, 2026",
     "section1Title": "1. Acceptance of Terms",
     "section1p1": "By using <strong>GoodWorker</strong>, you confirm that you have read and agree to these Terms of Service. If you do not agree with any provisions, please stop using the platform.",
     "section2Title": "2. Service Description",
@@ -2926,9 +2931,9 @@
     "section5item2": "The quality of educational services provided.",
     "section5item3": "Compliance with agreements with students.",
     "section5p2": "GoodWorker acts as an intermediary and is not responsible for the quality of specific sessions.",
-    "section6Title": "6. Payments and Tariffs",
-    "section6p1": "The platform provides basic access for free. Additional features (VIP status) are available on a paid basis. The cost and terms of tariff plans are specified in the relevant section of the platform.",
-    "section6p2": "Payment for sessions is made directly between the student and tutor in accordance with the terms of the specific service.",
+    "section6Title": "6. Payments, Balance and VIP",
+    "section6p1": "The platform provides basic access free of charge. Paid features — VIP status, artificial intelligence (AI) features and additional services for tutors — are paid from the account's internal balance on the terms set out below. Current prices and rates are always shown on the “Wallet” and “VIP” pages.",
+    "section6p2": "Payment for lessons is made directly between the student and the tutor under the terms of the specific service and does not go through the platform balance.",
     "section7Title": "7. User Content",
     "section7p1": "By publishing materials on the platform (posts, comments, courses, tests), you grant GoodWorker a non-exclusive license to use them for the purpose of operating the service.",
     "section7p2": "You retain all rights to your materials and are responsible for their legality.",
@@ -2948,7 +2953,77 @@
     "section13Title": "13. Contacts",
     "section13p1": "For questions regarding the terms of use:",
     "section13item1": "Feedback",
-    "section13item2": "Also check out our Privacy Policy."
+    "section13item2": "Also check out our Privacy Policy.",
+    "section6blocks": [
+      {
+        "title": "6.1. Balance",
+        "items": [
+          "Every account has an internal balance. The balance is kept in US dollars; in the Russian-language version amounts may additionally be shown in Belarusian rubles at a rate set by the platform — this display is for information only.",
+          "The balance is not a bank account or electronic money, and no interest accrues on it. Balance funds can only be used to pay for platform features.",
+          "The balance cannot become negative: if funds are insufficient, a paid operation is not performed, or only the remaining amount is debited (see 6.5).",
+          "The full history of credits and debits is available in the “Wallet” section."
+        ]
+      },
+      {
+        "title": "6.2. Top-ups",
+        "items": [
+          "The balance can be topped up by $1 to $1000 per operation using the methods available on the payment page. Payment details are processed by the payment provider.",
+          "The topped-up amount is credited to the balance in full and is not reduced by the bonuses described in 6.3."
+        ]
+      },
+      {
+        "title": "6.3. VIP bonus for top-ups",
+        "items": [
+          "A top-up of $5 or more additionally extends VIP status by a number of months calculated at the rates published on the top-up page (larger top-ups give more months per dollar).",
+          "One VIP month equals 30 days. If VIP status is already active, the new period is added to the current one.",
+          "VIP status may also be granted via a promo code, the referral program or by decision of the administration."
+        ]
+      },
+      {
+        "title": "6.4. AI features",
+        "items": [
+          "Use of AI features (formula recognition, generation of tests and lesson plans, material import, etc.) is paid from the balance at the actual processing cost of the request, which depends on the volume of processed data and the time of day, including the platform markup.",
+          "Before running a request, the platform checks that the balance covers the maximum possible cost; if funds are insufficient, the request is not performed and nothing is debited.",
+          "The debit is made only after a result has been successfully obtained. If processing fails, no funds are debited."
+        ]
+      },
+      {
+        "title": "6.5. Monthly VIP fee",
+        "items": [
+          "While VIP status is active, a monthly fee is debited from the balance every 30 days, starting from the moment VIP was obtained. The fee equals $5 minus the amount spent on platform features during that period: AI features, pinning in the tutors list and storage over the quota.",
+          "If $5 or more was spent on these features during the period, no monthly fee is debited. Example: $1.20 spent — $3.80 is debited; $6 spent — nothing is debited.",
+          "Payment for post promotion does not reduce the monthly fee.",
+          "If the balance is lower than the fee, only the remaining amount is debited; no debt arises and nothing is carried over to the next period.",
+          "If VIP status ended before the end of the period, no fee is charged for that period. The current amount due and its date are shown in the “Wallet” section."
+        ]
+      },
+      {
+        "title": "6.6. Additional services for tutors",
+        "items": [
+          "Pinning in the tutors list and post highlighting are paid from the balance in advance for the selected period at the prices shown on the service page. One month equals 30 days; if the service is already active, its period is extended.",
+          "Storage of tutor files beyond the free 7 GB quota is paid monthly for each started gigabyte of excess at the current rate. If funds are insufficient, the remaining amount is debited; access to files is not blocked."
+        ]
+      },
+      {
+        "title": "6.7. Promo codes",
+        "items": [
+          "A promo code may grant VIP days and/or bonus funds on the balance. Each promo code can be activated once per account within the validity period and number of uses set by the platform.",
+          "Bonus funds are credited to the balance and are spent the same way as topped-up funds, including on the monthly VIP fee."
+        ]
+      },
+      {
+        "title": "6.8. Refunds",
+        "items": [
+          "The unused remainder of topped-up funds is refunded upon the user's request submitted via the “Feedback” section, in the manner and within the time limits established by law. Bonus funds (promo codes, promotions) and services already rendered are not refundable."
+        ]
+      },
+      {
+        "title": "6.9. Price changes",
+        "items": [
+          "The platform may change prices, rates and the monthly fee by publishing them on the relevant pages. Changes do not affect already paid service periods or VIP status."
+        ]
+      }
+    ]
   },
   "homework": {
     "statusPending": "Not started",
