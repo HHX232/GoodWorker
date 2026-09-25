@@ -11,6 +11,7 @@ import { PinnedListingSection } from '../PinnedListingSection/PinnedListingSecti
 import { FeaturedPostsAddon } from '../FeaturedPostsAddon/FeaturedPostsAddon'
 import { MonthlyFeeCard } from '../MonthlyFeeCard/MonthlyFeeCard'
 import { VipMechanic } from '../VipMechanic/VipMechanic'
+import { ReceiptsSection } from '../ReceiptsSection/ReceiptsSection'
 import { onWalletChanged } from '../walletEvents'
 import styles from './WalletPage.module.scss'
 
@@ -51,17 +52,19 @@ export function WalletPage() {
             .layout in WalletPage.module.scss. */}
         <div className={styles.layout}>
           <div className={styles.leftCol}>
-            <TopUpCard
-              balanceCents={balance?.balanceCents}
-              balanceLoading={balanceLoading}
-              onSuccess={() => { fetchBalance(); setRefreshKey(k => k + 1) }}
-            />
+            <div id="wallet-topup">
+              <TopUpCard
+                balanceCents={balance?.balanceCents}
+                balanceLoading={balanceLoading}
+                onSuccess={() => { fetchBalance(); setRefreshKey(k => k + 1) }}
+              />
+            </div>
 
             {/* Teacher-only purchases from /vip: pinned listing + featured posts. */}
             {isTeacher && (
               <div className={styles.addonsPanel}>
-                <PinnedListingSection />
-                <FeaturedPostsAddon />
+                <div id="wallet-pinned"><PinnedListingSection /></div>
+                <div id="wallet-featured"><FeaturedPostsAddon /></div>
               </div>
             )}
           </div>
@@ -73,6 +76,10 @@ export function WalletPage() {
             </div>
           </div>
         </div>
+
+        {/* Receipt cards for recurring charges: monthly VIP fee, pinned
+            listing, featured posts, storage overage. */}
+        <ReceiptsSection refreshKey={refreshKey} />
 
         <section className={styles.offers}>
           <p className={styles.sectionLabel}>{t('offersLabel')}</p>

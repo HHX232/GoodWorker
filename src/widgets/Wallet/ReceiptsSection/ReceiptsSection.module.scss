@@ -1,0 +1,272 @@
+// Tokens from WalletPage.module.scss (html.wallet-page, light/dark).
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sectionLabel {
+  margin: 8px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--w-faint, #5c5d6e);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 20px;
+}
+
+// ─── Card ────────────────────────────────────────────────────────────────
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 18px;
+  background: var(--w-card, #1a1c26);
+  border: 1px solid rgba(var(--w-fg-rgb, 255, 255, 255), 0.08);
+  box-shadow: var(--w-shadow, 0 1px 2px rgba(0, 0, 0, 0.5), 0 8px 22px -10px rgba(0, 0, 0, 0.6));
+  color: var(--w-ink, #f2f3f7);
+}
+
+.head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.tile {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+
+  &[data-kind='VIP_FEE'] { background: #f6e3a1; color: #6b4e00; }
+  &[data-kind='PINNED_LISTING'] { background: #2f5d57; color: #fff; }
+  &[data-kind='FEATURED_POSTS'] { background: #dcebe7; color: #2f5d57; }
+  &[data-kind='STORAGE'] { background: #e4e7ee; color: #3b4254; }
+}
+
+.headText {
+  min-width: 0;
+}
+
+.name {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.sub {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--w-muted, #9a9aab);
+}
+
+.statusCol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.pill {
+  padding: 3px 9px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+
+  &[data-status='ACTIVE'] { background: rgba(var(--w-positive-rgb, 143, 224, 168), 0.16); color: var(--w-positive, #8fe0a8); }
+  &[data-status='ENDING_SOON'] { background: rgba(var(--w-gold-rgb, 216, 180, 106), 0.2); color: var(--w-gold, #d8b46a); }
+  &[data-status='INACTIVE'] { background: rgba(var(--w-fg-rgb, 255, 255, 255), 0.07); color: var(--w-muted, #9a9aab); }
+  &[data-status='FREE'] { background: rgba(var(--w-fg-rgb, 255, 255, 255), 0.07); color: var(--w-muted, #9a9aab); }
+}
+
+.note {
+  font-size: 11px;
+  color: var(--w-muted, #9a9aab);
+  white-space: nowrap;
+
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-right: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.6;
+    vertical-align: 1px;
+  }
+}
+
+.dateRow {
+  font-size: 12.5px;
+  color: var(--w-muted, #9a9aab);
+}
+
+// ─── Lines ───────────────────────────────────────────────────────────────
+.table {
+  display: flex;
+  flex-direction: column;
+  padding-top: 12px;
+  border-top: 1px solid rgba(var(--w-fg-rgb, 255, 255, 255), 0.08);
+}
+
+.thead,
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 56px 76px;
+  gap: 8px;
+
+  span:nth-child(2) { text-align: center; }
+  span:nth-child(3) { text-align: right; }
+}
+
+.thead {
+  padding-bottom: 8px;
+  font-size: 11.5px;
+  color: var(--w-faint, #5c5d6e);
+}
+
+.row {
+  padding: 5px 0;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.itemName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Feature spend / usage — explains the total but isn't summed into it.
+.rowInfo {
+  color: var(--w-muted, #9a9aab);
+}
+
+.rowCredit span:nth-child(3) {
+  color: var(--w-positive, #8fe0a8);
+  font-weight: 700;
+}
+
+.empty,
+.more {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  color: var(--w-muted, #9a9aab);
+}
+
+.more {
+  text-align: center;
+}
+
+.totalRow {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(var(--w-fg-rgb, 255, 255, 255), 0.18);
+  font-size: 14px;
+  font-weight: 700;
+
+  strong {
+    font-size: 18px;
+    font-weight: 800;
+  }
+}
+
+// ─── Actions ─────────────────────────────────────────────────────────────
+.actions {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 10px;
+}
+
+.secondaryBtn,
+.primaryBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.secondaryBtn {
+  border: none;
+  background: rgba(var(--w-fg-rgb, 255, 255, 255), 0.06);
+  color: var(--w-ink, #f2f3f7);
+
+  &:hover {
+    background: rgba(var(--w-fg-rgb, 255, 255, 255), 0.1);
+  }
+}
+
+.primaryBtn {
+  border: none;
+  background: var(--w-ink, #f2f3f7);
+  color: var(--w-card, #1a1c26);
+
+  &:hover {
+    opacity: 0.88;
+  }
+}
+
+// ─── Details modal ───────────────────────────────────────────────────────
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: min(460px, 80vw);
+  color: var(--w-ink, #f2f3f7);
+}
+
+.detailsHint {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--w-muted, #9a9aab);
+}
+
+.history {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.historyTitle {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--w-faint, #5c5d6e);
+}
+
+.historyRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}

@@ -3355,7 +3355,70 @@
       "more": "More about debits",
       "notCounted": "Post promotion is paid separately and does not count toward feature spending."
     },
-    "offersLabel": "Top-up and VIP"
+    "offersLabel": "Top-up and VIP",
+    "receipts": {
+      "title": "Recurring payments",
+      "names": {
+        "VIP_FEE": "VIP",
+        "PINNED_LISTING": "Pinned listing",
+        "FEATURED_POSTS": "Post highlighting",
+        "STORAGE": "Storage"
+      },
+      "subtitles": {
+        "VIP_FEE": "Monthly fee",
+        "PINNED_LISTING": "Paid per period",
+        "FEATURED_POSTS": "Paid per period",
+        "STORAGE": "Over 7 GB — monthly"
+      },
+      "status": {
+        "ACTIVE": "Active",
+        "ENDING_SOON": "Ending soon",
+        "INACTIVE": "Inactive",
+        "FREE": "Free"
+      },
+      "notes": {
+        "chargeOn": "Debit on {date}",
+        "until": "Until {date}",
+        "inactive": "Not active",
+        "free": "Within quota"
+      },
+      "activeUntil": "Active until {date}",
+      "cols": {
+        "item": "Item",
+        "qty": "Qty",
+        "sum": "Amount"
+      },
+      "lines": {
+        "feeBase": "VIP monthly fee",
+        "spentAi": "AI features",
+        "spentPinned": "Pinned listing",
+        "spentStorage": "Storage",
+        "feeCredit": "Credited from spend",
+        "purchase": "Payment",
+        "purchaseMonths": "{months} mo.",
+        "storageUsed": "{gb} GB of 7 used",
+        "storageOverage": "Over quota"
+      },
+      "gb": "{count} GB",
+      "more": "+{count} more",
+      "empty": "Nothing paid yet",
+      "totalDue": "Due",
+      "totalPaid": "Paid",
+      "actions": {
+        "details": "Details",
+        "topUp": "Top up",
+        "getVip": "Get VIP",
+        "extend": "Extend",
+        "connect": "Activate"
+      },
+      "historyTitle": "Previous debits",
+      "hints": {
+        "VIP_FEE": "The monthly fee minus what you already spent on features (AI, pinned listing, storage). Grey lines are your spend this month.",
+        "PINNED_LISTING": "Latest payments for pinning in the tutors list. A new payment extends the current period.",
+        "FEATURED_POSTS": "Latest payments for post highlighting. A new payment extends the current period. Does not count toward the VIP fee.",
+        "STORAGE": "Free up to 7 GB. Above the quota, each started gigabyte is billed once a month."
+      }
+    }
   },
   "vip": {
     "hero": {

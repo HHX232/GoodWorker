@@ -3182,7 +3182,70 @@
       "more": "了解扣费详情",
       "notCounted": "帖子推广单独付费，不计入功能花费。"
     },
-    "offersLabel": "充值与 VIP"
+    "offersLabel": "充值与 VIP",
+    "receipts": {
+      "title": "定期付款",
+      "names": {
+        "VIP_FEE": "VIP",
+        "PINNED_LISTING": "列表置顶",
+        "FEATURED_POSTS": "帖子高亮",
+        "STORAGE": "存储空间"
+      },
+      "subtitles": {
+        "VIP_FEE": "月费",
+        "PINNED_LISTING": "按期付费",
+        "FEATURED_POSTS": "按期付费",
+        "STORAGE": "超过 7 GB — 按月"
+      },
+      "status": {
+        "ACTIVE": "生效中",
+        "ENDING_SOON": "即将到期",
+        "INACTIVE": "未启用",
+        "FREE": "免费"
+      },
+      "notes": {
+        "chargeOn": "{date} 扣费",
+        "until": "至 {date}",
+        "inactive": "未开通",
+        "free": "额度以内"
+      },
+      "activeUntil": "有效期至 {date}",
+      "cols": {
+        "item": "项目",
+        "qty": "数量",
+        "sum": "金额"
+      },
+      "lines": {
+        "feeBase": "VIP 月费",
+        "spentAi": "AI 功能",
+        "spentPinned": "列表置顶",
+        "spentStorage": "存储空间",
+        "feeCredit": "花费抵扣",
+        "purchase": "付款",
+        "purchaseMonths": "{months} 个月",
+        "storageUsed": "已用 {gb} GB / 7",
+        "storageOverage": "超出额度"
+      },
+      "gb": "{count} GB",
+      "more": "还有 {count} 项",
+      "empty": "尚无付款",
+      "totalDue": "待扣",
+      "totalPaid": "已付",
+      "actions": {
+        "details": "详情",
+        "topUp": "充值",
+        "getVip": "开通 VIP",
+        "extend": "续期",
+        "connect": "开通"
+      },
+      "historyTitle": "以往扣费",
+      "hints": {
+        "VIP_FEE": "月费减去您已在功能上的花费（AI、列表置顶、存储）。灰色行为本月花费。",
+        "PINNED_LISTING": "导师列表置顶的最近付款。新付款会延长当前期限。",
+        "FEATURED_POSTS": "帖子高亮的最近付款。新付款会延长当前期限。不计入 VIP 月费抵扣。",
+        "STORAGE": "7 GB 以内免费。超出后每个起算的 GB 按月计费。"
+      }
+    }
   },
   "vip": {
     "hero": {

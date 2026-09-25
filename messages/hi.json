@@ -3181,7 +3181,70 @@
       "more": "कटौती के बारे में अधिक",
       "notCounted": "पोस्ट प्रमोशन का भुगतान अलग से होता है और यह सुविधाओं के खर्च में नहीं गिना जाता।"
     },
-    "offersLabel": "टॉप-अप और VIP"
+    "offersLabel": "टॉप-अप और VIP",
+    "receipts": {
+      "title": "नियमित भुगतान",
+      "names": {
+        "VIP_FEE": "VIP",
+        "PINNED_LISTING": "सूची में पिन",
+        "FEATURED_POSTS": "पोस्ट हाइलाइट",
+        "STORAGE": "स्टोरेज"
+      },
+      "subtitles": {
+        "VIP_FEE": "मासिक शुल्क",
+        "PINNED_LISTING": "अवधि के लिए भुगतान",
+        "FEATURED_POSTS": "अवधि के लिए भुगतान",
+        "STORAGE": "7 GB से अधिक — मासिक"
+      },
+      "status": {
+        "ACTIVE": "सक्रिय",
+        "ENDING_SOON": "जल्द समाप्त",
+        "INACTIVE": "निष्क्रिय",
+        "FREE": "निःशुल्क"
+      },
+      "notes": {
+        "chargeOn": "{date} को कटौती",
+        "until": "{date} तक",
+        "inactive": "सक्रिय नहीं",
+        "free": "सीमा के भीतर"
+      },
+      "activeUntil": "{date} तक सक्रिय",
+      "cols": {
+        "item": "मद",
+        "qty": "संख्या",
+        "sum": "राशि"
+      },
+      "lines": {
+        "feeBase": "मासिक VIP शुल्क",
+        "spentAi": "AI सुविधाएँ",
+        "spentPinned": "पिन की गई प्रोफ़ाइल",
+        "spentStorage": "स्टोरेज",
+        "feeCredit": "खर्च से समायोजित",
+        "purchase": "भुगतान",
+        "purchaseMonths": "{months} महीने",
+        "storageUsed": "7 में से {gb} GB उपयोग",
+        "storageOverage": "सीमा से अधिक"
+      },
+      "gb": "{count} GB",
+      "more": "+{count} और",
+      "empty": "अभी कोई भुगतान नहीं",
+      "totalDue": "देय",
+      "totalPaid": "भुगतान किया",
+      "actions": {
+        "details": "विवरण",
+        "topUp": "टॉप अप",
+        "getVip": "VIP लें",
+        "extend": "बढ़ाएँ",
+        "connect": "सक्रिय करें"
+      },
+      "historyTitle": "पिछली कटौतियाँ",
+      "hints": {
+        "VIP_FEE": "मासिक शुल्क में से सुविधाओं (AI, पिन प्रोफ़ाइल, स्टोरेज) पर आपका खर्च घटाया जाता है। धूसर पंक्तियाँ इस महीने का खर्च हैं।",
+        "PINNED_LISTING": "ट्यूटर सूची में पिन के हाल के भुगतान। नया भुगतान वर्तमान अवधि बढ़ाता है।",
+        "FEATURED_POSTS": "पोस्ट हाइलाइट के हाल के भुगतान। नया भुगतान वर्तमान अवधि बढ़ाता है। VIP शुल्क में नहीं गिना जाता।",
+        "STORAGE": "7 GB तक निःशुल्क। सीमा से अधिक होने पर हर शुरू हुए GB का मासिक शुल्क।"
+      }
+    }
   },
   "vip": {
     "hero": {
