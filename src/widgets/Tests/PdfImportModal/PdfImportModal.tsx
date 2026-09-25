@@ -143,9 +143,11 @@ function BlockPreview({ block, selected, onToggle, t }: {
 interface PdfImportModalProps {
   onClose: () => void
   onImport: (blocks: GeneratedBlock[]) => void
+  /** Pre-filled files (e.g. "Сделать тест" from the tutor file library). */
+  initialFiles?: File[]
 }
 
-export function PdfImportModal({ onClose, onImport }: PdfImportModalProps) {
+export function PdfImportModal({ onClose, onImport, initialFiles }: PdfImportModalProps) {
   const t = useTranslations('pdfImport')
   const { data: authSession } = useSession()
   const isAdmin = authSession?.user?.role === 'ADMIN'
@@ -201,6 +203,15 @@ export function PdfImportModal({ onClose, onImport }: PdfImportModalProps) {
     setError(null)
     setUploadWarning(warning)
   }
+
+  // Seed once with files handed in from outside (library → test).
+  const seeded = useRef(false)
+  useEffect(() => {
+    if (seeded.current || !initialFiles?.length) return
+    seeded.current = true
+    addFiles(initialFiles)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialFiles])
 
   const removeFile = (name: string) => {
     setFiles(prev => prev.filter(f => f.name !== name))

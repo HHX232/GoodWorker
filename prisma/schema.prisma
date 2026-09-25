@@ -60,6 +60,11 @@ model Student {
   referralCode           String?          @unique
   paymentReminderSettings PaymentReminderSetting[]
   conversationsAsStudent Conversation[]
+  tutorFolderGrants      TutorFolderGrant[]
+  tutorFileGrants        TutorFileGrant[]
+  tutorFolderOpens       TutorFolderOpen[]
+  tutorFileOpens         TutorFileOpen[]
+  restrictedTutorFolders TutorFolder[]      @relation("TutorFolderRestrictedToStudent")
 }
 
 model Teacher {
@@ -109,6 +114,8 @@ model Teacher {
   paymentReminderSettings PaymentReminderSetting[]
   conversationsAsTeacher Conversation[]
   whiteboardTemplates     WhiteboardTemplate[]
+  tutorFolders            TutorFolder[]
+  tutorFiles              TutorFile[]
 
   @@index([isVip, createdAt])
 }
@@ -278,6 +285,150 @@ model ChatMessage {
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@index([conversationId, createdAt])
+}
+
+/// Tutor's own file storage — folders form a tree via `parentId`.
+/// `ancestorIds` is computed once at creation time as
+/// `[...parent.ancestorIds, parent.id]` (`[]` for a root folder) and never
+/// recomputed; there is no "move folder" operation in this build (see
+/// tutor-files interfaces.md — "Правило видимости"). It powers
+/// `canStudentSee()` (grant-on-any-ancestor lookup without a recursive
+/// query) and the max-depth check in `storage.ts`.
+/// `restrictedToStudentId` narrows an otherwise-shared folder/file to one
+/// student — used for the auto-created "учебная" per-student subfolder
+/// under a folder with `allowStudentUpload`. `null` means unrestricted.
+/// `onDelete: SetNull` (not Cascade) for `restrictedToStudentId`: deleting a
+/// student account should lift the restriction, not delete the teacher's
+/// folder.
+model TutorFolder {
+  id                    String             @id @default(uuid())
+  teacherId             String
+  parentId              String?
+  name                  String
+  allowStudentUpload    Boolean            @default(false)
+  // "preset:<id>" (src/shared/lib/tutorFiles/covers.ts) or a public S3 URL; null = colour derived from the id
+  cover                 String?
+  // Submissions folder (allowStudentUpload): uploads after this are marked late.
+  submissionDeadline    DateTime?
+  restrictedToStudentId String?
+  ancestorIds           String[]           @default([])
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  teacher               Teacher            @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  parent                TutorFolder?       @relation("TutorFolderChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children              TutorFolder[]      @relation("TutorFolderChildren")
+  restrictedToStudent   Student?           @relation("TutorFolderRestrictedToStudent", fields: [restrictedToStudentId], references: [id], onDelete: SetNull)
+  files                 TutorFile[]
+  grants                TutorFolderGrant[]
+  opens                 TutorFolderOpen[]
+  links                 TutorFolderLink[]
+
+  @@index([teacherId])
+  @@index([parentId])
+}
+
+model TutorFile {
+  id             String            @id @default(uuid())
+  teacherId      String
+  folderId       String?
+  name           String
+  key            String
+  url            String
+  sizeBytes      Int
+  mimeType       String
+  uploadedByRole Role
+  uploadedById   String
+  createdAt      DateTime          @default(now())
+  // Plain text pulled out of PDF/DOCX/XLSX/TXT at upload, for search inside files.
+  contentText    String?
+  review         TutorFileReview?
+  teacher        Teacher           @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  folder         TutorFolder?      @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  grants         TutorFileGrant[]
+  opens          TutorFileOpen[]
+
+  @@index([teacherId])
+  @@index([folderId])
+}
+
+model TutorFolderGrant {
+  folderId  String
+  studentId String
+  grantedAt DateTime    @default(now())
+  // Scheduled access: hidden before availableFrom, gone after availableUntil (null = no bound).
+  availableFrom  DateTime?
+  availableUntil DateTime?
+  folder    TutorFolder @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  student   Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([folderId, studentId])
+}
+
+// Admin-editable storage settings (single row, id "global"): the VIP quota
+// (a hard cap in this build) and the per-file limit.
+model StorageSettings {
+  id         String   @id @default("global")
+  quotaGb    Int      @default(15)
+  maxFileMb  Int      @default(50)
+  updatedAt  DateTime @updatedAt
+}
+
+// The tutor's check of a student submission (a file uploaded into a personal
+// subfolder): verdict, grade, comment, and pen marks drawn over the pages.
+model TutorFileReview {
+  fileId      String    @id
+  status      String    // ACCEPTED | REVISION
+  grade       String?
+  comment     String?
+  // [{ page: number, url: string }] — transparent PNG overlays, one per marked page (images: page 1)
+  annotations Json      @default("[]")
+  reviewedAt  DateTime  @updatedAt
+  file        TutorFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+}
+
+// A folder attached "by link" to homework / posts / tests / courses: whoever
+// is logged in and holds the token sees the folder's subtree read-only
+// (other students' personal subfolders excluded). One link per folder.
+model TutorFolderLink {
+  token     String      @id
+  folderId  String      @unique
+  createdAt DateTime    @default(now())
+  folder    TutorFolder @relation(fields: [folderId], references: [id], onDelete: Cascade)
+}
+
+// When a student first opened a shared folder / file — shown to the tutor on
+// hover over the student's avatar. One row per (item, student), never updated.
+model TutorFolderOpen {
+  folderId      String
+  studentId     String
+  firstOpenedAt DateTime    @default(now())
+  folder        TutorFolder @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  student       Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([folderId, studentId])
+}
+
+model TutorFileOpen {
+  fileId        String
+  studentId     String
+  firstOpenedAt DateTime  @default(now())
+  file          TutorFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  student       Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([fileId, studentId])
+}
+
+model TutorFileGrant {
+  fileId    String
+  studentId String
+  grantedAt DateTime  @default(now())
+  // Scheduled access: hidden before availableFrom, gone after availableUntil (null = no bound).
+  availableFrom  DateTime?
+  availableUntil DateTime?
+  file      TutorFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  student   Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([fileId, studentId])
 }
 
 model Category {

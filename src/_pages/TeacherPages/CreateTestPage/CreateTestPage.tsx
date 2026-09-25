@@ -28,6 +28,23 @@ function CreateTestPage() {
   const mainContentRef = useRef<HTMLDivElement>(null)
   const {categoryIds} = useTypedSelector((s) => s.tasks)
   const [pdfModalOpen, setPdfModalOpen] = useState(false)
+  // "Сделать тест" from the tutor file library: /create-test?fromLibraryFile=<id>&name=<file name>
+  const libraryFileId = searchParams.get('fromLibraryFile')
+  const libraryFileName = searchParams.get('name') ?? 'document.pdf'
+  const [libraryFiles, setLibraryFiles] = useState<File[] | undefined>()
+  useEffect(() => {
+    if (!libraryFileId) return
+    let ignore = false
+    fetch(`/api/tutor-files/files/${libraryFileId}/content`)
+      .then(r => (r.ok ? r.blob() : Promise.reject(new Error(String(r.status)))))
+      .then(blob => {
+        if (ignore) return
+        setLibraryFiles([new File([blob], libraryFileName)])
+        setPdfModalOpen(true)
+      })
+      .catch(e => console.error('[CreateTestPage] library file failed', e))
+    return () => { ignore = true }
+  }, [libraryFileId, libraryFileName])
   const [loadingTest, setLoadingTest] = useState(!!existingId)
 
   useEffect(() => {
@@ -130,6 +147,7 @@ function CreateTestPage() {
 
       {pdfModalOpen && (
         <PdfImportModal
+          initialFiles={libraryFiles}
           onClose={() => setPdfModalOpen(false)}
           onImport={(blocks) => addBlocks(blocks as TestBlock[])}
         />

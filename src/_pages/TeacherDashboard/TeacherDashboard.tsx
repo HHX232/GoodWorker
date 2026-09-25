@@ -238,7 +238,7 @@ export const TeacherDashboard: FC<Props> = ({ initialData, statsId, studentCount
 
   return (
     <div className={styles.wrapper}>
-      <ProfileSubNav calendarHref={`/calendar/${statsId}`} statisticsHref={`/statistics/${statsId}`} />
+      <ProfileSubNav calendarHref={`/calendar/${statsId}`} statisticsHref={`/statistics/${statsId}`} filesHref='/files' />
       <div
         className={styles.dashboard}
         style={{ gridTemplateColumns: `${leftWidth}px 1fr ${rightWidth}px` }}

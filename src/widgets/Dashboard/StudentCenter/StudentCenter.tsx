@@ -4,6 +4,7 @@ import { RoadMapPreview } from '@/shared/ui/RoadMap/RoadMapPreview/RoadMapPrevie
 import { ServiceCard } from '@/shared/ui/Service/ServiceCard/ServiceCard'
 import { StudentErrorsList } from '@/shared/ui/Stats/StudentErrorsWidget/StudentErrorsList'
 import { VideoZone } from '@/widgets/Dashboard/VideoZone/VideoZone'
+import { StudentFilesStat } from '@/widgets/Files/StorageStat/StorageStat'
 import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
@@ -254,6 +255,8 @@ export function StudentCenter({
             </div>
           </div>
         ))}
+        {/* What tutors shared — highlighted, straight into /files. */}
+        <StudentFilesStat />
       </div>
 
       {/* Video zone */}
