@@ -2,12 +2,14 @@ import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { getFilesSessionUser, requireOwnedFolder } from '@/shared/lib/tutorFiles/access'
 import { ensureStudentSubfolder, studentsWithAccess } from '@/shared/lib/tutorFiles/storage'
+import { isAllowedCover } from '@/shared/lib/tutorFiles/covers'
 
 interface Params {
   params: Promise<{ id: string }>
 }
 
-// PATCH /api/tutor-files/folders/[id] {name?, allowStudentUpload?} — rename and/or
+// PATCH /api/tutor-files/folders/[id] {name?, allowStudentUpload?, cover?} — rename,
+// set/clear the cover (`preset:<id>` or our own public S3 URL, null = default) and/or
 // toggle the G03 "ученики могут сдавать сюда" flag; parent/ancestorIds are
 // untouched (moving a folder between parents is out of scope, interfaces.md).
 // Turning the flag on backfills a personal subfolder for every student who
@@ -25,7 +27,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     if (guard.response) return guard.response
 
     const body = await req.json().catch(() => ({}))
-    const data: { name?: string; allowStudentUpload?: boolean } = {}
+    const data: { name?: string; allowStudentUpload?: boolean; cover?: string | null } = {}
     if (body?.name !== undefined) {
       const name = typeof body.name === 'string' ? body.name.trim() : ''
       if (!name) return NextResponse.json({ error: 'name required' }, { status: 400 })
@@ -36,6 +38,12 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         return NextResponse.json({ error: 'RESTRICTED_PARENT' }, { status: 400 })
       }
       data.allowStudentUpload = body.allowStudentUpload
+    }
+    if (body?.cover !== undefined) {
+      if (body.cover !== null && (typeof body.cover !== 'string' || !isAllowedCover(body.cover, process.env.NEXT_PUBLIC_S3_PUBLIC_URL))) {
+        return NextResponse.json({ error: 'INVALID_COVER' }, { status: 400 })
+      }
+      data.cover = body.cover
     }
     if (Object.keys(data).length === 0) return NextResponse.json({ error: 'nothing to update' }, { status: 400 })
 

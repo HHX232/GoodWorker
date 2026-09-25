@@ -15,6 +15,7 @@ export function toFolder(f: TutorFolder, itemCount: number, grants: GrantRow[] =
     parentId: f.parentId,
     allowStudentUpload: f.allowStudentUpload,
     restrictedToStudentId: f.restrictedToStudentId,
+    cover: f.cover,
     itemCount,
     sharedWith: grants.map(g => g.student),
     updatedAt: f.updatedAt.toISOString(),
@@ -37,7 +38,7 @@ export function toFile(f: TutorFile, grants: GrantRow[] = []): LibraryFile {
 }
 
 export function toTreeNode(f: TutorFolder, parentVisible: boolean): TreeNode {
-  return { id: f.id, name: f.name, parentId: parentVisible ? f.parentId : null, teacherId: f.teacherId, restrictedToStudentId: f.restrictedToStudentId }
+  return { id: f.id, name: f.name, parentId: parentVisible ? f.parentId : null, teacherId: f.teacherId, restrictedToStudentId: f.restrictedToStudentId, cover: f.cover }
 }
 
 /** Student view: direct subfolders + files of a folder, counting only what the student can see. */

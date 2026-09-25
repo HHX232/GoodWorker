@@ -1174,8 +1174,7 @@
     "sdmMarkFixedTitle": "ठीक के रूप में चिह्नित करें",
     "sdmUnmarkFixedTitle": "चिह्न हटाएं",
     "paymentPaid": "भुगतान हो गया",
-    "paymentUnpaid": "भुगतान बाकी",
-    "tabFiles": "फ़ाइलें"
+    "paymentUnpaid": "भुगतान बाकी"
   },
   "SetCommentBlock": {
     "heading": "समीक्षा छोड़ें",
@@ -3211,7 +3210,6 @@
     }
   },
   "files": {
-    "tabLabel": "फ़ाइलें",
     "rootCrumb": "सभी फ़ाइलें",
     "treeTitle": "फ़ोल्डर",
     "searchPlaceholder": "पूरी लाइब्रेरी में खोजें",
@@ -3250,8 +3248,6 @@
     "upsellTitle": "फ़ाइलें VIP का हिस्सा हैं",
     "upsellText": "नोट्स, समाधान और होमवर्क को नेस्टेड फ़ोल्डरों में रखें और एक क्लिक में छात्रों के साथ साझा करें। VIP में 7 GB शामिल हैं।",
     "upsellCta": "VIP लें",
-    "usage": "{quota} में से {used}",
-    "usageOver": "सीमा से अधिक: {gb} GB",
     "badgeDropbox": "जमा करें",
     "badgePersonal": "छात्र फ़ोल्डर",
     "uploadedByStudent": "छात्र से",
@@ -3274,6 +3270,27 @@
     "overageNoPrice": "अभी सीमा से अधिक: {gb} GB। अपलोड नहीं रुकते। अतिरिक्त GB की कीमत अभी तय नहीं है — तब तक कुछ नहीं काटा जाएगा।",
     "overageWallet": "वॉलेट खोलें",
     "overageOk": "ठीक है",
-    "previewTitle": "पूर्वावलोकन"
+    "previewTitle": "पूर्वावलोकन",
+    "pageTitle": "फ़ाइलें",
+    "myFiles": "मेरी फ़ाइलें",
+    "sharedWithMe": "मेरे साथ साझा",
+    "foldersSection": "फ़ोल्डर",
+    "filesSection": "फ़ाइलें",
+    "actions": "क्रियाएँ",
+    "cover": "कवर",
+    "coverTitle": "फ़ोल्डर कवर",
+    "coverPastel": "पेस्टल",
+    "coverArt": "आर्ट",
+    "coverOwn": "अपनी छवि",
+    "coverUpload": "छवि अपलोड करें",
+    "coverUploaded": "छवि अपलोड हो गई — बदलें",
+    "coverUploadHint": "JPG, PNG, WebP, 10 MB तक",
+    "coverReset": "डिफ़ॉल्ट",
+    "errCoverFile": "10 MB तक की छवि चुनें",
+    "storageFree": "{quota} में से {used} मुफ़्त",
+    "storageLeft": "{left} बाकी",
+    "storageOver": "सीमा से {over} अधिक",
+    "storageCharge": "महीने के अंत में {amount} कटेंगे — {gb} GB × {price}",
+    "storageChargeNone": "अतिरिक्त शुल्क अभी तय नहीं — कुछ नहीं कटेगा"
   }
 }

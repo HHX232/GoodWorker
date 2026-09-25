@@ -1201,8 +1201,7 @@
     "sdmMarkFixedTitle": "Отметить как исправленное",
     "sdmUnmarkFixedTitle": "Снять отметку",
     "paymentPaid": "Оплачено",
-    "paymentUnpaid": "Не оплачено",
-    "tabFiles": "Файлы"
+    "paymentUnpaid": "Не оплачено"
   },
   "SetCommentBlock": {
     "heading": "Оставить отзыв",
@@ -3385,7 +3384,6 @@
     }
   },
   "files": {
-    "tabLabel": "Файлы",
     "rootCrumb": "Все файлы",
     "treeTitle": "Папки",
     "searchPlaceholder": "Поиск по всей библиотеке",
@@ -3424,8 +3422,6 @@
     "upsellTitle": "Файлы — часть VIP",
     "upsellText": "Храните методички, разборы и домашки в папках любой вложенности и открывайте их ученикам в один клик. 7 ГБ входят в VIP.",
     "upsellCta": "Оформить VIP",
-    "usage": "{used} из {quota}",
-    "usageOver": "Сверх лимита: {gb} ГБ",
     "badgeDropbox": "Сдача работ",
     "badgePersonal": "Папка ученика",
     "uploadedByStudent": "От ученика",
@@ -3448,6 +3444,27 @@
     "overageNoPrice": "Сейчас сверх лимита: {gb} ГБ. Загрузка не блокируется. Плата за гигабайт сверх лимита пока не назначена — до этого ничего не списывается.",
     "overageWallet": "Открыть Кошелёк",
     "overageOk": "Понятно",
-    "previewTitle": "Просмотр"
+    "previewTitle": "Просмотр",
+    "pageTitle": "Файлы",
+    "myFiles": "Мои файлы",
+    "sharedWithMe": "Доступно мне",
+    "foldersSection": "Папки",
+    "filesSection": "Файлы",
+    "actions": "Действия",
+    "cover": "Обложка",
+    "coverTitle": "Обложка папки",
+    "coverPastel": "Пастель",
+    "coverArt": "Арт",
+    "coverOwn": "Своё изображение",
+    "coverUpload": "Загрузить картинку",
+    "coverUploaded": "Картинка загружена — заменить",
+    "coverUploadHint": "JPG, PNG, WebP до 10 МБ",
+    "coverReset": "По умолчанию",
+    "errCoverFile": "Нужна картинка до 10 МБ",
+    "storageFree": "{used} из {quota} бесплатно",
+    "storageLeft": "свободно {left}",
+    "storageOver": "сверх лимита {over}",
+    "storageCharge": "В конце месяца спишется {amount} — {gb} ГБ × {price}",
+    "storageChargeNone": "Плата за перелимит пока не назначена — ничего не спишется"
   }
 }

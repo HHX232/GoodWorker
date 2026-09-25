@@ -29,4 +29,9 @@ export {
   HardDrive as FilesStorageIcon,
   Eye as FilesPreviewIcon,
   ExternalLink as FilesExternalIcon,
+  MoreVertical as FilesMoreIcon,
+  Image as FilesCoverIcon,
+  Plus as FilesPlusIcon,
+  Home as FilesHomeIcon,
+  Command as FilesCommandIcon,
 } from 'lucide-react'

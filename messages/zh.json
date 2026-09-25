@@ -1174,8 +1174,7 @@
     "sdmMarkFixedTitle": "标记为已修正",
     "sdmUnmarkFixedTitle": "取消标记",
     "paymentPaid": "已付款",
-    "paymentUnpaid": "未付款",
-    "tabFiles": "文件"
+    "paymentUnpaid": "未付款"
   },
   "SetCommentBlock": {
     "heading": "留下评价",
@@ -3212,7 +3211,6 @@
     }
   },
   "files": {
-    "tabLabel": "文件",
     "rootCrumb": "全部文件",
     "treeTitle": "文件夹",
     "searchPlaceholder": "搜索整个文件库",
@@ -3251,8 +3249,6 @@
     "upsellTitle": "文件功能属于 VIP",
     "upsellText": "将讲义、解析和作业存放在多级文件夹中，一键分享给学生。VIP 包含 7 GB 空间。",
     "upsellCta": "开通 VIP",
-    "usage": "已用 {used} / {quota}",
-    "usageOver": "超出额度：{gb} GB",
     "badgeDropbox": "作业提交",
     "badgePersonal": "学生文件夹",
     "uploadedByStudent": "来自学生",
@@ -3275,6 +3271,27 @@
     "overageNoPrice": "当前超出额度：{gb} GB。上传不会被阻止。超出部分的单价尚未设定——设定之前不会扣费。",
     "overageWallet": "打开钱包",
     "overageOk": "知道了",
-    "previewTitle": "预览"
+    "previewTitle": "预览",
+    "pageTitle": "文件",
+    "myFiles": "我的文件",
+    "sharedWithMe": "与我共享",
+    "foldersSection": "文件夹",
+    "filesSection": "文件",
+    "actions": "操作",
+    "cover": "封面",
+    "coverTitle": "文件夹封面",
+    "coverPastel": "柔和色",
+    "coverArt": "艺术",
+    "coverOwn": "自定义图片",
+    "coverUpload": "上传图片",
+    "coverUploaded": "已上传图片 — 替换",
+    "coverUploadHint": "JPG、PNG、WebP，不超过 10 MB",
+    "coverReset": "默认",
+    "errCoverFile": "请选择不超过 10 MB 的图片",
+    "storageFree": "免费额度已用 {used} / {quota}",
+    "storageLeft": "剩余 {left}",
+    "storageOver": "超出 {over}",
+    "storageCharge": "月末将扣除 {amount} — {gb} GB × {price}",
+    "storageChargeNone": "尚未设定超额价格 — 不会扣费"
   }
 }

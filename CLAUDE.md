@@ -427,9 +427,10 @@ set -a; source .env; set +a && npx tsx src/shared/lib/wallet/wallet.selfcheck.ts
 
 # GoodWorker — хранилище файлов репетитора (`tutor-files`)
 
-Вкладка «Файлы» у VIP-репетитора (`DashboardCenter`, только владелец) и у ученика (`StudentCenter`, диплинк `/student-profile?tab=files`); живёт только в ветках от `feature/wallet-balance-topup` (перелимит списывается через Кошелёк). Контракты и история — `.autopilot/tutor-files/interfaces.md`.
+Отдельная страница `/files` (`app/files/page.tsx` → `src/widgets/Files/FilesPage` → `FilesShell`, открытая папка в `?folder=`) — библиотека VIP-репетитора и «Доступно мне» ученика; входы — `ProfileSubNav` (`filesHref`) и `FilesHeaderIcon` в шапке. Живёт только в ветках от `feature/wallet-balance-topup` (перелимит списывается через Кошелёк). Контракты и история — `.autopilot/tutor-files/interfaces.md`.
 
 - API `app/api/tutor-files/*`: `library` (read-модель для обеих ролей — браузинг идёт только через неё), `folders`, `files`, `grants`, `search`, `usage`; крон `app/api/cron/storage-overage-billing` (идемпотентен по месяцу).
 - Видимость ученику — только через `loadStudentVisibility()`/`canStudentSee()` (`src/shared/lib/tutorFiles/access.ts`); `restrictedToStudentId` бывает только у листовых личных подпапок — новые дочерние папки создавать после `assertFolderDepthAllowed` + `assertNotUnderRestrictedFolder`.
-- Клиент импортирует типы из `src/shared/types/TutorFiles/tutorFiles.types.ts` и константы из `src/shared/lib/tutorFiles/constants.ts` — не `access.ts`/`storage.ts` (тянут Prisma).
+- Клиент импортирует типы из `src/shared/types/TutorFiles/tutorFiles.types.ts`, константы из `src/shared/lib/tutorFiles/constants.ts` и обложки из `covers.ts` — не `access.ts`/`storage.ts` (тянут Prisma).
+- `FilesShell` — контейнер для container queries; сетку держит внутренний `.layout` (контейнер не может запросить сам себя). Суммы в UI — только через `formatMoney()` (`ru` → BYN по `usdToBynRate`, иначе USD).
 - Смоук без внешних сервисов: локальный Postgres (`/usr/lib/postgresql/16/bin`, запуск от пользователя `postgres`) + заглушка S3 (любой HTTP-сервер, отвечающий 200 на PUT, в `S3_ENDPOINT`/`NEXT_PUBLIC_S3_PUBLIC_URL`). Puppeteer `uploadFile` молча не грузит файлы с кириллицей в пути; headless Chromium отвечает `hover: none`, поэтому кнопки действий на карточках там видны всегда.

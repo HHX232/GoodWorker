@@ -15,6 +15,8 @@ export interface LibraryFolder {
   allowStudentUpload: boolean
   /** Set only on a student's personal "учебная" subfolder (G03). */
   restrictedToStudentId: string | null
+  /** `preset:<id>` / image URL / null — resolve with `resolveCover()` (shared/lib/tutorFiles/covers). */
+  cover: string | null
   /** Direct subfolders + files, as visible to the viewer. */
   itemCount: number
   /** Teacher view only: students holding a direct grant. */
@@ -50,6 +52,7 @@ export interface TreeNode {
   parentId: string | null
   teacherId: string
   restrictedToStudentId: string | null
+  cover: string | null
 }
 
 export interface LibraryResponse {
@@ -73,4 +76,8 @@ export interface UsageResponse {
   quotaBytes: number
   overageGb: number
   priceCentsPerGbMonth: number
+  /** What the monthly cron would charge right now (overageGb × price), USD cents. */
+  estimatedChargeCents: number
+  /** Wallet display rate — ru shows BYN, other locales USD (same rule as /vip). */
+  usdToBynRate: number
 }

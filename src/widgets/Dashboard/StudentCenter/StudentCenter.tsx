@@ -4,7 +4,6 @@ import { RoadMapPreview } from '@/shared/ui/RoadMap/RoadMapPreview/RoadMapPrevie
 import { ServiceCard } from '@/shared/ui/Service/ServiceCard/ServiceCard'
 import { StudentErrorsList } from '@/shared/ui/Stats/StudentErrorsWidget/StudentErrorsList'
 import { VideoZone } from '@/widgets/Dashboard/VideoZone/VideoZone'
-import { FilesShell } from '@/widgets/Files/FilesShell/FilesShell'
 import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
@@ -53,7 +52,7 @@ function PersonalServiceCard({
   )
 }
 
-type Tab = 'all' | 'roadmaps' | 'services' | 'errors' | 'homework' | 'files'
+type Tab = 'all' | 'roadmaps' | 'services' | 'errors' | 'homework'
 
 interface HomeworkItem {
   id: string
@@ -172,10 +171,6 @@ export function StudentCenter({
   const tHw = useTranslations('homework')
   const locale = useLocale()
   const [tab, setTab] = useState<Tab>('all')
-  // Deep link from the FILE_ACCESS_GRANTED chat card: /student-profile?tab=files
-  useEffect(() => {
-    if (new URLSearchParams(window.location.search).get('tab') === 'files') setTab('files')
-  }, [])
   const [homeworks, setHomeworks] = useState<HomeworkItem[]>([])
   const [hwLoading, setHwLoading] = useState(false)
 
@@ -195,7 +190,6 @@ export function StudentCenter({
     { key: 'services', label: t('tabServices') },
     { key: 'errors',   label: t('tabErrors') },
     { key: 'homework', label: t('tabHomework') },
-    { key: 'files',    label: t('tabFiles') },
   ]
 
   const stats = [
@@ -244,7 +238,7 @@ export function StudentCenter({
   const visibleRoadmaps = showRoadmaps ? (tab === 'all' ? roadmapAccess.slice(0, 3) : roadmapAccess) : []
   const visibleServices = showServices ? (tab === 'all' ? serviceBookings.slice(0, 2) : serviceBookings) : []
 
-  const isEmpty = !loading && !showHomework && tab !== 'files' && visibleRoadmaps.length === 0 && visibleServices.length === 0 && !showErrors
+  const isEmpty = !loading && !showHomework && visibleRoadmaps.length === 0 && visibleServices.length === 0 && !showErrors
 
   return (
     <div className={styles.center}>
@@ -277,9 +271,7 @@ export function StudentCenter({
         ))}
       </div>
 
-      {tab === 'files' ? (
-        <FilesShell role="student" />
-      ) : loading ? (
+      {loading ? (
         <div className={styles.loading}>{t('loading')}</div>
       ) : (
         <>

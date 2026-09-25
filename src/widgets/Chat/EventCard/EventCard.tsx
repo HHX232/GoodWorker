@@ -222,7 +222,7 @@ export function EventCard({ message, isMine }: EventCardProps) {
     // tutor's own copy of the card stays link-less.
     if (!isMine) {
       link = (
-        <Link href="/student-profile?tab=files" className={styles.link}>
+        <Link href="/files" className={styles.link}>
           {t('eventCard.fileAccessLink')}
         </Link>
       )

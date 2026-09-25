@@ -1,195 +1,244 @@
-// Floe-reference cards in GoodWorker's palette: white surface, hairline
-// #DADCEB border, 14px radius, one soft tinted tile per card as the only
-// colour. The whole card is one hit target (`.hit`, stretched under the
-// content); action buttons sit above it.
-
-.card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-  padding: 14px;
-  background: #fff;
-  border: 1px solid #DADCEB;
-  border-radius: 14px;
-  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
-
-  &:hover {
-    border-color: #C9C6F0;
-    box-shadow: 0 6px 18px rgba(83, 74, 183, 0.08);
-    transform: translateY(-1px);
-  }
-
-  &:focus-within { border-color: #534AB7; }
-
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
-    &:hover { transform: none; }
-  }
-}
+// Card language from the Floe reference in GoodWorker colours. Each card is
+// one hit target (`.hit`, stretched underneath); the ⋮ menu sits above it.
 
 .hit {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: 1;
   border: none;
-  border-radius: inherit;
   background: transparent;
   cursor: pointer;
+  border-radius: 18px;
 
-  &:focus-visible { outline: 2px solid #534AB7; outline-offset: 2px; }
+  &:focus-visible { outline: 2px solid #534AB7; outline-offset: 3px; }
 }
 
-.top {
+// ── Folder ──
+.folderCard {
+  min-width: 0;
+  transition: transform 0.18s ease;
+
+  &:hover { transform: translateY(-2px); }
+  @media (prefers-reduced-motion: reduce) { transition: none; &:hover { transform: none; } }
+}
+
+.folderTop {
+  position: relative;
+  z-index: 2;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 4px;
-}
-
-.folderTile {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 11px;
-  background: #EEEDFE;
-  color: #534AB7;
-  flex-shrink: 0;
-}
-
-.personal .folderTile { background: #E1F5EE; color: #0F6E56; }
-
-// ── Actions: shown on hover/focus; always on touch screens ──
-.actions {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  gap: 4px;
-  opacity: 0;
-  transition: opacity 0.15s;
-
-  .card:hover &, .card:focus-within & { opacity: 1; }
-  @media (hover: none) { opacity: 1; }
-}
-
-.action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border: 1px solid #DADCEB;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.94);
-  color: #4b5563;
-  cursor: pointer;
-  text-decoration: none;
-
-  &:hover { color: #534AB7; border-color: #C9C6F0; }
-  &:focus-visible { outline: 2px solid #534AB7; outline-offset: 1px; }
-}
-
-.actionDanger:hover { color: #DC2626; border-color: #FCA5A5; }
-
-// ── File thumbnail ──
-.thumb {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 96px;
-  margin-bottom: 6px;
-  border-radius: 10px;
-  background: #F4F4F8;
-  color: #868897;
-  overflow: hidden;
-  pointer-events: none; // clicks fall through to .hit; only the actions take them
-
-  .actions { position: absolute; top: 6px; right: 6px; pointer-events: auto; }
-}
-
-.thumbImg { width: 100%; height: 100%; object-fit: cover; }
-
-.pdf { background: #FEF2F2; color: #DC2626; }
-.image { background: #E3F0FF; color: #1A5FAB; }
-.sheet { background: #E8F8F5; color: #1A7A5E; }
-.doc { background: #EEF2FF; color: #534AB7; }
-.archive { background: #FEF3E2; color: #9A5A00; }
-.video, .audio { background: #FBEAF0; color: #993556; }
-
-.name {
-  position: relative;
-  z-index: 0;
+  min-height: 22px;
   pointer-events: none;
-  font-size: 14px;
+
+  > * { pointer-events: auto; }
+}
+
+.badges { display: flex; gap: 4px; min-width: 0; pointer-events: none !important; }
+
+.badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  color: #3F3A8A;
+  font-size: 10px;
   font-weight: 600;
-  color: #141416;
+  white-space: nowrap;
+  backdrop-filter: blur(6px);
+}
+
+.folderName {
+  margin-top: 12px;
+  font-family: var(--files-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
   line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  pointer-events: none;
 }
 
-.hint {
-  pointer-events: none;
-  margin-top: -3px;
+.folderHint {
+  margin-top: 2px;
   font-size: 11px;
-  color: #ABABAB;
+  opacity: 0.65;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.folderFoot {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid rgba(20, 20, 40, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 34px;
+  pointer-events: none;
+}
+
+.folderCount { font-size: 12px; opacity: 0.7; white-space: nowrap; margin-left: auto; }
+
+:global([data-dark]) .folderFoot { border-color: rgba(255, 255, 255, 0.24); }
+:global([data-dark]) .badge { background: rgba(255, 255, 255, 0.2); color: #fff; }
+
+.newFolder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #868897;
+  pointer-events: none;
+}
+
+.newFolderIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: #F1F1F7;
+}
+
+// ── File ──
+.fileCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #fff;
+  border: 1px solid #E6E6EF;
+  border-radius: 18px;
+  overflow: visible;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+
+  &:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(40, 36, 110, 0.1); }
+  @media (prefers-reduced-motion: reduce) { transition: none; &:hover { transform: none; } }
+}
+
+.art {
+  position: relative;
+  height: 112px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 14px;
+  border-radius: 17px 17px 0 0;
+  overflow: hidden;
+  background: #F2F2F7;
+  color: #868897;
+}
+
+.artImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pdf { background: linear-gradient(160deg, #FFF1F1 0%, #FDDCDC 100%); color: #D23B3B; }
+.image { background: #E3F0FF; color: #1A5FAB; }
+.sheet { background: linear-gradient(160deg, #EAF8F1 0%, #CFEFDF 100%); color: #1A7A5E; }
+.doc { background: linear-gradient(160deg, #EEF2FF 0%, #DCE3FD 100%); color: #534AB7; }
+.archive { background: linear-gradient(160deg, #FFF6E8 0%, #FBE5C4 100%); color: #9A5A00; }
+.video, .audio { background: linear-gradient(160deg, #FFEFF4 0%, #F9D9E4 100%); color: #993556; }
+.other { background: linear-gradient(160deg, #F4F4F8 0%, #E7E7EF 100%); color: #868897; }
+
+.panel {
+  position: relative;
+  margin-top: -16px;
+  padding: 12px 14px 12px;
+  background: #fff;
+  border-radius: 16px 16px 17px 17px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  pointer-events: none;
+}
+
+.panelTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  > :last-child { pointer-events: auto; }
+}
+
+.meta { font-size: 11px; color: #868897; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.fileName {
+  margin-top: 6px;
+  font-family: var(--files-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+  font-size: 14px;
+  font-weight: 500;
+  color: #141416;
+  letter-spacing: -0.01em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.meta {
+.fileHint { margin-top: 2px; font-size: 11px; color: #ABABAB; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.fileFoot {
+  margin-top: auto;
+  padding-top: 10px;
   display: flex;
   align-items: center;
   gap: 6px;
-  min-height: 24px;
-  margin-top: auto; // equal-height cards in a grid row keep their footer aligned
-  pointer-events: none;
+  min-height: 34px;
+  border-top: 1px solid #EEEEF4;
+  margin-top: 10px;
 }
 
-.count {
-  font-size: 12px;
-  color: #868897;
-  white-space: nowrap;
-}
+.spacer { flex: 1; }
 
-.badge {
+.chip {
   padding: 2px 7px;
   border-radius: 999px;
-  background: #EEEDFE;
-  color: #534AB7;
+  background: #E1F5EE;
+  color: #0F6E56;
   font-size: 10px;
   font-weight: 600;
   white-space: nowrap;
 }
 
-.badgePersonal { background: #E1F5EE; color: #0F6E56; }
-
-.spacer { flex: 1; }
+.extChip {
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
 
 // ─── Dark theme ───────────────────────────────────────────────────────────────
 :global(html.theme-dark), :global(html.pomodoro-dark) {
-  .card { background: #1a1c24; border-color: rgba(255, 255, 255, 0.08); &:hover { border-color: rgba(129, 140, 248, 0.4); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3); } &:focus-within { border-color: #818cf8; } }
-  .folderTile { background: rgba(129, 140, 248, 0.14); color: #a5b4fc; }
-  .personal .folderTile { background: rgba(52, 211, 153, 0.12); color: #6ee7b7; }
-  .action { border-color: rgba(255, 255, 255, 0.12); background: rgba(20, 22, 32, 0.9); color: #9ea4b5; &:hover { color: #a5b4fc; border-color: rgba(129, 140, 248, 0.5); } }
-  .actionDanger:hover { color: #F87171; border-color: rgba(248, 113, 113, 0.5); }
-  .thumb { background: rgba(255, 255, 255, 0.04); color: #9ea4b5; }
-  .pdf { background: rgba(239, 68, 68, 0.1); color: #F87171; }
-  .image { background: rgba(59, 130, 246, 0.12); color: #93C5FD; }
-  .sheet { background: rgba(52, 211, 153, 0.1); color: #6ee7b7; }
-  .doc { background: rgba(129, 140, 248, 0.12); color: #a5b4fc; }
-  .archive { background: rgba(251, 191, 36, 0.1); color: #FCD34D; }
-  .video, .audio { background: rgba(236, 72, 153, 0.1); color: #F9A8D4; }
-  .name { color: #e8eaf0; }
-  .hint { color: #6b7080; }
-  .count { color: #9ea4b5; }
-  .badge { background: rgba(129, 140, 248, 0.16); color: #c7cbff; }
-  .badgePersonal { background: rgba(52, 211, 153, 0.12); color: #6ee7b7; }
+  .newFolder { color: #9ea4b5; }
+  .newFolderIcon { background: rgba(255, 255, 255, 0.06); }
+  .fileCard { background: #1a1c24; border-color: rgba(255, 255, 255, 0.08); &:hover { box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35); } }
+  .panel { background: #1a1c24; }
+  .art { background: rgba(255, 255, 255, 0.04); }
+  .pdf { background: linear-gradient(160deg, rgba(239, 68, 68, 0.16), rgba(239, 68, 68, 0.06)); color: #F87171; }
+  .sheet { background: linear-gradient(160deg, rgba(52, 211, 153, 0.16), rgba(52, 211, 153, 0.05)); color: #6ee7b7; }
+  .doc { background: linear-gradient(160deg, rgba(129, 140, 248, 0.2), rgba(129, 140, 248, 0.06)); color: #a5b4fc; }
+  .archive { background: linear-gradient(160deg, rgba(251, 191, 36, 0.16), rgba(251, 191, 36, 0.05)); color: #FCD34D; }
+  .video, .audio { background: linear-gradient(160deg, rgba(236, 72, 153, 0.16), rgba(236, 72, 153, 0.05)); color: #F9A8D4; }
+  .other, .image { background: rgba(255, 255, 255, 0.05); color: #9ea4b5; }
+  .meta { color: #9ea4b5; }
+  .fileName { color: #e8eaf0; }
+  .fileHint { color: #6b7080; }
+  .fileFoot { border-color: rgba(255, 255, 255, 0.08); }
+  .chip { background: rgba(52, 211, 153, 0.12); color: #6ee7b7; }
 }

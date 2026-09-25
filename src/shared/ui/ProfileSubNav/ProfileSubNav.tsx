@@ -7,10 +7,13 @@ import styles from './ProfileSubNav.module.scss'
 interface ProfileSubNavProps {
   calendarHref?: string
   statisticsHref?: string
+  /** Owner dashboards only: the tutor file library / files shared with the student. */
+  filesHref?: string
 }
 
-export function ProfileSubNav({ calendarHref, statisticsHref }: ProfileSubNavProps = {}) {
+export function ProfileSubNav({ calendarHref, statisticsHref, filesHref }: ProfileSubNavProps = {}) {
   const t = useTranslations('LandingPage')
+  const tFiles = useTranslations('files')
   const links = [
     { label: t('sub_teachers'), href: '/teachers' },
     { label: t('sub_posts'),    href: '/posts' },
@@ -20,6 +23,7 @@ export function ProfileSubNav({ calendarHref, statisticsHref }: ProfileSubNavPro
   const ownLinks = [
     calendarHref ? { label: t('sub_calendar'), href: calendarHref } : null,
     statisticsHref ? { label: t('sub_stats'), href: statisticsHref } : null,
+    filesHref ? { label: tFiles('pageTitle'), href: filesHref } : null,
   ].filter((l): l is { label: string; href: string } => l !== null)
 
   return (

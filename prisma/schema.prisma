@@ -310,6 +310,8 @@ model TutorFolder {
   parentId              String?
   name                  String
   allowStudentUpload    Boolean            @default(false)
+  // "preset:<id>" (src/shared/lib/tutorFiles/covers.ts) or a public S3 URL; null = colour derived from the id
+  cover                 String?
   restrictedToStudentId String?
   ancestorIds           String[]           @default([])
   createdAt             DateTime           @default(now())

@@ -2,7 +2,8 @@
 
 import type { FilesPerson, TreeNode } from '@/shared/types/TutorFiles/tutorFiles.types'
 import { useEffect, useMemo, useState } from 'react'
-import { FilesChevronIcon, FilesFolderIcon, FilesFolderOpenIcon, FilesPersonalFolderIcon, FilesStorageIcon } from '../icons'
+import { resolveCover } from '@/shared/lib/tutorFiles/covers'
+import { FilesChevronIcon, FilesHomeIcon } from '../icons'
 import styles from './FolderTree.module.scss'
 
 interface FolderTreeProps {
@@ -44,7 +45,8 @@ export function FolderTree({ nodes, teachers, currentId, openPath, rootLabel, on
     const kids = children.get(node.id) ?? []
     const isOpen = expanded.has(node.id)
     const active = node.id === currentId
-    const Icon = node.restrictedToStudentId ? FilesPersonalFolderIcon : active ? FilesFolderOpenIcon : FilesFolderIcon
+    const cover = resolveCover(node.id, node.cover)
+    const swatch = cover.kind === 'image' ? `center / cover no-repeat url("${cover.url}")` : cover.preset.background
     return (
       <li key={node.id}>
         <div className={`${styles.row} ${active ? styles.active : ''}`} style={{ paddingLeft: 6 + depth * 14 }}>
@@ -56,7 +58,7 @@ export function FolderTree({ nodes, teachers, currentId, openPath, rootLabel, on
             )
             : <span className={styles.chevronSpacer} />}
           <button type="button" className={styles.label} onClick={() => onSelect(node.id)} aria-current={active ? 'page' : undefined}>
-            <Icon size={15} strokeWidth={1.8} className={styles.icon} />
+            <span className={styles.swatch} style={{ background: swatch }} aria-hidden="true" />
             <span className={styles.name}>{node.name}</span>
           </button>
         </div>
@@ -71,7 +73,7 @@ export function FolderTree({ nodes, teachers, currentId, openPath, rootLabel, on
   return (
     <nav className={styles.tree}>
       <button type="button" className={`${styles.row} ${styles.rootRow} ${currentId === null ? styles.active : ''}`} onClick={() => onSelect(null)}>
-        <FilesStorageIcon size={15} strokeWidth={1.8} className={styles.icon} />
+        <FilesHomeIcon size={16} strokeWidth={1.8} className={styles.icon} />
         <span className={styles.name}>{rootLabel}</span>
       </button>
       {byTeacher

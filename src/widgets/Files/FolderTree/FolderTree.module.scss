@@ -15,7 +15,7 @@
   display: flex;
   align-items: center;
   gap: 2px;
-  min-height: 32px;
+  min-height: 34px;
   border-radius: 8px;
   color: #4b5563;
 
@@ -80,6 +80,15 @@
 }
 
 .icon { flex-shrink: 0; }
+
+// Floe "Favourites" thumbnail: the folder's own cover in miniature.
+.swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(20, 20, 40, 0.08);
+}
 
 .name {
   overflow: hidden;

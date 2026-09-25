@@ -1201,8 +1201,7 @@
     "sdmMarkFixedTitle": "Mark as fixed",
     "sdmUnmarkFixedTitle": "Unmark as fixed",
     "paymentPaid": "Paid",
-    "paymentUnpaid": "Unpaid",
-    "tabFiles": "Files"
+    "paymentUnpaid": "Unpaid"
   },
   "SetCommentBlock": {
     "heading": "Leave a review",
@@ -3385,7 +3384,6 @@
     }
   },
   "files": {
-    "tabLabel": "Files",
     "rootCrumb": "All files",
     "treeTitle": "Folders",
     "searchPlaceholder": "Search the whole library",
@@ -3424,8 +3422,6 @@
     "upsellTitle": "Files are part of VIP",
     "upsellText": "Keep handouts, walkthroughs and homework in nested folders and share them with students in one click. 7 GB included with VIP.",
     "upsellCta": "Get VIP",
-    "usage": "{used} of {quota}",
-    "usageOver": "Over the limit: {gb} GB",
     "badgeDropbox": "Submissions",
     "badgePersonal": "Student folder",
     "uploadedByStudent": "From student",
@@ -3448,6 +3444,27 @@
     "overageNoPrice": "Currently over the limit: {gb} GB. Uploads aren't blocked. The price per extra GB hasn't been set yet — nothing is charged until it is.",
     "overageWallet": "Open Wallet",
     "overageOk": "Got it",
-    "previewTitle": "Preview"
+    "previewTitle": "Preview",
+    "pageTitle": "Files",
+    "myFiles": "My files",
+    "sharedWithMe": "Shared with me",
+    "foldersSection": "Folders",
+    "filesSection": "Files",
+    "actions": "Actions",
+    "cover": "Cover",
+    "coverTitle": "Folder cover",
+    "coverPastel": "Pastel",
+    "coverArt": "Art",
+    "coverOwn": "Your own image",
+    "coverUpload": "Upload an image",
+    "coverUploaded": "Image uploaded — replace",
+    "coverUploadHint": "JPG, PNG, WebP up to 10 MB",
+    "coverReset": "Default",
+    "errCoverFile": "Please pick an image up to 10 MB",
+    "storageFree": "{used} of {quota} free",
+    "storageLeft": "{left} left",
+    "storageOver": "{over} over the limit",
+    "storageCharge": "{amount} will be charged at month end — {gb} GB × {price}",
+    "storageChargeNone": "No overage price set yet — nothing will be charged"
   }
 }

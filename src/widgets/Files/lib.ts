@@ -85,3 +85,43 @@ export async function filesFetch<T>(input: string, init?: RequestInit): Promise<
 export function jsonInit(method: string, data: unknown): RequestInit {
   return { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }
 }
+
+/**
+ * Wallet amounts are USD cents internally; ru shows BYN at the admin's
+ * `usdToBynRate`, every other locale USD — the same rule /vip uses
+ * (useVipTopUpPresets.formatCentsDisplay).
+ */
+export function formatMoney(cents: number, locale: string, usdToBynRate: number): string {
+  if (locale === 'ru') return `${((cents / 100) * usdToBynRate).toFixed(2)} BYN`
+  return `$${(cents / 100).toFixed(2)}`
+}
+
+/** Corner/tab sizes are tuned for the 156px card and scale down with height (cover swatches are ~48px). */
+function folderMetrics(w: number, h: number) {
+  const k = Math.min(1, h / 156)
+  return { k, tw: Math.min(Math.max(w * 0.4, 96 * k), 170) }
+}
+
+/**
+ * Floe-style folder silhouette for a w×h box: a rounded tab on the top-left
+ * that flows into the body with an S-curve. Pixel-exact per size (corners
+ * never stretch), fed to CSS `clip-path: path()` and an SVG outline.
+ */
+export function folderFrontPath(w: number, h: number): string {
+  const { k, tw } = folderMetrics(w, h)
+  const r = 18 * k
+  const rt = 12 * k
+  const th = 14 * k
+  const s = 20 * k
+  return `M0 ${rt} Q0 0 ${rt} 0 L${tw - s} 0 C${tw - s / 2} 0 ${tw - s / 2} ${th} ${tw} ${th} L${w - r} ${th} Q${w} ${th} ${w} ${th + r} L${w} ${h - r} Q${w} ${h} ${w - r} ${h} L${r} ${h} Q0 ${h} 0 ${h - r} Z`
+}
+
+/** The sheet peeking out behind the front on the right — a rounded rect a little lower than the tab. */
+export function folderBackPath(w: number, h: number): string {
+  const { k, tw } = folderMetrics(w, h)
+  const r = 16 * k
+  const top = 5 * k
+  const inset = 4 * k
+  const left = tw - 30 * k
+  return `M${left} ${top + r} Q${left} ${top} ${left + r} ${top} L${w - r - inset} ${top} Q${w - inset} ${top} ${w - inset} ${top + r} L${w - inset} ${h - r} Q${w - inset} ${h} ${w - r - inset} ${h} L${left + r} ${h} Q${left} ${h} ${left} ${h - r} Z`
+}

@@ -1,11 +1,13 @@
-import { prisma } from '@/shared/prisma/prisma'
+import { getWalletPricingSettings } from '@/shared/lib/wallet/wallet'
 import { NextResponse } from 'next/server'
 import { getFilesSessionUser } from '@/shared/lib/tutorFiles/access'
 import { getUsedBytes, QUOTA_BYTES } from '@/shared/lib/tutorFiles/storage'
 
 // GET /api/tutor-files/usage — contract fixed in interfaces.md "Контракт между
-// тикетами: квота": {usedBytes, quotaBytes, overageGb, priceCentsPerGbMonth}.
-// This is the ONLY route that reads WalletSettings.storageOveragePriceCentsPerGbMonth
+// тикетами: квота": {usedBytes, quotaBytes, overageGb, priceCentsPerGbMonth},
+// plus estimatedChargeCents (overageGb × price, same ceil rounding as the cron)
+// and usdToBynRate (ru displays BYN, like /vip).
+// This is the ONLY route the UI reads the storage price from
 // — tickets 05/06 (UI) and 04 (billing) must read the price from here, not
 // duplicate the WalletSettings read elsewhere.
 export async function GET() {
@@ -17,16 +19,15 @@ export async function GET() {
     const overageBytes = Math.max(0, usedBytes - QUOTA_BYTES)
     const overageGb = Math.ceil(overageBytes / 1024 ** 3)
 
-    const settings = await prisma.walletSettings.findUnique({
-      where: { id: 'global' },
-      select: { storageOveragePriceCentsPerGbMonth: true },
-    })
+    const { storageOveragePriceCentsPerGbMonth: priceCentsPerGbMonth, usdToBynRate } = await getWalletPricingSettings()
 
     return NextResponse.json({
       usedBytes,
       quotaBytes: QUOTA_BYTES,
       overageGb,
-      priceCentsPerGbMonth: settings?.storageOveragePriceCentsPerGbMonth ?? 0,
+      priceCentsPerGbMonth,
+      estimatedChargeCents: overageGb * priceCentsPerGbMonth,
+      usdToBynRate,
     })
   } catch (e) {
     console.error('[GET /api/tutor-files/usage]', e)

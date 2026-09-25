@@ -5,29 +5,36 @@ import type { LibraryFile, LibraryFolder, LibraryResponse, TreeNode, UsageRespon
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
-import { useLocale, useTranslations } from 'next-intl'
-import { useEffect, useMemo, useRef, useState, type DragEvent, type FormEvent } from 'react'
+import { useTranslations } from 'next-intl'
+import { useEffect, useMemo, useRef, useState, type DragEvent, type FormEvent, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import { FileCard } from '../Cards/FileCard'
-import { FolderCard } from '../Cards/FolderCard'
+import { FolderCard, NewFolderCard } from '../Cards/FolderCard'
+import { CoverPickerModal } from '../CoverPickerModal/CoverPickerModal'
 import { FilePreviewModal } from '../FilePreviewModal/FilePreviewModal'
 import { FilesModal } from '../FilesModal/FilesModal'
 import { FolderTree } from '../FolderTree/FolderTree'
 import {
-  FilesChevronDownIcon, FilesChevronIcon, FilesDropboxIcon, FilesFolderPlusIcon, FilesSearchIcon, FilesStorageIcon, FilesUploadIcon, FilesVipIcon,
+  FilesChevronDownIcon, FilesChevronIcon, FilesCoverIcon, FilesDropboxIcon, FilesFolderPlusIcon, FilesSearchIcon, FilesShareIcon,
+  FilesStorageIcon, FilesUploadIcon, FilesVipIcon,
 } from '../icons'
-import { filesFetch, FilesApiError, formatBytes, initials, jsonInit } from '../lib'
+import { filesFetch, FilesApiError, initials, jsonInit } from '../lib'
 import { ShareAccessModal, type ShareTarget } from '../ShareAccessModal/ShareAccessModal'
+import { StorageMeter } from '../StorageMeter/StorageMeter'
 import { StorageOverageWarningModal } from '../StorageOverageWarningModal/StorageOverageWarningModal'
 import ui from '../ui.module.scss'
 import styles from './FilesShell.module.scss'
 
 export interface FilesShellProps {
   role: 'teacher' | 'student'
+  /** The open folder — owned by the page (it lives in `?folder=`), so browser back works. */
+  folderId: string | null
+  onNavigate: (folderId: string | null) => void
 }
 
 type NameDialog = { mode: 'create' } | { mode: 'rename'; folder: LibraryFolder }
 type DeleteTarget = { itemType: 'folder'; item: LibraryFolder } | { itemType: 'file'; item: LibraryFile }
+type CoverTarget = { id: string; name: string; cover: string | null }
 
 const LIBRARY_KEY = ['tutor-files', 'library'] as const
 
@@ -44,37 +51,51 @@ function pathOf(parentId: string | null, byId: Map<string, TreeNode>): string {
 }
 
 /**
- * The Files tab for both sides (tickets 05/07): sidebar folder tree, then
- * breadcrumbs + global search + card grid. Teacher: create/rename/delete,
- * upload, share (ticket 06), VIP gate + storage meter. Student: read-only
- * browse of what's shared, grouped by tutor, upload only inside their own
- * "учебная" subfolder. Everything comes from GET /api/tutor-files/library,
- * which already applies the server-side visibility rule.
+ * The /files page body for both sides (Floe layout): sidebar with the folder
+ * tree, a top bar with global search and the storage line, then "Папки" and
+ * "Файлы" sections. Teacher: create/rename/delete, covers, upload, share, VIP
+ * gate. Student: read-only browse of what's shared, grouped by tutor, upload
+ * only inside their own "учебная" subfolder. Everything comes from
+ * GET /api/tutor-files/library, which already applies the visibility rule.
  */
-export function FilesShell({ role }: FilesShellProps) {
+export function FilesShell({ role, folderId, onNavigate }: FilesShellProps) {
   const t = useTranslations('files')
-  const locale = useLocale()
   const queryClient = useQueryClient()
   const { data: session } = useSession()
   const isTeacher = role === 'teacher'
 
-  const [folderId, setFolderId] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [treeOpen, setTreeOpen] = useState(false)
   const [nameDialog, setNameDialog] = useState<NameDialog | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null)
   const [shareTarget, setShareTarget] = useState<ShareTarget | null>(null)
+  const [coverTarget, setCoverTarget] = useState<CoverTarget | null>(null)
   const [previewFile, setPreviewFile] = useState<LibraryFile | null>(null)
   const [overage, setOverage] = useState<UsageResponse | null>(null)
   const [uploading, setUploading] = useState<{ done: number; total: number } | null>(null)
   const [dragOver, setDragOver] = useState(false)
+  const [shortcut, setShortcut] = useState('Ctrl F')
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const id = setTimeout(() => setDebouncedQuery(query.trim()), 250)
     return () => clearTimeout(id)
   }, [query])
+
+  // ⌘F / Ctrl+F focuses the library search (Floe's search hint).
+  useEffect(() => {
+    if (/Mac|iPhone|iPad/.test(navigator.userAgent)) setShortcut('⌘ F')
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'f' && searchRef.current) {
+        e.preventDefault()
+        searchRef.current.focus()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   const library = useQuery({
     queryKey: [...LIBRARY_KEY, folderId],
@@ -97,10 +118,10 @@ export function FilesShell({ role }: FilesShellProps) {
     enabled: isTeacher && isVip,
   })
 
-  // An open folder that vanished (deleted from search, access revoked) → back to the root.
+  // An open folder that vanished (deleted, access revoked, bad link) → back to the root.
   useEffect(() => {
-    if (folderId && library.error instanceof FilesApiError && (library.error.status === 403 || library.error.status === 404)) setFolderId(null)
-  }, [library.error, folderId])
+    if (folderId && library.error instanceof FilesApiError && (library.error.status === 403 || library.error.status === 404)) onNavigate(null)
+  }, [library.error, folderId, onNavigate])
 
   const treeById = useMemo(() => new Map((data?.tree ?? []).map(n => [n.id, n])), [data])
   const openPath = useMemo(() => [...(data?.breadcrumbs ?? []).map(b => b.id), ...(data?.folder ? [data.folder.id] : [])], [data])
@@ -110,7 +131,7 @@ export function FilesShell({ role }: FilesShellProps) {
   }
 
   const navigate = (id: string | null) => {
-    setFolderId(id)
+    onNavigate(id)
     setQuery('')
     setDebouncedQuery('')
     setTreeOpen(false)
@@ -188,39 +209,15 @@ export function FilesShell({ role }: FilesShellProps) {
   }
 
   // ── Render ────────────────────────────────────────────────
-  if (library.isError && !data) {
-    return (
-      <div className={styles.state}>
-        <p className={styles.stateText}>{t('errLoad')}</p>
-        <button type="button" className={ui.btn} onClick={() => library.refetch()}>{t('retry')}</button>
-      </div>
-    )
-  }
-
-  if (!data) return <div className={styles.skeletonGrid} aria-busy="true">{Array.from({ length: 6 }, (_, i) => <div key={i} className={styles.skeleton} />)}</div>
-
-  // G01: the tab is visible to every tutor, the library itself only with VIP.
-  if (isTeacher && !isVip) {
-    return (
-      <div className={styles.upsell}>
-        <span className={styles.upsellIcon}><FilesVipIcon size={26} strokeWidth={1.8} /></span>
-        <h3 className={styles.upsellTitle}>{t('upsellTitle')}</h3>
-        <p className={styles.upsellText}>{t('upsellText')}</p>
-        <Link href="/vip" className={`${ui.btn} ${ui.primary}`}>{t('upsellCta')}</Link>
-      </div>
-    )
-  }
-
   const canManage = isTeacher && isVip
-  const canUpload = data.canUpload
+  const canUpload = !!data?.canUpload
   const myId = session?.user?.id
   const searching = debouncedQuery.length > 0
-  const totalItems = data.groups.reduce((n, g) => n + g.folders.length + g.files.length, 0)
-  const showGroupHeaders = !isTeacher && data.folder === null && data.groups.length > 1
 
   const folderActions = (f: LibraryFolder) => canManage
     ? {
         onShare: () => setShareTarget({ itemType: 'folder', id: f.id, name: f.name, allowStudentUpload: f.allowStudentUpload }),
+        onCover: () => setCoverTarget({ id: f.id, name: f.name, cover: f.cover }),
         onRename: () => setNameDialog({ mode: 'rename', folder: f }),
         onDelete: () => setDeleteTarget({ itemType: 'folder', item: f }),
       }
@@ -237,145 +234,206 @@ export function FilesShell({ role }: FilesShellProps) {
     return {}
   }
 
-  const renderGrid = (folders: LibraryFolder[], files: LibraryFile[], withHints = false) => (
-    <div className={styles.grid}>
-      {folders.map(f => (
-        <FolderCard key={f.id} folder={f} onOpen={() => navigate(f.id)} hint={withHints ? pathOf(f.parentId, treeById) || t('rootCrumb') : undefined} {...folderActions(f)} />
-      ))}
-      {files.map(f => (
-        <FileCard key={f.id} file={f} onPreview={() => setPreviewFile(f)} hint={withHints ? pathOf(f.folderId, treeById) || t('rootCrumb') : undefined} {...fileActions(f)} />
-      ))}
-    </div>
+  const sections = (folders: LibraryFolder[], files: LibraryFile[], opts: { hints?: boolean; newFolder?: boolean } = {}) => (
+    <>
+      {(folders.length > 0 || opts.newFolder) && (
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>{t('foldersSection')} <span className={styles.count}>{folders.length}</span></h2>
+          <div className={styles.folderGrid}>
+            {folders.map(f => (
+              <FolderCard key={f.id} folder={f} onOpen={() => navigate(f.id)} hint={opts.hints ? pathOf(f.parentId, treeById) || t('rootCrumb') : undefined} {...folderActions(f)} />
+            ))}
+            {opts.newFolder && <NewFolderCard onCreate={openCreate} />}
+          </div>
+        </section>
+      )}
+      {files.length > 0 && (
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>{t('filesSection')} <span className={styles.count}>{files.length}</span></h2>
+          <div className={styles.fileGrid}>
+            {files.map(f => (
+              <FileCard key={f.id} file={f} onPreview={() => setPreviewFile(f)} hint={opts.hints ? pathOf(f.folderId, treeById) || t('rootCrumb') : undefined} {...fileActions(f)} />
+            ))}
+          </div>
+        </section>
+      )}
+    </>
   )
 
-  const tree = (
-    <FolderTree nodes={data.tree} teachers={data.teachers} currentId={folderId} openPath={openPath} rootLabel={t('rootCrumb')} onSelect={navigate} />
-  )
+  let body: ReactNode
+  if (library.isError && !data) {
+    body = (
+      <div className={styles.state}>
+        <p className={styles.stateText}>{t('errLoad')}</p>
+        <button type="button" className={ui.btn} onClick={() => library.refetch()}>{t('retry')}</button>
+      </div>
+    )
+  } else if (!data) {
+    body = <div className={styles.skeletonGrid} aria-busy="true">{Array.from({ length: 6 }, (_, i) => <div key={i} className={styles.skeleton} />)}</div>
+  } else if (isTeacher && !isVip) {
+    // G01: the page is open to every tutor, the library itself only with VIP.
+    body = (
+      <div className={styles.upsell}>
+        <span className={styles.upsellIcon}><FilesVipIcon size={26} strokeWidth={1.8} /></span>
+        <h3 className={styles.upsellTitle}>{t('upsellTitle')}</h3>
+        <p className={styles.upsellText}>{t('upsellText')}</p>
+        <Link href="/vip" className={`${ui.btn} ${ui.primary}`}>{t('upsellCta')}</Link>
+      </div>
+    )
+  } else if (searching) {
+    body = search.data && search.data.folders.length + search.data.files.length === 0
+      ? <p className={styles.muted}>{t('searchEmpty', { q: debouncedQuery })}</p>
+      : search.data && sections(search.data.folders, search.data.files, { hints: true })
+  } else {
+    const totalItems = data.groups.reduce((n, g) => n + g.folders.length + g.files.length, 0)
+    const showGroupHeaders = !isTeacher && data.folder === null && data.groups.length > 1
+    const inPersonal = !!data.folder?.restrictedToStudentId
+    if (totalItems === 0) {
+      body = (
+        <div className={styles.empty}>
+          {isTeacher && data.folder === null ? (
+            <>
+              <span className={styles.emptyIcon}><FilesFolderPlusIcon size={26} strokeWidth={1.6} /></span>
+              <div className={styles.emptyTitle}>{t('emptyTitle')}</div>
+              <p className={styles.emptyText}>{t('emptyText')}</p>
+            </>
+          ) : !isTeacher && data.folder === null ? (
+            <>
+              <span className={styles.emptyIcon}><FilesStorageIcon size={26} strokeWidth={1.6} /></span>
+              <div className={styles.emptyTitle}>{t('studentEmptyTitle')}</div>
+              <p className={styles.emptyText}>{t('studentEmptyText')}</p>
+            </>
+          ) : (
+            <div className={styles.emptyTitle}>{t('emptyFolder')}</div>
+          )}
+          {(canManage || canUpload) && (
+            <div className={styles.emptyActions}>
+              {canManage && !inPersonal && <button type="button" className={ui.btn} onClick={openCreate}><FilesFolderPlusIcon size={15} /> {t('newFolder')}</button>}
+              {canUpload && <button type="button" className={`${ui.btn} ${ui.primary}`} onClick={() => fileInputRef.current?.click()}><FilesUploadIcon size={15} /> {t('upload')}</button>}
+            </div>
+          )}
+        </div>
+      )
+    } else {
+      // A student's personal subfolder is a leaf (no subfolders allowed), so no "new folder" slot there.
+      const newFolderSlot = canManage && !inPersonal && (data.folder?.depth ?? 0) < MAX_FOLDER_DEPTH
+      body = data.groups.map(group => (
+        <div key={group.teacher?.id ?? 'own'} className={styles.group}>
+          {showGroupHeaders && group.teacher && (
+            <div className={styles.groupHeader}>
+              {group.teacher.avatarUrl
+                // eslint-disable-next-line @next/next/no-img-element
+                ? <img src={group.teacher.avatarUrl} alt="" className={styles.groupAvatar} />
+                : <span className={styles.groupAvatar}>{initials(group.teacher.name)}</span>}
+              {t('fromTeacher', { name: group.teacher.name })}
+            </div>
+          )}
+          {sections(group.folders, group.files, { newFolder: newFolderSlot })}
+        </div>
+      ))
+    }
+  }
 
-  const usageData = usage.data
-  const over = usageData ? usageData.usedBytes > usageData.quotaBytes : false
+  const rootLabel = isTeacher ? t('myFiles') : t('sharedWithMe')
+  const title = searching ? t('searchResults') : data?.folder?.name ?? rootLabel
+  const current = data?.folder
+  const tree = data && (
+    <FolderTree nodes={data.tree} teachers={data.teachers} currentId={folderId} openPath={openPath} rootLabel={rootLabel} onSelect={navigate} />
+  )
+  const showLibraryChrome = !!data && !(isTeacher && !isVip)
 
   return (
     <div className={styles.shell}>
       <div className={styles.layout}>
         <aside className={styles.sidebar}>
-          <div className={styles.sidebarTitle}>{t('treeTitle')}</div>
-          {tree}
-          {usageData && (
-            <div className={`${styles.usage} ${over ? styles.usageOver : ''}`}>
-              <div className={styles.usageRow}>
-                <FilesStorageIcon size={14} />
-                <span>{t('usage', { used: formatBytes(usageData.usedBytes, locale), quota: formatBytes(usageData.quotaBytes, locale) })}</span>
-              </div>
-              <div className={styles.usageBar}><span style={{ width: `${Math.min(100, (usageData.usedBytes / usageData.quotaBytes) * 100)}%` }} /></div>
-              {over && <div className={styles.usageNote}>{t('usageOver', { gb: usageData.overageGb })}</div>}
-            </div>
+          <div className={styles.brand}>
+            <span className={styles.brandIcon}><FilesStorageIcon size={16} /></span>
+            {t('pageTitle')}
+          </div>
+          {showLibraryChrome && (
+            <>
+              <div className={styles.sidebarLabel}>{t('treeTitle')}</div>
+              {tree}
+            </>
           )}
         </aside>
 
-        <section
+        <main
           className={`${styles.main} ${dragOver ? styles.dragOver : ''}`}
           onDragOver={canUpload ? e => { e.preventDefault(); setDragOver(true) } : undefined}
           onDragLeave={canUpload ? e => { if (e.currentTarget === e.target) setDragOver(false) } : undefined}
           onDrop={canUpload ? onDrop : undefined}
         >
-          <div className={styles.toolbar}>
-            <div className={styles.treeToggleWrap}>
-              <button type="button" className={`${ui.btn} ${styles.treeToggle}`} onClick={() => setTreeOpen(v => !v)} aria-expanded={treeOpen}>
-                {t('treeTitle')} <FilesChevronDownIcon size={14} />
-              </button>
-              {treeOpen && <div className={styles.treePopover}>{tree}</div>}
-            </div>
-            <label className={styles.search}>
-              <FilesSearchIcon size={15} className={styles.searchIcon} />
-              <input className={ui.input} type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder={t('searchPlaceholder')} aria-label={t('searchPlaceholder')} />
-            </label>
-            {canManage && (
-              <button type="button" className={ui.btn} onClick={openCreate}>
-                <FilesFolderPlusIcon size={15} /> <span className={styles.btnLabel}>{t('newFolder')}</span>
-              </button>
+          <div className={styles.topbar}>
+            {showLibraryChrome && (
+              <div className={styles.treeToggleWrap}>
+                <button type="button" className={`${ui.btn} ${styles.treeToggle}`} onClick={() => setTreeOpen(v => !v)} aria-expanded={treeOpen}>
+                  {t('treeTitle')} <FilesChevronDownIcon size={14} />
+                </button>
+                {treeOpen && <div className={styles.treePopover}>{tree}</div>}
+              </div>
             )}
-            {canUpload && (
-              <button type="button" className={`${ui.btn} ${ui.primary}`} onClick={() => fileInputRef.current?.click()} disabled={!!uploading}>
-                <FilesUploadIcon size={15} />
-                <span className={styles.btnLabel}>{uploading ? t('uploading', uploading) : t('upload')}</span>
-              </button>
+            {showLibraryChrome && (
+              <label className={styles.search}>
+                <FilesSearchIcon size={16} className={styles.searchIcon} />
+                <input ref={searchRef} type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder={t('searchPlaceholder')} aria-label={t('searchPlaceholder')} />
+                <kbd className={styles.kbd}>{shortcut}</kbd>
+              </label>
             )}
-            <input ref={fileInputRef} type="file" multiple hidden onChange={e => { uploadFiles(Array.from(e.target.files ?? [])); e.target.value = '' }} />
+            {usage.data && <div className={styles.meterSlot}><StorageMeter usage={usage.data} /></div>}
           </div>
 
-          {!searching && (
-            <nav className={styles.crumbs} aria-label="breadcrumbs">
-              <button type="button" className={styles.crumb} onClick={() => navigate(null)}>{t('rootCrumb')}</button>
-              {data.breadcrumbs.map(b => (
-                <span key={b.id} className={styles.crumbItem}>
-                  <FilesChevronIcon size={13} className={styles.crumbSep} />
-                  <button type="button" className={styles.crumb} onClick={() => navigate(b.id)}>{b.name}</button>
-                </span>
-              ))}
-              {data.folder && (
-                <span className={styles.crumbItem}>
-                  <FilesChevronIcon size={13} className={styles.crumbSep} />
-                  <span className={`${styles.crumb} ${styles.crumbCurrent}`} aria-current="page">{data.folder.name}</span>
-                </span>
-              )}
-            </nav>
-          )}
+          <div className={styles.content}>
+            {showLibraryChrome && !searching && current && (
+              <nav className={styles.crumbs} aria-label="breadcrumbs">
+                <button type="button" className={styles.crumb} onClick={() => navigate(null)}>{rootLabel}</button>
+                {data.breadcrumbs.map(b => (
+                  <span key={b.id} className={styles.crumbItem}>
+                    <FilesChevronIcon size={13} className={styles.crumbSep} />
+                    <button type="button" className={styles.crumb} onClick={() => navigate(b.id)}>{b.name}</button>
+                  </span>
+                ))}
+              </nav>
+            )}
 
-          {!searching && !isTeacher && canUpload && (
-            <div className={styles.banner}><FilesDropboxIcon size={16} /> {t('dropboxHint')}</div>
-          )}
-
-          {dragOver && <div className={styles.dropHint}><FilesUploadIcon size={18} /> {t('dropHint')}</div>}
-
-          {searching ? (
-            <>
-              <div className={styles.sectionTitle}>{t('searchResults')}</div>
-              {search.data && search.data.folders.length + search.data.files.length === 0
-                ? <p className={styles.muted}>{t('searchEmpty', { q: debouncedQuery })}</p>
-                : search.data && renderGrid(search.data.folders, search.data.files, true)}
-            </>
-          ) : totalItems === 0 ? (
-            <div className={styles.empty}>
-              {isTeacher && data.folder === null ? (
-                <>
-                  <span className={styles.emptyIcon}><FilesFolderPlusIcon size={26} strokeWidth={1.6} /></span>
-                  <div className={styles.emptyTitle}>{t('emptyTitle')}</div>
-                  <p className={styles.emptyText}>{t('emptyText')}</p>
-                </>
-              ) : !isTeacher && data.folder === null ? (
-                <>
-                  <span className={styles.emptyIcon}><FilesStorageIcon size={26} strokeWidth={1.6} /></span>
-                  <div className={styles.emptyTitle}>{t('studentEmptyTitle')}</div>
-                  <p className={styles.emptyText}>{t('studentEmptyText')}</p>
-                </>
-              ) : (
-                <div className={styles.emptyTitle}>{t('emptyFolder')}</div>
-              )}
-              {(canManage || canUpload) && (
-                <div className={styles.emptyActions}>
-                  {canManage && <button type="button" className={ui.btn} onClick={openCreate}><FilesFolderPlusIcon size={15} /> {t('newFolder')}</button>}
-                  {canUpload && <button type="button" className={`${ui.btn} ${ui.primary}`} onClick={() => fileInputRef.current?.click()}><FilesUploadIcon size={15} /> {t('upload')}</button>}
+            <div className={styles.titleRow}>
+              <h1 className={styles.title}>{title}</h1>
+              {showLibraryChrome && !searching && (
+                <div className={styles.actions}>
+                  {canManage && current && !current.restrictedToStudentId && (
+                    <button type="button" className={styles.pill} onClick={() => setShareTarget({ itemType: 'folder', id: current.id, name: current.name, allowStudentUpload: current.allowStudentUpload })}>
+                      <FilesShareIcon size={14} /> <span className={styles.pillLabel}>{t('share')}</span>
+                    </button>
+                  )}
+                  {canManage && current && (
+                    <button type="button" className={styles.pill} onClick={() => setCoverTarget({ id: current.id, name: current.name, cover: treeById.get(current.id)?.cover ?? null })}>
+                      <FilesCoverIcon size={14} /> <span className={styles.pillLabel}>{t('cover')}</span>
+                    </button>
+                  )}
+                  {canManage && !current?.restrictedToStudentId && (
+                    <button type="button" className={styles.pill} onClick={openCreate}>
+                      <FilesFolderPlusIcon size={14} /> <span className={styles.pillLabel}>{t('newFolder')}</span>
+                    </button>
+                  )}
+                  {canUpload && (
+                    <button type="button" className={`${styles.pill} ${styles.pillPrimary}`} onClick={() => fileInputRef.current?.click()} disabled={!!uploading}>
+                      <FilesUploadIcon size={14} />
+                      <span className={styles.pillLabel}>{uploading ? t('uploading', uploading) : t('upload')}</span>
+                    </button>
+                  )}
+                  <input ref={fileInputRef} type="file" multiple hidden onChange={e => { uploadFiles(Array.from(e.target.files ?? [])); e.target.value = '' }} />
                 </div>
               )}
             </div>
-          ) : (
-            data.groups.map(group => (
-              <div key={group.teacher?.id ?? 'own'} className={styles.group}>
-                {showGroupHeaders && group.teacher && (
-                  <div className={styles.groupHeader}>
-                    {group.teacher.avatarUrl
-                      // eslint-disable-next-line @next/next/no-img-element
-                      ? <img src={group.teacher.avatarUrl} alt="" className={styles.groupAvatar} />
-                      : <span className={styles.groupAvatar}>{initials(group.teacher.name)}</span>}
-                    {t('fromTeacher', { name: group.teacher.name })}
-                  </div>
-                )}
-                {renderGrid(group.folders, group.files)}
-              </div>
-            ))
-          )}
-        </section>
+
+            {!searching && !isTeacher && canUpload && (
+              <div className={styles.banner}><FilesDropboxIcon size={16} /> {t('dropboxHint')}</div>
+            )}
+            {dragOver && <div className={styles.dropHint}><FilesUploadIcon size={18} /> {t('dropHint')}</div>}
+
+            {body}
+          </div>
+        </main>
       </div>
 
       {nameDialog && (
@@ -407,8 +465,9 @@ export function FilesShell({ role }: FilesShellProps) {
       )}
 
       {shareTarget && <ShareAccessModal target={shareTarget} onClose={() => setShareTarget(null)} onChanged={refresh} />}
+      {coverTarget && <CoverPickerModal folder={coverTarget} onClose={() => setCoverTarget(null)} onSaved={() => { setCoverTarget(null); refresh() }} />}
       {previewFile && <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />}
-      {overage && <StorageOverageWarningModal overageGb={overage.overageGb} priceCentsPerGbMonth={overage.priceCentsPerGbMonth} onClose={() => setOverage(null)} />}
+      {overage && <StorageOverageWarningModal usage={overage} onClose={() => setOverage(null)} />}
     </div>
   )
 }
