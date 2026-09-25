@@ -1,10 +1,12 @@
 'use client'
 
 import { DEFAULT_MAX_FILE_MB, MAX_FOLDER_DEPTH, MB } from '@/shared/lib/tutorFiles/constants'
-import type { LibraryFile, LibraryFolder, LibraryResponse, TreeNode, UsageResponse } from '@/shared/types/TutorFiles/tutorFiles.types'
+import { kindOf as importKindOf } from '@/shared/constants/pdfImport'
+import type { LibraryFile, LibraryFolder, LibraryResponse, SearchFile, TreeNode, UsageResponse } from '@/shared/types/TutorFiles/tutorFiles.types'
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useMemo, useRef, useState, type DragEvent, type FormEvent, type ReactNode } from 'react'
 import { toast } from 'sonner'
@@ -12,13 +14,14 @@ import { FileCard } from '../Cards/FileCard'
 import { FolderCard, NewFolderCard } from '../Cards/FolderCard'
 import { CoverPickerModal } from '../CoverPickerModal/CoverPickerModal'
 import { FilePreviewModal } from '../FilePreviewModal/FilePreviewModal'
+import { ReviewModal } from '../ReviewModal/ReviewModal'
 import { FilesModal } from '../FilesModal/FilesModal'
 import { FolderTree } from '../FolderTree/FolderTree'
 import {
-  FilesChevronDownIcon, FilesChevronIcon, FilesCoverIcon, FilesDropboxIcon, FilesFolderPlusIcon, FilesSearchIcon, FilesShareIcon,
+  FilesChevronDownIcon, FilesChevronIcon, FilesCoverIcon, FilesDeadlineIcon, FilesDropboxIcon, FilesFolderPlusIcon, FilesSearchIcon, FilesShareIcon,
   FilesStorageIcon, FilesUploadIcon, FilesVipIcon,
 } from '../icons'
-import { filesFetch, FilesApiError, formatBytes, initials, jsonInit, triggerDownload } from '../lib'
+import { filesFetch, FilesApiError, formatBytes, formatDeadline, initials, jsonInit, triggerDownload } from '../lib'
 import { ShareAccessModal, type ShareTarget } from '../ShareAccessModal/ShareAccessModal'
 import { StorageMeter } from '../StorageMeter/StorageMeter'
 import { StorageOverageWarningModal } from '../StorageOverageWarningModal/StorageOverageWarningModal'
@@ -79,6 +82,8 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
   const [shareTarget, setShareTarget] = useState<ShareTarget | null>(null)
   const [coverTarget, setCoverTarget] = useState<CoverTarget | null>(null)
   const [previewFile, setPreviewFile] = useState<LibraryFile | null>(null)
+  const [reviewFile, setReviewFile] = useState<LibraryFile | null>(null)
+  const router = useRouter()
   const [overage, setOverage] = useState<UsageResponse | null>(null)
   const [uploading, setUploading] = useState<{ done: number; total: number } | null>(null)
   const [dragOver, setDragOver] = useState(false)
@@ -118,7 +123,7 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
 
   const search = useQuery({
     queryKey: ['tutor-files', 'search', debouncedQuery],
-    queryFn: () => filesFetch<{ folders: LibraryFolder[]; files: LibraryFile[] }>(`/api/tutor-files/search?q=${encodeURIComponent(debouncedQuery)}`),
+    queryFn: () => filesFetch<{ folders: LibraryFolder[]; files: SearchFile[] }>(`/api/tutor-files/search?q=${encodeURIComponent(debouncedQuery)}`),
     enabled: debouncedQuery.length > 0 && !admin,
   })
 
@@ -244,7 +249,7 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
 
   const folderActions = (f: LibraryFolder) => canManage
     ? {
-        onShare: () => setShareTarget({ itemType: 'folder', id: f.id, name: f.name, allowStudentUpload: f.allowStudentUpload }),
+        onShare: () => setShareTarget({ itemType: 'folder', id: f.id, name: f.name, allowStudentUpload: f.allowStudentUpload, submissionDeadline: f.submissionDeadline }),
         onCover: () => setCoverTarget({ id: f.id, name: f.name, cover: f.cover }),
         onRename: () => setNameDialog({ mode: 'rename', folder: f }),
         onDelete: () => setDeleteTarget({ itemType: 'folder', item: f }),
@@ -255,6 +260,11 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
       return {
         onShare: () => setShareTarget({ itemType: 'file', id: f.id, name: f.name }),
         onDelete: () => setDeleteTarget({ itemType: 'file', item: f }),
+        onReview: f.uploadedByRole === 'STUDENT' ? () => setReviewFile(f) : undefined,
+        // PDF → test (idea 3): the same importer as on /create-test, pre-filled with this file.
+        onMakeTest: importKindOf(f.name) !== 'unknown'
+          ? () => router.push(`/create-test?fromLibraryFile=${f.id}&name=${encodeURIComponent(f.name)}`)
+          : undefined,
       }
     }
     // Student: may take back only their own submission, inside their own subfolder.
@@ -262,7 +272,7 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
     return {}
   }
 
-  const sections = (folders: LibraryFolder[], files: LibraryFile[], opts: { hints?: boolean; newFolder?: boolean } = {}) => (
+  const sections = (folders: LibraryFolder[], files: (LibraryFile & { contentMatch?: string | null })[], opts: { hints?: boolean; newFolder?: boolean } = {}) => (
     <>
       {(folders.length > 0 || opts.newFolder) && (
         <section className={styles.section}>
@@ -280,7 +290,7 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
           <h2 className={styles.sectionTitle}>{t('filesSection')} <span className={styles.count}>{files.length}</span></h2>
           <div className={styles.fileGrid}>
             {files.map(f => (
-              <FileCard key={f.id} file={f} onPreview={() => openPreview(f)} onDownload={() => downloadFile(f)} hint={opts.hints ? pathOf(f.folderId, treeById) || t('rootCrumb') : undefined} {...fileActions(f)} />
+              <FileCard key={f.id} file={f} onPreview={() => openPreview(f)} onDownload={() => downloadFile(f)} hint={opts.hints ? pathOf(f.folderId, treeById) || t('rootCrumb') : undefined} contentMatch={f.contentMatch} query={debouncedQuery} {...fileActions(f)} />
             ))}
           </div>
         </section>
@@ -458,6 +468,17 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
             {!searching && !isTeacher && canUpload && (
               <div className={styles.banner}><FilesDropboxIcon size={16} /> {t('dropboxHint')}</div>
             )}
+            {!searching && data?.folder?.deadline && (() => {
+              const overdue = new Date(data.folder.deadline) < new Date()
+              const date = formatDeadline(data.folder.deadline, locale)
+              return (
+                <div className={`${styles.banner} ${overdue ? styles.bannerOverdue : styles.bannerDeadline}`}>
+                  <FilesDeadlineIcon size={16} />
+                  {overdue ? t('deadlinePassed', { date }) : t('deadlineUntil', { date })}
+                  {!isTeacher && overdue && <span className={styles.bannerNote}>{t('deadlineLateNote')}</span>}
+                </div>
+              )
+            })()}
             {dragOver && <div className={styles.dropHint}><FilesUploadIcon size={18} /> {t('dropHint')}</div>}
 
             {body}
@@ -496,6 +517,7 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
       {shareTarget && <ShareAccessModal target={shareTarget} onClose={() => setShareTarget(null)} onChanged={refresh} />}
       {coverTarget && <CoverPickerModal folder={coverTarget} onClose={() => setCoverTarget(null)} onSaved={() => { setCoverTarget(null); refresh() }} />}
       {previewFile && <FilePreviewModal file={previewFile} contentUrl={admin ? `/api/admin/tutor-files/files/${previewFile.id}/content` : undefined} onClose={() => setPreviewFile(null)} onDownload={() => downloadFile(previewFile)} />}
+      {reviewFile && <ReviewModal file={reviewFile} onClose={() => setReviewFile(null)} onSaved={() => { setReviewFile(null); refresh() }} />}
       {overage && <StorageOverageWarningModal usage={overage} onClose={() => setOverage(null)} />}
     </div>
   )

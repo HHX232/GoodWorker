@@ -169,3 +169,14 @@ export function triggerDownload(file: { url: string; name: string }): void {
   a.rel = 'noopener noreferrer'
   a.click()
 }
+
+/** Deadline / access-window dates: "12 окт., 18:00"; `short` drops the time. */
+export function formatDeadline(iso: string, locale: string, short = false): string {
+  try {
+    return new Date(iso).toLocaleString(locale, short
+      ? { day: 'numeric', month: 'short' }
+      : { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+  } catch {
+    return iso
+  }
+}

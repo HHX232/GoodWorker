@@ -86,9 +86,16 @@ export async function assertNotUnderRestrictedFolder(parent: { id: string; ances
  * `false` when the subfolder can't be created (depth cap / restricted parent)
  * — the caller's main grant stays valid, only the subfolder is skipped.
  */
+export interface GrantWindow {
+  availableFrom?: Date | null
+  availableUntil?: Date | null
+}
+
 export async function ensureStudentSubfolder(
   folder: { id: string; teacherId: string; ancestorIds: string[]; restrictedToStudentId: string | null },
   studentId: string,
+  // The personal subfolder opens and closes together with the grant that led to it.
+  window: GrantWindow = {},
 ): Promise<boolean> {
   const existing = await prisma.tutorFolder.findFirst({
     where: { parentId: folder.id, restrictedToStudentId: studentId },
@@ -99,8 +106,8 @@ export async function ensureStudentSubfolder(
     // submissions) survived, only its grant was removed — restore it.
     await prisma.tutorFolderGrant.upsert({
       where: { folderId_studentId: { folderId: existing.id, studentId } },
-      create: { folderId: existing.id, studentId },
-      update: {},
+      create: { folderId: existing.id, studentId, ...window },
+      update: window,
     })
     return true
   }
@@ -127,7 +134,7 @@ export async function ensureStudentSubfolder(
         restrictedToStudentId: studentId,
       },
     })
-    await tx.tutorFolderGrant.create({ data: { folderId: child.id, studentId } })
+    await tx.tutorFolderGrant.create({ data: { folderId: child.id, studentId, ...window } })
   })
   return true
 }
@@ -140,12 +147,12 @@ type DropboxFolder = { id: string; teacherId: string; ancestorIds: string[]; res
  * personal subfolder too — otherwise they'd see a submissions folder they
  * can't submit into.
  */
-export async function ensureSubfoldersForGrant(folder: DropboxFolder & { allowStudentUpload: boolean }, studentId: string): Promise<void> {
+export async function ensureSubfoldersForGrant(folder: DropboxFolder & { allowStudentUpload: boolean }, studentId: string, window: GrantWindow = {}): Promise<void> {
   const dropboxes = await prisma.tutorFolder.findMany({
     where: { ancestorIds: { has: folder.id }, allowStudentUpload: true, restrictedToStudentId: null },
   })
   if (folder.allowStudentUpload) dropboxes.unshift(folder as typeof dropboxes[number])
-  for (const dropbox of dropboxes) await ensureStudentSubfolder(dropbox, studentId)
+  for (const dropbox of dropboxes) await ensureStudentSubfolder(dropbox, studentId, window)
 }
 
 /** Every student who can reach `folder` through a grant on it or on one of its ancestors. */

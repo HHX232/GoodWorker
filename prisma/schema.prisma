@@ -314,6 +314,8 @@ model TutorFolder {
   allowStudentUpload    Boolean            @default(false)
   // "preset:<id>" (src/shared/lib/tutorFiles/covers.ts) or a public S3 URL; null = colour derived from the id
   cover                 String?
+  // Submissions folder (allowStudentUpload): uploads after this are marked late.
+  submissionDeadline    DateTime?
   restrictedToStudentId String?
   ancestorIds           String[]           @default([])
   createdAt             DateTime           @default(now())
@@ -325,6 +327,7 @@ model TutorFolder {
   files                 TutorFile[]
   grants                TutorFolderGrant[]
   opens                 TutorFolderOpen[]
+  links                 TutorFolderLink[]
 
   @@index([teacherId])
   @@index([parentId])
@@ -342,6 +345,9 @@ model TutorFile {
   uploadedByRole Role
   uploadedById   String
   createdAt      DateTime          @default(now())
+  // Plain text pulled out of PDF/DOCX/XLSX/TXT at upload, for search inside files.
+  contentText    String?
+  review         TutorFileReview?
   teacher        Teacher           @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   folder         TutorFolder?      @relation(fields: [folderId], references: [id], onDelete: Cascade)
   grants         TutorFileGrant[]
@@ -355,6 +361,9 @@ model TutorFolderGrant {
   folderId  String
   studentId String
   grantedAt DateTime    @default(now())
+  // Scheduled access: hidden before availableFrom, gone after availableUntil (null = no bound).
+  availableFrom  DateTime?
+  availableUntil DateTime?
   folder    TutorFolder @relation(fields: [folderId], references: [id], onDelete: Cascade)
   student   Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
@@ -368,6 +377,29 @@ model StorageSettings {
   quotaGb    Int      @default(15)
   maxFileMb  Int      @default(50)
   updatedAt  DateTime @updatedAt
+}
+
+// The tutor's check of a student submission (a file uploaded into a personal
+// subfolder): verdict, grade, comment, and pen marks drawn over the pages.
+model TutorFileReview {
+  fileId      String    @id
+  status      String    // ACCEPTED | REVISION
+  grade       String?
+  comment     String?
+  // [{ page: number, url: string }] — transparent PNG overlays, one per marked page (images: page 1)
+  annotations Json      @default("[]")
+  reviewedAt  DateTime  @updatedAt
+  file        TutorFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+}
+
+// A folder attached "by link" to homework / posts / tests / courses: whoever
+// is logged in and holds the token sees the folder's subtree read-only
+// (other students' personal subfolders excluded). One link per folder.
+model TutorFolderLink {
+  token     String      @id
+  folderId  String      @unique
+  createdAt DateTime    @default(now())
+  folder    TutorFolder @relation(fields: [folderId], references: [id], onDelete: Cascade)
 }
 
 // When a student first opened a shared folder / file — shown to the tutor on
@@ -396,6 +428,9 @@ model TutorFileGrant {
   fileId    String
   studentId String
   grantedAt DateTime  @default(now())
+  // Scheduled access: hidden before availableFrom, gone after availableUntil (null = no bound).
+  availableFrom  DateTime?
+  availableUntil DateTime?
   file      TutorFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
   student   Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
 

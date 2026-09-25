@@ -7,7 +7,7 @@ import { useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
 import { FilesModal } from '../FilesModal/FilesModal'
-import { FilesCheckIcon, FilesChevronIcon, FilesFolderIcon, FilesSearchIcon } from '../icons'
+import { FilesCheckIcon, FilesChevronIcon, FilesFolderIcon, FilesLinkIcon, FilesSearchIcon } from '../icons'
 import { fileKind, filesFetch, formatBytes, KIND_COLOR, KIND_ICON } from '../lib'
 import ui from '../ui.module.scss'
 import styles from './LibraryPicker.module.scss'
@@ -22,6 +22,14 @@ export interface PickedFile {
 }
 
 export type PickAccept = 'any' | 'media' | 'image' | 'audio'
+
+/** A whole folder attached by link (see SharedFolderBlock). */
+export interface PickedFolder {
+  token: string
+  folderId: string
+  name: string
+  itemCount: number
+}
 
 function accepts(accept: PickAccept, f: LibraryFile): boolean {
   if (accept === 'any') return true
@@ -43,10 +51,12 @@ interface LibraryPickerModalProps {
   /** Max files this pick may return (the editor's remaining slots). */
   max: number
   onPick: (files: PickedFile[]) => void
+  /** When set, folders can be attached whole ("by link"); the viewer unfolds them in place. */
+  onPickFolder?: (folder: PickedFolder) => void
   onClose: () => void
 }
 
-export function LibraryPickerModal({ accept, multiple, max, onPick, onClose }: LibraryPickerModalProps) {
+export function LibraryPickerModal({ accept, multiple, max, onPick, onPickFolder, onClose }: LibraryPickerModalProps) {
   const t = useTranslations('files')
   const locale = useLocale()
   const [folderId, setFolderId] = useState<string | null>(null)
@@ -89,6 +99,19 @@ export function LibraryPickerModal({ accept, multiple, max, onPick, onClose }: L
     setDebounced('')
   }
 
+  const [linking, setLinking] = useState<string | null>(null)
+  const attachFolder = async (folder: { id: string; name: string }) => {
+    if (!onPickFolder) return
+    setLinking(folder.id)
+    try {
+      const link = await filesFetch<{ token: string; name: string; itemCount: number }>(`/api/tutor-files/folders/${folder.id}/link`, { method: 'POST' })
+      onPickFolder({ token: link.token, folderId: folder.id, name: link.name, itemCount: link.itemCount })
+      onClose()
+    } catch {
+      setLinking(null)
+    }
+  }
+
   const confirm = () => {
     onPick([...selected.values()].map(f => ({ id: f.id, name: f.name, size: f.sizeBytes, mimeType: f.mimeType, url: f.url })))
     onClose()
@@ -127,6 +150,12 @@ export function LibraryPickerModal({ accept, multiple, max, onPick, onClose }: L
         </nav>
       )}
 
+      {onPickFolder && !searching && library.data?.folder && !library.data.folder.restrictedToStudentId && (
+        <button type="button" className={styles.attachCurrent} onClick={() => attachFolder(library.data!.folder!)} disabled={linking !== null}>
+          <FilesLinkIcon size={15} /> {t('pickThisFolder', { name: library.data.folder.name })}
+        </button>
+      )}
+
       <ul className={styles.list}>
         {folders.map(f => {
           const cover = resolveCover(f.id, f.cover)
@@ -140,6 +169,11 @@ export function LibraryPickerModal({ accept, multiple, max, onPick, onClose }: L
                 <span className={styles.rowMeta}>{t('itemsCount', { count: f.itemCount })}</span>
                 <FilesChevronIcon size={14} className={styles.rowChevron} />
               </button>
+              {onPickFolder && !f.restrictedToStudentId && (
+                <button type="button" className={styles.attachFolder} onClick={() => attachFolder(f)} disabled={linking !== null}>
+                  <FilesLinkIcon size={13} /> {t('pickFolder')}
+                </button>
+              )}
             </li>
           )
         })}

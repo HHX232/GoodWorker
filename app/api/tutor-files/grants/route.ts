@@ -31,6 +31,20 @@ export async function POST(req: NextRequest) {
     if (!itemType) return NextResponse.json({ error: 'itemType must be "folder" or "file"' }, { status: 400 })
     if (!itemId) return NextResponse.json({ error: 'itemId required' }, { status: 400 })
     if (studentIds.length === 0) return NextResponse.json({ error: 'studentIds required' }, { status: 400 })
+    // Optional access window (idea 5): open from / close after. null clears a bound.
+    const parseDate = (v: unknown): Date | null | undefined => {
+      if (v === null) return null
+      if (typeof v !== 'string') return undefined
+      const d = new Date(v)
+      return Number.isNaN(d.getTime()) ? undefined : d
+    }
+    const availableFrom = parseDate(body?.availableFrom)
+    const availableUntil = parseDate(body?.availableUntil)
+    if (availableFrom && availableUntil && availableUntil <= availableFrom) return NextResponse.json({ error: 'availableUntil must be after availableFrom' }, { status: 400 })
+    const window = {
+      ...(availableFrom !== undefined ? { availableFrom } : {}),
+      ...(availableUntil !== undefined ? { availableUntil } : {}),
+    }
     if (!(await isTeacherVipActive(user.id))) return vipRequiredResponse()
 
     const folderGuard = itemType === 'folder' ? await requireOwnedFolder(itemId, user.id) : null
@@ -63,15 +77,19 @@ export async function POST(req: NextRequest) {
       if (folder) {
         const existed = await prisma.tutorFolderGrant.findUnique({ where: { folderId_studentId: { folderId: folder.id, studentId } }, select: { studentId: true } })
         if (!existed) {
-          await prisma.tutorFolderGrant.create({ data: { folderId: folder.id, studentId } })
+          await prisma.tutorFolderGrant.create({ data: { folderId: folder.id, studentId, ...window } })
           newlyGranted.push(studentId)
+        } else if (Object.keys(window).length) {
+          await prisma.tutorFolderGrant.update({ where: { folderId_studentId: { folderId: folder.id, studentId } }, data: window })
         }
-        await ensureSubfoldersForGrant(folder, studentId)
+        await ensureSubfoldersForGrant(folder, studentId, window)
       } else if (file) {
         const existed = await prisma.tutorFileGrant.findUnique({ where: { fileId_studentId: { fileId: file.id, studentId } }, select: { studentId: true } })
         if (!existed) {
-          await prisma.tutorFileGrant.create({ data: { fileId: file.id, studentId } })
+          await prisma.tutorFileGrant.create({ data: { fileId: file.id, studentId, ...window } })
           newlyGranted.push(studentId)
+        } else if (Object.keys(window).length) {
+          await prisma.tutorFileGrant.update({ where: { fileId_studentId: { fileId: file.id, studentId } }, data: window })
         }
       }
     }
@@ -82,7 +100,8 @@ export async function POST(req: NextRequest) {
           teacherId: user.id,
           studentId,
           eventType: 'FILE_ACCESS_GRANTED',
-          payload: { itemType, itemName, teacherName },
+          // availableFrom in the future → the card says when it opens.
+          payload: { itemType, itemName, teacherName, availableFrom: availableFrom && availableFrom > new Date() ? availableFrom.toISOString() : null },
         }).catch(e => console.error('[POST /api/tutor-files/grants] postEventCard failed', e))
       )
     )
@@ -112,12 +131,12 @@ export async function GET(req: NextRequest) {
       const guard = await requireOwnedFolder(itemId, user.id)
       if (guard.response) return guard.response
       const grants = await prisma.tutorFolderGrant.findMany({ where: { folderId: itemId }, include: { student: studentSelect }, orderBy: { grantedAt: 'asc' } })
-      return NextResponse.json({ students: grants.map(g => ({ ...g.student, grantedAt: g.grantedAt })) })
+      return NextResponse.json({ students: grants.map(g => ({ ...g.student, grantedAt: g.grantedAt, availableFrom: g.availableFrom, availableUntil: g.availableUntil })) })
     }
     const guard = await requireOwnedFile(itemId, user.id)
     if (guard.response) return guard.response
     const grants = await prisma.tutorFileGrant.findMany({ where: { fileId: itemId }, include: { student: studentSelect }, orderBy: { grantedAt: 'asc' } })
-    return NextResponse.json({ students: grants.map(g => ({ ...g.student, grantedAt: g.grantedAt })) })
+    return NextResponse.json({ students: grants.map(g => ({ ...g.student, grantedAt: g.grantedAt, availableFrom: g.availableFrom, availableUntil: g.availableUntil })) })
   } catch (e) {
     console.error('[GET /api/tutor-files/grants]', e)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })

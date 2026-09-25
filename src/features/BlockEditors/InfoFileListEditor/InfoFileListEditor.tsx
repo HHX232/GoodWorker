@@ -21,6 +21,7 @@ import Image from 'next/image'
 import {useRef, useState} from 'react'
 import {toast} from 'sonner'
 import { LibraryPickButton } from '@/widgets/Files/LibraryPicker/LibraryPicker'
+import { SharedFolderBlock } from '@/widgets/Files/SharedFolder/SharedFolderBlock'
 import styles from './InfoFileListEditor.module.scss'
 
 interface Props {
@@ -214,9 +215,10 @@ export const InfoFileListEditor = ({payload, onChange, viewOnly = false}: Props)
     return (
       <div className={styles.block}>
         <div className={styles.fileList}>
-          {files.map((file, i) => (
-            <FileRowReadonly key={`${file.name}-${i}`} file={file} t={t} />
-          ))}
+          {files.map((file, i) => file.folder
+            ? <SharedFolderBlock key={`${file.folder.token}-${i}`} token={file.folder.token} name={file.name} />
+            : <FileRowReadonly key={`${file.name}-${i}`} file={file} t={t} />
+          )}
         </div>
       </div>
     )
@@ -228,9 +230,10 @@ export const InfoFileListEditor = ({payload, onChange, viewOnly = false}: Props)
 
       {files.length > 0 && (
         <div className={styles.fileList}>
-          {files.map((file, i) => (
-            <FileRow key={`${file.name}-${i}`} file={file} onRemove={() => removeFile(i)} t={t} />
-          ))}
+          {files.map((file, i) => file.folder
+            ? <SharedFolderBlock key={`${file.folder.token}-${i}`} token={file.folder.token} name={file.name} onRemove={() => removeFile(i)} />
+            : <FileRow key={`${file.name}-${i}`} file={file} onRemove={() => removeFile(i)} t={t} />
+          )}
         </div>
       )}
 
@@ -265,6 +268,7 @@ export const InfoFileListEditor = ({payload, onChange, viewOnly = false}: Props)
           max={MAX_FILES - files.length}
           disabled={uploading}
           onPick={(picked) => update({files: [...files, ...picked.map(({name, size, mimeType, url}) => ({name, size, mimeType, url}))]})}
+          onPickFolder={({token, folderId, name, itemCount}) => update({files: [...files, {name, size: 0, mimeType: 'inode/directory', url: '', folder: {token, folderId, itemCount}}]})}
         />
       )}
 

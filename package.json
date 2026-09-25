@@ -68,6 +68,7 @@
     "next": "16.1.6",
     "next-auth": "^5.0.0-beta.31",
     "next-intl": "^4.8.3",
+    "pdfjs-dist": "^4.10.38",
     "react": "^19.2.3",
     "react-colorful": "^5.6.1",
     "react-dom": "^19.2.3",

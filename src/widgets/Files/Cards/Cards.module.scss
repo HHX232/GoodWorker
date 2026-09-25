@@ -50,7 +50,12 @@
   font-weight: 600;
   white-space: nowrap;
   backdrop-filter: blur(6px);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
 }
+
+.badgeOverdue { background: rgba(253, 236, 236, 0.9); color: #B42318; }
 
 .folderName {
   margin-top: 12px;
@@ -91,6 +96,7 @@
 
 :global([data-dark]) .folderFoot { border-color: rgba(255, 255, 255, 0.24); }
 :global([data-dark]) .badge { background: rgba(255, 255, 255, 0.2); color: #fff; }
+:global([data-dark]) .badgeOverdue { background: rgba(180, 35, 24, 0.85); }
 
 .newFolder {
   flex: 1;
@@ -221,6 +227,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-wrap: wrap;
+  row-gap: 4px;
   min-height: 34px;
   border-top: 1px solid #EEEEF4;
   margin-top: 10px;
@@ -237,6 +245,24 @@
   font-weight: 600;
   white-space: nowrap;
 }
+
+.chipLate { background: #FDECEC; color: #B42318; }
+.chipRevision { background: #FEF3E2; color: #9A5B0B; }
+
+// Search hit inside the file's text (idea 8): the passage with the query marked.
+.contentMatch {
+  margin-top: 8px;
+  padding: 7px 9px;
+  border-radius: 10px;
+  background: #F5F3FF;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: #3d3f4d;
+
+  mark { background: #FFE58A; color: inherit; border-radius: 3px; padding: 0 2px; box-shadow: 0 0 0 1px #F5C84C inset; }
+}
+.contentMatchLabel { display: flex; align-items: center; gap: 4px; margin-bottom: 3px; font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #534AB7; }
+.contentMatchText { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
 .extChip {
   padding: 2px 6px;
@@ -262,4 +288,8 @@
   .fileHint { color: #6b7080; }
   .fileFoot { border-color: rgba(255, 255, 255, 0.08); }
   .chip { background: rgba(52, 211, 153, 0.12); color: #6ee7b7; }
+  .chipLate { background: rgba(248, 113, 113, 0.14); color: #fca5a5; }
+  .chipRevision { background: rgba(251, 191, 36, 0.14); color: #fcd34d; }
+  .contentMatch { background: rgba(124, 116, 230, 0.12); color: #c9ccd8; mark { background: rgba(250, 204, 21, 0.35); box-shadow: none; } }
+  .contentMatchLabel { color: #a5a0f0; }
 }

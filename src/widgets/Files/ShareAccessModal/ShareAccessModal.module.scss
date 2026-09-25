@@ -159,6 +159,42 @@
 
 .note { margin: 12px 0 0; font-size: 12px; color: #868897; }
 
+.inlineField { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 0 0 12px; }
+.inlineLabel { font-size: 13px; font-weight: 600; color: #141416; min-width: 130px; }
+
+.dateInput {
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid #DADCEB;
+  border-radius: 9px;
+  background: #fff;
+  color: #141416;
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+
+  &:focus { border-color: #534AB7; }
+}
+
+.clear { border: none; background: none; color: #868897; font: inherit; font-size: 12px; cursor: pointer; text-decoration: underline; }
+
+.schedule { margin-top: 12px; padding-top: 10px; border-top: 1px solid #F0F0F5; }
+
+.scheduleToggle {
+  border: none;
+  background: none;
+  padding: 0;
+  color: #534AB7;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover { text-decoration: underline; }
+}
+
+.scheduleFields { margin-top: 10px; .note { margin-top: 0; } }
+
 // ─── Dark theme ───────────────────────────────────────────────────────────────
 :global(html.theme-dark), :global(html.pomodoro-dark) {
   .switchRow { border-color: rgba(255, 255, 255, 0.08); }
@@ -172,5 +208,9 @@
   .avatar { background: rgba(129, 140, 248, 0.18); color: #c7cbff; }
   .rowName { color: #e8eaf0; }
   .hasLabel, .note, .empty { color: #9ea4b5; }
+  .inlineLabel { color: #e8eaf0; }
+  .dateInput { background: transparent; border-color: rgba(255, 255, 255, 0.12); color: #e8eaf0; color-scheme: dark; }
+  .schedule { border-color: rgba(255, 255, 255, 0.08); }
+  .scheduleToggle { color: #a5b4fc; }
   .revoke { color: #F87171; &:hover:not(:disabled) { background: rgba(239, 68, 68, 0.1); } }
 }

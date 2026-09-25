@@ -2,7 +2,7 @@ import { prisma } from '@/shared/prisma/prisma'
 import type { TutorFolder } from '@prisma/client'
 import type { LibraryResponse } from '@/shared/types/TutorFiles/tutorFiles.types'
 import { isTeacherVipActive } from './access'
-import { grantStudentSelect, loadOpens, toFile, toFolder, toTreeNode } from './readModel'
+import { grantStudentSelect, loadOpens, submissionDeadlineFor, toFile, toFolder, toTreeNode } from './readModel'
 import { getStorageLimits } from './storage'
 
 export type LibraryError = { status: 403 | 404; error: string }
@@ -34,20 +34,21 @@ export async function buildTeacherLibrary(teacherId: string, folderId: string | 
     }),
     prisma.tutorFile.findMany({
       where: { teacherId, folderId },
-      include: { grants: { include: grantStudentSelect, orderBy: { grantedAt: 'asc' } } },
+      include: { grants: { include: grantStudentSelect, orderBy: { grantedAt: 'asc' } }, review: true },
       orderBy: { createdAt: 'desc' },
     }),
   ])
 
   const opened = await loadOpens(folders.map(f => f.id), files.map(f => f.id))
+  const deadline = submissionDeadlineFor(current ?? null, byId)
   return {
     role: 'TEACHER',
-    folder: current ? { id: current.id, name: current.name, allowStudentUpload: current.allowStudentUpload, restrictedToStudentId: current.restrictedToStudentId, depth: current.ancestorIds.length + 1 } : null,
+    folder: current ? { id: current.id, name: current.name, allowStudentUpload: current.allowStudentUpload, restrictedToStudentId: current.restrictedToStudentId, depth: current.ancestorIds.length + 1, deadline: deadline?.toISOString() ?? null } : null,
     breadcrumbs: (current?.ancestorIds ?? []).map(id => byId.get(id)).filter((f): f is TutorFolder => !!f).map(f => ({ id: f.id, name: f.name })),
     groups: [{
       teacher: null,
       folders: folders.map(f => toFolder(f, f._count.children + f._count.files, f.grants, opened)),
-      files: files.map(f => toFile(f, f.grants, opened)),
+      files: files.map(f => toFile(f, f.grants, opened, deadline)),
     }],
     tree: allFolders.map(f => toTreeNode(f, true)),
     teachers: [],

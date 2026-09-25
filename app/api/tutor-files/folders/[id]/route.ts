@@ -8,7 +8,7 @@ interface Params {
   params: Promise<{ id: string }>
 }
 
-// PATCH /api/tutor-files/folders/[id] {name?, allowStudentUpload?, cover?} — rename,
+// PATCH /api/tutor-files/folders/[id] {name?, allowStudentUpload?, cover?, submissionDeadline?} — rename,
 // set/clear the cover (`preset:<id>` or our own public S3 URL, null = default) and/or
 // toggle the G03 "ученики могут сдавать сюда" flag; parent/ancestorIds are
 // untouched (moving a folder between parents is out of scope, interfaces.md).
@@ -27,7 +27,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     if (guard.response) return guard.response
 
     const body = await req.json().catch(() => ({}))
-    const data: { name?: string; allowStudentUpload?: boolean; cover?: string | null } = {}
+    const data: { name?: string; allowStudentUpload?: boolean; cover?: string | null; submissionDeadline?: Date | null } = {}
     if (body?.name !== undefined) {
       const name = typeof body.name === 'string' ? body.name.trim() : ''
       if (!name) return NextResponse.json({ error: 'name required' }, { status: 400 })
@@ -38,6 +38,15 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         return NextResponse.json({ error: 'RESTRICTED_PARENT' }, { status: 400 })
       }
       data.allowStudentUpload = body.allowStudentUpload
+    }
+    // Idea 2: a submissions folder's deadline (uploads after it are marked late).
+    if (body?.submissionDeadline !== undefined) {
+      if (body.submissionDeadline === null) data.submissionDeadline = null
+      else {
+        const d = new Date(String(body.submissionDeadline))
+        if (Number.isNaN(d.getTime())) return NextResponse.json({ error: 'submissionDeadline must be an ISO date or null' }, { status: 400 })
+        data.submissionDeadline = d
+      }
     }
     if (body?.cover !== undefined) {
       if (body.cover !== null && (typeof body.cover !== 'string' || !isAllowedCover(body.cover, process.env.NEXT_PUBLIC_S3_PUBLIC_URL))) {

@@ -1,9 +1,10 @@
 'use client'
 
 import type { LibraryFolder } from '@/shared/types/TutorFiles/tutorFiles.types'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { CardMenu, type CardMenuItem } from '../CardMenu/CardMenu'
-import { FilesCoverIcon, FilesDeleteIcon, FilesPlusIcon, FilesRenameIcon, FilesShareIcon } from '../icons'
+import { FilesCoverIcon, FilesDeadlineIcon, FilesDeleteIcon, FilesPlusIcon, FilesRenameIcon, FilesShareIcon } from '../icons'
+import { formatDeadline } from '../lib'
 import { AvatarStack } from './AvatarStack'
 import styles from './Cards.module.scss'
 import { FolderShape } from './FolderShape'
@@ -22,6 +23,7 @@ export interface FolderCardProps {
 
 export function FolderCard({ folder, onOpen, onShare, onCover, onRename, onDelete, hint }: FolderCardProps) {
   const t = useTranslations('files')
+  const locale = useLocale()
   const personal = !!folder.restrictedToStudentId
   const items: CardMenuItem[] = []
   if (onShare && !personal) items.push({ label: t('share'), icon: FilesShareIcon, onSelect: onShare })
@@ -37,6 +39,11 @@ export function FolderCard({ folder, onOpen, onShare, onCover, onRename, onDelet
           <span className={styles.badges}>
             {personal && <span className={styles.badge}>{t('badgePersonal')}</span>}
             {!personal && folder.allowStudentUpload && <span className={styles.badge}>{t('badgeDropbox')}</span>}
+            {folder.submissionDeadline && (
+              <span className={`${styles.badge} ${new Date(folder.submissionDeadline) < new Date() ? styles.badgeOverdue : ''}`} title={t('deadlineUntil', { date: formatDeadline(folder.submissionDeadline, locale) })}>
+                <FilesDeadlineIcon size={10} /> {formatDeadline(folder.submissionDeadline, locale, true)}
+              </span>
+            )}
           </span>
           <CardMenu items={items} label={t('actions')} />
         </div>

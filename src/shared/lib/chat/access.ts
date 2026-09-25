@@ -108,6 +108,10 @@ export const CHAT_EVENT_TYPES = [
   'PAYMENT_REMINDER',
   'MEETING_SCHEDULED',
   'FILE_ACCESS_GRANTED',
+  // Tutor file library: a student handed in work (sent by the student), and
+  // the tutor checked it (sent by the tutor).
+  'FILE_SUBMITTED',
+  'FILE_REVIEWED',
 ] as const
 export type ChatEventType = (typeof CHAT_EVENT_TYPES)[number]
 
@@ -118,6 +122,8 @@ export interface PostEventCardInput {
   /** Same data already sent to the sibling `Notification` for this event — plus
    * whatever extra fields the card needs to render without another fetch. */
   payload: Record<string, unknown>
+  /** Who the card comes from — tutor by default; FILE_SUBMITTED comes from the student. */
+  senderRole?: 'TEACHER' | 'STUDENT'
 }
 
 /**
@@ -136,7 +142,7 @@ export interface PostEventCardInput {
  * Best-effort by design — callers wrap this in `.catch()`/`Promise.allSettled`
  * so a chat hiccup never fails the request that created the underlying event.
  */
-export async function postEventCard({ teacherId, studentId, eventType, payload }: PostEventCardInput): Promise<void> {
+export async function postEventCard({ teacherId, studentId, eventType, payload, senderRole = 'TEACHER' }: PostEventCardInput): Promise<void> {
   const conversation = await prisma.conversation.upsert({
     where: { teacherId_studentId: { teacherId, studentId } },
     create: { teacherId, studentId },
@@ -147,7 +153,7 @@ export async function postEventCard({ teacherId, studentId, eventType, payload }
     prisma.chatMessage.create({
       data: {
         conversationId: conversation.id,
-        senderRole: 'TEACHER',
+        senderRole,
         eventType,
         eventPayload: JSON.parse(JSON.stringify(payload)),
       },

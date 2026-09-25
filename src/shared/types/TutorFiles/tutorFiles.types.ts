@@ -8,6 +8,9 @@ export interface FilesPerson {
   avatarUrl: string | null
   /** Teacher view, grant avatars only: when this student first opened the item (null = not yet). */
   firstOpenedAt?: string | null
+  /** Teacher view, grant avatars only: scheduled access window (idea 5). */
+  availableFrom?: string | null
+  availableUntil?: string | null
 }
 
 export interface LibraryFolder {
@@ -19,6 +22,8 @@ export interface LibraryFolder {
   restrictedToStudentId: string | null
   /** `preset:<id>` / image URL / null — resolve with `resolveCover()` (shared/lib/tutorFiles/covers). */
   cover: string | null
+  /** Submissions folder deadline (idea 2), ISO. */
+  submissionDeadline: string | null
   /** Direct subfolders + files, as visible to the viewer. */
   itemCount: number
   /** Teacher view only: students holding a direct grant. */
@@ -38,6 +43,19 @@ export interface LibraryFile {
   createdAt: string
   /** Teacher view only: students holding a direct grant. */
   sharedWith: FilesPerson[]
+  /** A student submission uploaded after the submissions folder's deadline. */
+  late: boolean
+  /** The tutor's check of a student submission (idea 1). */
+  review: FileReview | null
+}
+
+export interface FileReview {
+  status: 'ACCEPTED' | 'REVISION'
+  grade: string | null
+  comment: string | null
+  /** Transparent PNG pen overlays, one per marked page (images: page 1). */
+  annotations: { page: number; url: string }[]
+  reviewedAt: string
 }
 
 export interface LibraryGroup {
@@ -60,7 +78,15 @@ export interface TreeNode {
 export interface LibraryResponse {
   role: 'TEACHER' | 'STUDENT'
   /** The open folder, `null` at the root. */
-  folder: { id: string; name: string; allowStudentUpload: boolean; restrictedToStudentId: string | null; depth: number } | null
+  folder: {
+    id: string
+    name: string
+    allowStudentUpload: boolean
+    restrictedToStudentId: string | null
+    depth: number
+    /** For a personal submissions subfolder: the parent's deadline (idea 2). */
+    deadline: string | null
+  } | null
   /** Root → open folder's parent, only levels the viewer can see. */
   breadcrumbs: { id: string; name: string }[]
   groups: LibraryGroup[]
@@ -89,3 +115,22 @@ export interface UsageResponse {
     usdToBynRate: number
   } | null
 }
+
+/** GET /api/tutor-files/links/[token] — a folder attached by link (read-only subtree). */
+export interface LinkedFolderResponse {
+  folder: { id: string; name: string; cover: string | null }
+  teacher: FilesPerson
+  /** Descendant folders (the root excluded); `parentId` chains back to `folder.id`. */
+  folders: { id: string; name: string; parentId: string | null }[]
+  files: LibraryFile[]
+}
+
+/** What editors store for an attached folder (inside their usual file-entry shape). */
+export interface AttachedFolderRef {
+  token: string
+  folderId: string
+  itemCount: number
+}
+
+/** GET /api/tutor-files/search file hit: plus the passage where the query was found inside the file (idea 8). */
+export type SearchFile = LibraryFile & { contentMatch: string | null }

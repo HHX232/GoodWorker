@@ -92,6 +92,9 @@
   .avatar { transition: none; }
 }
 
+// Access on a schedule: dashed ring.
+.scheduled .avatar { outline: 1.5px dashed #9A5B0B; outline-offset: 1px; }
+
 // ─── Dark theme ───────────────────────────────────────────────────────────────
 :global(html.theme-dark), :global(html.pomodoro-dark) {
   .avatar { border-color: #1a1c24; background: rgba(129, 140, 248, 0.2); color: #c7cbff; }

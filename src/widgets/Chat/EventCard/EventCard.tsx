@@ -18,6 +18,8 @@ const KIND_BY_EVENT_TYPE: Record<string, EventKind> = {
   PAYMENT_REMINDER: 'payment',
   MEETING_SCHEDULED: 'meeting',
   FILE_ACCESS_GRANTED: 'files',
+  FILE_SUBMITTED: 'files',
+  FILE_REVIEWED: 'files',
 }
 
 const ICON_BY_KIND: Record<EventKind, ComponentType<{ size?: number; strokeWidth?: number }>> = {
@@ -31,10 +33,10 @@ const ICON_BY_KIND: Record<EventKind, ComponentType<{ size?: number; strokeWidth
 
 export interface EventCardProps {
   message: ChatMessage
-  /** True when `message.senderRole` is the current viewer's own role — event
-   * cards are always teacher-sent, so this is `false` exactly when the
-   * viewer is the recipient, which is the only side the unread dot means
-   * anything to. */
+  /** True when `message.senderRole` is the current viewer's own role — so
+   * `false` exactly when the viewer is the recipient (most cards come from
+   * the tutor; FILE_SUBMITTED comes from the student), which is the only
+   * side the unread dot and the link mean anything to. */
   isMine: boolean
 }
 
@@ -86,6 +88,26 @@ interface FileAccessGrantedPayload {
   itemType?: 'folder' | 'file'
   itemName?: string
   teacherName?: string
+  /** Scheduled access (idea 5): set when the grant opens later. */
+  availableFrom?: string | null
+}
+
+interface FileSubmittedPayload {
+  fileName?: string
+  folderName?: string
+  folderId?: string | null
+  late?: boolean
+}
+
+interface FileReviewedPayload {
+  fileName?: string
+  status?: 'ACCEPTED' | 'REVISION'
+  grade?: string | null
+  folderId?: string | null
+}
+
+function filesHref(folderId: string | null | undefined): string {
+  return folderId ? `/files?folder=${encodeURIComponent(folderId)}` : '/files'
 }
 
 function formatSentTime(iso: string, locale: string): string {
@@ -218,6 +240,8 @@ export function EventCard({ message, isMine }: EventCardProps) {
     title = t('eventCard.fileAccessTitle')
     const params = { name: p.itemName ?? '', teacher: p.teacherName ?? '' }
     description = p.itemType === 'file' ? t('eventCard.fileAccessFile', params) : t('eventCard.fileAccessFolder', params)
+    const opensAt = formatDueDate(p.availableFrom, locale)
+    if (opensAt) chip = t('eventCard.fileAccessOpensAt', { date: opensAt })
     // Only the student has a Files tab showing this item; the sending
     // tutor's own copy of the card stays link-less.
     if (!isMine) {
@@ -227,6 +251,19 @@ export function EventCard({ message, isMine }: EventCardProps) {
         </Link>
       )
     }
+  } else if (message.eventType === 'FILE_SUBMITTED') {
+    // Sent by the student (idea 2) — the tutor is the recipient.
+    const p = payload as FileSubmittedPayload
+    title = t('eventCard.fileSubmittedTitle')
+    description = t('eventCard.fileSubmittedDescription', { name: p.fileName ?? '', folder: p.folderName ?? '' })
+    if (p.late) chip = t('eventCard.fileSubmittedLate')
+    if (!isMine) link = <Link href={filesHref(p.folderId)} className={styles.link}>{t('eventCard.fileSubmittedLink')}</Link>
+  } else if (message.eventType === 'FILE_REVIEWED') {
+    const p = payload as FileReviewedPayload
+    title = p.status === 'ACCEPTED' ? t('eventCard.fileReviewedAccepted') : t('eventCard.fileReviewedRevision')
+    description = t('eventCard.fileReviewedDescription', { name: p.fileName ?? '' })
+    if (p.grade) chip = t('eventCard.fileReviewedGrade', { grade: p.grade })
+    if (!isMine) link = <Link href={filesHref(p.folderId)} className={styles.link}>{t('eventCard.fileReviewedLink')}</Link>
   } else {
     // Unknown/future eventType — same non-crashing fallback ticket 03 shipped
     // for every eventType, kept here so a value this card doesn't know about

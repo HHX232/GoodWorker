@@ -4,7 +4,7 @@ import type { TutorFolder } from '@prisma/client'
 import { canStudentSee, getFilesSessionUser, loadStudentVisibility } from '@/shared/lib/tutorFiles/access'
 import { buildTeacherLibrary } from '@/shared/lib/tutorFiles/teacherLibrary'
 import type { LibraryGroup, LibraryResponse } from '@/shared/types/TutorFiles/tutorFiles.types'
-import { studentItemCounter, toFile, toFolder, toTreeNode } from '@/shared/lib/tutorFiles/readModel'
+import { studentItemCounter, submissionDeadlineFor, toFile, toFolder, toTreeNode } from '@/shared/lib/tutorFiles/readModel'
 
 // GET /api/tutor-files/library?folderId=... — the browse read model behind
 // <FilesShell> for both roles (tickets 05/07). Teacher: their own library,
@@ -49,14 +49,17 @@ export async function GET(req: NextRequest) {
     // Entering a folder counts as opening it (the tutor's avatar hover).
     await prisma.tutorFolderOpen.createMany({ data: [{ folderId: current.id, studentId: user.id }], skipDuplicates: true })
 
+    // The parent submissions folder may be outside what the student sees directly — load it for its deadline.
+    const parent = current.restrictedToStudentId && current.parentId ? await prisma.tutorFolder.findUnique({ where: { id: current.parentId } }) : null
+    const deadline = submissionDeadlineFor(current, new Map(parent ? [[parent.id, parent]] : []))
     const body: LibraryResponse = {
       role: 'STUDENT',
-      folder: { id: current.id, name: current.name, allowStudentUpload: current.allowStudentUpload, restrictedToStudentId: current.restrictedToStudentId, depth: current.ancestorIds.length + 1 },
+      folder: { id: current.id, name: current.name, allowStudentUpload: current.allowStudentUpload, restrictedToStudentId: current.restrictedToStudentId, depth: current.ancestorIds.length + 1, deadline: deadline?.toISOString() ?? null },
       breadcrumbs: current.ancestorIds.map(id => visibleById.get(id)).filter((f): f is TutorFolder => !!f).map(f => ({ id: f.id, name: f.name })),
       groups: [{
         teacher: teacherById.get(current.teacherId) ?? null,
         folders: visibleFolders.filter(f => f.parentId === current.id).map(f => toFolder(f, countOf(f.id))),
-        files: visibleFiles.filter(f => f.folderId === current.id).map(f => toFile(f)),
+        files: visibleFiles.filter(f => f.folderId === current.id).map(f => toFile(f, [], undefined, deadline)),
       }],
       tree,
       teachers,

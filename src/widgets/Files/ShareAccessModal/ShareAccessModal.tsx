@@ -1,6 +1,7 @@
 'use client'
 
 import type { FilesPerson } from '@/shared/types/TutorFiles/tutorFiles.types'
+import { useLocale } from 'next-intl'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
@@ -16,6 +17,7 @@ export interface ShareTarget {
   id: string
   name: string
   allowStudentUpload?: boolean
+  submissionDeadline?: string | null
 }
 
 interface LinkedStudent {
@@ -51,6 +53,12 @@ export function ShareAccessModal({ target, onClose, onChanged }: ShareAccessModa
   const [query, setQuery] = useState('')
   const [busy, setBusy] = useState(false)
   const [allowUpload, setAllowUpload] = useState(!!target.allowStudentUpload)
+  const locale = useLocale()
+  // Idea 5: optional access window for this grant; idea 2: submissions deadline.
+  const [scheduleOpen, setScheduleOpen] = useState(false)
+  const [openFrom, setOpenFrom] = useState('')
+  const [closeAfter, setCloseAfter] = useState('')
+  const [deadline, setDeadline] = useState(toLocalInput(target.submissionDeadline ?? null))
 
   const grantsKey = ['tutor-files', 'grants', target.itemType, target.id]
   const { data: studentsData, isLoading: studentsLoading } = useQuery({
@@ -87,7 +95,13 @@ export function ShareAccessModal({ target, onClose, onChanged }: ShareAccessModa
     if (toGrant.length === 0) return
     setBusy(true)
     try {
-      await filesFetch('/api/tutor-files/grants', jsonInit('POST', { itemType: target.itemType, itemId: target.id, studentIds: toGrant }))
+      await filesFetch('/api/tutor-files/grants', jsonInit('POST', {
+        itemType: target.itemType,
+        itemId: target.id,
+        studentIds: toGrant,
+        ...(openFrom ? { availableFrom: new Date(openFrom).toISOString() } : {}),
+        ...(closeAfter ? { availableUntil: new Date(closeAfter).toISOString() } : {}),
+      }))
       setSelected(new Set())
       toast.success(t('shareDone'))
       await refresh()
@@ -108,6 +122,24 @@ export function ShareAccessModal({ target, onClose, onChanged }: ShareAccessModa
     } finally {
       setBusy(false)
     }
+  }
+
+  const saveDeadline = async (value: string) => {
+    setDeadline(value)
+    try {
+      await filesFetch(`/api/tutor-files/folders/${target.id}`, jsonInit('PATCH', { submissionDeadline: value ? new Date(value).toISOString() : null }))
+      onChanged()
+    } catch (e) {
+      fail(e)
+    }
+  }
+
+  const windowLabel = (p: FilesPerson) => {
+    const fmt = (iso: string) => new Date(iso).toLocaleString(locale, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+    const parts: string[] = []
+    if (p.availableFrom && new Date(p.availableFrom) > new Date()) parts.push(t('scheduleFromShort', { date: fmt(p.availableFrom) }))
+    if (p.availableUntil) parts.push(t('scheduleUntilShort', { date: fmt(p.availableUntil) }))
+    return parts.join(' · ')
   }
 
   const toggleAllowUpload = async () => {
@@ -147,6 +179,14 @@ export function ShareAccessModal({ target, onClose, onChanged }: ShareAccessModa
         </label>
       )}
 
+      {target.itemType === 'folder' && allowUpload && (
+        <label className={styles.inlineField}>
+          <span className={styles.inlineLabel}>{t('deadline')}</span>
+          <input type="datetime-local" className={styles.dateInput} value={deadline} onChange={e => saveDeadline(e.target.value)} />
+          {deadline && <button type="button" className={styles.clear} onClick={() => saveDeadline('')}>{t('clear')}</button>}
+        </label>
+      )}
+
       {students.length > 6 && (
         <div className={styles.search}>
           <FilesSearchIcon size={15} className={styles.searchIcon} />
@@ -167,7 +207,7 @@ export function ShareAccessModal({ target, onClose, onChanged }: ShareAccessModa
                 <span className={`${styles.check} ${checked ? styles.checkOn : ''}`} aria-hidden="true">{checked && <FilesCheckIcon size={13} strokeWidth={3} />}</span>
                 <Avatar person={s} />
                 <span className={styles.rowName}>{s.name}</span>
-                {has && <span className={styles.hasLabel}>{t('shareHas')}</span>}
+                {has && <span className={styles.hasLabel}>{windowLabel(grantsData!.students.find(g => g.id === s.id)!) || t('shareHas')}</span>}
               </label>
               {has && (
                 <button type="button" className={styles.revoke} onClick={() => revoke(s.id)} disabled={busy}>{t('shareRevoke')}</button>
@@ -177,7 +217,34 @@ export function ShareAccessModal({ target, onClose, onChanged }: ShareAccessModa
         })}
       </ul>
 
+      <div className={styles.schedule}>
+        <button type="button" className={styles.scheduleToggle} onClick={() => setScheduleOpen(v => !v)} aria-expanded={scheduleOpen}>
+          {t('schedule')}{(openFrom || closeAfter) && !scheduleOpen ? ' ·' : ''}
+        </button>
+        {scheduleOpen && (
+          <div className={styles.scheduleFields}>
+            <label className={styles.inlineField}>
+              <span className={styles.inlineLabel}>{t('scheduleFrom')}</span>
+              <input type="datetime-local" className={styles.dateInput} value={openFrom} onChange={e => setOpenFrom(e.target.value)} />
+            </label>
+            <label className={styles.inlineField}>
+              <span className={styles.inlineLabel}>{t('scheduleUntil')}</span>
+              <input type="datetime-local" className={styles.dateInput} value={closeAfter} onChange={e => setCloseAfter(e.target.value)} />
+            </label>
+            <p className={styles.note}>{t('scheduleHint')}</p>
+          </div>
+        )}
+      </div>
+
       {target.itemType === 'folder' && students.length > 0 && <p className={styles.note}>{t('shareInherited')}</p>}
     </FilesModal>
   )
+}
+
+/** ISO → value for <input type="datetime-local"> in the viewer's local time. */
+function toLocalInput(iso: string | null): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }

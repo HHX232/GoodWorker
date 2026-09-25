@@ -13,11 +13,12 @@ export async function GET() {
   const denied = await requireAdmin()
   if (denied) return denied
   try {
-    const [limits, pricing, usage, folderCounts] = await Promise.all([
+    const [limits, pricing, usage, folderCounts, unindexed] = await Promise.all([
       getStorageLimits(),
       getStoragePricing(),
       prisma.tutorFile.groupBy({ by: ['teacherId'], _sum: { sizeBytes: true }, _count: { _all: true } }),
       prisma.tutorFolder.groupBy({ by: ['teacherId'], _count: { _all: true } }),
+      prisma.tutorFile.count({ where: { contentText: null } }),
     ])
     const ids = [...new Set([...usage.map(u => u.teacherId), ...folderCounts.map(f => f.teacherId)])]
     const teachers = await prisma.teacher.findMany({
@@ -50,6 +51,7 @@ export async function GET() {
         folders: tutors.reduce((n, t) => n + t.folders, 0),
         tutors: tutors.length,
         overQuota: tutors.filter(t => t.usedBytes > limits.quotaBytes).length,
+        unindexed,
       },
       tutors,
     })

@@ -1,11 +1,13 @@
 import { PutObjectCommand } from '@aws-sdk/client-s3'
 import { randomUUID } from 'crypto'
-import { NextRequest, NextResponse } from 'next/server'
+import { after, NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/shared/prisma/prisma'
 import { publicUrlForKey, s3, S3_BUCKET } from '@/shared/s3/s3Client'
-import { canStudentSee, getFilesSessionUser, isTeacherVipActive, vipRequiredResponse } from '@/shared/lib/tutorFiles/access'
+import { activeGrantWhere, canStudentSee, getFilesSessionUser, isTeacherVipActive, vipRequiredResponse } from '@/shared/lib/tutorFiles/access'
 import { getStorageLimits, getUsedBytes } from '@/shared/lib/tutorFiles/storage'
 import { STORAGE_BILLING_ENABLED } from '@/shared/lib/tutorFiles/billing'
+import { postEventCard } from '@/shared/lib/chat/access'
+import { extractText, isIndexable } from '@/shared/lib/tutorFiles/extractText'
 
 export const runtime = 'nodejs'
 
@@ -54,7 +56,7 @@ export async function POST(req: NextRequest) {
       // only while they still hold access to it.
       if (!folder || folder.restrictedToStudentId !== user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
       const grants = await prisma.tutorFolderGrant.findMany({
-        where: { studentId: user.id, folderId: { in: [folder.id, ...folder.ancestorIds] } },
+        where: { studentId: user.id, folderId: { in: [folder.id, ...folder.ancestorIds] }, ...activeGrantWhere() },
         select: { folderId: true },
       })
       if (!canStudentSee(folder, user.id, new Set(grants.map(g => g.folderId)))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -69,8 +71,8 @@ export async function POST(req: NextRequest) {
     const ext = extOf(file.name) || 'bin'
     const key = `tutor-files/${teacherId}/${randomUUID()}.${ext}`
     let url: string
+    const buffer = Buffer.from(await file.arrayBuffer())
     try {
-      const buffer = Buffer.from(await file.arrayBuffer())
       await s3.send(new PutObjectCommand({
         Bucket: S3_BUCKET,
         Key: key,
@@ -100,8 +102,31 @@ export async function POST(req: NextRequest) {
       },
     })
 
+    // Idea 8: index the text for search inside files — after the response,
+    // so a big PDF never slows the upload down.
+    const fileName = file.name
+    const mime = created.mimeType
+    if (isIndexable(fileName, mime)) {
+      after(async () => {
+        const text = await extractText(buffer, fileName, mime)
+        await prisma.tutorFile.update({ where: { id: created.id }, data: { contentText: text } }).catch(() => {})
+      })
+    }
+
     // usedBytes is the teacher's own quota figure — not the student's business.
-    if (user.role === 'STUDENT') return NextResponse.json({ file: created })
+    if (user.role === 'STUDENT') {
+      // Idea 2: tell the tutor in chat (best-effort), flagging a late hand-in.
+      const dropbox = folder?.parentId ? await prisma.tutorFolder.findUnique({ where: { id: folder.parentId }, select: { name: true, submissionDeadline: true } }) : null
+      const late = !!dropbox?.submissionDeadline && created.createdAt > dropbox.submissionDeadline
+      postEventCard({
+        teacherId,
+        studentId: user.id,
+        senderRole: 'STUDENT',
+        eventType: 'FILE_SUBMITTED',
+        payload: { fileName: created.name, folderName: dropbox?.name ?? folder?.name ?? '', folderId: folder?.id ?? null, late },
+      }).catch(e => console.error('[POST /api/tutor-files/files] submission card failed', e))
+      return NextResponse.json({ file: created })
+    }
     const usedBytes = await getUsedBytes(teacherId)
     return NextResponse.json({ file: created, usedBytes, quotaBytes: limits.quotaBytes })
   } catch (e) {

@@ -26,7 +26,7 @@ interface AdminStorageResponse {
   settings: { quotaGb: number; maxFileMb: number }
   billingEnabled: boolean
   priceCentsPerGbMonth: number | null
-  totals: { usedBytes: number; files: number; folders: number; tutors: number; overQuota: number }
+  totals: { usedBytes: number; files: number; folders: number; tutors: number; overQuota: number; unindexed: number }
   tutors: AdminTutorRow[]
 }
 
@@ -82,6 +82,28 @@ export function StorageAdminTab() {
   const [saving, setSaving] = useState(false)
   const [viewing, setViewing] = useState<AdminTutorRow | null>(null)
   const [filter, setFilter] = useState('')
+  const [reindexing, setReindexing] = useState<number | null>(null)
+
+  // Search inside files (idea 8): files uploaded before indexing existed get
+  // their text extracted in batches of 20 until none are left.
+  const reindex = async () => {
+    setReindexing(data?.totals.unindexed ?? 0)
+    try {
+      for (let guard = 0; guard < 500; guard++) {
+        const res = await fetch('/api/admin/storage/reindex', { method: 'POST' })
+        if (!res.ok) throw new Error(String(res.status))
+        const { processed, remaining } = await res.json() as { processed: number; remaining: number }
+        setReindexing(remaining)
+        if (remaining === 0 || processed === 0) break
+      }
+      toast.success(t('storageReindexDone'))
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t('storageSaveError'))
+    } finally {
+      setReindexing(null)
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY })
+    }
+  }
 
   useEffect(() => {
     if (!data) return
@@ -158,6 +180,18 @@ export function StorageAdminTab() {
         <div className={styles.stat}><span className={styles.statLabel}>{t('storageFiles')}</span><span className={styles.statValue}>{data.totals.files}</span><span className={styles.statSub}>{t('storageFoldersSub', { n: data.totals.folders })}</span></div>
         <div className={styles.stat}><span className={styles.statLabel}>{t('storageOverQuota')}</span><span className={`${styles.statValue} ${data.totals.overQuota ? styles.warn : ''}`}>{data.totals.overQuota}</span></div>
       </div>
+
+      {(data.totals.unindexed > 0 || reindexing !== null) && (
+        <section className={`${styles.card} ${styles.reindex}`}>
+          <div>
+            <h2 className={styles.cardTitle}>{t('storageReindexTitle')}</h2>
+            <p className={styles.fieldHint}>{t('storageReindexHint')}</p>
+          </div>
+          <button type="button" className={styles.save} onClick={reindex} disabled={reindexing !== null}>
+            {reindexing !== null ? t('storageReindexRunning', { n: reindexing }) : t('storageReindex', { n: data.totals.unindexed })}
+          </button>
+        </section>
+      )}
 
       <section className={styles.card}>
         <div className={styles.cardHead}>

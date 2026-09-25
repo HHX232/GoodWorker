@@ -3,10 +3,11 @@
 import type { LibraryFile } from '@/shared/types/TutorFiles/tutorFiles.types'
 import { useQuery } from '@tanstack/react-query'
 import { useLocale, useTranslations } from 'next-intl'
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { AnnotatedPages } from '../AnnotatedPages/AnnotatedPages'
 import { FilesModal } from '../FilesModal/FilesModal'
 import { FilesDownloadIcon } from '../icons'
-import { fileKind, formatBytes, KIND_COLOR, KIND_ICON, viewerFor, type ViewerKind } from '../lib'
+import { fileKind, formatBytes, formatDeadline, KIND_COLOR, KIND_ICON, viewerFor, type ViewerKind } from '../lib'
 import ui from '../ui.module.scss'
 import styles from './FilePreviewModal.module.scss'
 
@@ -150,8 +151,19 @@ export function FilePreviewModal({ file, onClose, onDownload, contentUrl }: {
     staleTime: 5 * 60_000,
   })
 
+  // The tutor's pen marks (idea 1) are drawn over the pages, so a marked
+  // PDF/image renders through pdf.js instead of the browser's own viewer.
+  const review = file.review
+  const marked = !!review && review.annotations.length > 0 && (viewer === 'pdf' || viewer === 'image') && !renderFailed
+  const url = contentUrl ?? `/api/tutor-files/files/${file.id}/content`
+  const source = useMemo(() => viewer === 'pdf'
+    ? { kind: 'pdf' as const, contentUrl: url }
+    : { kind: 'image' as const, url: file.url }, [viewer, url, file.url])
+
   let stage: ReactNode
-  if (viewer === 'image') {
+  if (marked) {
+    stage = <div className={styles.markedWrap}><AnnotatedPages source={source} layers={review.annotations} onError={onRenderError} /></div>
+  } else if (viewer === 'image') {
     // eslint-disable-next-line @next/next/no-img-element
     stage = <img src={file.url} alt={file.name} className={styles.image} />
   } else if (viewer === 'pdf') {
@@ -209,7 +221,22 @@ export function FilePreviewModal({ file, onClose, onDownload, contentUrl }: {
         </span>
       }
     >
-      <div className={styles.stage}>{stage}</div>
+      {review ? (
+        <div className={styles.withReview}>
+          <div className={styles.stage}>{stage}</div>
+          <aside className={styles.reviewPanel}>
+            <span className={`${styles.verdict} ${review.status === 'ACCEPTED' ? styles.accepted : styles.revision}`}>
+              {review.status === 'ACCEPTED' ? t('reviewAccepted') : t('reviewRevision')}
+            </span>
+            {review.grade && <div className={styles.grade}><span>{t('reviewGrade')}</span><strong>{review.grade}</strong></div>}
+            {review.comment && <p className={styles.reviewComment}>{review.comment}</p>}
+            {review.annotations.length > 0 && <p className={styles.reviewMeta}>{t('reviewMarksHint')}</p>}
+            <p className={styles.reviewMeta}>{t('reviewedAt', { date: formatDeadline(review.reviewedAt, locale) })}</p>
+          </aside>
+        </div>
+      ) : (
+        <div className={styles.stage}>{stage}</div>
+      )}
     </FilesModal>
   )
 }
