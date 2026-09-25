@@ -4,15 +4,17 @@ import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
 import { useSession } from 'next-auth/react'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import {
   Tag, Video, FileText, FileUp, MessageSquare,
   Star, ArrowRight, CheckCircle, Zap, Users, BookOpen, X, Copy, Gift, Wallet, CreditCard, Sparkles,
+  QrCode, Landmark, ShoppingBag,
 } from 'lucide-react'
 import Link from 'next/link'
-import {
-  formatCents, MAX_DEPOSIT_DOLLARS, MIN_DEPOSIT_DOLLARS, useTopUpForm, VIP_BONUS_THRESHOLD_DOLLARS,
-} from '@/widgets/Wallet/useTopUpForm'
+import { useVipTopUpPresets } from '@/widgets/Wallet/useVipTopUpPresets'
+import { notifyWalletChanged } from '@/widgets/Wallet/walletEvents'
+import { FeaturedPostsAddon } from '@/widgets/Wallet/FeaturedPostsAddon/FeaturedPostsAddon'
+import { PinnedListingSection } from '@/widgets/Wallet/PinnedListingSection/PinnedListingSection'
 import styles from './vip.module.scss'
 
 // ── Starfield ──────────────────────────────────────────────
@@ -57,82 +59,25 @@ function Starfield() {
   )
 }
 
-// ── Features ───────────────────────────────────────────────
+// ── Features (icon/color stay in code — one row per messages.vip.features[i]) ──
 
-const FEATURES = [
-  {
-    icon: <Video size={18} />,
-    bg: '#eff6ff', color: '#2563eb',
-    title: 'Видеозвонки без ограничений',
-    desc: 'Приглашайте любое количество участников. У обычных пользователей — лимит 3 человека.',
-    tag: null,
-  },
-  {
-    icon: <Tag size={18} />,
-    bg: '#f0fdf4', color: '#16a34a',
-    title: 'Платные курсы и роадмапы',
-    desc: 'Устанавливайте цену и монетизируйте свои материалы напрямую через платформу.',
-    tag: null,
-  },
-  {
-    icon: <FileText size={18} />,
-    bg: '#fdf4ff', color: '#9333ea',
-    title: 'PDF → тест: до 50 страниц',
-    desc: 'Загружайте объёмные документы. Без VIP — только 5 страниц за раз.',
-    tag: '10× больше',
-  },
-  {
-    icon: <FileUp size={18} />,
-    bg: '#fff7ed', color: '#ea580c',
-    title: 'DOCX, TXT, RTF, ODT',
-    desc: 'Создавайте тесты из документов Word, текстовых файлов и других форматов.',
-    tag: 'Только VIP',
-  },
-  {
-    icon: <Zap size={18} />,
-    bg: '#fefce8', color: '#ca8a04',
-    title: 'До 20 вопросов в тесте',
-    desc: 'ИИ генерирует полноценный тест, а VIP при загрузке документа может одной галочкой снять лимит в 20 вопросов, если материала хватает на больше.',
-    tag: 'Без лимита для VIP',
-  },
-  {
-    icon: <Star size={18} />,
-    bg: '#fdf2f8', color: '#db2777',
-    title: 'VIP-значок на профиле',
-    desc: 'Заметный знак качества, который выделяет вас среди других авторов в каталоге.',
-    tag: null,
-  },
-  {
-    icon: <Users size={18} />,
-    bg: '#f0fdfa', color: '#0d9488',
-    title: 'Приоритет в каталоге',
-    desc: 'Ваши материалы и профиль отображаются выше в поиске и рекомендациях.',
-    tag: null,
-  },
-  {
-    icon: <BookOpen size={18} />,
-    bg: '#f8fafc', color: '#475569',
-    title: 'VIP-посты',
-    desc: 'Доступ к эксклюзивным материалам, доступным только VIP пользователям.',
-    tag: null,
-  },
-  {
-    icon: <MessageSquare size={18} />,
-    bg: '#fff1f2', color: '#e11d48',
-    title: 'Приоритетная поддержка',
-    desc: 'Ваши обращения обрабатываются в первую очередь.',
-    tag: null,
-  },
+const FEATURES_META = [
+  { icon: <Video size={18} />, bg: '#eff6ff', color: '#2563eb' },
+  { icon: <Tag size={18} />, bg: '#f0fdf4', color: '#16a34a' },
+  { icon: <FileText size={18} />, bg: '#fdf4ff', color: '#9333ea' },
+  { icon: <FileUp size={18} />, bg: '#fff7ed', color: '#ea580c' },
+  { icon: <Zap size={18} />, bg: '#fefce8', color: '#ca8a04' },
+  { icon: <Star size={18} />, bg: '#fdf2f8', color: '#db2777' },
+  { icon: <Users size={18} />, bg: '#f0fdfa', color: '#0d9488' },
+  { icon: <BookOpen size={18} />, bg: '#f8fafc', color: '#475569' },
+  { icon: <MessageSquare size={18} />, bg: '#fff1f2', color: '#e11d48' },
 ]
+
+interface VipFeatureText { title: string; desc: string; tag: string | null }
 
 // ── Errors ─────────────────────────────────────────────────
 
-const PROMO_ERRORS: Record<string, string> = {
-  INVALID_PROMO: 'Промокод не найден или неактивен',
-  PROMO_EXPIRED: 'Срок действия промокода истёк',
-  PROMO_EXHAUSTED: 'Лимит использований исчерпан',
-  ALREADY_USED: 'Вы уже использовали этот промокод',
-}
+const PROMO_ERROR_KEYS = ['INVALID_PROMO', 'PROMO_EXPIRED', 'PROMO_EXHAUSTED', 'ALREADY_USED'] as const
 
 // ── Promo activation form (shared between the inline "How to get VIP" card and the buy modal) ──
 
@@ -148,6 +93,7 @@ interface PromoFormProps {
 }
 
 function PromoForm({ activated, vipUntil, promoCode, setPromoCode, promoError, setPromoError, loading, onActivate }: PromoFormProps) {
+  const t = useTranslations('vip')
   if (activated) {
     return (
       <div className={styles.successBlock}>
@@ -155,11 +101,11 @@ function PromoForm({ activated, vipUntil, promoCode, setPromoCode, promoError, s
           <CheckCircle size={20} />
         </div>
         <div>
-          <div className={styles.successTitle}>VIP активирован!</div>
-          {vipUntil && <div className={styles.successSub}>Действует до {vipUntil}</div>}
+          <div className={styles.successTitle}>{t('promo.activated')}</div>
+          {vipUntil && <div className={styles.successSub}>{t('promo.validUntil', { date: vipUntil })}</div>}
         </div>
         <Link href="/create-road-map" className={styles.goBtn}>
-          Создать курс
+          {t('promo.createCourse')}
           <ArrowRight size={13} />
         </Link>
       </div>
@@ -175,9 +121,9 @@ function PromoForm({ activated, vipUntil, promoCode, setPromoCode, promoError, s
           <input
             className={`${styles.promoInput} ${promoError ? styles.promoInputError : ''}`}
             type="text"
-            aria-label="Промокод"
+            aria-label={t('promo.codeAria')}
             aria-invalid={!!promoError}
-            placeholder="Введите промокод"
+            placeholder={t('promo.codePlaceholder')}
             value={promoCode}
             onChange={e => { setPromoCode(e.target.value.toUpperCase()); setPromoError('') }}
             onKeyDown={e => e.key === 'Enter' && onActivate()}
@@ -186,11 +132,11 @@ function PromoForm({ activated, vipUntil, promoCode, setPromoCode, promoError, s
         </div>
         <button className={styles.activateBtn} onClick={onActivate} disabled={loading}>
           {loading ? <span className={styles.spinner} /> : <Star size={14} />}
-          {loading ? 'Активируем…' : 'Активировать'}
+          {loading ? t('promo.activating') : t('promo.activateBtn')}
         </button>
       </div>
       {promoError && <p className={styles.promoError}>{promoError}</p>}
-      <p className={styles.promoHint}>Промокоды чувствительны к регистру — вводите заглавными буквами.</p>
+      <p className={styles.promoHint}>{t('promo.caseHint')}</p>
     </>
   )
 }
@@ -207,6 +153,7 @@ interface ReferralData {
 }
 
 function ReferralCard() {
+  const t = useTranslations('vip')
   const { status } = useSession()
   const [data, setData] = useState<ReferralData | null>(null)
   const [loadFailed, setLoadFailed] = useState(false)
@@ -235,7 +182,7 @@ function ReferralCard() {
       document.body.removeChild(ta)
     }
     setCopied(true)
-    toast.success('Ссылка скопирована')
+    toast.success(t('referral.copiedToast'))
     setTimeout(() => setCopied(false), 2000)
   }
 
@@ -251,26 +198,25 @@ function ReferralCard() {
       <div className={styles.getCardHeader}>
         <div className={styles.getCardNum}><Gift size={14} /></div>
         <div>
-          <p className={styles.getCardTitle}>Получить бесплатный VIP — позвать друзей</p>
+          <p className={styles.getCardTitle}>{t('referral.title')}</p>
           <p className={styles.getCardSub}>
             {status === 'authenticated' && data
-              ? `Друг регистрируется по вашей ссылке — вы получаете +${data.rewardDays} дн. VIP, и друг тоже`
-              : 'Пригласите друга по личной ссылке — бонус получите оба'}
+              ? t('referral.subWithReward', { days: data.rewardDays })
+              : t('referral.subDefault')}
           </p>
         </div>
       </div>
       <div className={styles.getCardBody}>
-        {status === 'loading' && <p className={styles.promoHint}>Загрузка…</p>}
+        {status === 'loading' && <p className={styles.promoHint}>{t('referral.loading')}</p>}
 
         {status === 'unauthenticated' && (
           <p className={styles.promoHint}>
-            <Link href="/login" className={styles.freeHintLink}>Войдите в аккаунт</Link>
-            {' '}чтобы получить свою реферальную ссылку.
+            {t.rich('referral.loginToGetLink', { a: chunks => <Link href="/login" className={styles.freeHintLink}>{chunks}</Link> })}
           </p>
         )}
 
         {status === 'authenticated' && loadFailed && (
-          <p className={styles.promoError}>Не удалось загрузить реферальную ссылку. Попробуйте позже.</p>
+          <p className={styles.promoError}>{t('referral.loadFailed')}</p>
         )}
 
         {status === 'authenticated' && data && (
@@ -283,7 +229,7 @@ function ReferralCard() {
                 <input
                   className={styles.promoInput}
                   type="text"
-                  aria-label="Реферальная ссылка"
+                  aria-label={t('referral.linkAria')}
                   readOnly
                   value={data.link}
                   onFocus={e => e.currentTarget.select()}
@@ -291,12 +237,13 @@ function ReferralCard() {
               </div>
               <button className={styles.activateBtn} onClick={handleCopy}>
                 {copied ? <CheckCircle size={14} /> : <Copy size={14} />}
-                {copied ? 'Скопировано' : 'Копировать'}
+                {copied ? t('referral.copiedBtn') : t('referral.copyBtn')}
               </button>
             </div>
             <p className={styles.promoHint}>
-              Приглашено по ссылке: {data.invitesUsed}
-              {data.isUnlimited ? ' · без лимита' : ` из ${data.maxFreeInvites}`}
+              {data.isUnlimited
+                ? t('referral.invitedUnlimited', { count: data.invitesUsed })
+                : t('referral.invitedWithLimit', { count: data.invitesUsed, max: data.maxFreeInvites })}
             </p>
           </>
         )}
@@ -305,39 +252,38 @@ function ReferralCard() {
   )
 }
 
-// ── Top-up section (deposit funds AI-фичи; every $5 also grants +1 month VIP) ──
+// ── Top-up section (deposit funds AI-фичи; bigger amounts grant a better VIP rate) ──
 
-const TOPUP_STEPS = [
-  {
-    icon: <Wallet size={16} />,
-    title: 'Пополните баланс',
-    desc: 'Любая сумма от $1 до $1000 — деньги сразу зачисляются на счёт.',
-  },
-  {
-    icon: <Gift size={16} />,
-    title: 'Получите VIP-бонус',
-    desc: 'Каждые $5 пополнения — это +1 месяц VIP автоматически, без доплаты сверху.',
-  },
-  {
-    icon: <Sparkles size={16} />,
-    title: 'Тратьте остаток на AI',
-    desc: 'Весь баланс доступен для AI-фич: распознавание формул, генерация тестов, планы уроков.',
-  },
-]
+const TOPUP_STEP_ICONS = [<Wallet key="0" size={16} />, <Gift key="1" size={16} />, <Sparkles key="2" size={16} />]
 
-function TopUpSection() {
-  const t = useTranslations('wallet')
+function TopUpSection({ onOpenPayment }: { onOpenPayment: (amountCents: number) => void }) {
   const { status } = useSession()
-  const {
-    balance, balanceLoading,
-    amount, setAmount,
-    formError, submitting, successMessage,
-    handleSubmit,
-  } = useTopUpForm(t)
+  const t = useTranslations('wallet')
+  const tv = useTranslations('vip')
+  const { isByn, balance, balanceLoading, pricing, formatCentsDisplay, parseDisplayToCents, monthsFor } = useVipTopUpPresets()
+  const [showCustom, setShowCustom] = useState(false)
+  const [customValue, setCustomValue] = useState('')
+  const [customError, setCustomError] = useState('')
+
+  const tiers = pricing?.vipBonusTiers ?? []
+  const bestMinCents = tiers.length ? tiers[tiers.length - 1].minAmountCents : null
+  const steps = tv.raw('steps') as { title: string; desc: string }[]
+
+  const handleCustomContinue = () => {
+    const cents = parseDisplayToCents(customValue)
+    if (!pricing || cents === null || cents < pricing.minDepositCents || cents > pricing.maxDepositCents) {
+      const min = pricing ? formatCentsDisplay(pricing.minDepositCents) : '$1'
+      const max = pricing ? formatCentsDisplay(pricing.maxDepositCents) : '$1000'
+      setCustomError(t('topup.invalidAmount', { min, max }))
+      return
+    }
+    setCustomError('')
+    onOpenPayment(cents)
+  }
 
   return (
-    <section>
-      <p className={styles.sectionLabel}>Баланс и VIP-бонус</p>
+    <section id="topup-section">
+      <p className={styles.sectionLabel}>{tv('mechanic.sectionLabel')}</p>
 
       <motion.div
         className={styles.mechanicBanner}
@@ -350,33 +296,10 @@ function TopUpSection() {
           <Gift size={20} />
         </div>
         <div>
-          <p className={styles.mechanicTitle}>Пополнение баланса на $5 даёт месяц VIP</p>
-          <p className={styles.mechanicSub}>
-            Деньги идут на баланс целиком и остаются вашими — их можно тратить на AI-фичи (распознавание формул,
-            генерацию тестов, планы уроков). А VIP — бонус сверху: как только сумма пополнения достигает $5,
-            он включается автоматически. Работает на каждые $5: $10 → 2 месяца VIP, $25 → 5 месяцев VIP, и так далее.
-          </p>
+          <p className={styles.mechanicTitle}>{tv('mechanic.title')}</p>
+          <p className={styles.mechanicSub}>{tv('mechanic.sub')}</p>
         </div>
       </motion.div>
-
-      <div className={styles.topupSteps}>
-        {TOPUP_STEPS.map((s, i) => (
-          <motion.div
-            key={s.title}
-            className={styles.topupStepCard}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: i * 0.08 }}
-          >
-            <div className={styles.getCardNum}>{s.icon}</div>
-            <div>
-              <h3 className={styles.featureTitle}>{s.title}</h3>
-              <p className={styles.featureDesc}>{s.desc}</p>
-            </div>
-          </motion.div>
-        ))}
-      </div>
 
       <motion.div
         className={styles.getCard}
@@ -388,72 +311,132 @@ function TopUpSection() {
         <div className={styles.getCardHeader}>
           <div className={styles.getCardNum}><CreditCard size={14} /></div>
           <div>
-            <p className={styles.getCardTitle}>Пополнить баланс</p>
+            <p className={styles.getCardTitle}>{t('topup.chooseAmount')}</p>
             <p className={styles.getCardSub}>
               {status === 'authenticated'
-                ? <>Текущий баланс: <strong>{balanceLoading ? '…' : formatCents(balance?.balanceCents ?? 0)}</strong></>
-                : 'Войдите в аккаунт, чтобы пополнить баланс'}
+                ? <>{t('currentBalance')}: <strong>{balanceLoading ? '…' : formatCentsDisplay(balance?.balanceCents ?? 0)}</strong></>
+                : tv.rich('topupLoginHint', { a: chunks => <Link href="/login" className={styles.freeHintLink}>{chunks}</Link> })}
             </p>
           </div>
         </div>
         <div className={styles.getCardBody}>
-          {status === 'unauthenticated' && (
-            <p className={styles.promoHint}>
-              <Link href="/login" className={styles.freeHintLink}>Войдите в аккаунт</Link>
-              {' '}чтобы пополнить баланс и получить VIP-бонус.
-            </p>
-          )}
-
-          {status !== 'unauthenticated' && (
+          {status === 'unauthenticated' ? null : !pricing ? (
+            <p className={styles.promoHint}>{t('history.loading')}</p>
+          ) : (
             <>
-              <form onSubmit={handleSubmit} className={styles.promoRow}>
-                <div className={styles.promoInputWrap}>
-                  <span className={styles.promoIconWrap}>$</span>
-                  <input
-                    className={`${styles.promoInput} ${formError ? styles.promoInputError : ''}`}
-                    type="number"
-                    inputMode="numeric"
-                    step={1}
-                    min={MIN_DEPOSIT_DOLLARS}
-                    max={MAX_DEPOSIT_DOLLARS}
-                    aria-label="Сумма пополнения в долларах"
-                    value={amount}
-                    onChange={e => setAmount(e.target.value)}
-                  />
-                </div>
-                <button className={styles.activateBtn} type="submit" disabled={submitting}>
-                  {submitting ? <span className={styles.spinner} /> : <Wallet size={14} />}
-                  {submitting ? 'Пополняем…' : 'Пополнить'}
+              <div className={styles.presetGrid}>
+                {tiers.map(tier => (
+                  <button
+                    key={tier.minAmountCents}
+                    className={`${styles.presetCard} ${tier.minAmountCents === bestMinCents ? styles.presetCardBest : ''}`}
+                    onClick={() => onOpenPayment(tier.minAmountCents)}
+                  >
+                    {tier.minAmountCents === bestMinCents && <span className={styles.presetBadge}>{t('topup.bestValue')}</span>}
+                    <span className={styles.presetAmount}>{formatCentsDisplay(tier.minAmountCents)}</span>
+                    <span className={styles.presetMonths}>→ {t('topup.vipMonths', { count: monthsFor(tier.minAmountCents) })}</span>
+                  </button>
+                ))}
+                <button
+                  className={`${styles.presetCard} ${styles.presetCardCustom} ${showCustom ? styles.presetCardCustomActive : ''}`}
+                  onClick={() => setShowCustom(true)}
+                >
+                  <Sparkles size={18} />
+                  <span className={styles.presetAmount}>{t('topup.custom')}</span>
                 </button>
-              </form>
-              <p className={styles.promoHint}>
-                От ${VIP_BONUS_THRESHOLD_DOLLARS} — плюс месяц VIP на каждые ${VIP_BONUS_THRESHOLD_DOLLARS}.
-              </p>
-            </>
-          )}
-
-          {formError && <p className={styles.promoError}>{formError}</p>}
-
-          {successMessage && (
-            <div className={styles.successBlock}>
-              <div className={styles.successIconWrap}><CheckCircle size={20} /></div>
-              <div>
-                <div className={styles.successTitle}>Готово</div>
-                <div className={styles.successSub}>{successMessage}</div>
               </div>
-            </div>
+
+              {showCustom && (
+                <div style={{ marginBottom: 12 }}>
+                  <div className={styles.promoRow}>
+                    <div className={styles.promoInputWrap}>
+                      <span className={styles.promoIconWrap}>{isByn ? 'Br' : '$'}</span>
+                      <input
+                        className={`${styles.promoInput} ${customError ? styles.promoInputError : ''}`}
+                        type="number"
+                        inputMode="decimal"
+                        placeholder={t('topup.customPlaceholder')}
+                        aria-label={t('topup.custom')}
+                        value={customValue}
+                        onChange={e => { setCustomValue(e.target.value); setCustomError('') }}
+                        onKeyDown={e => e.key === 'Enter' && handleCustomContinue()}
+                        autoFocus
+                      />
+                    </div>
+                    <button className={styles.activateBtn} onClick={handleCustomContinue}>
+                      {t('topup.continue')}
+                    </button>
+                  </div>
+                  {customError && <p className={styles.promoError}>{customError}</p>}
+                  {!customError && customValue && parseDisplayToCents(customValue) !== null && (
+                    <p className={styles.customPreview}>→ {t('topup.vipMonths', { count: monthsFor(parseDisplayToCents(customValue)!) })}</p>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
       </motion.div>
+
+      <div className={styles.topupSteps}>
+        {steps.map((s, i) => (
+          <motion.div
+            key={s.title}
+            className={styles.topupStepCard}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, delay: i * 0.08 }}
+          >
+            <div className={styles.getCardNum}>{TOPUP_STEP_ICONS[i]}</div>
+            <div>
+              <h3 className={styles.featureTitle}>{s.title}</h3>
+              <p className={styles.featureDesc}>{s.desc}</p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
     </section>
   )
 }
 
-// ── Buy modal (placeholder: opens straight to promo activation until real checkout exists) ──
+// ── Payment method modal (mock checkout: amount + months are already
+// decided by the caller; picking a method is cosmetic, the actual submit
+// still goes through the same mock /api/wallet/topup as before) ──
 
-function BuyModal({ open, onClose, ...promoProps }: { open: boolean; onClose: () => void } & PromoFormProps) {
+const PAYMENT_METHODS_BYN = [
+  { id: 'card', icon: <CreditCard size={18} />, labelKey: 'topup.methodCard' as const },
+  { id: 'erip', icon: <Landmark size={18} />, labelKey: 'topup.methodErip' as const },
+  { id: 'qr', icon: <QrCode size={18} />, labelKey: 'topup.methodQr' as const },
+]
+const PAYMENT_METHODS_USD = [
+  { id: 'card', icon: <CreditCard size={18} />, labelKey: 'topup.methodCard' as const },
+  { id: 'paypal', icon: <ShoppingBag size={18} />, labelKey: 'topup.methodPaypal' as const },
+  { id: 'wallet', icon: <Wallet size={18} />, labelKey: 'topup.methodWallet' as const },
+]
+
+function TopUpPaymentModal({ amountCents, onClose, onSuccess }: {
+  amountCents: number | null
+  onClose: () => void
+  onSuccess: () => void
+}) {
+  const t = useTranslations('wallet')
+  const tv = useTranslations('vip')
+  const { isByn, formatCentsDisplay, monthsFor } = useVipTopUpPresets()
+  const [method, setMethod] = useState('card')
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState<string | null>(null)
+
   useEffect(() => {
-    if (!open) return
+    if (amountCents === null) return
+    setMethod('card')
+    setSubmitting(false)
+    setError('')
+    setSuccess(null)
+  }, [amountCents])
+
+  useEffect(() => {
+    if (amountCents === null) return
     function onKeydown(e: KeyboardEvent) { if (e.key === 'Escape') onClose() }
     document.addEventListener('keydown', onKeydown)
     document.body.style.setProperty('overflow', 'hidden', 'important')
@@ -461,9 +444,39 @@ function BuyModal({ open, onClose, ...promoProps }: { open: boolean; onClose: ()
       document.removeEventListener('keydown', onKeydown)
       document.body.style.removeProperty('overflow')
     }
-  }, [open, onClose])
+  }, [amountCents, onClose])
 
-  if (!open) return null
+  if (amountCents === null) return null
+
+  const methods = isByn ? PAYMENT_METHODS_BYN : PAYMENT_METHODS_USD
+  const months = monthsFor(amountCents)
+
+  const handlePay = async () => {
+    setSubmitting(true)
+    setError('')
+    try {
+      const res = await fetch('/api/wallet/topup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amountCents }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data?.message || t('form.genericError')); return }
+      setSuccess(
+        data.vipMonthsGranted > 0
+          ? t('form.successWithVip', { amount: formatCentsDisplay(amountCents), months: data.vipMonthsGranted })
+          : t('form.success', { amount: formatCentsDisplay(amountCents) }),
+      )
+      toast.success(t('form.success', { amount: formatCentsDisplay(amountCents) }))
+      notifyWalletChanged()
+      onSuccess()
+    } catch {
+      setError(t('form.genericError'))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   return (
     <div className={styles.buyModalBackdrop} onClick={onClose}>
       <motion.div
@@ -474,22 +487,68 @@ function BuyModal({ open, onClose, ...promoProps }: { open: boolean; onClose: ()
         onClick={e => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-label="Купить VIP"
+        aria-label={t('topup.modalTitle')}
       >
-        <button className={styles.buyModalClose} onClick={onClose} aria-label="Закрыть">
+        <button className={styles.buyModalClose} onClick={onClose} aria-label={tv('modal.close')}>
           <X size={16} />
         </button>
         <div className={styles.buyModalHeader}>
-          <div className={styles.getCardNum}><Star size={14} fill="currentColor" /></div>
+          <div className={styles.getCardNum}><Wallet size={14} /></div>
           <div>
-            <p className={styles.getCardTitle}>Активировать промокод</p>
-            <p className={styles.getCardSub}>Оплата картой скоро — пока VIP включается по промокоду</p>
+            <p className={styles.getCardTitle}>{t('topup.modalTitle')}</p>
+            <p className={styles.getCardSub}>{tv('modal.mockNote')}</p>
           </div>
         </div>
-        <PromoForm {...promoProps} />
+
+        {success ? (
+          <div className={styles.successBlock}>
+            <div className={styles.successIconWrap}><CheckCircle size={20} /></div>
+            <div>
+              <div className={styles.successTitle}>{tv('modal.done')}</div>
+              <div className={styles.successSub}>{success}</div>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className={styles.modalSummary}>
+              <span className={styles.modalSummaryAmount}>{formatCentsDisplay(amountCents)}</span>
+              {months > 0 && <span className={styles.modalSummaryMonths}>→ {t('topup.vipMonths', { count: months })}</span>}
+            </div>
+
+            <p className={styles.methodLabel}>{t('topup.methodLabel')}</p>
+            <div className={styles.methodGrid}>
+              {methods.map(m => (
+                <button
+                  key={m.id}
+                  className={`${styles.methodCard} ${method === m.id ? styles.methodCardSelected : ''}`}
+                  onClick={() => setMethod(m.id)}
+                >
+                  {m.icon}
+                  {t(m.labelKey)}
+                </button>
+              ))}
+            </div>
+
+            {error && <p className={styles.promoError} style={{ marginBottom: 10 }}>{error}</p>}
+
+            <button className={styles.payBtn} onClick={handlePay} disabled={submitting}>
+              {submitting ? <span className={styles.spinner} /> : <Wallet size={15} />}
+              {submitting ? t('topup.paying') : t('topup.payBtn', { amount: formatCentsDisplay(amountCents) })}
+            </button>
+          </>
+        )}
       </motion.div>
     </div>
   )
+}
+
+// FeaturedPostsAddon / PinnedListingSection moved to src/widgets/Wallet/ so
+// /wallet can render them too (imported above) — both debit the same wallet
+// balance as the VIP top-up above, teacher-only (students have neither posts
+// nor a tutor listing).
+
+function dateLocaleFor(locale: string) {
+  return locale === 'ru' ? 'ru-RU' : locale === 'zh' ? 'zh-CN' : locale === 'hi' ? 'hi-IN' : 'en-US'
 }
 
 // ── Page ───────────────────────────────────────────────────
@@ -505,7 +564,15 @@ export default function VipClientPage() {
     }
   }, [])
 
-  const [buyModalOpen, setBuyModalOpen] = useState(false)
+  const t = useTranslations('vip')
+  const locale = useLocale()
+  const dateLocale = dateLocaleFor(locale)
+  const { data: session } = useSession()
+  const sessionRole = (session?.user as { role?: string } | undefined)?.role
+  const isTeacher = sessionRole === 'TEACHER' || sessionRole === 'ADMIN'
+
+  const [paymentAmountCents, setPaymentAmountCents] = useState<number | null>(null)
+  const [balanceRefreshKey, setBalanceRefreshKey] = useState(0)
   const [loading, setLoading] = useState(false)
   const [activated, setActivated] = useState(false)
   const [vipUntil, setVipUntil] = useState<string | null>(null)
@@ -515,7 +582,7 @@ export default function VipClientPage() {
   const handleActivate = async () => {
     setPromoError('')
     if (!promoCode.trim()) {
-      setPromoError('Введите промокод')
+      setPromoError(t('promo.enterCode'))
       return
     }
     setLoading(true)
@@ -528,24 +595,28 @@ export default function VipClientPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        const promoErr = PROMO_ERRORS[data.error]
-        if (promoErr) { setPromoError(promoErr); return }
+        if ((PROMO_ERROR_KEYS as readonly string[]).includes(data.error)) {
+          setPromoError(t(`errors.${data.error}` as Parameters<typeof t>[0]))
+          return
+        }
         if (data.error === 'Unauthorized') {
-          toast.error('Войдите в аккаунт, чтобы активировать VIP')
+          toast.error(t('promo.loginToActivate'))
           return
         }
         throw new Error(data.error)
       }
 
       setActivated(true)
-      setVipUntil(data.vipUntil ? new Date(data.vipUntil).toLocaleDateString('ru-RU') : null)
-      toast.success(data.promoDescription ? `🎉 ${data.promoDescription}` : 'VIP активирован!')
+      setVipUntil(data.vipUntil ? new Date(data.vipUntil).toLocaleDateString(dateLocale) : null)
+      toast.success(data.promoDescription ? `🎉 ${data.promoDescription}` : t('promo.activated'))
     } catch {
-      toast.error('Не удалось активировать VIP. Попробуйте позже.')
+      toast.error(t('promo.activateFailed'))
     } finally {
       setLoading(false)
     }
   }
+
+  const features = t.raw('features') as VipFeatureText[]
 
   return (
     <main className={styles.page}>
@@ -560,60 +631,47 @@ export default function VipClientPage() {
           className={styles.heroBadge}
         >
           <Star size={11} fill="currentColor" />
-          GOODWORKER VIP
+          {t('hero.badge')}
         </motion.div>
 
-        <motion.h1
-          className={styles.heroTitle}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          Раскройте полный<br />потенциал платформы
-        </motion.h1>
-
-        <motion.p
-          className={styles.heroSub}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          Больше инструментов, больше контента, больше возможностей для монетизации.
-        </motion.p>
-
-        <motion.button
-          className={styles.heroBuyBtn}
-          onClick={() => setBuyModalOpen(true)}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-        >
-          <Star size={15} fill="currentColor" />
-          Купить VIP
-        </motion.button>
-
-        <motion.a
-          href="#referral-card"
-          className={styles.heroFreeBtn}
+        <motion.div
+          className={styles.heroLinks}
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.38 }}
+          transition={{ duration: 0.5, delay: 0.15 }}
         >
-          <Gift size={14} />
-          Получить бесплатный VIP — позвать друзей
-        </motion.a>
+          <a href="#features-section" className={styles.heroLink}>
+            {t('featuresAnchor')}
+          </a>
+          <a href="#referral-card" className={styles.heroFreeBtn}>
+            <Gift size={13} />
+            {t('hero.freeBtn')}
+          </a>
+        </motion.div>
       </section>
 
       <div className={styles.content}>
 
         {/* ── Top-up (balance → VIP bonus) ── */}
-        <TopUpSection />
+        <TopUpSection key={balanceRefreshKey} onOpenPayment={setPaymentAmountCents} />
+
+        {/* ── Teacher add-ons: pinned listing (full block) + featured posts (compact) ── */}
+        {isTeacher && (
+          <>
+            <PinnedListingSection key={`pinned-${balanceRefreshKey}`} />
+            <section id="featured-posts-section">
+              <FeaturedPostsAddon key={`featured-${balanceRefreshKey}`} />
+            </section>
+          </>
+        )}
 
         {/* ── Features ── */}
-        <section>
-          <p className={styles.sectionLabel}>Что входит в VIP</p>
+        <section id="features-section">
+          <p className={styles.sectionLabel}>{t('featuresLabel')}</p>
           <div className={styles.grid}>
-            {FEATURES.map((f, i) => (
+            {FEATURES_META.map((meta, i) => {
+              const f = features[i]
+              return (
               <motion.div
                 key={f.title}
                 className={styles.featureCard}
@@ -622,8 +680,8 @@ export default function VipClientPage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: i * 0.05 }}
               >
-                <div className={styles.featureIcon} style={{ background: f.bg, color: f.color }}>
-                  {f.icon}
+                <div className={styles.featureIcon} style={{ background: meta.bg, color: meta.color }}>
+                  {meta.icon}
                 </div>
                 <div>
                   <h3 className={styles.featureTitle}>{f.title}</h3>
@@ -631,20 +689,21 @@ export default function VipClientPage() {
                   {f.tag && (
                     <span
                       className={styles.featureTag}
-                      style={{ background: f.bg, color: f.color }}
+                      style={{ background: meta.bg, color: meta.color }}
                     >
                       {f.tag}
                     </span>
                   )}
                 </div>
               </motion.div>
-            ))}
+              )
+            })}
           </div>
         </section>
 
         {/* ── How to get VIP ── */}
         <section>
-          <p className={styles.sectionLabel}>Как получить VIP</p>
+          <p className={styles.sectionLabel}>{t('getVip.sectionLabel')}</p>
           <div className={styles.getSection}>
 
             {/* Promo code card */}
@@ -658,8 +717,8 @@ export default function VipClientPage() {
               <div className={styles.getCardHeader}>
                 <div className={styles.getCardNum}>1</div>
                 <div>
-                  <p className={styles.getCardTitle}>Активировать промокод</p>
-                  <p className={styles.getCardSub}>Введите промокод — VIP начнёт работать сразу</p>
+                  <p className={styles.getCardTitle}>{t('getVip.promoCardTitle')}</p>
+                  <p className={styles.getCardSub}>{t('getVip.promoCardSub')}</p>
                 </div>
               </div>
               <div className={styles.getCardBody}>
@@ -690,12 +749,9 @@ export default function VipClientPage() {
                 <MessageSquare size={17} />
               </div>
               <div className={styles.freeHintText}>
-                <p>
-                  <strong>Оставьте первый отзыв</strong> о платформе — и получите промокод на&nbsp;
-                  <strong>7 дней VIP автоматически</strong> в уведомлениях.
-                </p>
+                <p>{t.rich('getVip.feedbackHint', { b: chunks => <strong>{chunks}</strong> })}</p>
                 <Link href="/feedback" className={styles.freeHintLink}>
-                  Оставить отзыв
+                  {t('getVip.feedbackLink')}
                   <ArrowRight size={12} />
                 </Link>
               </div>
@@ -706,17 +762,10 @@ export default function VipClientPage() {
 
       </div>
 
-      <BuyModal
-        open={buyModalOpen}
-        onClose={() => setBuyModalOpen(false)}
-        activated={activated}
-        vipUntil={vipUntil}
-        promoCode={promoCode}
-        setPromoCode={setPromoCode}
-        promoError={promoError}
-        setPromoError={setPromoError}
-        loading={loading}
-        onActivate={handleActivate}
+      <TopUpPaymentModal
+        amountCents={paymentAmountCents}
+        onClose={() => setPaymentAmountCents(null)}
+        onSuccess={() => setBalanceRefreshKey(k => k + 1)}
       />
     </main>
   )

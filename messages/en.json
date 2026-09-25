@@ -1856,7 +1856,7 @@
     "tabUsers": "Users",
     "tabContent": "Content",
     "tabComplaints": "Complaints & Feedback",
-    "tabPromo": "Promo codes",
+    "tabPromo": "Monetization",
     "tabNotifications": "Notifications",
     "tabVerifications": "Verifications",
     "tabAdminEmails": "Administrators",
@@ -3170,6 +3170,7 @@
     "title": "Wallet",
     "currentBalance": "Current balance",
     "zeroBalanceHint": "Top up your balance",
+    "viewAllOffers": "View all offers",
     "form": {
       "title": "Top up balance",
       "amountLabel": "Amount in dollars",
@@ -3185,13 +3186,197 @@
       "title": "Transaction history",
       "loading": "Loading…",
       "empty": "Nothing here yet",
-      "loadMore": "Show more"
+      "viewAll": "View all",
+      "prevPage": "Previous",
+      "nextPage": "Next",
+      "pageOf": "Page {page} of {total}",
+      "colDate": "Date",
+      "colDescription": "Description",
+      "colType": "Type",
+      "colAmount": "Amount",
+      "colBalance": "Balance after",
+      "types": {
+        "DEPOSIT": "Top-up",
+        "AI_DEBIT": "AI usage",
+        "FEATURED_POSTS_PURCHASE": "Featured posts",
+        "PINNED_LISTING_PURCHASE": "Pinned listing"
+      }
     },
     "insufficientModal": {
       "title": "Wallet balance is too low",
       "message": "You're short {amount} to complete this action",
       "topUp": "Top up balance",
       "cancel": "Cancel"
+    },
+    "topup": {
+      "chooseAmount": "Choose an amount",
+      "custom": "Custom amount",
+      "customPlaceholder": "Enter amount",
+      "bestValue": "Best value",
+      "continue": "Continue",
+      "modalTitle": "Payment",
+      "toPayLabel": "Total",
+      "vipBonusLabel": "VIP granted",
+      "methodLabel": "Payment method",
+      "methodCard": "Bank card",
+      "methodErip": "ERIP",
+      "methodQr": "SBP / QR",
+      "methodPaypal": "PayPal",
+      "methodWallet": "E-wallet",
+      "payBtn": "Pay {amount}",
+      "paying": "Paying…",
+      "vipMonths": "{count, plural, one {# VIP month} other {# VIP months}}",
+      "invalidAmount": "Enter an amount between {min} and {max}"
+    },
+    "chart": {
+      "title": "AI spend by week",
+      "totalLabel": "Total spent",
+      "empty": "No AI spending yet"
+    }
+  },
+  "vip": {
+    "hero": {
+      "badge": "GOODWORKER VIP",
+      "title": "Unlock the platform's full potential",
+      "subtitle": "More tools, more content, more ways to earn.",
+      "buyBtn": "Get VIP",
+      "freeBtn": "Get VIP for free — invite friends"
+    },
+    "featuresLabel": "What's included in VIP",
+    "features": [
+      {
+        "title": "Unlimited video calls",
+        "desc": "Invite as many participants as you like. Regular users are capped at 3.",
+        "tag": null
+      },
+      {
+        "title": "Paid courses and roadmaps",
+        "desc": "Set a price and monetize your materials directly through the platform.",
+        "tag": null
+      },
+      {
+        "title": "PDF → test: up to 50 pages",
+        "desc": "Upload large documents. Without VIP — only 5 pages at a time.",
+        "tag": "10× more"
+      },
+      {
+        "title": "DOCX, TXT, RTF, ODT",
+        "desc": "Build tests from Word documents, plain text and other formats.",
+        "tag": "VIP only"
+      },
+      {
+        "title": "Up to 20 questions per test",
+        "desc": "AI generates a full test, and VIP can lift the 20-question cap with one checkbox when a document has more material.",
+        "tag": "No limit for VIP"
+      },
+      {
+        "title": "VIP badge on your profile",
+        "desc": "A visible mark of quality that sets you apart from other authors in the catalog.",
+        "tag": null
+      },
+      {
+        "title": "Priority in the catalog",
+        "desc": "Your materials and profile rank higher in search and recommendations.",
+        "tag": null
+      },
+      {
+        "title": "VIP posts",
+        "desc": "Access to exclusive material available only to VIP users.",
+        "tag": null
+      },
+      {
+        "title": "Priority support",
+        "desc": "Your requests get handled first.",
+        "tag": null
+      }
+    ],
+    "errors": {
+      "INVALID_PROMO": "Promo code not found or inactive",
+      "PROMO_EXPIRED": "This promo code has expired",
+      "PROMO_EXHAUSTED": "This code has reached its usage limit",
+      "ALREADY_USED": "You've already used this promo code"
+    },
+    "promo": {
+      "activated": "VIP activated!",
+      "validUntil": "Valid until {date}",
+      "createCourse": "Create a course",
+      "codeAria": "Promo code",
+      "codePlaceholder": "Enter a promo code",
+      "activateBtn": "Activate",
+      "activating": "Activating…",
+      "caseHint": "Promo codes are case-sensitive — enter them in capital letters.",
+      "enterCode": "Enter a promo code",
+      "loginToActivate": "Log in to activate VIP",
+      "activateFailed": "Couldn't activate VIP, please try again later."
+    },
+    "referral": {
+      "title": "Get VIP for free — invite friends",
+      "subWithReward": "A friend signs up with your link — you get +{days} day(s) of VIP, and so do they",
+      "subDefault": "Invite a friend with your personal link — you both get a bonus",
+      "loading": "Loading…",
+      "loginToGetLink": "<a>Log in</a> to get your referral link.",
+      "loadFailed": "Couldn't load your referral link, please try again later.",
+      "linkAria": "Referral link",
+      "copyBtn": "Copy",
+      "copiedBtn": "Copied",
+      "copiedToast": "Link copied",
+      "invitedUnlimited": "Invited via your link: {count} · no limit",
+      "invitedWithLimit": "Invited via your link: {count} of {max}"
+    },
+    "getVip": {
+      "sectionLabel": "How to get VIP",
+      "promoCardTitle": "Activate a promo code",
+      "promoCardSub": "Enter a promo code — VIP kicks in right away",
+      "feedbackHint": "<b>Leave your first review</b> of the platform — and get a promo code for <b>7 days of VIP automatically</b> in your notifications.",
+      "feedbackLink": "Leave a review"
+    },
+    "topupLoginHint": "<a>Log in</a> to top up your balance and get a VIP bonus.",
+    "mechanic": {
+      "sectionLabel": "Balance and VIP bonus",
+      "title": "Topping up your balance grants VIP — the bigger the amount, the better the rate",
+      "sub": "The money goes straight to your balance and stays yours — spend it on AI features (formula recognition, test generation, lesson plans). VIP is a bonus on top that's granted automatically and never reduces your balance. Bigger top-ups grant more VIP months per dollar — see the presets below."
+    },
+    "steps": [
+      {
+        "title": "Top up your balance",
+        "desc": "Any amount from $1 to $1000 — the money lands on your balance right away."
+      },
+      {
+        "title": "Get a VIP bonus",
+        "desc": "The bigger the amount, the better the VIP-months rate — no extra charge."
+      },
+      {
+        "title": "Spend the rest on AI",
+        "desc": "The whole balance is available for AI features: formula recognition, test generation, lesson plans."
+      }
+    ],
+    "modal": {
+      "mockNote": "Test mode — a real payment method is coming soon",
+      "close": "Close",
+      "done": "Done"
+    },
+    "featuresAnchor": "What's included in VIP →",
+    "addons": {
+      "sectionLabel": "Add-ons",
+      "featuredPosts": {
+        "checkboxLabel": "Highlight my posts",
+        "desc": "Your posts get a visible highlight in the community feed — easier to spot among the rest.",
+        "monthsLabel": "Months",
+        "buyBtn": "Buy",
+        "buying": "Buying…",
+        "activeUntil": "Active until {date}"
+      },
+      "pinnedListing": {
+        "eyebrow": "Popular",
+        "title": "Pin me in the tutors list",
+        "desc": "Your profile stays pinned at the top of the tutors catalog and rankings for the whole duration.",
+        "activeUntil": "Pinned until {date}",
+        "buyBtn": "Pin me"
+      },
+      "insufficientBalance": "Not enough balance — top up above",
+      "purchaseSuccess": "Done!",
+      "purchaseFailed": "Couldn't complete the purchase, please try again later.",
+      "monthsCount": "{count, plural, one {# month} other {# months}}"
     }
   }
 }

@@ -5,6 +5,15 @@
   font-family: inherit;
 }
 
+// In-page anchor targets (hero's "Что входит в VIP" link, the highlighted-
+// posts empty-state CTA on /posts, "Получить бесплатный VIP") all land under
+// the site's fixed header without this — measured overshoot ~105px.
+// :global is required — CSS Modules hashes #id selectors same as classes,
+// so a bare `#featured-posts-section` here never matches the real DOM id.
+:global(#topup-section), :global(#features-section), :global(#featured-posts-section), :global(#referral-card) {
+  scroll-margin-top: 110px;
+}
+
 // ── Starfield / hero ───────────────────────────────────────
 // Starfield is fixed behind the whole page (not just the hero), so it stays visible as the
 // user scrolls; .hero and .content sit above it at z-index 1 with transparent backgrounds
@@ -20,12 +29,12 @@
 .hero {
   position: relative;
   z-index: 1;
-  padding: 80px 24px 72px;
+  padding: 40px 24px 32px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 20px;
+  gap: 14px;
 }
 
 .heroBadge {
@@ -43,46 +52,28 @@
   background: rgba(255,255,255,0.05);
 }
 
-.heroTitle {
+.heroLinks {
   position: relative;
-  font-size: clamp(32px, 6vw, 52px);
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-  margin: 0;
-  max-width: 600px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 18px;
 }
 
-.heroSub {
-  position: relative;
-  font-size: 16px;
-  color: rgba(255,255,255,0.6);
-  line-height: 1.6;
-  margin: 0;
-  max-width: 440px;
-}
-
-.heroBuyBtn {
+.heroLink {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  height: 48px;
-  padding: 0 28px;
-  border-radius: 12px;
-  background: #fff;
-  color: #0e0f11;
-  font-size: 14.5px;
-  font-weight: 700;
-  font-family: inherit;
-  border: none;
-  cursor: pointer;
-  margin-top: 4px;
-  transition: opacity 0.15s, transform 0.12s;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.5);
+  text-decoration: none;
+  padding: 4px 2px;
+  transition: color 0.15s;
 
-  &:hover { opacity: 0.88; }
-  &:active { transform: scale(0.98); }
+  &:hover { color: rgba(255,255,255,0.8); }
 }
 
 .heroFreeBtn {
@@ -90,7 +81,7 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   color: #fbbf24;
   text-decoration: none;
@@ -239,6 +230,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
+  margin-top: 24px;
   margin-bottom: 10px;
 
   @media (max-width: 680px) { grid-template-columns: 1fr; }
@@ -252,6 +244,328 @@
   border: 1px solid rgba(255,255,255,0.07);
   border-radius: 16px;
   padding: 16px;
+}
+
+// ── Preset amount grid + custom amount (top-up) ─────────────
+
+.presetGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+
+  @media (max-width: 680px) { grid-template-columns: repeat(2, 1fr); }
+}
+
+.presetCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 16px 14px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: border-color 0.15s, background 0.15s, transform 0.12s;
+
+  &:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.06); }
+  &:active { transform: scale(0.98); }
+}
+
+.presetCardBest {
+  border-color: rgba(251, 191, 36, 0.4);
+  background: rgba(251, 191, 36, 0.06);
+
+  &:hover { border-color: rgba(251, 191, 36, 0.6); background: rgba(251, 191, 36, 0.09); }
+}
+
+.presetBadge {
+  position: absolute;
+  top: -9px;
+  right: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #0e0f11;
+  background: #fbbf24;
+  border-radius: 999px;
+  padding: 3px 8px;
+}
+
+.presetAmount {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.presetMonths {
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+}
+
+.presetCardCustom {
+  grid-column: 1 / -1;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  gap: 8px;
+  min-height: 64px;
+  padding: 20px 14px;
+  border-style: dashed;
+  color: rgba(255,255,255,0.6);
+
+  .presetAmount { font-size: 13px; font-weight: 600; color: inherit; }
+}
+
+.presetCardCustomActive {
+  border-style: solid;
+  border-color: #fff;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+}
+
+.customPreview {
+  font-size: 12.5px;
+  color: rgba(255,255,255,0.55);
+  margin: 8px 0 0;
+}
+
+// ── Payment method modal ────────────────────────────────────
+
+.modalSummary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 16px 18px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.modalSummaryAmount {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.modalSummaryMonths {
+  font-size: 12.5px;
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+.methodLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.55);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 8px;
+}
+
+.methodGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.methodCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.7);
+  font-size: 11.5px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+
+  &:hover { border-color: rgba(255,255,255,0.2); }
+}
+
+.methodCardSelected {
+  border-color: #fff;
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+.payBtn {
+  width: 100%;
+  height: 46px;
+  border-radius: 10px;
+  background: #fff;
+  color: #0e0f11;
+  font-size: 13.5px;
+  font-weight: 700;
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 0.15s, transform 0.12s;
+
+  &:hover:not(:disabled) { opacity: 0.88; }
+  &:active:not(:disabled) { transform: scale(0.98); }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+// ── Teacher add-ons (featured posts toggle, pinned listing) ─
+
+.addonEyebrow {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fbbf24;
+  margin-bottom: 3px;
+}
+
+.toggleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+
+  // Custom box (not just accent-color) — a bare native checkbox on this dark
+  // card background rendered as a near-invisible sliver in some browsers,
+  // since accent-color only recolors the check mark, not the empty box.
+  input[type='checkbox'] {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    margin-top: 1px;
+    border-radius: 6px;
+    border: 1.5px solid rgba(255,255,255,0.35);
+    background: rgba(255,255,255,0.04);
+    flex-shrink: 0;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.15s, border-color 0.15s;
+
+    &:hover { border-color: rgba(255,255,255,0.6); }
+
+    &:checked {
+      background: #fff;
+      border-color: #fff;
+
+      &::after {
+        content: '';
+        position: absolute;
+        left: 6px;
+        top: 2px;
+        width: 5px;
+        height: 10px;
+        border: solid #0e0f11;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+      }
+    }
+  }
+}
+
+.sliderBlock {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.sliderRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+
+  // Custom track + thumb — the unstyled native range input renders as a
+  // jarring light-grey OS-chrome bar against this dark card, out of place
+  // next to everything else on the page. -webkit-*/-moz-* pseudo-elements
+  // can't be combined in one selector (an unknown one invalidates the whole
+  // rule), so track and thumb are declared per engine.
+  input[type='range'] {
+    flex: 1;
+    appearance: none;
+    height: 20px;
+    background: transparent;
+    cursor: pointer;
+
+    &::-webkit-slider-runnable-track {
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.15);
+    }
+    &::-moz-range-track {
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.15);
+    }
+
+    &::-webkit-slider-thumb {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      margin-top: -7px;
+      border-radius: 50%;
+      background: #fff;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.12s;
+
+      &:hover { transform: scale(1.1); }
+    }
+    &::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.12s;
+
+      &:hover { transform: scale(1.1); }
+    }
+  }
+}
+
+.sliderValue {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  min-width: 72px;
+  text-align: right;
+}
+
+.priceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.priceDisplay {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.oldPrice {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  text-decoration: line-through;
+  margin-right: 4px;
 }
 
 // ── How to get VIP ─────────────────────────────────────────

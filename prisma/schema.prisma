@@ -116,6 +116,8 @@ model Teacher {
   whiteboardTemplates     WhiteboardTemplate[]
   balanceCents            Int                 @default(0)
   walletTransactions      WalletTransaction[]
+  postsHighlightedUntil   DateTime?
+  pinnedInListUntil       DateTime?
   tutorFolders            TutorFolder[]
   tutorFiles              TutorFile[]
 
@@ -898,6 +900,19 @@ model ReferralSettings {
 model WalletSettings {
   id            String   @id @default("global")
   markupPercent Int      @default(0)
+  // BYN per 1 USD, for display/input only on the ru locale — the ledger
+  // itself always stays in USD cents (AI cost table is USD-denominated).
+  usdToBynRate  Float    @default(3.2)
+  // Admin-editable volume bonus: [{minAmountCents, monthsPer500Cents}],
+  // ascending by minAmountCents. See computeVipMonthsGranted() in pricing.ts.
+  vipBonusTiers Json     @default("[{\"minAmountCents\":500,\"monthsPer500Cents\":1},{\"minAmountCents\":2500,\"monthsPer500Cents\":1.1},{\"minAmountCents\":5000,\"monthsPer500Cents\":1.25},{\"minAmountCents\":10000,\"monthsPer500Cents\":1.5}]")
+  // Flat rate, admin-editable — "Сделать мои посты выделенными" (slider by
+  // month count, price = months * this).
+  featuredPostsPriceCentsPerMonth Int @default(300)
+  // Admin-editable duration presets for "Закрепить меня в списке
+  // репетиторов": [{months, priceCents, oldPriceCents?}], ascending by
+  // months — oldPriceCents (optional) renders as a strikethrough price.
+  pinnedListingTiers Json @default("[{\"months\":1,\"priceCents\":500},{\"months\":3,\"priceCents\":1200,\"oldPriceCents\":1500},{\"months\":6,\"priceCents\":2100,\"oldPriceCents\":3000},{\"months\":12,\"priceCents\":3600,\"oldPriceCents\":6000}]")
   // Per-GB/month price for VIP tutor-file storage beyond QUOTA_BYTES
   // (src/shared/lib/tutorFiles/storage.ts) — 0 until an admin sets it, in
   // which case no overage billing happens (chargeStorageOverage no-ops).
@@ -933,6 +948,8 @@ enum Role {
 enum WalletTransactionType {
   DEPOSIT
   AI_DEBIT
+  FEATURED_POSTS_PURCHASE
+  PINNED_LISTING_PURCHASE
   STORAGE_OVERAGE_DEBIT
 }
 
@@ -950,6 +967,12 @@ model WalletTransaction {
   shortfallCents    Int?
   description       String
   createdAt         DateTime              @default(now())
+  // AI_DEBIT only — real DeepSeek cost (no markup) and token count at charge
+  // time, for the admin token-spend chart. Null on every other transaction
+  // type and on AI_DEBIT rows written before this field existed (no way to
+  // recover the raw cost retroactively — markup may have changed since).
+  rawCostCents      Int?
+  totalTokens       Int?
   teacher           Teacher?              @relation(fields: [teacherId], references: [id], onDelete: SetNull)
   student           Student?              @relation(fields: [studentId], references: [id], onDelete: SetNull)
 

@@ -97,8 +97,8 @@ export  const HighlightedSlider: FC<IHighlightedSlider> = ({
     return (
       <div className={style.empty_card}>
         <p className={style.empty_title}>Здесь может быть ваш выделенный пост</p>
-        <p className={style.empty_desc}>Обращайтесь за публикацией в поддержку</p>
-        <Link href="/feedback" className={style.empty_btn}>Написать в поддержку</Link>
+        <p className={style.empty_desc}>Сделайте свои посты выделенными — платная опция на странице VIP</p>
+        <Link href="/vip#featured-posts-section" className={style.empty_btn}>Сделать пост выделенным</Link>
       </div>
     );
   }

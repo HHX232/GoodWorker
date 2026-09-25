@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useState } from 'react'
+import { onWalletChanged } from '../walletEvents'
 import styles from './WalletBadge.module.scss'
 
 // Header entry point for the wallet feature (ticket 04, .autopilot/wallet-balance),
@@ -32,6 +33,11 @@ export function WalletBadge() {
     fetchBalance()
     const interval = setInterval(fetchBalance, 15_000)
     return () => clearInterval(interval)
+  }, [fetchBalance, session?.user])
+
+  useEffect(() => {
+    if (!session?.user) return
+    return onWalletChanged(fetchBalance)
   }, [fetchBalance, session?.user])
 
   if (!session?.user) return null

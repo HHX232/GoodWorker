@@ -87,3 +87,53 @@ export function estimateMaxCostCents(endpoint: string, promptChars: number, at: 
   const usage: AIUsage = { promptCacheHitTokens: 0, promptCacheMissTokens: promptTokens, completionTokens: outputCeiling }
   return computeCostCents(usage, at, markupPercent)
 }
+
+// ─── VIP top-up bonus (deposit → free VIP months) ──────────────────────────
+
+export interface VipBonusTier {
+  minAmountCents: number
+  monthsPer500Cents: number
+}
+
+export const DEFAULT_VIP_BONUS_TIERS: VipBonusTier[] = [
+  { minAmountCents: 500, monthsPer500Cents: 1 },
+  { minAmountCents: 2500, monthsPer500Cents: 1.1 },
+  { minAmountCents: 5000, monthsPer500Cents: 1.25 },
+  { minAmountCents: 10000, monthsPer500Cents: 1.5 },
+]
+
+/**
+ * Bigger top-ups get a better VIP-per-dollar rate (admin-editable tier
+ * table, `WalletSettings.vipBonusTiers`). `tiers` must be sorted ascending by
+ * `minAmountCents` — the highest threshold the deposit clears wins, so a
+ * $50 deposit uses the $50 tier's rate for its *entire* amount, not a
+ * blended rate across tiers (simpler to reason about and to show on the
+ * pricing card: one rate per bucket, no marginal-rate math for the user).
+ * Below the lowest threshold, no VIP bonus is granted at all (matches the
+ * original "$5 minimum" rule).
+ */
+export function computeVipMonthsGranted(amountCents: number, tiers: VipBonusTier[]): number {
+  let rate = 0
+  for (const tier of tiers) {
+    if (amountCents >= tier.minAmountCents) rate = tier.monthsPer500Cents
+  }
+  if (rate === 0) return 0
+  return Math.floor((amountCents / 500) * rate)
+}
+
+// ─── Teacher add-ons: featured posts (flat $/month) + pinned listing (duration tiers) ──
+
+export interface PinnedListingTier {
+  months: number
+  priceCents: number
+  oldPriceCents?: number
+}
+
+export const DEFAULT_PINNED_LISTING_TIERS: PinnedListingTier[] = [
+  { months: 1, priceCents: 500 },
+  { months: 3, priceCents: 1200, oldPriceCents: 1500 },
+  { months: 6, priceCents: 2100, oldPriceCents: 3000 },
+  { months: 12, priceCents: 3600, oldPriceCents: 6000 },
+]
+
+export const DEFAULT_FEATURED_POSTS_PRICE_CENTS_PER_MONTH = 300

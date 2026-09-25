@@ -1,11 +1,14 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { notifyWalletChanged } from './walletEvents'
 
 export interface WalletBalance {
   balanceCents: number
   isVip: boolean
   vipExpiresAt: string | null
+  postsHighlightedUntil: string | null
+  pinnedInListUntil: string | null
 }
 
 export const MIN_DEPOSIT_DOLLARS = 1
@@ -74,6 +77,7 @@ export function useTopUpForm(t: Translate, onSuccess?: () => void) {
             ? t('form.successWithVip', { amount: dollars, months: data.vipMonthsGranted })
             : t('form.success', { amount: dollars }),
         )
+        notifyWalletChanged()
         onSuccess?.()
       } catch {
         setFormError(t('form.genericError'))
@@ -85,7 +89,7 @@ export function useTopUpForm(t: Translate, onSuccess?: () => void) {
   )
 
   return {
-    balance, balanceLoading,
+    balance, balanceLoading, fetchBalance,
     amount, setAmount,
     formError, submitting, successMessage,
     handleSubmit,

@@ -1599,7 +1599,7 @@
     "tabUsers": "用户",
     "tabContent": "内容",
     "tabComplaints": "投诉与反馈",
-    "tabPromo": "优惠码",
+    "tabPromo": "变现",
     "tabNotifications": "通知",
     "tabVerifications": "验证",
     "tabAdminEmails": "管理员",
@@ -2997,6 +2997,7 @@
     "title": "钱包",
     "currentBalance": "当前余额",
     "zeroBalanceHint": "充值余额",
+    "viewAllOffers": "查看全部优惠",
     "form": {
       "title": "充值余额",
       "amountLabel": "金额（美元）",
@@ -3012,13 +3013,197 @@
       "title": "交易记录",
       "loading": "加载中…",
       "empty": "暂无记录",
-      "loadMore": "查看更多"
+      "viewAll": "查看全部",
+      "prevPage": "上一页",
+      "nextPage": "下一页",
+      "pageOf": "第 {page} / {total} 页",
+      "colDate": "日期",
+      "colDescription": "描述",
+      "colType": "类型",
+      "colAmount": "金额",
+      "colBalance": "之后余额",
+      "types": {
+        "DEPOSIT": "充值",
+        "AI_DEBIT": "AI 使用",
+        "FEATURED_POSTS_PURCHASE": "帖子推广",
+        "PINNED_LISTING_PURCHASE": "置顶资料"
+      }
     },
     "insufficientModal": {
       "title": "钱包余额不足",
       "message": "完成此操作还差 {amount}",
       "topUp": "充值余额",
       "cancel": "取消"
+    },
+    "topup": {
+      "chooseAmount": "选择金额",
+      "custom": "自定义金额",
+      "customPlaceholder": "输入金额",
+      "bestValue": "最划算",
+      "continue": "继续",
+      "modalTitle": "支付",
+      "toPayLabel": "应付金额",
+      "vipBonusLabel": "将获得 VIP",
+      "methodLabel": "支付方式",
+      "methodCard": "银行卡",
+      "methodErip": "ERIP",
+      "methodQr": "二维码支付",
+      "methodPaypal": "PayPal",
+      "methodWallet": "电子钱包",
+      "payBtn": "支付 {amount}",
+      "paying": "支付中…",
+      "vipMonths": "{count, plural, other {# 个 VIP 月}}",
+      "invalidAmount": "请输入 {min} 到 {max} 之间的金额"
+    },
+    "chart": {
+      "title": "按周统计的 AI 支出",
+      "totalLabel": "总支出",
+      "empty": "暂无支出"
+    }
+  },
+  "vip": {
+    "hero": {
+      "badge": "GOODWORKER VIP",
+      "title": "释放平台的全部潜力",
+      "subtitle": "更多工具，更多内容，更多变现方式。",
+      "buyBtn": "开通 VIP",
+      "freeBtn": "免费获得 VIP——邀请好友"
+    },
+    "featuresLabel": "VIP 包含的权益",
+    "features": [
+      {
+        "title": "视频通话无人数限制",
+        "desc": "邀请任意数量的参与者。普通用户上限为 3 人。",
+        "tag": null
+      },
+      {
+        "title": "付费课程与路线图",
+        "desc": "自主定价，直接通过平台将您的资料变现。",
+        "tag": null
+      },
+      {
+        "title": "PDF → 测试：最多 50 页",
+        "desc": "上传大型文档。非 VIP 用户一次仅限 5 页。",
+        "tag": "多10倍"
+      },
+      {
+        "title": "DOCX、TXT、RTF、ODT",
+        "desc": "从 Word 文档、纯文本及其他格式生成测试。",
+        "tag": "仅限 VIP"
+      },
+      {
+        "title": "每份测试最多 20 道题",
+        "desc": "AI 生成完整测试，当材料足够时，VIP 可一键解除 20 题的限制。",
+        "tag": "VIP 无限制"
+      },
+      {
+        "title": "个人主页 VIP 标识",
+        "desc": "醒目的品质标志，让您在目录中的其他作者中脱颖而出。",
+        "tag": null
+      },
+      {
+        "title": "目录优先展示",
+        "desc": "您的资料和主页会在搜索与推荐中排名更靠前。",
+        "tag": null
+      },
+      {
+        "title": "VIP 专属帖子",
+        "desc": "访问仅面向 VIP 用户开放的独家内容。",
+        "tag": null
+      },
+      {
+        "title": "优先客服支持",
+        "desc": "您的请求将被优先处理。",
+        "tag": null
+      }
+    ],
+    "errors": {
+      "INVALID_PROMO": "兑换码不存在或已失效",
+      "PROMO_EXPIRED": "该兑换码已过期",
+      "PROMO_EXHAUSTED": "该兑换码使用次数已达上限",
+      "ALREADY_USED": "您已使用过该兑换码"
+    },
+    "promo": {
+      "activated": "VIP 已开通！",
+      "validUntil": "有效期至 {date}",
+      "createCourse": "创建课程",
+      "codeAria": "兑换码",
+      "codePlaceholder": "输入兑换码",
+      "activateBtn": "兑换",
+      "activating": "兑换中…",
+      "caseHint": "兑换码区分大小写——请输入大写字母。",
+      "enterCode": "请输入兑换码",
+      "loginToActivate": "请登录后再兑换 VIP",
+      "activateFailed": "VIP 兑换失败，请稍后重试。"
+    },
+    "referral": {
+      "title": "免费获得 VIP——邀请好友",
+      "subWithReward": "好友通过您的链接注册后，您将获得 {days} 天 VIP，好友同样获得",
+      "subDefault": "通过您的专属链接邀请好友，双方都可获得奖励",
+      "loading": "加载中…",
+      "loginToGetLink": "<a>登录</a>以获取您的专属邀请链接。",
+      "loadFailed": "邀请链接加载失败，请稍后重试。",
+      "linkAria": "邀请链接",
+      "copyBtn": "复制",
+      "copiedBtn": "已复制",
+      "copiedToast": "链接已复制",
+      "invitedUnlimited": "已通过链接邀请：{count} 人 · 无上限",
+      "invitedWithLimit": "已通过链接邀请：{count} / {max}"
+    },
+    "getVip": {
+      "sectionLabel": "如何获得 VIP",
+      "promoCardTitle": "兑换促销码",
+      "promoCardSub": "输入兑换码，VIP 立即生效",
+      "feedbackHint": "<b>发表您的首个评价</b>——即可在通知中自动获得 <b>7 天 VIP</b> 兑换码。",
+      "feedbackLink": "发表评价"
+    },
+    "topupLoginHint": "<a>登录</a>以充值余额并获得 VIP 奖励。",
+    "mechanic": {
+      "sectionLabel": "余额与 VIP 奖励",
+      "title": "充值即可获得 VIP——金额越大，汇率越划算",
+      "sub": "充值金额将全额进入您的余额并始终归您所有——可用于 AI 功能（公式识别、生成测试、制定教案）。VIP 是额外赠送的奖励，自动发放且不会减少您的余额。充值金额越大，每一美元兑换的 VIP 月数就越多——详见下方档位。"
+    },
+    "steps": [
+      {
+        "title": "充值余额",
+        "desc": "任意 1 至 1000 美元的金额，资金立即到账。"
+      },
+      {
+        "title": "获得 VIP 奖励",
+        "desc": "金额越大，VIP 月数兑换率越划算，无需额外付费。"
+      },
+      {
+        "title": "用余额使用 AI",
+        "desc": "全部余额均可用于 AI 功能：公式识别、生成测试、制定教案。"
+      }
+    ],
+    "modal": {
+      "mockNote": "测试模式——真实支付方式即将上线",
+      "close": "关闭",
+      "done": "完成"
+    },
+    "featuresAnchor": "VIP 包含的权益 →",
+    "addons": {
+      "sectionLabel": "增值服务",
+      "featuredPosts": {
+        "checkboxLabel": "让我的帖子获得高亮展示",
+        "desc": "您的帖子会在社区动态中获得醒目样式，更容易被发现。",
+        "monthsLabel": "月数",
+        "buyBtn": "购买",
+        "buying": "购买中…",
+        "activeUntil": "有效期至 {date}"
+      },
+      "pinnedListing": {
+        "eyebrow": "热门服务",
+        "title": "将我置顶在导师列表中",
+        "desc": "在整个有效期内，您的主页会一直置顶在导师目录和排行榜顶部。",
+        "activeUntil": "置顶至 {date}",
+        "buyBtn": "置顶"
+      },
+      "insufficientBalance": "余额不足——请在上方充值",
+      "purchaseSuccess": "完成！",
+      "purchaseFailed": "购买失败，请稍后重试。",
+      "monthsCount": "{count, plural, other {# 个月}}"
     }
   }
 }

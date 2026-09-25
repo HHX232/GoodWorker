@@ -1,7 +1,7 @@
 // Self-check for pricing.ts — run with `npx tsx src/shared/lib/wallet/pricing.selfcheck.ts`.
 // No test runner in this project; expected numbers below are computed BY HAND
 // from the rate card in spec.md, not derived from computeCostCents itself.
-import { computeCostCents, isPeak } from './pricing'
+import { computeCostCents, computeVipMonthsGranted, DEFAULT_VIP_BONUS_TIERS, isPeak } from './pricing'
 
 let failures = 0
 function assertEqual(actual: number, expected: number, label: string) {
@@ -75,6 +75,27 @@ assertEqual(
   30,
   'computeCostCents: markupPercent 0 means no markup',
 )
+
+// computeVipMonthsGranted, against DEFAULT_VIP_BONUS_TIERS
+// ($5->1x, $25->1.1x, $50->1.25x, $100->1.5x per $5).
+
+// Below the lowest threshold ($5): no bonus at all.
+assertEqual(computeVipMonthsGranted(499, DEFAULT_VIP_BONUS_TIERS), 0, 'vipBonus: $4.99 grants nothing')
+
+// $5 exactly: baseline 1 month per $5 -> floor(500/500 * 1) = 1.
+assertEqual(computeVipMonthsGranted(500, DEFAULT_VIP_BONUS_TIERS), 1, 'vipBonus: $5 grants 1 month')
+
+// $24.99: still baseline tier (below $25) -> floor(2499/500 * 1) = floor(4.998) = 4.
+assertEqual(computeVipMonthsGranted(2499, DEFAULT_VIP_BONUS_TIERS), 4, 'vipBonus: $24.99 stays on baseline tier')
+
+// $25 exactly: crosses into the 1.1x tier for its WHOLE amount -> floor(2500/500 * 1.1) = floor(5.5) = 5.
+assertEqual(computeVipMonthsGranted(2500, DEFAULT_VIP_BONUS_TIERS), 5, 'vipBonus: $25 uses the 1.1x tier on the full amount')
+
+// $100: top tier 1.5x -> floor(10000/500 * 1.5) = floor(30) = 30.
+assertEqual(computeVipMonthsGranted(10000, DEFAULT_VIP_BONUS_TIERS), 30, 'vipBonus: $100 uses the 1.5x tier')
+
+// Empty tier list: no threshold ever clears -> always 0, never throws.
+assertEqual(computeVipMonthsGranted(100000, []), 0, 'vipBonus: empty tier list grants nothing')
 
 if (failures > 0) {
   console.error(`pricing.selfcheck: ${failures} check(s) FAILED`)

@@ -95,6 +95,7 @@ export async function GET(req: NextRequest) {
       nameTransliterated: true,
       avatarUrl: true,
       isVip: true,
+      pinnedInListUntil: true,
       lastSeenAt: true,
       languages: true,
       bio: true,
@@ -103,6 +104,7 @@ export async function GET(req: NextRequest) {
       reviews: {select: {stars: true}},
       services: {select: {price: true, currency: true}, orderBy: {price: 'asc' as const}, take: 1}
     }
+    const now = new Date()
 
     // The seed/demo account is a placeholder, not a real tutor — it should
     // never outrank an actual teacher on the public leaderboard.
@@ -130,7 +132,7 @@ export async function GET(req: NextRequest) {
       const DAY_MS = 86400000
       const WEEK_MS = DAY_MS * 7
 
-      const scored = all.map(({reviews, services, posts, roadmaps, categories, email, students, ...teacher}) => {
+      const scored = all.map(({reviews, services, posts, roadmaps, categories, email, students, pinnedInListUntil, ...teacher}) => {
         const cheapest = services[0]
         const totalViews =
           posts.reduce((sum, p) => sum + p.viewCount, 0) +
@@ -148,8 +150,10 @@ export async function GET(req: NextRequest) {
           const cutoff = now - (6 - i) * WEEK_MS
           return linkedTimes.filter(tm => tm <= cutoff).length
         })
+        const isPinned = pinnedInListUntil !== null && pinnedInListUntil.getTime() > now
         const t = {
           ...teacher,
+          isPinned,
           categories: resolveTeacherCategories(categories),
           avgRating,
           reviewsCount,
@@ -159,10 +163,14 @@ export async function GET(req: NextRequest) {
           trend
         }
         const score = computeScore({isVip: teacher.isVip, avgRating, reviewsCount, totalViews, _count: teacher._count})
-        return {t, score, isSeedAccount: email === SEED_ACCOUNT_EMAIL}
+        return {t, score, isPinned, isSeedAccount: email === SEED_ACCOUNT_EMAIL}
       })
       scored.sort((a, b) => {
         if (a.isSeedAccount !== b.isSeedAccount) return a.isSeedAccount ? 1 : -1
+        // Paid "закрепить в списке" — pinned-active teachers rank above
+        // everyone else regardless of score, but still order among
+        // themselves by score (not first-come-first-served).
+        if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1
         return b.score - a.score
       })
 
@@ -175,21 +183,45 @@ export async function GET(req: NextRequest) {
       })
     }
 
-    const [teachers, total] = await Promise.all([
-      prisma.teacher.findMany({
-        where,
-        skip: (page - 1) * limit,
-        take: limit,
-        orderBy: [{isVip: 'desc'}, {createdAt: 'desc'}],
-        select: baseSelect
-      }),
-      prisma.teacher.count({where})
+    // Paid "закрепить в списке" (pinned) teachers must lead every page of the
+    // default listing too, not just the score leaderboard — but `orderBy`
+    // can't express "pinnedInListUntil is a future date" as a sort key
+    // (Prisma has no computed-expression orderBy, and sorting by the raw
+    // nullable date would rank an EXPIRED pin above an unpinned teacher
+    // forever). Two partitions instead: pinned-active teachers are few (a
+    // paid add-on), so fetching the whole partition unpaginated and slicing
+    // it client-side-of-the-query is cheap; the rest is paginated normally
+    // with `skip` adjusted for how many pinned rows this page already used.
+    const pinnedWhere: Prisma.TeacherWhereInput = {...where, pinnedInListUntil: {gt: now}}
+    const restWhere: Prisma.TeacherWhereInput = {...where, OR: [{pinnedInListUntil: null}, {pinnedInListUntil: {lte: now}}]}
+
+    const [pinnedAll, restTotal] = await Promise.all([
+      prisma.teacher.findMany({where: pinnedWhere, orderBy: {pinnedInListUntil: 'desc'}, select: baseSelect, take: 100}),
+      prisma.teacher.count({where: restWhere})
     ])
 
-    const mapped = teachers.map(({reviews, services, categories, ...teacher}) => {
+    const total = pinnedAll.length + restTotal
+    const start = (page - 1) * limit
+    const end = start + limit
+
+    let teachers: typeof pinnedAll = start < pinnedAll.length ? pinnedAll.slice(start, end) : []
+    if (teachers.length < limit) {
+      const restSkip = Math.max(0, start - pinnedAll.length)
+      const restTeachers = await prisma.teacher.findMany({
+        where: restWhere,
+        skip: restSkip,
+        take: limit - teachers.length,
+        orderBy: [{isVip: 'desc'}, {createdAt: 'desc'}],
+        select: baseSelect
+      })
+      teachers = [...teachers, ...restTeachers]
+    }
+
+    const mapped = teachers.map(({reviews, services, categories, pinnedInListUntil, ...teacher}) => {
       const cheapest = services[0]
       return {
         ...teacher,
+        isPinned: pinnedInListUntil !== null && pinnedInListUntil > now,
         categories: resolveTeacherCategories(categories),
         avgRating: reviews.length ? reviews.reduce((sum, r) => sum + r.stars, 0) / reviews.length : null,
         reviewsCount: reviews.length,

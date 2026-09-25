@@ -3,7 +3,7 @@
 // (DATABASE_URL from .env). No test runner in this project. Creates and
 // tears down its own throwaway Teacher row — does not touch seed accounts.
 import { prisma } from '@/shared/prisma/prisma'
-import { chargeForAICall, depositMock, type WalletUser } from './wallet'
+import { chargeForAICall, depositMock, InsufficientBalanceError, purchaseAddon, type WalletUser } from './wallet'
 import type { AIUsage } from '@/lib/openrouter'
 
 let failures = 0
@@ -130,6 +130,41 @@ async function main() {
     await prisma.walletTransaction.deleteMany({ where: { teacherId: teacher2.id } })
     await prisma.vipTransaction.deleteMany({ where: { teacherId: teacher2.id } })
     await prisma.teacher.delete({ where: { id: teacher2.id } })
+  }
+
+  // ── purchaseAddon: sufficient balance debits + extends the *Until field;
+  // insufficient balance throws and touches nothing ──
+  const teacher3 = await prisma.teacher.create({
+    data: { name: 'Wallet Selfcheck Addon', email: `wallet-selfcheck-addon-${Date.now()}@example.test`, balanceCents: 500 },
+    select: { id: true },
+  })
+  const user3: WalletUser = { id: teacher3.id, role: 'TEACHER' }
+
+  try {
+    const result = await purchaseAddon(user3, 'FEATURED_POSTS', 2, 300)
+    assert(result.balanceAfterCents === 200, `purchaseAddon: debits exactly the price (500 - 300 = 200), got ${result.balanceAfterCents}`)
+
+    const row = await prisma.teacher.findUnique({ where: { id: teacher3.id }, select: { balanceCents: true, postsHighlightedUntil: true } })
+    assert(row?.balanceCents === 200, `purchaseAddon: balance persisted as 200, got ${row?.balanceCents}`)
+    assert(
+      !!row?.postsHighlightedUntil && row.postsHighlightedUntil.getTime() > Date.now(),
+      'purchaseAddon: postsHighlightedUntil is set in the future',
+    )
+
+    let threw = false
+    try {
+      await purchaseAddon(user3, 'PINNED_LISTING', 1, 500) // only 200c left, needs 500c
+    } catch (e) {
+      threw = e instanceof InsufficientBalanceError
+    }
+    assert(threw, 'purchaseAddon: insufficient balance throws InsufficientBalanceError')
+
+    const rowAfterFailedPurchase = await prisma.teacher.findUnique({ where: { id: teacher3.id }, select: { balanceCents: true, pinnedInListUntil: true } })
+    assert(rowAfterFailedPurchase?.balanceCents === 200, `purchaseAddon: failed purchase leaves balance untouched at 200, got ${rowAfterFailedPurchase?.balanceCents}`)
+    assert(rowAfterFailedPurchase?.pinnedInListUntil === null, 'purchaseAddon: failed purchase never sets pinnedInListUntil')
+  } finally {
+    await prisma.walletTransaction.deleteMany({ where: { teacherId: teacher3.id } })
+    await prisma.teacher.delete({ where: { id: teacher3.id } })
   }
 
   if (failures > 0) {
