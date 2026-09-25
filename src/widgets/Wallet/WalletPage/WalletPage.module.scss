@@ -19,6 +19,7 @@
   --w-danger: #dc2626;
   --w-accent-soft: #d90505;
   --w-gold: #a16207;
+  --w-gold-rgb: 202, 138, 4;
   --w-bar: #dfe1e8;
   --w-shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 8px 24px -12px rgba(16, 24, 40, 0.12);
   --w-shadow-lg: 0 2px 6px rgba(16, 24, 40, 0.06), 0 18px 40px -16px rgba(16, 24, 40, 0.18);
@@ -40,6 +41,7 @@
   --w-danger: #ff8a8a;
   --w-accent-soft: #ff8a8a;
   --w-gold: #d8b46a;
+  --w-gold-rgb: 216, 180, 106;
   --w-bar: #2e3040;
   --w-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 8px 22px -10px rgba(0, 0, 0, 0.6);
   --w-shadow-lg: 0 4px 10px rgba(0, 0, 0, 0.5), 0 18px 42px -14px rgba(0, 0, 0, 0.68);
@@ -95,6 +97,43 @@
 
   > * {
     min-width: 0;
+  }
+}
+
+.historySlot {
+  display: flex;
+  flex-direction: column;
+
+  > * {
+    flex: 1;
+  }
+}
+
+// Desktop: the main block is exactly 90vh tall (below the header and the
+// monthly-fee strip). Each column scrolls on its own if its content is
+// taller; the history card stretches to fill what the chart leaves.
+@media (min-width: 1101px) and (min-height: 700px) {
+  .layout {
+    height: 90vh;
+    align-items: stretch;
+  }
+
+  .leftCol,
+  .rightCol {
+    min-height: 0;
+    overflow-y: auto;
+    // room for card shadows inside the scroll box
+    padding: 2px 6px 12px 2px;
+    margin: -2px -6px -12px -2px;
+    scrollbar-width: thin;
+  }
+
+  .rightCol > * {
+    flex-shrink: 0;
+  }
+
+  .rightCol > .historySlot {
+    flex: 1 0 auto;
   }
 }
 

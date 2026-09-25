@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
+import { Crown } from 'lucide-react'
 import { formatCents, MIN_DEPOSIT_DOLLARS, MAX_DEPOSIT_DOLLARS, VIP_BONUS_THRESHOLD_DOLLARS } from '../useTopUpForm'
 import { useVipTopUpPresets } from '../useVipTopUpPresets'
 import { TopUpPaymentModal } from '../TopUpPaymentModal/TopUpPaymentModal'
@@ -95,12 +96,15 @@ export function TopUpCard({ balanceCents, balanceLoading, onSuccess }: Props) {
           <button
             key={tier.minAmountCents}
             type="button"
-            className={`${styles.tile} ${selectedCents === tier.minAmountCents ? styles.tileActive : ''}`}
+            className={`${styles.tile} ${tier.minAmountCents === bestMinCents ? styles.tileBest : ''} ${selectedCents === tier.minAmountCents ? styles.tileActive : ''}`}
             onClick={() => selectPreset(tier.minAmountCents)}
           >
             {tier.minAmountCents === bestMinCents && <span className={styles.badge}>{t('topup.bestValue')}</span>}
             <span className={styles.tileAmount}>{formatCents(tier.minAmountCents)}</span>
-            <span className={styles.tileMonths}>→ {t('topup.vipMonths', { count: monthsFor(tier.minAmountCents) })}</span>
+            <span className={styles.tileMonths}>
+              <Crown size={11} />
+              {t('topup.vipMonths', { count: monthsFor(tier.minAmountCents) })}
+            </span>
           </button>
         ))}
       </div>

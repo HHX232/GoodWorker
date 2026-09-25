@@ -46,6 +46,9 @@ export function WalletPage() {
 
         <MonthlyFeeCard refreshKey={refreshKey} />
 
+        {/* Main block: buy on the left (top-up, then teacher add-ons), see on
+            the right (spend chart above history). 90vh on desktop — see
+            .layout in WalletPage.module.scss. */}
         <div className={styles.layout}>
           <div className={styles.leftCol}>
             <TopUpCard
@@ -53,25 +56,27 @@ export function WalletPage() {
               balanceLoading={balanceLoading}
               onSuccess={() => { fetchBalance(); setRefreshKey(k => k + 1) }}
             />
-            <SpendChart refreshKey={refreshKey} />
+
+            {/* Teacher-only purchases from /vip: pinned listing + featured posts. */}
+            {isTeacher && (
+              <div className={styles.addonsPanel}>
+                <PinnedListingSection />
+                <FeaturedPostsAddon />
+              </div>
+            )}
           </div>
 
           <div className={styles.rightCol}>
-            <TransactionsTable refreshKey={refreshKey} />
+            <SpendChart refreshKey={refreshKey} />
+            <div className={styles.historySlot}>
+              <TransactionsTable refreshKey={refreshKey} />
+            </div>
           </div>
         </div>
 
         <section className={styles.offers}>
           <p className={styles.sectionLabel}>{t('offersLabel')}</p>
           <VipMechanic />
-
-          {/* Teacher-only purchases from /vip: pinned listing + featured posts. */}
-          {isTeacher && (
-            <div className={styles.addonsPanel}>
-              <PinnedListingSection />
-              <FeaturedPostsAddon />
-            </div>
-          )}
         </section>
       </div>
     </div>

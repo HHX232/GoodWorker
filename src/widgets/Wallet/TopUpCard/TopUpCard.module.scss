@@ -95,49 +95,62 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  column-gap: 10px;
-  row-gap: 22px;
+  grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+  column-gap: 12px;
+  row-gap: 16px;
 }
 
+// Preset tiles: real cards (not grey slabs) — big ink amount, VIP months in a
+// tinted pill, lift on hover. Selected = red ring; best value = warm tint.
 .tile {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(var(--w-fg-rgb, 255, 255, 255), 0.12);
-  background: var(--w-surface, #1f2230);
+  gap: 8px;
+  padding: 14px 14px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(var(--w-fg-rgb, 255, 255, 255), 0.1);
+  background: var(--w-card, #1a1c26);
   color: var(--w-ink, #f2f3f7);
+  box-shadow: var(--w-shadow, 0 1px 2px rgba(0, 0, 0, 0.5), 0 8px 22px -10px rgba(0, 0, 0, 0.6));
   cursor: pointer;
   text-align: left;
   font-family: inherit;
-  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
 
   &:hover {
-    border-color: rgba(var(--w-fg-rgb, 255, 255, 255), 0.24);
+    border-color: rgba(237, 6, 6, 0.45);
     transform: translateY(-2px);
   }
 }
 
+.tileBest {
+  border-color: rgba(237, 6, 6, 0.35);
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgba(237, 6, 6, 0.1), transparent 65%),
+    var(--w-card, #1a1c26);
+}
+
 .tileActive {
   border-color: #ed0606;
-  background: rgba(237, 6, 6, 0.1);
-  box-shadow: 0 12px 32px -14px rgba(237, 6, 6, 0.55);
+  box-shadow: 0 0 0 3px rgba(237, 6, 6, 0.18), 0 12px 28px -14px rgba(237, 6, 6, 0.55);
 }
 
 .tileCustom {
   cursor: text;
+  border-style: dashed;
+  border-color: rgba(var(--w-fg-rgb, 255, 255, 255), 0.25);
+  box-shadow: none;
+  background: transparent;
 }
 
 .tileLabel {
   font-size: 11px;
-  font-weight: 600;
-  color: rgba(var(--w-fg-rgb, 255, 255, 255), 0.55);
+  font-weight: 700;
+  color: var(--w-muted, #9a9aab);
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
 }
 
 .customInputRow {
@@ -153,12 +166,13 @@
     outline: none;
     background: transparent;
     color: var(--w-ink, #fff);
-    font-size: 15px;
-    font-weight: 700;
+    font-size: 20px;
+    font-weight: 800;
     font-family: inherit;
 
     &::placeholder {
-      color: rgba(var(--w-fg-rgb, 255, 255, 255), 0.35);
+      color: var(--w-faint, #5c5d6e);
+      font-size: 14px;
       font-weight: 500;
     }
 
@@ -172,18 +186,29 @@
 }
 
 .currencyPrefix {
-  color: rgba(var(--w-fg-rgb, 255, 255, 255), 0.55);
-  font-weight: 600;
-}
-
-.tileAmount {
-  font-size: 16px;
+  color: var(--w-muted, #9a9aab);
+  font-size: 18px;
   font-weight: 700;
 }
 
+.tileAmount {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
 .tileMonths {
-  font-size: 11px;
-  color: rgba(var(--w-fg-rgb, 255, 255, 255), 0.55);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 99px;
+  background: rgba(var(--w-gold-rgb, 216, 180, 106), 0.16);
+  color: var(--w-gold, #d8b46a);
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .badge {

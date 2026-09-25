@@ -162,6 +162,9 @@
   display: flex;
   justify-content: space-between;
   gap: 4px;
+  // Line the ticks up under the range track only — the row above also holds
+  // .sliderValue (min-width 84px + 14px gap) to the right of the track.
+  padding-right: 98px;
 }
 
 .tierTick {
