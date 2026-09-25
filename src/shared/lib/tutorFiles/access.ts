@@ -148,7 +148,7 @@ export async function loadStudentVisibility(studentId: string): Promise<StudentV
     : []
   const files = candidateFiles
     .filter(file => canStudentSee(fileVisibilityItem(file, file.folder ?? (file.folderId ? folderById.get(file.folderId) ?? null : null)), studentId, grantedIds))
-    .map(({ folder: _folder, ...file }) => file)
+    .map(({ folder, ...file }) => { void folder; return file })
 
   return { grantedIds, folders, files }
 }

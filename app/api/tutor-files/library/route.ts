@@ -1,42 +1,9 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
-import type { TutorFile, TutorFolder } from '@prisma/client'
+import type { TutorFolder } from '@prisma/client'
 import { canStudentSee, getFilesSessionUser, isTeacherVipActive, loadStudentVisibility } from '@/shared/lib/tutorFiles/access'
-import type { FilesPerson, LibraryFile, LibraryFolder, LibraryGroup, LibraryResponse, TreeNode } from '@/shared/types/TutorFiles/tutorFiles.types'
-
-type GrantRow = { student: FilesPerson }
-const studentSelect = { student: { select: { id: true, name: true, avatarUrl: true } } }
-
-function toFolder(f: TutorFolder, itemCount: number, grants: GrantRow[] = []): LibraryFolder {
-  return {
-    id: f.id,
-    name: f.name,
-    parentId: f.parentId,
-    allowStudentUpload: f.allowStudentUpload,
-    restrictedToStudentId: f.restrictedToStudentId,
-    itemCount,
-    sharedWith: grants.map(g => g.student),
-    updatedAt: f.updatedAt.toISOString(),
-  }
-}
-
-function toFile(f: TutorFile, grants: GrantRow[] = []): LibraryFile {
-  return {
-    id: f.id,
-    name: f.name,
-    url: f.url,
-    sizeBytes: f.sizeBytes,
-    mimeType: f.mimeType,
-    uploadedByRole: f.uploadedByRole,
-    uploadedById: f.uploadedById,
-    createdAt: f.createdAt.toISOString(),
-    sharedWith: grants.map(g => g.student),
-  }
-}
-
-function toTreeNode(f: TutorFolder, parentVisible: boolean): TreeNode {
-  return { id: f.id, name: f.name, parentId: parentVisible ? f.parentId : null, teacherId: f.teacherId, restrictedToStudentId: f.restrictedToStudentId }
-}
+import type { LibraryGroup, LibraryResponse } from '@/shared/types/TutorFiles/tutorFiles.types'
+import { grantStudentSelect, studentItemCounter, toFile, toFolder, toTreeNode } from '@/shared/lib/tutorFiles/readModel'
 
 // GET /api/tutor-files/library?folderId=... — the browse read model behind
 // <FilesShell> for both roles (tickets 05/07). Teacher: their own library,
@@ -64,12 +31,12 @@ export async function GET(req: NextRequest) {
       const [folders, files] = await Promise.all([
         prisma.tutorFolder.findMany({
           where: { teacherId: user.id, parentId: folderId },
-          include: { _count: { select: { children: true, files: true } }, grants: { include: studentSelect, orderBy: { grantedAt: 'asc' } } },
+          include: { _count: { select: { children: true, files: true } }, grants: { include: grantStudentSelect, orderBy: { grantedAt: 'asc' } } },
           orderBy: { name: 'asc' },
         }),
         prisma.tutorFile.findMany({
           where: { teacherId: user.id, folderId },
-          include: { grants: { include: studentSelect, orderBy: { grantedAt: 'asc' } } },
+          include: { grants: { include: grantStudentSelect, orderBy: { grantedAt: 'asc' } } },
           orderBy: { createdAt: 'desc' },
         }),
       ])
@@ -84,6 +51,7 @@ export async function GET(req: NextRequest) {
           files: files.map(f => toFile(f, f.grants)),
         }],
         tree: allFolders.map(f => toTreeNode(f, true)),
+        teachers: [],
         canUpload: isVip,
         isVip,
       }
@@ -93,11 +61,7 @@ export async function GET(req: NextRequest) {
     // STUDENT
     const { grantedIds, folders: visibleFolders, files: visibleFiles } = await loadStudentVisibility(user.id)
     const visibleById = new Map(visibleFolders.map(f => [f.id, f]))
-    const childFolderCount = new Map<string, number>()
-    for (const f of visibleFolders) if (f.parentId && visibleById.has(f.parentId)) childFolderCount.set(f.parentId, (childFolderCount.get(f.parentId) ?? 0) + 1)
-    const fileCount = new Map<string, number>()
-    for (const f of visibleFiles) if (f.folderId) fileCount.set(f.folderId, (fileCount.get(f.folderId) ?? 0) + 1)
-    const countOf = (id: string) => (childFolderCount.get(id) ?? 0) + (fileCount.get(id) ?? 0)
+    const countOf = studentItemCounter(visibleFolders, visibleFiles)
 
     const teacherIds = [...new Set([...visibleFolders.map(f => f.teacherId), ...visibleFiles.map(f => f.teacherId)])]
     const teachers = await prisma.teacher.findMany({ where: { id: { in: teacherIds } }, select: { id: true, name: true, avatarUrl: true }, orderBy: { name: 'asc' } })
@@ -111,7 +75,7 @@ export async function GET(req: NextRequest) {
         folders: visibleFolders.filter(f => f.teacherId === teacher.id && !(f.parentId && visibleById.has(f.parentId))).map(f => toFolder(f, countOf(f.id))),
         files: visibleFiles.filter(f => f.teacherId === teacher.id && !(f.folderId && visibleById.has(f.folderId))).map(f => toFile(f)),
       }))
-      const body: LibraryResponse = { role: 'STUDENT', folder: null, breadcrumbs: [], groups, tree, canUpload: false, isVip: false }
+      const body: LibraryResponse = { role: 'STUDENT', folder: null, breadcrumbs: [], groups, tree, teachers, canUpload: false, isVip: false }
       return NextResponse.json(body)
     }
 
@@ -128,6 +92,7 @@ export async function GET(req: NextRequest) {
         files: visibleFiles.filter(f => f.folderId === current.id).map(f => toFile(f)),
       }],
       tree,
+      teachers,
       canUpload: current.restrictedToStudentId === user.id,
       isVip: false,
     }

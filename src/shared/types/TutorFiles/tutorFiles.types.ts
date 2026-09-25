@@ -25,6 +25,7 @@ export interface LibraryFolder {
 export interface LibraryFile {
   id: string
   name: string
+  folderId: string | null
   url: string
   sizeBytes: number
   mimeType: string
@@ -59,6 +60,8 @@ export interface LibraryResponse {
   breadcrumbs: { id: string; name: string }[]
   groups: LibraryGroup[]
   tree: TreeNode[]
+  /** Student only: every tutor who shares something with the viewer (labels the sidebar tree). */
+  teachers: FilesPerson[]
   /** Viewer may upload into the open folder (teacher: always; student: only their own subfolder). */
   canUpload: boolean
   /** Teacher only: VIP active — write actions allowed (G01). */

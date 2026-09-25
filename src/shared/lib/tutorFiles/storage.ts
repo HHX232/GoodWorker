@@ -1,14 +1,7 @@
 import { prisma } from '@/shared/prisma/prisma'
+import { MAX_FOLDER_DEPTH, QUOTA_BYTES } from './constants'
 
-/** Single source of truth for the storage cap — interfaces.md "Контракт между тикетами: квота". */
-export const QUOTA_BYTES = 7 * 1024 ** 3
-
-/**
- * A root folder (no parent) has depth 1 (`ancestorIds.length === 0`). A
- * folder's depth is `ancestorIds.length + 1`. 6 levels means the deepest
- * allowed folder has 5 ancestors.
- */
-export const MAX_FOLDER_DEPTH = 6
+export { MAX_FOLDER_DEPTH, QUOTA_BYTES }
 
 export class FolderDepthExceededError extends Error {
   constructor() {
@@ -122,4 +115,49 @@ export async function ensureStudentSubfolder(
     await tx.tutorFolderGrant.create({ data: { folderId: child.id, studentId } })
   })
   return true
+}
+
+type DropboxFolder = { id: string; teacherId: string; ancestorIds: string[]; restrictedToStudentId: string | null }
+
+/**
+ * G03 with inherited access: a grant on `folder` gives the student access to
+ * every "сдача" folder at or below it, so each of those needs the student's
+ * personal subfolder too — otherwise they'd see a submissions folder they
+ * can't submit into.
+ */
+export async function ensureSubfoldersForGrant(folder: DropboxFolder & { allowStudentUpload: boolean }, studentId: string): Promise<void> {
+  const dropboxes = await prisma.tutorFolder.findMany({
+    where: { ancestorIds: { has: folder.id }, allowStudentUpload: true, restrictedToStudentId: null },
+  })
+  if (folder.allowStudentUpload) dropboxes.unshift(folder as typeof dropboxes[number])
+  for (const dropbox of dropboxes) await ensureStudentSubfolder(dropbox, studentId)
+}
+
+/** Every student who can reach `folder` through a grant on it or on one of its ancestors. */
+export async function studentsWithAccess(folder: { id: string; ancestorIds: string[] }): Promise<string[]> {
+  const grants = await prisma.tutorFolderGrant.findMany({
+    where: { folderId: { in: [folder.id, ...folder.ancestorIds] } },
+    select: { studentId: true },
+  })
+  return [...new Set(grants.map(g => g.studentId))]
+}
+
+/**
+ * After revoking `studentId`'s grant on `folderId`: drop the student's grant
+ * on each of their personal subfolders inside that branch whose submissions
+ * parent they can no longer reach through any remaining grant (R04i — revoke
+ * really closes the branch; the subfolder and its files stay for the teacher,
+ * and a later re-grant restores access via ensureStudentSubfolder).
+ */
+export async function revokeOrphanedSubfolderGrants(folderId: string, studentId: string): Promise<void> {
+  const personal = await prisma.tutorFolder.findMany({
+    where: { restrictedToStudentId: studentId, OR: [{ parentId: folderId }, { ancestorIds: { has: folderId } }] },
+    select: { id: true, ancestorIds: true },
+  })
+  if (personal.length === 0) return
+  const remaining = new Set(
+    (await prisma.tutorFolderGrant.findMany({ where: { studentId }, select: { folderId: true } })).map(g => g.folderId)
+  )
+  const orphaned = personal.filter(p => !p.ancestorIds.some(id => remaining.has(id))).map(p => p.id)
+  if (orphaned.length) await prisma.tutorFolderGrant.deleteMany({ where: { studentId, folderId: { in: orphaned } } })
 }

@@ -1,7 +1,7 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { getFilesSessionUser, requireOwnedFolder } from '@/shared/lib/tutorFiles/access'
-import { ensureStudentSubfolder } from '@/shared/lib/tutorFiles/storage'
+import { ensureStudentSubfolder, studentsWithAccess } from '@/shared/lib/tutorFiles/storage'
 
 interface Params {
   params: Promise<{ id: string }>
@@ -11,8 +11,9 @@ interface Params {
 // toggle the G03 "ученики могут сдавать сюда" flag; parent/ancestorIds are
 // untouched (moving a folder between parents is out of scope, interfaces.md).
 // Turning the flag on backfills a personal subfolder for every student who
-// already holds a grant on this folder (the grant route only does it for new
-// grants). Turning it off keeps existing subfolders and their files — the
+// can already see this folder (the grant route only does it for new
+// grants), including students who reach it through a grant on an ancestor.
+// Turning it off keeps existing subfolders and their files — the
 // teacher deletes them explicitly if wanted.
 export async function PATCH(req: NextRequest, { params }: Params) {
   try {
@@ -41,8 +42,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const folder = await prisma.tutorFolder.update({ where: { id }, data })
 
     if (data.allowStudentUpload && !guard.folder.allowStudentUpload) {
-      const grants = await prisma.tutorFolderGrant.findMany({ where: { folderId: id }, select: { studentId: true } })
-      for (const { studentId } of grants) await ensureStudentSubfolder(folder, studentId)
+      for (const studentId of await studentsWithAccess(folder)) await ensureStudentSubfolder(folder, studentId)
     }
 
     return NextResponse.json({ folder })

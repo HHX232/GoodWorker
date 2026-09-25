@@ -5,14 +5,14 @@ import { prisma } from '@/shared/prisma/prisma'
 import { publicUrlForKey, s3, S3_BUCKET } from '@/shared/s3/s3Client'
 import { canStudentSee, getFilesSessionUser, isTeacherVipActive, vipRequiredResponse } from '@/shared/lib/tutorFiles/access'
 import { getUsedBytes } from '@/shared/lib/tutorFiles/storage'
+import { MAX_FILE_BYTES } from '@/shared/lib/tutorFiles/constants'
 
 export const runtime = 'nodejs'
 
-// Same cap as app/api/upload/route.ts (kept in sync by eye, that route has no
-// exported constant to import) — this quota gate is separate and deliberately
-// not enforced here (G02: uploads past QUOTA_BYTES are allowed, the UI shows
-// an informational modal from the `usedBytes` this route returns).
-const MAX_SIZE = 50 * 1024 * 1024 // 50MB
+// Uploads past QUOTA_BYTES are deliberately allowed (G02: the UI shows an
+// informational modal from the `usedBytes` this route returns); only the
+// per-file cap is enforced here.
+const MAX_SIZE = MAX_FILE_BYTES
 
 function extOf(filename: string): string {
   const parts = filename.split('.')
