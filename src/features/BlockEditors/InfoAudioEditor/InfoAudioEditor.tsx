@@ -1,6 +1,7 @@
 'use client'
 import {InfoAudioPayload} from '@/shared/types/Tasks/TaskPayload.type'
 import {uploadFile} from '@/shared/lib/uploadFile'
+import {LibraryPickButton, pickedFileAsFile, type PickedFile} from '@/widgets/Files/LibraryPicker/LibraryPicker'
 import {Mic2Icon, PauseIcon, PlayIcon, UploadIcon, XIcon} from 'lucide-react'
 import {useTranslations} from 'next-intl'
 import {useCallback, useEffect, useRef, useState} from 'react'
@@ -174,6 +175,17 @@ export const InfoAudioEditor = ({payload, onChange, viewOnly = false}: Props) =>
     }
   }
 
+  const pickFromLibrary = async ([picked]: PickedFile[]) => {
+    if (!picked) return
+    setExtracting(true)
+    try {
+      const waveform = await pickedFileAsFile(picked).then(extractWaveform).catch(() => Array(100).fill(0.5))
+      update({url: picked.url, filename: picked.name, waveform})
+    } finally {
+      setExtracting(false)
+    }
+  }
+
   const remove = () => {
     update({url: null, filename: null, waveform: null})
     if (fileRef.current) fileRef.current.value = ''
@@ -201,6 +213,8 @@ export const InfoAudioEditor = ({payload, onChange, viewOnly = false}: Props) =>
           <span className={styles.upload_hint}>{t('audioFormats')}</span>
         </button>
       )}
+
+      {!hasAudio && !extracting && <LibraryPickButton accept='audio' multiple={false} max={1} onPick={pickFromLibrary} />}
 
       {extracting && (
         <div className={styles.extracting}>

@@ -1,0 +1,5 @@
+// The mobile header already overflows 390px on its own; this extra icon
+// stays desktop-only (phones reach /files from the profile sub-nav).
+.hideNarrow {
+  @media (max-width: 768px) { display: none !important; }
+}

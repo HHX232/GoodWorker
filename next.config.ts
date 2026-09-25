@@ -6,6 +6,9 @@ const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 const nextConfig: NextConfig = {
   reactCompiler: true,
   output: "standalone",
+  // pdf.js is loaded from node_modules at runtime on the server (text
+  // extraction for search inside library files), not bundled.
+  serverExternalPackages: ["pdfjs-dist"],
   turbopack: {
     root: __dirname,
   },

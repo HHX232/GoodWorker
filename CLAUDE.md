@@ -224,3 +224,14 @@ ADMIN→TEACHER: сид-репетитор логинится с ролью `ADM
 Состояние прогона — `.autopilot/state.js`; контракты/копирайт для этой фичи и живая история тикетов — `.autopilot/chat-system/interfaces.md` (читать перед кодом), требования и их статус — `.autopilot/chat-system/manifest.md`, бриф — `.autopilot/chat-system/2026-09-15-brief.md`, тикеты — `.autopilot/chat-system/tickets/`.
 
 <!-- autopilot:chat-system:end -->
+
+# GoodWorker — хранилище файлов репетитора (`tutor-files`)
+
+Страница `/files` (VIP-репетитор и его ученики); ссылки — иконка в шапке, подменю профиля, ячейки «Хранилище» / «Файлы от репетиторов» в полосе статистики профиля. Эта сборка — **без Кошелька**: хранилище входит в VIP, квота (админка → Хранилище, по умолчанию 15 ГБ) — жёсткий потолок, загрузка сверх — 413 `QUOTA_EXCEEDED`. Контракты и история — `.autopilot/tutor-files/interfaces.md`.
+
+- API `app/api/tutor-files/*`: `library` (read-модель для обеих ролей — браузинг идёт только через неё), `folders`, `files`, `grants`, `search`, `usage`, `limits`, `links`; админские — `app/api/admin/storage`, `app/api/admin/tutor-files/*` (тихий просмотр, ничего не пишет в `TutorFileOpen`/`TutorFolderOpen`).
+- `src/shared/lib/tutorFiles/billing.ts` — единственная точка связи с Кошельком; здесь `STORAGE_BILLING_ENABLED = false`, `getStoragePricing() → null`. Wallet-сборка меняет только этот файл (+ крон и поле цены в админке).
+- Видимость ученику — только через `loadStudentVisibility()`/`canStudentSee()` (`src/shared/lib/tutorFiles/access.ts`), с учётом окна доступа `activeGrantWhere()`; `restrictedToStudentId` бывает только у листовых личных подпапок.
+- Prisma-клиент (`src/shared/prisma/prisma.ts`) по умолчанию omit-ит `TutorFile.contentText` (текст для поиска внутри файлов) — выбирать явно; тип строк — `TutorFileRow`.
+- Клиент импортирует типы из `src/shared/types/TutorFiles/tutorFiles.types.ts` и константы из `src/shared/lib/tutorFiles/constants.ts` — не `access.ts`/`storage.ts` (тянут Prisma).
+- `/content`-роуты всегда отдают `application/octet-stream` + `attachment` + `CSP: sandbox` (загруженный учеником .html не должен исполниться на нашем домене).

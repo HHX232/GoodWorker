@@ -1,0 +1,173 @@
+.pickBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid #DADCEB;
+  border-radius: 10px;
+  background: #fff;
+  color: #534AB7;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover:not(:disabled) { background: #F4F3FF; border-color: #C9C6F0; }
+  &:disabled { opacity: 0.5; cursor: default; }
+  &:focus-visible { outline: 2px solid #534AB7; outline-offset: 2px; }
+}
+
+.search {
+  position: relative;
+  display: block;
+  margin-bottom: 10px;
+
+  input { padding-left: 34px; }
+}
+
+.searchIcon { position: absolute; top: 50%; left: 12px; transform: translateY(-50%); color: #ABABAB; pointer-events: none; }
+
+.crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; margin: 0 0 8px -6px; font-size: 12px; color: #C4C6D4; }
+.crumbItem { display: inline-flex; align-items: center; gap: 2px; }
+
+.crumb {
+  padding: 2px 6px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #868897;
+  font: inherit;
+  cursor: pointer;
+
+  &:hover { background: #F4F4F8; color: #141416; }
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 52vh;
+  overflow-y: auto;
+
+  li { position: relative; }
+}
+
+// "Attach this folder" — on a folder row, and for the folder being browsed.
+.attachFolder {
+  position: absolute;
+  top: 50%;
+  right: 34px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 9px;
+  border: 1px solid #C9C6F0;
+  border-radius: 8px;
+  background: #fff;
+  color: #534AB7;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  opacity: 0;
+
+  li:hover &, &:focus-visible { opacity: 1; }
+  @media (hover: none) { opacity: 1; }
+  &:hover { background: #F4F3FF; }
+}
+
+.attachCurrent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 10px 12px;
+  border: 1.5px dashed #C9C6F0;
+  border-radius: 12px;
+  background: #F8F7FF;
+  color: #3F3A8A;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover:not(:disabled) { border-style: solid; background: #F1F0FD; }
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: #141416;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover:not(:disabled) { background: #F7F7FB; }
+  &:disabled { opacity: 0.45; cursor: default; }
+  &:focus-visible { outline: 2px solid #534AB7; outline-offset: -2px; }
+}
+
+.rowOn, .rowOn:hover:not(:disabled) { background: #F1F0FD; }
+
+.swatch, .fileIcon, .thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  flex-shrink: 0;
+  color: rgba(20, 20, 40, 0.45);
+}
+
+.fileIcon { background: #F4F4F8; }
+.thumb { object-fit: cover; }
+
+.rowName { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rowMeta { font-size: 12px; color: #868897; white-space: nowrap; }
+.rowChevron { color: #C4C6D4; flex-shrink: 0; }
+
+.check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid #C4C6D4;
+  border-radius: 5px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.checkOn { background: #534AB7; border-color: #534AB7; }
+
+.empty { margin: 16px 0 6px; text-align: center; color: #868897; font-size: 13px; }
+.footNote { flex: 1; font-size: 12px; color: #868897; align-self: center; }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .pickBtn { border-color: rgba(255, 255, 255, 0.12); background: transparent; color: #c7cbff; &:hover:not(:disabled) { background: rgba(129, 140, 248, 0.1); border-color: rgba(129, 140, 248, 0.4); } }
+  .crumb { color: #9ea4b5; &:hover { background: rgba(255, 255, 255, 0.06); color: #e8eaf0; } }
+  .row { color: #e8eaf0; &:hover:not(:disabled) { background: rgba(255, 255, 255, 0.04); } }
+  .rowOn, .rowOn:hover:not(:disabled) { background: rgba(129, 140, 248, 0.12); }
+  .fileIcon { background: rgba(255, 255, 255, 0.05); }
+  .rowMeta, .empty, .footNote { color: #9ea4b5; }
+  .check { border-color: rgba(255, 255, 255, 0.24); }
+  .checkOn { background: #818cf8; border-color: #818cf8; }
+  .attachFolder { background: #1a1c24; border-color: rgba(129, 140, 248, 0.4); color: #c7cbff; }
+  .attachCurrent { background: rgba(129, 140, 248, 0.08); border-color: rgba(129, 140, 248, 0.4); color: #c7cbff; }
+}

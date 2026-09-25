@@ -5,10 +5,12 @@ import { toast } from 'sonner'
 import { motion } from 'framer-motion'
 import { useSession } from 'next-auth/react'
 import {
+  FolderOpen,
   Tag, Video, FileText, FileUp, MessageSquare,
   Star, ArrowRight, CheckCircle, Zap, Users, BookOpen, X, Copy, Gift,
 } from 'lucide-react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import styles from './vip.module.scss'
 
 // ── Starfield ──────────────────────────────────────────────
@@ -120,6 +122,40 @@ const FEATURES = [
     tag: null,
   },
 ]
+
+/** The file library is VIP-only — the lead feature, full row, with the live quota from the admin setting. */
+function StorageFeatureCard() {
+  const t = useTranslations('vip.storage')
+  const [quotaGb, setQuotaGb] = useState<number | null>(null)
+  useEffect(() => {
+    fetch('/api/tutor-files/limits')
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => { if (d && typeof d.quotaGb === 'number') setQuotaGb(d.quotaGb) })
+      .catch(() => {})
+  }, [])
+  return (
+    <motion.div
+      className={`${styles.featureCard} ${styles.featureCardWide}`}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.4 }}
+    >
+      <div className={styles.featureIcon} style={{ background: '#EEEDFE', color: '#534AB7' }}>
+        <FolderOpen size={18} />
+      </div>
+      <div className={styles.featureWideBody}>
+        <h3 className={styles.featureTitle}>{t('title')}</h3>
+        <p className={styles.featureDesc}>{t('desc')}</p>
+        <div className={styles.featureWideTags}>
+          <span className={styles.featureTag} style={{ background: '#EEEDFE', color: '#534AB7' }}>{t('tag')}</span>
+          {quotaGb !== null && <span className={styles.featureTag} style={{ background: '#E1F5EE', color: '#0F6E56' }}>{t('quota', { gb: quotaGb })}</span>}
+        </div>
+      </div>
+      <Link href="/files" className={styles.featureWideLink}>{t('open')}</Link>
+    </motion.div>
+  )
+}
 
 // ── Errors ─────────────────────────────────────────────────
 
@@ -462,6 +498,7 @@ export default function VipClientPage() {
         <section>
           <p className={styles.sectionLabel}>Что входит в VIP</p>
           <div className={styles.grid}>
+            <StorageFeatureCard />
             {FEATURES.map((f, i) => (
               <motion.div
                 key={f.title}
