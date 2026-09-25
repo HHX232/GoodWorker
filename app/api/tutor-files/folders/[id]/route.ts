@@ -1,13 +1,19 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { getFilesSessionUser, requireOwnedFolder } from '@/shared/lib/tutorFiles/access'
+import { ensureStudentSubfolder } from '@/shared/lib/tutorFiles/storage'
 
 interface Params {
   params: Promise<{ id: string }>
 }
 
-// PATCH /api/tutor-files/folders/[id] {name} — rename only; parent/ancestorIds are
+// PATCH /api/tutor-files/folders/[id] {name?, allowStudentUpload?} — rename and/or
+// toggle the G03 "ученики могут сдавать сюда" flag; parent/ancestorIds are
 // untouched (moving a folder between parents is out of scope, interfaces.md).
+// Turning the flag on backfills a personal subfolder for every student who
+// already holds a grant on this folder (the grant route only does it for new
+// grants). Turning it off keeps existing subfolders and their files — the
+// teacher deletes them explicitly if wanted.
 export async function PATCH(req: NextRequest, { params }: Params) {
   try {
     const user = await getFilesSessionUser()
@@ -18,10 +24,27 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     if (guard.response) return guard.response
 
     const body = await req.json().catch(() => ({}))
-    const name = typeof body?.name === 'string' ? body.name.trim() : ''
-    if (!name) return NextResponse.json({ error: 'name required' }, { status: 400 })
+    const data: { name?: string; allowStudentUpload?: boolean } = {}
+    if (body?.name !== undefined) {
+      const name = typeof body.name === 'string' ? body.name.trim() : ''
+      if (!name) return NextResponse.json({ error: 'name required' }, { status: 400 })
+      data.name = name
+    }
+    if (typeof body?.allowStudentUpload === 'boolean') {
+      if (body.allowStudentUpload && guard.folder.restrictedToStudentId) {
+        return NextResponse.json({ error: 'RESTRICTED_PARENT' }, { status: 400 })
+      }
+      data.allowStudentUpload = body.allowStudentUpload
+    }
+    if (Object.keys(data).length === 0) return NextResponse.json({ error: 'nothing to update' }, { status: 400 })
 
-    const folder = await prisma.tutorFolder.update({ where: { id }, data: { name } })
+    const folder = await prisma.tutorFolder.update({ where: { id }, data })
+
+    if (data.allowStudentUpload && !guard.folder.allowStudentUpload) {
+      const grants = await prisma.tutorFolderGrant.findMany({ where: { folderId: id }, select: { studentId: true } })
+      for (const { studentId } of grants) await ensureStudentSubfolder(folder, studentId)
+    }
+
     return NextResponse.json({ folder })
   } catch (e) {
     console.error('[PATCH /api/tutor-files/folders/[id]]', e)

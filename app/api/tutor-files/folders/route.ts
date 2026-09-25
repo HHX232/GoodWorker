@@ -1,6 +1,6 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
-import { getFilesSessionUser } from '@/shared/lib/tutorFiles/access'
+import { getFilesSessionUser, isTeacherVipActive, vipRequiredResponse } from '@/shared/lib/tutorFiles/access'
 import { assertFolderDepthAllowed, assertNotUnderRestrictedFolder, FolderDepthExceededError, RestrictedAncestorError } from '@/shared/lib/tutorFiles/storage'
 
 // POST /api/tutor-files/folders {name, parentId?} — creates a TutorFolder for the
@@ -17,6 +17,7 @@ export async function POST(req: NextRequest) {
     const name = typeof body?.name === 'string' ? body.name.trim() : ''
     const parentId = typeof body?.parentId === 'string' ? body.parentId : null
     if (!name) return NextResponse.json({ error: 'name required' }, { status: 400 })
+    if (!(await isTeacherVipActive(user.id))) return vipRequiredResponse()
 
     let ancestorIds: string[] = []
     if (parentId) {
@@ -27,8 +28,9 @@ export async function POST(req: NextRequest) {
         assertFolderDepthAllowed(parent.ancestorIds)
         await assertNotUnderRestrictedFolder(parent)
       } catch (e) {
-        if (e instanceof FolderDepthExceededError || e instanceof RestrictedAncestorError) {
-          return NextResponse.json({ error: e.message }, { status: 400 })
+        if (e instanceof FolderDepthExceededError) return NextResponse.json({ error: 'MAX_DEPTH', message: e.message }, { status: 400 })
+        if (e instanceof RestrictedAncestorError) {
+          return NextResponse.json({ error: 'RESTRICTED_PARENT', message: e.message }, { status: 400 })
         }
         throw e
       }

@@ -1,7 +1,7 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
-import { getFilesSessionUser, hasTeacherStudentLink, requireOwnedFile, requireOwnedFolder } from '@/shared/lib/tutorFiles/access'
-import { assertFolderDepthAllowed, assertNotUnderRestrictedFolder, FolderDepthExceededError, RestrictedAncestorError } from '@/shared/lib/tutorFiles/storage'
+import { getFilesSessionUser, hasTeacherStudentLink, isTeacherVipActive, requireOwnedFile, requireOwnedFolder, vipRequiredResponse } from '@/shared/lib/tutorFiles/access'
+import { ensureStudentSubfolder } from '@/shared/lib/tutorFiles/storage'
 import { postEventCard } from '@/shared/lib/chat/access'
 
 type ItemType = 'folder' | 'file'
@@ -12,9 +12,8 @@ type ItemType = 'folder' | 'file'
 // checked before any write — a single unlinked id fails the whole request
 // with 403, not a partial grant). Granting a folder with
 // `allowStudentUpload===true` additionally auto-creates (idempotently) the
-// student's own restricted "учебная" subfolder — G03 — reusing the same
-// assertFolderDepthAllowed/assertNotUnderRestrictedFolder guard ticket 02's
-// folder POST route uses, since this is a TutorFolder.create like any other.
+// student's own restricted "учебная" subfolder — G03 — via
+// ensureStudentSubfolder (storage.ts, shared with the folder PATCH backfill).
 // Best-effort chat notification (FILE_ACCESS_GRANTED) fires after grants are
 // persisted — interfaces.md "Контракт: уведомление ученика в чате".
 export async function POST(req: NextRequest) {
@@ -25,11 +24,14 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => ({}))
     const itemType: ItemType | undefined = body?.itemType === 'folder' || body?.itemType === 'file' ? body.itemType : undefined
     const itemId = typeof body?.itemId === 'string' ? body.itemId : ''
-    const studentIds: string[] = Array.isArray(body?.studentIds) ? body.studentIds.filter((s: unknown): s is string => typeof s === 'string') : []
+    const studentIds: string[] = Array.isArray(body?.studentIds)
+      ? [...new Set<string>(body.studentIds.filter((s: unknown): s is string => typeof s === 'string'))]
+      : []
 
     if (!itemType) return NextResponse.json({ error: 'itemType must be "folder" or "file"' }, { status: 400 })
     if (!itemId) return NextResponse.json({ error: 'itemId required' }, { status: 400 })
     if (studentIds.length === 0) return NextResponse.json({ error: 'studentIds required' }, { status: 400 })
+    if (!(await isTeacherVipActive(user.id))) return vipRequiredResponse()
 
     const folderGuard = itemType === 'folder' ? await requireOwnedFolder(itemId, user.id) : null
     if (folderGuard?.response) return folderGuard.response
@@ -38,6 +40,9 @@ export async function POST(req: NextRequest) {
     const folder = folderGuard?.folder
     const file = fileGuard?.file
     const itemName = (folder ?? file)!.name
+    // A student's own "учебная" subfolder already belongs to exactly one
+    // student — sharing it onward would be invisible anyway (canStudentSee).
+    if (folder?.restrictedToStudentId) return NextResponse.json({ error: 'Restricted folder cannot be shared' }, { status: 400 })
 
     // All-or-nothing link check — a request naming one unlinked student must
     // not silently grant the rest (acceptance criterion "Попытка дать
@@ -50,59 +55,29 @@ export async function POST(req: NextRequest) {
     const teacher = await prisma.teacher.findUnique({ where: { id: user.id }, select: { name: true } })
     const teacherName = teacher?.name ?? ''
 
+    // Only students who didn't already hold this grant get the chat card — a
+    // repeat "share" must not spam the conversation (R03i.3: notify about
+    // *new* access).
+    const newlyGranted: string[] = []
     for (const studentId of studentIds) {
       if (folder) {
-        await prisma.tutorFolderGrant.upsert({
-          where: { folderId_studentId: { folderId: folder.id, studentId } },
-          create: { folderId: folder.id, studentId },
-          update: {},
-        })
-
-        if (folder.allowStudentUpload) {
-          const existing = await prisma.tutorFolder.findFirst({
-            where: { parentId: folder.id, restrictedToStudentId: studentId },
-            select: { id: true },
-          })
-          if (!existing) {
-            try {
-              assertFolderDepthAllowed(folder.ancestorIds)
-              await assertNotUnderRestrictedFolder(folder)
-            } catch (e) {
-              if (e instanceof FolderDepthExceededError || e instanceof RestrictedAncestorError) {
-                // Main grant on `folder` above already succeeded — only the
-                // auto subfolder is skipped for this student.
-                console.error('[POST /api/tutor-files/grants] auto subfolder skipped', e)
-                continue
-              }
-              throw e
-            }
-
-            const student = await prisma.student.findUnique({ where: { id: studentId }, select: { name: true } })
-            await prisma.$transaction(async tx => {
-              const child = await tx.tutorFolder.create({
-                data: {
-                  teacherId: user.id,
-                  parentId: folder.id,
-                  name: student?.name ?? 'Ученик',
-                  ancestorIds: [...folder.ancestorIds, folder.id],
-                  restrictedToStudentId: studentId,
-                },
-              })
-              await tx.tutorFolderGrant.create({ data: { folderId: child.id, studentId } })
-            })
-          }
+        const existed = await prisma.tutorFolderGrant.findUnique({ where: { folderId_studentId: { folderId: folder.id, studentId } }, select: { studentId: true } })
+        if (!existed) {
+          await prisma.tutorFolderGrant.create({ data: { folderId: folder.id, studentId } })
+          newlyGranted.push(studentId)
         }
+        if (folder.allowStudentUpload) await ensureStudentSubfolder(folder, studentId)
       } else if (file) {
-        await prisma.tutorFileGrant.upsert({
-          where: { fileId_studentId: { fileId: file.id, studentId } },
-          create: { fileId: file.id, studentId },
-          update: {},
-        })
+        const existed = await prisma.tutorFileGrant.findUnique({ where: { fileId_studentId: { fileId: file.id, studentId } }, select: { studentId: true } })
+        if (!existed) {
+          await prisma.tutorFileGrant.create({ data: { fileId: file.id, studentId } })
+          newlyGranted.push(studentId)
+        }
       }
     }
 
     await Promise.allSettled(
-      studentIds.map(studentId =>
+      newlyGranted.map(studentId =>
         postEventCard({
           teacherId: user.id,
           studentId,
@@ -119,10 +94,42 @@ export async function POST(req: NextRequest) {
   }
 }
 
+// GET /api/tutor-files/grants?itemType=folder|file&itemId=... — who currently
+// holds a direct grant on the item (ShareAccessModal's "already has access"
+// list, ticket 06). Direct grants only: access inherited from an ancestor is
+// revoked on that ancestor, not here.
+export async function GET(req: NextRequest) {
+  try {
+    const user = await getFilesSessionUser()
+    if (!user || user.role !== 'TEACHER') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const itemType = req.nextUrl.searchParams.get('itemType')
+    const itemId = req.nextUrl.searchParams.get('itemId') ?? ''
+    if (itemType !== 'folder' && itemType !== 'file') return NextResponse.json({ error: 'itemType must be "folder" or "file"' }, { status: 400 })
+
+    const studentSelect = { select: { id: true, name: true, avatarUrl: true } }
+    if (itemType === 'folder') {
+      const guard = await requireOwnedFolder(itemId, user.id)
+      if (guard.response) return guard.response
+      const grants = await prisma.tutorFolderGrant.findMany({ where: { folderId: itemId }, include: { student: studentSelect }, orderBy: { grantedAt: 'asc' } })
+      return NextResponse.json({ students: grants.map(g => ({ ...g.student, grantedAt: g.grantedAt })) })
+    }
+    const guard = await requireOwnedFile(itemId, user.id)
+    if (guard.response) return guard.response
+    const grants = await prisma.tutorFileGrant.findMany({ where: { fileId: itemId }, include: { student: studentSelect }, orderBy: { grantedAt: 'asc' } })
+    return NextResponse.json({ students: grants.map(g => ({ ...g.student, grantedAt: g.grantedAt })) })
+  } catch (e) {
+    console.error('[GET /api/tutor-files/grants]', e)
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+  }
+}
+
 // DELETE /api/tutor-files/grants {itemType, itemId, studentId} — revokes one
-// grant. Idempotent (deleteMany, no error if already absent). Does not touch
-// an auto-created "учебная" subfolder — that is a separate TutorFolder with
-// its own grant, unaffected by revoking the parent's grant.
+// grant. Idempotent (deleteMany, no error if already absent). Revoking a
+// folder also revokes the student's grant on their own "учебная" subfolder
+// directly under it (R04i: the student stops seeing the folder, and can't keep
+// uploading) — the subfolder and its files stay for the teacher to review; a
+// later re-grant restores the student's access to it (ensureStudentSubfolder).
 export async function DELETE(req: NextRequest) {
   try {
     const user = await getFilesSessionUser()
@@ -139,7 +146,9 @@ export async function DELETE(req: NextRequest) {
     if (itemType === 'folder') {
       const guard = await requireOwnedFolder(itemId, user.id)
       if (guard.response) return guard.response
-      await prisma.tutorFolderGrant.deleteMany({ where: { folderId: itemId, studentId } })
+      await prisma.tutorFolderGrant.deleteMany({
+        where: { studentId, OR: [{ folderId: itemId }, { folder: { parentId: itemId, restrictedToStudentId: studentId } }] },
+      })
     } else {
       const guard = await requireOwnedFile(itemId, user.id)
       if (guard.response) return guard.response

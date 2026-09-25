@@ -68,3 +68,58 @@ export async function assertNotUnderRestrictedFolder(parent: { id: string; ances
   })
   if (restrictedAncestor) throw new RestrictedAncestorError()
 }
+
+/**
+ * G03: idempotently creates `studentId`'s own restricted "учебная" subfolder
+ * under `folder` (plus that student's grant on it). Shared by the grant route
+ * (grant on an `allowStudentUpload` folder) and the folder PATCH route
+ * (turning `allowStudentUpload` on backfills every existing grantee), so both
+ * keep the leaf-only `restrictedToStudentId` invariant the same way. Returns
+ * `false` when the subfolder can't be created (depth cap / restricted parent)
+ * — the caller's main grant stays valid, only the subfolder is skipped.
+ */
+export async function ensureStudentSubfolder(
+  folder: { id: string; teacherId: string; ancestorIds: string[]; restrictedToStudentId: string | null },
+  studentId: string,
+): Promise<boolean> {
+  const existing = await prisma.tutorFolder.findFirst({
+    where: { parentId: folder.id, restrictedToStudentId: studentId },
+    select: { id: true },
+  })
+  if (existing) {
+    // Re-grant after a revoke: the subfolder (and the student's past
+    // submissions) survived, only its grant was removed — restore it.
+    await prisma.tutorFolderGrant.upsert({
+      where: { folderId_studentId: { folderId: existing.id, studentId } },
+      create: { folderId: existing.id, studentId },
+      update: {},
+    })
+    return true
+  }
+
+  try {
+    assertFolderDepthAllowed(folder.ancestorIds)
+    await assertNotUnderRestrictedFolder(folder)
+  } catch (e) {
+    if (e instanceof FolderDepthExceededError || e instanceof RestrictedAncestorError) {
+      console.error('[ensureStudentSubfolder] skipped', e)
+      return false
+    }
+    throw e
+  }
+
+  const student = await prisma.student.findUnique({ where: { id: studentId }, select: { name: true } })
+  await prisma.$transaction(async tx => {
+    const child = await tx.tutorFolder.create({
+      data: {
+        teacherId: folder.teacherId,
+        parentId: folder.id,
+        name: student?.name ?? 'Ученик',
+        ancestorIds: [...folder.ancestorIds, folder.id],
+        restrictedToStudentId: studentId,
+      },
+    })
+    await tx.tutorFolderGrant.create({ data: { folderId: child.id, studentId } })
+  })
+  return true
+}

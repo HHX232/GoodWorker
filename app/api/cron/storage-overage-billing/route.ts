@@ -24,8 +24,19 @@ export async function GET(req: NextRequest) {
     select: { id: true },
   })
 
+  // Idempotent per calendar month (UTC): a retried or manually re-fired run
+  // must not charge the same month twice.
+  const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
+  const alreadyBilled = new Set(
+    (await prisma.walletTransaction.findMany({
+      where: { type: 'STORAGE_OVERAGE_DEBIT', createdAt: { gte: monthStart }, teacherId: { in: vipTeachers.map(t => t.id) } },
+      select: { teacherId: true },
+    })).map(t => t.teacherId)
+  )
+
   let billed = 0
   for (const teacher of vipTeachers) {
+    if (alreadyBilled.has(teacher.id)) continue
     const usedBytes = await getUsedBytes(teacher.id)
     if (usedBytes <= QUOTA_BYTES) continue
 

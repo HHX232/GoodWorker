@@ -77,3 +77,78 @@ export async function requireOwnedFile(fileId: string, teacherId: string): Promi
   if (file.teacherId !== teacherId) return { response: NextResponse.json({ error: STATUS_MESSAGE[403] }, { status: 403 }) }
   return { file }
 }
+
+/**
+ * G01 server-side: the library's write operations (create folder, upload,
+ * grant) are VIP-only. Same expiry rule as the storage-overage cron —
+ * `isVip` alone isn't enough, an expired `vipExpiresAt` means not VIP.
+ */
+export async function isTeacherVipActive(teacherId: string): Promise<boolean> {
+  const teacher = await prisma.teacher.findUnique({ where: { id: teacherId }, select: { isVip: true, vipExpiresAt: true } })
+  if (!teacher?.isVip) return false
+  return teacher.vipExpiresAt === null || teacher.vipExpiresAt > new Date()
+}
+
+export function vipRequiredResponse(): NextResponse {
+  return NextResponse.json({ error: 'VIP_REQUIRED' }, { status: 403 })
+}
+
+export interface StudentVisibility {
+  grantedIds: Set<string>
+  /** Every folder the student can see (granted directly or via a granted ancestor, minus other students' restricted subfolders). */
+  folders: TutorFolder[]
+  /** Every file the student can see. */
+  files: TutorFile[]
+}
+
+/** A file has no `ancestorIds`/`restrictedToStudentId` of its own — both come from its folder (interfaces.md "Правило видимости"). */
+export function fileVisibilityItem(file: { id: string }, folder: { id: string; ancestorIds: string[]; restrictedToStudentId: string | null } | null): VisibilityItem {
+  return {
+    id: file.id,
+    ancestorIds: folder ? [...folder.ancestorIds, folder.id] : [],
+    restrictedToStudentId: folder?.restrictedToStudentId ?? null,
+  }
+}
+
+/**
+ * The student's whole visible library in three queries: the DB narrows to
+ * candidates (direct grant, or under a granted folder), `canStudentSee()` is
+ * the actual filter — shared by the library read model and search so both
+ * apply the one rule.
+ */
+export async function loadStudentVisibility(studentId: string): Promise<StudentVisibility> {
+  const [folderGrants, fileGrants] = await Promise.all([
+    prisma.tutorFolderGrant.findMany({ where: { studentId }, select: { folderId: true } }),
+    prisma.tutorFileGrant.findMany({ where: { studentId }, select: { fileId: true } }),
+  ])
+  const grantedFolderIds = folderGrants.map(g => g.folderId)
+  const grantedFileIds = fileGrants.map(g => g.fileId)
+  const grantedIds = new Set([...grantedFolderIds, ...grantedFileIds])
+  if (grantedIds.size === 0) return { grantedIds, folders: [], files: [] }
+
+  const candidateFolders = grantedFolderIds.length
+    ? await prisma.tutorFolder.findMany({
+        where: { OR: [{ id: { in: grantedFolderIds } }, { ancestorIds: { hasSome: grantedFolderIds } }] },
+        orderBy: { name: 'asc' },
+      })
+    : []
+  const folders = candidateFolders.filter(f => canStudentSee(f, studentId, grantedIds))
+  const folderById = new Map(candidateFolders.map(f => [f.id, f]))
+
+  const fileOr = [
+    ...(grantedFileIds.length ? [{ id: { in: grantedFileIds } }] : []),
+    ...(candidateFolders.length ? [{ folderId: { in: candidateFolders.map(f => f.id) } }] : []),
+  ]
+  const candidateFiles = fileOr.length
+    ? await prisma.tutorFile.findMany({
+        where: { OR: fileOr },
+        include: { folder: { select: { id: true, ancestorIds: true, restrictedToStudentId: true } } },
+        orderBy: { name: 'asc' },
+      })
+    : []
+  const files = candidateFiles
+    .filter(file => canStudentSee(fileVisibilityItem(file, file.folder ?? (file.folderId ? folderById.get(file.folderId) ?? null : null)), studentId, grantedIds))
+    .map(({ folder: _folder, ...file }) => file)
+
+  return { grantedIds, folders, files }
+}
