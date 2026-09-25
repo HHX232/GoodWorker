@@ -1,11 +1,11 @@
 'use client'
 
-import { MAX_FILE_BYTES, MAX_FOLDER_DEPTH, QUOTA_BYTES } from '@/shared/lib/tutorFiles/constants'
+import { DEFAULT_MAX_FILE_MB, MAX_FOLDER_DEPTH, MB } from '@/shared/lib/tutorFiles/constants'
 import type { LibraryFile, LibraryFolder, LibraryResponse, TreeNode, UsageResponse } from '@/shared/types/TutorFiles/tutorFiles.types'
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useMemo, useRef, useState, type DragEvent, type FormEvent, type ReactNode } from 'react'
 import { toast } from 'sonner'
 import { FileCard } from '../Cards/FileCard'
@@ -18,7 +18,7 @@ import {
   FilesChevronDownIcon, FilesChevronIcon, FilesCoverIcon, FilesDropboxIcon, FilesFolderPlusIcon, FilesSearchIcon, FilesShareIcon,
   FilesStorageIcon, FilesUploadIcon, FilesVipIcon,
 } from '../icons'
-import { filesFetch, FilesApiError, initials, jsonInit, triggerDownload } from '../lib'
+import { filesFetch, FilesApiError, formatBytes, initials, jsonInit, triggerDownload } from '../lib'
 import { ShareAccessModal, type ShareTarget } from '../ShareAccessModal/ShareAccessModal'
 import { StorageMeter } from '../StorageMeter/StorageMeter'
 import { StorageOverageWarningModal } from '../StorageOverageWarningModal/StorageOverageWarningModal'
@@ -30,6 +30,12 @@ export interface FilesShellProps {
   /** The open folder — owned by the page (it lives in `?folder=`), so browser back works. */
   folderId: string | null
   onNavigate: (folderId: string | null) => void
+  /**
+   * Admin's silent read-only view of a tutor's library (admin panel →
+   * Хранилище). Reads through /api/admin/*, records nothing (no first-open
+   * rows), no management or upload, no search/usage.
+   */
+  admin?: { teacherId: string; teacherName: string }
 }
 
 type NameDialog = { mode: 'create' } | { mode: 'rename'; folder: LibraryFolder }
@@ -58,8 +64,9 @@ function pathOf(parentId: string | null, byId: Map<string, TreeNode>): string {
  * only inside their own "учебная" subfolder. Everything comes from
  * GET /api/tutor-files/library, which already applies the visibility rule.
  */
-export function FilesShell({ role, folderId, onNavigate }: FilesShellProps) {
+export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProps) {
   const t = useTranslations('files')
+  const locale = useLocale()
   const queryClient = useQueryClient()
   const { data: session } = useSession()
   const isTeacher = role === 'teacher'
@@ -97,9 +104,12 @@ export function FilesShell({ role, folderId, onNavigate }: FilesShellProps) {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
+  const libraryUrl = admin
+    ? `/api/admin/tutor-files/library?teacherId=${admin.teacherId}${folderId ? `&folderId=${folderId}` : ''}`
+    : `/api/tutor-files/library${folderId ? `?folderId=${folderId}` : ''}`
   const library = useQuery({
-    queryKey: [...LIBRARY_KEY, folderId],
-    queryFn: () => filesFetch<LibraryResponse>(`/api/tutor-files/library${folderId ? `?folderId=${folderId}` : ''}`),
+    queryKey: admin ? ['tutor-files', 'admin', admin.teacherId, folderId] : [...LIBRARY_KEY, folderId],
+    queryFn: () => filesFetch<LibraryResponse>(libraryUrl),
     placeholderData: keepPreviousData,
     retry: false,
   })
@@ -109,13 +119,13 @@ export function FilesShell({ role, folderId, onNavigate }: FilesShellProps) {
   const search = useQuery({
     queryKey: ['tutor-files', 'search', debouncedQuery],
     queryFn: () => filesFetch<{ folders: LibraryFolder[]; files: LibraryFile[] }>(`/api/tutor-files/search?q=${encodeURIComponent(debouncedQuery)}`),
-    enabled: debouncedQuery.length > 0,
+    enabled: debouncedQuery.length > 0 && !admin,
   })
 
   const usage = useQuery({
     queryKey: ['tutor-files', 'usage'],
     queryFn: () => filesFetch<UsageResponse>('/api/tutor-files/usage'),
-    enabled: isTeacher && isVip,
+    enabled: isTeacher && isVip && !admin,
   })
 
   // An open folder that vanished (deleted, access revoked, bad link) → back to the root.
@@ -152,20 +162,23 @@ export function FilesShell({ role, folderId, onNavigate }: FilesShellProps) {
     setUploading({ done: 0, total: list.length })
     for (let i = 0; i < list.length; i++) {
       const file = list[i]
-      if (file.size > MAX_FILE_BYTES) {
+      // Students don't get /usage; the server re-checks anyway.
+      if (file.size > (usage.data?.maxFileBytes ?? DEFAULT_MAX_FILE_MB * MB)) {
         toast.error(t('errTooLarge', { name: file.name }))
       } else {
         const form = new FormData()
         form.append('file', file)
         if (folderId) form.append('folderId', folderId)
         try {
-          const res = await filesFetch<{ file: LibraryFile; usedBytes?: number }>('/api/tutor-files/files', { method: 'POST', body: form })
-          // G02: warn only on the upload that *first* crosses the quota —
-          // "was the library already over before this file?" comes straight
-          // from the post-write usedBytes minus this file's size.
-          if (typeof res.usedBytes === 'number' && res.usedBytes > QUOTA_BYTES && res.usedBytes - res.file.sizeBytes <= QUOTA_BYTES) crossedQuota = true
+          const res = await filesFetch<{ file: LibraryFile; usedBytes?: number; quotaBytes?: number }>('/api/tutor-files/files', { method: 'POST', body: form })
+          // G02 (Wallet build): warn only on the upload that *first* crosses
+          // the quota — "was the library already over before this file?"
+          // comes straight from the post-write usedBytes minus this file's size.
+          const { usedBytes, quotaBytes } = res
+          if (usedBytes !== undefined && quotaBytes !== undefined && usedBytes > quotaBytes && usedBytes - res.file.sizeBytes <= quotaBytes) crossedQuota = true
         } catch (e) {
-          toast.error(e instanceof FilesApiError && e.code === 'VIP_REQUIRED' ? t('errVip') : t('errUpload', { name: file.name }))
+          const code = e instanceof FilesApiError ? e.code : ''
+          toast.error(code === 'VIP_REQUIRED' ? t('errVip') : code === 'QUOTA_EXCEEDED' ? t('errQuota') : code === 'FILE_TOO_LARGE' ? t('errTooLarge', { name: file.name }) : t('errUpload', { name: file.name }))
         }
       }
       setUploading({ done: i + 1, total: list.length })
@@ -191,7 +204,7 @@ export function FilesShell({ role, folderId, onNavigate }: FilesShellProps) {
   // A student's first preview or download is what the tutor sees on hover
   // over that student's avatar; the server keeps only the first time.
   const markOpened = (f: LibraryFile) => {
-    if (!isTeacher) fetch(`/api/tutor-files/files/${f.id}/open`, { method: 'POST' }).catch(() => {})
+    if (!isTeacher && !admin) fetch(`/api/tutor-files/files/${f.id}/open`, { method: 'POST' }).catch(() => {})
   }
   const openPreview = (f: LibraryFile) => {
     markOpened(f)
@@ -224,7 +237,7 @@ export function FilesShell({ role, folderId, onNavigate }: FilesShellProps) {
   }
 
   // ── Render ────────────────────────────────────────────────
-  const canManage = isTeacher && isVip
+  const canManage = isTeacher && isVip && !admin
   const canUpload = !!data?.canUpload
   const myId = session?.user?.id
   const searching = debouncedQuery.length > 0
@@ -285,13 +298,13 @@ export function FilesShell({ role, folderId, onNavigate }: FilesShellProps) {
     )
   } else if (!data) {
     body = <div className={styles.skeletonGrid} aria-busy="true">{Array.from({ length: 6 }, (_, i) => <div key={i} className={styles.skeleton} />)}</div>
-  } else if (isTeacher && !isVip) {
+  } else if (isTeacher && !isVip && !admin) {
     // G01: the page is open to every tutor, the library itself only with VIP.
     body = (
       <div className={styles.upsell}>
         <span className={styles.upsellIcon}><FilesVipIcon size={26} strokeWidth={1.8} /></span>
         <h3 className={styles.upsellTitle}>{t('upsellTitle')}</h3>
-        <p className={styles.upsellText}>{t('upsellText')}</p>
+        <p className={styles.upsellText}>{t('upsellText', { quota: formatBytes(data.quotaBytes, locale) })}</p>
         <Link href="/vip" className={`${ui.btn} ${ui.primary}`}>{t('upsellCta')}</Link>
       </div>
     )
@@ -349,13 +362,13 @@ export function FilesShell({ role, folderId, onNavigate }: FilesShellProps) {
     }
   }
 
-  const rootLabel = isTeacher ? t('myFiles') : t('sharedWithMe')
+  const rootLabel = admin ? admin.teacherName : isTeacher ? t('myFiles') : t('sharedWithMe')
   const title = searching ? t('searchResults') : data?.folder?.name ?? rootLabel
   const current = data?.folder
   const tree = data && (
     <FolderTree nodes={data.tree} teachers={data.teachers} currentId={folderId} openPath={openPath} rootLabel={rootLabel} onSelect={navigate} />
   )
-  const showLibraryChrome = !!data && !(isTeacher && !isVip)
+  const showLibraryChrome = !!data && (!!admin || !(isTeacher && !isVip))
 
   return (
     <div className={styles.shell}>
@@ -364,6 +377,7 @@ export function FilesShell({ role, folderId, onNavigate }: FilesShellProps) {
           <div className={styles.brand}>
             <span className={styles.brandIcon}><FilesStorageIcon size={16} /></span>
             {t('pageTitle')}
+            {admin && <span className={styles.readOnly}>{t('adminReadOnly')}</span>}
           </div>
           {showLibraryChrome && (
             <>
@@ -388,7 +402,7 @@ export function FilesShell({ role, folderId, onNavigate }: FilesShellProps) {
                 {treeOpen && <div className={styles.treePopover}>{tree}</div>}
               </div>
             )}
-            {showLibraryChrome && (
+            {showLibraryChrome && !admin && (
               <label className={styles.search}>
                 <FilesSearchIcon size={16} className={styles.searchIcon} />
                 <input ref={searchRef} type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder={t('searchPlaceholder')} aria-label={t('searchPlaceholder')} />
@@ -481,7 +495,7 @@ export function FilesShell({ role, folderId, onNavigate }: FilesShellProps) {
 
       {shareTarget && <ShareAccessModal target={shareTarget} onClose={() => setShareTarget(null)} onChanged={refresh} />}
       {coverTarget && <CoverPickerModal folder={coverTarget} onClose={() => setCoverTarget(null)} onSaved={() => { setCoverTarget(null); refresh() }} />}
-      {previewFile && <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} onDownload={() => downloadFile(previewFile)} />}
+      {previewFile && <FilePreviewModal file={previewFile} contentUrl={admin ? `/api/admin/tutor-files/files/${previewFile.id}/content` : undefined} onClose={() => setPreviewFile(null)} onDownload={() => downloadFile(previewFile)} />}
       {overage && <StorageOverageWarningModal usage={overage} onClose={() => setOverage(null)} />}
     </div>
   )

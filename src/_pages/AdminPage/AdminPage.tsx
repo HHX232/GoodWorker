@@ -1,12 +1,27 @@
 'use client'
 
 import { NavBar } from '@/widgets/BaseUI'
+import { AdminSidebar, type AdminTab } from './AdminSidebar/AdminSidebar'
+import { StorageAdminTab } from './StorageAdminTab/StorageAdminTab'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import styles from './AdminPage.module.scss'
+
+
+const TAB_TITLE_KEYS: Record<AdminTab, string> = {
+  stats: 'tabStats',
+  users: 'tabUsers',
+  content: 'tabContent',
+  complaints: 'tabComplaints',
+  promo: 'tabPromo',
+  storage: 'tabStorage',
+  notifications: 'tabNotifications',
+  verifications: 'tabVerifications',
+  'admin-emails': 'tabAdminEmails',
+}
 
 // ─── Types ────────────────────────────────────────────────
 
@@ -2696,8 +2711,6 @@ function AdminEmailsTab() {
 
 // ─── Page ─────────────────────────────────────────────────
 
-type AdminTab = 'stats' | 'users' | 'content' | 'complaints' | 'promo' | 'notifications' | 'verifications' | 'admin-emails'
-
 export function AdminPage() {
   const t = useTranslations('admin')
   const { data: session, status } = useSession()
@@ -2705,8 +2718,7 @@ export function AdminPage() {
 
   if (status === 'loading') {
     return (
-      <div className={`container default_content ${styles.page_wrap}`}>
-        <NavBar />
+      <div className={`container ${styles.page_wrap}`}>
         <div className={styles.loading}>{t('loading')}</div>
       </div>
     )
@@ -2728,102 +2740,13 @@ export function AdminPage() {
     )
   }
 
+  // The admin menu replaces the site's NavBar here (and the old top tab row).
   return (
-    <div className={`container default_content ${styles.page_wrap}`}>
-      <NavBar />
+    <div className={`container ${styles.page_wrap} ${styles.admin_layout}`}>
+      <AdminSidebar active={activeTab} onSelect={setActiveTab} />
       <div className={styles.content}>
         <div className={styles.page_header}>
-          <h1 className={styles.page_title}>{t('pageTitle')}</h1>
-        </div>
-
-        <div className={styles.main_tabs}>
-          {/* Статистика — first */}
-          <button
-            className={`${styles.main_tab} ${activeTab === 'stats' ? styles.main_tab_active : ''}`}
-            onClick={() => setActiveTab('stats')}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="20" x2="18" y2="10" />
-              <line x1="12" y1="20" x2="12" y2="4" />
-              <line x1="6" y1="20" x2="6" y2="14" />
-            </svg>
-            {t('tabStats')}
-          </button>
-          <button
-            className={`${styles.main_tab} ${activeTab === 'users' ? styles.main_tab_active : ''}`}
-            onClick={() => setActiveTab('users')}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-            {t('tabUsers')}
-          </button>
-          <button
-            className={`${styles.main_tab} ${activeTab === 'content' ? styles.main_tab_active : ''}`}
-            onClick={() => setActiveTab('content')}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
-              <line x1="16" y1="13" x2="8" y2="13" />
-              <line x1="16" y1="17" x2="8" y2="17" />
-              <polyline points="10 9 9 9 8 9" />
-            </svg>
-            {t('tabContent')}
-          </button>
-          <button
-            className={`${styles.main_tab} ${activeTab === 'complaints' ? styles.main_tab_active : ''}`}
-            onClick={() => setActiveTab('complaints')}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-              <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
-            </svg>
-            {t('tabComplaints')}
-          </button>
-          <button
-            className={`${styles.main_tab} ${activeTab === 'promo' ? styles.main_tab_active : ''}`}
-            onClick={() => setActiveTab('promo')}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="20 12 20 22 4 22 4 12" />
-              <rect x="2" y="7" width="20" height="5" />
-              <line x1="12" y1="22" x2="12" y2="7" />
-              <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
-              <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
-            </svg>
-            {t('tabPromo')}
-          </button>
-          <button
-            className={`${styles.main_tab} ${activeTab === 'notifications' ? styles.main_tab_active : ''}`}
-            onClick={() => setActiveTab('notifications')}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-            </svg>
-            {t('tabNotifications')}
-          </button>
-          <button
-            className={`${styles.main_tab} ${activeTab === 'verifications' ? styles.main_tab_active : ''}`}
-            onClick={() => setActiveTab('verifications')}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-              <polyline points="22 4 12 14.01 9 11.01" />
-            </svg>
-            {t('tabVerifications')}
-          </button>
-          <button
-            className={`${styles.main_tab} ${activeTab === 'admin-emails' ? styles.main_tab_active : ''}`}
-            onClick={() => setActiveTab('admin-emails')}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            </svg>
-            {t('tabAdminEmails')}
-          </button>
+          <h1 className={styles.page_title}>{t(TAB_TITLE_KEYS[activeTab])}</h1>
         </div>
 
         {activeTab === 'stats' && <StatsTab />}
@@ -2834,6 +2757,7 @@ export function AdminPage() {
         {activeTab === 'notifications' && <NotificationsTab />}
         {activeTab === 'verifications' && <VerificationsTab />}
         {activeTab === 'admin-emails' && <AdminEmailsTab />}
+        {activeTab === 'storage' && <StorageAdminTab />}
       </div>
     </div>
   )

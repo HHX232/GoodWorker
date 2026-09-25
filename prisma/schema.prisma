@@ -361,6 +361,15 @@ model TutorFolderGrant {
   @@id([folderId, studentId])
 }
 
+// Admin-editable storage settings (single row, id "global"). Wallet-free on
+// purpose: the storage feature must also ship without the Wallet (main).
+model StorageSettings {
+  id         String   @id @default("global")
+  quotaGb    Int      @default(15)
+  maxFileMb  Int      @default(50)
+  updatedAt  DateTime @updatedAt
+}
+
 // When a student first opened a shared folder / file — shown to the tutor on
 // hover over the student's avatar. One row per (item, student), never updated.
 model TutorFolderOpen {

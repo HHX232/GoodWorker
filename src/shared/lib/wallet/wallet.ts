@@ -508,7 +508,7 @@ export async function chargeStorageOverage(
     return { costCents: 0, balanceAfterCents: await getBalanceCents(user), shortfallCents: 0 }
   }
 
-  const description = `Плата за превышение лимита хранилища: ${overageGb} ГБ сверх 7 ГБ`
+  const description = `Плата за превышение лимита хранилища: ${overageGb} ГБ сверх бесплатного объёма`
   let balanceAfterCents: number | null = null
   let shortfallCents = 0
 

@@ -1,9 +1,10 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import type { TutorFolder } from '@prisma/client'
-import { canStudentSee, getFilesSessionUser, isTeacherVipActive, loadStudentVisibility } from '@/shared/lib/tutorFiles/access'
+import { canStudentSee, getFilesSessionUser, loadStudentVisibility } from '@/shared/lib/tutorFiles/access'
+import { buildTeacherLibrary } from '@/shared/lib/tutorFiles/teacherLibrary'
 import type { LibraryGroup, LibraryResponse } from '@/shared/types/TutorFiles/tutorFiles.types'
-import { grantStudentSelect, loadOpens, studentItemCounter, toFile, toFolder, toTreeNode } from '@/shared/lib/tutorFiles/readModel'
+import { studentItemCounter, toFile, toFolder, toTreeNode } from '@/shared/lib/tutorFiles/readModel'
 
 // GET /api/tutor-files/library?folderId=... — the browse read model behind
 // <FilesShell> for both roles (tickets 05/07). Teacher: their own library,
@@ -17,45 +18,8 @@ export async function GET(req: NextRequest) {
     const folderId = req.nextUrl.searchParams.get('folderId') || null
 
     if (user.role === 'TEACHER') {
-      const [allFolders, isVip] = await Promise.all([
-        prisma.tutorFolder.findMany({ where: { teacherId: user.id }, orderBy: { name: 'asc' } }),
-        isTeacherVipActive(user.id),
-      ])
-      const byId = new Map(allFolders.map(f => [f.id, f]))
-      const current = folderId ? byId.get(folderId) : null
-      if (folderId && !current) {
-        const exists = await prisma.tutorFolder.findUnique({ where: { id: folderId }, select: { id: true } })
-        return NextResponse.json({ error: exists ? 'Forbidden' : 'Not found' }, { status: exists ? 403 : 404 })
-      }
-
-      const [folders, files] = await Promise.all([
-        prisma.tutorFolder.findMany({
-          where: { teacherId: user.id, parentId: folderId },
-          include: { _count: { select: { children: true, files: true } }, grants: { include: grantStudentSelect, orderBy: { grantedAt: 'asc' } } },
-          orderBy: { name: 'asc' },
-        }),
-        prisma.tutorFile.findMany({
-          where: { teacherId: user.id, folderId },
-          include: { grants: { include: grantStudentSelect, orderBy: { grantedAt: 'asc' } } },
-          orderBy: { createdAt: 'desc' },
-        }),
-      ])
-
-      const opened = await loadOpens(folders.map(f => f.id), files.map(f => f.id))
-      const body: LibraryResponse = {
-        role: 'TEACHER',
-        folder: current ? { id: current.id, name: current.name, allowStudentUpload: current.allowStudentUpload, restrictedToStudentId: current.restrictedToStudentId, depth: current.ancestorIds.length + 1 } : null,
-        breadcrumbs: (current?.ancestorIds ?? []).map(id => byId.get(id)).filter((f): f is TutorFolder => !!f).map(f => ({ id: f.id, name: f.name })),
-        groups: [{
-          teacher: null,
-          folders: folders.map(f => toFolder(f, f._count.children + f._count.files, f.grants, opened)),
-          files: files.map(f => toFile(f, f.grants, opened)),
-        }],
-        tree: allFolders.map(f => toTreeNode(f, true)),
-        teachers: [],
-        canUpload: isVip,
-        isVip,
-      }
+      const body = await buildTeacherLibrary(user.id, folderId)
+      if ('status' in body) return NextResponse.json({ error: body.error }, { status: body.status })
       return NextResponse.json(body)
     }
 
@@ -76,7 +40,7 @@ export async function GET(req: NextRequest) {
         folders: visibleFolders.filter(f => f.teacherId === teacher.id && !(f.parentId && visibleById.has(f.parentId))).map(f => toFolder(f, countOf(f.id))),
         files: visibleFiles.filter(f => f.teacherId === teacher.id && !(f.folderId && visibleById.has(f.folderId))).map(f => toFile(f)),
       }))
-      const body: LibraryResponse = { role: 'STUDENT', folder: null, breadcrumbs: [], groups, tree, teachers, canUpload: false, isVip: false }
+      const body: LibraryResponse = { role: 'STUDENT', folder: null, breadcrumbs: [], groups, tree, teachers, canUpload: false, isVip: false, quotaBytes: 0 }
       return NextResponse.json(body)
     }
 
@@ -98,6 +62,7 @@ export async function GET(req: NextRequest) {
       teachers,
       canUpload: current.restrictedToStudentId === user.id,
       isVip: false,
+      quotaBytes: 0,
     }
     return NextResponse.json(body)
   } catch (e) {

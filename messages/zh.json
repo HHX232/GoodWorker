@@ -1847,7 +1847,38 @@
     "adminEmailsDeleteConfirm": "Delete administrator \"{email}\"?",
     "userLastVisitNever": "从未",
     "userLastVisitToday": "今天",
-    "userLastVisitDays": "{n} 天前"
+    "userLastVisitDays": "{n} 天前",
+    "groupOverview": "概览",
+    "groupPeople": "用户",
+    "groupContent": "内容",
+    "groupPlatform": "平台",
+    "tabStorage": "存储",
+    "backToSite": "返回网站",
+    "storageSettings": "存储限制",
+    "storageModeBilling": "超出部分从钱包扣费",
+    "storageModeHard": "硬性上限 — 超出后禁止上传",
+    "storageQuota": "每位 VIP 老师的空间",
+    "storageQuotaHintBilling": "免费额度；超出部分按月计费",
+    "storageQuotaHintHard": "超出此容量将无法上传新文件",
+    "storageMaxFile": "单个文件上限",
+    "storageMaxFileHint": "每个文件不超过 {max} MB",
+    "storagePrice": "超出部分每 GB 每月价格",
+    "storagePriceHint": "0 — 不收费",
+    "storageSave": "保存",
+    "storageSaved": "存储设置已保存",
+    "storageSaveError": "保存失败",
+    "storageTotalUsed": "总占用",
+    "storageTutors": "有文件的老师",
+    "storageFiles": "文件",
+    "storageFoldersSub": "文件夹：{n}",
+    "storageOverQuota": "超出限制",
+    "storageTutorsTitle": "老师",
+    "storageFilter": "姓名或邮箱",
+    "storageNoTutors": "还没有人上传",
+    "storageCounts": "{files} 个文件 · {folders} 个文件夹",
+    "storageView": "查看",
+    "storageSilentView": "静默查看：{name} — 老师和学生看不到，也不会留下记录",
+    "storageClose": "关闭"
   },
   "tutorial": {
     "prev": "上一步",
@@ -3208,6 +3239,13 @@
       "purchaseSuccess": "完成！",
       "purchaseFailed": "购买失败，请稍后重试。",
       "monthsCount": "{count, plural, other {# 个月}}"
+    },
+    "storage": {
+      "title": "面向学生的文件库",
+      "desc": "多级文件夹、一键向学生开放、作业提交文件夹、内置 PDF、Word、Excel、视频和音频预览 — 还能在作业、测试和课程中直接附加文件库中的文件。",
+      "tag": "仅限 VIP",
+      "quota": "VIP 包含 {gb} GB",
+      "open": "打开文件库"
     }
   },
   "files": {
@@ -3247,7 +3285,7 @@
     "errLoad": "无法打开文件库",
     "retry": "重试",
     "upsellTitle": "文件功能属于 VIP",
-    "upsellText": "将讲义、解析和作业存放在多级文件夹中，一键分享给学生。VIP 包含 7 GB 空间。",
+    "upsellText": "将讲义、解析和作业存放在多级文件夹中，一键分享给学生。VIP 包含 {quota} 空间。",
     "upsellCta": "开通 VIP",
     "badgeDropbox": "作业提交",
     "badgePersonal": "学生文件夹",
@@ -3266,7 +3304,7 @@
     "shareInherited": "文件夹权限涵盖其中所有内容，包括之后添加的内容。",
     "allowUpload": "学生可在此提交",
     "allowUploadHint": "每位有权限的学生都会获得一个个人子文件夹，只有他和你能看到。",
-    "overageTitle": "已超出 7 GB",
+    "overageTitle": "已超出 {quota}",
     "overageText": "当前超出额度：{gb} GB。上传不会被阻止：只要仍超出额度，每月末将从钱包余额按每超出 1 GB 扣除 {price}。",
     "overageNoPrice": "当前超出额度：{gb} GB。上传不会被阻止。超出部分的单价尚未设定——设定之前不会扣费。",
     "overageWallet": "打开钱包",
@@ -3303,6 +3341,12 @@
     "pickTitle": "从文件库选择",
     "pickAdd": "添加",
     "pickEmpty": "这里没有符合的文件",
-    "pickLimit": "还可选择 {n} 个"
+    "pickLimit": "还可选择 {n} 个",
+    "storageUsed": "已用 {used} / {quota}",
+    "storageNearFull": "存储空间即将用尽 — 请释放空间以继续上传",
+    "errQuota": "存储空间已满 — 请删除不需要的文件后再上传",
+    "adminReadOnly": "只读",
+    "statStorage": "存储",
+    "statShared": "老师的文件"
   }
 }

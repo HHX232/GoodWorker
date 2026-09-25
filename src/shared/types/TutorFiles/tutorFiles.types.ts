@@ -71,15 +71,21 @@ export interface LibraryResponse {
   canUpload: boolean
   /** Teacher only: VIP active — write actions allowed (G01). */
   isVip: boolean
+  /** Teacher only: the storage quota (admin-set), for copy like the VIP upsell. 0 for students. */
+  quotaBytes: number
 }
 
 export interface UsageResponse {
   usedBytes: number
   quotaBytes: number
+  maxFileBytes: number
   overageGb: number
-  priceCentsPerGbMonth: number
-  /** What the monthly cron would charge right now (overageGb × price), USD cents. */
-  estimatedChargeCents: number
-  /** Wallet display rate — ru shows BYN, other locales USD (same rule as /vip). */
-  usdToBynRate: number
+  /** Wallet build only: overage is billed monthly. `null` → the quota is a hard cap (uploads past it are refused). */
+  billing: {
+    priceCentsPerGbMonth: number
+    /** What the monthly cron would charge right now (overageGb × price), USD cents. */
+    estimatedChargeCents: number
+    /** Wallet display rate — ru shows BYN, other locales USD (same rule as /vip). */
+    usdToBynRate: number
+  } | null
 }

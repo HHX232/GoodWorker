@@ -8,13 +8,15 @@ import styles from './StorageMeter.module.scss'
 
 /**
  * The storage line at the top of /files (G02): how much of the free 7 GB is
- * used, how much is over it, and what the month-end charge would be at the
- * current price — in BYN on ru, USD elsewhere.
+ * used, how much is over it, and (Wallet build) what the month-end charge
+ * would be at the current price — in BYN on ru, USD elsewhere. Without
+ * billing the quota is a hard cap, so it warns from 90%.
  */
 export function StorageMeter({ usage }: { usage: UsageResponse }) {
   const t = useTranslations('files')
   const locale = useLocale()
-  const { usedBytes, quotaBytes, overageGb, priceCentsPerGbMonth, estimatedChargeCents, usdToBynRate } = usage
+  const { usedBytes, quotaBytes, overageGb, billing } = usage
+  const nearFull = !billing && usedBytes >= quotaBytes * 0.9
   const over = usedBytes > quotaBytes
   const overBytes = Math.max(0, usedBytes - quotaBytes)
   // Over the limit the bar rescales to the total, so the free part and the
@@ -26,10 +28,10 @@ export function StorageMeter({ usage }: { usage: UsageResponse }) {
   const size = (b: number) => formatBytes(b, locale)
 
   return (
-    <div className={`${styles.meter} ${over ? styles.isOver : ''}`}>
+    <div className={`${styles.meter} ${over || nearFull ? styles.isOver : ''}`}>
       <div className={styles.row}>
         <FilesStorageIcon size={15} className={styles.icon} />
-        <span className={styles.main}>{t('storageFree', { used: size(Math.min(usedBytes, quotaBytes)), quota: size(quotaBytes) })}</span>
+        <span className={styles.main}>{t(billing ? 'storageFree' : 'storageUsed', { used: size(Math.min(usedBytes, quotaBytes)), quota: size(quotaBytes) })}</span>
         {over ? (
           <span className={styles.overLabel}>{t('storageOver', { over: size(overBytes) })}</span>
         ) : (
@@ -41,13 +43,14 @@ export function StorageMeter({ usage }: { usage: UsageResponse }) {
         {over && <span className={styles.over} style={{ left: `${quotaPct}%`, width: `${overPct}%` }} />}
         {over && <span className={styles.mark} style={{ left: `${quotaPct}%` }} />}
       </div>
-      {over && (
+      {over && billing && (
         <div className={styles.charge}>
-          {priceCentsPerGbMonth > 0
-            ? t('storageCharge', { amount: formatMoney(estimatedChargeCents, locale, usdToBynRate), gb: overageGb, price: formatMoney(priceCentsPerGbMonth, locale, usdToBynRate) })
+          {billing.priceCentsPerGbMonth > 0
+            ? t('storageCharge', { amount: formatMoney(billing.estimatedChargeCents, locale, billing.usdToBynRate), gb: overageGb, price: formatMoney(billing.priceCentsPerGbMonth, locale, billing.usdToBynRate) })
             : t('storageChargeNone')}
         </div>
       )}
+      {nearFull && <div className={styles.charge}>{t('storageNearFull')}</div>}
     </div>
   )
 }

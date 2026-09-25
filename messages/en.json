@@ -2104,7 +2104,38 @@
     "adminEmailsDeleteConfirm": "Delete administrator \"{email}\"?",
     "userLastVisitNever": "Never",
     "userLastVisitToday": "Today",
-    "userLastVisitDays": "{n} days ago"
+    "userLastVisitDays": "{n} days ago",
+    "groupOverview": "Overview",
+    "groupPeople": "People",
+    "groupContent": "Content",
+    "groupPlatform": "Platform",
+    "tabStorage": "Storage",
+    "backToSite": "Back to site",
+    "storageSettings": "Storage limits",
+    "storageModeBilling": "Overage is charged to the Wallet",
+    "storageModeHard": "Hard limit — uploads past it are refused",
+    "storageQuota": "Space per VIP tutor",
+    "storageQuotaHintBilling": "Free; anything above is billed monthly",
+    "storageQuotaHintHard": "New files won't upload beyond this",
+    "storageMaxFile": "Max file size",
+    "storageMaxFileHint": "Up to {max} MB per file",
+    "storagePrice": "Price per GB over the limit per month",
+    "storagePriceHint": "0 — don't charge",
+    "storageSave": "Save",
+    "storageSaved": "Storage settings saved",
+    "storageSaveError": "Couldn't save",
+    "storageTotalUsed": "Used in total",
+    "storageTutors": "Tutors with files",
+    "storageFiles": "Files",
+    "storageFoldersSub": "folders: {n}",
+    "storageOverQuota": "Over the limit",
+    "storageTutorsTitle": "Tutors",
+    "storageFilter": "Name or email",
+    "storageNoTutors": "No one has uploaded anything yet",
+    "storageCounts": "{files} files · {folders} folders",
+    "storageView": "View",
+    "storageSilentView": "Silent view: {name} — the tutor and students don't see this, nothing is recorded",
+    "storageClose": "Close"
   },
   "tutorial": {
     "prev": "Back",
@@ -3381,6 +3412,13 @@
       "purchaseSuccess": "Done!",
       "purchaseFailed": "Couldn't complete the purchase, please try again later.",
       "monthsCount": "{count, plural, one {# month} other {# months}}"
+    },
+    "storage": {
+      "title": "File library for your students",
+      "desc": "Nested folders, one-click access for students, submission folders, built-in viewer for PDF, Word, Excel, video and audio — and attach library files to homework, tests and courses.",
+      "tag": "VIP only",
+      "quota": "{gb} GB included with VIP",
+      "open": "Open the library"
     }
   },
   "files": {
@@ -3420,7 +3458,7 @@
     "errLoad": "Couldn't open the library",
     "retry": "Retry",
     "upsellTitle": "Files are part of VIP",
-    "upsellText": "Keep handouts, walkthroughs and homework in nested folders and share them with students in one click. 7 GB included with VIP.",
+    "upsellText": "Keep handouts, walkthroughs and homework in nested folders and share them with students in one click. {quota} included with VIP.",
     "upsellCta": "Get VIP",
     "badgeDropbox": "Submissions",
     "badgePersonal": "Student folder",
@@ -3439,8 +3477,8 @@
     "shareInherited": "Folder access covers everything inside, including what you add later.",
     "allowUpload": "Students can submit here",
     "allowUploadHint": "Each student with access gets a personal subfolder that only they and you can see.",
-    "overageTitle": "You've gone over 7 GB",
-    "overageText": "Currently over the limit: {gb} GB. Uploads aren't blocked: at the end of every month you stay over the limit, {price} per GB over 7 GB is charged from your Wallet balance.",
+    "overageTitle": "You've gone over {quota}",
+    "overageText": "Currently over the limit: {gb} GB. Uploads aren't blocked: at the end of every month you stay over the limit, {price} per GB over {quota} is charged from your Wallet balance.",
     "overageNoPrice": "Currently over the limit: {gb} GB. Uploads aren't blocked. The price per extra GB hasn't been set yet — nothing is charged until it is.",
     "overageWallet": "Open Wallet",
     "overageOk": "Got it",
@@ -3476,6 +3514,12 @@
     "pickTitle": "Pick from your library",
     "pickAdd": "Add",
     "pickEmpty": "No matching files here",
-    "pickLimit": "{n} more can be picked"
+    "pickLimit": "{n} more can be picked",
+    "storageUsed": "{used} of {quota}",
+    "storageNearFull": "Storage is almost full — free up space to keep uploading",
+    "errQuota": "Storage is full — delete files you don't need to upload new ones",
+    "adminReadOnly": "Read-only",
+    "statStorage": "Storage",
+    "statShared": "Files from tutors"
   }
 }

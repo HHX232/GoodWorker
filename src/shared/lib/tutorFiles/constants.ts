@@ -1,8 +1,4 @@
-// Prisma-free so client components can import them too (storage.ts re-exports
-// them for server code) — interfaces.md "Контракт между тикетами: квота".
-
-/** Single source of truth for the storage cap. */
-export const QUOTA_BYTES = 7 * 1024 ** 3
+// Prisma-free so client components can import them too.
 
 /**
  * A root folder (no parent) has depth 1 (`ancestorIds.length === 0`). A
@@ -11,5 +7,13 @@ export const QUOTA_BYTES = 7 * 1024 ** 3
  */
 export const MAX_FOLDER_DEPTH = 6
 
-/** Per-file upload cap, same as app/api/upload/route.ts. */
-export const MAX_FILE_BYTES = 50 * 1024 * 1024
+/** Defaults for the admin-editable StorageSettings row (used until an admin saves it). */
+export const DEFAULT_QUOTA_GB = 15
+export const DEFAULT_MAX_FILE_MB = 50
+
+/** Admin input bounds. The per-file cap stays modest: uploads are buffered in memory by the route. */
+export const QUOTA_GB_RANGE = { min: 1, max: 1000 } as const
+export const MAX_FILE_MB_RANGE = { min: 1, max: 200 } as const
+
+export const GB = 1024 ** 3
+export const MB = 1024 ** 2

@@ -1846,7 +1846,38 @@
     "adminEmailsDeleteConfirm": "Delete administrator \"{email}\"?",
     "userLastVisitNever": "कभी नहीं",
     "userLastVisitToday": "आज",
-    "userLastVisitDays": "{n} दिन पहले"
+    "userLastVisitDays": "{n} दिन पहले",
+    "groupOverview": "अवलोकन",
+    "groupPeople": "लोग",
+    "groupContent": "सामग्री",
+    "groupPlatform": "प्लेटफ़ॉर्म",
+    "tabStorage": "स्टोरेज",
+    "backToSite": "साइट पर वापस",
+    "storageSettings": "स्टोरेज सीमाएँ",
+    "storageModeBilling": "अतिरिक्त उपयोग वॉलेट से कटता है",
+    "storageModeHard": "कड़ी सीमा — इसके ऊपर अपलोड नहीं होगा",
+    "storageQuota": "प्रति VIP ट्यूटर स्थान",
+    "storageQuotaHintBilling": "मुफ़्त; ऊपर का हर महीने बिल होता है",
+    "storageQuotaHintHard": "इससे ऊपर नई फ़ाइलें अपलोड नहीं होंगी",
+    "storageMaxFile": "अधिकतम फ़ाइल आकार",
+    "storageMaxFileHint": "प्रति फ़ाइल {max} MB तक",
+    "storagePrice": "सीमा से ऊपर प्रति GB मासिक मूल्य",
+    "storagePriceHint": "0 — शुल्क नहीं",
+    "storageSave": "सहेजें",
+    "storageSaved": "स्टोरेज सेटिंग्स सहेजी गईं",
+    "storageSaveError": "सहेजा नहीं जा सका",
+    "storageTotalUsed": "कुल उपयोग",
+    "storageTutors": "फ़ाइलों वाले ट्यूटर",
+    "storageFiles": "फ़ाइलें",
+    "storageFoldersSub": "फ़ोल्डर: {n}",
+    "storageOverQuota": "सीमा से ऊपर",
+    "storageTutorsTitle": "ट्यूटर",
+    "storageFilter": "नाम या ईमेल",
+    "storageNoTutors": "अभी किसी ने कुछ अपलोड नहीं किया",
+    "storageCounts": "{files} फ़ाइलें · {folders} फ़ोल्डर",
+    "storageView": "देखें",
+    "storageSilentView": "मौन दृश्य: {name} — ट्यूटर और छात्र इसे नहीं देखते, कुछ दर्ज नहीं होता",
+    "storageClose": "बंद करें"
   },
   "tutorial": {
     "prev": "पीछे",
@@ -3207,6 +3238,13 @@
       "purchaseSuccess": "हो गया!",
       "purchaseFailed": "खरीद पूरी नहीं हो सकी, कृपया बाद में फिर कोशिश करें।",
       "monthsCount": "{count, plural, one {# महीना} other {# महीने}}"
+    },
+    "storage": {
+      "title": "छात्रों के लिए फ़ाइल लाइब्रेरी",
+      "desc": "नेस्टेड फ़ोल्डर, एक क्लिक में छात्रों को पहुँच, जमा करने के फ़ोल्डर, PDF, Word, Excel, वीडियो और ऑडियो का अंतर्निहित दर्शक — और होमवर्क, टेस्ट और कोर्स में लाइब्रेरी से फ़ाइलें जोड़ें।",
+      "tag": "केवल VIP",
+      "quota": "VIP में {gb} GB शामिल",
+      "open": "लाइब्रेरी खोलें"
     }
   },
   "files": {
@@ -3246,7 +3284,7 @@
     "errLoad": "लाइब्रेरी नहीं खुल सकी",
     "retry": "फिर कोशिश करें",
     "upsellTitle": "फ़ाइलें VIP का हिस्सा हैं",
-    "upsellText": "नोट्स, समाधान और होमवर्क को नेस्टेड फ़ोल्डरों में रखें और एक क्लिक में छात्रों के साथ साझा करें। VIP में 7 GB शामिल हैं।",
+    "upsellText": "नोट्स, समाधान और होमवर्क को नेस्टेड फ़ोल्डरों में रखें और एक क्लिक में छात्रों के साथ साझा करें। VIP में {quota} शामिल हैं।",
     "upsellCta": "VIP लें",
     "badgeDropbox": "जमा करें",
     "badgePersonal": "छात्र फ़ोल्डर",
@@ -3265,8 +3303,8 @@
     "shareInherited": "फ़ोल्डर की पहुँच उसके अंदर की हर चीज़ पर लागू होती है, बाद में जोड़ी गई चीज़ों पर भी।",
     "allowUpload": "छात्र यहाँ जमा कर सकते हैं",
     "allowUploadHint": "पहुँच वाले हर छात्र को एक निजी सबफ़ोल्डर मिलेगा, जिसे केवल वह और आप देख सकते हैं।",
-    "overageTitle": "आप 7 GB से ऊपर चले गए हैं",
-    "overageText": "अभी सीमा से अधिक: {gb} GB। अपलोड नहीं रुकते: जब तक आप सीमा से ऊपर हैं, हर महीने के अंत में 7 GB से ऊपर के प्रति GB {price} वॉलेट से काटे जाते हैं।",
+    "overageTitle": "आप {quota} से ऊपर चले गए हैं",
+    "overageText": "अभी सीमा से अधिक: {gb} GB। अपलोड नहीं रुकते: जब तक आप सीमा से ऊपर हैं, हर महीने के अंत में {quota} से ऊपर के प्रति GB {price} वॉलेट से काटे जाते हैं।",
     "overageNoPrice": "अभी सीमा से अधिक: {gb} GB। अपलोड नहीं रुकते। अतिरिक्त GB की कीमत अभी तय नहीं है — तब तक कुछ नहीं काटा जाएगा।",
     "overageWallet": "वॉलेट खोलें",
     "overageOk": "ठीक है",
@@ -3302,6 +3340,12 @@
     "pickTitle": "लाइब्रेरी से चुनें",
     "pickAdd": "जोड़ें",
     "pickEmpty": "यहाँ उपयुक्त फ़ाइलें नहीं हैं",
-    "pickLimit": "और {n} चुन सकते हैं"
+    "pickLimit": "और {n} चुन सकते हैं",
+    "storageUsed": "{quota} में से {used}",
+    "storageNearFull": "स्टोरेज लगभग भर गया है — अपलोड जारी रखने के लिए जगह खाली करें",
+    "errQuota": "स्टोरेज भर गया है — नई फ़ाइलें अपलोड करने के लिए अनावश्यक फ़ाइलें हटाएँ",
+    "adminReadOnly": "केवल देखें",
+    "statStorage": "स्टोरेज",
+    "statShared": "ट्यूटर की फ़ाइलें"
   }
 }

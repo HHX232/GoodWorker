@@ -32,8 +32,8 @@ function colName(i: number): string {
  * bucket). The heavy parsers are dynamic imports — SheetJS and docx-preview
  * download only when a spreadsheet / Word file is actually opened.
  */
-async function loadParsed(file: LibraryFile, viewer: ViewerKind, locale: string): Promise<Parsed> {
-  const res = await fetch(`/api/tutor-files/files/${file.id}/content`)
+async function loadParsed(file: LibraryFile, viewer: ViewerKind, locale: string, contentUrl: string): Promise<Parsed> {
+  const res = await fetch(contentUrl)
   if (!res.ok) throw new Error(String(res.status))
   const buf = await res.arrayBuffer()
   if (viewer === 'docx') return { kind: 'docx', buf }
@@ -126,7 +126,13 @@ function SheetView({ sheets }: { sheets: Sheet[] }) {
  * Spreadsheets (xlsx/xls/ods/csv via SheetJS) and Word (docx-preview) load
  * their libraries lazily, on first open of such a file.
  */
-export function FilePreviewModal({ file, onClose, onDownload }: { file: LibraryFile; onClose: () => void; onDownload: () => void }) {
+export function FilePreviewModal({ file, onClose, onDownload, contentUrl }: {
+  file: LibraryFile
+  onClose: () => void
+  onDownload: () => void
+  /** Where the viewer reads bytes from (admin view / shared-folder links override the default). */
+  contentUrl?: string
+}) {
   const t = useTranslations('files')
   const locale = useLocale()
   const viewer = viewerFor(file.mimeType, file.name)
@@ -137,8 +143,8 @@ export function FilePreviewModal({ file, onClose, onDownload }: { file: LibraryF
   const onRenderError = useCallback(() => setRenderFailed(true), [])
 
   const parsed = useQuery({
-    queryKey: ['tutor-files', 'content', file.id],
-    queryFn: () => loadParsed(file, viewer!, locale),
+    queryKey: ['tutor-files', 'content', file.id, contentUrl],
+    queryFn: () => loadParsed(file, viewer!, locale, contentUrl ?? `/api/tutor-files/files/${file.id}/content`),
     enabled: parsedViewer,
     retry: false,
     staleTime: 5 * 60_000,

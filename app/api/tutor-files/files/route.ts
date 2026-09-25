@@ -4,16 +4,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/shared/prisma/prisma'
 import { publicUrlForKey, s3, S3_BUCKET } from '@/shared/s3/s3Client'
 import { canStudentSee, getFilesSessionUser, isTeacherVipActive, vipRequiredResponse } from '@/shared/lib/tutorFiles/access'
-import { getUsedBytes } from '@/shared/lib/tutorFiles/storage'
-import { MAX_FILE_BYTES } from '@/shared/lib/tutorFiles/constants'
+import { getStorageLimits, getUsedBytes } from '@/shared/lib/tutorFiles/storage'
+import { STORAGE_BILLING_ENABLED } from '@/shared/lib/tutorFiles/billing'
 
 export const runtime = 'nodejs'
 
-// Uploads past QUOTA_BYTES are deliberately allowed (G02: the UI shows an
-// informational modal from the `usedBytes` this route returns); only the
-// per-file cap is enforced here.
-const MAX_SIZE = MAX_FILE_BYTES
-
+// Limits come from the admin-editable StorageSettings. With billing (Wallet
+// build) uploads past the quota are allowed and billed monthly — the UI shows
+// an informational modal from the returned usedBytes/quotaBytes; without it
+// (main) the quota is a hard cap and the upload is refused up front.
 function extOf(filename: string): string {
   const parts = filename.split('.')
   return parts.length > 1 ? parts.pop()!.toLowerCase() : ''
@@ -36,7 +35,8 @@ export async function POST(req: NextRequest) {
 
     const file = formData.get('file')
     if (!(file instanceof File)) return NextResponse.json({ error: 'file is required' }, { status: 400 })
-    if (file.size > MAX_SIZE) return NextResponse.json({ error: 'FILE_TOO_LARGE' }, { status: 413 })
+    const limits = await getStorageLimits()
+    if (file.size > limits.maxFileBytes) return NextResponse.json({ error: 'FILE_TOO_LARGE', maxFileBytes: limits.maxFileBytes }, { status: 413 })
 
     const folderId = (formData.get('folderId') as string | null) || null
     const folder = folderId ? await prisma.tutorFolder.findUnique({ where: { id: folderId } }) : null
@@ -59,6 +59,11 @@ export async function POST(req: NextRequest) {
       })
       if (!canStudentSee(folder, user.id, new Set(grants.map(g => g.folderId)))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
       teacherId = folder.teacherId
+    }
+
+    // Student submissions count toward their tutor's library, like everything in it.
+    if (!STORAGE_BILLING_ENABLED && (await getUsedBytes(teacherId)) + file.size > limits.quotaBytes) {
+      return NextResponse.json({ error: 'QUOTA_EXCEEDED', quotaBytes: limits.quotaBytes }, { status: 413 })
     }
 
     const ext = extOf(file.name) || 'bin'
@@ -98,7 +103,7 @@ export async function POST(req: NextRequest) {
     // usedBytes is the teacher's own quota figure — not the student's business.
     if (user.role === 'STUDENT') return NextResponse.json({ file: created })
     const usedBytes = await getUsedBytes(teacherId)
-    return NextResponse.json({ file: created, usedBytes })
+    return NextResponse.json({ file: created, usedBytes, quotaBytes: limits.quotaBytes })
   } catch (e) {
     console.error('[POST /api/tutor-files/files]', e)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })

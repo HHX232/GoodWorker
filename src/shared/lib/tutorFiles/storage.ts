@@ -1,7 +1,22 @@
 import { prisma } from '@/shared/prisma/prisma'
-import { MAX_FOLDER_DEPTH, QUOTA_BYTES } from './constants'
+import { DEFAULT_MAX_FILE_MB, DEFAULT_QUOTA_GB, GB, MAX_FOLDER_DEPTH, MB } from './constants'
 
-export { MAX_FOLDER_DEPTH, QUOTA_BYTES }
+export { MAX_FOLDER_DEPTH }
+
+export interface StorageLimits {
+  quotaGb: number
+  maxFileMb: number
+  quotaBytes: number
+  maxFileBytes: number
+}
+
+/** Admin-editable limits (StorageSettings row "global"), defaults until an admin saves them. */
+export async function getStorageLimits(): Promise<StorageLimits> {
+  const row = await prisma.storageSettings.findUnique({ where: { id: 'global' } })
+  const quotaGb = row?.quotaGb ?? DEFAULT_QUOTA_GB
+  const maxFileMb = row?.maxFileMb ?? DEFAULT_MAX_FILE_MB
+  return { quotaGb, maxFileMb, quotaBytes: quotaGb * GB, maxFileBytes: maxFileMb * MB }
+}
 
 export class FolderDepthExceededError extends Error {
   constructor() {
@@ -22,7 +37,7 @@ export function assertFolderDepthAllowed(parentAncestorIds: string[]): void {
   if (parentDepth >= MAX_FOLDER_DEPTH) throw new FolderDepthExceededError()
 }
 
-/** `SUM(sizeBytes)` across every file owned by `teacherId` — used against `QUOTA_BYTES`. */
+/** `SUM(sizeBytes)` across every file owned by `teacherId` — compared against the quota from `getStorageLimits()`. */
 export async function getUsedBytes(teacherId: string): Promise<number> {
   const result = await prisma.tutorFile.aggregate({ where: { teacherId }, _sum: { sizeBytes: true } })
   return result._sum.sizeBytes ?? 0

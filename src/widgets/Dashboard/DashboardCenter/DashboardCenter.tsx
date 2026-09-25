@@ -8,6 +8,7 @@ import { CreateServiceModal } from '@/widgets/Dashboard/CreateServiceModal/Creat
 import { BookServiceModal } from '@/widgets/Dashboard/BookServiceModal/BookServiceModal'
 import { VideoZone } from '@/widgets/Dashboard/VideoZone/VideoZone'
 import { ChatBubbleIcon } from '@/widgets/Chat/icons'
+import { TeacherStorageStat } from '@/widgets/Files/StorageStat/StorageStat'
 import Card from '@/shared/ui/Posts/Card/Card'
 import { RoadMapPreview } from '@/shared/ui/RoadMap/RoadMapPreview/RoadMapPreview'
 import { useSession } from 'next-auth/react'
@@ -308,7 +309,9 @@ export function DashboardCenter({ statsId, studentCount, callCount, totalHours, 
 
       {/* Compact stats strip */}
       <div className={styles.statsMerged}>
-        {stats.map((s, i) => (
+        {/* Owner: the student count already heads the left sidebar, so the
+            strip gives that slot to storage (right end, highlighted). */}
+        {(isOwner ? stats.slice(1) : stats).map((s, i) => (
           isOwner ? (
             <Link key={s.label} href={`/statistics/${statsId}`} className={`${styles.statsItem} ${styles.statsItemLink}`}>
               {i > 0 && <div className={styles.statsSep} />}
@@ -343,6 +346,13 @@ export function DashboardCenter({ statsId, studentCount, callCount, totalHours, 
               <div className={styles.statsItemLabel}>{tChat('dashboardStatsLabel')}</div>
             </div>
           </Link>
+        )}
+
+        {isOwner && (
+          <>
+            <div className={styles.statsSep} />
+            <TeacherStorageStat />
+          </>
         )}
       </div>
 
