@@ -3471,6 +3471,11 @@
     "previewLoading": "Opening the file…",
     "previewTruncated": "Showing the beginning — download for the full text",
     "previewFailed": "This file can't be shown here — download it",
-    "previewUnavailable": "No built-in preview for this format"
+    "previewUnavailable": "No built-in preview for this format",
+    "pickFromLibrary": "From library",
+    "pickTitle": "Pick from your library",
+    "pickAdd": "Add",
+    "pickEmpty": "No matching files here",
+    "pickLimit": "{n} more can be picked"
   }
 }

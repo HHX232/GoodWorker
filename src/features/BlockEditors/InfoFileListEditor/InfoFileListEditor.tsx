@@ -20,6 +20,7 @@ import {useTranslations} from 'next-intl'
 import Image from 'next/image'
 import {useRef, useState} from 'react'
 import {toast} from 'sonner'
+import { LibraryPickButton } from '@/widgets/Files/LibraryPicker/LibraryPicker'
 import styles from './InfoFileListEditor.module.scss'
 
 interface Props {
@@ -255,6 +256,16 @@ export const InfoFileListEditor = ({payload, onChange, viewOnly = false}: Props)
             </span>
           )}
         </button>
+      )}
+
+      {canAddMore && (
+        <LibraryPickButton
+          accept='any'
+          multiple
+          max={MAX_FILES - files.length}
+          disabled={uploading}
+          onPick={(picked) => update({files: [...files, ...picked.map(({name, size, mimeType, url}) => ({name, size, mimeType, url}))]})}
+        />
       )}
 
       {!canAddMore && <p className={styles.limitMsg}>{t('maxFilesLimit', {maxFiles: MAX_FILES})}</p>}

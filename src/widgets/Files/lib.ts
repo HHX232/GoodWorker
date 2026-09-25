@@ -53,15 +53,14 @@ export const KIND_COLOR: Record<FileKind, string> = {
 }
 
 /** Which in-app viewer opens this file; null → download only. */
-export type ViewerKind = 'pdf' | 'image' | 'video' | 'audio' | 'text' | 'csv' | 'docx' | 'xlsx'
+export type ViewerKind = 'pdf' | 'image' | 'video' | 'audio' | 'text' | 'sheet' | 'docx'
 
 export function viewerFor(mimeType: string, name: string): ViewerKind | null {
   const kind = fileKind(mimeType, name)
   const ext = extOf(name)
   if (kind === 'pdf' || kind === 'image' || kind === 'video' || kind === 'audio') return kind
-  if (ext === 'csv') return 'csv'
+  if (['csv', 'xlsx', 'xls', 'ods'].includes(ext)) return 'sheet'
   if (ext === 'docx') return 'docx'
-  if (ext === 'xlsx') return 'xlsx'
   if (kind === 'text') return 'text'
   return null
 }

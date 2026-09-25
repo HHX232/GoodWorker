@@ -5,6 +5,7 @@
 import {RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
 import {useViewMode} from '@/shared/ui/RoadMap/context/ViewModeContext'
 import {uploadFile} from '@/shared/lib/uploadFile'
+import {LibraryPickButton} from '@/widgets/Files/LibraryPicker/LibraryPicker'
 import {useReactFlow, useStore} from '@xyflow/react'
 import {
   DownloadIcon,
@@ -279,6 +280,16 @@ export default function FileBlock({nodeId}: {nodeId: string}) {
             </span>
           )}
         </button>
+      )}
+
+      {canAddMore && (
+        <LibraryPickButton
+          accept='any'
+          multiple
+          max={MAX_FILES - files.length}
+          disabled={uploading}
+          onPick={(picked) => update({uploadedFiles: [...files, ...picked.map(({name, size, mimeType, url}) => ({name, size, mimeType, url}))]})}
+        />
       )}
 
       {!canAddMore && <p className={styles.limitMsg}>{t('maxFilesLimit', {maxFiles: MAX_FILES})}</p>}

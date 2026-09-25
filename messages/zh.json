@@ -3298,6 +3298,11 @@
     "previewLoading": "正在打开文件…",
     "previewTruncated": "仅显示开头部分 — 完整内容请下载",
     "previewFailed": "无法在此显示该文件 — 请下载",
-    "previewUnavailable": "此格式不支持内置预览"
+    "previewUnavailable": "此格式不支持内置预览",
+    "pickFromLibrary": "从文件库",
+    "pickTitle": "从文件库选择",
+    "pickAdd": "添加",
+    "pickEmpty": "这里没有符合的文件",
+    "pickLimit": "还可选择 {n} 个"
   }
 }
