@@ -1,7 +1,7 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { randomBytes } from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
-import { getFilesSessionUser, isTeacherVipActive, requireOwnedFolder, vipRequiredResponse } from '@/shared/lib/tutorFiles/access'
+import { getFilesSessionUser, hasStorageAccess, requireOwnedFolder, vipRequiredResponse } from '@/shared/lib/tutorFiles/access'
 
 // POST /api/tutor-files/folders/[id]/link -> {token, name, itemCount} — the
 // folder's attach-by-link token (created once, then reused), for putting a
@@ -14,7 +14,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     const guard = await requireOwnedFolder(id, user.id)
     if (guard.response) return guard.response
     if (guard.folder.restrictedToStudentId) return NextResponse.json({ error: 'RESTRICTED_PARENT' }, { status: 400 })
-    if (!(await isTeacherVipActive(user.id))) return vipRequiredResponse()
+    if (!(await hasStorageAccess(user.id))) return vipRequiredResponse()
 
     const link = await prisma.tutorFolderLink.upsert({
       where: { folderId: id },

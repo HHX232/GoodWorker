@@ -2,7 +2,8 @@ import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/shared/lib/tutorFiles/adminGuard'
 import { getStoragePricing, setStoragePrice, STORAGE_BILLING_ENABLED } from '@/shared/lib/tutorFiles/billing'
-import { getStorageLimits } from '@/shared/lib/tutorFiles/storage'
+import { getStorageAdminIds, getStorageLimits } from '@/shared/lib/tutorFiles/storage'
+import { ADMIN_QUOTA_GB, GB } from '@/shared/lib/tutorFiles/constants'
 import { MAX_FILE_MB_RANGE, QUOTA_GB_RANGE } from '@/shared/lib/tutorFiles/constants'
 
 const MAX_PRICE_CENTS = 100_000
@@ -25,6 +26,7 @@ export async function GET() {
       where: { id: { in: ids } },
       select: { id: true, name: true, email: true, avatarUrl: true, isVip: true, vipExpiresAt: true },
     })
+    const adminIds = await getStorageAdminIds(teachers.map(t => t.id))
     const now = new Date()
     const foldersBy = new Map(folderCounts.map(f => [f.teacherId, f._count._all]))
     const usageBy = new Map(usage.map(u => [u.teacherId, u]))
@@ -35,6 +37,8 @@ export async function GET() {
         email: t.email,
         avatarUrl: t.avatarUrl,
         isVip: t.isVip && (t.vipExpiresAt === null || t.vipExpiresAt > now),
+        isAdmin: adminIds.has(t.id),
+        quotaBytes: adminIds.has(t.id) ? ADMIN_QUOTA_GB * GB : limits.quotaBytes,
         usedBytes: usageBy.get(t.id)?._sum.sizeBytes ?? 0,
         files: usageBy.get(t.id)?._count._all ?? 0,
         folders: foldersBy.get(t.id) ?? 0,
@@ -43,6 +47,7 @@ export async function GET() {
 
     return NextResponse.json({
       settings: { quotaGb: limits.quotaGb, maxFileMb: limits.maxFileMb },
+      adminQuotaGb: ADMIN_QUOTA_GB,
       billingEnabled: STORAGE_BILLING_ENABLED,
       priceCentsPerGbMonth: pricing?.priceCentsPerGbMonth ?? null,
       totals: {
@@ -50,7 +55,7 @@ export async function GET() {
         files: tutors.reduce((n, t) => n + t.files, 0),
         folders: tutors.reduce((n, t) => n + t.folders, 0),
         tutors: tutors.length,
-        overQuota: tutors.filter(t => t.usedBytes > limits.quotaBytes).length,
+        overQuota: tutors.filter(t => t.usedBytes > t.quotaBytes).length,
         unindexed,
       },
       tutors,

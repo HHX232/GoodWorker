@@ -1886,7 +1886,9 @@
     "storageReindexHint": "सामग्री खोज से पहले अपलोड की गई फ़ाइलें अभी इंडेक्स नहीं हैं।",
     "storageReindex": "इंडेक्स करें ({n})",
     "storageReindexRunning": "इंडेक्स हो रहा है… {n} बाकी",
-    "storageReindexDone": "इंडेक्सिंग पूरी"
+    "storageReindexDone": "इंडेक्सिंग पूरी",
+    "storageAdminBadge": "एडमिन",
+    "storageAdminQuotaHint": "एडमिन को VIP के बिना {gb} GB मिलते हैं।"
   },
   "tutorial": {
     "prev": "पीछे",

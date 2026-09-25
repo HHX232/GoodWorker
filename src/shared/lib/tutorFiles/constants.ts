@@ -11,6 +11,9 @@ export const MAX_FOLDER_DEPTH = 6
 export const DEFAULT_QUOTA_GB = 15
 export const DEFAULT_MAX_FILE_MB = 50
 
+/** Admins (AdminEmail) use the library without VIP; their quota is fixed and always a hard cap (never billed). */
+export const ADMIN_QUOTA_GB = 100
+
 /** Admin input bounds. The per-file cap stays modest: uploads are buffered in memory by the route. */
 export const QUOTA_GB_RANGE = { min: 1, max: 1000 } as const
 export const MAX_FILE_MB_RANGE = { min: 1, max: 200 } as const

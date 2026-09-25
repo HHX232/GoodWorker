@@ -2143,7 +2143,9 @@
     "storageReindexHint": "Файлы, загруженные до появления поиска по содержимому, ещё не проиндексированы.",
     "storageReindex": "Проиндексировать ({n})",
     "storageReindexRunning": "Индексируем… осталось {n}",
-    "storageReindexDone": "Индексация завершена"
+    "storageReindexDone": "Индексация завершена",
+    "storageAdminBadge": "Админ",
+    "storageAdminQuotaHint": "Администраторам — {gb} ГБ без VIP."
   },
   "tutorial": {
     "prev": "Назад",

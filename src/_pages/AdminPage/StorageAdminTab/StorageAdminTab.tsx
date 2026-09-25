@@ -17,6 +17,9 @@ interface AdminTutorRow {
   email: string
   avatarUrl: string | null
   isVip: boolean
+  isAdmin: boolean
+  /** This owner's quota — admins have their own fixed one. */
+  quotaBytes: number
   usedBytes: number
   files: number
   folders: number
@@ -24,6 +27,7 @@ interface AdminTutorRow {
 
 interface AdminStorageResponse {
   settings: { quotaGb: number; maxFileMb: number }
+  adminQuotaGb: number
   billingEnabled: boolean
   priceCentsPerGbMonth: number | null
   totals: { usedBytes: number; files: number; folders: number; tutors: number; overQuota: number; unindexed: number }
@@ -130,7 +134,6 @@ export function StorageAdminTab() {
 
   if (isLoading || !data) return <div className={styles.loading}>{t('loading')}</div>
 
-  const quotaBytes = data.settings.quotaGb * 1024 ** 3
   const size = (b: number) => formatBytes(b, locale)
   const rows = data.tutors.filter(r => `${r.name} ${r.email}`.toLowerCase().includes(filter.trim().toLowerCase()))
 
@@ -149,6 +152,7 @@ export function StorageAdminTab() {
               <span className={styles.unit}>GB</span>
             </span>
             <span className={styles.fieldHint}>{data.billingEnabled ? t('storageQuotaHintBilling') : t('storageQuotaHintHard')}</span>
+            <span className={styles.fieldHint}>{t('storageAdminQuotaHint', { gb: data.adminQuotaGb })}</span>
           </label>
           <label className={styles.field}>
             <span className={styles.fieldLabel}>{t('storageMaxFile')}</span>
@@ -201,8 +205,8 @@ export function StorageAdminTab() {
         {rows.length === 0 ? <p className={styles.empty}>{t('storageNoTutors')}</p> : (
           <div className={styles.table}>
             {rows.map(r => {
-              const pct = Math.min(100, (r.usedBytes / quotaBytes) * 100)
-              const over = r.usedBytes > quotaBytes
+              const pct = Math.min(100, (r.usedBytes / r.quotaBytes) * 100)
+              const over = r.usedBytes > r.quotaBytes
               return (
                 <div key={r.id} className={styles.row}>
                   {r.avatarUrl
@@ -210,11 +214,11 @@ export function StorageAdminTab() {
                     ? <img src={r.avatarUrl} alt="" className={styles.avatar} />
                     : <span className={styles.avatar}>{initials(r.name)}</span>}
                   <span className={styles.who}>
-                    <span className={styles.name}>{r.name} {r.isVip && <span className={styles.vip}>VIP</span>}</span>
+                    <span className={styles.name}>{r.name} {r.isVip && <span className={styles.vip}>VIP</span>}{r.isAdmin && <span className={styles.adminBadge}>{t('storageAdminBadge')}</span>}</span>
                     <span className={styles.email}>{r.email}</span>
                   </span>
                   <span className={styles.usage}>
-                    <span className={styles.usageText}>{size(r.usedBytes)} <span className={styles.muted}>/ {size(quotaBytes)}</span></span>
+                    <span className={styles.usageText}>{size(r.usedBytes)} <span className={styles.muted}>/ {size(r.quotaBytes)}</span></span>
                     <span className={styles.bar}><span className={over ? styles.barOver : ''} style={{ width: `${pct}%` }} /></span>
                   </span>
                   <span className={styles.counts}>{t('storageCounts', { files: r.files, folders: r.folders })}</span>

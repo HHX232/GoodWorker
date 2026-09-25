@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getFilesSessionUser } from '@/shared/lib/tutorFiles/access'
 import { getStoragePricing } from '@/shared/lib/tutorFiles/billing'
-import { getStorageLimits, getUsedBytes } from '@/shared/lib/tutorFiles/storage'
+import { getTeacherStorageLimits, getUsedBytes } from '@/shared/lib/tutorFiles/storage'
 import { GB } from '@/shared/lib/tutorFiles/constants'
 import type { UsageResponse } from '@/shared/types/TutorFiles/tutorFiles.types'
 
@@ -14,7 +14,7 @@ export async function GET() {
     const user = await getFilesSessionUser()
     if (!user || user.role !== 'TEACHER') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const [usedBytes, limits, pricing] = await Promise.all([getUsedBytes(user.id), getStorageLimits(), getStoragePricing()])
+    const [usedBytes, limits, pricing] = await Promise.all([getUsedBytes(user.id), getTeacherStorageLimits(user.id), getStoragePricing()])
     const overageGb = Math.ceil(Math.max(0, usedBytes - limits.quotaBytes) / GB)
 
     const body: UsageResponse = {
@@ -22,7 +22,8 @@ export async function GET() {
       quotaBytes: limits.quotaBytes,
       maxFileBytes: limits.maxFileBytes,
       overageGb,
-      billing: pricing && { ...pricing, estimatedChargeCents: overageGb * pricing.priceCentsPerGbMonth },
+      // Admins have a hard cap and are never billed.
+      billing: pricing && !limits.isAdmin ? { ...pricing, estimatedChargeCents: overageGb * pricing.priceCentsPerGbMonth } : null,
     }
     return NextResponse.json(body)
   } catch (e) {

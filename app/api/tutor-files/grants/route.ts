@@ -1,6 +1,6 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
-import { getFilesSessionUser, hasTeacherStudentLink, isTeacherVipActive, requireOwnedFile, requireOwnedFolder, vipRequiredResponse } from '@/shared/lib/tutorFiles/access'
+import { getFilesSessionUser, hasTeacherStudentLink, hasStorageAccess, requireOwnedFile, requireOwnedFolder, vipRequiredResponse } from '@/shared/lib/tutorFiles/access'
 import { ensureSubfoldersForGrant, revokeOrphanedSubfolderGrants } from '@/shared/lib/tutorFiles/storage'
 import { postEventCard } from '@/shared/lib/chat/access'
 
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
       ...(availableFrom !== undefined ? { availableFrom } : {}),
       ...(availableUntil !== undefined ? { availableUntil } : {}),
     }
-    if (!(await isTeacherVipActive(user.id))) return vipRequiredResponse()
+    if (!(await hasStorageAccess(user.id))) return vipRequiredResponse()
 
     const folderGuard = itemType === 'folder' ? await requireOwnedFolder(itemId, user.id) : null
     if (folderGuard?.response) return folderGuard.response
