@@ -1,9 +1,11 @@
 .titleRow {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
 }
+
+.kindIcon { display: flex; flex-shrink: 0; }
 
 .name {
   flex: 1;
@@ -23,23 +25,170 @@
   align-items: center;
   justify-content: center;
   min-height: 0;
+  min-width: 0;
   background: #F4F4F8;
 }
 
-.image {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+.image { max-width: 100%; max-height: 100%; object-fit: contain; }
+.frame { width: 100%; height: 100%; border: none; background: #fff; }
+.video { max-width: 100%; max-height: 100%; background: #000; }
+
+// ── Audio / no-viewer card ──
+.audioCard, .fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: min(440px, calc(100% - 32px));
+  padding: 32px 24px 26px;
+  background: #fff;
+  border: 1px solid #E6E6EF;
+  border-radius: 22px;
+  text-align: center;
 }
 
-.frame {
-  width: 100%;
-  height: 100%;
-  border: none;
-  background: #fff;
+.audioIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 84px;
+  height: 84px;
+  margin-bottom: 6px;
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--kind) 12%, #fff);
+  color: var(--kind);
 }
+
+.audioName { max-width: 100%; font-size: 15px; font-weight: 600; color: #141416; overflow-wrap: anywhere; }
+.audioMeta { font-size: 12px; color: #868897; }
+.audio { width: 100%; margin-top: 12px; }
+.fallbackText { margin: 4px 0 10px; font-size: 13px; color: #868897; }
+
+// ── Loading ──
+.loading { display: flex; align-items: center; gap: 10px; color: #868897; font-size: 14px; }
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #DADCEB;
+  border-top-color: #534AB7;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+
+  @media (prefers-reduced-motion: reduce) { animation-duration: 2.4s; }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ── Text ──
+.textWrap { align-self: stretch; flex: 1; min-width: 0; overflow: auto; background: #fff; }
+
+.text {
+  margin: 0;
+  font-size: 13px;
+  padding: 24px 28px;
+  font-family: var(--files-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+  font-size: 13px;
+  line-height: 1.6;
+  color: #1f2330;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.truncated { padding: 0 28px 24px; font-size: 12px; color: #868897; }
+
+// ── DOCX: a sheet of paper ──
+.paperWrap { align-self: stretch; flex: 1; min-width: 0; overflow: auto; padding: 28px 16px; }
+
+.paper {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 56px 64px;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 2px 10px rgba(20, 20, 45, 0.08), 0 0 0 1px rgba(20, 20, 45, 0.04);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: #1f2330;
+  overflow-wrap: anywhere;
+
+  // The app's global reset sets `font` on every element, so nothing inherits —
+  // the paper face has to be spelled out for its descendants too.
+  * { font-family: inherit; font-size: inherit; line-height: inherit; color: inherit; }
+  strong { font-weight: 700; }
+  em { font-style: italic; }
+  u { text-decoration: underline; }
+  p { margin: 0 0 10px; white-space: pre-wrap; }
+  h1 { margin: 6px 0 16px; font-size: 26px; font-weight: 700; line-height: 1.25; }
+  h2 { margin: 18px 0 10px; font-size: 20px; font-weight: 700; }
+  h3 { margin: 16px 0 8px; font-size: 17px; font-weight: 700; }
+  li { list-style: disc; }
+  li { display: list-item; margin: 0 0 6px 22px; white-space: pre-wrap; }
+
+  @media (max-width: 600px) { padding: 28px 22px; }
+}
+
+.docGap { height: 12px; }
+
+.docTable {
+  width: 100%;
+  margin: 12px 0 16px;
+  border-collapse: collapse;
+  font-size: 14px;
+
+  td { padding: 6px 10px; border: 1px solid #D5D7E3; vertical-align: top; white-space: pre-wrap; }
+}
+
+// ── XLSX / CSV grid ──
+.sheetWrap { align-self: stretch; flex: 1; min-width: 0; display: flex; flex-direction: column; background: #fff; }
+.sheetScroll { flex: 1; overflow: auto; }
+
+.sheet {
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+  color: #1f2330;
+
+  th, td { padding: 6px 10px; border-right: 1px solid #ECECF3; border-bottom: 1px solid #ECECF3; white-space: nowrap; max-width: 320px; overflow: hidden; text-overflow: ellipsis; }
+  thead th { position: sticky; top: 0; z-index: 1; background: #F7F7FA; color: #868897; font-weight: 600; text-align: center; }
+  tbody th { position: sticky; left: 0; background: #F7F7FA; color: #868897; font-weight: 500; text-align: right; min-width: 40px; }
+  thead th:first-child { left: 0; z-index: 2; }
+}
+
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.tabs { display: flex; gap: 2px; padding: 6px 8px; border-top: 1px solid #ECECF3; background: #FAFAFC; overflow-x: auto; }
+
+.tab {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #868897;
+  font: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover { background: #F0F0F6; color: #141416; }
+}
+
+.tabActive { background: #fff; color: #16a34a; font-weight: 600; box-shadow: 0 0 0 1px #E3E3EC; }
 
 // ─── Dark theme ───────────────────────────────────────────────────────────────
 :global(html.theme-dark), :global(html.pomodoro-dark) {
   .stage { background: #0e0f15; }
+  .audioCard, .fallback { background: #1a1c24; border-color: rgba(255, 255, 255, 0.08); }
+  .audioIcon { background: color-mix(in srgb, var(--kind) 18%, #1a1c24); }
+  .audioName { color: #e8eaf0; }
+  .audioMeta, .fallbackText, .loading, .truncated { color: #9ea4b5; }
+  .textWrap, .sheetWrap { background: #14151c; }
+  .text, .sheet { color: #e0e3ec; }
+  .paper { background: #f7f7f4; } // documents stay "paper" in dark mode, like a PDF viewer
+  .sheet th, .sheet td { border-color: rgba(255, 255, 255, 0.07); }
+  .sheet thead th, .sheet tbody th { background: #1a1c24; color: #9ea4b5; }
+  .tabs { background: #1a1c24; border-color: rgba(255, 255, 255, 0.07); }
+  .tab { color: #9ea4b5; &:hover { background: rgba(255, 255, 255, 0.05); color: #e8eaf0; } }
+  .tabActive { background: #14151c; color: #4ade80; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1); }
 }

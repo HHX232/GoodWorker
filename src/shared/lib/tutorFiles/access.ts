@@ -152,3 +152,19 @@ export async function loadStudentVisibility(studentId: string): Promise<StudentV
 
   return { grantedIds, folders, files }
 }
+
+/** The file if `studentId` may see it (direct grant, or a grant on its folder chain, minus other students' subfolders), else null. */
+export async function findFileVisibleToStudent(fileId: string, studentId: string) {
+  const file = await prisma.tutorFile.findUnique({
+    where: { id: fileId },
+    include: { folder: { select: { id: true, ancestorIds: true, restrictedToStudentId: true } } },
+  })
+  if (!file) return null
+  const folderIds = file.folder ? [file.folder.id, ...file.folder.ancestorIds] : []
+  const [fileGrant, folderGrants] = await Promise.all([
+    prisma.tutorFileGrant.findUnique({ where: { fileId_studentId: { fileId, studentId } }, select: { fileId: true } }),
+    folderIds.length ? prisma.tutorFolderGrant.findMany({ where: { studentId, folderId: { in: folderIds } }, select: { folderId: true } }) : [],
+  ])
+  const granted = new Set<string>([...(fileGrant ? [fileId] : []), ...folderGrants.map(g => g.folderId)])
+  return canStudentSee(fileVisibilityItem(file, file.folder), studentId, granted) ? file : null
+}

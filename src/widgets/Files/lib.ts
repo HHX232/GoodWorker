@@ -1,36 +1,69 @@
 import type { ComponentType } from 'react'
 import {
-  FilesArchiveIcon, FilesAudioIcon, FilesDocIcon, FilesFileIcon, FilesImageIcon, FilesPdfIcon, FilesSheetIcon, FilesVideoIcon,
-} from './icons'
+  FileArchiveIcon, FileCheckIcon, FileIcon, FileImageIcon, FileMusicIcon, FilePlusIcon, FileTextIcon, FileVideoIcon,
+} from 'lucide-react'
 
-export type FileKind = 'pdf' | 'image' | 'sheet' | 'doc' | 'archive' | 'video' | 'audio' | 'other'
+export type FileKind = 'pdf' | 'image' | 'video' | 'audio' | 'doc' | 'sheet' | 'presentation' | 'text' | 'archive' | 'other'
+
+function extOf(name: string): string {
+  return name.includes('.') ? name.split('.').pop()!.toLowerCase() : ''
+}
 
 export function fileKind(mimeType: string, name: string): FileKind {
-  const ext = name.split('.').pop()?.toLowerCase() ?? ''
+  const ext = extOf(name)
   if (mimeType === 'application/pdf' || ext === 'pdf') return 'pdf'
   if (mimeType.startsWith('image/')) return 'image'
   if (mimeType.startsWith('video/')) return 'video'
   if (mimeType.startsWith('audio/')) return 'audio'
-  if (/sheet|excel|csv/.test(mimeType) || ['xls', 'xlsx', 'csv', 'ods'].includes(ext)) return 'sheet'
-  if (/zip|rar|7z|tar|gzip/.test(mimeType) || ['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)) return 'archive'
-  if (/word|document|presentation|powerpoint|text/.test(mimeType) || ['doc', 'docx', 'ppt', 'pptx', 'txt', 'odt', 'rtf'].includes(ext)) return 'doc'
+  if (/excel|sheet|spreadsheet/.test(mimeType) || ['xls', 'xlsx', 'ods', 'csv'].includes(ext)) return 'sheet'
+  if (/powerpoint|presentation/.test(mimeType) || ['ppt', 'pptx', 'odp'].includes(ext)) return 'presentation'
+  if (/word|msword|opendocument\.text/.test(mimeType) || ['doc', 'docx', 'odt', 'rtf'].includes(ext)) return 'doc'
+  if (/zip|rar|7z|tar|gzip|archive/.test(mimeType) || ['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)) return 'archive'
+  if (mimeType.startsWith('text/') || ['txt', 'md', 'json', 'log', 'xml', 'yml', 'yaml'].includes(ext)) return 'text'
   return 'other'
 }
 
-export const KIND_ICON: Record<FileKind, ComponentType<{ size?: number; strokeWidth?: number }>> = {
-  pdf: FilesPdfIcon,
-  image: FilesImageIcon,
-  sheet: FilesSheetIcon,
-  doc: FilesDocIcon,
-  archive: FilesArchiveIcon,
-  video: FilesVideoIcon,
-  audio: FilesAudioIcon,
-  other: FilesFileIcon,
+// Same icon + colour per type as the road-map file blocks
+// (src/widgets/RoadMap/UI/nodes/OtherBlocks/FileRow/FileRow.tsx), so a file
+// looks the same wherever it shows up in the app.
+export const KIND_ICON: Record<FileKind, ComponentType<{ size?: number; strokeWidth?: number; color?: string }>> = {
+  image: FileImageIcon,
+  video: FileVideoIcon,
+  audio: FileMusicIcon,
+  pdf: FileTextIcon,
+  doc: FileTextIcon,
+  sheet: FileCheckIcon,
+  presentation: FilePlusIcon,
+  text: FileTextIcon,
+  archive: FileArchiveIcon,
+  other: FileIcon,
 }
 
-/** G05: only PDFs and images open in the built-in viewer; everything else downloads. */
-export function isPreviewable(kind: FileKind): boolean {
-  return kind === 'pdf' || kind === 'image'
+export const KIND_COLOR: Record<FileKind, string> = {
+  image: '#10b981',
+  video: '#6366f1',
+  audio: '#f59e0b',
+  pdf: '#ef4444',
+  doc: '#2563eb',
+  sheet: '#16a34a',
+  presentation: '#ea580c',
+  text: '#3b82f6',
+  archive: '#8b5cf6',
+  other: '#868897',
+}
+
+/** Which in-app viewer opens this file; null → download only. */
+export type ViewerKind = 'pdf' | 'image' | 'video' | 'audio' | 'text' | 'csv' | 'docx' | 'xlsx'
+
+export function viewerFor(mimeType: string, name: string): ViewerKind | null {
+  const kind = fileKind(mimeType, name)
+  const ext = extOf(name)
+  if (kind === 'pdf' || kind === 'image' || kind === 'video' || kind === 'audio') return kind
+  if (ext === 'csv') return 'csv'
+  if (ext === 'docx') return 'docx'
+  if (ext === 'xlsx') return 'xlsx'
+  if (kind === 'text') return 'text'
+  return null
 }
 
 /** `12 МБ` / `3.4 GB` — the unit name comes from Intl, so every locale reads its own. */
@@ -123,5 +156,17 @@ export function folderBackPath(w: number, h: number): string {
   const top = 5 * k
   const inset = 4 * k
   const left = tw - 30 * k
-  return `M${left} ${top + r} Q${left} ${top} ${left + r} ${top} L${w - r - inset} ${top} Q${w - inset} ${top} ${w - inset} ${top + r} L${w - inset} ${h - r} Q${w - inset} ${h} ${w - r - inset} ${h} L${left + r} ${h} Q${left} ${h} ${left} ${h - r} Z`
+  // Ends well above the front's bottom so no anti-aliased fringe shows under it.
+  const b = Math.min(h, top + 60 * k)
+  return `M${left} ${top + r} Q${left} ${top} ${left + r} ${top} L${w - r - inset} ${top} Q${w - inset} ${top} ${w - inset} ${top + r} L${w - inset} ${b - r} Q${w - inset} ${b} ${w - r - inset} ${b} L${left + r} ${b} Q${left} ${b} ${left} ${b - r} Z`
+}
+
+/** Starts a download of the public file URL (new tab fallback where `download` is ignored cross-origin). */
+export function triggerDownload(file: { url: string; name: string }): void {
+  const a = document.createElement('a')
+  a.href = file.url
+  a.download = file.name
+  a.target = '_blank'
+  a.rel = 'noopener noreferrer'
+  a.click()
 }

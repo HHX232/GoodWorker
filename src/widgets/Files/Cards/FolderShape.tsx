@@ -39,7 +39,14 @@ export function FolderShape({ folderId, cover, ghost = false, className, childre
   const [ref, { w, h }] = useSize<HTMLDivElement>()
   const resolved = resolveCover(folderId, cover)
   const background = resolved.kind === 'image' ? `center / cover no-repeat url("${resolved.url}")` : resolved.preset.background
+  const backColor = resolved.kind === 'preset' ? resolved.preset.back : undefined
   const dark = resolved.kind === 'image' || resolved.preset.dark
+  // Readability layer baked into the background (not a ::after), so the
+  // folder's clip-path is the only thing that shapes it: a light sheen on
+  // pastels, a bottom scrim under the white label on artwork/photos.
+  const overlay = dark
+    ? 'linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0) 40%, rgba(10,10,20,0.42) 100%)'
+    : 'linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 38%)'
   const measured = w > 0 && h > 0
   const front = measured ? folderFrontPath(w, h) : ''
   const back = measured ? folderBackPath(w, h) : ''
@@ -48,11 +55,11 @@ export function FolderShape({ folderId, cover, ghost = false, className, childre
     <div ref={ref} className={`${styles.shape} ${dark ? styles.dark : ''} ${ghost ? styles.ghost : ''} ${className ?? ''}`} data-dark={dark || undefined}>
       {!ghost && (
         <>
-          <div className={styles.back} style={{ background, clipPath: measured ? `path('${back}')` : undefined }} aria-hidden="true" />
-          <div className={styles.front} style={{ background, clipPath: measured ? `path('${front}')` : undefined }} aria-hidden="true" />
+          <div className={`${styles.back} ${backColor ? '' : styles.backShaded}`} style={{ background: backColor ?? background, clipPath: measured ? `path('${back}')` : undefined }} aria-hidden="true" />
+          <div className={styles.front} style={{ background: `${overlay}, ${background}`, clipPath: measured ? `path('${front}')` : undefined }} aria-hidden="true" />
         </>
       )}
-      {measured && (
+      {measured && ghost && (
         <svg className={styles.outline} width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
           <path d={front} />
         </svg>

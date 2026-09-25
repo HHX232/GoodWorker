@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import type { TutorFolder } from '@prisma/client'
 import { canStudentSee, getFilesSessionUser, isTeacherVipActive, loadStudentVisibility } from '@/shared/lib/tutorFiles/access'
 import type { LibraryGroup, LibraryResponse } from '@/shared/types/TutorFiles/tutorFiles.types'
-import { grantStudentSelect, studentItemCounter, toFile, toFolder, toTreeNode } from '@/shared/lib/tutorFiles/readModel'
+import { grantStudentSelect, loadOpens, studentItemCounter, toFile, toFolder, toTreeNode } from '@/shared/lib/tutorFiles/readModel'
 
 // GET /api/tutor-files/library?folderId=... — the browse read model behind
 // <FilesShell> for both roles (tickets 05/07). Teacher: their own library,
@@ -41,14 +41,15 @@ export async function GET(req: NextRequest) {
         }),
       ])
 
+      const opened = await loadOpens(folders.map(f => f.id), files.map(f => f.id))
       const body: LibraryResponse = {
         role: 'TEACHER',
         folder: current ? { id: current.id, name: current.name, allowStudentUpload: current.allowStudentUpload, restrictedToStudentId: current.restrictedToStudentId, depth: current.ancestorIds.length + 1 } : null,
         breadcrumbs: (current?.ancestorIds ?? []).map(id => byId.get(id)).filter((f): f is TutorFolder => !!f).map(f => ({ id: f.id, name: f.name })),
         groups: [{
           teacher: null,
-          folders: folders.map(f => toFolder(f, f._count.children + f._count.files, f.grants)),
-          files: files.map(f => toFile(f, f.grants)),
+          folders: folders.map(f => toFolder(f, f._count.children + f._count.files, f.grants, opened)),
+          files: files.map(f => toFile(f, f.grants, opened)),
         }],
         tree: allFolders.map(f => toTreeNode(f, true)),
         teachers: [],
@@ -81,6 +82,8 @@ export async function GET(req: NextRequest) {
 
     const current = visibleById.get(folderId)
     if (!current || !canStudentSee(current, user.id, grantedIds)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    // Entering a folder counts as opening it (the tutor's avatar hover).
+    await prisma.tutorFolderOpen.createMany({ data: [{ folderId: current.id, studentId: user.id }], skipDuplicates: true })
 
     const body: LibraryResponse = {
       role: 'STUDENT',

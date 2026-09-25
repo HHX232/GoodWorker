@@ -3444,7 +3444,6 @@
     "overageNoPrice": "Currently over the limit: {gb} GB. Uploads aren't blocked. The price per extra GB hasn't been set yet — nothing is charged until it is.",
     "overageWallet": "Open Wallet",
     "overageOk": "Got it",
-    "previewTitle": "Preview",
     "pageTitle": "Files",
     "myFiles": "My files",
     "sharedWithMe": "Shared with me",
@@ -3465,6 +3464,13 @@
     "storageLeft": "{left} left",
     "storageOver": "{over} over the limit",
     "storageCharge": "{amount} will be charged at month end — {gb} GB × {price}",
-    "storageChargeNone": "No overage price set yet — nothing will be charged"
+    "storageChargeNone": "No overage price set yet — nothing will be charged",
+    "openedAt": "Opened {date}",
+    "notOpened": "Not opened yet",
+    "openedSummary": "Opened by {opened} of {total}",
+    "previewLoading": "Opening the file…",
+    "previewTruncated": "Showing the beginning — download for the full text",
+    "previewFailed": "This file can't be shown here — download it",
+    "previewUnavailable": "No built-in preview for this format"
   }
 }

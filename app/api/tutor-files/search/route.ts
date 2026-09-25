@@ -1,7 +1,7 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { getFilesSessionUser, loadStudentVisibility } from '@/shared/lib/tutorFiles/access'
-import { grantStudentSelect, studentItemCounter, toFile, toFolder } from '@/shared/lib/tutorFiles/readModel'
+import { grantStudentSelect, loadOpens, studentItemCounter, toFile, toFolder } from '@/shared/lib/tutorFiles/readModel'
 
 // GET /api/tutor-files/search?q=... — teacher searches their whole library by
 // name; student searches only their granted subset, via the same
@@ -28,9 +28,10 @@ export async function GET(req: NextRequest) {
           orderBy: { name: 'asc' },
         }),
       ])
+      const opened = await loadOpens(folders.map(f => f.id), files.map(f => f.id))
       return NextResponse.json({
-        folders: folders.map(f => toFolder(f, f._count.children + f._count.files, f.grants)),
-        files: files.map(f => toFile(f, f.grants)),
+        folders: folders.map(f => toFolder(f, f._count.children + f._count.files, f.grants, opened)),
+        files: files.map(f => toFile(f, f.grants, opened)),
       })
     }
 

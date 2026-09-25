@@ -1,38 +1,22 @@
-// Same outer frame as /chats (ChatShell .page/.container): lavender backdrop,
-// one white rounded app window.
+// Full-bleed app surface right under the site header — no outer backdrop or
+// floating frame (user feedback: the empty margin around the page was noise).
 .page {
   min-height: calc(100vh - var(--chat-header-height, 83px));
-  padding: 24px;
-  background: #EEEFF8;
-  box-sizing: border-box;
-
-  @media (max-width: 768px) { padding: 0; }
-}
-
-.frame {
-  max-width: 1600px;
-  min-height: calc(100vh - var(--chat-header-height, 83px) - 48px);
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
   background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.07);
-  border-radius: 20px;
-  box-shadow: 0 24px 64px rgba(20, 20, 45, 0.12);
-  overflow: hidden;
+  border-top: 1px solid #EDEDF3;
+}
+
+.frame {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 
   > * { flex: 1; }
-
-  @media (max-width: 768px) {
-    min-height: calc(100vh - var(--chat-header-height, 83px));
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
-  }
 }
 
 // ─── Dark theme ───────────────────────────────────────────────────────────────
 :global(html.theme-dark), :global(html.pomodoro-dark) {
-  .page { background: #0e0f15; }
-  .frame { background: #14151c; border-color: rgba(255, 255, 255, 0.07); box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4); }
+  .page { background: #14151c; border-color: rgba(255, 255, 255, 0.07); }
 }

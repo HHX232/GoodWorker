@@ -32,6 +32,7 @@ export {
   MoreVertical as FilesMoreIcon,
   Image as FilesCoverIcon,
   Plus as FilesPlusIcon,
+  Play as FilesPlayIcon,
   Home as FilesHomeIcon,
   Command as FilesCommandIcon,
 } from 'lucide-react'

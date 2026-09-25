@@ -5,10 +5,32 @@ import type { FilesPerson, LibraryFile, LibraryFolder, TreeNode } from '@/shared
 // search hit renders with the same card data (counts, grant avatars) as the
 // same item in the browse view.
 
-export type GrantRow = { student: FilesPerson }
+import { prisma } from '@/shared/prisma/prisma'
+
+export type GrantRow = { studentId: string; student: { id: string; name: string; avatarUrl: string | null } }
+/** `itemId:studentId` → first open, for the avatar tooltips. */
+export type OpenLookup = (itemId: string, studentId: string) => Date | undefined
+
+const noOpens: OpenLookup = () => undefined
+
+/** First-open times for the given items (teacher views — the avatar hover). */
+export async function loadOpens(folderIds: string[], fileIds: string[]): Promise<OpenLookup> {
+  const [folderOpens, fileOpens] = await Promise.all([
+    folderIds.length ? prisma.tutorFolderOpen.findMany({ where: { folderId: { in: folderIds } } }) : [],
+    fileIds.length ? prisma.tutorFileOpen.findMany({ where: { fileId: { in: fileIds } } }) : [],
+  ])
+  const map = new Map<string, Date>()
+  for (const o of folderOpens) map.set(`${o.folderId}:${o.studentId}`, o.firstOpenedAt)
+  for (const o of fileOpens) map.set(`${o.fileId}:${o.studentId}`, o.firstOpenedAt)
+  return (itemId, studentId) => map.get(`${itemId}:${studentId}`)
+}
+
+function people(itemId: string, grants: GrantRow[], opened: OpenLookup): FilesPerson[] {
+  return grants.map(g => ({ ...g.student, firstOpenedAt: opened(itemId, g.student.id)?.toISOString() ?? null }))
+}
 export const grantStudentSelect = { student: { select: { id: true, name: true, avatarUrl: true } } }
 
-export function toFolder(f: TutorFolder, itemCount: number, grants: GrantRow[] = []): LibraryFolder {
+export function toFolder(f: TutorFolder, itemCount: number, grants: GrantRow[] = [], opened: OpenLookup = noOpens): LibraryFolder {
   return {
     id: f.id,
     name: f.name,
@@ -17,12 +39,12 @@ export function toFolder(f: TutorFolder, itemCount: number, grants: GrantRow[] =
     restrictedToStudentId: f.restrictedToStudentId,
     cover: f.cover,
     itemCount,
-    sharedWith: grants.map(g => g.student),
+    sharedWith: people(f.id, grants, opened),
     updatedAt: f.updatedAt.toISOString(),
   }
 }
 
-export function toFile(f: TutorFile, grants: GrantRow[] = []): LibraryFile {
+export function toFile(f: TutorFile, grants: GrantRow[] = [], opened: OpenLookup = noOpens): LibraryFile {
   return {
     id: f.id,
     name: f.name,
@@ -33,7 +55,7 @@ export function toFile(f: TutorFile, grants: GrantRow[] = []): LibraryFile {
     uploadedByRole: f.uploadedByRole,
     uploadedById: f.uploadedById,
     createdAt: f.createdAt.toISOString(),
-    sharedWith: grants.map(g => g.student),
+    sharedWith: people(f.id, grants, opened),
   }
 }
 

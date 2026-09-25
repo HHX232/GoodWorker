@@ -5,19 +5,19 @@
 
 export interface CoverPreset {
   id: string
-  /** Any CSS `background` value. */
+  /** Any CSS `background` value for the front of the folder. */
   background: string
+  /** The sheet peeking out behind the front; omitted → the front, one shade deeper. */
+  back?: string
   /** Dark artwork → the card switches to light text. */
   dark: boolean
 }
 
+/** The base folder palette (front / back pairs from the design brief). */
 export const PASTEL_PRESETS: CoverPreset[] = [
-  { id: 'lavender', background: 'linear-gradient(160deg, #F1EEFF 0%, #E4E0FB 100%)', dark: false },
-  { id: 'sky', background: 'linear-gradient(160deg, #EAF4FF 0%, #D9E9FB 100%)', dark: false },
-  { id: 'peach', background: 'linear-gradient(160deg, #FFF3E8 0%, #FBE3CC 100%)', dark: false },
-  { id: 'mint', background: 'linear-gradient(160deg, #EAF8F1 0%, #D5F0E3 100%)', dark: false },
-  { id: 'rose', background: 'linear-gradient(160deg, #FFEFF3 0%, #F9DDE5 100%)', dark: false },
-  { id: 'sand', background: 'linear-gradient(160deg, #FBF7EC 0%, #F1E9D2 100%)', dark: false },
+  { id: 'peach', background: '#FDF0E7', back: '#F5E1D2', dark: false },
+  { id: 'sky', background: '#E6F1FC', back: '#CCE0F0', dark: false },
+  { id: 'lavender', background: '#EEEEF8', back: '#DBDCF1', dark: false },
 ]
 
 export const ART_PRESETS: CoverPreset[] = [

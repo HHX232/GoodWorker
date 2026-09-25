@@ -6,6 +6,8 @@ export interface FilesPerson {
   id: string
   name: string
   avatarUrl: string | null
+  /** Teacher view, grant avatars only: when this student first opened the item (null = not yet). */
+  firstOpenedAt?: string | null
 }
 
 export interface LibraryFolder {

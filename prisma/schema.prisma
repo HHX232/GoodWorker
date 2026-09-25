@@ -64,6 +64,8 @@ model Student {
   walletTransactions     WalletTransaction[]
   tutorFolderGrants      TutorFolderGrant[]
   tutorFileGrants        TutorFileGrant[]
+  tutorFolderOpens       TutorFolderOpen[]
+  tutorFileOpens         TutorFileOpen[]
   restrictedTutorFolders TutorFolder[]      @relation("TutorFolderRestrictedToStudent")
 }
 
@@ -322,6 +324,7 @@ model TutorFolder {
   restrictedToStudent   Student?           @relation("TutorFolderRestrictedToStudent", fields: [restrictedToStudentId], references: [id], onDelete: SetNull)
   files                 TutorFile[]
   grants                TutorFolderGrant[]
+  opens                 TutorFolderOpen[]
 
   @@index([teacherId])
   @@index([parentId])
@@ -342,6 +345,7 @@ model TutorFile {
   teacher        Teacher           @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   folder         TutorFolder?      @relation(fields: [folderId], references: [id], onDelete: Cascade)
   grants         TutorFileGrant[]
+  opens          TutorFileOpen[]
 
   @@index([teacherId])
   @@index([folderId])
@@ -355,6 +359,28 @@ model TutorFolderGrant {
   student   Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@id([folderId, studentId])
+}
+
+// When a student first opened a shared folder / file — shown to the tutor on
+// hover over the student's avatar. One row per (item, student), never updated.
+model TutorFolderOpen {
+  folderId      String
+  studentId     String
+  firstOpenedAt DateTime    @default(now())
+  folder        TutorFolder @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  student       Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([folderId, studentId])
+}
+
+model TutorFileOpen {
+  fileId        String
+  studentId     String
+  firstOpenedAt DateTime  @default(now())
+  file          TutorFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  student       Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([fileId, studentId])
 }
 
 model TutorFileGrant {

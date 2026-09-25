@@ -62,34 +62,6 @@
   color: #DC2626;
 }
 
-.avatars {
-  display: inline-flex;
-  align-items: center;
-}
-
-.avatar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border: 2px solid #fff;
-  border-radius: 50%;
-  background: #EEEDFE;
-  color: #534AB7;
-  font-size: 9px;
-  font-weight: 700;
-  object-fit: cover;
-  flex-shrink: 0;
-
-  & + & { margin-left: -7px; }
-}
-
-.avatarMore {
-  background: #F1F1F6;
-  color: #868897;
-}
-
 // ─── Dark theme ───────────────────────────────────────────────────────────────
 :global(html.theme-dark), :global(html.pomodoro-dark) {
   .btn { border-color: rgba(255, 255, 255, 0.12); background: transparent; color: #e8eaf0; &:hover:not(:disabled) { background: rgba(255, 255, 255, 0.06); } }
@@ -97,6 +69,4 @@
   .danger { border-color: #EF4444; background: #EF4444; color: #fff; &:hover:not(:disabled) { background: #DC2626; } }
   .input { border-color: rgba(255, 255, 255, 0.12); background: rgba(255, 255, 255, 0.04); color: #e8eaf0; &:focus { border-color: #818cf8; box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.18); } }
   .error { color: #F87171; }
-  .avatar { border-color: #1a1c24; background: rgba(129, 140, 248, 0.18); color: #c7cbff; }
-  .avatarMore { background: rgba(255, 255, 255, 0.08); color: #9ea4b5; }
 }

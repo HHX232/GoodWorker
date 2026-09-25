@@ -3271,7 +3271,6 @@
     "overageNoPrice": "当前超出额度：{gb} GB。上传不会被阻止。超出部分的单价尚未设定——设定之前不会扣费。",
     "overageWallet": "打开钱包",
     "overageOk": "知道了",
-    "previewTitle": "预览",
     "pageTitle": "文件",
     "myFiles": "我的文件",
     "sharedWithMe": "与我共享",
@@ -3292,6 +3291,13 @@
     "storageLeft": "剩余 {left}",
     "storageOver": "超出 {over}",
     "storageCharge": "月末将扣除 {amount} — {gb} GB × {price}",
-    "storageChargeNone": "尚未设定超额价格 — 不会扣费"
+    "storageChargeNone": "尚未设定超额价格 — 不会扣费",
+    "openedAt": "{date} 已打开",
+    "notOpened": "尚未打开",
+    "openedSummary": "{total} 人中 {opened} 人已打开",
+    "previewLoading": "正在打开文件…",
+    "previewTruncated": "仅显示开头部分 — 完整内容请下载",
+    "previewFailed": "无法在此显示该文件 — 请下载",
+    "previewUnavailable": "此格式不支持内置预览"
   }
 }

@@ -3270,7 +3270,6 @@
     "overageNoPrice": "अभी सीमा से अधिक: {gb} GB। अपलोड नहीं रुकते। अतिरिक्त GB की कीमत अभी तय नहीं है — तब तक कुछ नहीं काटा जाएगा।",
     "overageWallet": "वॉलेट खोलें",
     "overageOk": "ठीक है",
-    "previewTitle": "पूर्वावलोकन",
     "pageTitle": "फ़ाइलें",
     "myFiles": "मेरी फ़ाइलें",
     "sharedWithMe": "मेरे साथ साझा",
@@ -3291,6 +3290,13 @@
     "storageLeft": "{left} बाकी",
     "storageOver": "सीमा से {over} अधिक",
     "storageCharge": "महीने के अंत में {amount} कटेंगे — {gb} GB × {price}",
-    "storageChargeNone": "अतिरिक्त शुल्क अभी तय नहीं — कुछ नहीं कटेगा"
+    "storageChargeNone": "अतिरिक्त शुल्क अभी तय नहीं — कुछ नहीं कटेगा",
+    "openedAt": "{date} को खोला",
+    "notOpened": "अभी नहीं खोला",
+    "openedSummary": "{total} में से {opened} ने खोला",
+    "previewLoading": "फ़ाइल खुल रही है…",
+    "previewTruncated": "शुरुआत दिखाई गई है — पूरा टेक्स्ट डाउनलोड में",
+    "previewFailed": "यह फ़ाइल यहाँ नहीं दिख सकती — डाउनलोड करें",
+    "previewUnavailable": "इस फ़ॉर्मेट के लिए पूर्वावलोकन नहीं है"
   }
 }

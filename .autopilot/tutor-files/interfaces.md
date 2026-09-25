@@ -108,3 +108,11 @@
 - `GET /api/cron/storage-overage-billing` — `Authorization: Bearer $CRON_SECRET`, 401 без него.
 - `vercel.json` → `crons` пополнен записью `"0 3 1 * *"` для этого пути.
 - `WalletSettingsCard` (AdminPage) — новое поле «Плата за перелимит хранилища файлов, ¢/ГБ в мес.».
+
+## Итерация 3 (фидбек пользователя)
+
+- Базовая гамма папок — пары «лицо / задняя створка»: `#FDF0E7/#F5E1D2`, `#E6F1FC/#CCE0F0`, `#EEEEF8/#DBDCF1` (`PASTEL_PRESETS` в `covers.ts`, поле `back`); у арт-обложек и картинок створка — тот же фон, затемнённый фильтром. Контурной обводки у заполненных папок нет (только у пунктирной «Новая папка»); затемнение под подписью запечено в `background` слоя, а не `::after`.
+- `/files` без внешних отступов — страница в край под шапкой.
+- «Когда ученик впервые открыл»: модели `TutorFolderOpen` / `TutorFileOpen` (миграция `20260925150000_tutor_item_opens`, одна строка на пару элемент–ученик, `createMany skipDuplicates`). Папка отмечается, когда ученик входит в неё (`GET /library?folderId`), файл — `POST /api/tutor-files/files/[id]/open` (превью или скачивание). Репетитору в `sharedWith[].firstOpenedAt` (read-модель `loadOpens()`), `AvatarStack`: зелёная точка = открыл, подсказка при наведении — имя + «Открыто 25 сент., 09:58» / «Ещё не открыто».
+- Встроенный просмотр (`FilePreviewModal`): PDF (iframe), картинки, видео и аудио — нативные плееры; txt/md/json — текст; csv и xlsx — таблица с листами; docx — «лист бумаги» с заголовками/списками/таблицами. docx/xlsx читаются в браузере без зависимостей (`officeParsers.ts`: мини-zip через `DecompressionStream('deflate-raw')` + `DOMParser`). Байты — через `GET /api/tutor-files/files/[id]/content` (проверка доступа; отдаётся всегда `application/octet-stream` + `attachment` + `CSP: sandbox`, чтобы загруженный учеником .html не исполнился на нашем домене). pptx/архивы/старые .doc/.xls — карточка «скачать».
+- Иконки и цвета типов файлов — как у файловых блоков road-map (`FileRow.tsx`): `KIND_ICON`/`KIND_COLOR` в `widgets/Files/lib.ts`; иконка стоит рядом с названием, у видео на карточке — первый кадр.

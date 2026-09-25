@@ -15,10 +15,14 @@
 
 // ── Folder ──
 .folderCard {
+  position: relative;
   min-width: 0;
   transition: transform 0.18s ease;
 
   &:hover { transform: translateY(-2px); }
+  // The hover lift makes a stacking context; keep it above the neighbours so
+  // avatar tooltips / the ⋮ menu aren't covered by the next card.
+  &:hover, &:focus-within { z-index: 5; }
   @media (prefers-reduced-motion: reduce) { transition: none; &:hover { transform: none; } }
 }
 
@@ -123,6 +127,7 @@
   transition: transform 0.18s ease, box-shadow 0.18s ease;
 
   &:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(40, 36, 110, 0.1); }
+  &:hover, &:focus-within { z-index: 5; }
   @media (prefers-reduced-motion: reduce) { transition: none; &:hover { transform: none; } }
 }
 
@@ -135,8 +140,9 @@
   padding-bottom: 14px;
   border-radius: 17px 17px 0 0;
   overflow: hidden;
-  background: #F2F2F7;
-  color: #868897;
+  // One accent per type (same colours as the road-map file blocks), as a soft wash.
+  background: linear-gradient(160deg, color-mix(in srgb, var(--kind) 8%, #fff) 0%, color-mix(in srgb, var(--kind) 18%, #fff) 100%);
+  color: var(--kind);
 }
 
 .artImg {
@@ -145,15 +151,28 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  pointer-events: none;
 }
 
-.pdf { background: linear-gradient(160deg, #FFF1F1 0%, #FDDCDC 100%); color: #D23B3B; }
-.image { background: #E3F0FF; color: #1A5FAB; }
-.sheet { background: linear-gradient(160deg, #EAF8F1 0%, #CFEFDF 100%); color: #1A7A5E; }
-.doc { background: linear-gradient(160deg, #EEF2FF 0%, #DCE3FD 100%); color: #534AB7; }
-.archive { background: linear-gradient(160deg, #FFF6E8 0%, #FBE5C4 100%); color: #9A5A00; }
-.video, .audio { background: linear-gradient(160deg, #FFEFF4 0%, #F9D9E4 100%); color: #993556; }
-.other { background: linear-gradient(160deg, #F4F4F8 0%, #E7E7EF 100%); color: #868897; }
+.play {
+  position: absolute;
+  left: 50%;
+  top: calc(50% - 7px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  margin: -19px 0 0 -19px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--kind);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18);
+
+  svg { margin-left: 2px; fill: currentColor; }
+}
+
+.playCorner { top: auto; bottom: 22px; left: auto; right: 12px; margin: 0; width: 30px; height: 30px; }
 
 .panel {
   position: relative;
@@ -179,16 +198,20 @@
 .meta { font-size: 11px; color: #868897; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .fileName {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   margin-top: 6px;
   font-family: var(--files-mono, ui-monospace, 'SF Mono', Menlo, monospace);
   font-size: 14px;
   font-weight: 500;
   color: #141416;
   letter-spacing: -0.01em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 0;
 }
+
+.nameIcon { display: flex; flex-shrink: 0; color: var(--kind); }
+.nameText { font-family: var(--files-mono, ui-monospace, "SF Mono", Menlo, monospace); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .fileHint { margin-top: 2px; font-size: 11px; color: #ABABAB; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -218,6 +241,8 @@
 .extChip {
   padding: 2px 6px;
   border-radius: 6px;
+  background: color-mix(in srgb, var(--kind) 12%, #fff);
+  color: var(--kind);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.03em;
@@ -229,13 +254,9 @@
   .newFolderIcon { background: rgba(255, 255, 255, 0.06); }
   .fileCard { background: #1a1c24; border-color: rgba(255, 255, 255, 0.08); &:hover { box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35); } }
   .panel { background: #1a1c24; }
-  .art { background: rgba(255, 255, 255, 0.04); }
-  .pdf { background: linear-gradient(160deg, rgba(239, 68, 68, 0.16), rgba(239, 68, 68, 0.06)); color: #F87171; }
-  .sheet { background: linear-gradient(160deg, rgba(52, 211, 153, 0.16), rgba(52, 211, 153, 0.05)); color: #6ee7b7; }
-  .doc { background: linear-gradient(160deg, rgba(129, 140, 248, 0.2), rgba(129, 140, 248, 0.06)); color: #a5b4fc; }
-  .archive { background: linear-gradient(160deg, rgba(251, 191, 36, 0.16), rgba(251, 191, 36, 0.05)); color: #FCD34D; }
-  .video, .audio { background: linear-gradient(160deg, rgba(236, 72, 153, 0.16), rgba(236, 72, 153, 0.05)); color: #F9A8D4; }
-  .other, .image { background: rgba(255, 255, 255, 0.05); color: #9ea4b5; }
+  .art { background: linear-gradient(160deg, color-mix(in srgb, var(--kind) 10%, #1a1c24) 0%, color-mix(in srgb, var(--kind) 22%, #1a1c24) 100%); }
+  .extChip { background: color-mix(in srgb, var(--kind) 20%, #1a1c24); }
+  .play { background: rgba(26, 28, 36, 0.9); }
   .meta { color: #9ea4b5; }
   .fileName { color: #e8eaf0; }
   .fileHint { color: #6b7080; }

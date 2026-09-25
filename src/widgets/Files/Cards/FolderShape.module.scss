@@ -12,37 +12,19 @@
   border-radius: 18px; // fallback until the path is measured
 }
 
-// The back sheet reads as the same material, one shade deeper.
-.back { filter: brightness(0.95) saturate(1.5); }
+// Artwork/images have no explicit back colour: same material, one shade deeper.
+.backShaded { filter: brightness(0.82) saturate(1.2); }
 
-.front::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  // Light top sheen on every folder; on dark artwork also a bottom scrim so
-  // the white label stays readable over any image.
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 38%);
-}
+.dark { color: #fff; }
 
-.dark {
-  color: #fff;
-
-  .front::after {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(0, 0, 0, 0) 40%, rgba(10, 10, 20, 0.45) 100%);
-  }
-}
-
+// Only the dashed "new folder" slot draws an outline; filled folders have none.
 .outline {
   position: absolute;
   inset: 0;
   overflow: visible;
   pointer-events: none;
 
-  path {
-    fill: none;
-    stroke: rgba(20, 20, 40, 0.07);
-    stroke-width: 1;
-  }
+  path { fill: none; }
 }
 
 .ghost .outline path {
@@ -67,9 +49,7 @@
 :global(html.theme-dark), :global(html.pomodoro-dark) {
   // Pastel covers stay pastel (they're content, like a photo), just a touch dimmer.
   .shape:not(.dark):not(.ghost) .back,
-  .shape:not(.dark):not(.ghost) .front { filter: brightness(0.86); }
-  .shape:not(.dark):not(.ghost) .back { filter: brightness(0.78); }
-  .outline path { stroke: rgba(255, 255, 255, 0.08); }
+  .shape:not(.dark):not(.ghost) .front { filter: brightness(0.88); }
   .ghost { color: #9ea4b5; }
   .ghost .outline path { stroke: rgba(255, 255, 255, 0.18); }
 }

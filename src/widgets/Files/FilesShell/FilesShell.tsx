@@ -18,7 +18,7 @@ import {
   FilesChevronDownIcon, FilesChevronIcon, FilesCoverIcon, FilesDropboxIcon, FilesFolderPlusIcon, FilesSearchIcon, FilesShareIcon,
   FilesStorageIcon, FilesUploadIcon, FilesVipIcon,
 } from '../icons'
-import { filesFetch, FilesApiError, initials, jsonInit } from '../lib'
+import { filesFetch, FilesApiError, initials, jsonInit, triggerDownload } from '../lib'
 import { ShareAccessModal, type ShareTarget } from '../ShareAccessModal/ShareAccessModal'
 import { StorageMeter } from '../StorageMeter/StorageMeter'
 import { StorageOverageWarningModal } from '../StorageOverageWarningModal/StorageOverageWarningModal'
@@ -187,6 +187,21 @@ export function FilesShell({ role, folderId, onNavigate }: FilesShellProps) {
     if (data?.canUpload) uploadFiles(Array.from(e.dataTransfer.files))
   }
 
+  // ── Open / download ───────────────────────────────────────
+  // A student's first preview or download is what the tutor sees on hover
+  // over that student's avatar; the server keeps only the first time.
+  const markOpened = (f: LibraryFile) => {
+    if (!isTeacher) fetch(`/api/tutor-files/files/${f.id}/open`, { method: 'POST' }).catch(() => {})
+  }
+  const openPreview = (f: LibraryFile) => {
+    markOpened(f)
+    setPreviewFile(f)
+  }
+  const downloadFile = (f: LibraryFile) => {
+    markOpened(f)
+    triggerDownload(f)
+  }
+
   // ── Folder create / rename, delete ────────────────────────
   const openCreate = () => {
     if (data?.folder && data.folder.depth >= MAX_FOLDER_DEPTH) {
@@ -252,7 +267,7 @@ export function FilesShell({ role, folderId, onNavigate }: FilesShellProps) {
           <h2 className={styles.sectionTitle}>{t('filesSection')} <span className={styles.count}>{files.length}</span></h2>
           <div className={styles.fileGrid}>
             {files.map(f => (
-              <FileCard key={f.id} file={f} onPreview={() => setPreviewFile(f)} hint={opts.hints ? pathOf(f.folderId, treeById) || t('rootCrumb') : undefined} {...fileActions(f)} />
+              <FileCard key={f.id} file={f} onPreview={() => openPreview(f)} onDownload={() => downloadFile(f)} hint={opts.hints ? pathOf(f.folderId, treeById) || t('rootCrumb') : undefined} {...fileActions(f)} />
             ))}
           </div>
         </section>
@@ -466,7 +481,7 @@ export function FilesShell({ role, folderId, onNavigate }: FilesShellProps) {
 
       {shareTarget && <ShareAccessModal target={shareTarget} onClose={() => setShareTarget(null)} onChanged={refresh} />}
       {coverTarget && <CoverPickerModal folder={coverTarget} onClose={() => setCoverTarget(null)} onSaved={() => { setCoverTarget(null); refresh() }} />}
-      {previewFile && <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />}
+      {previewFile && <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} onDownload={() => downloadFile(previewFile)} />}
       {overage && <StorageOverageWarningModal usage={overage} onClose={() => setOverage(null)} />}
     </div>
   )
