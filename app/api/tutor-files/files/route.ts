@@ -99,6 +99,8 @@ export async function POST(req: NextRequest) {
         mimeType: file.type || 'application/octet-stream',
         uploadedByRole: user.role,
         uploadedById: user.id,
+        // Not searchable inside (media, archives…): '' marks it as done, so the admin reindex never counts it.
+        ...(isIndexable(file.name, file.type || 'application/octet-stream') ? {} : { contentText: '' }),
       },
     })
 

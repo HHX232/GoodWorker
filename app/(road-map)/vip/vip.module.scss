@@ -134,7 +134,7 @@
   @media (max-width: 400px) { grid-template-columns: 1fr; }
 }
 
-.featureCardWide {
+.featureCard.featureCardWide {
   grid-column: 1 / -1;
   flex-direction: row;
   align-items: center;
@@ -149,6 +149,7 @@
 .featureWideTags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 
 .featureWideLink {
+  display: inline-flex; // the global `a { display: contents }` reset (main.scss) would drop the button box
   flex-shrink: 0;
   padding: 9px 16px;
   border-radius: 10px;
