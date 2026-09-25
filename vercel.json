@@ -7,6 +7,10 @@
     {
       "path": "/api/cron/storage-overage-billing",
       "schedule": "0 3 1 * *"
+    },
+    {
+      "path": "/api/cron/wallet-monthly-fee",
+      "schedule": "20 3 * * *"
     }
   ]
 }

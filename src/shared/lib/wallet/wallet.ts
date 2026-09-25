@@ -2,8 +2,9 @@ import { prisma } from '@/shared/prisma/prisma'
 import type { AIUsage } from '@/lib/openrouter'
 import { auth } from '../../../../auth'
 import {
-  computeCostCents, computeVipMonthsGranted, DEFAULT_FEATURED_POSTS_PRICE_CENTS_PER_MONTH,
-  DEFAULT_PINNED_LISTING_TIERS, DEFAULT_VIP_BONUS_TIERS, estimateMaxCostCents,
+  computeCostCents, computeMonthlyFeeCents, computeVipMonthsGranted, DEFAULT_FEATURED_POSTS_PRICE_CENTS_PER_MONTH,
+  DEFAULT_MONTHLY_FEE_CENTS, DEFAULT_PINNED_LISTING_TIERS, DEFAULT_VIP_BONUS_TIERS, estimateMaxCostCents,
+  MONTHLY_FEE_PERIOD_DAYS,
   type PinnedListingTier, type VipBonusTier,
 } from './pricing'
 import { NextResponse } from 'next/server'
@@ -60,6 +61,7 @@ export interface WalletPricingSettings {
   featuredPostsPriceCentsPerMonth: number
   pinnedListingTiers: PinnedListingTier[]
   storageOveragePriceCentsPerGbMonth: number
+  monthlyFeeCents: number
 }
 
 /**
@@ -75,7 +77,7 @@ export async function getWalletPricingSettings(): Promise<WalletPricingSettings>
     where: { id: 'global' },
     select: {
       usdToBynRate: true, vipBonusTiers: true, featuredPostsPriceCentsPerMonth: true, pinnedListingTiers: true,
-      storageOveragePriceCentsPerGbMonth: true,
+      storageOveragePriceCentsPerGbMonth: true, monthlyFeeCents: true,
     },
   })
   const vipTiers = Array.isArray(row?.vipBonusTiers) ? (row.vipBonusTiers as unknown as VipBonusTier[]) : DEFAULT_VIP_BONUS_TIERS
@@ -90,6 +92,7 @@ export async function getWalletPricingSettings(): Promise<WalletPricingSettings>
     // 0 until an admin sets it (WalletSettings default) — chargeStorageOverage
     // no-ops at 0, see tutor-files interfaces.md "Контракт между тикетами".
     storageOveragePriceCentsPerGbMonth: row?.storageOveragePriceCentsPerGbMonth ?? 0,
+    monthlyFeeCents: row?.monthlyFeeCents ?? DEFAULT_MONTHLY_FEE_CENTS,
   }
 }
 
@@ -359,14 +362,21 @@ export async function depositMock(user: WalletUser, amountCents: number): Promis
   const description = `Пополнение баланса на $${(amountCents / 100).toFixed(2)}`
   const isTeacher = user.role === 'TEACHER'
 
+  // Close any fee period that already ended BEFORE this deposit can restart
+  // the period anchor below — otherwise a lapsed-then-renewed VIP would skip
+  // billing the period that ended while the cron hadn't run yet.
+  await settleMonthlyFee(user, now)
+
   // Interactive transaction (not the array form) because the VIP-expiry math
   // needs the pre-deposit `vipExpiresAt`, and the ledger row's
   // `balanceAfterCents` needs the post-increment balance — both only known
   // once earlier statements in this same transaction have actually run.
   return prisma.$transaction(async tx => {
+    const vipSelect = { isVip: true, vipExpiresAt: true, vipFeePeriodStart: true } as const
     const current = isTeacher
-      ? await tx.teacher.findUnique({ where: { id: user.id }, select: { vipExpiresAt: true } })
-      : await tx.student.findUnique({ where: { id: user.id }, select: { vipExpiresAt: true } })
+      ? await tx.teacher.findUnique({ where: { id: user.id }, select: vipSelect })
+      : await tx.student.findUnique({ where: { id: user.id }, select: vipSelect })
+    const wasVip = isVipActive(current?.isVip ?? false, current?.vipExpiresAt ?? null, now)
 
     let vipExpiresAt = current?.vipExpiresAt ?? null
     if (vipMonthsGranted > 0) {
@@ -377,6 +387,10 @@ export async function depositMock(user: WalletUser, amountCents: number): Promis
     const balanceUpdateData = {
       balanceCents: { increment: amountCents },
       ...(vipMonthsGranted > 0 ? { isVip: true, vipExpiresAt } : {}),
+      // VIP obtained just now → the monthly-fee period starts now (R: "месяц
+      // с момента получения VIP"). Extending an already-active VIP keeps the
+      // existing anchor so the billing date doesn't move.
+      ...(vipMonthsGranted > 0 && (!wasVip || !current?.vipFeePeriodStart) ? { vipFeePeriodStart: now } : {}),
     }
     const balanceAfterCents = isTeacher
       ? (await tx.teacher.update({ where: { id: user.id }, data: balanceUpdateData, select: { balanceCents: true } })).balanceCents
@@ -560,9 +574,173 @@ export async function chargeStorageOverage(
   return { costCents, balanceAfterCents, shortfallCents }
 }
 
+// ─── Monthly VIP fee ──────────────────────────────────────────────────────
+
+const DAY_MS = 24 * 60 * 60 * 1000
+
+/** Transaction types that count as "spent on features" and reduce the monthly fee. */
+const FEATURE_SPEND_TYPES = ['AI_DEBIT', 'FEATURED_POSTS_PURCHASE', 'PINNED_LISTING_PURCHASE', 'STORAGE_OVERAGE_DEBIT'] as const
+
+/** Same VIP check as the storage-overage cron: an expired vipExpiresAt means not VIP. */
+function isVipActive(isVip: boolean, vipExpiresAt: Date | null, at: Date): boolean {
+  return isVip && (vipExpiresAt === null || vipExpiresAt > at)
+}
+
+function feePeriodEnd(start: Date): Date {
+  return new Date(start.getTime() + MONTHLY_FEE_PERIOD_DAYS * DAY_MS)
+}
+
+type PrismaLike = Pick<typeof prisma, 'walletTransaction'>
+
+async function sumFeatureSpendCents(client: PrismaLike, user: WalletUser, from: Date, to: Date): Promise<number> {
+  const agg = await client.walletTransaction.aggregate({
+    where: {
+      ...(user.role === 'TEACHER' ? { teacherId: user.id } : { studentId: user.id }),
+      type: { in: [...FEATURE_SPEND_TYPES] },
+      createdAt: { gte: from, lt: to },
+    },
+    _sum: { amountCents: true },
+  })
+  return agg._sum.amountCents ?? 0
+}
+
+export interface SettleMonthlyFeeResult {
+  periodsClosed: number
+  chargedCents: number
+}
+
+/**
+ * Closes every monthly-fee period that has already ended for this user. Each
+ * period is `MONTHLY_FEE_PERIOD_DAYS` long and starts at `vipFeePeriodStart`
+ * (set when VIP was obtained). At its end the wallet is debited
+ * `max(0, fee - spent on features in the period)` — spent $1.20 of $5 → $3.80,
+ * spent $6 → nothing. Same zero floor as `chargeStorageOverage`: if the
+ * balance can't cover the fee, whatever is there is taken, the rest is
+ * recorded as `shortfallCents` and not carried over as debt.
+ *
+ * A period whose end falls after VIP expired is not billed — the anchor is
+ * cleared and restarts the next time VIP is obtained.
+ *
+ * Each period is settled in its own transaction with the user row locked
+ * (`FOR UPDATE`), so the cron and a concurrent balance read/deposit can't
+ * both close the same period: whoever gets the lock second sees the already-
+ * advanced anchor.
+ */
+export async function settleMonthlyFee(user: WalletUser, now: Date = new Date()): Promise<SettleMonthlyFeeResult> {
+  const table: WalletTable = user.role === 'TEACHER' ? 'Teacher' : 'Student'
+  const { monthlyFeeCents } = await getWalletPricingSettings()
+  const result: SettleMonthlyFeeResult = { periodsClosed: 0, chargedCents: 0 }
+
+  // Bounded: a user the cron missed for a year closes at most 13 periods per call.
+  for (let i = 0; i < 13; i++) {
+    const closed = await prisma.$transaction(async tx => {
+      const rows = await tx.$queryRawUnsafe<{
+        balanceCents: number; isVip: boolean; vipExpiresAt: Date | null; vipFeePeriodStart: Date | null
+      }[]>(
+        `SELECT "balanceCents", "isVip", "vipExpiresAt", "vipFeePeriodStart" FROM "${table}" WHERE id = $1 FOR UPDATE`,
+        user.id,
+      )
+      const row = rows[0]
+      if (!row?.vipFeePeriodStart) return null
+      const periodStart = row.vipFeePeriodStart
+      const periodEnd = feePeriodEnd(periodStart)
+      if (periodEnd > now) return null
+
+      const idWhere = { id: user.id }
+      // VIP ran out before this period ended → nothing to bill, restart later.
+      if (!isVipActive(row.isVip, row.vipExpiresAt, new Date(periodEnd.getTime() - 1))) {
+        if (table === 'Teacher') await tx.teacher.update({ where: idWhere, data: { vipFeePeriodStart: null } })
+        else await tx.student.update({ where: idWhere, data: { vipFeePeriodStart: null } })
+        return null
+      }
+
+      const spentCents = await sumFeatureSpendCents(tx, user, periodStart, periodEnd)
+      const feeCents = computeMonthlyFeeCents(monthlyFeeCents, spentCents)
+      const balanceCents = Number(row.balanceCents)
+      const chargeCents = Math.min(feeCents, Math.max(balanceCents, 0))
+      const data = { vipFeePeriodStart: periodEnd, ...(chargeCents > 0 ? { balanceCents: { decrement: chargeCents } } : {}) }
+      if (table === 'Teacher') await tx.teacher.update({ where: idWhere, data })
+      else await tx.student.update({ where: idWhere, data })
+
+      if (chargeCents > 0) {
+        await tx.walletTransaction.create({
+          data: {
+            ...(user.role === 'TEACHER' ? { teacherId: user.id } : { studentId: user.id }),
+            userRole: user.role,
+            type: 'MONTHLY_FEE',
+            amountCents: chargeCents,
+            balanceAfterCents: balanceCents - chargeCents,
+            shortfallCents: feeCents > chargeCents ? feeCents - chargeCents : null,
+            description: spentCents > 0
+              ? `Ежемесячная плата VIP: $${(monthlyFeeCents / 100).toFixed(2)} − $${(spentCents / 100).toFixed(2)} потрачено на функции`
+              : `Ежемесячная плата VIP: $${(monthlyFeeCents / 100).toFixed(2)}`,
+          },
+        })
+      }
+      return chargeCents
+    })
+
+    if (closed === null) break
+    result.periodsClosed++
+    result.chargedCents += closed
+  }
+
+  return result
+}
+
+export interface MonthlyFeeStatus {
+  /** false when the user isn't VIP — no fee applies. */
+  active: boolean
+  feeCents: number
+  periodStart: Date | null
+  periodEnd: Date | null
+  /** Spent on features since periodStart. */
+  spentCents: number
+  /** What would be debited if the period ended right now. */
+  projectedChargeCents: number
+}
+
+/**
+ * Current-period snapshot for the /wallet fee block. Also self-heals the
+ * anchor: VIP granted by a path that doesn't set `vipFeePeriodStart` (promo
+ * code, referral, admin) gets its period started on first read, and a period
+ * that already ended is settled before reporting the new one.
+ */
+export async function getMonthlyFeeStatus(user: WalletUser, now: Date = new Date()): Promise<MonthlyFeeStatus> {
+  await settleMonthlyFee(user, now)
+  const { monthlyFeeCents } = await getWalletPricingSettings()
+  const select = { isVip: true, vipExpiresAt: true, vipFeePeriodStart: true } as const
+  const row = user.role === 'TEACHER'
+    ? await prisma.teacher.findUnique({ where: { id: user.id }, select })
+    : await prisma.student.findUnique({ where: { id: user.id }, select })
+
+  const inactive: MonthlyFeeStatus = {
+    active: false, feeCents: monthlyFeeCents, periodStart: null, periodEnd: null, spentCents: 0, projectedChargeCents: 0,
+  }
+  if (!row || !isVipActive(row.isVip, row.vipExpiresAt, now)) return inactive
+
+  let periodStart = row.vipFeePeriodStart
+  if (!periodStart) {
+    periodStart = now
+    const where = { id: user.id, vipFeePeriodStart: null }
+    if (user.role === 'TEACHER') await prisma.teacher.updateMany({ where, data: { vipFeePeriodStart: now } })
+    else await prisma.student.updateMany({ where, data: { vipFeePeriodStart: now } })
+  }
+
+  const spentCents = await sumFeatureSpendCents(prisma, user, periodStart, now)
+  return {
+    active: true,
+    feeCents: monthlyFeeCents,
+    periodStart,
+    periodEnd: feePeriodEnd(periodStart),
+    spentCents,
+    projectedChargeCents: computeMonthlyFeeCents(monthlyFeeCents, spentCents),
+  }
+}
+
 export interface WalletTransactionItem {
   id: string
-  type: 'DEPOSIT' | 'AI_DEBIT' | 'FEATURED_POSTS_PURCHASE' | 'PINNED_LISTING_PURCHASE' | 'STORAGE_OVERAGE_DEBIT'
+  type: 'DEPOSIT' | 'AI_DEBIT' | 'FEATURED_POSTS_PURCHASE' | 'PINNED_LISTING_PURCHASE' | 'STORAGE_OVERAGE_DEBIT' | 'MONTHLY_FEE'
   amountCents: number
   balanceAfterCents: number
   endpoint: string | null

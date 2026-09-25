@@ -1,7 +1,7 @@
 // Self-check for pricing.ts — run with `npx tsx src/shared/lib/wallet/pricing.selfcheck.ts`.
 // No test runner in this project; expected numbers below are computed BY HAND
 // from the rate card in spec.md, not derived from computeCostCents itself.
-import { computeCostCents, computeVipMonthsGranted, DEFAULT_VIP_BONUS_TIERS, isPeak } from './pricing'
+import { computeCostCents, computeMonthlyFeeCents, computeVipMonthsGranted, DEFAULT_VIP_BONUS_TIERS, isPeak } from './pricing'
 
 let failures = 0
 function assertEqual(actual: number, expected: number, label: string) {
@@ -96,6 +96,12 @@ assertEqual(computeVipMonthsGranted(10000, DEFAULT_VIP_BONUS_TIERS), 30, 'vipBon
 
 // Empty tier list: no threshold ever clears -> always 0, never throws.
 assertEqual(computeVipMonthsGranted(100000, []), 0, 'vipBonus: empty tier list grants nothing')
+
+// Monthly fee: $5 minus what was spent on features in the period, floored at 0.
+assertEqual(computeMonthlyFeeCents(500, 0), 500, 'monthlyFee: nothing spent -> full $5')
+assertEqual(computeMonthlyFeeCents(500, 120), 380, 'monthlyFee: spent $1.20 -> $3.80')
+assertEqual(computeMonthlyFeeCents(500, 500), 0, 'monthlyFee: spent exactly $5 -> $0')
+assertEqual(computeMonthlyFeeCents(500, 600), 0, 'monthlyFee: spent $6 -> $0, never negative')
 
 if (failures > 0) {
   console.error(`pricing.selfcheck: ${failures} check(s) FAILED`)

@@ -61,6 +61,8 @@ model Student {
   paymentReminderSettings PaymentReminderSetting[]
   conversationsAsStudent Conversation[]
   balanceCents           Int              @default(0)
+  // See Teacher.vipFeePeriodStart.
+  vipFeePeriodStart      DateTime?
   walletTransactions     WalletTransaction[]
   tutorFolderGrants      TutorFolderGrant[]
   tutorFileGrants        TutorFileGrant[]
@@ -118,6 +120,10 @@ model Teacher {
   walletTransactions      WalletTransaction[]
   postsHighlightedUntil   DateTime?
   pinnedInListUntil       DateTime?
+  // Start of the current monthly-fee period — set when VIP is obtained,
+  // advanced by 30 days each time settleMonthlyFee() closes a period, null
+  // while not VIP. See src/shared/lib/wallet/wallet.ts settleMonthlyFee().
+  vipFeePeriodStart       DateTime?
   tutorFolders            TutorFolder[]
   tutorFiles              TutorFile[]
 
@@ -917,6 +923,10 @@ model WalletSettings {
   // (src/shared/lib/tutorFiles/storage.ts) — 0 until an admin sets it, in
   // which case no overage billing happens (chargeStorageOverage no-ops).
   storageOveragePriceCentsPerGbMonth Int @default(0)
+  // Monthly VIP fee: at the end of each 30-day period (anchored to when VIP
+  // was obtained, see vipFeePeriodStart) the wallet is debited
+  // max(0, monthlyFeeCents - spent on features in that period).
+  monthlyFeeCents Int @default(500)
   updatedAt     DateTime @updatedAt
 }
 
@@ -951,6 +961,7 @@ enum WalletTransactionType {
   FEATURED_POSTS_PURCHASE
   PINNED_LISTING_PURCHASE
   STORAGE_OVERAGE_DEBIT
+  MONTHLY_FEE
 }
 
 /// Money ledger for the AI-usage wallet — separate from VipTransaction, which

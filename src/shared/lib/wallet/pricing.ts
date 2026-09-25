@@ -137,3 +137,17 @@ export const DEFAULT_PINNED_LISTING_TIERS: PinnedListingTier[] = [
 ]
 
 export const DEFAULT_FEATURED_POSTS_PRICE_CENTS_PER_MONTH = 300
+
+// ─── Monthly VIP fee ──────────────────────────────────────────────────────
+
+export const DEFAULT_MONTHLY_FEE_CENTS = 500
+export const MONTHLY_FEE_PERIOD_DAYS = 30
+
+/**
+ * What the monthly fee actually debits at the end of a period: the flat fee
+ * minus whatever the user already spent on paid features in that period,
+ * never below 0 — spent $1.20 of a $5 fee → $3.80, spent $6 → $0.
+ */
+export function computeMonthlyFeeCents(feeCents: number, spentCents: number): number {
+  return Math.max(0, feeCents - Math.max(0, spentCents))
+}
