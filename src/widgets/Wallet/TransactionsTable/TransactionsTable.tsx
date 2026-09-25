@@ -1,8 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
-import ModalWindowDefault from '@/shared/ui/Modals/ModalWindowDefault/ModalWindowDefault'
 import { formatCents } from '../useTopUpForm'
 import styles from './TransactionsTable.module.scss'
 
@@ -16,9 +15,11 @@ interface TransactionItem {
   createdAt: string
 }
 
-interface TransactionsResponse {
+interface TransactionsPageResponse {
   items: TransactionItem[]
-  nextCursor: string | null
+  page: number
+  totalPages: number
+  total: number
 }
 
 // Matches the reference's four distinct .ops-row__type-- colors
@@ -36,135 +37,106 @@ const TYPE_BADGE_CLASS: Record<TransactionItem['type'], string> = {
 // Money coming IN — rendered green with a "+" (top-ups and promo-code bonus).
 const isCredit = (type: TransactionItem['type']) => type === 'DEPOSIT' || type === 'PROMO_BONUS'
 
-const PREVIEW_COUNT = 8
-const PAGE_SIZE = 15
-// The wallet API is cursor-only (no skip/offset), so jumping straight to page
-// N needs the whole list in memory first — fine at personal-wallet scale.
-// Ceiling: if this ever needs to page through thousands of rows, switch to
-// server-side offset pagination instead of raising this number.
-const MAX_FETCH_ROWS = 300
+const PAGE_SIZE = 8
 
-type Translate = (key: string, values?: Record<string, string | number>) => string
+type Translate = ((key: string, values?: Record<string, string | number>) => string) & { has: (key: string) => boolean }
 
-function TransactionRows({ items, locale, t }: { items: TransactionItem[]; locale: string; t: Translate }) {
-  return (
-    <div className={styles.tableWrap}>
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>{t('history.colDate')}</th>
-            <th>{t('history.colDescription')}</th>
-            <th>{t('history.colType')}</th>
-            <th className={styles.numeric}>{t('history.colAmount')}</th>
-            <th className={styles.numeric}>{t('history.colBalance')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map(item => (
-            <tr key={item.id} className={isCredit(item.type) ? styles.rowDeposit : undefined}>
-              <td className={styles.dateCell}>
-                {new Date(item.createdAt).toLocaleDateString(locale, { day: 'numeric', month: 'short' })}
-              </td>
-              <td className={styles.descCell}>{item.description}</td>
-              <td>
-                <span className={`${styles.badge} ${TYPE_BADGE_CLASS[item.type]}`}>
-                  {t(`history.types.${item.type}`)}
-                </span>
-              </td>
-              <td className={`${styles.numeric} ${isCredit(item.type) ? styles.amountPositive : styles.amountNegative}`}>
-                {isCredit(item.type)
-                  ? <span>+{formatCents(item.amountCents)}</span>
-                  : <>−{formatCents(item.amountCents)}</>}
-              </td>
-              <td className={`${styles.numeric} ${styles.balanceCell}`}>{formatCents(item.balanceAfterCents)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-
-interface Props {
-  transactions: TransactionItem[]
-  historyLoading: boolean
-}
-
-export function TransactionsTable({ transactions, historyLoading }: Props) {
-  const t = useTranslations('wallet')
-  const locale = useLocale()
-
-  const [modalOpen, setModalOpen] = useState(false)
-  const [allTransactions, setAllTransactions] = useState<TransactionItem[] | null>(null)
-  const [loadingAll, setLoadingAll] = useState(false)
-  const [page, setPage] = useState(1)
-
-  async function openModal() {
-    setModalOpen(true)
-    setPage(1)
-    if (allTransactions !== null) return
-    setLoadingAll(true)
-    try {
-      let items: TransactionItem[] = []
-      let cursor: string | null = null
-      do {
-        const url = cursor
-          ? `/api/wallet/transactions?cursor=${encodeURIComponent(cursor)}&limit=100`
-          : '/api/wallet/transactions?limit=100'
-        const res = await fetch(url)
-        if (!res.ok) break
-        const data: TransactionsResponse = await res.json()
-        items = items.concat(data.items)
-        cursor = data.nextCursor
-      } while (cursor && items.length < MAX_FETCH_ROWS)
-      setAllTransactions(items)
-    } catch {
-      setAllTransactions([])
-    } finally {
-      setLoadingAll(false)
-    }
+// Ledger descriptions are stored in Russian (written server-side at charge
+// time). On ru show them as-is (they carry details like months/amounts); on
+// other locales translate by type — and by endpoint for AI debits.
+function describe(item: TransactionItem, locale: string, t: Translate): string {
+  if (locale === 'ru') return item.description
+  if (item.type === 'AI_DEBIT' && item.endpoint) {
+    const key = `history.desc.endpoints.${item.endpoint.replaceAll('/', '_')}`
+    if (t.has(key)) return t(key)
   }
+  const key = `history.desc.${item.type}`
+  return t.has(key) ? t(key) : item.description
+}
 
-  const totalPages = allTransactions ? Math.max(1, Math.ceil(allTransactions.length / PAGE_SIZE)) : 1
-  const pageItems = allTransactions ? allTransactions.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE) : []
+export function TransactionsTable({ refreshKey }: { refreshKey?: number }) {
+  const t = useTranslations('wallet') as unknown as Translate
+  const locale = useLocale()
+  const [page, setPage] = useState(1)
+  const [data, setData] = useState<TransactionsPageResponse | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    setLoading(true)
+    fetch(`/api/wallet/transactions?page=${page}&pageSize=${PAGE_SIZE}`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => { if (!cancelled && d) setData(d) })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
+  }, [page, refreshKey])
+
+  // A top-up (refreshKey bump) puts a new row on page 1 — go back there.
+  useEffect(() => { setPage(1) }, [refreshKey])
+
+  const items = data?.items ?? []
+  const totalPages = data?.totalPages ?? 1
 
   return (
     <section className={styles.card}>
       <div className={styles.headerRow}>
         <h2 className={styles.title}>{t('history.title')}</h2>
-        {!historyLoading && transactions.length > 0 && (
-          <button type="button" className={styles.viewAllBtn} onClick={openModal}>
-            {t('history.viewAll')}
-          </button>
-        )}
+        {data && data.total > 0 && <span className={styles.totalCount}>{data.total}</span>}
       </div>
 
-      {historyLoading ? (
+      {!data && loading ? (
         <p className={styles.muted}>{t('history.loading')}</p>
-      ) : transactions.length === 0 ? (
+      ) : items.length === 0 ? (
         <p className={styles.muted}>{t('history.empty')}</p>
       ) : (
-        <TransactionRows items={transactions.slice(0, PREVIEW_COUNT)} locale={locale} t={t} />
+        <div className={`${styles.tableWrap} ${loading ? styles.tableLoading : ''}`}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>{t('history.colDate')}</th>
+                <th>{t('history.colDescription')}</th>
+                <th>{t('history.colType')}</th>
+                <th className={styles.numeric}>{t('history.colAmount')}</th>
+                <th className={styles.numeric}>{t('history.colBalance')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map(item => (
+                <tr key={item.id} className={isCredit(item.type) ? styles.rowDeposit : undefined}>
+                  <td className={styles.dateCell}>
+                    {new Date(item.createdAt).toLocaleDateString(locale, { day: 'numeric', month: 'short' })}
+                  </td>
+                  <td className={styles.descCell}>{describe(item, locale, t)}</td>
+                  <td>
+                    <span className={`${styles.badge} ${TYPE_BADGE_CLASS[item.type]}`}>
+                      {t(`history.types.${item.type}`)}
+                    </span>
+                  </td>
+                  <td className={`${styles.numeric} ${isCredit(item.type) ? styles.amountPositive : styles.amountNegative}`}>
+                    {isCredit(item.type)
+                      ? <span>+{formatCents(item.amountCents)}</span>
+                      : <>−{formatCents(item.amountCents)}</>}
+                  </td>
+                  <td className={`${styles.numeric} ${styles.balanceCell}`}>{formatCents(item.balanceAfterCents)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
-      <ModalWindowDefault isOpen={modalOpen} onClose={() => setModalOpen(false)} additionalTitle={t('history.title')}>
-        {loadingAll ? (
-          <p className={styles.muted}>{t('history.loading')}</p>
-        ) : (
-          <>
-            <TransactionRows items={pageItems} locale={locale} t={t} />
-            <div className={styles.pagination}>
-              <button type="button" onClick={() => setPage(p => p - 1)} disabled={page <= 1}>
-                {t('history.prevPage')}
-              </button>
-              <span className={styles.pageLabel}>{t('history.pageOf', { page, total: totalPages })}</span>
-              <button type="button" onClick={() => setPage(p => p + 1)} disabled={page >= totalPages}>
-                {t('history.nextPage')}
-              </button>
-            </div>
-          </>
-        )}
-      </ModalWindowDefault>
+      {totalPages > 1 && (
+        <div className={styles.pagination}>
+          <button type="button" onClick={() => setPage(p => p - 1)} disabled={page <= 1 || loading}>
+            {t('history.prevPage')}
+          </button>
+          <span className={styles.pageLabel}>{t('history.pageOf', { page, total: totalPages })}</span>
+          <button type="button" onClick={() => setPage(p => p + 1)} disabled={page >= totalPages || loading}>
+            {t('history.nextPage')}
+          </button>
+        </div>
+      )}
     </section>
   )
 }

@@ -69,39 +69,63 @@
   min-width: 0;
 }
 
+// "К списанию …" — neutral surface, amount in ink (no red price tags).
 .projected {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 10px 14px;
-  border-radius: 12px;
-  background: rgba(237, 6, 6, 0.1);
+  gap: 12px;
+  padding: 10px 14px 10px 10px;
+  border-radius: 14px;
+  background: var(--w-surface, #1f2230);
+  border: 1px solid rgba(var(--w-fg-rgb, 255, 255, 255), 0.08);
+}
+
+.projectedIcon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--w-card, #1a1c26);
+  border: 1px solid rgba(var(--w-fg-rgb, 255, 255, 255), 0.08);
+  color: var(--w-muted, #9a9aab);
+}
+
+.projectedText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.projectedLabel {
   font-size: 13px;
+  font-weight: 600;
   color: var(--w-ink, #f2f3f7);
+}
 
-  span {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    white-space: nowrap;
-  }
+.projectedMeta {
+  font-size: 12px;
+  color: var(--w-muted, #9a9aab);
+}
 
-  small {
-    font-size: 12px;
-    color: var(--w-muted, #9a9aab);
-  }
-
-  strong {
-    font-size: 22px;
-    font-weight: 800;
-    color: var(--w-accent-soft, #ff8a8a);
-  }
+.projectedAmount {
+  margin-left: auto;
+  padding-left: 8px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--w-ink, #f2f3f7);
 }
 
 .projectedZero {
-  background: rgba(var(--w-positive-rgb, 143, 224, 168), 0.12);
+  .projectedIcon {
+    color: var(--w-positive, #8fe0a8);
+  }
 
-  strong {
+  .projectedAmount {
     color: var(--w-positive, #8fe0a8);
   }
 }

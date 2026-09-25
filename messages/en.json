@@ -3206,6 +3206,24 @@
         "STORAGE_OVERAGE_DEBIT": "Storage",
         "MONTHLY_FEE": "VIP fee",
         "PROMO_BONUS": "Promo bonus"
+      },
+      "desc": {
+        "DEPOSIT": "Balance top-up",
+        "AI_DEBIT": "AI usage",
+        "FEATURED_POSTS_PURCHASE": "Post highlighting",
+        "PINNED_LISTING_PURCHASE": "Pinned in the tutors list",
+        "STORAGE_OVERAGE_DEBIT": "Storage over quota",
+        "MONTHLY_FEE": "Monthly VIP fee",
+        "PROMO_BONUS": "Promo code bonus",
+        "endpoints": {
+          "whiteboard_formula-ai": "Formula from description",
+          "whiteboard_formula-photo": "Formula from photo",
+          "pdf-to-test_photos": "Test from photos",
+          "pdf-to-test": "Test from document",
+          "tests_import-pdf": "Test import from PDF",
+          "teacher_lesson-plan": "Lesson plan",
+          "teacher_lesson-plan_revise": "Lesson plan revision"
+        }
       }
     },
     "insufficientModal": {
@@ -3235,9 +3253,11 @@
       "invalidAmount": "Enter an amount between {min} and {max}"
     },
     "chart": {
-      "title": "AI spend by week",
-      "totalLabel": "Total spent",
-      "empty": "No AI spending yet"
+      "title": "AI spend by day",
+      "totalLabel": "This period",
+      "empty": "No spend on these days",
+      "prev": "Earlier",
+      "next": "Later"
     },
     "monthlyFee": {
       "label": "Monthly VIP fee",

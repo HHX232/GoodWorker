@@ -116,11 +116,14 @@ export function MonthlyFeeCard({ refreshKey }: { refreshKey?: number }) {
           <span className={styles.muted}>{t('inactive')}</span>
         ) : (
           <div className={`${styles.projected} ${status.projectedChargeCents === 0 ? styles.projectedZero : ''}`}>
-            <span>
-              {status.periodEnd ? t('projected', { date: fmtDate(status.periodEnd) }) : ''}
-              <small>{t('progressValue', { spent: formatCents(status.spentCents), fee })}</small>
-            </span>
-            <strong>{formatCents(status.projectedChargeCents)}</strong>
+            <div className={styles.projectedIcon}><CalendarClock size={16} /></div>
+            <div className={styles.projectedText}>
+              <span className={styles.projectedLabel}>
+                {status.periodEnd ? t('projected', { date: fmtDate(status.periodEnd) }) : ''}
+              </span>
+              <span className={styles.projectedMeta}>{t('progressValue', { spent: formatCents(status.spentCents), fee })}</span>
+            </div>
+            <strong className={styles.projectedAmount}>{formatCents(status.projectedChargeCents)}</strong>
           </div>
         )}
       </div>

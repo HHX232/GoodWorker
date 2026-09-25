@@ -3206,6 +3206,24 @@
         "STORAGE_OVERAGE_DEBIT": "Хранилище",
         "MONTHLY_FEE": "Плата VIP",
         "PROMO_BONUS": "Бонус по промокоду"
+      },
+      "desc": {
+        "DEPOSIT": "Пополнение баланса",
+        "AI_DEBIT": "Расход на ИИ",
+        "FEATURED_POSTS_PURCHASE": "Выделение постов",
+        "PINNED_LISTING_PURCHASE": "Закрепление в списке репетиторов",
+        "STORAGE_OVERAGE_DEBIT": "Превышение лимита хранилища",
+        "MONTHLY_FEE": "Ежемесячная плата VIP",
+        "PROMO_BONUS": "Бонус по промокоду",
+        "endpoints": {
+          "whiteboard_formula-ai": "Формула по описанию",
+          "whiteboard_formula-photo": "Формула по фото",
+          "pdf-to-test_photos": "Тест из фото",
+          "pdf-to-test": "Тест из документа",
+          "tests_import-pdf": "Импорт теста из PDF",
+          "teacher_lesson-plan": "План урока",
+          "teacher_lesson-plan_revise": "Правка плана урока"
+        }
       }
     },
     "insufficientModal": {
@@ -3235,9 +3253,11 @@
       "invalidAmount": "Введите сумму от {min} до {max}"
     },
     "chart": {
-      "title": "Расход на ИИ по неделям",
-      "totalLabel": "Всего потрачено",
-      "empty": "Пока нет расходов"
+      "title": "Расход на ИИ по дням",
+      "totalLabel": "За период",
+      "empty": "За эти дни трат не было",
+      "prev": "Раньше",
+      "next": "Позже"
     },
     "monthlyFee": {
       "label": "Ежемесячная плата VIP",

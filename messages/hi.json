@@ -3032,6 +3032,24 @@
         "STORAGE_OVERAGE_DEBIT": "स्टोरेज",
         "MONTHLY_FEE": "VIP शुल्क",
         "PROMO_BONUS": "प्रोमो बोनस"
+      },
+      "desc": {
+        "DEPOSIT": "बैलेंस टॉप-अप",
+        "AI_DEBIT": "AI उपयोग",
+        "FEATURED_POSTS_PURCHASE": "पोस्ट हाइलाइट",
+        "PINNED_LISTING_PURCHASE": "ट्यूटर सूची में पिन",
+        "STORAGE_OVERAGE_DEBIT": "स्टोरेज सीमा से अधिक",
+        "MONTHLY_FEE": "मासिक VIP शुल्क",
+        "PROMO_BONUS": "प्रोमो कोड बोनस",
+        "endpoints": {
+          "whiteboard_formula-ai": "विवरण से फ़ॉर्मूला",
+          "whiteboard_formula-photo": "फ़ोटो से फ़ॉर्मूला",
+          "pdf-to-test_photos": "फ़ोटो से टेस्ट",
+          "pdf-to-test": "दस्तावेज़ से टेस्ट",
+          "tests_import-pdf": "PDF से टेस्ट आयात",
+          "teacher_lesson-plan": "पाठ योजना",
+          "teacher_lesson-plan_revise": "पाठ योजना संशोधन"
+        }
       }
     },
     "insufficientModal": {
@@ -3061,9 +3079,11 @@
       "invalidAmount": "{min} से {max} के बीच राशि दर्ज करें"
     },
     "chart": {
-      "title": "सप्ताह के अनुसार AI खर्च",
-      "totalLabel": "कुल खर्च",
-      "empty": "अभी तक कोई खर्च नहीं"
+      "title": "प्रतिदिन AI खर्च",
+      "totalLabel": "इस अवधि में",
+      "empty": "इन दिनों कोई खर्च नहीं",
+      "prev": "पहले",
+      "next": "बाद में"
     },
     "monthlyFee": {
       "label": "मासिक VIP शुल्क",

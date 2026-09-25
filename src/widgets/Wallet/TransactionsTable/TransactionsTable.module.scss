@@ -23,22 +23,18 @@
   margin-bottom: 14px;
 }
 
-.viewAllBtn {
-  flex-shrink: 0;
-  padding: 6px 12px;
-  border: 1px solid rgba(var(--w-fg-rgb, 255, 255, 255), 0.14);
+.totalCount {
+  padding: 2px 9px;
   border-radius: 99px;
-  background: rgba(var(--w-fg-rgb, 255, 255, 255), 0.05);
+  background: rgba(var(--w-fg-rgb, 255, 255, 255), 0.06);
   font-size: 12px;
-  font-weight: 600;
-  color: var(--w-ink, #f2f3f7);
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  font-weight: 700;
+  color: var(--w-muted, #9a9aab);
+}
 
-  &:hover {
-    background: rgba(var(--w-fg-rgb, 255, 255, 255), 0.1);
-    border-color: rgba(var(--w-fg-rgb, 255, 255, 255), 0.24);
-  }
+.tableLoading {
+  opacity: 0.55;
+  transition: opacity 0.15s;
 }
 
 .muted {

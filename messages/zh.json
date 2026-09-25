@@ -3033,6 +3033,24 @@
         "STORAGE_OVERAGE_DEBIT": "存储空间",
         "MONTHLY_FEE": "VIP 月费",
         "PROMO_BONUS": "促销码奖励"
+      },
+      "desc": {
+        "DEPOSIT": "余额充值",
+        "AI_DEBIT": "AI 使用",
+        "FEATURED_POSTS_PURCHASE": "帖子高亮",
+        "PINNED_LISTING_PURCHASE": "导师列表置顶",
+        "STORAGE_OVERAGE_DEBIT": "存储超额",
+        "MONTHLY_FEE": "VIP 月费",
+        "PROMO_BONUS": "促销码奖励",
+        "endpoints": {
+          "whiteboard_formula-ai": "按描述生成公式",
+          "whiteboard_formula-photo": "按照片识别公式",
+          "pdf-to-test_photos": "照片生成测试",
+          "pdf-to-test": "文档生成测试",
+          "tests_import-pdf": "从 PDF 导入测试",
+          "teacher_lesson-plan": "课程计划",
+          "teacher_lesson-plan_revise": "修改课程计划"
+        }
       }
     },
     "insufficientModal": {
@@ -3062,9 +3080,11 @@
       "invalidAmount": "请输入 {min} 到 {max} 之间的金额"
     },
     "chart": {
-      "title": "按周统计的 AI 支出",
-      "totalLabel": "总支出",
-      "empty": "暂无支出"
+      "title": "每日 AI 花费",
+      "totalLabel": "本期合计",
+      "empty": "这些天没有花费",
+      "prev": "更早",
+      "next": "更晚"
     },
     "monthlyFee": {
       "label": "VIP 月费",

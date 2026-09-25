@@ -441,3 +441,7 @@ set -a; source .env; set +a && npx tsx src/shared/lib/wallet/wallet.selfcheck.ts
 ### Бонусный баланс в промокодах
 
 `PromoCode.bonusBalanceCents` («Бесплатный доп. баланс» в админке, только для типа `FREE_VIP`, 0–$1000): при активации в `app/api/teacher/vip/activate` баланс пополняется в той же транзакции, что и выдача VIP, и пишется строка леджера `PROMO_BONUS` (в истории — зелёная, как пополнение). Миграция `prisma/migrations/20260925150000_promo_bonus_balance/`.
+
+### История и график на `/wallet`
+
+`TransactionsTable` и `SpendChart` грузят данные сами (обновляются по `refreshKey`, который `WalletPage` бампает на любой `notifyWalletChanged`). Таблица — номерные страницы `GET /api/wallet/transactions?page=&pageSize=` (`listTransactionsPage`, offset; курсорный режим того же роута остался для других потребителей). График — расход на ИИ по дням, 14 дней на страницу, `GET /api/wallet/spend?from=&to=` отдаёт сырые строки `AI_DEBIT`, по локальным дням их раскладывает клиент (не сервер — иначе часовой пояс сервера). Дни с $0 рисуются заглушкой через `minPointSize`. Описания операций в БД хранятся по-русски; на остальных локалях таблица переводит их по `type`/`endpoint` (`wallet.history.desc.*`). Суммы-ценники красным не красим — только цвет основного текста, зелёный для пополнений.

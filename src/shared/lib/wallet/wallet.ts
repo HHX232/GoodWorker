@@ -797,3 +797,61 @@ export async function listTransactions(
     nextCursor: hasMore ? page[page.length - 1].id : null,
   }
 }
+
+export interface TransactionsPageResult {
+  items: WalletTransactionItem[]
+  page: number
+  totalPages: number
+  total: number
+}
+
+const MAX_PAGE_SIZE = 50
+
+/** Offset pagination for the /wallet history table ("страница N из M"). */
+export async function listTransactionsPage(user: WalletUser, page: number, pageSize: number): Promise<TransactionsPageResult> {
+  const size = Math.min(Math.max(Math.trunc(pageSize) || 10, 1), MAX_PAGE_SIZE)
+  const where = user.role === 'TEACHER' ? { teacherId: user.id } : { studentId: user.id }
+  const total = await prisma.walletTransaction.count({ where })
+  const totalPages = Math.max(1, Math.ceil(total / size))
+  const current = Math.min(Math.max(Math.trunc(page) || 1, 1), totalPages)
+  const rows = await prisma.walletTransaction.findMany({
+    where,
+    orderBy: { createdAt: 'desc' },
+    skip: (current - 1) * size,
+    take: size,
+  })
+  return {
+    items: rows.map(r => ({
+      id: r.id,
+      type: r.type,
+      amountCents: r.amountCents,
+      balanceAfterCents: r.balanceAfterCents,
+      endpoint: r.endpoint,
+      description: r.description,
+      createdAt: r.createdAt,
+    })),
+    page: current,
+    totalPages,
+    total,
+  }
+}
+
+const MAX_SPEND_RANGE_DAYS = 400
+
+/**
+ * Raw AI_DEBIT rows in [from, to) for the /wallet daily spend chart. Returned
+ * unaggregated on purpose: the client buckets them into ITS local days —
+ * grouping by day here would use the server's timezone.
+ */
+export async function listAiSpend(user: WalletUser, from: Date, to: Date): Promise<{ createdAt: Date; amountCents: number }[]> {
+  if (!(from < to) || to.getTime() - from.getTime() > MAX_SPEND_RANGE_DAYS * DAY_MS) return []
+  return prisma.walletTransaction.findMany({
+    where: {
+      ...(user.role === 'TEACHER' ? { teacherId: user.id } : { studentId: user.id }),
+      type: 'AI_DEBIT',
+      createdAt: { gte: from, lt: to },
+    },
+    select: { createdAt: true, amountCents: true },
+    orderBy: { createdAt: 'asc' },
+  })
+}
