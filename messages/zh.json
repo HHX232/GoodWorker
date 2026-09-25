@@ -1847,7 +1847,10 @@
     "adminEmailsDeleteConfirm": "Delete administrator \"{email}\"?",
     "userLastVisitNever": "从未",
     "userLastVisitToday": "今天",
-    "userLastVisitDays": "{n} 天前"
+    "userLastVisitDays": "{n} 天前",
+    "promoBonusBalanceLabel": "免费附加余额，$",
+    "promoBonusBalanceOptional": "（可选 —— 与 VIP 一同存入钱包）",
+    "promoBonusBalanceBadge": "余额 +{amount}"
   },
   "tutorial": {
     "prev": "上一步",
@@ -3028,7 +3031,8 @@
         "FEATURED_POSTS_PURCHASE": "帖子推广",
         "PINNED_LISTING_PURCHASE": "置顶资料",
         "STORAGE_OVERAGE_DEBIT": "存储空间",
-        "MONTHLY_FEE": "VIP 月费"
+        "MONTHLY_FEE": "VIP 月费",
+        "PROMO_BONUS": "促销码奖励"
       }
     },
     "insufficientModal": {
@@ -3065,7 +3069,7 @@
     "monthlyFee": {
       "label": "VIP 月费",
       "title": "每月 {fee} —— 您在功能上的花费全部抵扣",
-      "sub": "VIP 有效期间，每月从余额中扣除 {fee} 减去您当月已在功能上花费的金额：AI、帖子推广、置顶展示、存储空间。当月花费达到 {fee} 或更多 —— 不扣任何费用。月份从您获得 VIP 的那一刻起计算，而不是按日历月。",
+      "sub": "VIP 有效期间，每月从余额中扣除 {fee} 减去您当月已在功能上花费的金额：AI、置顶展示、存储空间。当月花费达到 {fee} 或更多 —— 不扣任何费用。月份从您获得 VIP 的那一刻起计算，而不是按日历月。",
       "examplesTitle": "单月示例",
       "exampleSpent": "花费 {amount}",
       "exampleCharge": "扣除 {amount}",
@@ -3078,7 +3082,10 @@
       "remainingHint": "再在功能上花费 {amount}，月费即降为 $0.00",
       "inactive": "当前 VIP 未激活 —— 不收取月费。月份将从您获得 VIP 时开始计算。",
       "noDebt": "如果余额不足，只扣除现有金额 —— 余额不会变为负数。",
-      "loading": "加载中…"
+      "loading": "加载中…",
+      "short": "VIP 有效期间，每月扣除 {fee} 减去您在功能上的花费。",
+      "more": "了解扣费详情",
+      "notCounted": "帖子推广单独付费，不计入功能花费。"
     },
     "offersLabel": "充值与 VIP"
   },
@@ -3155,7 +3162,8 @@
       "caseHint": "兑换码区分大小写——请输入大写字母。",
       "enterCode": "请输入兑换码",
       "loginToActivate": "请登录后再兑换 VIP",
-      "activateFailed": "VIP 兑换失败，请稍后重试。"
+      "activateFailed": "VIP 兑换失败，请稍后重试。",
+      "bonusBalanceActivated": "促销码已激活 · 余额 +{amount}"
     },
     "referral": {
       "title": "免费获得 VIP——邀请好友",

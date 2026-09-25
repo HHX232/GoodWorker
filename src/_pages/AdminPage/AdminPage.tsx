@@ -734,6 +734,7 @@ interface PromoCodeItem {
   rewardType: 'FREE_VIP' | 'DISCOUNT'
   discountPercent: number | null
   vipDays: number
+  bonusBalanceCents: number
   description: string
   maxUses: number | null
   usedCount: number
@@ -1275,6 +1276,7 @@ function PromoCodesTab() {
     description: '',
     discountPercent: '',
     vipDays: '30',
+    bonusBalance: '',
     maxUses: '',
     expiresAt: '',
   })
@@ -1306,6 +1308,9 @@ function PromoCodesTab() {
           description: form.description,
           discountPercent: form.rewardType === 'DISCOUNT' ? form.discountPercent : undefined,
           vipDays: form.rewardType === 'FREE_VIP' ? form.vipDays : undefined,
+          bonusBalanceCents: form.rewardType === 'FREE_VIP' && form.bonusBalance
+            ? Math.round(Number(form.bonusBalance.replace(',', '.')) * 100)
+            : undefined,
           maxUses: form.maxUses || undefined,
           expiresAt: form.expiresAt || undefined,
         }),
@@ -1313,7 +1318,7 @@ function PromoCodesTab() {
       if (!res.ok) { const d = await res.json(); throw new Error(d.error) }
       toast.success(t('promoCreated'))
       setShowForm(false)
-      setForm({ rewardType: 'FREE_VIP', code: '', autoCode: true, description: '', discountPercent: '', vipDays: '30', maxUses: '', expiresAt: '' })
+      setForm({ rewardType: 'FREE_VIP', code: '', autoCode: true, description: '', discountPercent: '', vipDays: '30', bonusBalance: '', maxUses: '', expiresAt: '' })
       await load()
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t('promoCreateError'))
@@ -1442,6 +1447,23 @@ function PromoCodesTab() {
             </div>
           )}
 
+          {form.rewardType === 'FREE_VIP' && (
+            <div className={styles.promo_form_row}>
+              <label className={styles.notif_label}>
+                {t('promoBonusBalanceLabel')} <span className={styles.notif_optional}>{t('promoBonusBalanceOptional')}</span>
+              </label>
+              <input
+                className={styles.notif_input}
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="0"
+                value={form.bonusBalance}
+                onChange={e => setForm(p => ({ ...p, bonusBalance: e.target.value }))}
+              />
+            </div>
+          )}
+
           {form.rewardType === 'DISCOUNT' && (
             <div className={styles.promo_form_row}>
               <label className={styles.notif_label}>{t('promoDiscountLabel')}</label>
@@ -1480,6 +1502,11 @@ function PromoCodesTab() {
                 <span className={`${styles.promo_type_badge} ${item.rewardType === 'FREE_VIP' ? styles.promo_vip : styles.promo_discount}`}>
                   {item.rewardType === 'FREE_VIP' ? `VIP ${item.vipDays}д` : `−${item.discountPercent}%`}
                 </span>
+                {item.bonusBalanceCents > 0 && (
+                  <span className={`${styles.promo_type_badge} ${styles.promo_balance}`}>
+                    {t('promoBonusBalanceBadge', { amount: `$${(item.bonusBalanceCents / 100).toFixed(2)}` })}
+                  </span>
+                )}
                 <span className={styles.promo_uses}>{t('promoUsed', {used: item.usedCount, max: item.maxUses ? `/${item.maxUses}` : ''})}</span>
                 <div style={{ flex: 1 }} />
                 {/* Copy button */}

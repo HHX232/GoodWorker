@@ -15,7 +15,7 @@ import styles from './WalletPage.module.scss'
 
 interface TransactionItem {
   id: string
-  type: 'DEPOSIT' | 'AI_DEBIT' | 'FEATURED_POSTS_PURCHASE' | 'PINNED_LISTING_PURCHASE' | 'STORAGE_OVERAGE_DEBIT' | 'MONTHLY_FEE'
+  type: 'DEPOSIT' | 'AI_DEBIT' | 'FEATURED_POSTS_PURCHASE' | 'PINNED_LISTING_PURCHASE' | 'STORAGE_OVERAGE_DEBIT' | 'MONTHLY_FEE' | 'PROMO_BONUS'
   amountCents: number
   balanceAfterCents: number
   endpoint: string | null

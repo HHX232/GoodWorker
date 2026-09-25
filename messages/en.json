@@ -2104,7 +2104,10 @@
     "adminEmailsDeleteConfirm": "Delete administrator \"{email}\"?",
     "userLastVisitNever": "Never",
     "userLastVisitToday": "Today",
-    "userLastVisitDays": "{n} days ago"
+    "userLastVisitDays": "{n} days ago",
+    "promoBonusBalanceLabel": "Free extra balance, $",
+    "promoBonusBalanceOptional": "(optional — credited to the wallet together with VIP)",
+    "promoBonusBalanceBadge": "+{amount} balance"
   },
   "tutorial": {
     "prev": "Back",
@@ -3201,7 +3204,8 @@
         "FEATURED_POSTS_PURCHASE": "Featured posts",
         "PINNED_LISTING_PURCHASE": "Pinned listing",
         "STORAGE_OVERAGE_DEBIT": "Storage",
-        "MONTHLY_FEE": "VIP fee"
+        "MONTHLY_FEE": "VIP fee",
+        "PROMO_BONUS": "Promo bonus"
       }
     },
     "insufficientModal": {
@@ -3238,7 +3242,7 @@
     "monthlyFee": {
       "label": "Monthly VIP fee",
       "title": "{fee} a month — but everything you spend on features counts toward it",
-      "sub": "While your VIP is active, once a month we debit {fee} minus what you already spent on features that month: AI, post promotion, pinned listing, storage. Spent {fee} or more — nothing is debited. The month is counted from the moment you got VIP, not by the calendar.",
+      "sub": "While your VIP is active, once a month we debit {fee} minus what you already spent on features that month: AI, pinned listing, storage. Spent {fee} or more — nothing is debited. The month is counted from the moment you got VIP, not by the calendar.",
       "examplesTitle": "Examples for one month",
       "exampleSpent": "Spent {amount}",
       "exampleCharge": "We debit {amount}",
@@ -3251,7 +3255,10 @@
       "remainingHint": "Spend {amount} more on features and the fee drops to $0.00",
       "inactive": "VIP is not active right now — no fee applies. The month starts counting from the moment you get VIP.",
       "noDebt": "If your balance is lower than the fee, we only take what is there — the balance never goes negative.",
-      "loading": "Loading…"
+      "loading": "Loading…",
+      "short": "While VIP is active, once a month we debit {fee} minus what you spent on features.",
+      "more": "More about debits",
+      "notCounted": "Post promotion is paid separately and does not count toward feature spending."
     },
     "offersLabel": "Top-up and VIP"
   },
@@ -3328,7 +3335,8 @@
       "caseHint": "Promo codes are case-sensitive — enter them in capital letters.",
       "enterCode": "Enter a promo code",
       "loginToActivate": "Log in to activate VIP",
-      "activateFailed": "Couldn't activate VIP, please try again later."
+      "activateFailed": "Couldn't activate VIP, please try again later.",
+      "bonusBalanceActivated": "Promo code activated · +{amount} added to your balance"
     },
     "referral": {
       "title": "Get VIP for free — invite friends",

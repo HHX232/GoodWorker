@@ -16,9 +16,10 @@ export async function POST(req: NextRequest) {
     const promoCodeRaw: string | undefined = body.promoCode?.trim().toUpperCase()
 
     let vipDays = 30
-    let amount = 0
+    const amount = 0
     let promoCodeId: string | undefined
     let promoDescription: string | null = null
+    let bonusBalanceCents = 0
 
     if (promoCodeRaw) {
       const promo = await prisma.promoCode.findUnique({ where: { code: promoCodeRaw } })
@@ -44,6 +45,7 @@ export async function POST(req: NextRequest) {
       }
 
       vipDays = promo.vipDays
+      bonusBalanceCents = promo.bonusBalanceCents
       promoCodeId = promo.id
       promoDescription = promo.description
     }
@@ -52,70 +54,67 @@ export async function POST(req: NextRequest) {
     const transactionType = promoCodeId ? 'VIP_PROMO' : ('VIP_PURCHASE' as const)
     const transactionDesc = promoDescription ?? `VIP активирован на ${vipDays} дней`
 
-    if (role === 'TEACHER') {
-      const current = await prisma.teacher.findUnique({
-        where: { id: userId },
-        select: { vipExpiresAt: true },
-      })
+    const isTeacher = role === 'TEACHER' || role === 'ADMIN'
+    const ownerId = isTeacher ? { teacherId: userId } : { studentId: userId }
+    const userRole = isTeacher ? 'TEACHER' as const : 'STUDENT' as const
+
+    // Interactive transaction: the wallet ledger row needs the post-increment
+    // balance, only known once the user update inside it has run.
+    const newExpiry = await prisma.$transaction(async tx => {
+      const select = { isVip: true, vipExpiresAt: true, vipFeePeriodStart: true } as const
+      const current = isTeacher
+        ? await tx.teacher.findUnique({ where: { id: userId }, select })
+        : await tx.student.findUnique({ where: { id: userId }, select })
+      const wasVip = !!current?.isVip && (current.vipExpiresAt === null || current.vipExpiresAt > now)
       const base = current?.vipExpiresAt && current.vipExpiresAt > now ? current.vipExpiresAt : now
-      const newExpiry = new Date(base.getTime() + vipDays * 24 * 60 * 60 * 1000)
+      const expiry = new Date(base.getTime() + vipDays * 24 * 60 * 60 * 1000)
 
-      await prisma.$transaction([
-        prisma.teacher.update({
-          where: { id: userId },
-          data: { isVip: true, vipExpiresAt: newExpiry },
-        }),
-        prisma.vipTransaction.create({
-          data: {
-            teacherId: userId,
-            userRole: 'TEACHER',
-            type: transactionType,
-            amount,
-            description: transactionDesc,
-            promoCodeId: promoCodeId ?? null,
-            vipGrantedUntil: newExpiry,
-          },
-        }),
-        ...(promoCodeId ? [prisma.promoCode.update({
-          where: { id: promoCodeId },
-          data: { usedCount: { increment: 1 } },
-        })] : []),
-      ])
+      const data = {
+        isVip: true,
+        vipExpiresAt: expiry,
+        // VIP obtained just now → the monthly-fee period starts now (same rule
+        // as depositMock in src/shared/lib/wallet/wallet.ts).
+        ...(!wasVip || !current?.vipFeePeriodStart ? { vipFeePeriodStart: now } : {}),
+        // "Бесплатный доп. баланс" of the promo code, credited on top of VIP.
+        ...(bonusBalanceCents > 0 ? { balanceCents: { increment: bonusBalanceCents } } : {}),
+      }
+      const updated = isTeacher
+        ? await tx.teacher.update({ where: { id: userId }, data, select: { balanceCents: true } })
+        : await tx.student.update({ where: { id: userId }, data, select: { balanceCents: true } })
 
-      return NextResponse.json({ success: true, promoDescription, vipUntil: newExpiry })
-    }
-
-    // STUDENT
-    const current = await prisma.student.findUnique({
-      where: { id: userId },
-      select: { vipExpiresAt: true },
-    })
-    const base = current?.vipExpiresAt && current.vipExpiresAt > now ? current.vipExpiresAt : now
-    const newExpiry = new Date(base.getTime() + vipDays * 24 * 60 * 60 * 1000)
-
-    await prisma.$transaction([
-      prisma.student.update({
-        where: { id: userId },
-        data: { isVip: true, vipExpiresAt: newExpiry },
-      }),
-      prisma.vipTransaction.create({
+      await tx.vipTransaction.create({
         data: {
-          studentId: userId,
-          userRole: 'STUDENT',
+          ...ownerId,
+          userRole,
           type: transactionType,
           amount,
           description: transactionDesc,
           promoCodeId: promoCodeId ?? null,
-          vipGrantedUntil: newExpiry,
+          vipGrantedUntil: expiry,
         },
-      }),
-      ...(promoCodeId ? [prisma.promoCode.update({
-        where: { id: promoCodeId },
-        data: { usedCount: { increment: 1 } },
-      })] : []),
-    ])
+      })
 
-    return NextResponse.json({ success: true, promoDescription, vipUntil: newExpiry })
+      if (bonusBalanceCents > 0) {
+        await tx.walletTransaction.create({
+          data: {
+            ...ownerId,
+            userRole,
+            type: 'PROMO_BONUS',
+            amountCents: bonusBalanceCents,
+            balanceAfterCents: updated.balanceCents,
+            description: `Бонус по промокоду ${promoCodeRaw}: +$${(bonusBalanceCents / 100).toFixed(2)}`,
+          },
+        })
+      }
+
+      if (promoCodeId) {
+        await tx.promoCode.update({ where: { id: promoCodeId }, data: { usedCount: { increment: 1 } } })
+      }
+
+      return expiry
+    })
+
+    return NextResponse.json({ success: true, promoDescription, vipUntil: newExpiry, bonusBalanceCents })
   } catch (error) {
     console.error('[POST /api/teacher/vip/activate]', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

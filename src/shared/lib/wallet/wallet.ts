@@ -578,8 +578,12 @@ export async function chargeStorageOverage(
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
-/** Transaction types that count as "spent on features" and reduce the monthly fee. */
-const FEATURE_SPEND_TYPES = ['AI_DEBIT', 'FEATURED_POSTS_PURCHASE', 'PINNED_LISTING_PURCHASE', 'STORAGE_OVERAGE_DEBIT'] as const
+/**
+ * Transaction types that count as "spent on features" and reduce the monthly
+ * fee. FEATURED_POSTS_PURCHASE (post promotion) deliberately does NOT count —
+ * it's paid on top of the fee.
+ */
+const FEATURE_SPEND_TYPES = ['AI_DEBIT', 'PINNED_LISTING_PURCHASE', 'STORAGE_OVERAGE_DEBIT'] as const
 
 /** Same VIP check as the storage-overage cron: an expired vipExpiresAt means not VIP. */
 function isVipActive(isVip: boolean, vipExpiresAt: Date | null, at: Date): boolean {
@@ -740,7 +744,7 @@ export async function getMonthlyFeeStatus(user: WalletUser, now: Date = new Date
 
 export interface WalletTransactionItem {
   id: string
-  type: 'DEPOSIT' | 'AI_DEBIT' | 'FEATURED_POSTS_PURCHASE' | 'PINNED_LISTING_PURCHASE' | 'STORAGE_OVERAGE_DEBIT' | 'MONTHLY_FEE'
+  type: 'DEPOSIT' | 'AI_DEBIT' | 'FEATURED_POSTS_PURCHASE' | 'PINNED_LISTING_PURCHASE' | 'STORAGE_OVERAGE_DEBIT' | 'MONTHLY_FEE' | 'PROMO_BONUS'
   amountCents: number
   balanceAfterCents: number
   endpoint: string | null

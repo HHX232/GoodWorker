@@ -27,7 +27,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     const { id } = await params
     const body = await req.json()
-    const { isActive, description, maxUses, expiresAt, discountPercent, vipDays } = body
+    const { isActive, description, maxUses, expiresAt, discountPercent, vipDays, bonusBalanceCents } = body
+    if (bonusBalanceCents !== undefined && (!Number.isInteger(bonusBalanceCents) || bonusBalanceCents < 0 || bonusBalanceCents > 100_000)) {
+      return NextResponse.json({ error: 'bonusBalanceCents must be an integer 0–100000' }, { status: 400 })
+    }
 
     const updated = await prisma.promoCode.update({
       where: { id },
@@ -38,6 +41,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         ...(expiresAt !== undefined && { expiresAt: expiresAt ? new Date(expiresAt) : null }),
         ...(discountPercent !== undefined && { discountPercent: discountPercent ? Number(discountPercent) : null }),
         ...(vipDays !== undefined && { vipDays: Number(vipDays) }),
+        ...(bonusBalanceCents !== undefined && { bonusBalanceCents }),
       },
     })
 

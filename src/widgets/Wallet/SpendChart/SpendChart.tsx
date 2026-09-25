@@ -7,7 +7,7 @@ import { formatCents } from '../useTopUpForm'
 import styles from './SpendChart.module.scss'
 
 interface TransactionItem {
-  type: 'DEPOSIT' | 'AI_DEBIT' | 'FEATURED_POSTS_PURCHASE' | 'PINNED_LISTING_PURCHASE' | 'STORAGE_OVERAGE_DEBIT' | 'MONTHLY_FEE'
+  type: 'DEPOSIT' | 'AI_DEBIT' | 'FEATURED_POSTS_PURCHASE' | 'PINNED_LISTING_PURCHASE' | 'STORAGE_OVERAGE_DEBIT' | 'MONTHLY_FEE' | 'PROMO_BONUS'
   amountCents: number
   createdAt: string
 }

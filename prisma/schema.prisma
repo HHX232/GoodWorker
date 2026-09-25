@@ -872,6 +872,9 @@ model PromoCode {
   rewardType      PromoRewardType
   discountPercent Int?
   vipDays         Int             @default(30)
+  // "Бесплатный доп. баланс": credited to the wallet (PROMO_BONUS ledger row)
+  // on top of the VIP days when the code is activated. 0 = none.
+  bonusBalanceCents Int           @default(0)
   description     String
   maxUses         Int?
   usedCount       Int             @default(0)
@@ -962,6 +965,7 @@ enum WalletTransactionType {
   PINNED_LISTING_PURCHASE
   STORAGE_OVERAGE_DEBIT
   MONTHLY_FEE
+  PROMO_BONUS
 }
 
 /// Money ledger for the AI-usage wallet — separate from VipTransaction, which

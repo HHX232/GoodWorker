@@ -609,6 +609,11 @@ export default function VipClientPage() {
       setActivated(true)
       setVipUntil(data.vipUntil ? new Date(data.vipUntil).toLocaleDateString(dateLocale) : null)
       toast.success(data.promoDescription ? `🎉 ${data.promoDescription}` : t('promo.activated'))
+      if (data.bonusBalanceCents > 0) {
+        toast.success(t('promo.bonusBalanceActivated', { amount: `$${(data.bonusBalanceCents / 100).toFixed(2)}` }))
+        notifyWalletChanged()
+        setBalanceRefreshKey(k => k + 1)
+      }
     } catch {
       toast.error(t('promo.activateFailed'))
     } finally {

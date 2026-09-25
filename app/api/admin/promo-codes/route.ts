@@ -40,6 +40,12 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json()
     const { rewardType, discountPercent, vipDays, description, maxUses, expiresAt, autoCode } = body
+    // Optional wallet bonus ("бесплатный доп. баланс"), in USD cents — credited
+    // on activation by app/api/teacher/vip/activate on top of the VIP days.
+    const bonusBalanceCents = Number(body.bonusBalanceCents ?? 0)
+    if (!Number.isInteger(bonusBalanceCents) || bonusBalanceCents < 0 || bonusBalanceCents > 100_000) {
+      return NextResponse.json({ error: 'bonusBalanceCents must be an integer 0–100000' }, { status: 400 })
+    }
 
     if (!rewardType || !description?.trim()) {
       return NextResponse.json({ error: 'rewardType and description are required' }, { status: 400 })
@@ -70,6 +76,7 @@ export async function POST(req: NextRequest) {
         rewardType,
         discountPercent: rewardType === 'DISCOUNT' ? Number(discountPercent) : null,
         vipDays: rewardType === 'FREE_VIP' ? Number(vipDays ?? 30) : 0,
+        bonusBalanceCents: rewardType === 'FREE_VIP' ? bonusBalanceCents : 0,
         description: description.trim(),
         maxUses: maxUses ? Number(maxUses) : null,
         expiresAt: expiresAt ? new Date(expiresAt) : null,

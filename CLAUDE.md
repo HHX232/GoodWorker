@@ -427,12 +427,17 @@ set -a; source .env; set +a && npx tsx src/shared/lib/wallet/wallet.selfcheck.ts
 
 ### Ежемесячная плата VIP (`settleMonthlyFee`)
 
-Пока VIP активен, раз в 30 дней с баланса списывается `max(0, WalletSettings.monthlyFeeCents − потрачено на функции за период)`: дефолт $5, потратил $1.20 → $3.80, потратил $6 → $0. «Функции» — типы `AI_DEBIT`, `FEATURED_POSTS_PURCHASE`, `PINNED_LISTING_PURCHASE`, `STORAGE_OVERAGE_DEBIT` (`FEATURE_SPEND_TYPES` в `wallet.ts`); формула — `computeMonthlyFeeCents` в `pricing.ts`.
-Период привязан к моменту получения VIP, не к календарю: `Teacher/Student.vipFeePeriodStart` ставит `depositMock` при переходе не-VIP→VIP; VIP, выданный промокодом/рефералкой/админом, получает якорь лениво (крон или первое открытие `/wallet`). Каждое закрытие периода сдвигает якорь на +30 дней; период, в конце которого VIP уже истёк, не биллится, и якорь обнуляется.
+Пока VIP активен, раз в 30 дней с баланса списывается `max(0, WalletSettings.monthlyFeeCents − потрачено на функции за период)`: дефолт $5, потратил $1.20 → $3.80, потратил $6 → $0. «Функции» — типы `AI_DEBIT`, `PINNED_LISTING_PURCHASE`, `STORAGE_OVERAGE_DEBIT` (`FEATURE_SPEND_TYPES` в `wallet.ts`); продвижение постов (`FEATURED_POSTS_PURCHASE`) сознательно НЕ засчитывается — оплачивается сверх платы; формула — `computeMonthlyFeeCents` в `pricing.ts`.
+Период привязан к моменту получения VIP, не к календарю: `Teacher/Student.vipFeePeriodStart` ставят `depositMock` и активация промокода (`app/api/teacher/vip/activate`) при переходе не-VIP→VIP; VIP, выданный рефералкой/админом, получает якорь лениво (крон или первое открытие `/wallet`). Каждое закрытие периода сдвигает якорь на +30 дней; период, в конце которого VIP уже истёк, не биллится, и якорь обнуляется.
 Нехватка баланса — берём сколько есть, остаток пишется в `shortfallCents` (в минус не уходим, долг не переносится). Строка леджера `MONTHLY_FEE` пишется только при списании > 0.
+На `/wallet` — компактная полоса `MonthlyFeeCard` (одна строка правила + прогресс + сумма к списанию); полное объяснение с примерами — в модалке по ссылке «Подробнее о списаниях» (`ModalWindowDefault`).
 Входы: крон `app/api/cron/wallet-monthly-fee/route.ts` (ежедневно, `vercel.json`, `Bearer CRON_SECRET`), `GET /api/wallet/monthly-fee` (снимок текущего периода для `MonthlyFeeCard` на `/wallet`), а также `depositMock` — он сначала закрывает просроченные периоды, чтобы не перезатереть якорь. Каждый период закрывается в своей транзакции с `SELECT … FOR UPDATE` строки пользователя: параллельный крон или открытие страницы не спишут дважды.
 Миграция — `prisma/migrations/20260925120000_wallet_monthly_fee/`. Админ-UI для `monthlyFeeCents` пока нет: меняется только прямо в `WalletSettings`.
 
 ### Темы `/wallet`
 
 Все виджеты `src/widgets/Wallet/*` красятся токенами `--w-*` с тёмным фолбэком в `var()`. Сами токены (светлые по умолчанию, тёмные под `html.theme-dark`/`pomodoro-dark`) объявлены на `html.wallet-page` в `WalletPage.module.scss`: класс вешает `WalletPage` на mount. На `/vip` класса нет, поэтому переиспользуемые там `PinnedListingSection`/`FeaturedPostsAddon` остаются тёмными. Новые цвета в wallet-виджетах — только через `--w-*`, не хардкодом.
+
+### Бонусный баланс в промокодах
+
+`PromoCode.bonusBalanceCents` («Бесплатный доп. баланс» в админке, только для типа `FREE_VIP`, 0–$1000): при активации в `app/api/teacher/vip/activate` баланс пополняется в той же транзакции, что и выдача VIP, и пишется строка леджера `PROMO_BONUS` (в истории — зелёная, как пополнение). Миграция `prisma/migrations/20260925150000_promo_bonus_balance/`.
