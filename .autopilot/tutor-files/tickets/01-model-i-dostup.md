@@ -4,7 +4,7 @@
 **Blocked by:** —
 **Зона:** `prisma/schema.prisma`, `prisma/migrations/`, `src/shared/lib/tutorFiles/access.ts`, `src/shared/lib/tutorFiles/storage.ts`
 **Волна:** 1
-**Status:** ready
+**Status:** done
 
 ## Что должно заработать
 

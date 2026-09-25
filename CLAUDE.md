@@ -424,3 +424,12 @@ npx tsx src/shared/lib/wallet/pricing.selfcheck.ts
 set -a; source .env; set +a && npx tsx src/shared/lib/wallet/wallet.selfcheck.ts
 ```
 <!-- autopilot:wallet-balance:end -->
+
+# GoodWorker — хранилище файлов репетитора (`tutor-files`)
+
+Вкладка «Файлы» у VIP-репетитора (`DashboardCenter`, только владелец) и у ученика (`StudentCenter`, диплинк `/student-profile?tab=files`); живёт только в ветках от `feature/wallet-balance-topup` (перелимит списывается через Кошелёк). Контракты и история — `.autopilot/tutor-files/interfaces.md`.
+
+- API `app/api/tutor-files/*`: `library` (read-модель для обеих ролей — браузинг идёт только через неё), `folders`, `files`, `grants`, `search`, `usage`; крон `app/api/cron/storage-overage-billing` (идемпотентен по месяцу).
+- Видимость ученику — только через `loadStudentVisibility()`/`canStudentSee()` (`src/shared/lib/tutorFiles/access.ts`); `restrictedToStudentId` бывает только у листовых личных подпапок — новые дочерние папки создавать после `assertFolderDepthAllowed` + `assertNotUnderRestrictedFolder`.
+- Клиент импортирует типы из `src/shared/types/TutorFiles/tutorFiles.types.ts` и константы из `src/shared/lib/tutorFiles/constants.ts` — не `access.ts`/`storage.ts` (тянут Prisma).
+- Смоук без внешних сервисов: локальный Postgres (`/usr/lib/postgresql/16/bin`, запуск от пользователя `postgres`) + заглушка S3 (любой HTTP-сервер, отвечающий 200 на PUT, в `S3_ENDPOINT`/`NEXT_PUBLIC_S3_PUBLIC_URL`). Puppeteer `uploadFile` молча не грузит файлы с кириллицей в пути; headless Chromium отвечает `hover: none`, поэтому кнопки действий на карточках там видны всегда.

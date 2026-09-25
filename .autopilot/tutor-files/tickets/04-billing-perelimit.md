@@ -4,7 +4,7 @@
 **Blocked by:** 01
 **Зона:** `src/shared/lib/wallet/wallet.ts`, `app/api/cron/storage-overage-billing/`, `app/api/admin/wallet-settings/`, `src/_pages/AdminPage/AdminPage.tsx` (только `WalletSettingsCard`), `vercel.json`
 **Волна:** 2
-**Status:** ready
+**Status:** done
 
 ## Что должно заработать
 

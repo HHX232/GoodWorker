@@ -4,7 +4,7 @@
 **Blocked by:** 01
 **Зона:** `app/api/tutor-files/grants/`, `app/api/tutor-files/search/`, `app/api/tutor-files/usage/`, `src/shared/lib/chat/access.ts` (только добавление значения в `CHAT_EVENT_TYPES`, уже создано тикетом 01 — здесь только вызов `postEventCard`)
 **Волна:** 2
-**Status:** ready
+**Status:** done
 
 ## Что должно заработать
 

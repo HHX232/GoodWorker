@@ -4,7 +4,7 @@
 **Blocked by:** 01
 **Зона:** `app/api/tutor-files/folders/`, `app/api/tutor-files/files/`
 **Волна:** 2
-**Status:** ready
+**Status:** done
 
 ## Что должно заработать
 

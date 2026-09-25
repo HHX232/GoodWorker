@@ -5,7 +5,7 @@
 ## Правила проекта (читать перед кодом)
 
 - Стек: Next.js (App Router) + Prisma + PostgreSQL, SCSS-модули, `next-intl`, TanStack Query на клиенте, `lucide-react` для иконок.
-- Работаем **в worktree `/Users/nikitatisevic/Desktop/GoodWorker-wallet-wt`, ветка `feature/wallet-balance-topup`** — НЕ в `/Users/nikitatisevic/Desktop/GoodWorkerRemaster` (main). Кошелёк (`Wallet*`, `balanceCents`, `purchaseAddon`, `InsufficientBalanceModal`, `/wallet`) уже существует именно здесь, на main его нет.
+- Работаем **в worktree `/Users/nikitatisevic/Desktop/GoodWorker-wallet-wt`, ветка `feature/wallet-balance-topup`** (продолжение 05–07 и доревью 02–04 — в облачной сессии, ветка `claude/determined-wozniak-ga0gfz`, растёт от `feature/wallet-balance-topup`) — НЕ в `/Users/nikitatisevic/Desktop/GoodWorkerRemaster` (main). Кошелёк (`Wallet*`, `balanceCents`, `purchaseAddon`, `InsufficientBalanceModal`, `/wallet`) уже существует именно здесь, на main его нет.
 - Команды: `npm run dev`, `npx prisma generate` после правки схемы, миграции — `set -a; source .env; set +a && npx prisma migrate dev` (локально пишем обычную dev-миграцию, не deploy).
 - Тестового раннера в проекте нет — верификация через `curl` к поднятому `npm run dev` (см. сид-аккаунты и рецепт логина в CLAUDE.md) + смоук в браузере для UI-тикетов.
 - i18n: новый namespace `files` добавляется в `messages/en.json`, `messages/hi.json`, `messages/ru.json`, `messages/zh.json` — одновременно, во всех четырёх, даже если добавляет один тикет.
@@ -69,6 +69,34 @@
 - `POST /api/tutor-files/files` (FormData: `file`, `folderId?`) `-> {file, usedBytes}` — загрузка через существующий S3-паттерн (`folder: 'tutor-files'`), `usedBytes` пересчитан после записи (контракт квоты для тикетов 04/06).
 - `DELETE /api/tutor-files/files/[id] -> {ok:true}`.
 - Все эндпоинты — 403 на чужую папку/файл (через `requireOwnedFolder`/`requireOwnedFile` тикета 01).
+
+## Из тикета 03 — доступ, поиск, квота
+
+- `POST /api/tutor-files/grants {itemType, itemId, studentIds[]}` — все-или-ничего по `TeacherStudent` (403), дубли `studentIds` схлопываются; карточка `FILE_ACCESS_GRANTED` уходит только тем, у кого гранта ещё не было. Личную папку ученика (`restrictedToStudentId`) расшаривать нельзя — 400.
+- `GET /api/tutor-files/grants?itemType&itemId -> {students: [{id,name,avatarUrl,grantedAt}]}` — прямые гранты (для `ShareAccessModal`).
+- `DELETE /api/tutor-files/grants {itemType, itemId, studentId}` — плюс `revokeOrphanedSubfolderGrants()`: снимает гранты ученика на его личные подпапки в этой ветке, если до их родителя-«сдачи» больше не дотянуться. Сами подпапки и файлы остаются у репетитора; повторная выдача восстанавливает доступ.
+- `GET /api/tutor-files/search?q` — формы `LibraryFolder`/`LibraryFile` (как в библиотеке), ученик — через `loadStudentVisibility()`.
+- `GET /api/tutor-files/usage` — без изменений (контракт квоты выше).
+
+## Доревью 02–04 (облачная сессия, коммит `8a8e104`)
+
+- **Новый** `GET /api/tutor-files/library?folderId=` → `LibraryResponse` (`src/shared/types/TutorFiles/tutorFiles.types.ts` — клиентское зеркало, импортировать в клиенте его, не `shared/lib/tutorFiles/*`). Репетитор: своя библиотека одной группой + аватары грантов + `isVip`. Ученик: только видимое по `canStudentSee()`, в корне — группы по репетитору, `canUpload` только в своей личной подпапке. Всегда отдаёт плоское `tree` для сайдбара и `teachers` (ученику — для подписи дерева).
+- `src/shared/lib/tutorFiles/readModel.ts` — мапперы строк Prisma в клиентские формы (общие для `/library` и `/search`).
+- `loadStudentVisibility(studentId)` в `access.ts` — единственный загрузчик видимого ученику; `fileVisibilityItem()` — как считать видимость файла по его папке.
+- VIP-гейт на сервере: `isTeacherVipActive()` (как в кроне: `isVip` + не истёкший `vipExpiresAt`), `403 {error:'VIP_REQUIRED'}` на создание папки, загрузку, выдачу доступа. Чтение/удаление/отзыв — без гейта.
+- `POST /files`: ученик грузит только в свою личную подпапку (`restrictedToStudentId === me` и грант ещё действует); ответ ученику — `{file}` без `usedBytes`. `DELETE /files/[id]`: ученик может удалить только свой файл из своей подпапки.
+- `PATCH /folders/[id] {name?, allowStudentUpload?}` — включение флага досоздаёт подпапки всем, кто видит папку (включая унаследованный доступ через предка). Ошибки создания папки — коды `MAX_DEPTH`/`RESTRICTED_PARENT` (+`message`).
+- `ensureStudentSubfolder()` / `ensureSubfoldersForGrant()` / `studentsWithAccess()` / `revokeOrphanedSubfolderGrants()` — в `storage.ts`; грант на папку создаёт подпапки во всех «сдачах» на ней и ниже.
+- `QUOTA_BYTES`/`MAX_FOLDER_DEPTH`/`MAX_FILE_BYTES` — в `src/shared/lib/tutorFiles/constants.ts` (без Prisma, импортируется и клиентом); `storage.ts` их реэкспортирует.
+- Крон перелимита идемпотентен в пределах календарного месяца (UTC): при наличии `STORAGE_OVERAGE_DEBIT` этого месяца репетитор пропускается.
+
+## Из тикетов 05–07 — UI
+
+- `src/widgets/Files/FilesShell/FilesShell.tsx` — `<FilesShell role="teacher" | "student">`, вся логика вкладки; TanStack Query ключи `['tutor-files', ...]` (любая мутация инвалидирует весь префикс).
+- Монтирование: вкладка `files` в `DashboardCenter` (только `isOwner`), вкладка `files` в `StudentCenter`; диплинк ученика — `/student-profile?tab=files` (его же ставит ссылка в `EventCard`).
+- Модалки — через общий `FilesModal` (портал в `#modal_portal`, `stopPropagation`, Esc): `ShareAccessModal`, `FilePreviewModal`, `StorageOverageWarningModal`, диалоги имени/удаления.
+- Предупреждение о перелимите: после загрузки `usedBytes > QUOTA_BYTES && usedBytes - file.sizeBytes <= QUOTA_BYTES` → один раз, цена из `GET /usage`; при `0` — текст без суммы.
+- i18n: namespace `files` (все 4 локали), `dashboard.tabFiles`, `chat.eventCard.fileAccess*`. Иконки — `src/widgets/Files/icons.tsx` (реэкспорт lucide), в чате — `ChatFilesIcon`.
 
 ## Из тикета 04 — биллинг перелимита
 
