@@ -3026,7 +3026,9 @@
         "DEPOSIT": "充值",
         "AI_DEBIT": "AI 使用",
         "FEATURED_POSTS_PURCHASE": "帖子推广",
-        "PINNED_LISTING_PURCHASE": "置顶资料"
+        "PINNED_LISTING_PURCHASE": "置顶资料",
+        "STORAGE_OVERAGE_DEBIT": "存储空间",
+        "MONTHLY_FEE": "VIP 月费"
       }
     },
     "insufficientModal": {
@@ -3059,7 +3061,26 @@
       "title": "按周统计的 AI 支出",
       "totalLabel": "总支出",
       "empty": "暂无支出"
-    }
+    },
+    "monthlyFee": {
+      "label": "VIP 月费",
+      "title": "每月 {fee} —— 您在功能上的花费全部抵扣",
+      "sub": "VIP 有效期间，每月从余额中扣除 {fee} 减去您当月已在功能上花费的金额：AI、帖子推广、置顶展示、存储空间。当月花费达到 {fee} 或更多 —— 不扣任何费用。月份从您获得 VIP 的那一刻起计算，而不是按日历月。",
+      "examplesTitle": "单月示例",
+      "exampleSpent": "花费 {amount}",
+      "exampleCharge": "扣除 {amount}",
+      "exampleFree": "不扣费",
+      "progressLabel": "本月功能花费",
+      "progressValue": "{spent} / {fee}",
+      "period": "当前月份：{start} — {end}",
+      "projected": "{date} 将扣除",
+      "projectedZero": "本月不收取月费 —— 您在功能上的花费已达到 {fee} 或更多",
+      "remainingHint": "再在功能上花费 {amount}，月费即降为 $0.00",
+      "inactive": "当前 VIP 未激活 —— 不收取月费。月份将从您获得 VIP 时开始计算。",
+      "noDebt": "如果余额不足，只扣除现有金额 —— 余额不会变为负数。",
+      "loading": "加载中…"
+    },
+    "offersLabel": "充值与 VIP"
   },
   "vip": {
     "hero": {
@@ -3161,7 +3182,7 @@
     "mechanic": {
       "sectionLabel": "余额与 VIP 奖励",
       "title": "充值即可获得 VIP——金额越大，汇率越划算",
-      "sub": "充值金额将全额进入您的余额并始终归您所有——可用于 AI 功能（公式识别、生成测试、制定教案）。VIP 是额外赠送的奖励，自动发放且不会减少您的余额。充值金额越大，每一美元兑换的 VIP 月数就越多——详见下方档位。"
+      "sub": "充值金额全部进入余额，可用于各项功能：公式识别、生成测试、课程计划、推广。VIP 是充值奖励 —— 金额越大，每美元获得的 VIP 月数越多。VIP 有效期间，每月从余额中扣除 $5 减去您当月已在功能上花费的金额。"
     },
     "steps": [
       {

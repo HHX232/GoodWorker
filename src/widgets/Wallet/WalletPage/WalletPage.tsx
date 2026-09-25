@@ -9,11 +9,13 @@ import { SpendChart } from '../SpendChart/SpendChart'
 import { TransactionsTable } from '../TransactionsTable/TransactionsTable'
 import { PinnedListingSection } from '../PinnedListingSection/PinnedListingSection'
 import { FeaturedPostsAddon } from '../FeaturedPostsAddon/FeaturedPostsAddon'
+import { MonthlyFeeCard } from '../MonthlyFeeCard/MonthlyFeeCard'
+import { VipMechanic } from '../VipMechanic/VipMechanic'
 import styles from './WalletPage.module.scss'
 
 interface TransactionItem {
   id: string
-  type: 'DEPOSIT' | 'AI_DEBIT' | 'FEATURED_POSTS_PURCHASE' | 'PINNED_LISTING_PURCHASE'
+  type: 'DEPOSIT' | 'AI_DEBIT' | 'FEATURED_POSTS_PURCHASE' | 'PINNED_LISTING_PURCHASE' | 'STORAGE_OVERAGE_DEBIT' | 'MONTHLY_FEE'
   amountCents: number
   balanceAfterCents: number
   endpoint: string | null
@@ -51,6 +53,18 @@ export function WalletPage() {
 
   useEffect(() => { fetchHistory() }, [fetchHistory])
 
+  // Theme tokens (light by default, dark under html.theme-dark) are declared
+  // on html.wallet-page in WalletPage.module.scss — on <html>, not on this
+  // div, so fixed/portalled children (payment modal, "view all" history
+  // modal) inherit them too. Same add-on-mount pattern as /vip's vip-dark.
+  useEffect(() => {
+    document.documentElement.classList.add('wallet-page')
+    return () => document.documentElement.classList.remove('wallet-page')
+  }, [])
+
+  // Bumped after a top-up so the monthly-fee block re-reads its status.
+  const [refreshKey, setRefreshKey] = useState(0)
+
   const { balance, balanceLoading, fetchBalance } = useTopUpForm(t)
 
   const { data: session } = useSession()
@@ -58,33 +72,40 @@ export function WalletPage() {
   const isTeacher = sessionRole === 'TEACHER' || sessionRole === 'ADMIN'
 
   return (
-    <div className={styles.wrapper}>
-      <h1 className={styles.title}>{t('title')}</h1>
+    <div className={styles.page}>
+      <div className={`container ${styles.inner}`}>
+        <h1 className={styles.title}>{t('title')}</h1>
 
-      <div className={styles.layout}>
-        <div className={styles.leftCol}>
-          <TopUpCard
-            balanceCents={balance?.balanceCents}
-            balanceLoading={balanceLoading}
-            onSuccess={() => { fetchBalance(); fetchHistory() }}
-          />
-          <SpendChart transactions={transactions} />
+        <MonthlyFeeCard refreshKey={refreshKey} />
+
+        <div className={styles.layout}>
+          <div className={styles.leftCol}>
+            <TopUpCard
+              balanceCents={balance?.balanceCents}
+              balanceLoading={balanceLoading}
+              onSuccess={() => { fetchBalance(); fetchHistory(); setRefreshKey(k => k + 1) }}
+            />
+            <SpendChart transactions={transactions} />
+          </div>
+
+          <div className={styles.rightCol}>
+            <TransactionsTable transactions={transactions} historyLoading={historyLoading} />
+          </div>
         </div>
 
-        <div className={styles.rightCol}>
-          <TransactionsTable transactions={transactions} historyLoading={historyLoading} />
-        </div>
+        <section className={styles.offers}>
+          <p className={styles.sectionLabel}>{t('offersLabel')}</p>
+          <VipMechanic />
+
+          {/* Teacher-only purchases from /vip: pinned listing + featured posts. */}
+          {isTeacher && (
+            <div className={styles.addonsPanel}>
+              <PinnedListingSection />
+              <FeaturedPostsAddon />
+            </div>
+          )}
+        </section>
       </div>
-
-      {/* Teacher-only purchases: pinned listing + featured posts — same dark
-          card styling as the VIP page these were lifted from, wrapped so they
-          read fine on /wallet's light background. */}
-      {isTeacher && (
-        <div className={styles.addonsPanel}>
-          <PinnedListingSection />
-          <FeaturedPostsAddon />
-        </div>
-      )}
     </div>
   )
 }

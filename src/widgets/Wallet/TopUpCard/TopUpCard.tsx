@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { formatCents, MIN_DEPOSIT_DOLLARS, MAX_DEPOSIT_DOLLARS, VIP_BONUS_THRESHOLD_DOLLARS } from '../useTopUpForm'
 import { useVipTopUpPresets } from '../useVipTopUpPresets'
-import { notifyWalletChanged } from '../walletEvents'
+import { TopUpPaymentModal } from '../TopUpPaymentModal/TopUpPaymentModal'
 import styles from './TopUpCard.module.scss'
 
 interface Props {
@@ -14,20 +14,18 @@ interface Props {
   onSuccess: () => void
 }
 
-// Big VIP-page-style preset grid (see TopUpSection in VipClientPage.tsx), but
-// simpler: no payment-method modal (that's VIP-page theatrics), one submit
-// button, and the custom-amount tile pinned first instead of last — this
-// page's own topup/form copy stays USD-only like the rest of /wallet
-// (formatCents, not the BYN-aware formatCentsDisplay the VIP page uses).
+// VIP-page-style preset grid (see TopUpSection in VipClientPage.tsx) with the
+// same payment step (TopUpPaymentModal: method choice, BYN on ru). The tiles
+// themselves stay USD like the rest of /wallet; the custom-amount tile is
+// pinned first instead of last.
 export function TopUpCard({ balanceCents, balanceLoading, onSuccess }: Props) {
   const t = useTranslations('wallet')
   const { pricing, monthsFor } = useVipTopUpPresets()
 
   const [customValue, setCustomValue] = useState('')
   const [selectedCents, setSelectedCents] = useState<number | null>(null)
-  const [submitting, setSubmitting] = useState(false)
+  const [paymentCents, setPaymentCents] = useState<number | null>(null)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
 
   const tiers = pricing?.vipBonusTiers ?? []
   const bestMinCents = tiers.length ? tiers[tiers.length - 1].minAmountCents : null
@@ -41,44 +39,17 @@ export function TopUpCard({ balanceCents, balanceLoading, onSuccess }: Props) {
     setError('')
   }
 
-  async function handleTopUp() {
+  // Validates the amount, then hands off to the same payment step /vip uses
+  // (method choice + mock POST /api/wallet/topup inside TopUpPaymentModal).
+  function handleTopUp() {
     setError('')
-    setSuccess('')
-
     const minCents = pricing?.minDepositCents ?? MIN_DEPOSIT_DOLLARS * 100
     const maxCents = pricing?.maxDepositCents ?? MAX_DEPOSIT_DOLLARS * 100
     if (activeCents === null || !Number.isFinite(activeCents) || activeCents < minCents || activeCents > maxCents) {
       setError(t('form.invalidAmount', { min: MIN_DEPOSIT_DOLLARS, max: MAX_DEPOSIT_DOLLARS }))
       return
     }
-
-    setSubmitting(true)
-    try {
-      const res = await fetch('/api/wallet/topup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amountCents: activeCents }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        setError(data?.message || t('form.genericError'))
-        return
-      }
-      const dollars = (activeCents / 100).toFixed(2)
-      setSuccess(
-        data.vipMonthsGranted > 0
-          ? t('form.successWithVip', { amount: dollars, months: data.vipMonthsGranted })
-          : t('form.success', { amount: dollars }),
-      )
-      setCustomValue('')
-      setSelectedCents(null)
-      notifyWalletChanged()
-      onSuccess()
-    } catch {
-      setError(t('form.genericError'))
-    } finally {
-      setSubmitting(false)
-    }
+    setPaymentCents(activeCents)
   }
 
   return (
@@ -135,20 +106,23 @@ export function TopUpCard({ balanceCents, balanceLoading, onSuccess }: Props) {
       </div>
 
       {error && <p className={styles.errorText}>{error}</p>}
-      {success && <p className={styles.successText}>{success}</p>}
 
       <button
         type="button"
         className={styles.submitBtn}
         onClick={handleTopUp}
-        disabled={submitting || activeCents === null}
+        disabled={activeCents === null}
       >
-        {submitting
-          ? t('form.submitting')
-          : activeCents !== null
-            ? `${t('form.submit')} · ${formatCents(activeCents)}`
-            : t('form.submit')}
+        {activeCents !== null
+          ? `${t('form.submit')} · ${formatCents(activeCents)}`
+          : t('form.submit')}
       </button>
+
+      <TopUpPaymentModal
+        amountCents={paymentCents}
+        onClose={() => setPaymentCents(null)}
+        onSuccess={() => { setCustomValue(''); setSelectedCents(null); onSuccess() }}
+      />
     </section>
   )
 }

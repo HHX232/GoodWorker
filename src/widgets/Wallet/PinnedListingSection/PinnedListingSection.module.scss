@@ -8,20 +8,20 @@
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.1em;
-  color: #9a9aab;
+  color: var(--w-muted, #9a9aab);
   text-transform: uppercase;
   margin: 0 0 12px;
 }
 
 .getCard {
-  background: #1a1c26;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--w-card, #1a1c26);
+  border: 1px solid rgba(var(--w-fg-rgb, 255, 255, 255), 0.08);
   border-radius: 16px;
   overflow: hidden;
   transition: border-color 0.15s;
 
   &:hover {
-    border-color: rgba(255, 255, 255, 0.14);
+    border-color: rgba(var(--w-fg-rgb, 255, 255, 255), 0.14);
   }
 }
 
@@ -30,7 +30,7 @@
   align-items: center;
   gap: 14px;
   padding: 20px 22px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(var(--w-fg-rgb, 255, 255, 255), 0.06);
 }
 
 .getCardNum {
@@ -60,13 +60,13 @@
 .getCardTitle {
   font-size: 14px;
   font-weight: 600;
-  color: #f2f3f7;
+  color: var(--w-ink, #f2f3f7);
   margin: 0;
 }
 
 .getCardSub {
   font-size: 12.5px;
-  color: #9a9aab;
+  color: var(--w-muted, #9a9aab);
   margin: 2px 0 0;
 }
 
@@ -76,7 +76,7 @@
 
 .customPreview {
   font-size: 12.5px;
-  color: #8fe0a8;
+  color: var(--w-positive, #8fe0a8);
   margin: 0 0 14px;
 }
 
@@ -108,12 +108,12 @@
     &::-webkit-slider-runnable-track {
       height: 4px;
       border-radius: 2px;
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(var(--w-fg-rgb, 255, 255, 255), 0.15);
     }
     &::-moz-range-track {
       height: 4px;
       border-radius: 2px;
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(var(--w-fg-rgb, 255, 255, 255), 0.15);
     }
 
     &::-webkit-slider-thumb {
@@ -152,7 +152,7 @@
 .sliderValue {
   font-size: 13px;
   font-weight: 700;
-  color: #f2f3f7;
+  color: var(--w-ink, #f2f3f7);
   white-space: nowrap;
   min-width: 84px;
   text-align: right;
@@ -168,13 +168,13 @@
   position: relative;
   font-size: 11px;
   font-weight: 600;
-  color: #5c5d6e;
+  color: var(--w-faint, #5c5d6e);
   text-align: center;
   flex: 1;
 }
 
 .tierTickActive {
-  color: #f2f3f7;
+  color: var(--w-ink, #f2f3f7);
 }
 
 .tierTickBest {
@@ -204,18 +204,18 @@
   gap: 12px;
   margin-top: 6px;
   padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(var(--w-fg-rgb, 255, 255, 255), 0.08);
 }
 
 .priceDisplay {
   font-size: 20px;
   font-weight: 700;
-  color: #f2f3f7;
+  color: var(--w-ink, #f2f3f7);
 }
 
 .oldPrice {
   font-size: 11px;
-  color: #5c5d6e;
+  color: var(--w-faint, #5c5d6e);
   text-decoration: line-through;
   margin-right: 4px;
 }
@@ -269,6 +269,6 @@
 
 .promoError {
   font-size: 12px;
-  color: #f87171;
+  color: var(--w-danger, #f87171);
   margin: 10px 0 0;
 }

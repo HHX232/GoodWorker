@@ -8,7 +8,7 @@ import styles from './TransactionsTable.module.scss'
 
 interface TransactionItem {
   id: string
-  type: 'DEPOSIT' | 'AI_DEBIT' | 'FEATURED_POSTS_PURCHASE' | 'PINNED_LISTING_PURCHASE'
+  type: 'DEPOSIT' | 'AI_DEBIT' | 'FEATURED_POSTS_PURCHASE' | 'PINNED_LISTING_PURCHASE' | 'STORAGE_OVERAGE_DEBIT' | 'MONTHLY_FEE'
   amountCents: number
   balanceAfterCents: number
   endpoint: string | null
@@ -28,6 +28,8 @@ const TYPE_BADGE_CLASS: Record<TransactionItem['type'], string> = {
   AI_DEBIT: styles.badgeDebit,
   FEATURED_POSTS_PURCHASE: styles.badgePromo,
   PINNED_LISTING_PURCHASE: styles.badgePin,
+  STORAGE_OVERAGE_DEBIT: styles.badgeStorage,
+  MONTHLY_FEE: styles.badgeFee,
 }
 
 const PREVIEW_COUNT = 8
@@ -55,7 +57,7 @@ function TransactionRows({ items, locale, t }: { items: TransactionItem[]; local
         </thead>
         <tbody>
           {items.map(item => (
-            <tr key={item.id}>
+            <tr key={item.id} className={item.type === 'DEPOSIT' ? styles.rowDeposit : undefined}>
               <td className={styles.dateCell}>
                 {new Date(item.createdAt).toLocaleDateString(locale, { day: 'numeric', month: 'short' })}
               </td>
@@ -66,8 +68,9 @@ function TransactionRows({ items, locale, t }: { items: TransactionItem[]; local
                 </span>
               </td>
               <td className={`${styles.numeric} ${item.type === 'DEPOSIT' ? styles.amountPositive : styles.amountNegative}`}>
-                {item.type === 'DEPOSIT' ? '+' : '−'}
-                {formatCents(item.amountCents)}
+                {item.type === 'DEPOSIT'
+                  ? <span>+{formatCents(item.amountCents)}</span>
+                  : <>−{formatCents(item.amountCents)}</>}
               </td>
               <td className={`${styles.numeric} ${styles.balanceCell}`}>{formatCents(item.balanceAfterCents)}</td>
             </tr>

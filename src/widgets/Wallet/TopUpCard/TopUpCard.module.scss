@@ -3,16 +3,16 @@
   // gradient + red accent, replaces the old generic dark-grey gradient.
   background:
     radial-gradient(120% 140% at 8% 0%, rgba(237, 6, 6, 0.14), transparent 55%),
-    linear-gradient(155deg, #22242f 0%, #15161e 70%, #101017 100%);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+    var(--w-hero-bg, linear-gradient(155deg, #22242f 0%, #15161e 70%, #101017 100%));
+  border: 1px solid rgba(var(--w-fg-rgb, 255, 255, 255), 0.09);
   border-radius: 20px;
   padding: 24px;
   box-sizing: border-box;
-  color: #f2f3f7;
+  color: var(--w-ink, #f2f3f7);
   display: flex;
   flex-direction: column;
   gap: 14px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), 0 18px 42px -14px rgba(0, 0, 0, 0.68);
+  box-shadow: var(--w-shadow-lg, 0 4px 10px rgba(0, 0, 0, 0.5), 0 18px 42px -14px rgba(0, 0, 0, 0.68));
 }
 
 .header {
@@ -36,7 +36,7 @@
   flex-wrap: wrap;
   gap: 12px;
   padding-bottom: 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(var(--w-fg-rgb, 255, 255, 255), 0.1);
 }
 
 .balanceInfo {
@@ -55,9 +55,9 @@
   flex-shrink: 0;
   padding: 9px 16px;
   border-radius: 99px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: #f2f3f7;
+  background: rgba(var(--w-fg-rgb, 255, 255, 255), 0.08);
+  border: 1px solid rgba(var(--w-fg-rgb, 255, 255, 255), 0.14);
+  color: var(--w-ink, #f2f3f7);
   font-size: 13px;
   font-weight: 700;
   text-decoration: none;
@@ -65,32 +65,32 @@
   transition: background 0.15s, border-color 0.15s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.14);
-    border-color: rgba(255, 255, 255, 0.24);
+    background: rgba(var(--w-fg-rgb, 255, 255, 255), 0.14);
+    border-color: rgba(var(--w-fg-rgb, 255, 255, 255), 0.24);
   }
 }
 
 .balanceLabel {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(var(--w-fg-rgb, 255, 255, 255), 0.55);
 }
 
 .balanceValue {
   font-size: 32px;
   font-weight: 800;
-  color: #fff;
+  color: var(--w-ink, #fff);
   word-break: break-word;
 }
 
 .balanceHint {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(var(--w-fg-rgb, 255, 255, 255), 0.55);
 }
 
 .vipHint {
   margin: 0;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(var(--w-fg-rgb, 255, 255, 255), 0.55);
 }
 
 .grid {
@@ -108,16 +108,16 @@
   gap: 4px;
   padding: 12px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: #1f2230;
-  color: #f2f3f7;
+  border: 1px solid rgba(var(--w-fg-rgb, 255, 255, 255), 0.12);
+  background: var(--w-surface, #1f2230);
+  color: var(--w-ink, #f2f3f7);
   cursor: pointer;
   text-align: left;
   font-family: inherit;
   transition: border-color 0.15s, background 0.15s, transform 0.15s;
 
   &:hover {
-    border-color: rgba(255, 255, 255, 0.24);
+    border-color: rgba(var(--w-fg-rgb, 255, 255, 255), 0.24);
     transform: translateY(-2px);
   }
 }
@@ -135,7 +135,7 @@
 .tileLabel {
   font-size: 11px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(var(--w-fg-rgb, 255, 255, 255), 0.55);
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
@@ -152,13 +152,13 @@
     border: none;
     outline: none;
     background: transparent;
-    color: #fff;
+    color: var(--w-ink, #fff);
     font-size: 15px;
     font-weight: 700;
     font-family: inherit;
 
     &::placeholder {
-      color: rgba(255, 255, 255, 0.35);
+      color: rgba(var(--w-fg-rgb, 255, 255, 255), 0.35);
       font-weight: 500;
     }
 
@@ -172,7 +172,7 @@
 }
 
 .currencyPrefix {
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(var(--w-fg-rgb, 255, 255, 255), 0.55);
   font-weight: 600;
 }
 
@@ -183,7 +183,7 @@
 
 .tileMonths {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(var(--w-fg-rgb, 255, 255, 255), 0.55);
 }
 
 .badge {
@@ -203,14 +203,9 @@
 .errorText {
   margin: 0;
   font-size: 13px;
-  color: #ff8a8a;
+  color: var(--w-danger, #ff8a8a);
 }
 
-.successText {
-  margin: 0;
-  font-size: 13px;
-  color: #8affa0;
-}
 
 .submitBtn {
   align-self: flex-start;

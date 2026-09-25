@@ -7,7 +7,7 @@ import { formatCents } from '../useTopUpForm'
 import styles from './SpendChart.module.scss'
 
 interface TransactionItem {
-  type: 'DEPOSIT' | 'AI_DEBIT' | 'FEATURED_POSTS_PURCHASE' | 'PINNED_LISTING_PURCHASE'
+  type: 'DEPOSIT' | 'AI_DEBIT' | 'FEATURED_POSTS_PURCHASE' | 'PINNED_LISTING_PURCHASE' | 'STORAGE_OVERAGE_DEBIT' | 'MONTHLY_FEE'
   amountCents: number
   createdAt: string
 }
@@ -118,7 +118,14 @@ export function SpendChart({ transactions }: { transactions: TransactionItem[] }
               <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.04)' }} />
               <Bar dataKey="cents" radius={[4, 4, 3, 3]} isAnimationActive animationDuration={500}>
                 {data.map(d => (
-                  <Cell key={d.weekKey} fill={d.cents === peakCents && peakCents > 0 ? '#ed0606' : '#2e3040'} />
+                  // Colors come from SpendChart.module.scss (.bar/.barPeak) so
+                  // they follow the light/dark wallet theme — CSS fill beats
+                  // the SVG attribute recharts writes.
+                  <Cell
+                    key={d.weekKey}
+                    className={d.cents === peakCents && peakCents > 0 ? styles.barPeak : styles.bar}
+                    fill={d.cents === peakCents && peakCents > 0 ? '#ed0606' : '#2e3040'}
+                  />
                 ))}
               </Bar>
             </BarChart>

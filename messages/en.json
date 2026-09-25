@@ -3199,7 +3199,9 @@
         "DEPOSIT": "Top-up",
         "AI_DEBIT": "AI usage",
         "FEATURED_POSTS_PURCHASE": "Featured posts",
-        "PINNED_LISTING_PURCHASE": "Pinned listing"
+        "PINNED_LISTING_PURCHASE": "Pinned listing",
+        "STORAGE_OVERAGE_DEBIT": "Storage",
+        "MONTHLY_FEE": "VIP fee"
       }
     },
     "insufficientModal": {
@@ -3232,7 +3234,26 @@
       "title": "AI spend by week",
       "totalLabel": "Total spent",
       "empty": "No AI spending yet"
-    }
+    },
+    "monthlyFee": {
+      "label": "Monthly VIP fee",
+      "title": "{fee} a month — but everything you spend on features counts toward it",
+      "sub": "While your VIP is active, once a month we debit {fee} minus what you already spent on features that month: AI, post promotion, pinned listing, storage. Spent {fee} or more — nothing is debited. The month is counted from the moment you got VIP, not by the calendar.",
+      "examplesTitle": "Examples for one month",
+      "exampleSpent": "Spent {amount}",
+      "exampleCharge": "We debit {amount}",
+      "exampleFree": "Nothing debited",
+      "progressLabel": "Spent on features this month",
+      "progressValue": "{spent} of {fee}",
+      "period": "Current month: {start} — {end}",
+      "projected": "To be debited on {date}",
+      "projectedZero": "No fee this month — you have already spent {fee} or more on features",
+      "remainingHint": "Spend {amount} more on features and the fee drops to $0.00",
+      "inactive": "VIP is not active right now — no fee applies. The month starts counting from the moment you get VIP.",
+      "noDebt": "If your balance is lower than the fee, we only take what is there — the balance never goes negative.",
+      "loading": "Loading…"
+    },
+    "offersLabel": "Top-up and VIP"
   },
   "vip": {
     "hero": {
@@ -3334,7 +3355,7 @@
     "mechanic": {
       "sectionLabel": "Balance and VIP bonus",
       "title": "Topping up your balance grants VIP — the bigger the amount, the better the rate",
-      "sub": "The money goes straight to your balance and stays yours — spend it on AI features (formula recognition, test generation, lesson plans). VIP is a bonus on top that's granted automatically and never reduces your balance. Bigger top-ups grant more VIP months per dollar — see the presets below."
+      "sub": "The whole amount goes to your balance and can be spent on features: formula recognition, test generation, lesson plans, promotion. VIP is a bonus for topping up — bigger amounts give more VIP months per dollar. While VIP is active, once a month we debit $5 minus what you already spent on features that month."
     },
     "steps": [
       {

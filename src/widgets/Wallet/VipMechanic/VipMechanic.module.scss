@@ -1,0 +1,89 @@
+// Tokens from WalletPage.module.scss (html.wallet-page, light/dark).
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.banner {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 20px;
+  border-radius: 20px;
+  background: var(--w-card, #1a1c26);
+  border: 1px solid rgba(var(--w-fg-rgb, 255, 255, 255), 0.08);
+  box-shadow: var(--w-shadow, 0 1px 2px rgba(0, 0, 0, 0.5), 0 8px 22px -10px rgba(0, 0, 0, 0.6));
+}
+
+.bannerIcon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(237, 6, 6, 0.12);
+  color: #ed0606;
+}
+
+.bannerTitle {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--w-ink, #f2f3f7);
+}
+
+.bannerSub {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--w-muted, #9a9aab);
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.step {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--w-card, #1a1c26);
+  border: 1px solid rgba(var(--w-fg-rgb, 255, 255, 255), 0.08);
+}
+
+.stepIcon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: rgba(var(--w-fg-rgb, 255, 255, 255), 0.06);
+  color: var(--w-ink, #f2f3f7);
+}
+
+.stepTitle {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--w-ink, #f2f3f7);
+}
+
+.stepDesc {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--w-muted, #9a9aab);
+}
+
+@media (max-width: 860px) {
+  .steps {
+    grid-template-columns: 1fr;
+  }
+}
