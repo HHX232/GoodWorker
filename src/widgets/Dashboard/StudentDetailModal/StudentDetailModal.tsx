@@ -26,7 +26,10 @@ interface Meeting {
   id: string
   title: string
   scheduledAt: string | null
-  roomName: string
+  roomName: string | null
+  /** 'calendar' = lives only in the calendar's own JSON blob — no per-event
+   * delete route exists for those yet, so it isn't cancellable from here. */
+  type?: 'conference' | 'booking' | 'calendar'
 }
 
 interface StudentData {
@@ -341,11 +344,13 @@ export function StudentDetailModal({
                         <div className={styles.meetingTitle}>{m.title}</div>
                         {m.scheduledAt && <div className={styles.meetingTime}>{formatDateShort(m.scheduledAt)}</div>}
                       </div>
-                      <button className={styles.cancelBtn} title={t('sdmCancelTitle')} onClick={() => cancelMeeting(m.id)}>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                          <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                      </button>
+                      {m.type !== 'calendar' && (
+                        <button className={styles.cancelBtn} title={t('sdmCancelTitle')} onClick={() => cancelMeeting(m.id)}>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                          </svg>
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>

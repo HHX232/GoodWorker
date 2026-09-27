@@ -101,7 +101,10 @@ export async function POST(req: NextRequest) {
           studentId,
           eventType: 'FILE_ACCESS_GRANTED',
           // availableFrom in the future → the card says when it opens.
-          payload: { itemType, itemName, teacherName, availableFrom: availableFrom && availableFrom > new Date() ? availableFrom.toISOString() : null },
+          // folderId (the folder itself, or a granted file's parent folder) is
+          // what the chat card's link opens — same field FILE_SUBMITTED/
+          // FILE_REVIEWED use, there's no standalone "open this one file" route.
+          payload: { itemType, itemName, teacherName, folderId: folder ? folder.id : (file!.folderId ?? null), availableFrom: availableFrom && availableFrom > new Date() ? availableFrom.toISOString() : null },
         }).catch(e => console.error('[POST /api/tutor-files/grants] postEventCard failed', e))
       )
     )

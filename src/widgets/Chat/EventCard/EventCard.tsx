@@ -88,6 +88,8 @@ interface FileAccessGrantedPayload {
   itemType?: 'folder' | 'file'
   itemName?: string
   teacherName?: string
+  /** The folder itself, or a granted file's parent folder — what the card's link opens. Absent on cards sent before this field existed. */
+  folderId?: string | null
   /** Scheduled access (idea 5): set when the grant opens later. */
   availableFrom?: string | null
 }
@@ -246,7 +248,7 @@ export function EventCard({ message, isMine }: EventCardProps) {
     // tutor's own copy of the card stays link-less.
     if (!isMine) {
       link = (
-        <Link href="/files" className={styles.link}>
+        <Link href={filesHref(p.folderId)} className={styles.link}>
           {t('eventCard.fileAccessLink')}
         </Link>
       )

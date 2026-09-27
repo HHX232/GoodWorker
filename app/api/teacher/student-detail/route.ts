@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
 
     const todayStr = new Date().toISOString().split('T')[0]
 
-    const [student, errors, meetings, confirmedBookings] = await Promise.all([
+    const [student, errors, meetings, confirmedBookings, teacher] = await Promise.all([
       prisma.student.findUnique({
         where: { id: studentId },
         select: { id: true, name: true, email: true, avatarUrl: true, schoolGrade: true, courseNumber: true },
@@ -72,6 +72,12 @@ export async function GET(req: NextRequest) {
           service: { select: { id: true, title: true, duration: true } },
         },
       }),
+
+      // Most lessons booked straight from the calendar UI live only in this
+      // JSON blob (POST /api/teacher/calendar), never as a Conference row —
+      // without this, this modal's "meetings" undercounts against what the
+      // calendar itself and the sidebar reminder both show for this student.
+      prisma.teacher.findUnique({ where: { id: teacherId }, select: { calendar: true } }),
     ])
 
     if (!student) return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -101,7 +107,21 @@ export async function GET(req: NextRequest) {
       }
     })
 
-    const allMeetings = [...conferenceMeetings, ...bookingMeetings].sort((a, b) => {
+    // Same union GET /api/teacher/calendar shows: the stored JSON blob plus
+    // Conference rows not already reflected in it (dedup by id) — here
+    // filtered down to this one student and to upcoming events only.
+    const conferenceIds = new Set(conferenceMeetings.map(m => m.id))
+    const calendarData = teacher?.calendar as { events?: { id?: string; studentId?: string; title?: string; date?: string; startTime?: string }[] } | null
+    const now = new Date()
+    const blobMeetings = (calendarData?.events ?? [])
+      .filter(e => e?.studentId === studentId && e?.id && !conferenceIds.has(e.id) && e?.date)
+      .map(e => {
+        const scheduledAt = e.startTime ? new Date(`${e.date}T${e.startTime}:00`) : new Date(`${e.date}T00:00:00`)
+        return { id: e.id!, title: e.title ?? '', scheduledAt: scheduledAt.toISOString(), roomName: null, type: 'calendar' as const }
+      })
+      .filter(m => new Date(m.scheduledAt) >= now)
+
+    const allMeetings = [...conferenceMeetings, ...bookingMeetings, ...blobMeetings].sort((a, b) => {
       if (!a.scheduledAt) return 1
       if (!b.scheduledAt) return -1
       return new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()

@@ -67,7 +67,10 @@ interface Props {
   statsId: string
   studentCount: number
   callCount: number
-  totalHours: number
+  /** Public profile only — "hours taught" as a trust signal for visitors. */
+  totalHours?: number
+  /** Owner's own dashboard only — replaces `totalHours` there with something actionable (links to the calendar, not stale past totals). */
+  todayLessons?: number
   isOwner?: boolean
   ownerName?: string
 }
@@ -112,7 +115,7 @@ function mapPost(p: PostItem) {
   }
 }
 
-export function DashboardCenter({ statsId, studentCount, callCount, totalHours, isOwner = false, ownerName = '' }: Props) {
+export function DashboardCenter({ statsId, studentCount, callCount, totalHours = 0, todayLessons = 0, isOwner = false, ownerName = '' }: Props) {
   const t = useTranslations('dashboard')
   const tChat = useTranslations('chat')
   const locale = useLocale()
@@ -141,22 +144,22 @@ export function DashboardCenter({ statsId, studentCount, callCount, totalHours, 
   const canBook = !isOwner && session?.user?.role === 'STUDENT'
   const blockedFromBooking = !isOwner && !!session?.user && session.user.role !== 'STUDENT'
 
-  // Unread chat count for the 4th stats-strip item — only the profile owner
-  // sees the strip's owner-only items (stats links, chat entry), so this
-  // mirrors ChatHeaderIcon's own 15s poll rather than sharing state with it
-  // (different component tree, no shared store for this in the project).
-  const [unreadChats, setUnreadChats] = useState(0)
+  // Total chat count for the 4th stats-strip item ("Чаты" — how many
+  // conversations, not how many unread messages: unread already has its own
+  // badge on ChatHeaderIcon, and showed 0 here for anyone who'd simply
+  // already read their messages, on a card whose label reads "Чаты").
+  const [chatCount, setChatCount] = useState(0)
   useEffect(() => {
     if (!isOwner) return
     let cancelled = false
-    const fetchUnread = () => {
-      fetch('/api/chat/unread-count')
+    const fetchCount = () => {
+      fetch('/api/chat/conversations')
         .then(r => (r.ok ? r.json() : null))
-        .then(data => { if (!cancelled && data) setUnreadChats(data.count ?? 0) })
+        .then(data => { if (!cancelled && Array.isArray(data?.conversations)) setChatCount(data.conversations.length) })
         .catch(() => {})
     }
-    fetchUnread()
-    const interval = setInterval(fetchUnread, 15000)
+    fetchCount()
+    const interval = setInterval(fetchCount, 15000)
     return () => { cancelled = true; clearInterval(interval) }
   }, [isOwner])
 
@@ -250,11 +253,19 @@ export function DashboardCenter({ statsId, studentCount, callCount, totalHours, 
     { key: 'tests',    label: t('tabTests') },
   ]
 
+  const clockIcon = (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2" strokeLinecap="round">
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  )
+
   const stats = [
     {
       label: t('students'),
       value: studentCount,
       bg: '#EEF2FF',
+      href: `/statistics/${statsId}`,
       icon: (
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#534AB7" strokeWidth="2" strokeLinecap="round">
           <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
@@ -267,6 +278,7 @@ export function DashboardCenter({ statsId, studentCount, callCount, totalHours, 
       label: t('calls'),
       value: callCount,
       bg: '#E0F2FE',
+      href: `/statistics/${statsId}`,
       icon: (
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0369A1" strokeWidth="2" strokeLinecap="round">
           <path d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14" />
@@ -274,17 +286,12 @@ export function DashboardCenter({ statsId, studentCount, callCount, totalHours, 
         </svg>
       ),
     },
-    {
-      label: t('hours'),
-      value: totalHours,
-      bg: '#FEF9C3',
-      icon: (
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2" strokeLinecap="round">
-          <circle cx="12" cy="12" r="10" />
-          <polyline points="12 6 12 12 16 14" />
-        </svg>
-      ),
-    },
+    // Owner: today's calendar lesson count, linking to the calendar — the
+    // "hours taught" total means little day-to-day and duplicated /statistics.
+    // Public profile: hours taught stays as a trust signal for visitors.
+    isOwner
+      ? { label: t('todayLessons'), value: todayLessons, bg: '#FEF9C3', href: '/calendar', icon: clockIcon }
+      : { label: t('hours'), value: totalHours, bg: '#FEF9C3', href: `/statistics/${statsId}`, icon: clockIcon },
   ]
 
   const showRoadmaps = tab === 'all' || tab === 'roadmap'
@@ -313,7 +320,7 @@ export function DashboardCenter({ statsId, studentCount, callCount, totalHours, 
             strip gives that slot to storage (right end, highlighted). */}
         {(isOwner ? stats.slice(1) : stats).map((s, i) => (
           isOwner ? (
-            <Link key={s.label} href={`/statistics/${statsId}`} className={`${styles.statsItem} ${styles.statsItemLink}`}>
+            <Link key={s.label} href={s.href} className={`${styles.statsItem} ${styles.statsItemLink}`}>
               {i > 0 && <div className={styles.statsSep} />}
               <div className={styles.statsItemIcon} style={{ background: s.bg }}>{s.icon}</div>
               <div>
@@ -342,7 +349,7 @@ export function DashboardCenter({ statsId, studentCount, callCount, totalHours, 
               <ChatBubbleIcon size={15} strokeWidth={2} color="#534AB7" />
             </div>
             <div>
-              <div className={styles.statsItemValue}>{unreadChats}</div>
+              <div className={styles.statsItemValue}>{chatCount}</div>
               <div className={styles.statsItemLabel}>{tChat('dashboardStatsLabel')}</div>
             </div>
           </Link>
