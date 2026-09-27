@@ -2933,6 +2933,13 @@
     "weekend": "छुट्टी",
     "eventsCount": "{count} कार्यक्रम",
     "tasksLabel": "कार्य",
+    "fileDeadlines": {
+      "dueAt": "{date} तक जमा करें",
+      "submitted": "जमा किया",
+      "late": "देर से जमा किया",
+      "notSubmitted": "जमा नहीं किया",
+      "openFolder": "फ़ोल्डर खोलें"
+    },
     "sidebar": {
       "collapse": "समेटें",
       "navigation": "नेविगेशन",

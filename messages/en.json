@@ -1412,6 +1412,13 @@
     "weekend": "Day off",
     "eventsCount": "{count} events",
     "tasksLabel": "Tasks",
+    "fileDeadlines": {
+      "dueAt": "Due {date}",
+      "submitted": "Submitted",
+      "late": "Submitted late",
+      "notSubmitted": "Not submitted",
+      "openFolder": "Open folder"
+    },
     "sidebar": {
       "collapse": "Collapse",
       "navigation": "Navigation",

@@ -1412,6 +1412,13 @@
     "weekend": "Выходной",
     "eventsCount": "{count} событий",
     "tasksLabel": "Задачи",
+    "fileDeadlines": {
+      "dueAt": "Сдать до {date}",
+      "submitted": "Сдал",
+      "late": "Сдал с опозданием",
+      "notSubmitted": "Не сдал",
+      "openFolder": "Открыть папку"
+    },
     "sidebar": {
       "collapse": "Свернуть",
       "navigation": "Навигация",

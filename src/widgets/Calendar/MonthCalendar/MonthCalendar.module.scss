@@ -157,6 +157,34 @@
    flex-shrink: 0;
 }
 
+/* Submission-deadline chip in month view (tutor-files) */
+.monthDeadline {
+   display: flex;
+   align-items: center;
+   gap: 4px;
+   padding: 2px 5px;
+   border-radius: 4px;
+   background: rgba(245, 158, 11, 0.08);
+   border: 0.5px solid rgba(245, 158, 11, 0.25);
+   font-size: 10px;
+   color: #B45309;
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   cursor: pointer;
+   transition: background 0.12s;
+
+   &:hover { background: rgba(245, 158, 11, 0.16); }
+}
+
+.monthDeadlineDot {
+   width: 5px;
+   height: 5px;
+   border-radius: 50%;
+   background: #F59E0B;
+   flex-shrink: 0;
+}
+
 :global(html.theme-dark), :global(html.pomodoro-dark) {
   .monthGrid { background: #12141f; }
   .monthDayName { background: #1a1c24; color: rgba(255,255,255,0.25); border-bottom-color: rgba(255,255,255,0.07); }
@@ -168,4 +196,6 @@
   .monthMore { color: rgba(255,255,255,0.25); }
   .monthHw { background: rgba(124,58,237,0.12); border-color: rgba(124,58,237,0.25); color: #c4b5fd; &:hover { background: rgba(124,58,237,0.18); } }
   .monthHwDot { background: #c4b5fd; }
+  .monthDeadline { background: rgba(245,158,11,0.14); border-color: rgba(245,158,11,0.3); color: #fcd34d; &:hover { background: rgba(245,158,11,0.2); } }
+  .monthDeadlineDot { background: #fcd34d; }
 }

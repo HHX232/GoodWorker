@@ -2934,6 +2934,13 @@
     "weekend": "休息日",
     "eventsCount": "{count} 个事件",
     "tasksLabel": "任务",
+    "fileDeadlines": {
+      "dueAt": "截止日期 {date}",
+      "submitted": "已提交",
+      "late": "逾期提交",
+      "notSubmitted": "未提交",
+      "openFolder": "打开文件夹"
+    },
     "sidebar": {
       "collapse": "收起",
       "navigation": "导航",
