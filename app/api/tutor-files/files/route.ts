@@ -20,8 +20,10 @@ function extOf(filename: string): string {
   return parts.length > 1 ? parts.pop()!.toLowerCase() : ''
 }
 
-// POST /api/tutor-files/files — FormData {file, folderId?}. Teacher: any own
-// folder or the root. Student: only their own "учебная" subfolder (G03.2). Uploads straight to S3
+// POST /api/tutor-files/files — FormData {file, folderId?, derivedFromId?}. Teacher: any own
+// folder or the root. Student: only their own "учебная" subfolder (G03.2). `derivedFromId`
+// (teacher only) tags the row as the docx editor's "save as new" — a later edit of that same
+// row goes through PATCH .../content instead of another POST here. Uploads straight to S3
 // (same PutObjectCommand/publicUrlForKey path as app/api/upload/route.ts and
 // uploadFilesToS3.ts, folder: 'tutor-files' — that route itself is untouched,
 // interfaces.md "не менять app/api/upload/route.ts") and writes a TutorFile
@@ -63,6 +65,15 @@ export async function POST(req: NextRequest) {
       teacherId = folder.teacherId
     }
 
+    // Set only by the in-browser docx editor's first save of a session — marks
+    // this row as a derived copy, so PATCH .../content will later accept
+    // overwriting it (an original never can). Must be a file this same teacher owns.
+    const derivedFromId = (formData.get('derivedFromId') as string | null) || null
+    if (derivedFromId) {
+      const source = await prisma.tutorFile.findUnique({ where: { id: derivedFromId }, select: { teacherId: true } })
+      if (!source || source.teacherId !== teacherId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     // Student submissions count toward their tutor's library, like everything in it.
     // Admin libraries are always hard-capped (ADMIN_QUOTA_GB, never billed).
     const owner = await getTeacherStorageLimits(teacherId)
@@ -101,6 +112,7 @@ export async function POST(req: NextRequest) {
         mimeType: file.type || 'application/octet-stream',
         uploadedByRole: user.role,
         uploadedById: user.id,
+        derivedFromId,
         // Not searchable inside (media, archives…): '' marks it as done, so the admin reindex never counts it.
         ...(isIndexable(file.name, file.type || 'application/octet-stream') ? {} : { contentText: '' }),
       },

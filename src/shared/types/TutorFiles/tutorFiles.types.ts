@@ -47,6 +47,8 @@ export interface LibraryFile {
   late: boolean
   /** The tutor's check of a student submission (idea 1). */
   review: FileReview | null
+  /** Set on a file the in-browser docx editor saved "as new" — the id it was derived from. Editing this file again overwrites it in place instead of spawning another copy. */
+  derivedFromId: string | null
 }
 
 export interface FileReview {

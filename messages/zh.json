@@ -3724,6 +3724,8 @@
     "reuploadButton": "上传到文件夹",
     "reuploadSuffix": "已修正",
     "reuploadDone": "已上传到原文件旁边",
+    "editDocx": "编辑",
+    "editSaved": "已保存",
     "reviewedAt": "批改于 {date}"
   }
 }

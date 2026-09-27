@@ -4,7 +4,7 @@ import type { LibraryFile } from '@/shared/types/TutorFiles/tutorFiles.types'
 import { useLocale, useTranslations } from 'next-intl'
 import type { CSSProperties, ReactNode } from 'react'
 import { CardMenu, type CardMenuItem } from '../CardMenu/CardMenu'
-import { FilesDeleteIcon, FilesDownloadIcon, FilesPlayIcon, FilesPreviewIcon, FilesReviewIcon, FilesShareIcon, FilesTestIcon, FilesTextSearchIcon } from '../icons'
+import { FilesDeleteIcon, FilesDownloadIcon, FilesEditIcon, FilesPlayIcon, FilesPreviewIcon, FilesReviewIcon, FilesShareIcon, FilesTestIcon, FilesTextSearchIcon } from '../icons'
 import { fileKind, formatBytes, formatDate, KIND_COLOR, KIND_ICON, viewerFor } from '../lib'
 import { AvatarStack } from './AvatarStack'
 import styles from './Cards.module.scss'
@@ -19,6 +19,8 @@ export interface FileCardProps {
   hint?: string
   /** Tutor: check a student submission (idea 1) — only passed for student uploads. */
   onReview?: () => void
+  /** Tutor: edit this docx in the browser — only passed for docx files. */
+  onEdit?: () => void
   /** Tutor: open the PDF → test importer with this file (idea 3). */
   onMakeTest?: () => void
   /** Search: the passage where the query was found inside the file (idea 8). */
@@ -43,7 +45,7 @@ function Highlighted({ text, query }: { text: string; query: string }) {
 }
 
 /** Floe workflow-card shape: artwork on top, a white panel riding up over it. */
-export function FileCard({ file, onPreview, onDownload, onShare, onDelete, hint, onReview, onMakeTest, contentMatch, query = '' }: FileCardProps) {
+export function FileCard({ file, onPreview, onDownload, onShare, onDelete, hint, onReview, onEdit, onMakeTest, contentMatch, query = '' }: FileCardProps) {
   const t = useTranslations('files')
   const locale = useLocale()
   const kind = fileKind(file.mimeType, file.name)
@@ -55,6 +57,7 @@ export function FileCard({ file, onPreview, onDownload, onShare, onDelete, hint,
   if (viewable) items.push({ label: t('open'), icon: FilesPreviewIcon, onSelect: onPreview })
   items.push({ label: t('download'), icon: FilesDownloadIcon, onSelect: onDownload })
   if (onReview) items.push({ label: file.review ? t('reviewEdit') : t('review'), icon: FilesReviewIcon, onSelect: onReview })
+  if (onEdit) items.push({ label: t('editDocx'), icon: FilesEditIcon, onSelect: onEdit })
   if (onMakeTest) items.push({ label: t('makeTest'), icon: FilesTestIcon, onSelect: onMakeTest })
   if (onShare) items.push({ label: t('share'), icon: FilesShareIcon, onSelect: onShare })
   if (onDelete) items.push({ label: t('delete'), icon: FilesDeleteIcon, onSelect: onDelete, danger: true })

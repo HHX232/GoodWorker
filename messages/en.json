@@ -3751,6 +3751,8 @@
     "reuploadButton": "Upload to folder",
     "reuploadSuffix": "corrected",
     "reuploadDone": "Uploaded next to the original",
+    "editDocx": "Edit",
+    "editSaved": "Saved",
     "reviewedAt": "Reviewed {date}"
   }
 }

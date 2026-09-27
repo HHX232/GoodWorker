@@ -341,6 +341,10 @@ model TutorFile {
   createdAt      DateTime          @default(now())
   // Plain text pulled out of PDF/DOCX/XLSX/TXT at upload, for search inside files.
   contentText    String?
+  // Set only on a file the in-browser docx editor saved "as new" (the first
+  // save of a session). A plain marker, not a Prisma relation — nothing reads
+  // it in reverse. Lets PATCH .../content refuse to overwrite an original.
+  derivedFromId  String?
   review         TutorFileReview?
   teacher        Teacher           @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   folder         TutorFolder?      @relation(fields: [folderId], references: [id], onDelete: Cascade)

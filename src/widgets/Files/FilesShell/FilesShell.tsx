@@ -6,6 +6,7 @@ import type { LibraryFile, LibraryFolder, LibraryResponse, SearchFile, TreeNode,
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useMemo, useRef, useState, type DragEvent, type FormEvent, type ReactNode } from 'react'
@@ -15,13 +16,17 @@ import { FolderCard, NewFolderCard } from '../Cards/FolderCard'
 import { CoverPickerModal } from '../CoverPickerModal/CoverPickerModal'
 import { FilePreviewModal } from '../FilePreviewModal/FilePreviewModal'
 import { ReviewModal } from '../ReviewModal/ReviewModal'
+
+// The docx editor engine (~7MB) only ever fetches once a docx is actually
+// opened for editing — never part of the FilesShell bundle.
+const DocxEditorModal = dynamic(() => import('../DocxEditorModal/DocxEditorModal').then(m => m.DocxEditorModal), { ssr: false })
 import { FilesModal } from '../FilesModal/FilesModal'
 import { FolderTree } from '../FolderTree/FolderTree'
 import {
   FilesChevronDownIcon, FilesChevronIcon, FilesCoverIcon, FilesDeadlineIcon, FilesDropboxIcon, FilesFolderPlusIcon, FilesSearchIcon, FilesShareIcon,
   FilesStorageIcon, FilesUploadIcon, FilesVipIcon,
 } from '../icons'
-import { filesFetch, FilesApiError, formatBytes, formatDeadline, initials, jsonInit, triggerDownload } from '../lib'
+import { filesFetch, FilesApiError, formatBytes, formatDeadline, initials, jsonInit, triggerDownload, viewerFor } from '../lib'
 import { ShareAccessModal, type ShareTarget } from '../ShareAccessModal/ShareAccessModal'
 import { StorageMeter } from '../StorageMeter/StorageMeter'
 import { StorageOverageWarningModal } from '../StorageOverageWarningModal/StorageOverageWarningModal'
@@ -83,6 +88,7 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
   const [coverTarget, setCoverTarget] = useState<CoverTarget | null>(null)
   const [previewFile, setPreviewFile] = useState<LibraryFile | null>(null)
   const [reviewFile, setReviewFile] = useState<LibraryFile | null>(null)
+  const [editFile, setEditFile] = useState<LibraryFile | null>(null)
   const router = useRouter()
   const [overage, setOverage] = useState<UsageResponse | null>(null)
   const [uploading, setUploading] = useState<{ done: number; total: number } | null>(null)
@@ -161,13 +167,19 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
   }
 
   // ── Upload ────────────────────────────────────────────────
-  // Returns whether every file made it in — callers that need to know (the
-  // reupload button in ReviewModal) get a real signal instead of guessing
-  // from the toast that already ran.
-  const uploadFiles = async (list: File[]): Promise<boolean> => {
-    if (list.length === 0 || uploading) return false
+  const uploadErrorToast = (e: unknown, fileName: string) => {
+    const code = e instanceof FilesApiError ? e.code : ''
+    toast.error(code === 'VIP_REQUIRED' ? t('errVip') : code === 'QUOTA_EXCEEDED' ? t('errQuota') : code === 'FILE_TOO_LARGE' ? t('errTooLarge', { name: fileName }) : t('errUpload', { name: fileName }))
+  }
+
+  // Returns the created rows, or null if any file failed — callers that need
+  // to know (the reupload button in ReviewModal, the docx editor's "save as
+  // new") get a real signal instead of guessing from the toast that already ran.
+  const uploadFiles = async (list: File[], opts?: { derivedFromId?: string }): Promise<LibraryFile[] | null> => {
+    if (list.length === 0 || uploading) return null
     let crossedQuota = false
     let allOk = true
+    const created: LibraryFile[] = []
     setUploading({ done: 0, total: list.length })
     for (let i = 0; i < list.length; i++) {
       const file = list[i]
@@ -179,16 +191,17 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
         const form = new FormData()
         form.append('file', file)
         if (folderId) form.append('folderId', folderId)
+        if (opts?.derivedFromId) form.append('derivedFromId', opts.derivedFromId)
         try {
           const res = await filesFetch<{ file: LibraryFile; usedBytes?: number; quotaBytes?: number }>('/api/tutor-files/files', { method: 'POST', body: form })
+          created.push(res.file)
           // G02 (Wallet build): warn only on the upload that *first* crosses
           // the quota — "was the library already over before this file?"
           // comes straight from the post-write usedBytes minus this file's size.
           const { usedBytes, quotaBytes } = res
           if (usedBytes !== undefined && quotaBytes !== undefined && usedBytes > quotaBytes && usedBytes - res.file.sizeBytes <= quotaBytes) crossedQuota = true
         } catch (e) {
-          const code = e instanceof FilesApiError ? e.code : ''
-          toast.error(code === 'VIP_REQUIRED' ? t('errVip') : code === 'QUOTA_EXCEEDED' ? t('errQuota') : code === 'FILE_TOO_LARGE' ? t('errTooLarge', { name: file.name }) : t('errUpload', { name: file.name }))
+          uploadErrorToast(e, file.name)
           allOk = false
         }
       }
@@ -203,7 +216,21 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
         console.error('[FilesShell] usage after overage failed', e)
       }
     }
-    return allOk
+    return allOk ? created : null
+  }
+
+  // The docx editor's overwrite path (target already has `derivedFromId` set).
+  const overwriteFile = async (fileId: string, file: File): Promise<boolean> => {
+    const form = new FormData()
+    form.append('file', file)
+    try {
+      await filesFetch(`/api/tutor-files/files/${fileId}/content`, { method: 'PATCH', body: form })
+      refresh()
+      return true
+    } catch (e) {
+      uploadErrorToast(e, file.name)
+      return false
+    }
   }
 
   const onDrop = (e: DragEvent) => {
@@ -268,6 +295,7 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
         onShare: () => setShareTarget({ itemType: 'file', id: f.id, name: f.name }),
         onDelete: () => setDeleteTarget({ itemType: 'file', item: f }),
         onReview: f.uploadedByRole === 'STUDENT' ? () => setReviewFile(f) : undefined,
+        onEdit: viewerFor(f.mimeType, f.name) === 'docx' ? () => setEditFile(f) : undefined,
         // PDF → test (idea 3): the same importer as on /create-test, pre-filled with this file.
         onMakeTest: importKindOf(f.name) !== 'unknown'
           ? () => router.push(`/create-test?fromLibraryFile=${f.id}&name=${encodeURIComponent(f.name)}`)
@@ -524,7 +552,15 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
       {shareTarget && <ShareAccessModal target={shareTarget} onClose={() => setShareTarget(null)} onChanged={refresh} />}
       {coverTarget && <CoverPickerModal folder={coverTarget} onClose={() => setCoverTarget(null)} onSaved={() => { setCoverTarget(null); refresh() }} />}
       {previewFile && <FilePreviewModal file={previewFile} contentUrl={admin ? `/api/admin/tutor-files/files/${previewFile.id}/content` : undefined} onClose={() => setPreviewFile(null)} onDownload={() => downloadFile(previewFile)} />}
-      {reviewFile && <ReviewModal file={reviewFile} onClose={() => setReviewFile(null)} onSaved={() => { setReviewFile(null); refresh() }} onReupload={f => uploadFiles([f])} />}
+      {reviewFile && <ReviewModal file={reviewFile} onClose={() => setReviewFile(null)} onSaved={() => { setReviewFile(null); refresh() }} onReupload={async f => (await uploadFiles([f])) !== null} />}
+      {editFile && (
+        <DocxEditorModal
+          file={editFile}
+          onClose={() => setEditFile(null)}
+          onCreateDerived={async (f, derivedFromId) => (await uploadFiles([f], { derivedFromId }))?.[0] ?? null}
+          onOverwrite={overwriteFile}
+        />
+      )}
       {overage && <StorageOverageWarningModal usage={overage} onClose={() => setOverage(null)} />}
     </div>
   )

@@ -3751,6 +3751,8 @@
     "reuploadButton": "Загрузить в директорию",
     "reuploadSuffix": "исправлено",
     "reuploadDone": "Загружено рядом с оригиналом",
+    "editDocx": "Редактировать",
+    "editSaved": "Сохранено",
     "reviewedAt": "Проверено {date}"
   }
 }

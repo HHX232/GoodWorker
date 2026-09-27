@@ -45,4 +45,5 @@ export {
   Eraser as FilesEraserIcon,
   TextSearch as FilesTextSearchIcon,
   RefreshCw as FilesReindexIcon,
+  FileEdit as FilesEditIcon,
 } from 'lucide-react'

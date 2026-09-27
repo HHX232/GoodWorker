@@ -3723,6 +3723,8 @@
     "reuploadButton": "फ़ोल्डर में अपलोड करें",
     "reuploadSuffix": "सुधारा गया",
     "reuploadDone": "मूल के पास अपलोड हो गया",
+    "editDocx": "संपादित करें",
+    "editSaved": "सहेजा गया",
     "reviewedAt": "{date} को जाँचा गया"
   }
 }

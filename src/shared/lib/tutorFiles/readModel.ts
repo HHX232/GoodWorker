@@ -67,6 +67,7 @@ export function toFile(f: TutorFileRow & { review?: TutorFileReview | null }, gr
     sharedWith: people(f.id, grants, opened),
     // Idea 2: a student's submission that came in after the folder's deadline.
     late: f.uploadedByRole === 'STUDENT' && !!deadline && f.createdAt > deadline,
+    derivedFromId: f.derivedFromId,
     review: f.review
       ? {
           status: f.review.status as 'ACCEPTED' | 'REVISION',
