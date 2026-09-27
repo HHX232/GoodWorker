@@ -13,6 +13,8 @@ interface FilesModalProps {
   /** `wide` for the share list, `viewer` for the full-bleed preview. */
   size?: 'default' | 'wide' | 'viewer'
   closeLabel: string
+  /** Extra controls in the header, between the title and the close button — e.g. an explicit Save next to a packaged editor whose own save control isn't obvious. */
+  headerActions?: ReactNode
 }
 
 /**
@@ -22,7 +24,7 @@ interface FilesModalProps {
  * stops propagation on close/inside clicks because React portals still bubble
  * synthetic events up the component tree to whichever card/modal opened it.
  */
-export function FilesModal({ title, onClose, children, footer, size = 'default', closeLabel }: FilesModalProps) {
+export function FilesModal({ title, onClose, children, footer, size = 'default', closeLabel, headerActions }: FilesModalProps) {
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
 
@@ -46,6 +48,7 @@ export function FilesModal({ title, onClose, children, footer, size = 'default',
       >
         <div className={styles.header}>
           <div className={styles.title}>{title}</div>
+          {headerActions}
           <button type="button" className={styles.close} onClick={e => { e.stopPropagation(); onClose() }} aria-label={closeLabel}>
             <FilesCloseIcon size={18} />
           </button>

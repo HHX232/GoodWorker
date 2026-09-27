@@ -133,6 +133,38 @@ function PdfPageCanvas({ pdf, page, onAspect }: { pdf: import('pdfjs-dist').PDFD
   return <canvas ref={ref} className={styles.pageCanvas} />
 }
 
+/** Invisible, selectable text over the page — the browser's own selection and copy, matching pdf.js's own viewer contract (see AnnotatedPages.module.scss). Re-renders on container resize so spans stay aligned with the canvas under them. */
+function PdfTextLayer({ pdf, page }: { pdf: import('pdfjs-dist').PDFDocumentProxy; page: number }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const container = ref.current
+    if (!container) return
+    let cancelled = false
+    let layer: { cancel: () => void } | null = null
+    const build = async () => {
+      layer?.cancel()
+      container.innerHTML = ''
+      const pdfjs = await loadPdfjs()
+      const p = await pdf.getPage(page)
+      if (cancelled) return
+      const base = p.getViewport({ scale: 1 })
+      const cssWidth = container.clientWidth || 800
+      const viewport = p.getViewport({ scale: cssWidth / base.width })
+      container.style.setProperty('--scale-factor', String(viewport.scale))
+      const textContent = await p.getTextContent()
+      if (cancelled) return
+      const built = new pdfjs.TextLayer({ textContentSource: textContent, container, viewport })
+      layer = built
+      await built.render().catch(() => {})
+    }
+    build()
+    const ro = new ResizeObserver(build)
+    ro.observe(container)
+    return () => { cancelled = true; ro.disconnect(); layer?.cancel() }
+  }, [pdf, page])
+  return <div ref={ref} className={styles.textLayer} />
+}
+
 /**
  * A file's pages with pen-mark layers on top — the tutor's review canvas
  * (`pen` set) and the student's read-only view of it. PDFs render through
@@ -219,7 +251,7 @@ export const AnnotatedPages = forwardRef<AnnotatedPagesHandle, {
           <div key={page} className={styles.page} data-page={page}>
             <div className={styles.paper} style={source.kind === 'pdf' ? { aspectRatio: `1 / ${aspect}` } : undefined}>
               {source.kind === 'pdf' && pdf
-                ? <PdfPageCanvas pdf={pdf} page={page} onAspect={setAspectFor(page)} />
+                ? <><PdfPageCanvas pdf={pdf} page={page} onAspect={setAspectFor(page)} /><PdfTextLayer pdf={pdf} page={page} /></>
                 : source.kind === 'image' && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={source.url} alt="" className={styles.pageImage} onLoad={e => setAspectFor(page)(e.currentTarget.naturalHeight / e.currentTarget.naturalWidth)} />

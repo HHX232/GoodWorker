@@ -104,7 +104,7 @@ export function ReviewModal({ file, onClose, onSaved, onReupload }: {
         pdfPage.drawImage(png, { x: 0, y: 0, width: pdfPage.getWidth(), height: pdfPage.getHeight() })
       }
       const bytes = await pdfDoc.save()
-      const name = `${file.name.replace(/\.pdf$/i, '')} (${t('reuploadSuffix')}).pdf`
+      const name = `(${t('reuploadPrefix')}) ${file.name.replace(/\.pdf$/i, '')}.pdf`
       // uploadFiles already shows its own toast on failure (quota/VIP/etc) — a
       // second, generic one here would just contradict it.
       const ok = await onReupload(new File([bytes.slice().buffer], name, { type: 'application/pdf' }))

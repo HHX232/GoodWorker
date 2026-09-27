@@ -28,6 +28,29 @@
   pointer-events: none;
 }
 
+// Standard pdf.js text-layer contract (web/text_layer_builder.css, trimmed to
+// what selection needs — no search-highlight/markedContent styling, this
+// isn't a search UI): invisible spans positioned exactly over the glyphs
+// pdf.js's own TextLayer class paints, so the browser's native selection and
+// Ctrl/Cmd+C just work on top of our canvas render.
+.textLayer {
+  position: absolute;
+  inset: 0;
+  line-height: 1;
+  text-align: initial;
+  overflow: clip;
+  opacity: 1;
+  z-index: 1;
+}
+.textLayer span, .textLayer br {
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
+}
+.textLayer ::selection { background: rgba(83, 74, 183, 0.35); }
+
 .drawable {
   pointer-events: auto;
   touch-action: none;

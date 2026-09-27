@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { FilesModal } from '../FilesModal/FilesModal'
+import { FilesUploadIcon } from '../icons'
 import styles from './DocxEditorModal.module.scss'
 
 const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
@@ -31,7 +32,7 @@ export function DocxEditorModal({ file, onClose, onCreateDerived, onOverwrite }:
   const [target, setTarget] = useState(file)
   const [bytes, setBytes] = useState<Uint8Array | null>(null)
   const [loadFailed, setLoadFailed] = useState(false)
-  const savingRef = useRef(false)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -43,16 +44,16 @@ export function DocxEditorModal({ file, onClose, onCreateDerived, onOverwrite }:
   }, [file.id])
 
   const save = async () => {
-    if (savingRef.current) return
+    if (saving) return
     const buf = await editorRef.current?.save()
     if (!buf) return
-    savingRef.current = true
+    setSaving(true)
     try {
       if (target.derivedFromId) {
         const ok = await onOverwrite(target.id, new File([buf], target.name, { type: DOCX_MIME }))
         if (ok) toast.success(t('editSaved'))
       } else {
-        const name = `${target.name.replace(/\.docx$/i, '')} (${t('reuploadSuffix')}).docx`
+        const name = `(${t('reuploadPrefix')}) ${target.name.replace(/\.docx$/i, '')}.docx`
         const created = await onCreateDerived(new File([buf], name, { type: DOCX_MIME }), target.id)
         if (created) { setTarget(created); toast.success(t('editSaved')) }
       }
@@ -60,12 +61,23 @@ export function DocxEditorModal({ file, onClose, onCreateDerived, onOverwrite }:
       console.error('[DocxEditorModal] save failed', e)
       toast.error(t('errGeneric'))
     } finally {
-      savingRef.current = false
+      setSaving(false)
     }
   }
 
   return (
-    <FilesModal size="viewer" closeLabel={t('close')} onClose={onClose} title={<span>{t('editTitle')} · {target.name}</span>}>
+    <FilesModal
+      size="viewer"
+      closeLabel={t('close')}
+      onClose={onClose}
+      title={<span>{t('editTitle')} · {target.name}</span>}
+      headerActions={bytes && (
+        <button type="button" className={styles.saveButton} disabled={saving} onClick={save}>
+          <FilesUploadIcon size={15} />
+          {saving ? t('saving') : t('saveButton')}
+        </button>
+      )}
+    >
       <div className={styles.stage}>
         {loadFailed
           ? <p className={styles.error}>{t('errGeneric')}</p>

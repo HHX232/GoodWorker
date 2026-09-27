@@ -3758,10 +3758,11 @@
     "reviewSaved": "Review saved",
     "reviewMarksHint": "The tutor's marks are shown right on the pages.",
     "reuploadButton": "Upload to folder",
-    "reuploadSuffix": "corrected",
+    "reuploadPrefix": "Edited",
     "reuploadDone": "Uploaded next to the original",
     "editDocx": "Edit",
     "editSaved": "Saved",
+    "saveButton": "Save",
     "reviewedAt": "Reviewed {date}"
   }
 }
