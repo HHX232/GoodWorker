@@ -3715,6 +3715,7 @@
     "deadlinePassed": "समय सीमा बीत गई · {date}",
     "deadlineLateNote": "आप अब भी जमा कर सकते हैं, पर इसे देर से चिह्नित किया जाएगा",
     "reviewTitle": "जाँच",
+    "editTitle": "संपादन",
     "reviewPen": "पेन",
     "reviewUndo": "पूर्ववत करें",
     "reviewClear": "सभी निशान मिटाएँ",

@@ -3743,6 +3743,7 @@
     "deadlinePassed": "Срок сдачи прошёл · {date}",
     "deadlineLateNote": "Сдать можно, но работа будет отмечена как опоздавшая",
     "reviewTitle": "Проверка",
+    "editTitle": "Редактирование",
     "reviewPen": "Карандаш",
     "reviewUndo": "Отменить",
     "reviewClear": "Стереть все пометки",

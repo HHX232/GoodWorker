@@ -245,8 +245,15 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
   const markOpened = (f: LibraryFile) => {
     if (!isTeacher && !admin) fetch(`/api/tutor-files/files/${f.id}/open`, { method: 'POST' }).catch(() => {})
   }
+  const canManage = isTeacher && isVip && !admin
+  // Opening a pdf/docx you can manage goes straight to its editor — no
+  // separate "Edit" click needed. Read-only viewers (students, admin's
+  // silent browsing) still get the plain preview; they couldn't save anyway.
   const openPreview = (f: LibraryFile) => {
     markOpened(f)
+    const kind = viewerFor(f.mimeType, f.name)
+    if (canManage && kind === 'docx') { setEditFile(f); return }
+    if (canManage && kind === 'pdf') { setReviewFile(f); return }
     setPreviewFile(f)
   }
   // Through our own API, never the bucket's raw public URL — that domain has
@@ -281,7 +288,6 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
   }
 
   // ── Render ────────────────────────────────────────────────
-  const canManage = isTeacher && isVip && !admin
   const canUpload = !!data?.canUpload
   const myId = session?.user?.id
   const searching = debouncedQuery.length > 0

@@ -16,11 +16,16 @@ const PEN_COLORS = ['#E5484D', '#1F9D55', '#2E6FE0'] as const
 const PEN_WIDTH = 0.004
 
 /**
- * The tutor checks a student's submission (idea 1): pen marks right on the
- * pages (PDF via pdf.js, images), a verdict — accepted / needs revision — an
- * optional grade and comment. Marks are uploaded as transparent PNG layers;
- * the student sees them over the same pages and gets a chat card when the
- * verdict changes. Other file types get the verdict panel without the pen.
+ * Two things happen here, sharing one canvas:
+ * - Reviewing a student's submission (idea 1): pen marks on the pages (PDF
+ *   via pdf.js, images), a verdict — accepted / needs revision — an optional
+ *   grade and comment. Marks upload as transparent PNG layers; the student
+ *   sees them over the same pages and gets a chat card when the verdict
+ *   changes. Other file types get the verdict panel without the pen.
+ * - Plain PDF editing: opening any PDF the tutor manages lands here too
+ *   (FilesShell.openPreview), pen tools only, no verdict — a grade/comment
+ *   panel makes no sense on your own file. `isSubmission` is what tells the
+ *   two apart, straight from data already on hand, not a prop.
  */
 export function ReviewModal({ file, onClose, onSaved, onReupload }: {
   file: LibraryFile
@@ -32,9 +37,12 @@ export function ReviewModal({ file, onClose, onSaved, onReupload }: {
   const t = useTranslations('files')
   const viewer = viewerFor(file.mimeType, file.name)
   const drawable = viewer === 'pdf' || viewer === 'image'
+  const isSubmission = file.uploadedByRole === 'STUDENT'
   const pagesRef = useRef<AnnotatedPagesHandle>(null)
   const [color, setColor] = useState<string>(PEN_COLORS[0])
-  const [penOn, setPenOn] = useState(true)
+  // Off by default: this now opens on a plain click (FilesShell.openPreview),
+  // so a casual "just looking" open must not draw on the first drag.
+  const [penOn, setPenOn] = useState(false)
   const [status, setStatus] = useState<FileReview['status'] | null>(file.review?.status ?? null)
   const [grade, setGrade] = useState(file.review?.grade ?? '')
   const [comment, setComment] = useState(file.review?.comment ?? '')
@@ -114,9 +122,9 @@ export function ReviewModal({ file, onClose, onSaved, onReupload }: {
       size="viewer"
       closeLabel={t('close')}
       onClose={onClose}
-      title={<span className={styles.title}>{t('reviewTitle')} · <span className={styles.name}>{file.name}</span></span>}
+      title={<span className={styles.title}>{isSubmission ? t('reviewTitle') : t('editTitle')} · <span className={styles.name}>{file.name}</span></span>}
     >
-      <div className={styles.layout}>
+      <div className={`${styles.layout} ${!isSubmission ? styles.layoutSolo : ''}`}>
         <div className={styles.stage}>
           {drawable && !renderFailed ? (
             <>
@@ -162,21 +170,23 @@ export function ReviewModal({ file, onClose, onSaved, onReupload }: {
           )}
         </div>
 
-        <aside className={styles.panel}>
-          <div className={styles.label}>{t('reviewVerdict')}</div>
-          <div className={styles.verdicts}>
-            <button type="button" className={`${styles.verdict} ${status === 'ACCEPTED' ? styles.accepted : ''}`} onClick={() => setStatus('ACCEPTED')} aria-pressed={status === 'ACCEPTED'}>{t('reviewAccepted')}</button>
-            <button type="button" className={`${styles.verdict} ${status === 'REVISION' ? styles.revision : ''}`} onClick={() => setStatus('REVISION')} aria-pressed={status === 'REVISION'}>{t('reviewRevision')}</button>
-          </div>
-          <label className={styles.label} htmlFor="review-grade">{t('reviewGrade')}</label>
-          <input id="review-grade" className={ui.input} value={grade} maxLength={20} onChange={e => setGrade(e.target.value)} placeholder={t('reviewGradePlaceholder')} />
-          <label className={styles.label} htmlFor="review-comment">{t('reviewComment')}</label>
-          <textarea id="review-comment" className={`${ui.input} ${styles.comment}`} value={comment} maxLength={4000} onChange={e => setComment(e.target.value)} rows={5} />
-          <p className={styles.hint}>{t('reviewNotifyHint')}</p>
-          <button type="button" className={`${ui.btn} ${ui.primary} ${styles.save}`} disabled={!status || saving} onClick={save}>
-            {saving ? t('saving') : t('reviewSave')}
-          </button>
-        </aside>
+        {isSubmission && (
+          <aside className={styles.panel}>
+            <div className={styles.label}>{t('reviewVerdict')}</div>
+            <div className={styles.verdicts}>
+              <button type="button" className={`${styles.verdict} ${status === 'ACCEPTED' ? styles.accepted : ''}`} onClick={() => setStatus('ACCEPTED')} aria-pressed={status === 'ACCEPTED'}>{t('reviewAccepted')}</button>
+              <button type="button" className={`${styles.verdict} ${status === 'REVISION' ? styles.revision : ''}`} onClick={() => setStatus('REVISION')} aria-pressed={status === 'REVISION'}>{t('reviewRevision')}</button>
+            </div>
+            <label className={styles.label} htmlFor="review-grade">{t('reviewGrade')}</label>
+            <input id="review-grade" className={ui.input} value={grade} maxLength={20} onChange={e => setGrade(e.target.value)} placeholder={t('reviewGradePlaceholder')} />
+            <label className={styles.label} htmlFor="review-comment">{t('reviewComment')}</label>
+            <textarea id="review-comment" className={`${ui.input} ${styles.comment}`} value={comment} maxLength={4000} onChange={e => setComment(e.target.value)} rows={5} />
+            <p className={styles.hint}>{t('reviewNotifyHint')}</p>
+            <button type="button" className={`${ui.btn} ${ui.primary} ${styles.save}`} disabled={!status || saving} onClick={save}>
+              {saving ? t('saving') : t('reviewSave')}
+            </button>
+          </aside>
+        )}
       </div>
     </FilesModal>
   )

@@ -3716,6 +3716,7 @@
     "deadlinePassed": "已过截止时间 · {date}",
     "deadlineLateNote": "仍可提交，但会被标记为逾期",
     "reviewTitle": "批改",
+    "editTitle": "编辑",
     "reviewPen": "画笔",
     "reviewUndo": "撤销",
     "reviewClear": "清除所有标注",

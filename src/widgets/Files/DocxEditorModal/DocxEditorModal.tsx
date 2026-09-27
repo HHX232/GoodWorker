@@ -65,7 +65,7 @@ export function DocxEditorModal({ file, onClose, onCreateDerived, onOverwrite }:
   }
 
   return (
-    <FilesModal size="viewer" closeLabel={t('close')} onClose={onClose} title={t('editDocx')}>
+    <FilesModal size="viewer" closeLabel={t('close')} onClose={onClose} title={<span>{t('editTitle')} · {target.name}</span>}>
       <div className={styles.stage}>
         {loadFailed
           ? <p className={styles.error}>{t('errGeneric')}</p>

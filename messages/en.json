@@ -3743,6 +3743,7 @@
     "deadlinePassed": "Deadline passed · {date}",
     "deadlineLateNote": "You can still submit, but it will be marked late",
     "reviewTitle": "Review",
+    "editTitle": "Edit",
     "reviewPen": "Pen",
     "reviewUndo": "Undo",
     "reviewClear": "Erase all marks",
