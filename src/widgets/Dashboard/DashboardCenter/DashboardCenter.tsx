@@ -260,6 +260,13 @@ export function DashboardCenter({ statsId, studentCount, callCount, totalHours =
     </svg>
   )
 
+  const calendarIcon = (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2" strokeLinecap="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <path d="M16 2v4M8 2v4M3 10h18" />
+    </svg>
+  )
+
   const stats = [
     {
       label: t('students'),
@@ -290,7 +297,7 @@ export function DashboardCenter({ statsId, studentCount, callCount, totalHours =
     // "hours taught" total means little day-to-day and duplicated /statistics.
     // Public profile: hours taught stays as a trust signal for visitors.
     isOwner
-      ? { label: t('todayLessons'), value: todayLessons, bg: '#FEF9C3', href: '/calendar', icon: clockIcon }
+      ? { label: t('todayLessons'), value: todayLessons, bg: '#FEF9C3', href: '/calendar', icon: calendarIcon }
       : { label: t('hours'), value: totalHours, bg: '#FEF9C3', href: `/statistics/${statsId}`, icon: clockIcon },
   ]
 
