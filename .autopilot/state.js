@@ -43,7 +43,7 @@ window.STATE =
       "messages/en.json", "messages/ru.json", "messages/hi.json", "messages/zh.json"
     ],
     "tests": { "passed": 0, "failed": 0 },
-    "commit": "9875516, +1 (докс-редактор, коммит после этого отчёта)"
+    "commit": "9875516, 436cf2b"
   },
   "tests": { "passed": 0, "failed": 0 },
   "debt": {
