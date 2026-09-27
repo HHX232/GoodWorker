@@ -32,7 +32,8 @@ window.STATE =
       "package.json", "package-lock.json",
       "messages/en.json", "messages/ru.json", "messages/hi.json", "messages/zh.json"
     ],
-    "tests": { "passed": 0, "failed": 0 }
+    "tests": { "passed": 0, "failed": 0 },
+    "commit": "9875516"
   },
   "tests": { "passed": 0, "failed": 0 },
   "debt": {
