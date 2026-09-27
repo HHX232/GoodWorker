@@ -249,9 +249,14 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
     markOpened(f)
     setPreviewFile(f)
   }
+  // Through our own API, never the bucket's raw public URL — that domain has
+  // no reputation of its own and browsers' Safe Browsing flags a top-level
+  // navigation to it as a dangerous site. The API route already forces
+  // Content-Disposition: attachment, so this is a real download, not a tab.
+  const contentUrl = (f: LibraryFile) => admin ? `/api/admin/tutor-files/files/${f.id}/content` : `/api/tutor-files/files/${f.id}/content`
   const downloadFile = (f: LibraryFile) => {
     markOpened(f)
-    triggerDownload(f)
+    triggerDownload({ url: contentUrl(f), name: f.name })
   }
 
   // ── Folder create / rename, delete ────────────────────────

@@ -60,10 +60,13 @@ export function SharedFolderBlock({ token, name, onRemove }: SharedFolderBlockPr
   const markOpened = (f: LibraryFile) => {
     fetch(`/api/tutor-files/links/${token}/files/${f.id}/open`, { method: 'POST' }).catch(() => {})
   }
+  // Through our own API, never the bucket's raw public URL (no reputation of
+  // its own — browsers' Safe Browsing flags a top-level navigation there).
+  const download = (f: LibraryFile) => triggerDownload({ url: `/api/tutor-files/links/${token}/files/${f.id}/content`, name: f.name })
   const open = (f: LibraryFile) => {
     markOpened(f)
     if (viewerFor(f.mimeType, f.name)) setPreview(f)
-    else triggerDownload(f)
+    else download(f)
   }
 
   const renderFiles = (folderId: string) => (
@@ -78,7 +81,7 @@ export function SharedFolderBlock({ token, name, onRemove }: SharedFolderBlockPr
               <span className={styles.fileName}>{f.name}</span>
               <span className={styles.fileSize}>{formatBytes(f.sizeBytes, locale)}</span>
             </button>
-            <button type="button" className={styles.download} onClick={() => { markOpened(f); triggerDownload(f) }} aria-label={t('download')} title={t('download')}>
+            <button type="button" className={styles.download} onClick={() => { markOpened(f); download(f) }} aria-label={t('download')} title={t('download')}>
               <FilesDownloadIcon size={15} />
             </button>
           </li>
@@ -142,7 +145,7 @@ export function SharedFolderBlock({ token, name, onRemove }: SharedFolderBlockPr
           file={preview}
           contentUrl={`/api/tutor-files/links/${token}/files/${preview.id}/content`}
           onClose={() => setPreview(null)}
-          onDownload={() => triggerDownload(preview)}
+          onDownload={() => preview && download(preview)}
         />
       )}
     </div>
