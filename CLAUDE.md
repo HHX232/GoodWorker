@@ -245,7 +245,7 @@ ADMIN→TEACHER: сид-репетитор логинится с ролью `ADM
 
 # GoodWorker — хранилище файлов репетитора (`tutor-files`)
 
-Страница `/files` (VIP-репетитор и его ученики); ссылки — иконка в шапке, подменю профиля, ячейки «Хранилище» / «Файлы от репетиторов» в полосе статистики профиля. Эта сборка — **без Кошелька**: хранилище входит в VIP, квота (админка → Хранилище, по умолчанию 15 ГБ) — жёсткий потолок, загрузка сверх — 413 `QUOTA_EXCEEDED`. Контракты и история — `.autopilot/tutor-files/interfaces.md`.
+Страница `/files` (VIP-репетитор и его ученики); ссылки — иконка в шапке, подменю профиля, ячейки «Хранилище» / «Файлы от репетиторов» в полосе статистики профиля. Эта сборка — **без Кошелька**: хранилище входит в VIP, квота (админка → Хранилище, по умолчанию 15 ГБ) — жёсткий потолок, загрузка сверх — 413 `QUOTA_EXCEEDED`. Контракты и история — `.autopilot/tutor-files/interfaces.md`, `.autopilot/tutor-files-reupload-edit/interfaces.md` (перезалив исправленного PDF).
 
 - API `app/api/tutor-files/*`: `library` (read-модель для обеих ролей — браузинг идёт только через неё), `folders`, `files`, `grants`, `search`, `usage`, `limits`, `links`; админские — `app/api/admin/storage`, `app/api/admin/tutor-files/*` (тихий просмотр, ничего не пишет в `TutorFileOpen`/`TutorFolderOpen`).
 - `src/shared/lib/tutorFiles/billing.ts` — единственная точка связи с Кошельком; здесь `STORAGE_BILLING_ENABLED = false`, `getStoragePricing() → null`. Wallet-сборка меняет только этот файл (+ крон и поле цены в админке).
@@ -253,3 +253,4 @@ ADMIN→TEACHER: сид-репетитор логинится с ролью `ADM
 - Prisma-клиент (`src/shared/prisma/prisma.ts`) по умолчанию omit-ит `TutorFile.contentText` (текст для поиска внутри файлов) — выбирать явно; тип строк — `TutorFileRow`.
 - Клиент импортирует типы из `src/shared/types/TutorFiles/tutorFiles.types.ts` и константы из `src/shared/lib/tutorFiles/constants.ts` — не `access.ts`/`storage.ts` (тянут Prisma).
 - `/content`-роуты всегда отдают `application/octet-stream` + `attachment` + `CSP: sandbox` (загруженный учеником .html не должен исполниться на нашем домене).
+- `ReviewModal` (проверка работы репетитором): кнопка «Загрузить в директорию» впечатывает мазки пера **этой сессии** прямо в страницы PDF через `pdf-lib` (`import('pdf-lib')`, лениво) и грузит результат в ту же папку через уже существующий `FilesShell.uploadFiles()` (теперь возвращает `Promise<boolean>` — успела ли загрузка, не только `void`). Пометки из *прошлой* сессии проверки (`review.annotations`, уже загруженные PNG-слои) туда не впечатываются — риск тайнта `<canvas>` без гарантии CORS у S3-бакета. Гочта: `pagesRef.current?.hasChanges()` нельзя читать прямо в JSX рендера (`react-hooks/refs` фейлит билд) — держать как стейт, обновляемый в `onChange`.

@@ -7,7 +7,7 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AnnotatedPages, type AnnotatedPagesHandle } from '../AnnotatedPages/AnnotatedPages'
 import { FilesModal } from '../FilesModal/FilesModal'
-import { FilesEraserIcon, FilesPenIcon, FilesUndoIcon } from '../icons'
+import { FilesEraserIcon, FilesPenIcon, FilesUndoIcon, FilesUploadIcon } from '../icons'
 import { filesFetch, jsonInit, viewerFor } from '../lib'
 import ui from '../ui.module.scss'
 import styles from './ReviewModal.module.scss'
@@ -22,10 +22,12 @@ const PEN_WIDTH = 0.004
  * the student sees them over the same pages and gets a chat card when the
  * verdict changes. Other file types get the verdict panel without the pen.
  */
-export function ReviewModal({ file, onClose, onSaved }: {
+export function ReviewModal({ file, onClose, onSaved, onReupload }: {
   file: LibraryFile
   onClose: () => void
   onSaved: (review: FileReview) => void
+  /** Uploads a file into the same folder as `file` (reuses FilesShell's own upload — quota/VIP/toasts included). Resolves to whether it made it in. */
+  onReupload: (file: File) => Promise<boolean>
 }) {
   const t = useTranslations('files')
   const viewer = viewerFor(file.mimeType, file.name)
@@ -37,8 +39,9 @@ export function ReviewModal({ file, onClose, onSaved }: {
   const [grade, setGrade] = useState(file.review?.grade ?? '')
   const [comment, setComment] = useState(file.review?.comment ?? '')
   const [saving, setSaving] = useState(false)
-  const [, bump] = useState(0)
-  const onChange = useCallback(() => bump(n => n + 1), [])
+  const [reuploading, setReuploading] = useState(false)
+  const [hasMarks, setHasMarks] = useState(false)
+  const onChange = useCallback(() => setHasMarks(pagesRef.current?.hasChanges() ?? false), [])
   const [renderFailed, setRenderFailed] = useState(false)
   const onError = useCallback(() => setRenderFailed(true), [])
 
@@ -71,6 +74,41 @@ export function ReviewModal({ file, onClose, onSaved }: {
     }
   }
 
+  // Bakes this session's pen marks straight into the PDF's pages (pdf-lib) and
+  // drops the result next to the original via the same upload FilesShell
+  // already uses — no download/re-upload round trip. Marks saved in an
+  // earlier review (`layers`) are not re-flattened here: they were uploaded
+  // as separate PNGs, and pulling them back through a <canvas> would taint it
+  // without guaranteed CORS headers on the bucket (see spec §2).
+  const uploadCorrected = async () => {
+    const pages = pagesRef.current
+    if (!pages?.hasChanges()) return
+    setReuploading(true)
+    try {
+      const marks = await pages.exportStrokes()
+      const res = await fetch(`/api/tutor-files/files/${file.id}/content`)
+      if (!res.ok) throw new Error(String(res.status))
+      const { PDFDocument } = await import('pdf-lib')
+      const pdfDoc = await PDFDocument.load(await res.arrayBuffer())
+      for (const { page, blob } of marks) {
+        const pdfPage = pdfDoc.getPage(page - 1)
+        const png = await pdfDoc.embedPng(await blob.arrayBuffer())
+        pdfPage.drawImage(png, { x: 0, y: 0, width: pdfPage.getWidth(), height: pdfPage.getHeight() })
+      }
+      const bytes = await pdfDoc.save()
+      const name = `${file.name.replace(/\.pdf$/i, '')} (${t('reuploadSuffix')}).pdf`
+      // uploadFiles already shows its own toast on failure (quota/VIP/etc) — a
+      // second, generic one here would just contradict it.
+      const ok = await onReupload(new File([bytes.slice().buffer], name, { type: 'application/pdf' }))
+      if (ok) toast.success(t('reuploadDone'))
+    } catch (e) {
+      console.error('[ReviewModal] reupload failed', e)
+      toast.error(t('errGeneric'))
+    } finally {
+      setReuploading(false)
+    }
+  }
+
   return (
     <FilesModal
       size="viewer"
@@ -100,6 +138,15 @@ export function ReviewModal({ file, onClose, onSaved }: {
                 <span className={styles.sep} />
                 <button type="button" className={styles.tool} onClick={() => pagesRef.current?.undo()} title={t('reviewUndo')} aria-label={t('reviewUndo')}><FilesUndoIcon size={16} /></button>
                 <button type="button" className={styles.tool} onClick={() => pagesRef.current?.clearAll()} title={t('reviewClear')} aria-label={t('reviewClear')}><FilesEraserIcon size={16} /></button>
+                {viewer === 'pdf' && hasMarks && (
+                  <>
+                    <span className={styles.sep} />
+                    <button type="button" className={styles.reupload} disabled={reuploading} onClick={uploadCorrected}>
+                      <FilesUploadIcon size={16} />
+                      {reuploading ? t('saving') : t('reuploadButton')}
+                    </button>
+                  </>
+                )}
               </div>
               <AnnotatedPages
                 ref={pagesRef}

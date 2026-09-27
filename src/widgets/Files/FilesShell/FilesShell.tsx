@@ -161,15 +161,20 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
   }
 
   // ── Upload ────────────────────────────────────────────────
-  const uploadFiles = async (list: File[]) => {
-    if (list.length === 0 || uploading) return
+  // Returns whether every file made it in — callers that need to know (the
+  // reupload button in ReviewModal) get a real signal instead of guessing
+  // from the toast that already ran.
+  const uploadFiles = async (list: File[]): Promise<boolean> => {
+    if (list.length === 0 || uploading) return false
     let crossedQuota = false
+    let allOk = true
     setUploading({ done: 0, total: list.length })
     for (let i = 0; i < list.length; i++) {
       const file = list[i]
       // Students don't get /usage; the server re-checks anyway.
       if (file.size > (usage.data?.maxFileBytes ?? DEFAULT_MAX_FILE_MB * MB)) {
         toast.error(t('errTooLarge', { name: file.name }))
+        allOk = false
       } else {
         const form = new FormData()
         form.append('file', file)
@@ -184,6 +189,7 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
         } catch (e) {
           const code = e instanceof FilesApiError ? e.code : ''
           toast.error(code === 'VIP_REQUIRED' ? t('errVip') : code === 'QUOTA_EXCEEDED' ? t('errQuota') : code === 'FILE_TOO_LARGE' ? t('errTooLarge', { name: file.name }) : t('errUpload', { name: file.name }))
+          allOk = false
         }
       }
       setUploading({ done: i + 1, total: list.length })
@@ -197,6 +203,7 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
         console.error('[FilesShell] usage after overage failed', e)
       }
     }
+    return allOk
   }
 
   const onDrop = (e: DragEvent) => {
@@ -517,7 +524,7 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
       {shareTarget && <ShareAccessModal target={shareTarget} onClose={() => setShareTarget(null)} onChanged={refresh} />}
       {coverTarget && <CoverPickerModal folder={coverTarget} onClose={() => setCoverTarget(null)} onSaved={() => { setCoverTarget(null); refresh() }} />}
       {previewFile && <FilePreviewModal file={previewFile} contentUrl={admin ? `/api/admin/tutor-files/files/${previewFile.id}/content` : undefined} onClose={() => setPreviewFile(null)} onDownload={() => downloadFile(previewFile)} />}
-      {reviewFile && <ReviewModal file={reviewFile} onClose={() => setReviewFile(null)} onSaved={() => { setReviewFile(null); refresh() }} />}
+      {reviewFile && <ReviewModal file={reviewFile} onClose={() => setReviewFile(null)} onSaved={() => { setReviewFile(null); refresh() }} onReupload={f => uploadFiles([f])} />}
       {overage && <StorageOverageWarningModal usage={overage} onClose={() => setOverage(null)} />}
     </div>
   )

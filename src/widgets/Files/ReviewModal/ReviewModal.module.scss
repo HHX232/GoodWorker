@@ -69,6 +69,25 @@
 
 .sep { width: 1px; height: 20px; margin: 0 2px; background: #E4E4EC; }
 
+.reupload {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px 0 10px;
+  border: none;
+  border-radius: 999px;
+  background: #534AB7;
+  color: #fff;
+  font: 600 13px/1 inherit;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover { background: #453e9c; }
+  &:disabled { opacity: 0.6; cursor: default; }
+  &:focus-visible { outline: 2px solid #534AB7; outline-offset: 2px; }
+}
+
 .noPen { margin: 40px 24px; text-align: center; color: #868897; font-size: 14px; }
 
 .panel {
@@ -116,6 +135,7 @@
   .swatch { border-color: #1f2129; }
   .swatchOn { box-shadow: 0 0 0 2px #e8eaf0; }
   .sep { background: rgba(255, 255, 255, 0.1); }
+  .reupload { background: #7c74e6; &:hover { background: #6b62d8; } }
   .panel { border-color: rgba(255, 255, 255, 0.08); }
   .label { color: #c9ccd8; }
   .verdict { background: transparent; border-color: rgba(255, 255, 255, 0.12); color: #c9ccd8; }

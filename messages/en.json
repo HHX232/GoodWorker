@@ -3748,6 +3748,9 @@
     "reviewSave": "Save review",
     "reviewSaved": "Review saved",
     "reviewMarksHint": "The tutor's marks are shown right on the pages.",
+    "reuploadButton": "Upload to folder",
+    "reuploadSuffix": "corrected",
+    "reuploadDone": "Uploaded next to the original",
     "reviewedAt": "Reviewed {date}"
   }
 }

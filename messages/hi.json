@@ -3720,6 +3720,9 @@
     "reviewSave": "जाँच सहेजें",
     "reviewSaved": "जाँच सहेजी गई",
     "reviewMarksHint": "शिक्षक के निशान सीधे पेजों पर दिखाए गए हैं।",
+    "reuploadButton": "फ़ोल्डर में अपलोड करें",
+    "reuploadSuffix": "सुधारा गया",
+    "reuploadDone": "मूल के पास अपलोड हो गया",
     "reviewedAt": "{date} को जाँचा गया"
   }
 }

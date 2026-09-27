@@ -3748,6 +3748,9 @@
     "reviewSave": "Сохранить проверку",
     "reviewSaved": "Проверка сохранена",
     "reviewMarksHint": "Пометки репетитора показаны прямо на страницах.",
+    "reuploadButton": "Загрузить в директорию",
+    "reuploadSuffix": "исправлено",
+    "reuploadDone": "Загружено рядом с оригиналом",
     "reviewedAt": "Проверено {date}"
   }
 }
