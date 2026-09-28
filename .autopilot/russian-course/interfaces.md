@@ -251,6 +251,111 @@ Cyrillic-проверка PDF: открыт через `pdfjs-dist` (`legacy/bui
 `endings-spelling` — оба темы полностью с нуля. Остальные 5 тем были пропущены как уже
 готовые (`= пропуск темы ... — пост уже существует`).
 
+### Тикет 02
+
+Скрипт `prisma/seedRussianCourse02Morphology.ts` написан полностью (все 10 тем блока
+«Морфология», включая MATCH_PAIRS/HIGHLIGHT_TEXT-хелперы, идемпотентный по образцу
+тикета 01 — `findOrCreateTest()` на уровне темы). Прогнан один раз на локальной dev-БД
+(`postgresql://nikitatisevic@localhost/goodworker`) через `npx tsx
+prisma/seedRussianCourse02Morphology.ts`.
+
+**Статус: BLOCKED на генерации изображений** — у аккаунта `velsvisual`/KIE API кончились
+кредиты (`velsvisual credits` -> `1.01 кредитов`, `google/nano-banana` стоит 4
+кредита/изображение, см. `velsvisual pricing --search nano-banana`). Прогон упал на
+шаге генерации обложки для `adjective-morphology` с `Ошибка KIE API (code=402): Credits
+insufficient`. Это внешняя зависимость вне контроля скрипта — пополнить баланс
+самостоятельно нельзя, поэтому по конвенции CLAUDE.md («Недостающую зависимость не
+ставим — возвращаем BLOCKED») тикет остановлен на этом месте, а не завершён с
+заглушками/фейковыми URL.
+
+**Что реально создано в БД (проверено `psql` + `curl` + `pdfjs-dist`):**
+
+Категории (`slug` — `Category.id`; всего 10, из них 2 существовали до тикета):
+- `parts-of-speech` — `8ea463f0-919e-4b07-a296-5e173f3a7810` (уже существовала)
+- `participles-gerunds` — `a35ccefe-ef8c-4eba-9a4e-908af4050fbd` (уже существовала)
+- `noun-morphology` — `be5bb64f-4d20-4bee-ba98-2d068aa58ca8` (новая)
+- `adjective-morphology` — `b4c6a361-3d3a-4448-b7a1-a9f9cf8cb43c` (новая)
+- `verb-morphology` — `f3d201ff-1a45-4818-9cc0-f4b5a3912a56` (новая)
+- `pronoun-morphology` — `3fb4d296-b09b-4b03-a5f7-7532bab64998` (новая)
+- `numeral-morphology` — `25b5c86d-0228-4d63-b011-e65c651788e0` (новая)
+- `adverb-morphology` — `f442186a-bfd3-46e8-bad5-46f821b79600` (новая)
+- `function-words` — `82dc5303-86d1-400e-87fe-14ebb83fec60` (новая)
+- `interjections` — `5cb8f31a-8ed7-488e-8258-4a17516e8d51` (новая)
+
+Все 10 категорий получили `CategoryTranslation` в ru/en/hi/zh (переводы по смыслу, не
+копия русского текста) — этот шаг кредитов не требует и выполнен полностью для всех
+10 тем.
+
+Темы, доведённые до конца (пост + оба теста + шпаргалка + обложка, все связи
+TEST_LINK/FILE_LIST/MEDIA в посте):
+1. `parts-of-speech` — пост `b402d83d-0195-40d5-9940-f730e1bcf110`; короткий тест
+   (MATCH_PAIRS, 6 блоков) `f18d7c78-5ca3-49b2-af48-6f36cbc89194`; большой тест (14
+   блоков) `784960dd-dab0-4c67-80d6-cb2da3dd1ff6`; шпаргалка
+   `.../russian-course-cheatsheets/.../8d20fe3b-bfb8-4525-be5f-ac34b88503ed.pdf`;
+   обложка `.../russian-course-images/.../e374277b-7f2e-43a3-9b4a-91052ffa9a32.jpg`.
+2. `participles-gerunds` — пост `7984e7be-de7a-4048-8461-dab9602d2abf`; короткий тест
+   (CHOOSE_OPTION, 6 блоков) `698babeb-68e7-45a4-b14f-6e0752b70b23`; большой тест (14
+   блоков) `38dd3197-3443-4e6d-8ae0-c5e040a10186`; шпаргалка
+   `.../russian-course-cheatsheets/.../d732da4c-698d-4f3e-8baf-d8669fe6d8a2.pdf`;
+   обложка `.../russian-course-images/.../9a3d4637-059b-424a-b6cf-c4c6b0594fa3.jpg`.
+3. `noun-morphology` — пост `9fa96b9e-c18b-4f31-9849-d624268fa4ef`; короткий тест
+   (FILL_TEXT, 6 блоков) `6aa82983-70ed-4fbc-8512-1c31c66552e4`; большой тест (14
+   блоков) `2022b330-0ec1-4b33-823f-542f3827964f`; шпаргалка
+   `.../russian-course-cheatsheets/.../d4c8d876-a723-42a6-8e93-7dc61c7ddd87.pdf`;
+   обложка `.../russian-course-images/.../d4149d40-e7e5-45d4-bc5e-88d986de52d9.jpg`.
+
+Тема с частичным прогрессом (тесты и шпаргалка созданы, пост и обложка — нет,
+т.к. скрипт падает на генерации обложки до создания поста): `adjective-morphology` —
+короткий тест (CHOOSE_OPTION, 6 блоков) `8594ddbb-e27c-4e7a-82cf-97729fc13660`; большой
+тест (14 блоков) `4ed80a19-725d-4a18-8d0c-76f25d8b1ddd`; шпаргалка
+`.../russian-course-cheatsheets/.../b893e123-9f68-4b36-8502-36d8234db8c7.pdf`. При
+повторном запуске `findOrCreateTest()` переиспользует эти тесты (не задублирует),
+скрипт досоздаст только обложку и пост.
+
+Темы, не начатые вовсе (категория + переводы созданы, постов/тестов нет): `verb-morphology`,
+`pronoun-morphology`, `numeral-morphology`, `adverb-morphology`, `function-words`,
+`interjections`. Сводный PDF блока «Морфология» тоже не создан (шаг идёт после цикла по
+темам).
+
+**Верификация выполненного:**
+- DB: `psql` — подсчёт `Post`/`Test` per категория (`select c.slug, count(distinct p.id),
+  count(distinct t.id) ... group by c.slug`) подтвердил ровно 1 пост / 2 теста у трёх
+  завершённых тем, 0 постов / 2 теста у `adjective-morphology`, 0/0 у остальных шести.
+- HTTP: `curl -o /dev/null -w '%{http_code} %{size_download}'` по всем 7 загруженным
+  файлам (3 обложки + 4 шпаргалки, включая шпаргалку сироту `adjective-morphology`) —
+  все `200` с ненулевым размером.
+- Cyrillic PDF: все 4 шпаргалки открыты через `pdfjs-dist` (`legacy/build/pdf.mjs`),
+  текст первой страницы извлечён и читаем без искажений (кириллица не превращается в
+  кракозябры) — вручную сверено с ожидаемым текстом каждой шпаргалки.
+
+**Типы блоков тестов по темам (10 из 10 распределены по спецификации тикета):**
+`parts-of-speech` → MATCH_PAIRS, `participles-gerunds` → CHOOSE_OPTION,
+`noun-morphology` → FILL_TEXT, `adjective-morphology` → CHOOSE_OPTION, `verb-morphology`
+→ FILL_TEXT (контент готов в скрипте, в БД ещё нет), `pronoun-morphology` → MATCH_PAIRS
+(готов в скрипте), `numeral-morphology` → FILL_TEXT (готов в скрипте, включая
+многогапповый блок для составного числительного «тремястами двадцатью тремя»),
+`adverb-morphology` → CHOOSE_OPTION (готов в скрипте), `function-words` →
+HIGHLIGHT_TEXT (готов в скрипте, включая новый хелпер `highlightTextBlock()` — payload
+`{instruction, tokens:{id,text,isCorrect}[]}`, проверено по `TaskPayload.type.ts:52-61`
+и `scoreBlock.tsx:120`), `interjections` → CHOOSE_OPTION (готов в скрипте).
+
+**Отклонения от плана:**
+- **D04 — BLOCKED на кредитах KIE API**, см. выше. Не отклонение от контракта, а
+  внешний блокер, который сам исполнитель разрешить не может (пополнение баланса —
+  вне зоны доступа скрипта/агента).
+- Никаких других отклонений от `interfaces.md`/`tickets/02-morphology.md` — типы блоков
+  тестов, структура постов, папки S3, модель `google/nano-banana` с явным
+  `output_format=jpeg`, идемпотентность на уровне темы (`findOrCreateTest`) — всё как в
+  тикете 01.
+
+**Как продолжить:** после пополнения баланса `velsvisual` (или переключения на другую
+image-модель через `velsvisual recommend image --refresh`, если `google/nano-banana`
+перестанет быть рекомендованной) — просто перезапустить `npx tsx
+prisma/seedRussianCourse02Morphology.ts`. Скрипт идемпотентен: 3 готовые темы будут
+пропущены (`= пропуск темы ... — пост уже существует`), `adjective-morphology`
+переиспользует существующие тесты и допишет обложку+пост, остальные 6 тем и сводный
+PDF будут созданы с нуля.
+
 ### Тикет 04
 
 Скрипт `prisma/seedRussianCourse04Punctuation.ts` написан полностью (все 7 тем блока
