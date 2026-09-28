@@ -274,108 +274,139 @@ Cyrillic-проверка PDF: открыт через `pdfjs-dist` (`legacy/bui
 
 ### Тикет 02
 
-Скрипт `prisma/seedRussianCourse02Morphology.ts` написан полностью (все 10 тем блока
-«Морфология», включая MATCH_PAIRS/HIGHLIGHT_TEXT-хелперы, идемпотентный по образцу
-тикета 01 — `findOrCreateTest()` на уровне темы). Прогнан один раз на локальной dev-БД
-(`postgresql://nikitatisevic@localhost/goodworker`) через `npx tsx
-prisma/seedRussianCourse02Morphology.ts`.
+Скрипт `prisma/seedRussianCourse02Morphology.ts` — все 10 тем блока «Морфология»,
+включая MATCH_PAIRS/HIGHLIGHT_TEXT-хелперы, идемпотентный по образцу тикета 01
+(`findOrCreateTest()` на уровне темы). **Статус: ЗАВЕРШЕНО.**
 
-**Статус: BLOCKED на генерации изображений** — у аккаунта `velsvisual`/KIE API кончились
-кредиты (`velsvisual credits` -> `1.01 кредитов`, `google/nano-banana` стоит 4
-кредита/изображение, см. `velsvisual pricing --search nano-banana`). Прогон упал на
-шаге генерации обложки для `adjective-morphology` с `Ошибка KIE API (code=402): Credits
-insufficient`. Это внешняя зависимость вне контроля скрипта — пополнить баланс
-самостоятельно нельзя, поэтому по конвенции CLAUDE.md («Недостающую зависимость не
-ставим — возвращаем BLOCKED») тикет остановлен на этом месте, а не завершён с
-заглушками/фейковыми URL.
+Первый прогон (kie.ai/`velsvisual`, модель `google/nano-banana`) остановился на теме
+`adjective-morphology` с `Ошибка KIE API (code=402): Credits insufficient` — баланс
+делился между параллельными тикетами 02/03/04 и кончился раньше расчёта. Пользователь
+подтвердил, что kie.ai кончился насовсем, и дал другой провайдер вместо пополнения —
+`api.bycom.by` (см. §5, контракт переписан и перепроверен реальным вызовом). Скрипт
+переключён: `generateCoverImage()` теперь делает `POST
+https://api.bycom.by/v1/images/generations` с `{model:'z-image-turbo', prompt, n:1,
+size:'1024x1024'}`, `Authorization: Bearer $BYCOM_API_KEY`, декодирует
+`data[0].b64_json` (`Buffer.from(b64, 'base64')`) и грузит в S3 напрямую — без
+временной папки на диске и без `execFileSync`/`velsvisual` CLI (тот вызывал kie.ai,
+для bycom.by не нужен, дёргаем HTTP напрямую). Формат обложек поменялся с
+`jpg`/`image/jpeg` на `png`/`image/png` — bycom.by отдаёт PNG, не JPEG (проверено
+реальным ответом перед прогоном, не угадано).
 
-**Что реально создано в БД (проверено `psql` + `curl` + `pdfjs-dist`):**
+Второй прогон (после переключения) прошёл до конца без ошибок: 3 уже готовые темы
+пропущены как идемпотентные (`= пропуск темы ... — пост уже существует`),
+`adjective-morphology` переиспользовал существующие тесты (не задублировал) и
+досоздал обложку+пост, оставшиеся 6 тем созданы с нуля, сводный PDF блока сгенерирован
+последним шагом.
 
-Категории (`slug` — `Category.id`; всего 10, из них 2 существовали до тикета):
-- `parts-of-speech` — `8ea463f0-919e-4b07-a296-5e173f3a7810` (уже существовала)
-- `participles-gerunds` — `a35ccefe-ef8c-4eba-9a4e-908af4050fbd` (уже существовала)
-- `noun-morphology` — `be5bb64f-4d20-4bee-ba98-2d068aa58ca8` (новая)
-- `adjective-morphology` — `b4c6a361-3d3a-4448-b7a1-a9f9cf8cb43c` (новая)
-- `verb-morphology` — `f3d201ff-1a45-4818-9cc0-f4b5a3912a56` (новая)
-- `pronoun-morphology` — `3fb4d296-b09b-4b03-a5f7-7532bab64998` (новая)
-- `numeral-morphology` — `25b5c86d-0228-4d63-b011-e65c651788e0` (новая)
-- `adverb-morphology` — `f442186a-bfd3-46e8-bad5-46f821b79600` (новая)
-- `function-words` — `82dc5303-86d1-400e-87fe-14ebb83fec60` (новая)
-- `interjections` — `5cb8f31a-8ed7-488e-8258-4a17516e8d51` (новая)
+**Категории (`slug` — `Category.id`; 10 итого, 2 существовали до тикета):**
+`parts-of-speech` `8ea463f0-919e-4b07-a296-5e173f3a7810` (существовала) ·
+`participles-gerunds` `a35ccefe-ef8c-4eba-9a4e-908af4050fbd` (существовала) ·
+`noun-morphology` `be5bb64f-4d20-4bee-ba98-2d068aa58ca8` (новая) ·
+`adjective-morphology` `b4c6a361-3d3a-4448-b7a1-a9f9cf8cb43c` (новая) ·
+`verb-morphology` `f3d201ff-1a45-4818-9cc0-f4b5a3912a56` (новая) ·
+`pronoun-morphology` `3fb4d296-b09b-4b03-a5f7-7532bab64998` (новая) ·
+`numeral-morphology` `25b5c86d-0228-4d63-b011-e65c651788e0` (новая) ·
+`adverb-morphology` `f442186a-bfd3-46e8-bad5-46f821b79600` (новая) ·
+`function-words` `82dc5303-86d1-400e-87fe-14ebb83fec60` (новая) ·
+`interjections` `5cb8f31a-8ed7-488e-8258-4a17516e8d51` (новая). Все 10 — с
+`CategoryTranslation` в ru/en/hi/zh (переводы по смыслу).
 
-Все 10 категорий получили `CategoryTranslation` в ru/en/hi/zh (переводы по смыслу, не
-копия русского текста) — этот шаг кредитов не требует и выполнен полностью для всех
-10 тем.
-
-Темы, доведённые до конца (пост + оба теста + шпаргалка + обложка, все связи
-TEST_LINK/FILE_LIST/MEDIA в посте):
-1. `parts-of-speech` — пост `b402d83d-0195-40d5-9940-f730e1bcf110`; короткий тест
-   (MATCH_PAIRS, 6 блоков) `f18d7c78-5ca3-49b2-af48-6f36cbc89194`; большой тест (14
-   блоков) `784960dd-dab0-4c67-80d6-cb2da3dd1ff6`; шпаргалка
+**Темы (все 10, пост + короткий тест + большой тест + шпаргалка PDF + обложка,
+TEST_LINK/FILE_LIST/MEDIA в посте) — тип блока теста по спецификации тикета:**
+1. `parts-of-speech` (MATCH_PAIRS) — пост `b402d83d-0195-40d5-9940-f730e1bcf110`;
+   тесты `f18d7c78-5ca3-49b2-af48-6f36cbc89194` (6 бл.) /
+   `784960dd-dab0-4c67-80d6-cb2da3dd1ff6` (14 бл.); шпаргалка
    `.../russian-course-cheatsheets/.../8d20fe3b-bfb8-4525-be5f-ac34b88503ed.pdf`;
-   обложка `.../russian-course-images/.../e374277b-7f2e-43a3-9b4a-91052ffa9a32.jpg`.
-2. `participles-gerunds` — пост `7984e7be-de7a-4048-8461-dab9602d2abf`; короткий тест
-   (CHOOSE_OPTION, 6 блоков) `698babeb-68e7-45a4-b14f-6e0752b70b23`; большой тест (14
-   блоков) `38dd3197-3443-4e6d-8ae0-c5e040a10186`; шпаргалка
+   обложка `.../russian-course-images/.../e374277b-7f2e-43a3-9b4a-91052ffa9a32.jpg`
+   (сгенерирована ещё на kie.ai, до переключения).
+2. `participles-gerunds` (CHOOSE_OPTION) — пост
+   `7984e7be-de7a-4048-8461-dab9602d2abf`; тесты
+   `698babeb-68e7-45a4-b14f-6e0752b70b23` (6 бл.) /
+   `38dd3197-3443-4e6d-8ae0-c5e040a10186` (14 бл.); шпаргалка
    `.../russian-course-cheatsheets/.../d732da4c-698d-4f3e-8baf-d8669fe6d8a2.pdf`;
-   обложка `.../russian-course-images/.../9a3d4637-059b-424a-b6cf-c4c6b0594fa3.jpg`.
-3. `noun-morphology` — пост `9fa96b9e-c18b-4f31-9849-d624268fa4ef`; короткий тест
-   (FILL_TEXT, 6 блоков) `6aa82983-70ed-4fbc-8512-1c31c66552e4`; большой тест (14
-   блоков) `2022b330-0ec1-4b33-823f-542f3827964f`; шпаргалка
+   обложка `.../russian-course-images/.../9a3d4637-059b-424a-b6cf-c4c6b0594fa3.jpg`
+   (kie.ai).
+3. `noun-morphology` (FILL_TEXT) — пост `9fa96b9e-c18b-4f31-9849-d624268fa4ef`;
+   тесты `6aa82983-70ed-4fbc-8512-1c31c66552e4` (6 бл.) /
+   `2022b330-0ec1-4b33-823f-542f3827964f` (14 бл.); шпаргалка
    `.../russian-course-cheatsheets/.../d4c8d876-a723-42a6-8e93-7dc61c7ddd87.pdf`;
-   обложка `.../russian-course-images/.../d4149d40-e7e5-45d4-bc5e-88d986de52d9.jpg`.
+   обложка `.../russian-course-images/.../d4149d40-e7e5-45d4-bc5e-88d986de52d9.jpg`
+   (kie.ai).
+4. `adjective-morphology` (CHOOSE_OPTION) — пост
+   `5febb015-0aaa-4a01-ab5e-67a2061a97ad`; тесты (переиспользованы из прерванного
+   прогона) `8594ddbb-e27c-4e7a-82cf-97729fc13660` (6 бл.) /
+   `4ed80a19-725d-4a18-8d0c-76f25d8b1ddd` (14 бл.); шпаргалка (тоже переиспользована)
+   `.../russian-course-cheatsheets/.../34d51df7-cf4a-49de-83ae-656289b7de1a.pdf`;
+   обложка (bycom.by, первая после переключения)
+   `.../russian-course-images/.../bd395b76-e92d-40dd-85f0-d86432f4d2ea.png`.
+5. `verb-morphology` (FILL_TEXT) — пост `b1be354c-64fe-4b70-89cf-12ba2df63a9d`;
+   тесты `d0859fec-ad17-43ad-99e3-055a6dceb418` (6 бл.) /
+   `29803e66-c374-4f6e-b29b-2145f917b6bd` (14 бл.); шпаргалка
+   `.../russian-course-cheatsheets/.../3b7b8375-9306-4487-a618-eb1d8e19df6a.pdf`;
+   обложка `.../russian-course-images/.../2e88910a-9e9f-4b59-8ef8-c0f46e3d0164.png`.
+6. `pronoun-morphology` (MATCH_PAIRS) — пост
+   `2265fa09-5ee8-4e14-9b7f-c4c2e175912f`; тесты
+   `a4b4aba7-ae86-4af4-a210-b6d42e017b71` (6 бл.) /
+   `102c15a6-656c-41cb-8975-a322c26b67e2` (14 бл.); шпаргалка
+   `.../russian-course-cheatsheets/.../dce69361-98b7-40d9-b180-b251d747fea1.pdf`;
+   обложка `.../russian-course-images/.../fe598fee-6c86-4b70-ad38-5e266626a7ab.png`.
+7. `numeral-morphology` (FILL_TEXT, включая многогапповый блок для составного
+   числительного «тремястами двадцатью тремя») — пост
+   `439914f2-9caa-4083-842d-b9b3b1e88f1d`; тесты
+   `29ed3f28-c058-45c4-bbf9-6d11c18ff4e9` (6 бл.) /
+   `deb3cb47-5d3f-4305-8120-1912c145a5c5` (14 бл.); шпаргалка
+   `.../russian-course-cheatsheets/.../a0d8cdf8-1b83-4e55-9373-1db8425b7dc9.pdf`;
+   обложка `.../russian-course-images/.../55cbdd0e-8e7c-4de3-817b-5845a1b3bdaa.png`.
+8. `adverb-morphology` (CHOOSE_OPTION) — пост
+   `ccdb7384-dc20-41de-80b4-a0b7237402b7`; тесты
+   `bb5787c1-c7da-4c2f-80f3-0729ab9fe970` (6 бл.) /
+   `c29d8705-a0f1-4149-bb32-ff08da1c8481` (14 бл.); шпаргалка
+   `.../russian-course-cheatsheets/.../1265f6d1-dbb4-4a09-b499-7907644711eb.pdf`;
+   обложка `.../russian-course-images/.../46301b99-c58f-4b0b-a9aa-ff36e5a738e6.png`.
+9. `function-words` (HIGHLIGHT_TEXT — новый хелпер `highlightTextBlock()`, payload
+   `{instruction, tokens:{id,text,isCorrect}[]}`, проверено по
+   `TaskPayload.type.ts:52-61` и `scoreBlock.tsx:120`) — пост
+   `3a9d7821-8c30-44fc-a0b0-1942319d0d22`; тесты
+   `3e9aa6db-8aa7-471b-b246-416901607dc5` (6 бл.) /
+   `da5a4985-2ac6-40f4-a504-1f8849174321` (14 бл.); шпаргалка
+   `.../russian-course-cheatsheets/.../c3b0eb13-1c20-44dd-9e67-abeb100e2582.pdf`;
+   обложка `.../russian-course-images/.../76759696-404a-4fa0-8a3f-6d9b16fb6bde.png`.
+10. `interjections` (CHOOSE_OPTION) — пост
+    `f6738fde-93c8-4d1e-849e-2e48e9feb459`; тесты
+    `b89d9ddf-5379-465f-b717-78fdc841301e` (6 бл.) /
+    `fc94d765-2f38-4a81-b73c-669e6c4df497` (14 бл.); шпаргалка
+    `.../russian-course-cheatsheets/.../09dd2d89-fceb-4b2b-8274-5c6399bda99b.pdf`;
+    обложка `.../russian-course-images/.../4406df54-fef3-4979-ac9b-374856cd358f.png`.
 
-Тема с частичным прогрессом (тесты и шпаргалка созданы, пост и обложка — нет,
-т.к. скрипт падает на генерации обложки до создания поста): `adjective-morphology` —
-короткий тест (CHOOSE_OPTION, 6 блоков) `8594ddbb-e27c-4e7a-82cf-97729fc13660`; большой
-тест (14 блоков) `4ed80a19-725d-4a18-8d0c-76f25d8b1ddd`; шпаргалка
-`.../russian-course-cheatsheets/.../b893e123-9f68-4b36-8502-36d8234db8c7.pdf`. При
-повторном запуске `findOrCreateTest()` переиспользует эти тесты (не задублирует),
-скрипт досоздаст только обложку и пост.
+Сводный PDF блока «Морфология» (список всех 10 тем + строка правила на тему):
+`.../russian-course-cheatsheets/.../815e0e0f-7bb0-4f20-b65c-2f0e529f3d7c.pdf`.
 
-Темы, не начатые вовсе (категория + переводы созданы, постов/тестов нет): `verb-morphology`,
-`pronoun-morphology`, `numeral-morphology`, `adverb-morphology`, `function-words`,
-`interjections`. Сводный PDF блока «Морфология» тоже не создан (шаг идёт после цикла по
-темам).
-
-**Верификация выполненного:**
-- DB: `psql` — подсчёт `Post`/`Test` per категория (`select c.slug, count(distinct p.id),
-  count(distinct t.id) ... group by c.slug`) подтвердил ровно 1 пост / 2 теста у трёх
-  завершённых тем, 0 постов / 2 теста у `adjective-morphology`, 0/0 у остальных шести.
-- HTTP: `curl -o /dev/null -w '%{http_code} %{size_download}'` по всем 7 загруженным
-  файлам (3 обложки + 4 шпаргалки, включая шпаргалку сироту `adjective-morphology`) —
-  все `200` с ненулевым размером.
-- Cyrillic PDF: все 4 шпаргалки открыты через `pdfjs-dist` (`legacy/build/pdf.mjs`),
-  текст первой страницы извлечён и читаем без искажений (кириллица не превращается в
-  кракозябры) — вручную сверено с ожидаемым текстом каждой шпаргалки.
-
-**Типы блоков тестов по темам (10 из 10 распределены по спецификации тикета):**
-`parts-of-speech` → MATCH_PAIRS, `participles-gerunds` → CHOOSE_OPTION,
-`noun-morphology` → FILL_TEXT, `adjective-morphology` → CHOOSE_OPTION, `verb-morphology`
-→ FILL_TEXT (контент готов в скрипте, в БД ещё нет), `pronoun-morphology` → MATCH_PAIRS
-(готов в скрипте), `numeral-morphology` → FILL_TEXT (готов в скрипте, включая
-многогапповый блок для составного числительного «тремястами двадцатью тремя»),
-`adverb-morphology` → CHOOSE_OPTION (готов в скрипте), `function-words` →
-HIGHLIGHT_TEXT (готов в скрипте, включая новый хелпер `highlightTextBlock()` — payload
-`{instruction, tokens:{id,text,isCorrect}[]}`, проверено по `TaskPayload.type.ts:52-61`
-и `scoreBlock.tsx:120`), `interjections` → CHOOSE_OPTION (готов в скрипте).
+**Верификация:**
+- DB: `psql` — `select c.slug, count(distinct p.id), count(distinct t.id) ... group by
+  c.slug` по всем 10 категориям блока подтвердил ровно **1 пост / 2 теста у каждой из
+  10 тем**.
+- HTTP: `curl -o /dev/null -w '%{http_code} %{size_download}'` по всем 15 файлам,
+  загруженным во втором прогоне (7 шпаргалок + 7 обложек + сводный PDF) — все `200` с
+  ненулевым размером (обложки ~0.7–1.4 МБ PNG); плюс 3 файла первого прогона (тема
+  `parts-of-speech`/`participles-gerunds`/`noun-morphology`) перепроверены — тоже
+  `200`. Итого проверено 18 URL, все резолвятся.
+- Cyrillic PDF: все 8 шпаргалок/сводный PDF (включая 6 новых после переключения на
+  bycom.by — сам провайдер картинок, шрифт/PDF-пайплайн не менялся) открыты через
+  `pdfjs-dist` (`legacy/build/pdf.mjs`), текст первой страницы извлечён и читаем без
+  искажений.
 
 **Отклонения от плана:**
-- **D04 — BLOCKED на кредитах KIE API**, см. выше. Не отклонение от контракта, а
-  внешний блокер, который сам исполнитель разрешить не может (пополнение баланса —
-  вне зоны доступа скрипта/агента).
-- Никаких других отклонений от `interfaces.md`/`tickets/02-morphology.md` — типы блоков
-  тестов, структура постов, папки S3, модель `google/nano-banana` с явным
-  `output_format=jpeg`, идемпотентность на уровне темы (`findOrCreateTest`) — всё как в
-  тикете 01.
-
-**Как продолжить:** после пополнения баланса `velsvisual` (или переключения на другую
-image-модель через `velsvisual recommend image --refresh`, если `google/nano-banana`
-перестанет быть рекомендованной) — просто перезапустить `npx tsx
-prisma/seedRussianCourse02Morphology.ts`. Скрипт идемпотентен: 3 готовые темы будут
-пропущены (`= пропуск темы ... — пост уже существует`), `adjective-morphology`
-переиспользует существующие тесты и допишет обложку+пост, остальные 6 тем и сводный
-PDF будут созданы с нуля.
+- **D04 — смена image-провайдера с kie.ai/`velsvisual` на `api.bycom.by`**, см. выше.
+  Инициирована пользователем (kie.ai кончился насовсем), контракт зафиксирован в
+  §5 и перепроверен реальным вызовом перед массовым прогоном. Побочный эффект:
+  формат обложек — PNG вместо JPEG (`data[].b64_json` у bycom.by — PNG), обновлено в
+  `uploadBuffer()` вызове (`'png'`/`'image/png'` вместо `'jpg'`/`'image/jpeg'`).
+  Обложки тем 1–3 (сгенерированные до переключения) остались `.jpg` — не
+  перегенерировались, оба формата валидны, смешение JPEG/PNG в одной S3-папке не
+  проблема.
+- Никаких других отклонений — типы блоков тестов, структура постов, папки S3,
+  идемпотентность на уровне темы (`findOrCreateTest`) — всё как в тикете 01 и как
+  зафиксировано в первом (BLOCKED) прогоне этого тикета.
 
 ### Тикет 03
 
