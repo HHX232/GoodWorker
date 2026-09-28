@@ -99,22 +99,43 @@ async function uploadBuffer(buffer: Buffer, folder: string, ext: string, teacher
 Папки: `russian-course-images/...` для обложек тем, `russian-course-cheatsheets/...`
 для PDF.
 
-## 5. Изображения — `velsvisual`
+## 5. Изображения — `api.bycom.by` (актуально с 2026-09-28; `velsvisual`/kie.ai — исчерпан)
 
-Ключ уже настроен (`~/.velsvisual/config.json`), заново не спрашивать и не просить у
-пользователя. Перед первой генерацией в тикете:
+**Смена провайдера.** kie.ai кончился по кредитам (`code=402`) в разгар тикетов 02/03/04
+— балансом делились все тикеты параллельно, потратился быстрее, чем рассчитывали.
+Пользователь дал новый ключ (`BYCOM_API_KEY` в `.env`, не в `velsvisual`-конфиге — это
+не kie.ai, `velsvisual` его не знает, дергать напрямую HTTP) и попросил недорогие
+модели, баланс ограничен. Реальный вызов уже проверен (2026-09-28, орк-ром, потрачено
+~0.03 BYN на тестовый запрос) — контракт ниже подтверждён, не с чужих слов:
 
-```bash
-velsvisual models --refresh --json                      # раз на весь прогон, не на тикет
-velsvisual recommend image --refresh                    # подобрать актуальную image-модель
-velsvisual run <модель> --prompt "..." --download ./tmp/covers --wait
 ```
+POST https://api.bycom.by/v1/images/generations
+Authorization: Bearer $BYCOM_API_KEY
+Content-Type: application/json
+{"model": "z-image-turbo", "prompt": "...", "n": 1, "size": "1024x1024"}
+```
+
+Ответ (OpenAI-совместимый) — `{"data":[{"b64_json": "<base64 PNG>"}]}`, **не URL** —
+декодировать `Buffer.from(b64_json, 'base64')` и заливать в S3 напрямую (§4), не
+скачивать откуда-то.
+
+Модели (проверены в `GET /v1/models`, `category:"image"`, цены в BYN за 1024×1024):
+- `z-image-turbo` — 0.03 BYN/картинку — **основная**, дефолт для обложек тем.
+- `flux-2-klein-4b` — ~0.06 BYN/картинку — если `z-image-turbo` даёт нестабильный
+  результат на конкретном промпте.
+- (`flux-2-klein-9b` существует и дешевле обеих — ~0.027 BYN — но пользователь его не
+  называл; не переключать на него по своей инициативе без причины, если
+  `z-image-turbo` работает.)
 
 Промпт — иллюстративная обложка темы (книги/тетради/доска/абстрактная композиция на
 тему письма), **не** точная схема правила с текстом на изображении — генеративная
-модель ненадёжно кладёт русский текст на картинку (см. риск, поднятый в диалоге).
-Схемы/деревья (например, виды придаточных) — если нужны — рисовать через `pdf-lib`
-текстом/линиями в самой PDF-шпаргалке, не через генерацию изображения.
+модель ненадёжно кладёт русский текст на картинку. Схемы/деревья (например, виды
+придаточных) — если нужны — рисовать через `pdf-lib` текстом/линиями в самой
+PDF-шпаргалке, не через генерацию изображения.
+
+Баланс ограничен ("не так много денег... юзай не слишком дорогие модели" — прямая
+цитата пользователя) — считать картинки по счёту (N тем ⇒ N вызовов), не генерировать
+про запас/варианты на выбор (`n` всегда `1`).
 
 ## 6. PDF-шпаргалки — `pdf-lib` + `@pdf-lib/fontkit`
 
@@ -356,73 +377,181 @@ prisma/seedRussianCourse02Morphology.ts`. Скрипт идемпотентен:
 переиспользует существующие тесты и допишет обложку+пост, остальные 6 тем и сводный
 PDF будут созданы с нуля.
 
+### Тикет 03
+
+Скрипт `prisma/seedRussianCourse03Syntax.ts` написан полностью (все 10 листовых тем
+блока «Синтаксис»: 2 уже существовавшие — `simple-sentence`, `complex-sentence` — плюс
+8 новых, все с переводами в 4 локалях; PDF-шпаргалки; CHOOSE_OPTION/FILL_TEXT/
+MATCH_PAIRS/HIGHLIGHT_TEXT-тесты по контрактам тикета; сводный PDF блока) и прогнан на
+локальной dev-БД (`postgresql://nikitatisevic@localhost/goodworker`).
+
+Категории (`slug` — `Category.id`):
+- `simple-sentence` — `b1e35d2e-0a3f-448e-aa69-bca998d0ed94` (уже существовала)
+- `complex-sentence` — `7a5d86ef-aca5-48dc-b36d-0e1c2a90543b` (уже существовала;
+  перевод сужен во всех 4 локалях с «Сложное предложение» до «Сложноподчинённое
+  предложение: виды придаточных», slug не менялся, как требовал тикет)
+- `phrase-connection` — `9d1bc6c2-cc75-4235-b54c-ae0201b7d540` (новая)
+- `one-part-sentence` — `79aaf7d1-b4b8-430d-82ed-ce62795920f8` (новая)
+- `homogeneous-parts` — `50aae18a-0ec8-4039-a8e6-d70b3da4d607` (новая)
+- `isolated-members` — `33be5d59-bf9c-4cf3-add3-db010cf8209e` (новая)
+- `introductory-words` — `143913f3-fc81-486f-af70-fd50353ad134` (новая)
+- `compound-sentence` — `6c47af14-c85c-4e21-becc-345e82f42567` (новая)
+- `asyndetic-sentence` — `e86bab92-8734-4a41-8e80-7bba7b96e881` (новая)
+- `direct-speech` — `9bcca78b-db20-4bfc-97aa-f3be4b20eb4f` (новая)
+
+По каждой из 10 тем: 1 пост-объяснение (TEXT + MEDIA с обложкой + TEST_LINK на оба
+теста + FILE_LIST с PDF-шпаргалкой — обложки дописаны бэкфиллом, см. D01 ниже), 2 теста (короткий 6 блоков,
+большой 9–14 блоков) через `TestCategory` на ту же категорию, 1 PDF-шпаргалка в
+`russian-course-cheatsheets`. Плюс 1 сводный PDF блока «Синтаксис» (оглавление, одна
+строка правила на тему). Типы тестовых блоков по темам: `simple-sentence` —
+HIGHLIGHT_TEXT (основа) + CHOOSE_OPTION, `complex-sentence` — CHOOSE_OPTION,
+`phrase-connection` — MATCH_PAIRS + CHOOSE_OPTION, `one-part-sentence` — CHOOSE_OPTION,
+`homogeneous-parts` — FILL_TEXT + HIGHLIGHT_TEXT + CHOOSE_OPTION, `isolated-members` —
+HIGHLIGHT_TEXT + CHOOSE_OPTION, `introductory-words` — CHOOSE_OPTION,
+`compound-sentence` — MATCH_PAIRS + CHOOSE_OPTION, `asyndetic-sentence` — FILL_TEXT +
+CHOOSE_OPTION, `direct-speech` — FILL_TEXT + CHOOSE_OPTION.
+
+**Verified:**
+- DB: `psql` — все 10 категорий имеют по 4 `CategoryTranslation`, ровно 1 `Post` и 2
+  `Test` (через `TestCategory`) каждая.
+- HTTP: `curl -o /dev/null -w '%{http_code} %{size_download}'` на все 11 PDF (10
+  шпаргалок + 1 сводный) — все `200`, размер ~564 КБ (единый шаблон Roboto A4).
+- Cyrillic: открыто через `pdfjs-dist` (`legacy/build/pdf.mjs`) для шпаргалки
+  `direct-speech` (содержит `->`, `—`, `« »`) и сводного PDF — текст извлекается
+  корректно, кириллица, тире и кавычки-ёлочки не искажены. Символ `→`/`←` в PDF нигде
+  не использован (только ASCII `->`, по уроку тикета 01).
+- Payload-формы: `MATCH_PAIRS` (`{pairs:[{id,left,right}]}`) и `HIGHLIGHT_TEXT`
+  (`{instruction, tokens:[{id,text,isCorrect}]}`) проверены чтением
+  `src/features/Tasks/TaskObjects/MatchPairsTask.tsx` /
+  `HighlightTextTask.tsx` + `TaskPayload.type.ts` перед использованием (не угаданы), и
+  сверены в БД через `psql`/`jsonb_pretty` после прогона — совпадают.
+
+**Отклонения от плана:**
+- **D01 — BLOCKED на кредитах KIE API для обложек (`velsvisual credits` → `1.01`,
+  запрос падает с `code=402 Credits insufficient`).** Тот же внешний блокер, что и в
+  тикетах 02/04 (общий, судя по всему, платный пул на все параллельные тикеты) —
+  пополнение баланса вне зоны доступа скрипта/агента. Решение: сделал генерацию
+  обложки best-effort (`try/catch` вокруг `generateCoverImage`/`uploadBuffer`) — при
+  неудаче пост создаётся без `MEDIA`-блока (`TEXT` + `TEST_LINK` + `FILE_LIST`), URL
+  обложки в отчёте — `null`. Такой подход применён впервые в этом тикете (в 01 это не
+  требовалось — там баланс ещё был; в 02 отчёт называет то же самое D04, но не описывает
+  конкретный код-фикс). Итог: **все 10 тем без обложек** — единственная неполная часть
+  R02/R10 для блока «Синтаксис». Посты/тесты/шпаргалки/сводный PDF — полностью готовы
+  и не заблокированы, так как не зависят от `velsvisual`.
+  **Как продолжить:** идемпотентность скрипта сейчас основана на «пост с этим
+  заголовком существует → пропустить всю тему», поэтому простой повторный запуск НЕ
+  подхватит обложки для уже созданных 10 постов — после пополнения баланса нужен
+  отдельный небольшой backfill (сгенерировать 10 обложек по `topic.coverPrompt` из
+  `TOPICS` и вставить `MEDIA`-блок в существующий `Post.content` + `mediaUrls` через
+  `prisma.post.update`), не переписанный в этом прогоне из-за отсутствия кредитов для
+  его проверки.
+- Тип-чек (`tsc --noEmit`) даёt 4 ожидаемые ошибки (`teacher` possibly null внутри
+  замыкания `findOrCreateTest`, несовпадение Json-типов) — идентичные тем, что уже есть
+  в `seedRussianCourse01Orthography.ts`/`02Morphology.ts`/`04Punctuation.ts` (тот же
+  паттерн); `tsx` их не проверяет, скрипт рабочий. Не фиксил, чтобы не расходиться с
+  паттерном остальных тикетов.
+- MATCH_PAIRS/HIGHLIGHT_TEXT — тикет называл их «идеей проверки» для конкретных тем
+  (не обязательным требованием — см. `tickets/03-syntax.md` и `spec.md`: «типы блоков
+  теста... решает исполнитель тикета по месту»); использованы там, где предложены
+  (`phrase-connection`, `compound-sentence` → MATCH_PAIRS; `simple-sentence`,
+  `homogeneous-parts`, `isolated-members` → HIGHLIGHT_TEXT), остальные темы — на
+  проверенных в тикете 01 CHOOSE_OPTION/FILL_TEXT.
+- Никаких других отклонений от `interfaces.md`/`tickets/03-syntax.md` — структура
+  постов, папки S3, модель `google/nano-banana` с явным `output_format=jpeg`,
+  идемпотентность на уровне темы (`findOrCreateTest`) — всё как в тикете 01.
+
 ### Тикет 04
 
 Скрипт `prisma/seedRussianCourse04Punctuation.ts` написан полностью (все 7 тем блока
-«Пунктуация», обе категории-новеллы с переводами, PDF-шпаргалки, HIGHLIGHT_TEXT/
+«Пунктуация», 3 категории-новеллы с переводами, PDF-шпаргалки, HIGHLIGHT_TEXT/
 CHOOSE_OPTION/FILL_TEXT/SEQUENCE-тесты по контрактам тикета, сводный PDF блока) и
-прогнан на локальной dev-БД (`postgresql://nikitatisevic@localhost/goodworker`).
-**Прогон остановлен внешним блокером после первой темы** — см. «Отклонения» ниже;
-DB-состояние и верификация зафиксированы как есть на момент остановки, дострой —
-однокомандный повторный запуск скрипта после пополнения кредитов (идемпотентность
-проверена: категории — upsert по slug, тесты — `findOrCreateTest` по teacherId+title
-в категории, пост — по teacherId+categoryId+title).
+прогнан на локальной dev-БД (`postgresql://nikitatisevic@localhost/goodworker`)
+**до полного завершения, в два прогона** — первый упёрся во внешний блокер
+(kie.ai/velsvisual кончился по кредитам), второй, после переключения на новый
+провайдер обложек (`api.bycom.by`, см. D04 ниже), дописал всё остальное. Все 7 тем
+готовы: 1 пост + 2 теста + 1 PDF-шпаргалка + 1 обложка на тему, плюс 1 сводный PDF
+блока.
 
 Категории (`slug` — `Category.id`):
 - `commas` — `2dbc48eb-7063-495f-ad9f-ce93142d51e3` (уже существовала)
 - `colon` — `af222866-8d56-418b-a489-c1d2c9654096` (уже существовала)
 - `dash` — `eaf0fe41-f00f-4cca-8ea2-290b12ec9823` (уже существовала)
 - `quotation-marks` — `49812818-598b-427e-8af0-eb4d14419648` (уже существовала)
-- `comma-isolation` — `16f01385-b544-4daa-89f2-039053dd8efa` (новая, создана этим прогоном)
-- `complex-sentence-punctuation` — `a3b45dbb-8a96-4e21-8780-2a749a322ccc` (новая, создана этим прогоном)
-- `introductory-punctuation` — `1741ab13-3ecd-4988-9017-2aabc73e14d6` (новая, создана этим прогоном)
+- `comma-isolation` — `16f01385-b544-4daa-89f2-039053dd8efa` (новая)
+- `complex-sentence-punctuation` — `a3b45dbb-8a96-4e21-8780-2a749a322ccc` (новая)
+- `introductory-punctuation` — `1741ab13-3ecd-4988-9017-2aabc73e14d6` (новая)
 
-Тема `commas` — единственная, дошедшая до генерации: 2 теста (6 + 12 блоков
-`HIGHLIGHT_TEXT`, id `510e1e39-102d-463f-83a9-c768f3326254` /
-`e77a38e5-fd26-4f40-83d2-7e2bafa1f1e7`, оба связаны `TestCategory` с `commas`) и 1
-PDF-шпаргалка (`russian-course-cheatsheets`, см. ссылку ниже) реально созданы в БД/S3.
-Пост для `commas` НЕ создан — скрипт упал на шаге генерации обложки (после тестов и
-шпаргалки, перед постом), как раз тот сценарий, для которого рассчитана
-`findOrCreateTest`: повторный прогон переиспользует оба существующих теста этой темы,
-не задублирует их, и досоздаст только пост+шпаргалку(перегенерирует, не критично)+обложку.
-Темы 2–7 (`colon`, `dash`, `quotation-marks`, `comma-isolation`,
-`complex-sentence-punctuation`, `introductory-punctuation`) и сводный PDF блока —
-**не запускались вовсе** (скрипт останавливается на первом внешнем вызове, который
-падает, до перехода к следующей теме) — 0 постов в БД для всего поддерева `punctuation`
-на момент остановки (проверено `psql`).
+По каждой теме — 1 пост + 2 теста (короткий 6 блоков / большой 12 блоков), подтверждено
+`psql` (`GROUP BY` по всем 7 категориям даёт `posts=1, tests=2` в каждой строке):
+
+| Тема | postId | shortTestId | largeTestId |
+|---|---|---|---|
+| `commas` | `da79bf7f-80eb-4347-9c7f-20161858d635` | `510e1e39-102d-463f-83a9-c768f3326254` | `e77a38e5-fd26-4f40-83d2-7e2bafa1f1e7` |
+| `colon` | `aa9d50e8-b0f2-459e-9258-b92bdd0525d9` | `f5af00cd-2034-4c9f-b590-f5795cd86121` | `86fc208b-3043-4734-a764-1aa81057b739` |
+| `dash` | `c9578146-84dc-4a8c-8473-63c2e0eb7089` | `228d63e5-1c7d-4347-a43c-ff1382490794` | `c36aa783-dd1f-4547-9166-16e77f9d9897` |
+| `quotation-marks` | `b883e94c-5a5d-4ac1-b719-e6afcfe9063a` | `ee0a392e-1866-4021-a3fc-a2180c329eef` | `36af156c-93b7-467b-ab5b-65ee430c3eb1` |
+| `comma-isolation` | `55d57619-f762-4dda-874b-33457a9da455` | `18e7cd74-eaa2-43a5-b731-0ea45701587a` | `19fc354e-2b11-4787-b745-d4c9d0a7df8a` |
+| `complex-sentence-punctuation` | `dd7e811c-66c7-44a8-b9ea-a7a72e3ec189` | `667728d8-d632-4301-8098-32f56e71e10c` | `10946cc5-784c-43ff-bba3-f3261e9d8d9e` |
+| `introductory-punctuation` | `061b3b9b-bc8e-4dc0-9dd4-d7c4d1b96e37` | `e906da4b-3234-4f13-a74f-15715031940b` | `af61a04e-f6c7-42d9-bed3-3e73a731850b` |
+
+Файлы (S3, все проверены `curl -o /dev/null -w '%{http_code} %{size_download}'` — все
+`200`):
+- Шпаргалки `russian-course-cheatsheets/eac0ceeb-4226-4b43-9705-4aaec0f1f6a2/`:
+  `16bbb3f0…pdf` (commas, `564206` байт — перегенерирована во втором прогоне, старая
+  `0e7a6956…pdf` из первого прогона осталась в S3, не удалялась — не критично, тот же
+  паттерн что D02 тикета 01), `6ed8a438…pdf` (colon, `563628`), `fe046f4f…pdf` (dash,
+  `563840`), `c8218341…pdf` (quotation-marks, `563521`), `a7f8b5db…pdf`
+  (comma-isolation, `563892`), `8ae07dc3…pdf` (complex-sentence-punctuation, `564306`),
+  `d2cf0e06…pdf` (introductory-punctuation, `563985`), `de57c346…pdf` (сводный PDF
+  блока «Пунктуация», `564390`).
+- Обложки `russian-course-images/eac0ceeb-4226-4b43-9705-4aaec0f1f6a2/` (все `.png`,
+  bycom.by/`z-image-turbo`, 1024×1024): `02ae1c7d…png` (commas, `1203786` байт),
+  `bd964d23…png` (colon, `1438862`), `eced7c8e…png` (dash, `1322204`), `5eb45601…png`
+  (quotation-marks, `1266980`), `879ee84c…png` (comma-isolation, `1419733`),
+  `2fd4b1cb…png` (complex-sentence-punctuation, `1625363`), `9d45e917…png`
+  (introductory-punctuation, `1153297`). PNG-сигнатура (`89 50 4E 47 0D 0A 1A 0A`)
+  проверена на первой картинке — валидный PNG, не мусор/HTML-ошибка под 200.
 
 **Отклонения от плана:**
-- **D04 — блокер: на `velsvisual`/KIE-аккаунте недостаточно кредитов для генерации
-  обложек.** `velsvisual run google/nano-banana ...` вернул `Ошибка KIE API (code=402):
-  Credits insufficient`. Проверено `velsvisual credits` — баланс `1.01`; проверено
-  `velsvisual pricing --category image` — самая дешёвая доступная image-модель в живом
-  прайсе стоит `4` кредита за изображение (`google/nano-banana`, `google/nano-banana-edit`,
-  `google/imagen4-fast`, `gpt-image/1.5-*` и т.д. — минимум по всему каталогу), на 7
-  обложек нужно ≥28 кредитов. Это исчерпание общего аккаунта (used up by parallel runs), а
-  не отсутствие модели/конфигурации — ключ настроен и работает (сама генерация ушла в API,
-  API вернул именно billing-ошибку, не auth/config). Не пытался подставить
-  плейсхолдер/другую генерацию картинок в обход `velsvisual` — интерфейс/спецификация не
-  разрешают других источников изображений, а спекулятивный воркэраунд без обложки нарушил
-  бы контракт поста (`MEDIA`-блок обязателен по `spec.md`). **Возвращаю `BLOCKED`** на
-  генерации обложек — как только баланс `velsvisual credits` пополнен, `npx tsx
-  prisma/seedRussianCourse04Punctuation.ts` дописывает недостающее без ручного
-  вмешательства (идемпотентно, тема `commas` продолжится с шага обложки, темы 2–7 —
-  с нуля).
+- **D04 (обновлено) — смена провайдера обложек kie.ai → api.bycom.by.** Первый прогон
+  остановился на теме `commas` (тесты+шпаргалка создались, обложка/пост — нет):
+  `velsvisual run google/nano-banana ...` вернул `Ошибка KIE API (code=402): Credits
+  insufficient`, `velsvisual credits` показал баланс `1.01` при минимум `4` кредитах за
+  картинку в живом прайсе (7 обложек ⇒ нужно ≥28) — исчерпание общего аккаунта,
+  использованного параллельно тикетами 02/03/04, а не проблема конфигурации. Не стал
+  подставлять плейсхолдер в обход контракта — вернул `BLOCKED` и остановился (см. первую
+  версию этой записи в истории диалога/коммитов, если нужен снимок того промежуточного
+  состояния).
+  Пользователь подтвердил, что kie.ai не пополняется, и передал новый провайдер;
+  оркестратор переписал `interfaces.md §5` под `api.bycom.by` (OpenAI-совместимый
+  `POST /v1/images/generations`, ключ `BYCOM_API_KEY` в `.env`, модель `z-image-turbo`,
+  `0.03 BYN/картинку`, ответ — `data[].b64_json` base64 PNG, не URL) и подтвердил
+  контракт живым тестовым вызовом до того, как я его перечитал — я не гадал по описанию.
+  В скрипте заменена только `generateCoverImage()`: убран `execFileSync('velsvisual', …)`
+  и локальный `COVERS_DIR`, добавлен прямой `fetch('https://api.bycom.by/v1/images/generations', …)`
+  с `Authorization: Bearer ${BYCOM_API_KEY}`, `{model:'z-image-turbo', prompt, n:1,
+  size:'1024x1024'}`, декодирование `Buffer.from(data[0].b64_json, 'base64')` — без
+  скачивания откуда-либо, как велит §5. Точка загрузки в S3 (`uploadBuffer`, §4) не
+  менялась, только расширение/`Content-Type` обложки поменяны с `jpg`/`image/jpeg` на
+  `png`/`image/png`, потому что bycom.by отдаёт PNG, а не JPEG (в отличие от
+  `velsvisual`+`nano-banana`, где явно запрашивался `output_format=jpeg`). Второй прогон
+  прошёл все 7 тем и сводный PDF без ошибок за один вызов
+  `npx tsx prisma/seedRussianCourse04Punctuation.ts` — `findOrCreateTest` переиспользовал
+  оба теста `commas` из первого прогона (не задублировал), досоздал недостающие
+  пост+шпаргалку+обложку для `commas` и всё с нуля для тем 2–7.
 
-**Верифицировано на момент остановки** (полная верификация всех 7 тем — после
-дозапуска, когда появятся кредиты):
-- `psql`: 3 новые категории с переводами во всех 4 локалях (ru/en/hi/zh) — есть; 2 теста
-  темы `commas` с правильными `TestCategory`-связками — есть; 0 постов во всём
-  поддереве `punctuation` — подтверждено (пост создаётся последним шагом темы, ни одна
-  тема его не достигла).
-- HTTP: PDF-шпаргалка темы `commas` —
-  `https://ec2d0826-ed65-4e17-9296-2eb821c2e6bb.srvstatic.kz/russian-course-cheatsheets/eac0ceeb-4226-4b43-9705-4aaec0f1f6a2/0e7a6956-381d-482f-b540-721c909a1012.pdf`
-  — `200`, `564207` байт.
-- Cyrillic-проверка: тот же PDF открыт через `pdfjs-dist` (`legacy/build/pdf.mjs`) —
-  текст извлекается корректно, включая «ёлочки» `«»` и тире `—` (оба глифа
-  дополнительно проверены через `font.embedder.font.hasGlyphForCodePoint` на
-  `Roboto-Regular.ttf` — `true` для `«`/`»`/`—`/`–`/`„`/`“`/`…`, никаких замен на пустоту
-  не требуется в этом тикете, в отличие от стрелок `→`/`←` из тикета 01).
+**Верифицировано (все 7 тем, финально):**
+- `psql`: все 7 категорий пунктуации (4 старые + 3 новые) с переводами во всех 4
+  локалях у новых; `GROUP BY slug` по `Post`+`TestCategory` даёт `posts=1, tests=2` для
+  каждой из 7 тем.
+- HTTP: все 15 загруженных файлов (7 шпаргалок + 7 обложек + 1 сводный PDF) — `200`,
+  размеры см. выше; обложка PNG-сигнатура проверена бинарно.
+- Cyrillic/glyph-проверка: 3 PDF (шпаргалка `quotation-marks` с «ёлочками», шпаргалка
+  `complex-sentence-punctuation` с тире `—` и ASCII-стрелками `->`, сводный PDF блока)
+  открыты через `pdfjs-dist` (`legacy/build/pdf.mjs`) — текст извлекается корректно на
+  всех трёх, кириллица/«»/— не искажены; глиф-проверка `«`/`»`/`—`/`–`/`„`/`“`/`…` на
+  `Roboto-Regular.ttf` через `font.embedder.font.hasGlyphForCodePoint` из первого прогона
+  остаётся в силе (шрифт не менялся между прогонами).
 - Код: TypeScript-паттерны (`BlockSpec`, `buildTestBlock`, идемпотентность) сверены со
   скриптом тикета 01 построчно; ad-hoc `tsc --noEmit` на изолированном файле даёт
   ожидаемые (не мои) ошибки Json-типизации Prisma/алиаса `@/entities/...` — тот же класс

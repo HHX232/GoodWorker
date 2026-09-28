@@ -10,7 +10,6 @@
  */
 import {PrismaClient} from '@prisma/client'
 import {randomUUID} from 'crypto'
-import {execFileSync} from 'child_process'
 import fs from 'fs/promises'
 import path from 'path'
 import {PutObjectCommand} from '@aws-sdk/client-s3'
@@ -23,10 +22,14 @@ import {TaskBlockType} from '../src/shared/types/Tasks/TaskType.type'
 const prisma = new PrismaClient()
 
 const TEACHER_EMAIL = 'teacher@seed.dev'
-// см. interfaces.md §9 (урок тикета 01): 'nano-banana-2' не существует в живом каталоге,
-// актуальная рекомендованная модель — 'google/nano-banana', с явным output_format=jpeg.
-const IMAGE_MODEL = 'google/nano-banana'
-const COVERS_DIR = path.join(process.cwd(), '.tmp-russian-course-covers')
+// D04 (interfaces.md §8/§5): kie.ai/velsvisual исчерпан по кредитам на середине тикета
+// (code=402, подтверждено `velsvisual credits`/`pricing`). Пользователь дал новый провайдер
+// — api.bycom.by, OpenAI-совместимый /v1/images/generations, ключ BYCOM_API_KEY в .env
+// (не в velsvisual-конфиге — дёргаем HTTP напрямую). Контракт подтверждён реальным вызовом
+// в interfaces.md §5, не переоткрываю заново.
+const BYCOM_API_KEY = process.env.BYCOM_API_KEY
+if (!BYCOM_API_KEY) throw new Error('BYCOM_API_KEY is not set in .env — required for cover image generation (interfaces.md §5).')
+const IMAGE_MODEL = 'z-image-turbo' // 0.03 BYN/картинку — дефолт по §5, бюджет ограничен, n:1, без вариантов
 
 // ───────────────────────── small id/content helpers ─────────────────────────
 
@@ -141,33 +144,19 @@ async function uploadBuffer(buffer: Buffer, folder: string, ext: string, teacher
   return publicUrlForKey(key)
 }
 
-// ───────────────────────── image generation (velsvisual) ─────────────────────────
+// ───────────────────────── image generation (api.bycom.by) ─────────────────────────
 
 async function generateCoverImage(prompt: string): Promise<Buffer> {
-  await fs.mkdir(COVERS_DIR, {recursive: true})
-  const stdout = execFileSync(
-    'velsvisual',
-    [
-      'run',
-      IMAGE_MODEL,
-      '--prompt',
-      prompt,
-      '--set',
-      'aspect_ratio=4:3',
-      '--set',
-      'output_format=jpeg',
-      '--download',
-      COVERS_DIR,
-      '--wait',
-      '--json'
-    ],
-    {encoding: 'utf8', maxBuffer: 1024 * 1024 * 20}
-  )
-  const result = JSON.parse(stdout.slice(stdout.indexOf('{')))
-  const filePath: string = result.files[0]
-  const buf = await fs.readFile(filePath)
-  await fs.rm(filePath, {force: true})
-  return buf
+  const res = await fetch('https://api.bycom.by/v1/images/generations', {
+    method: 'POST',
+    headers: {Authorization: `Bearer ${BYCOM_API_KEY}`, 'Content-Type': 'application/json'},
+    body: JSON.stringify({model: IMAGE_MODEL, prompt, n: 1, size: '1024x1024'})
+  })
+  if (!res.ok) throw new Error(`bycom.by image generation failed: ${res.status} ${await res.text()}`)
+  const json = (await res.json()) as {data: {b64_json: string}[]}
+  const b64 = json.data?.[0]?.b64_json
+  if (!b64) throw new Error(`bycom.by response has no data[0].b64_json: ${JSON.stringify(json)}`)
+  return Buffer.from(b64, 'base64')
 }
 
 // ───────────────────────── PDF generation (pdf-lib + fontkit) ─────────────────────────
@@ -950,7 +939,7 @@ async function main() {
 
     // cover image
     const coverBuffer = await generateCoverImage(topic.coverPrompt)
-    const coverUrl = await uploadBuffer(coverBuffer, 'russian-course-images', 'jpg', teacher.id, 'image/jpeg')
+    const coverUrl = await uploadBuffer(coverBuffer, 'russian-course-images', 'png', teacher.id, 'image/png')
     console.log(`  + обложка: ${coverUrl}`)
 
     // post
