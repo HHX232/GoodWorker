@@ -36,6 +36,7 @@ import path from 'path'
 import {S3Client, PutObjectCommand} from '@aws-sdk/client-s3'
 import {PDFDocument, PDFFont, PDFPage, rgb} from 'pdf-lib'
 import fontkit from '@pdf-lib/fontkit'
+import sharp from 'sharp'
 
 const prisma = new PrismaClient()
 
@@ -87,6 +88,13 @@ async function generateCoverImage(prompt: string): Promise<Buffer> {
   const b64 = json.data?.[0]?.b64_json
   if (!b64) throw new Error(`bycom response missing data[0].b64_json: ${JSON.stringify(json).slice(0, 300)}`)
   return Buffer.from(b64, 'base64')
+}
+
+// IMAGE_SIZE above is 4:3 (1024x768), not square — `fit: 'inside'` scales it proportionally to
+// ~768x576 instead of cropping to a square. Re-encode as JPEG q78/mozjpeg (PNG is the wrong
+// format for a photographic/gradient poster image, same fix as the other 3 rich-pass scripts).
+async function compressCover(pngBuffer: Buffer): Promise<Buffer> {
+  return sharp(pngBuffer).resize(768, 768, {fit: 'inside'}).jpeg({quality: 78, mozjpeg: true}).toBuffer()
 }
 
 // ───────────────────────── TipTap doc builders (TEXT block) ─────────────────────────
@@ -1171,9 +1179,10 @@ async function main() {
     let mediaBlockOut: Block | ReturnType<typeof mediaBlock> | undefined = existingMedia
     try {
       const coverBuffer = await generateCoverImage(topic.coverPrompt)
-      const coverUrl = await uploadBuffer(coverBuffer, COVER_FOLDER, 'png', teacher.id, 'image/png')
+      const jpeg = await compressCover(coverBuffer)
+      const coverUrl = await uploadBuffer(jpeg, COVER_FOLDER, 'jpg', teacher.id, 'image/jpeg')
       mediaBlockOut = mediaBlock(coverUrl, `Обложка темы «${topic.ruName}»`)
-      console.log(`  + обложка v3 (${coverBuffer.length} байт): ${coverUrl}`)
+      console.log(`  + обложка v3 (${jpeg.length}B, было ${coverBuffer.length}B): ${coverUrl}`)
     } catch (e) {
       coverFailures++
       const msg = e instanceof Error ? e.message.split('\n')[0] : String(e)

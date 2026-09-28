@@ -41,6 +41,7 @@ import path from 'path'
 import {S3Client, PutObjectCommand} from '@aws-sdk/client-s3'
 import {PDFDocument, PDFFont, PDFPage, rgb} from 'pdf-lib'
 import fontkit from '@pdf-lib/fontkit'
+import sharp from 'sharp'
 
 const prisma = new PrismaClient()
 
@@ -48,10 +49,10 @@ const TEACHER_EMAIL = 'teacher@seed.dev'
 // D-IMG: checked GET /v1/models for both flux-2-klein-4b and z-image-turbo (2026-09-28) — neither
 // exposes a size or response_format/quality parameter (only `n`, and sell_pricing lists exactly
 // one size tier: "1024x1024_standard"). The "request a smaller size/JPEG" route from the brief is
-// a dead end at the API level, not something this script is doing wrong. Real compression would
-// need a post-processing image library (e.g. `sharp`) — not installed, and per the brief that's a
-// "stop and report" case, not something to install unilaterally. Using the cheaper of the two
-// models (z-image-turbo, 0.03 BYN) since there's no size lever to pull. Separately, BYCOM_API_KEY
+// a dead end at the API level, not something this script is doing wrong. Real compression now
+// happens post-generation via `sharp` (added as a real dependency, see compressCover below) —
+// resize + re-encode as JPEG, since there's no smaller size tier to request at the API level.
+// Using the cheaper of the two models (z-image-turbo, 0.03 BYN). Separately, BYCOM_API_KEY
 // currently has a 0.0000 BYN balance (verified: POST .../generations → 402 "insufficient balance"
 // on 2026-09-28) — every image call below will fail until it's topped up; handled per-topic with
 // try/catch so it doesn't block the free (text/tests/PDF) work.
@@ -209,6 +210,12 @@ async function generateCoverImage(prompt: string): Promise<Buffer> {
   const b64 = json.data[0]?.b64_json
   if (!b64) throw new Error(`bycom.by response has no b64_json: ${JSON.stringify(json)}`)
   return Buffer.from(b64, 'base64')
+}
+
+// Source is a square 1024x1024 PNG (see `size` above) — resize down to 768x768 and re-encode
+// as JPEG q78/mozjpeg (photographic/gradient poster art, PNG was the wrong format to begin with).
+async function compressCover(pngBuffer: Buffer): Promise<Buffer> {
+  return sharp(pngBuffer).resize(768, 768, {fit: 'inside'}).jpeg({quality: 78, mozjpeg: true}).toBuffer()
 }
 
 // ───────────────────────── PDF redesign (pdf-lib + fontkit, manual table grid) ─────────────────────────
@@ -2099,9 +2106,10 @@ async function main() {
     } else {
       try {
         const buffer = await generateCoverImage(COVER_PROMPTS[topic.slug])
-        coverUrl = await uploadBuffer(buffer, RICH_COVER_FOLDER, 'png', teacher.id, 'image/png')
+        const jpeg = await compressCover(buffer)
+        coverUrl = await uploadBuffer(jpeg, RICH_COVER_FOLDER, 'jpg', teacher.id, 'image/jpeg')
         imageStatus = 'refreshed'
-        console.log(`  + обложка v3 (${buffer.length} байт): ${coverUrl}`)
+        console.log(`  + обложка v3 (${jpeg.length}B, было ${buffer.length}B): ${coverUrl}`)
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e)
         console.error(`  ! обложка не сгенерирована (${msg}) — оставляю старую (${coverUrl || 'нет обложки'})`)

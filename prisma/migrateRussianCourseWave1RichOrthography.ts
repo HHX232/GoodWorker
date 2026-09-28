@@ -39,6 +39,7 @@ import path from 'path'
 import {PutObjectCommand, S3Client} from '@aws-sdk/client-s3'
 import {PDFDocument, PDFFont, PDFPage, rgb} from 'pdf-lib'
 import fontkit from '@pdf-lib/fontkit'
+import sharp from 'sharp'
 
 const prisma = new PrismaClient()
 
@@ -94,6 +95,14 @@ async function generateCoverBycom(prompt: string): Promise<Buffer> {
   const b64 = json.data?.[0]?.b64_json
   if (!b64) throw new Error(`bycom response missing data[0].b64_json: ${JSON.stringify(json).slice(0, 300)}`)
   return Buffer.from(b64, 'base64')
+}
+
+// Requested IMAGE_SIZE (1024x576) is non-square, and bycom.by has no size/quality/format
+// param besides `size` itself (see D01 in the Пунктуация script) — resize `fit: 'inside'`
+// (not 'cover') so a genuinely 1024x576 PNG scales proportionally to ~768x432 instead of
+// being cropped to a square. Re-encode as JPEG q78/mozjpeg, same as the other 3 scripts.
+async function compressCover(pngBuffer: Buffer): Promise<Buffer> {
+  return sharp(pngBuffer).resize(768, 768, {fit: 'inside'}).jpeg({quality: 78, mozjpeg: true}).toBuffer()
 }
 
 // ───────────────────────── TipTap rich-content builders (TEXT blocks) ─────────────────────────
@@ -1406,11 +1415,12 @@ async function main() {
       } else {
         try {
           const buffer = await generateCoverBycom(topic.coverPrompt)
-          const coverUrl = await uploadBuffer(buffer, COVER_FOLDER, 'png', teacher.id, 'image/png')
+          const jpeg = await compressCover(buffer)
+          const coverUrl = await uploadBuffer(jpeg, COVER_FOLDER, 'jpg', teacher.id, 'image/jpeg')
           mediaBlock.payload = {...mediaBlock.payload, url: coverUrl}
           changed = true
           coverUpdated++
-          console.log(`  + обложка v3 (${buffer.length} байт): ${coverUrl}`)
+          console.log(`  + обложка v3 (${jpeg.length}B, было ${buffer.length}B): ${coverUrl}`)
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e)
           console.log(`  ! обложка не сгенерирована — оставлена старая: ${msg}`)
