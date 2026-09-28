@@ -30,5 +30,12 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "prisma/backfillRussianCourse03SyntaxCovers.ts",
+    "prisma/seedRussianCourse01Orthography.ts",
+    "prisma/seedRussianCourse02Morphology.ts",
+    "prisma/seedRussianCourse03Syntax.ts",
+    "prisma/seedRussianCourse04Punctuation.ts"
+  ]
 }
