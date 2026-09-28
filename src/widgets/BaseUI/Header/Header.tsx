@@ -84,6 +84,8 @@ function Header() {
           <NotificationBell />
           <ChatHeaderIcon />
           <FilesHeaderIcon />
+        </div>
+        <div className={styles.profile_slot}>
           <ProfilePreview />
         </div>
       </div>
