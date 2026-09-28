@@ -1016,7 +1016,7 @@ async function main() {
       const blocks = buildBlocks()
       await prisma.test.update({
         where: {id: test.id},
-        data: {content: {description: existingContent?.description ?? title, blocks, richVersion: TEST_RICH_VERSION}}
+        data: {content: {description: existingContent?.description ?? title, blocks, richVersion: TEST_RICH_VERSION} as object}
       })
       console.log(`  + тест "${title}" обновлён (${blocks.length} блоков)`)
       testsRefreshed++
@@ -1047,7 +1047,7 @@ async function main() {
           const blocks = [...(existingContent?.blocks ?? []), topic.varietyForLargeTest()]
           await prisma.test.update({
             where: {id: largeTest.id},
-            data: {content: {description: existingContent?.description ?? topic.largeTestTitle, blocks, richVersion: TEST_RICH_VERSION}}
+            data: {content: {description: existingContent?.description ?? topic.largeTestTitle, blocks, richVersion: TEST_RICH_VERSION} as object}
           })
           console.log(`  + тест "${topic.largeTestTitle}" обновлён (+1 блок вариативности, ${blocks.length} блоков всего)`)
           testsRefreshed++
