@@ -11,6 +11,13 @@
     background: #1a1c22;
 
     h1, h2, h3, h4, h5, h6, p, li, strong, em { color: #d0d3e0; }
+
+    blockquote { border-left-color: rgba(255,255,255,0.2); color: #a3a8bd; }
+
+    table {
+      td, th { border-color: rgba(255,255,255,0.12); }
+      th { background: rgba(255,255,255,0.05); }
+    }
   }
 
   .box { background: #1e2030; border-color: rgba(255,255,255,0.08); }
@@ -97,6 +104,32 @@
 
     ul, ol { padding-left: 20px; margin: 0 0 6px; }
     li { margin-bottom: 2px; }
+
+    blockquote {
+      margin: 0 0 6px;
+      padding: 4px 12px;
+      border-left: 3px solid #94a3b8;
+      color: #475569;
+      font-style: italic;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 0 0 10px;
+      font-size: 13px;
+
+      td, th {
+        border: 1px solid #e2e8f0;
+        padding: 6px 10px;
+        text-align: left;
+      }
+
+      th {
+        background: #f8fafc;
+        font-weight: 600;
+      }
+    }
 
     // placeholder
     p.is-editor-empty:first-child::before {
