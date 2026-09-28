@@ -84,6 +84,23 @@
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+
+  // Mobile: logo + profile on the first row, the icon buttons on their own row below
+  @media (max-width: 700px) {
+    order: 5;
+    flex-basis: 100%;
+    flex-wrap: wrap;
+  }
+}
+
+.profile_slot {
+  flex-shrink: 0;
+  margin-left: -7px; // keep the desktop 8px gap to the icon group (inner gap is 15px)
+
+  @media (max-width: 700px) {
+    order: 1;
+    margin-left: auto;
+  }
 }
 
 .theme_btn {
