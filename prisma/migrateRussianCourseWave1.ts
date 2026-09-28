@@ -11,7 +11,6 @@
 import {PrismaClient} from '@prisma/client'
 import fs from 'fs/promises'
 import path from 'path'
-import {PostBlockType} from '../src/shared/types/Post/Post.type'
 
 const prisma = new PrismaClient()
 
@@ -31,7 +30,7 @@ function rewriteTestLinkIds(content: unknown, titleToId: Map<string, string>): u
   const doc = content as {blocks?: {type: string; payload?: Record<string, unknown>}[]} | null
   if (!doc?.blocks) return content
   for (const block of doc.blocks) {
-    if (block.type !== PostBlockType.TEST_LINK) continue
+    if (block.type !== 'TEST_LINK') continue
     const tests = block.payload?.tests as {id: string; title: string}[] | undefined
     if (!tests) continue
     for (const t of tests) {
