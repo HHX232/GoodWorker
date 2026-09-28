@@ -1,62 +1,39 @@
 window.STATE =
 {
-  "slug": "tutor-files-reupload-edit",
-  "title": "Перезалив отредактированного PDF в директорию + редактор docx",
-  "mode": "semi",
+  "slug": "russian-course",
+  "title": "Курс «Русский язык» — посты, тесты, шпаргалки, фото (первая волна: Орфография/Морфология/Синтаксис/Пунктуация)",
+  "mode": "interview",
   "depth": "normal",
-  "briefFile": "2026-09-26-brief.md",
+  "briefFile": "2026-09-28-brief.md",
   "memoryFile": "CLAUDE.md",
-  "startedAt": "2026-09-26T00:52:21+03:00",
-  "updatedAt": "2026-09-27T20:50:00+03:00",
-  "finishedAt": "2026-09-27T20:50:00+03:00",
+  "startedAt": "2026-09-28T00:00:00+03:00",
+  "updatedAt": "2026-09-28T00:00:00+03:00",
+  "finishedAt": "2026-09-28T00:00:00+03:00",
   "stages": [
-    { "id": "preflight", "status": "done",    "startedAt": "2026-09-26T00:52:21+03:00", "finishedAt": "2026-09-26T00:53:00+03:00" },
-    { "id": "manifest",  "status": "done",    "startedAt": "2026-09-26T00:53:00+03:00", "finishedAt": "2026-09-27T20:50:00+03:00", "note": "9 требований (2 добавлены во второй итерации)" },
-    { "id": "briefing",  "status": "done",    "startedAt": "2026-09-26T00:54:00+03:00", "finishedAt": "2026-09-27T20:15:00+03:00", "note": "2 вопроса всего: docx-редактор (объём), схема сохранения" },
-    { "id": "spec",      "status": "done",    "startedAt": "2026-09-26T00:56:00+03:00", "finishedAt": "2026-09-27T00:10:00+03:00" },
-    { "id": "plan",      "status": "skipped", "note": "ярус T0 — без разбивки на таски" },
-    { "id": "build",     "status": "done",    "startedAt": "2026-09-27T00:10:00+03:00", "finishedAt": "2026-09-27T20:50:00+03:00", "note": "2 итерации: перезалив PDF, затем редактор docx" },
-    { "id": "review",    "status": "done",    "startedAt": "2026-09-27T17:20:00+03:00", "finishedAt": "2026-09-27T20:50:00+03:00", "note": "T0 — все 3 оси инлайн, обе итерации" },
-    { "id": "final",     "status": "done",    "startedAt": "2026-09-27T20:45:00+03:00", "finishedAt": "2026-09-27T20:50:00+03:00" }
+    { "id": "preflight", "status": "done",   "startedAt": "2026-09-28T00:00:00+03:00", "finishedAt": "2026-09-28T00:00:00+03:00", "note": "новый прогон в настроенном репо: новый слаг, стейт прошлого прогона (tutor-files-reupload-edit) заархивирован" },
+    { "id": "manifest",  "status": "done",   "startedAt": "2026-09-28T00:00:00+03:00", "finishedAt": "2026-09-28T00:00:00+03:00", "note": "10 требований, R05 deferred (цитата пользователя)" },
+    { "id": "briefing",  "status": "done",   "startedAt": "2026-09-28T00:00:00+03:00", "finishedAt": "2026-09-28T00:00:00+03:00", "note": "режим переключён на interview («прожарь меня»); 6 вопросов: порядок блоков, охват по классам, объём на тему, формат шпаргалок (2 захода), пакет @pdf-lib/fontkit" },
+    { "id": "spec",      "status": "done",   "startedAt": "2026-09-28T00:00:00+03:00", "finishedAt": "2026-09-28T00:00:00+03:00", "note": "T2 — первая волна: 4 блока, 35 листовых тем" },
+    { "id": "plan",      "status": "done",   "startedAt": "2026-09-28T00:00:00+03:00", "finishedAt": "2026-09-28T00:00:00+03:00", "note": "4 тикета, по одному на блок, независимые файлы" },
+    { "id": "build",     "status": "done", "startedAt": "2026-09-28T00:00:00+03:00", "finishedAt": "2026-09-28T00:00:00+03:00", "note": "все 4 тикета готовы; смена провайдера картинок kie.ai→bycom.by в середине сборки (кредиты кончились у всех троих параллельных тикетов почти одновременно)" },
+    { "id": "review",    "status": "done", "startedAt": "2026-09-28T00:00:00+03:00", "finishedAt": "2026-09-28T00:00:00+03:00", "note": "T2 — орк-ром: сверка счётчиков постов/тестов по всем 35 темам (без расхождений), проверка на дубли тестов (4 пары совпавших заголовков — не дубли, разные темы двух блоков с пересекающимся явлением), выборочная проверка переводов (не копии ru)" },
+    { "id": "final",     "status": "done", "startedAt": "2026-09-28T00:00:00+03:00", "finishedAt": "2026-09-28T00:00:00+03:00", "note": "первая волна из запланированных (Фонетика и новые ветки — Лексика/Словообразование/Стилистика/Развитие речи/ОГЭ/ЕГЭ — вне этого прогона, R07)" }
   ],
-  "requirements": { "total": 9, "done": 9, "inTicket": 0, "inSpec": 0, "placeholder": 0, "deferred": 0, "dropped": 0 },
-  "coverage": { "found": 0, "fixed": 0, "deferred": 0, "notes": "G2 — самопроверка орк-ром (T0, независимый субагент отклонён пользователем): брифу соответствуют все пункты, лишнего не найдено" },
-  "tickets": [],
-  "singlePass": {
-    "startedAt": "2026-09-27T00:10:00+03:00",
-    "finishedAt": "2026-09-27T20:50:00+03:00",
-    "files": [
-      "src/widgets/Files/ReviewModal/ReviewModal.tsx",
-      "src/widgets/Files/ReviewModal/ReviewModal.module.scss",
-      "src/widgets/Files/FilesShell/FilesShell.tsx",
-      "src/widgets/Files/Cards/FileCard.tsx",
-      "src/widgets/Files/icons.tsx",
-      "src/widgets/Files/DocxEditorModal/DocxEditorModal.tsx",
-      "src/widgets/Files/DocxEditorModal/DocxEditorModal.module.scss",
-      "src/shared/lib/tutorFiles/readModel.ts",
-      "src/shared/types/TutorFiles/tutorFiles.types.ts",
-      "app/api/tutor-files/files/route.ts",
-      "app/api/tutor-files/files/[id]/content/route.ts",
-      "prisma/schema.prisma",
-      "prisma/migrations/20260927204113_tutor_file_derived_from/migration.sql",
-      "package.json", "package-lock.json",
-      "messages/en.json", "messages/ru.json", "messages/hi.json", "messages/zh.json"
-    ],
-    "tests": { "passed": 0, "failed": 0 },
-    "commit": "9875516, 436cf2b"
-  },
+  "requirements": { "total": 10, "done": 9, "inTicket": 0, "inSpec": 0, "placeholder": 0, "deferred": 1, "dropped": 0 },
+  "coverage": { "found": 1, "fixed": 0, "deferred": 0, "notes": "1 находка на ревью — совпадающие заголовки тестов между introductory-words/introductory-punctuation и isolated-members/comma-isolation; проверено — не баг, разные категории, дизайн пересечения был заложен в тикетах" },
+  "tickets": [
+    { "id": "01", "title": "Блок «Орфография» — 8 тем", "status": "done", "startedAt": "2026-09-28T00:00:00+03:00", "finishedAt": "2026-09-28T00:00:00+03:00", "commit": "81316fe, 74ad73f" },
+    { "id": "02", "title": "Блок «Морфология» — 10 тем", "status": "done", "startedAt": "2026-09-28T00:00:00+03:00", "finishedAt": "2026-09-28T00:00:00+03:00", "commit": "097fb56, a15cc94", "note": "картинки — bycom.by/z-image-turbo после исчерпания kie.ai" },
+    { "id": "03", "title": "Блок «Синтаксис» — 10 тем", "status": "done", "startedAt": "2026-09-28T00:00:00+03:00", "finishedAt": "2026-09-28T00:00:00+03:00", "commit": "d34780a, 5f36c14", "note": "обложки дозалиты бэкфилл-скриптом после смены провайдера на bycom.by" },
+    { "id": "04", "title": "Блок «Пунктуация» — 7 тем", "status": "done", "startedAt": "2026-09-28T00:00:00+03:00", "finishedAt": "2026-09-28T00:00:00+03:00", "commit": "f00981b, 9d50a62", "note": "картинки — bycom.by/z-image-turbo после исчерпания kie.ai" }
+  ],
   "tests": { "passed": 0, "failed": 0 },
   "debt": {
     "placeholders": [],
-    "assumptions": [
-      "PDF-кнопка впечатывает только новые (несохранённые) мазки текущей сессии, не пометки, сохранённые в прошлой проверке — во избежание тайнта canvas без гарантии CORS у бакета (spec §2)",
-      "PDF-кнопка не распространена на изображения — брифу соответствует, но A01 в spec «Вне рамок» описывает дешёвое расширение по запросу",
-      "docx-редактор — только .docx (библиотека @docx-editor.dev не умеет xlsx/pptx, хотя пользователь написал «и подобных файлов»)",
-      "Чужой UI редактора docx остаётся на английском — @docx-editor.dev/i18n не поставляет ru-каталог",
-      "Обнаружен пре-существующий дрейф локальной dev-БД (не моя правка): часть таблиц tutor-files (StorageSettings и др.) физически отсутствуют локально из-за общей Postgres с веткой кошелька — живой клик по докс-редактору через реальный аплоад не прогонялся, проверено tsc/eslint/полным npm run build"
-    ],
-    "emptyEnv": []
-  },
-  "additions": [],
-  "blind": { "checked": 9, "agreed": 9, "drift": 0, "notes": "Слепая сверка орк-ром (T0, без отдельного субагента — пользователь отклонил подобный запуск на G2): все пункты обоих сообщений пользователя покрыты кодом 1:1." }
+    "notes": [
+      "Ключ kie.ai получен в чате 2026-09-28, сразу настроен локально (~/.velsvisual/config.json), в бриф записан редактированным.",
+      "@pdf-lib/fontkit добавлен как devDependency-компаньон pdf-lib для кириллицы в PDF-шпаргалках, с подтверждения пользователя.",
+      "Блок «Фонетика/графика/орфоэпия» (R05) сознательно не в этой волне — отдельный будущий курс для начальной школы."
+    ]
+  }
 }
