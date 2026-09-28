@@ -9,5 +9,11 @@ npx tsx prisma/seed-if-empty.ts
 # just retries cleanly on the next boot.
 npx tsx prisma/migrateRussianCourseWave1.ts || echo "⚠️ russian-course migration failed, continuing boot (will retry next restart)" >&2
 npx tsx prisma/migrateRussianCourseWave1Roadmap.ts || echo "⚠️ russian-course roadmap migration failed, continuing boot (will retry next restart)" >&2
-npx tsx prisma/migrateRussianCourseWave1CoverRefresh.ts || echo "⚠️ russian-course cover refresh failed, continuing boot (will retry next restart)" >&2
+# Superseded migrateRussianCourseWave1CoverRefresh.ts (uncompressed v2 covers) —
+# the 4 rich-content scripts below own covers now (compressed v3, plus
+# text/PDF/tests), so running the old one would just be wasted API spend.
+npx tsx prisma/migrateRussianCourseWave1RichOrthography.ts || echo "⚠️ russian-course rich orthography pass failed, continuing boot (will retry next restart)" >&2
+npx tsx prisma/migrateRussianCourseWave1RichMorphology.ts || echo "⚠️ russian-course rich morphology pass failed, continuing boot (will retry next restart)" >&2
+npx tsx prisma/migrateRussianCourseWave1RichSyntax.ts || echo "⚠️ russian-course rich syntax pass failed, continuing boot (will retry next restart)" >&2
+npx tsx prisma/migrateRussianCourseWave1RichPunctuation.ts || echo "⚠️ russian-course rich punctuation pass failed, continuing boot (will retry next restart)" >&2
 exec node server.js -p ${PORT:-3000}
