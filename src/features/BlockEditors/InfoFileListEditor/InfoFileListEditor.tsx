@@ -79,11 +79,23 @@ function FileRow({file, onRemove, t}: {file: PostFileEntry; onRemove: () => void
   const color = getFileColor(file.mimeType)
   const isImage = file.mimeType.startsWith('image/')
 
-  const handleDownload = () => {
-    const a = document.createElement('a')
-    a.href = file.url
-    a.download = file.name
-    a.click()
+  const handleDownload = async () => {
+    try {
+      const res = await fetch(file.url)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = file.name
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      // fallback: same as before, at least opens the file even if download-as-attachment fails
+      const a = document.createElement('a')
+      a.href = file.url
+      a.download = file.name
+      a.click()
+    }
   }
 
   return (
@@ -125,11 +137,23 @@ function FileRowReadonly({file, t}: {file: PostFileEntry; t: TFn}) {
   const color = getFileColor(file.mimeType)
   const isImage = file.mimeType.startsWith('image/')
 
-  const handleDownload = () => {
-    const a = document.createElement('a')
-    a.href = file.url
-    a.download = file.name
-    a.click()
+  const handleDownload = async () => {
+    try {
+      const res = await fetch(file.url)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = file.name
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      // fallback: same as before, at least opens the file even if download-as-attachment fails
+      const a = document.createElement('a')
+      a.href = file.url
+      a.download = file.name
+      a.click()
+    }
   }
 
   return (
