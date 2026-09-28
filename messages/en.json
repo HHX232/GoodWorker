@@ -3649,6 +3649,8 @@
     "errMaxDepth": "Can't go deeper: at most {max} levels of nesting",
     "errTooLarge": "“{name}” is larger than 50 MB",
     "errUpload": "Couldn't upload “{name}”. Check your connection and try again",
+    "pageCropped": "{count, plural, one {Page photo cropped to the sheet} other {Page photos cropped to the sheet}}",
+    "pageCropUndo": "Keep original",
     "errVip": "This action requires VIP",
     "errGeneric": "Something went wrong. Please try again",
     "errLoad": "Couldn't open the library",

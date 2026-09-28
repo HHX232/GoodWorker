@@ -2,6 +2,7 @@
 
 import { DEFAULT_MAX_FILE_MB, MAX_FOLDER_DEPTH, MB } from '@/shared/lib/tutorFiles/constants'
 import { kindOf as importKindOf } from '@/shared/constants/pdfImport'
+import { autoCropPagePhoto } from '@/shared/lib/pageAutoCrop'
 import type { LibraryFile, LibraryFolder, LibraryResponse, SearchFile, TreeNode, UsageResponse } from '@/shared/types/TutorFiles/tutorFiles.types'
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
@@ -175,14 +176,28 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
   // Returns the created rows, or null if any file failed — callers that need
   // to know (the reupload button in ReviewModal, the docx editor's "save as
   // new") get a real signal instead of guessing from the toast that already ran.
-  const uploadFiles = async (list: File[], opts?: { derivedFromId?: string }): Promise<LibraryFile[] | null> => {
+  //
+  // Photos of a notebook/paper page are auto-cropped to the sheet and
+  // straightened before upload (pageAutoCrop.ts); the toast then offers to
+  // swap the result back for the untouched original. `keepOriginal` is that
+  // swap-back path; derived files (docx editor, review re-upload) never crop.
+  const uploadFiles = async (list: File[], opts?: { derivedFromId?: string; keepOriginal?: boolean }): Promise<LibraryFile[] | null> => {
     if (list.length === 0 || uploading) return null
     let crossedQuota = false
     let allOk = true
     const created: LibraryFile[] = []
+    const cropped: { created: LibraryFile; original: File }[] = []
     setUploading({ done: 0, total: list.length })
     for (let i = 0; i < list.length; i++) {
-      const file = list[i]
+      const original = list[i]
+      let file = original
+      if (!opts?.derivedFromId && !opts?.keepOriginal && original.type.startsWith('image/')) {
+        try {
+          file = (await autoCropPagePhoto(original)) ?? original
+        } catch (e) {
+          console.error('[FilesShell] page auto-crop failed, uploading original', e)
+        }
+      }
       // Students don't get /usage; the server re-checks anyway.
       if (file.size > (usage.data?.maxFileBytes ?? DEFAULT_MAX_FILE_MB * MB)) {
         toast.error(t('errTooLarge', { name: file.name }))
@@ -195,6 +210,7 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
         try {
           const res = await filesFetch<{ file: LibraryFile; usedBytes?: number; quotaBytes?: number }>('/api/tutor-files/files', { method: 'POST', body: form })
           created.push(res.file)
+          if (file !== original) cropped.push({ created: res.file, original })
           // G02 (Wallet build): warn only on the upload that *first* crosses
           // the quota — "was the library already over before this file?"
           // comes straight from the post-write usedBytes minus this file's size.
@@ -209,6 +225,12 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
     }
     setUploading(null)
     refresh()
+    if (cropped.length > 0) {
+      toast.success(t('pageCropped', { count: cropped.length }), {
+        duration: 10000,
+        action: { label: t('pageCropUndo'), onClick: () => { void restoreOriginals(cropped) } },
+      })
+    }
     if (crossedQuota) {
       try {
         setOverage(await queryClient.fetchQuery({ queryKey: ['tutor-files', 'usage'], queryFn: () => filesFetch<UsageResponse>('/api/tutor-files/usage'), staleTime: 0 }))
@@ -217,6 +239,22 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
       }
     }
     return allOk ? created : null
+  }
+
+  // "Keep the original" from the auto-crop toast: drop the cropped copies,
+  // upload the untouched photos in their place.
+  const restoreOriginals = async (pairs: { created: LibraryFile; original: File }[]) => {
+    const originals: File[] = []
+    for (const { created, original } of pairs) {
+      try {
+        await filesFetch(`/api/tutor-files/files/${created.id}`, { method: 'DELETE' })
+        originals.push(original)
+      } catch (e) {
+        console.error('[FilesShell] delete of cropped copy failed', e)
+        toast.error(t('errGeneric'))
+      }
+    }
+    if (originals.length > 0) await uploadFiles(originals, { keepOriginal: true })
   }
 
   // The docx editor's overwrite path (target already has `derivedFromId` set).

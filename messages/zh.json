@@ -3622,6 +3622,8 @@
     "errMaxDepth": "无法继续嵌套：最多 {max} 层",
     "errTooLarge": "“{name}”超过 50 MB",
     "errUpload": "无法上传“{name}”。请检查网络后重试",
+    "pageCropped": "{count, plural, other {已按纸张边缘裁剪页面照片}}",
+    "pageCropUndo": "保留原图",
     "errVip": "此操作仅限 VIP",
     "errGeneric": "出了点问题，请重试",
     "errLoad": "无法打开文件库",
