@@ -44,7 +44,7 @@ export default function PostsBlock({nodeId}: {nodeId: string}) {
   const {data: postsData, isLoading: postsLoading} = useQuery({
     queryKey: ['my-posts-modal', me?.id],
     queryFn: () => PostService.getList({teacherId: me!.id, limit: 100}),
-    enabled: !!me?.id && modalOpen,
+    enabled: !!me?.id && (modalOpen || viewOnly),
     staleTime: 1000 * 30
   })
 
