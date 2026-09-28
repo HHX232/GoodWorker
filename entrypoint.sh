@@ -16,4 +16,10 @@ npx tsx prisma/migrateRussianCourseWave1RichOrthography.ts || echo "⚠️ russi
 npx tsx prisma/migrateRussianCourseWave1RichMorphology.ts || echo "⚠️ russian-course rich morphology pass failed, continuing boot (will retry next restart)" >&2
 npx tsx prisma/migrateRussianCourseWave1RichSyntax.ts || echo "⚠️ russian-course rich syntax pass failed, continuing boot (will retry next restart)" >&2
 npx tsx prisma/migrateRussianCourseWave1RichPunctuation.ts || echo "⚠️ russian-course rich punctuation pass failed, continuing boot (will retry next restart)" >&2
+# TEMPORARY one-off, runs last so it has final say over the rich passes above:
+# revert 7 topics to their pre-promo-poster cover, hide the whole batch
+# (posts + roadmap) from public view pending a quality pass. Remove this line
+# once confirmed to have run on production — it's a one-time fix, not a
+# permanent part of boot.
+npx tsx prisma/fixCoversAndHideRussianCourse.ts || echo "⚠️ russian-course cover-fix/hide failed, continuing boot (will retry next restart)" >&2
 exec node server.js -p ${PORT:-3000}
