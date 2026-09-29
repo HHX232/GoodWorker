@@ -1,5 +1,5 @@
 import { prisma } from '@/shared/prisma/prisma'
-import { lectureAudioBytes } from '@/shared/lib/lecture/audio'
+import { lectureStorageBytes } from '@/shared/lib/lecture/audio'
 import { ADMIN_QUOTA_GB, DEFAULT_MAX_FILE_MB, DEFAULT_QUOTA_GB, GB, MAX_FOLDER_DEPTH, MB } from './constants'
 
 export { MAX_FOLDER_DEPTH }
@@ -62,13 +62,13 @@ export function assertFolderDepthAllowed(parentAncestorIds: string[]): void {
 
 /**
  * `SUM(sizeBytes)` across every file owned by `teacherId`, plus the tutor's
- * own lecture audio kept in S3 (/lecture, "сохранять аудио") — compared
+ * own /lecture audio and photos kept in S3 — compared
  * against the quota from `getStorageLimits()`.
  */
 export async function getUsedBytes(teacherId: string): Promise<number> {
   const [files, audio] = await Promise.all([
     prisma.tutorFile.aggregate({ where: { teacherId }, _sum: { sizeBytes: true } }),
-    lectureAudioBytes(teacherId, 'TEACHER'),
+    lectureStorageBytes(teacherId, 'TEACHER'),
   ])
   return (files._sum.sizeBytes ?? 0) + audio
 }

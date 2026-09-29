@@ -2,6 +2,7 @@ import { Mark, mergeAttributes, Node } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { ReactNodeViewRenderer } from '@tiptap/react'
 import { MathView } from './MathView'
+import { PhotoView } from './PhotoView'
 
 /** Transactions carrying this meta come from the AI (append / final regen) — they don't mark a section as edited. */
 export const AI_META = 'lectureAi'
@@ -132,5 +133,34 @@ export const PendingFixMark = Mark.create({
   },
   renderHTML({ HTMLAttributes }) {
     return ['span', mergeAttributes(HTMLAttributes, { class: 'lecture-pending-fix' }), 0]
+  },
+})
+
+/** A board / notebook photo in the notes (LecturePhoto row; image served via our API). */
+export const LecturePhotoNode = Node.create({
+  name: 'lecturePhoto',
+  group: 'block',
+  atom: true,
+  selectable: true,
+  draggable: true,
+  addAttributes() {
+    return {
+      photoId: { default: '', parseHTML: el => el.getAttribute('data-photo-id') ?? '', renderHTML: a => ({ 'data-photo-id': a.photoId }) },
+      width: { default: 0, parseHTML: el => Number(el.getAttribute('data-w')) || 0, renderHTML: a => ({ 'data-w': a.width }) },
+      height: { default: 0, parseHTML: el => Number(el.getAttribute('data-h')) || 0, renderHTML: a => ({ 'data-h': a.height }) },
+      size: { default: 'full', parseHTML: el => (el.getAttribute('data-size') === 'half' ? 'half' : 'full'), renderHTML: a => ({ 'data-size': a.size }) },
+    }
+  },
+  parseHTML() {
+    return [{ tag: 'figure[data-photo-id]' }]
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ['figure', mergeAttributes(HTMLAttributes)]
+  },
+  renderText() {
+    return '[фото]\n'
+  },
+  addNodeView() {
+    return ReactNodeViewRenderer(PhotoView)
   },
 })

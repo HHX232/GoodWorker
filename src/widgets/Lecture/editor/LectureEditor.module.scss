@@ -4,6 +4,7 @@
 
 $ink: #1e1e24;
 $muted: #6b6d7a;
+$faint: #9a9cab;
 $line: #ececf2;
 $soft: #f6f6f9;
 $ai: #7c3aed;
@@ -20,6 +21,9 @@ $aiSoft: #f5f0ff;
 }
 
 @keyframes shimmer { to { background-position: -200% 0; } }
+
+:global(.lecture-spin) { animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .spacer { flex: 1; }
 
@@ -133,6 +137,67 @@ $aiSoft: #f5f0ff;
   }
   :global(.lecture-math-block:hover .lecture-math-actions), :global(.lecture-math-block.is-selected .lecture-math-actions) { opacity: 1; }
   @media (hover: none) { :global(.lecture-math-actions) { opacity: 1; } }
+
+  // ── Photos ──
+  :global(.lecture-photo) {
+    position: relative;
+    margin: 1em 0;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid $line;
+    background: $soft;
+    line-height: 0;
+
+    img { display: block; width: 100%; height: auto; }
+    &.is-half { width: 50%; margin-left: auto; margin-right: auto; @media (max-width: 640px) { width: 100%; } }
+    &.is-selected { outline: 2px solid rgba(124, 58, 237, 0.5); outline-offset: 2px; }
+  }
+
+  :global(.lecture-photo-bar) {
+    position: absolute;
+    left: 50%;
+    bottom: 10px;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 12px;
+    background: rgba(20, 20, 28, 0.82);
+    backdrop-filter: blur(8px);
+    line-height: 1;
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 32px;
+      padding: 0 10px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: #fff;
+      font: 500 13px/1 inherit;
+      font-family: inherit;
+      white-space: nowrap;
+      cursor: pointer;
+      &:hover { background: rgba(255, 255, 255, 0.12); }
+    }
+    :global(.is-primary) { background: linear-gradient(135deg, #7c3aed, #6366f1); &:hover { filter: brightness(1.08); background: linear-gradient(135deg, #7c3aed, #6366f1); } }
+  }
+
+  :global(.lecture-photo-busy) {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(2px);
+    color: $ai;
+    font: 600 14px/1 system-ui, sans-serif;
+  }
 }
 
 // ── Selection actions menu (Scribe-style) ──
@@ -510,6 +575,84 @@ $aiSoft: #f5f0ff;
 .aiResultMath { text-align: center; font-size: 1.2em; overflow-x: auto; }
 .aiExplain { margin: 8px 0 0; color: #4c1d95; font-size: 14px; line-height: 1.5; }
 
+// ── Photo dialogs ──
+.photoDialog { width: min(560px, 100%); }
+
+.photoPreview {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+  max-height: 46vh;
+  border: 1px solid $line;
+  border-radius: 14px;
+  background: $soft;
+  overflow: hidden;
+  img { display: block; max-width: 100%; max-height: 46vh; object-fit: contain; }
+}
+
+.photoPreviewBusy { display: inline-flex; align-items: center; gap: 8px; color: $muted; font-size: 14px; }
+
+.photoBadge {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #b45309;
+  font-size: 12px;
+}
+.photoBadgeOk { color: #047857; }
+
+.optionList { display: flex; flex-direction: column; gap: 2px; margin-top: 12px; }
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: $ink;
+  font-size: 14px;
+  cursor: pointer;
+  svg { color: $muted; }
+  &:hover { background: $soft; }
+  input { flex: none; width: 16px; height: 16px; margin: 0; accent-color: $ai; appearance: auto; }
+}
+
+.mergeDialog { width: min(720px, 100%); }
+
+.mergeProgress { display: flex; align-items: center; gap: 14px; padding: 18px 4px; color: $ai; }
+.mergeStep { color: $ink; font-weight: 600; font-size: 15px; }
+.mergeHint { margin: 4px 0 0; color: $muted; font-size: 13px; line-height: 1.5; }
+
+.mergeList { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; max-height: 58vh; overflow-y: auto; }
+
+.mergeItem {
+  padding: 12px;
+  border: 1px solid $line;
+  border-radius: 14px;
+  background: #fafafc;
+  opacity: 0.62;
+  transition: opacity 0.15s, border-color 0.15s;
+}
+.mergeItemOn { opacity: 1; border-color: rgba(124, 58, 237, 0.25); background: #fff; }
+
+.mergeHead { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; cursor: pointer; input { flex: none; width: 16px; height: 16px; margin: 0; accent-color: $ai; appearance: auto; } }
+
+.mergeTag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.mergeTag_duplicate { background: #f1f1f5; color: $muted; }
+.mergeTag_continuation { background: #eff6ff; color: #1d4ed8; }
+.mergeTag_new { background: #ecfdf5; color: #047857; }
+
+.mergeWhere { color: $muted; font-size: 12.5px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.mergeReason { margin: 6px 0 8px 24px; color: $faint; font-size: 12.5px; }
+.mergeItem .diffAfter { margin-left: 24px; padding: 8px 10px; border-radius: 10px; background: #faf6ff; }
+
 // ─── Dark theme ───────────────────────────────────────────────────────────────
 :global(html.theme-dark), :global(html.pomodoro-dark) {
   .skeleton { background: linear-gradient(90deg, #1a1c24 0%, #20222c 50%, #1a1c24 100%); background-size: 200% 100%; }
@@ -555,4 +698,16 @@ $aiSoft: #f5f0ff;
   .modeTab { color: #8f94a6; }
   .modeTabOn { border-color: rgba(167, 139, 250, 0.3); background: #1a1c24; color: #c4b5fd; }
   .aiExplain { color: #ddd6fe; }
+  .editor :global(.lecture-photo) { border-color: rgba(255, 255, 255, 0.08); background: #16171e; }
+  .editor :global(.lecture-photo-busy) { background: rgba(20, 21, 28, 0.72); color: #c4b5fd; }
+  .photoPreview { border-color: rgba(255, 255, 255, 0.08); background: #16171e; }
+  .photoBadge { background: rgba(20, 21, 28, 0.9); }
+  .option { color: #e8eaf0; &:hover { background: rgba(255, 255, 255, 0.05); } }
+  .mergeItem { border-color: rgba(255, 255, 255, 0.07); background: #16171e; }
+  .mergeItemOn { border-color: rgba(167, 139, 250, 0.3); background: #1a1c24; }
+  .mergeStep { color: #e8eaf0; }
+  .mergeTag_duplicate { background: rgba(255, 255, 255, 0.06); color: #aeb2c2; }
+  .mergeTag_continuation { background: rgba(59, 130, 246, 0.14); color: #93c5fd; }
+  .mergeTag_new { background: rgba(16, 185, 129, 0.14); color: #6ee7b7; }
+  .mergeItem .diffAfter { background: rgba(167, 139, 250, 0.08); }
 }

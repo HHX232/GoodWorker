@@ -154,6 +154,60 @@ $rec: #e11d48;
   &:disabled { opacity: 0.45; cursor: default; }
 }
 
+.photoBtn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 2px 0 4px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #7c3aed 0%, #6366f1 55%, #0ea5e9 130%);
+  color: #fff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(124, 58, 237, 0.28);
+  overflow: hidden;
+  transition: transform 0.12s, box-shadow 0.12s;
+
+  // A slow sheen across the button — the "AI does this" affordance.
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.28) 50%, transparent 70%);
+    transform: translateX(-100%);
+    animation: sheen 3.6s ease-in-out infinite;
+  }
+  &:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 14px 30px rgba(124, 58, 237, 0.34); }
+  &:disabled { opacity: 0.5; cursor: default; box-shadow: none; &::after { display: none; } }
+}
+
+@keyframes sheen { 0%, 55% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) { .photoBtn::after { animation: none; display: none; } }
+
+.photoBtnIcon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.photoBtnText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  strong { font-size: 14px; font-weight: 600; }
+  small { color: rgba(255, 255, 255, 0.82); font-size: 11.5px; line-height: 1.35; }
+}
+
 .badge { margin-left: auto; padding: 1px 6px; border-radius: 6px; background: $aiSoft; color: $ai; font: 600 11px/1.5 ui-monospace, Menlo, monospace; }
 
 .feedEmpty { margin: 0; color: $faint; font-size: 13px; }
@@ -268,7 +322,6 @@ $rec: #e11d48;
   small { display: block; color: $faint; font-size: 11px; font-weight: 400; }
 }
 
-.tariffLine { margin: 10px 0 0; padding-top: 10px; border-top: 1px dashed $line; color: $faint; font-size: 11.5px; line-height: 1.45; }
 
 .exportGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 
@@ -479,7 +532,6 @@ $rec: #e11d48;
   .roundTool { color: #e8eaf0; }
   .notes button { background: rgba(245, 158, 11, 0.08); &:hover { background: rgba(245, 158, 11, 0.14); } }
   .noteText, .finalText { color: #e8eaf0; }
-  .tariffLine { border-color: rgba(255, 255, 255, 0.07); }
   .loadingCard { background: linear-gradient(90deg, #16171e 0%, #1c1e27 50%, #16171e 100%); background-size: 200% 100%; }
   .overlay { background: rgba(0, 0, 0, 0.55); }
   .playBtn { border-color: rgba(255, 255, 255, 0.1); background: #1c1e27; }

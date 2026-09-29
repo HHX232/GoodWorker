@@ -3,18 +3,19 @@
 import type { Editor } from '@tiptap/core'
 import { useEditorState } from '@tiptap/react'
 import {
-  AlertTriangleIcon, AudioLinesIcon, ChevronLeftIcon, CloudOffIcon, CrownIcon, DownloadIcon, FileTextIcon, FolderInputIcon, MicIcon, NotebookPenIcon,
+  AlertTriangleIcon, AudioLinesIcon, CameraIcon, ChevronLeftIcon, CloudOffIcon, CrownIcon, DownloadIcon, FileTextIcon, FolderInputIcon, MicIcon, NotebookPenIcon,
   PrinterIcon, ScrollTextIcon, SparklesIcon, SquareIcon, WandSparklesIcon,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { collectNotes } from '../editor/docOps'
 import { LectureEditor } from '../editor/LectureEditor'
 import { lectureRecorder } from '../recorder/lectureRecorder'
 import { AiOrb, type OrbMode } from '../ui/AiOrb'
 import { FormatPanel } from '../ui/FormatPanel'
+import { PhotoMergeDialog } from '../editor/PhotoMergeDialog'
 import { TranscriptModal } from './TranscriptModal'
 import { formatClock } from './format'
 import { useLectureSession } from './useLectureSession'
@@ -33,6 +34,8 @@ export function LectureWorkspace({ lectureId }: { lectureId: string }) {
   const [editor, setEditor] = useState<Editor | null>(null)
   const [transcriptOpen, setTranscriptOpen] = useState(false)
   const [exporting, setExporting] = useState<null | 'files' | 'word'>(null)
+  const [mergeFile, setMergeFile] = useState<File | null>(null)
+  const boardInput = useRef<HTMLInputElement>(null)
 
   const onReady = useCallback((e: Editor) => { setEditor(e); s.onEditorReady(e) }, [s])
 
@@ -150,6 +153,14 @@ export function LectureWorkspace({ lectureId }: { lectureId: string }) {
 
           <div className={styles.aiControls}>
             <div className={styles.railLabel}><SparklesIcon size={13} /> {t('aiControls')}</div>
+            <button type="button" className={styles.photoBtn} disabled={!canUseAi || !editor} onClick={() => boardInput.current?.click()}>
+              <span className={styles.photoBtnIcon}><CameraIcon size={18} /></span>
+              <span className={styles.photoBtnText}>
+                <strong>{t('processPhoto')}</strong>
+                <small>{t('processPhotoHint')}</small>
+              </span>
+            </button>
+            <input ref={boardInput} type="file" accept="image/*" capture="environment" hidden onChange={e => { const f = e.target.files?.[0]; if (f) setMergeFile(f); e.target.value = '' }} />
             <label className={styles.switchRow}>
               <span>{t('autoStructure')}</span>
               <input type="checkbox" className={styles.switch} checked={s.autoStructure} onChange={e => { s.setAutoStructure(e.target.checked); if (e.target.checked) s.structureNow() }} />
@@ -227,9 +238,6 @@ export function LectureWorkspace({ lectureId }: { lectureId: string }) {
               <div><dt>{t('statFormulas')}</dt><dd>{docStats?.formulas ?? 0}</dd></div>
               <div><dt>{t('statCost')}</dt><dd>{s.isAdmin ? t('costAdmin') : `${cost} ₽`}{!s.isAdmin && !s.tariff?.billingEnabled ? <small>{t('costNotCharged')}</small> : null}</dd></div>
             </dl>
-            {s.tariff && !s.isAdmin && (
-              <p className={styles.tariffLine}>{t('tariffLine', { base: s.tariff.baseMinutes, basePrice: (s.tariff.basePer5MinKopecks / 100).toFixed(0), extra: (s.tariff.extraPer5MinKopecks / 100).toFixed(0), markup: s.tariff.aiMarkup })}</p>
-            )}
           </section>
 
           <section className={styles.panel}>
@@ -269,6 +277,7 @@ export function LectureWorkspace({ lectureId }: { lectureId: string }) {
         </aside>
       </div>
 
+      {mergeFile && editor && <PhotoMergeDialog lectureId={lectureId} editor={editor} file={mergeFile} onClose={() => setMergeFile(null)} />}
       {transcriptOpen && <TranscriptModal lectureId={lectureId} chunks={s.chunks} onClose={() => setTranscriptOpen(false)} />}
     </div>
   )

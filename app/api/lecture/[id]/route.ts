@@ -36,7 +36,9 @@ export async function GET(_req: NextRequest, { params }: Params) {
         text: c.finalText ?? c.draftText, isFinal: c.finalText !== null,
         hasAudio: !!c.audioKey || held.has(c.seq),
       })),
-      tariff: { ...tariff, billingEnabled: LECTURE_BILLING_ENABLED },
+      // The tariff's internals (markup, token prices, tiers) are for admins only —
+      // everyone else just sees the resulting price.
+      tariff: user.isAdmin ? { ...tariff, billingEnabled: LECTURE_BILLING_ENABLED } : { billingEnabled: LECTURE_BILLING_ENABLED },
       access,
       isAdmin: user.isAdmin,
       sttConfigured: isSttConfigured(),

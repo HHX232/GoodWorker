@@ -1,5 +1,5 @@
 import {
-  AlignmentType, CommentRangeEnd, CommentRangeStart, CommentReference, Document, HeadingLevel, ImportedXmlComponent,
+  AlignmentType, CommentRangeEnd, CommentRangeStart, CommentReference, Document, HeadingLevel, ImageRun, ImportedXmlComponent,
   LevelFormat, Packer, Paragraph, ShadingType, TextRun, type ParagraphChild,
 } from 'docx'
 import type { PMMark, PMNode } from './markdownToDoc'
@@ -45,9 +45,27 @@ function hex(color: unknown): string | undefined {
   return typeof color === 'string' && /^#[0-9a-f]{6}$/i.test(color) ? color.slice(1) : undefined
 }
 
+export interface DocxPhoto { bytes: Buffer; width: number; height: number; mime: string }
+
 interface Ctx {
   comments: { id: number; text: string; date: Date }[]
   noteIds: Map<string, number>
+  photos: Map<string, DocxPhoto>
+}
+
+/** Page content width ≈ 6.3" at 96 dpi. */
+const MAX_IMAGE_PX = 600
+
+function photoParagraph(photo: DocxPhoto): Paragraph {
+  const scale = Math.min(1, MAX_IMAGE_PX / photo.width)
+  return new Paragraph({
+    alignment: AlignmentType.CENTER,
+    children: [new ImageRun({
+      type: photo.mime === 'image/png' ? 'png' : 'jpg',
+      data: photo.bytes,
+      transformation: { width: Math.round(photo.width * scale), height: Math.round(photo.height * scale) },
+    })],
+  })
 }
 
 function runsFor(nodes: PMNode[] | undefined, ctx: Ctx): ParagraphChild[] {
@@ -126,6 +144,11 @@ function blocksFor(nodes: PMNode[] | undefined, ctx: Ctx, list?: { ordered: bool
       case 'mathBlock':
         out.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [omml(String(n.attrs?.latex ?? ''), true)] }))
         break
+      case 'lecturePhoto': {
+        const photo = ctx.photos.get(String(n.attrs?.photoId ?? ''))
+        if (photo && photo.mime !== 'image/webp') out.push(photoParagraph(photo))
+        break
+      }
       case 'codeBlock':
         out.push(new Paragraph({ children: [new TextRun({ text: (n.content ?? []).map(c => c.text ?? '').join(''), font: 'Consolas' })] }))
         break
@@ -141,11 +164,19 @@ function blocksFor(nodes: PMNode[] | undefined, ctx: Ctx, list?: { ordered: bool
 
 let orderedInstance = 0
 
+/** Photo ids placed in the doc — the export route loads just these. */
+export function photoIdsIn(doc: PMNode | null): string[] {
+  const ids: string[] = []
+  const walk = (n: PMNode) => { if (n.type === 'lecturePhoto' && n.attrs?.photoId) ids.push(String(n.attrs.photoId)); n.content?.forEach(walk) }
+  if (doc) walk(doc)
+  return [...new Set(ids)]
+}
+
 /** A lecture's TipTap doc → .docx bytes. */
-export async function lectureToDocx(doc: PMNode | null, title: string, author: string): Promise<Buffer> {
+export async function lectureToDocx(doc: PMNode | null, title: string, author: string, photos: Map<string, DocxPhoto> = new Map()): Promise<Buffer> {
   orderedInstance = 0
   await loadMath()
-  const ctx: Ctx = { comments: [], noteIds: new Map() }
+  const ctx: Ctx = { comments: [], noteIds: new Map(), photos }
   const body = blocksFor(doc?.content ?? [], ctx)
   const document = new Document({
     creator: author,

@@ -150,3 +150,58 @@ export async function formulaAssist(opts: {
   if (!latex) throw new Error('empty latex')
   return { latex, explanation: (parsed.explanation ?? '').trim() }
 }
+
+const PHOTO_READ_SYSTEM = `Ты переносишь в конспект лекции то, что написано на фото доски, слайда или тетрадного листа.
+Перепиши содержимое фото аккуратно и структурированно: формулы — точно как на фото, в LaTeX; текст — как есть, без пересказа; выкладки — по шагам.
+Игнорируй то, что не относится к учебному материалу (посторонние предметы, отражения, стёртые фрагменты).
+Если на фото нет учебного содержимого — верни пустой ответ.
+
+${DIALECT}`
+
+/** "Вставить с фото": the photo's content as notes, placed where the student chose. */
+export async function readPhoto(opts: { lectureId: string; context: string; photo: { mimeType: string; base64: string } }): Promise<string> {
+  let usage: AIUsage | null = null
+  const prompt = `Контекст конспекта в месте вставки (для терминов и обозначений):\n"""\n${opts.context.slice(0, 2000)}\n"""\n\nПерепиши содержимое фото.`
+  const raw = await callVisionAI(PHOTO_READ_SYSTEM, [opts.photo], prompt, { json: false, temperature: 0.1, maxTokens: 2500, onUsage: u => { usage = u } })
+  await addUsage(opts.lectureId, usage)
+  return stripFence(raw)
+}
+
+const PHOTO_MERGE_SYSTEM = `Ты сверяешь фото доски с уже готовым конспектом лекции и решаешь, куда что добавить.
+Тебе дают конспект как пронумерованные блоки [0], [1], … и фото.
+Раздели содержимое фото на смысловые фрагменты (формула, выкладка, определение, пример). Для КАЖДОГО фрагмента реши:
+- "duplicate" — это уже есть в конспекте (та же формула/мысль, даже если записана иначе). Укажи номер блока, где оно уже есть.
+- "continuation" — это продолжение или уточнение уже записанного (следующий шаг выкладки, дополнение к формуле/примеру). Укажи номер блока, ПОСЛЕ которого вставить.
+- "new" — новое содержание, которого в конспекте нет; вставляется в конец.
+Формулы сравнивай по смыслу, а не по записи ($x^2$ и $x\\cdot x$ — одно и то же).
+Возвращай ТОЛЬКО JSON без markdown:
+{"items":[{"action":"duplicate"|"continuation"|"new","block":<номер или null>,"reason":"<коротко по-русски, почему так>","markdown":"<фрагмент в формате ниже; для duplicate — как на фото>"}]}
+
+Формат поля markdown:
+${DIALECT}`
+
+export interface PhotoMergeItem {
+  action: 'duplicate' | 'continuation' | 'new'
+  block: number | null
+  reason: string
+  markdown: string
+}
+
+/** Left-rail "Обработать фото доски": what on the photo is already in the notes, what continues them, what's new. */
+export async function mergePhoto(opts: { lectureId: string; outline: string[]; photo: { mimeType: string; base64: string } }): Promise<PhotoMergeItem[]> {
+  let usage: AIUsage | null = null
+  const outline = opts.outline.slice(-80).map((t, i, arr) => `[${opts.outline.length - arr.length + i}] ${t.slice(0, 220)}`).join('\n')
+  const prompt = `Конспект (блоки):\n${outline || '(конспект пока пуст)'}\n\nРазбери фото.`
+  const raw = await callVisionAI(PHOTO_MERGE_SYSTEM, [opts.photo], prompt, { temperature: 0.1, maxTokens: 3000, onUsage: u => { usage = u } })
+  await addUsage(opts.lectureId, usage)
+  const clean = raw.trim().replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim()
+  const parsed = JSON.parse(clean) as { items?: Partial<PhotoMergeItem>[] }
+  return (parsed.items ?? [])
+    .filter(i => typeof i.markdown === 'string' && i.markdown.trim())
+    .map(i => ({
+      action: i.action === 'duplicate' || i.action === 'continuation' ? i.action : 'new',
+      block: Number.isInteger(i.block) && (i.block as number) >= 0 && (i.block as number) < opts.outline.length ? (i.block as number) : null,
+      reason: String(i.reason ?? '').slice(0, 300),
+      markdown: String(i.markdown),
+    }))
+}

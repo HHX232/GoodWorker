@@ -23,12 +23,8 @@ export interface ChunkDto {
   hasAudio: boolean
 }
 
+/** Only `billingEnabled` for non-admins — the tariff's internals stay server-side. */
 export interface TariffDto {
-  baseMinutes: number
-  basePer5MinKopecks: number
-  extraPer5MinKopecks: number
-  aiMarkup: number
-  maxMinutesPerDay: number
   billingEnabled: boolean
 }
 

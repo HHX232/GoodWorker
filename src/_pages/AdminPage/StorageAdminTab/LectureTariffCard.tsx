@@ -16,7 +16,11 @@ interface Tariff {
   maxMinutesPerDay: number
 }
 
+type Labels = Record<'lectureTariff' | 'lectureTariffHint' | 'lectureModeNoWallet' | 'lectureBaseMinutes' | 'lectureBasePrice' | 'lectureExtraPrice' | 'lectureAiMarkup' | 'lectureAiMarkupHint' | 'lectureAiInput' | 'lectureAiOutput' | 'lectureDailyCap' | 'lectureDailyCapHint' | 'lectureUnitMin' | 'lectureMonth' | 'lectureUnitPer5Min', string>
+
 interface Response {
+  /** Card copy comes from the admin API, not messages/*.json (those reach every visitor). */
+  labels: Labels
   settings: Tariff
   billingEnabled: boolean
   month: { lectures: number; minutes: number; costKopecks: number; promptTokens: number; completionTokens: number }
@@ -27,7 +31,7 @@ const rub = (kopecks: number) => (kopecks / 100).toFixed(2)
 
 type Field = { key: keyof Tariff; label: string; unit: string; money?: boolean; step?: string; hint?: string }
 
-/** /lecture tariff (admin → Хранилище): first minutes cheaper, then per-5-min fee + DeepSeek cost × markup. */
+/** /lecture tariff (admin → Хранилище). The pricing mechanism is internal — its copy is served by the admin API only. */
 export function LectureTariffCard() {
   const t = useTranslations('admin')
   const queryClient = useQueryClient()
@@ -49,14 +53,16 @@ export function LectureTariffCard() {
     })
   }, [data])
 
-  const fields: Field[] = [
-    { key: 'baseMinutes', label: t('lectureBaseMinutes'), unit: t('lectureUnitMin') },
-    { key: 'basePer5MinKopecks', label: t('lectureBasePrice'), unit: t('lectureUnitPer5Min'), money: true, step: '0.01' },
-    { key: 'extraPer5MinKopecks', label: t('lectureExtraPrice'), unit: t('lectureUnitPer5Min'), money: true, step: '0.01' },
-    { key: 'aiMarkup', label: t('lectureAiMarkup'), unit: '×', step: '0.1', hint: t('lectureAiMarkupHint') },
-    { key: 'aiInputPer1MKopecks', label: t('lectureAiInput'), unit: '₽ / 1M', money: true, step: '0.01' },
-    { key: 'aiOutputPer1MKopecks', label: t('lectureAiOutput'), unit: '₽ / 1M', money: true, step: '0.01' },
-    { key: 'maxMinutesPerDay', label: t('lectureDailyCap'), unit: t('lectureUnitMin'), hint: t('lectureDailyCapHint') },
+  const L = data?.labels
+  const fill = (tpl: string, v: Record<string, string | number>) => tpl.replace(/\{(\w+)\}/g, (_, k) => String(v[k] ?? ''))
+  const fields: Field[] = !L ? [] : [
+    { key: 'baseMinutes', label: L.lectureBaseMinutes, unit: L.lectureUnitMin },
+    { key: 'basePer5MinKopecks', label: L.lectureBasePrice, unit: L.lectureUnitPer5Min, money: true, step: '0.01' },
+    { key: 'extraPer5MinKopecks', label: L.lectureExtraPrice, unit: L.lectureUnitPer5Min, money: true, step: '0.01' },
+    { key: 'aiMarkup', label: L.lectureAiMarkup, unit: '×', step: '0.1', hint: L.lectureAiMarkupHint },
+    { key: 'aiInputPer1MKopecks', label: L.lectureAiInput, unit: '₽ / 1M', money: true, step: '0.01' },
+    { key: 'aiOutputPer1MKopecks', label: L.lectureAiOutput, unit: '₽ / 1M', money: true, step: '0.01' },
+    { key: 'maxMinutesPerDay', label: L.lectureDailyCap, unit: L.lectureUnitMin, hint: L.lectureDailyCapHint },
   ]
 
   const save = async () => {
@@ -78,14 +84,14 @@ export function LectureTariffCard() {
     }
   }
 
-  if (!data?.settings) return null
+  if (!data?.settings || !L) return null
   return (
     <section className={styles.card}>
       <div className={styles.cardHead}>
-        <h2 className={styles.cardTitle}>{t('lectureTariff')}</h2>
-        <span className={styles.mode}>{data.billingEnabled ? t('storageModeBilling') : t('lectureModeNoWallet')}</span>
+        <h2 className={styles.cardTitle}>{L.lectureTariff}</h2>
+        <span className={styles.mode}>{data.billingEnabled ? t('storageModeBilling') : L.lectureModeNoWallet}</span>
       </div>
-      <p className={styles.fieldHint}>{t('lectureTariffHint')}</p>
+      <p className={styles.fieldHint}>{L.lectureTariffHint}</p>
       <div className={styles.fields}>
         {fields.map(f => (
           <label key={f.key} className={styles.field}>
@@ -99,7 +105,7 @@ export function LectureTariffCard() {
         ))}
       </div>
       <p className={styles.fieldHint}>
-        {t('lectureMonth', { lectures: data.month.lectures, minutes: data.month.minutes, cost: rub(data.month.costKopecks), tokens: data.month.promptTokens + data.month.completionTokens })}
+        {fill(L.lectureMonth, { lectures: data.month.lectures, minutes: data.month.minutes, cost: rub(data.month.costKopecks), tokens: data.month.promptTokens + data.month.completionTokens })}
       </p>
       <div className={styles.actions}>
         <button type="button" className={styles.save} onClick={save} disabled={saving}>{t('storageSave')}</button>

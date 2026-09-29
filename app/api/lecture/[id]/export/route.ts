@@ -4,7 +4,8 @@ import { after, NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/shared/prisma/prisma'
 import { publicUrlForKey, s3, S3_BUCKET } from '@/shared/s3/s3Client'
 import { requireOwnLecture } from '@/shared/lib/lecture/access'
-import { lectureToDocx } from '@/shared/lib/lecture/docx'
+import { lectureToDocx, photoIdsIn, type DocxPhoto } from '@/shared/lib/lecture/docx'
+import { readObject } from '@/shared/lib/lecture/audio'
 import type { PMNode } from '@/shared/lib/lecture/markdownToDoc'
 import { DriveError, driveErrorResponse, ensureLecturesFolder, isStudentVipActive, putStudentFile, replaceStudentFile } from '@/shared/lib/studentDrive/drive'
 import { hasStorageAccess, vipRequiredResponse } from '@/shared/lib/tutorFiles/access'
@@ -53,7 +54,14 @@ export async function POST(req: NextRequest, { params }: Params) {
     const body = await req.json().catch(() => ({}))
 
     const name = fileName(lecture.title, lecture.createdAt)
-    const bytes = await lectureToDocx(lecture.docJson as unknown as PMNode | null, lecture.title || name.replace(/\.docx$/, ''), await ownerName(user.id, user.role))
+    const doc = lecture.docJson as unknown as PMNode | null
+    const photoRows = await prisma.lecturePhoto.findMany({ where: { lectureId: id, id: { in: photoIdsIn(doc) } } })
+    const photos = new Map<string, DocxPhoto>()
+    for (const p of photoRows) {
+      const data = await readObject(p.key).catch(() => null)
+      if (data) photos.set(p.id, { bytes: data, width: p.width, height: p.height, mime: p.mimeType })
+    }
+    const bytes = await lectureToDocx(doc, lecture.title || name.replace(/\.docx$/, ''), await ownerName(user.id, user.role), photos)
 
     if (body.save !== true) {
       return new NextResponse(new Uint8Array(bytes), {

@@ -1285,6 +1285,7 @@ model LectureNote {
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
   chunks             LectureChunk[]
+  photos             LecturePhoto[]
 
   @@index([ownerId, ownerRole])
 }
@@ -1325,4 +1326,22 @@ model LectureSettings {
   // Safety cap while there's no Wallet to charge: minutes per owner per day (0 = off).
   maxMinutesPerDay     Int      @default(240)
   updatedAt            DateTime @updatedAt
+}
+
+// A board/notebook photo placed into the lecture document. Private S3 object
+// (never a public URL — the bucket's website domain trips browsers' Safe
+// Browsing), served through /api/lecture/[id]/photos/[photoId]; counts
+// toward the owner's storage quota.
+model LecturePhoto {
+  id        String      @id @default(uuid())
+  lectureId String
+  key       String
+  mimeType  String      @default("image/jpeg")
+  sizeBytes Int
+  width     Int
+  height    Int
+  createdAt DateTime    @default(now())
+  lecture   LectureNote @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+
+  @@index([lectureId])
 }

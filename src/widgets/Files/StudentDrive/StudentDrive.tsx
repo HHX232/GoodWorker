@@ -89,10 +89,13 @@ export function StudentDrive({ folderId, onNavigate }: { folderId: string | null
     }
   }
 
+  // Through our API, never the bucket's public URL — browsers flag that domain as dangerous.
+  const download = (f: { id: string; name: string }) => triggerDownload({ url: `/api/student-files/files/${f.id}/download`, name: f.name })
+
   const openFile = (f: DriveFile) => {
     if (f.lectureNoteId) { router.push(`/lecture/${f.lectureNoteId}`); return }
     if (viewerFor(f.mimeType, f.name)) setPreview(asLibraryFile(f, folderId))
-    else triggerDownload(f)
+    else download(f)
   }
 
   if (library.isError && !data) {
@@ -183,7 +186,7 @@ export function StudentDrive({ folderId, onNavigate }: { folderId: string | null
                       file={asLibraryFile(f, folderId)}
                       hint={f.lectureNoteId ? t('driveLectureHint') : undefined}
                       onPreview={() => openFile(f)}
-                      onDownload={() => triggerDownload(f)}
+                      onDownload={() => download(f)}
                       onDelete={() => setDeleteTarget({ kind: 'file', id: f.id, name: f.name })}
                     />
                   ))}
@@ -212,7 +215,7 @@ export function StudentDrive({ folderId, onNavigate }: { folderId: string | null
           </p>
         </FilesModal>
       )}
-      {preview && <FilePreviewModal file={preview} contentUrl={`/api/student-files/files/${preview.id}/content`} onClose={() => setPreview(null)} onDownload={() => triggerDownload(preview)} />}
+      {preview && <FilePreviewModal file={preview} contentUrl={`/api/student-files/files/${preview.id}/content`} onClose={() => setPreview(null)} onDownload={() => download(preview)} />}
     </>
   )
 }

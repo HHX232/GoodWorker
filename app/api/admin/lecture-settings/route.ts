@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/shared/prisma/prisma'
 import { requireAdmin } from '@/shared/lib/tutorFiles/adminGuard'
 import { getLectureSettings, LECTURE_BILLING_ENABLED } from '@/shared/lib/lecture/pricing'
+import { TARIFF_LABELS, type TariffLocale } from '@/shared/lib/lecture/tariffLabels'
+import { getLocale } from 'next-intl/server'
 
 const INT_FIELDS = {
   baseMinutes: [0, 600],
@@ -28,7 +30,9 @@ export async function GET() {
         _sum: { recordedMs: true, costKopecks: true, aiPromptTokens: true, aiCompletionTokens: true },
       }),
     ])
+    const locale = (await getLocale().catch(() => 'ru')) as TariffLocale
     return NextResponse.json({
+      labels: TARIFF_LABELS[locale] ?? TARIFF_LABELS.ru,
       settings,
       billingEnabled: LECTURE_BILLING_ENABLED,
       month: {

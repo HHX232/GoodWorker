@@ -6,7 +6,7 @@ import { publicUrlForKey, s3, S3_BUCKET } from '@/shared/s3/s3Client'
 import { getStorageLimits } from '@/shared/lib/tutorFiles/storage'
 import { GB, MAX_FOLDER_DEPTH } from '@/shared/lib/tutorFiles/constants'
 import type { StudentFile } from '@prisma/client'
-import { lectureAudioBytes } from '@/shared/lib/lecture/audio'
+import { lectureStorageBytes } from '@/shared/lib/lecture/audio'
 
 // A student's own drive ("Мои файлы"). Paid from the student's quota
 // (StorageSettings.studentQuotaGb, VIP only) — unlike homework handed in to a
@@ -26,11 +26,11 @@ export async function getStudentDriveLimits(): Promise<{ quotaBytes: number; max
   return { quotaBytes: (row?.studentQuotaGb ?? 5) * GB, maxFileBytes: limits.maxFileBytes }
 }
 
-/** Drive files plus lecture audio kept in S3 — both are the student's own bytes. */
+/** Drive files plus /lecture audio and photos kept in S3 — both are the student's own bytes. */
 export async function getStudentUsedBytes(studentId: string): Promise<number> {
   const [files, audio] = await Promise.all([
     prisma.studentFile.aggregate({ where: { studentId }, _sum: { sizeBytes: true } }),
-    lectureAudioBytes(studentId, 'STUDENT'),
+    lectureStorageBytes(studentId, 'STUDENT'),
   ])
   return (files._sum.sizeBytes ?? 0) + audio
 }

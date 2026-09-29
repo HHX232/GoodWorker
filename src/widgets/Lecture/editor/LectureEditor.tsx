@@ -10,14 +10,16 @@ import { EditorContent, useEditor, useEditorState } from '@tiptap/react'
 import { BubbleMenu } from '@tiptap/react/menus'
 import StarterKit from '@tiptap/starter-kit'
 import {
-  CameraIcon, CopyIcon, EraserIcon, ListIcon, MessageSquarePlusIcon, MinimizeIcon, SigmaIcon, SparklesIcon, SpellCheckIcon, WandSparklesIcon,
+  CameraIcon, CopyIcon, EraserIcon, ImagePlusIcon, ListIcon, MessageSquarePlusIcon, MinimizeIcon, SigmaIcon, SparklesIcon, SpellCheckIcon, WandSparklesIcon,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AskAiPanel, type AskTarget } from './AskAiPanel'
 import { docText, fragmentFor, markRange } from './docOps'
-import { AiSection, LectureNoteMark, MathBlock, MathInline, PendingFixMark } from './extensions'
+import { AiSection, LectureNoteMark, LecturePhotoNode, MathBlock, MathInline, PendingFixMark } from './extensions'
+import { InsertPhotoDialog } from './InsertPhotoDialog'
+import { afterBlock, lectureCtx } from './photoTools'
 import { FormulaDialog } from './FormulaDialog'
 import { mathEditBus, type MathEditRequest } from './MathView'
 import styles from './LectureEditor.module.scss'
@@ -58,7 +60,13 @@ export function LectureEditor({ lectureId, initialDoc, editable, canUseAi, onRea
   const [noteDraft, setNoteDraft] = useState<{ id: string | null; text: string; quote: string } | null>(null)
   const [ask, setAsk] = useState<AskTarget | null>(null)
   const photoInput = useRef<HTMLInputElement>(null)
+  const insertInput = useRef<HTMLInputElement>(null)
+  const insertAt = useRef(0)
+  const [insertPhoto, setInsertPhoto] = useState<{ file: File; at: number } | null>(null)
   const pendingPhoto = useRef<{ id: string; selection: string; context: string } | null>(null)
+
+  // Photo node views read the lecture id from here (they render outside these props).
+  useLayoutEffect(() => { lectureCtx.id = lectureId }, [lectureId])
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -70,6 +78,7 @@ export function LectureEditor({ lectureId, initialDoc, editable, canUseAi, onRea
       Highlight.configure({ multicolor: true }),
       MathInline,
       MathBlock,
+      LecturePhotoNode,
       AiSection,
       LectureNoteMark,
       PendingFixMark,
@@ -187,6 +196,12 @@ export function LectureEditor({ lectureId, initialDoc, editable, canUseAi, onRea
     photoInput.current?.click()
   }
 
+  const startInsertPhoto = () => {
+    if (!canUseAi) { toast.error(t('vipOnly')); return }
+    insertAt.current = afterBlock(editor, editor.state.selection.to)
+    insertInput.current?.click()
+  }
+
   const onPhoto = async (file: File | undefined) => {
     const job = pendingPhoto.current
     pendingPhoto.current = null
@@ -227,10 +242,11 @@ export function LectureEditor({ lectureId, initialDoc, editable, canUseAi, onRea
             // Never taller than the room left on screen — the menu scrolls inside instead.
             size: { padding: 8, apply: ({ availableHeight, elements }) => { elements.floating.style.maxHeight = `${Math.max(180, Math.min(520, availableHeight))}px` } },
           }}
-          shouldShow={({ editor: e, state: s }) => !s.selection.empty && e.isEditable && !ask && !e.isActive('mathInline') && !e.isActive('mathBlock')}
+          shouldShow={({ editor: e, state: s }) => !s.selection.empty && e.isEditable && !ask && !e.isActive('mathInline') && !e.isActive('mathBlock') && !e.isActive('lecturePhoto')}
         >
           <div className={styles.menuSection}>{t('menuActions')}</div>
           <MenuItem icon={<SparklesIcon size={15} />} label={t('askTitle')} onClick={() => openAsk()} ai />
+          <MenuItem icon={<ImagePlusIcon size={15} />} label={t('insertFromPhoto')} onClick={() => startInsertPhoto()} ai />
           <MenuItem icon={<CameraIcon size={15} />} label={t('photoFix')} onClick={() => startPhotoFix()} ai />
           <MenuItem icon={<MessageSquarePlusIcon size={15} />} label={state?.noteId ? t('noteEdit') : t('noteAdd')} onClick={openNote} />
           <MenuItem icon={<SigmaIcon size={15} />} label={t('toFormula')} onClick={toFormula} />
@@ -260,6 +276,8 @@ export function LectureEditor({ lectureId, initialDoc, editable, canUseAi, onRea
       <EditorContent editor={editor} className={styles.editor} />
 
       <input ref={photoInput} type="file" accept="image/*" capture="environment" hidden onChange={e => { onPhoto(e.target.files?.[0]); e.target.value = '' }} />
+      <input ref={insertInput} type="file" accept="image/*" hidden onChange={e => { const f = e.target.files?.[0]; if (f) setInsertPhoto({ file: f, at: insertAt.current }); e.target.value = '' }} />
+      {insertPhoto && <InsertPhotoDialog lectureId={lectureId} editor={editor} file={insertPhoto.file} at={insertPhoto.at} onClose={() => setInsertPhoto(null)} />}
 
       {ask && <AskAiPanel lectureId={lectureId} target={ask} onApply={applyAsk} onCancel={cancelAsk} />}
 
