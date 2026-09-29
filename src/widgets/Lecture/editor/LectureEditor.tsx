@@ -17,7 +17,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { toast } from 'sonner'
 import { AskAiPanel, type AskTarget } from './AskAiPanel'
 import { docText, fragmentFor, markRange } from './docOps'
-import { AiSection, BoardBlockNode, LectureNoteMark, LecturePhotoNode, MathBlock, MathInline, PendingFixMark } from './extensions'
+import { AiSection, BoardBlockNode, GraphBlockNode, LectureNoteMark, LecturePhotoNode, MathBlock, MathInline, PendingFixMark } from './extensions'
 import { InsertPhotoDialog } from './InsertPhotoDialog'
 import { afterBlock, lectureCtx } from './photoTools'
 import { FormulaDialog } from './FormulaDialog'
@@ -80,6 +80,7 @@ export function LectureEditor({ lectureId, initialDoc, editable, canUseAi, onRea
       MathBlock,
       LecturePhotoNode,
       BoardBlockNode,
+      GraphBlockNode,
       AiSection,
       LectureNoteMark,
       PendingFixMark,

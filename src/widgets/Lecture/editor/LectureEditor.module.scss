@@ -243,6 +243,8 @@ $aiSoft: #f5f0ff;
     img { display: block; max-width: 100%; height: auto; }
   }
   :global(.lecture-board-empty) { display: inline-flex; align-items: center; gap: 8px; padding: 24px; color: $faint; font-size: 13.5px; }
+  // Graph blocks share the board frame; the chart sits on plain white paper.
+  :global(.lecture-graph-body) { display: block; padding: 10px 14px 6px; background: #fff; cursor: default; }
   :global(.lecture-board-busy) { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(255, 255, 255, 0.6); color: $ai; }
 }
 

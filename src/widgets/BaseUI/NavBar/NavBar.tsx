@@ -114,6 +114,13 @@ const Icon = {
       <circle cx='18' cy='13' r='1' fill='currentColor' stroke='none' />
     </svg>
   ),
+  Lecture: () => (
+    <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'>
+      <rect x='9' y='2' width='6' height='12' rx='3' />
+      <path d='M5 10v1a7 7 0 0 0 14 0v-1' />
+      <line x1='12' y1='18' x2='12' y2='22' />
+    </svg>
+  ),
   Pomodoro: () => (
     <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round'>
       <circle cx='12' cy='12' r='10' />
@@ -215,6 +222,7 @@ export function NavBar({extraClass}: {extraClass?: string}) {
       {items: [{href: '/create-road-map', label: t('createCourse'), icon: <Icon.CreateRoadmap />, extraClass: styles.create_course_item}]},
       {items: [{href: '/create-test',     label: t('createTest'),   icon: <Icon.CreateTest />}]},
       ...(userId ? [{items: [{href: `/calendar/${userId}`, label: t('calendar'), icon: <Icon.Calendar />}]}] : []),
+      {items: [{href: '/lecture',         label: t('lecture'), icon: <Icon.Lecture />}]},
       {items: [{href: '/game',            label: t('games'),   icon: <Icon.Games />}]},
       {items: [{href: '/teacher-profile', label: t('profile'), icon: <Icon.Profile />}]},
       {items: [{href: '/vip',             label: t('vip'),     icon: <Icon.Vip />}]},
@@ -231,6 +239,7 @@ export function NavBar({extraClass}: {extraClass?: string}) {
     ]
     bottomGroups = [
       ...(userId ? [{items: [{href: `/student-calendar`, label: t('calendar'), icon: <Icon.Calendar />}]}] : []),
+      {items: [{href: '/lecture',         label: t('lecture'),  icon: <Icon.Lecture />}]},
       {items: [{href: '/game',            label: t('games'),    icon: <Icon.Games />}]},
       {items: [{href: '/pomodoro',        label: t('pomodoro'), icon: <Icon.Pomodoro />}]},
       {items: [{href: '/student-profile', label: t('profile'),  icon: <Icon.Profile />}]},

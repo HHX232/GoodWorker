@@ -1733,6 +1733,7 @@ function SubNav() {
     { label: t('sub_courses'),  href: '/workflows-list' },
     { label: t('sub_support'),  href: '/feedback' },
     { label: t('sub_vip'),      href: '/vip' },
+    { label: t('sub_lecture'),  href: '/lecture' },
   ]
   return (
     <div className={s.subnav}>

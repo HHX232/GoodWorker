@@ -5,6 +5,19 @@ import { getLectureSettings, lectureCostKopecks } from './pricing'
 // Every /lecture AI call goes to DeepSeek (text: deepseek-chat, photos: the
 // vision model). The house markdown dialect is parsed by markdownToDoc.ts.
 
+// The graph block spec (graphSpec.ts validates it). Shared by the notes dialect and graphAssist.
+const GRAPH_FORMAT = `Формат графика (JSON):
+  type "plot" (по умолчанию) — графики на осях: "x": [min, max], необязательно "y": [min, max], "xLabel"/"yLabel", "series" — список:
+    {"kind": "fn", "expr": "sin x", "from": 0, "to": 3} — функция; from/to — область куска (кусочная функция = несколько fn с разными from/to);
+    {"kind": "area", "expr": "2 - x", "from": 0, "to": 2} — закрашенная площадь под кривой (интеграл);
+    {"kind": "points", "points": [{"x": 1, "y": 2, "label": "A"}]} — отмеченные точки;
+    {"kind": "line", "points": [{"x": 0, "y": 0}, {"x": 1, "y": 3}]} — ломаная по данным (эксперимент, таблица значений, кривая без формулы);
+    {"kind": "vline", "value": 1} / {"kind": "hline", "value": 0} — асимптоты и прямые x = a, y = b;
+    у любой серии: "label", "color" (blue, red, green, orange, purple, teal, pink, gray, black), "dashed": true.
+    expr — обычная запись: x^2, 2x+1, sin x, cos(2x), sqrt(x), |x|, e^(-x), ln x, log x, 1/(x-1), pi.
+  type "bar" — диаграмма по категориям: "categories": ["Янв", "Фев"], "series": [{"label": "…", "values": [3, 5], "kind": "bar" | "line"}] — столбцы и линии можно комбинировать.
+  По фото графика: если по виду (пересечения с осями, вершина, асимптоты, период, подписи) формула очевидна — пиши её в expr; если нет — перенеси кривую ломаной "line" по 8–20 точкам, снятым с рисунка. Диапазоны осей — как на рисунке. Ничего не выдумывай сверх нарисованного/сказанного.`
+
 const DIALECT = `Формат ответа — markdown с расширениями:
 - заголовки ## и ###, списки, **жирный**, *курсив*;
 - формулы строго в LaTeX: в строке $...$, отдельной строкой $$...$$ (никаких формул "словами");
@@ -15,7 +28,12 @@ const DIALECT = `Формат ответа — markdown с расширения�
 \`\`\`board
 {"title": "Пирамида SABCD", "shapes": [{"solid": "pyramid", "sides": 4, "label": "SABCD"}], "annotations": ["AB = 6 см", "SO = 8 см — высота"]}
 \`\`\`
-  solid: cube | pyramid | prism | cone | cylinder | sphere | polygon (плоский многоугольник); sides — число вершин основания (3 — треугольная, 4 — четырёхугольная…); annotations — данные и обозначения с доски как есть. Не выдумывай размеры, которых нет.`
+  solid: cube | pyramid | prism | cone | cylinder | sphere | polygon (плоский многоугольник); sides — число вершин основания (3 — треугольная, 4 — четырёхугольная…); annotations — данные и обозначения с доски как есть. Не выдумывай размеры, которых нет.
+- если на фото/доске нарисован график или диаграмма (или преподаватель строит/описывает график функции) — вставь блок графика:
+\`\`\`graph
+{"title": "…", "x": [-5, 5], "series": [{"kind": "fn", "expr": "x^2 - 2x", "label": "y = x² − 2x"}]}
+\`\`\`
+${GRAPH_FORMAT}`
 
 // Context makes unclear fragments readable — but only where the match is obvious.
 const CONTEXT_RULE = `Используй контекст лекции (предмет, тема, подтемы, обозначения), чтобы правильно понять неразборчивые места: если фрагмент распознан плохо, но явно совпадает с типичной формулой или термином этой темы — восстанови его. Если совпадение не очевидно — НЕ выдумывай, оставь как есть и пометь ==[неразборчиво]==. Никогда не добавляй содержание, которого не было.`
@@ -265,4 +283,36 @@ export async function mergePhoto(opts: { lectureId: string; lecture: string; out
       reason: String(i.reason ?? '').slice(0, 300),
       markdown: String(i.markdown),
     }))
+}
+
+const GRAPH_SYSTEM = `Ты строишь график для конспекта лекции. Верни ТОЛЬКО JSON спецификации графика без markdown-обёртки.
+${GRAPH_FORMAT}
+Перенеси КАЖДЫЙ элемент из описания или с фото — все функции, куски, асимптоты (vline/hline), точки, площади; ничего не пропускай.
+Если просят изменить текущий график — верни его целиком с правками.`
+
+export type GraphMode = 'describe' | 'edit' | 'photo'
+
+/** Words / a photo of a board graph / an edit request → a graph spec (validated by the caller). */
+export async function graphAssist(opts: {
+  lectureId: string
+  mode: GraphMode
+  lecture: string
+  instruction: string
+  spec: unknown
+  photo?: { mimeType: string; base64: string }
+}): Promise<unknown> {
+  let usage: AIUsage | null = null
+  const current = opts.spec ? `Текущий график: ${JSON.stringify(opts.spec).slice(0, 4000)}` : ''
+  const task = {
+    describe: `Построй график по описанию: ${opts.instruction}`,
+    edit: `${current}\nИзмени его: ${opts.instruction}`,
+    photo: `Перенеси график/диаграмму с фото${opts.instruction ? ` (уточнение: ${opts.instruction})` : ''}. ${current}`,
+  }[opts.mode]
+  const prompt = `${opts.lecture}\n\n${task}`
+  const onUsage = (u: AIUsage) => { usage = u }
+  const raw = opts.mode === 'photo' && opts.photo
+    ? await callVisionAI(GRAPH_SYSTEM, [opts.photo], prompt, { temperature: 0.1, maxTokens: 3000, onUsage })
+    : await callAI(GRAPH_SYSTEM, prompt, { temperature: 0.2, maxTokens: 3000, onUsage })
+  await addUsage(opts.lectureId, usage)
+  return JSON.parse(raw.trim().replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim())
 }
