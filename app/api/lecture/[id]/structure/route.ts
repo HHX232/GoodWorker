@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/shared/prisma/prisma'
 import { requireOwnLecture } from '@/shared/lib/lecture/access'
-import { structureTranscript } from '@/shared/lib/lecture/ai'
+import { cleanTranscript, structureTranscript } from '@/shared/lib/lecture/ai'
 import { markdownToBlocks } from '@/shared/lib/lecture/markdownToDoc'
 import { contextPrompt, mergeContext, parseContext } from '@/shared/lib/lecture/context'
 import type { Prisma } from '@prisma/client'
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     const body = await req.json().catch(() => ({}))
     const fromSeq = Number(body.fromSeq)
     const toSeq = Number(body.toSeq)
-    if (!Number.isInteger(fromSeq) || !Number.isInteger(toSeq) || fromSeq < 0 || toSeq < fromSeq || toSeq - fromSeq > 40) {
+    if (!Number.isInteger(fromSeq) || !Number.isInteger(toSeq) || fromSeq < 0 || toSeq < fromSeq || toSeq - fromSeq > 60) {
       return NextResponse.json({ error: 'fromSeq/toSeq invalid' }, { status: 400 })
     }
     const previousNotes = typeof body.previousNotes === 'string' ? body.previousNotes.slice(-3000) : ''
@@ -37,16 +37,23 @@ export async function POST(req: NextRequest, { params }: Params) {
       select: { draftText: true, finalText: true },
     })
     const transcript = chunks.map(c => c.finalText ?? c.draftText).join(' ').trim()
-    if (!transcript) return NextResponse.json({ blocks: [], markdown: '', isFinal: false })
+    const isFinal = chunks.every(c => c.finalText !== null)
+    if (!transcript) return NextResponse.json({ blocks: [], markdown: '', empty: true, isFinal })
 
     const current = parseContext(lecture.context)
-    const { markdown, context: aiContext } = await structureTranscript({ lectureId: id, context: contextPrompt(current, lecture.title), previousNotes, transcript })
+    const ctx = contextPrompt(current, lecture.title)
+    // Pass 1 — restore what the teacher said (misheard words, junk out); pass 2 — notes.
+    const cleaned = await cleanTranscript({ lectureId: id, context: ctx, transcript })
+    if (!cleaned) return NextResponse.json({ blocks: [], markdown: '', cleaned, empty: true, isFinal })
+    const { markdown, context: aiContext } = await structureTranscript({ lectureId: id, context: ctx, previousNotes, transcript: cleaned })
     const context = aiContext ? mergeContext(current, aiContext) : current
+    const blocks = markdownToBlocks(markdown)
+    // An empty result doesn't advance processedSeq: the range stays available to the next attempt.
     await prisma.lectureNote.update({
       where: { id },
-      data: { ...(lecture.processedSeq < toSeq ? { processedSeq: toSeq } : {}), context: context as unknown as Prisma.InputJsonValue },
+      data: { ...(blocks.length && lecture.processedSeq < toSeq ? { processedSeq: toSeq } : {}), context: context as unknown as Prisma.InputJsonValue },
     })
-    return NextResponse.json({ blocks: markdownToBlocks(markdown), markdown, context, isFinal: chunks.every(c => c.finalText !== null) })
+    return NextResponse.json({ blocks, markdown, cleaned, context, empty: !blocks.length, isFinal })
   } catch (e) {
     console.error('[POST /api/lecture/[id]/structure]', e)
     return NextResponse.json({ error: 'AI_FAILED' }, { status: 502 })

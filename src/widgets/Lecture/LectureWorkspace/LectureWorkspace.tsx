@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { collectNotes } from '../editor/docOps'
 import { LectureEditor } from '../editor/LectureEditor'
@@ -17,6 +17,7 @@ import { AiOrb, type OrbMode } from '../ui/AiOrb'
 import { FormatPanel } from '../ui/FormatPanel'
 import { PhotoMergeDialog } from '../editor/PhotoMergeDialog'
 import { ContextBar } from './ContextBar'
+import { boardAccess } from '../board/BoardView'
 import { TranscriptModal } from './TranscriptModal'
 import { formatClock } from './format'
 import { useLectureSession } from './useLectureSession'
@@ -56,6 +57,8 @@ export function LectureWorkspace({ lectureId }: { lectureId: string }) {
   const elapsed = recording ? rec.elapsedMs : s.lecture?.recordedMs ?? 0
   const hasAudio = useMemo(() => s.chunks.some(c => c.hasAudio), [s.chunks])
   const canUseAi = s.access
+  // The board block's own VIP tools (AI formula etc.) read this — node views sit outside these props.
+  useEffect(() => { boardAccess.isVip = s.access; boardAccess.isAdmin = s.isAdmin }, [s.access, s.isAdmin])
 
   const orbMode: OrbMode =
     rec.error && rec.lectureId === lectureId ? 'error'

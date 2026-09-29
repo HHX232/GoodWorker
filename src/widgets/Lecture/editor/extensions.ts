@@ -3,6 +3,7 @@ import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { ReactNodeViewRenderer } from '@tiptap/react'
 import { MathView } from './MathView'
 import { PhotoView } from './PhotoView'
+import { BoardView } from '../board/BoardView'
 
 /** Transactions carrying this meta come from the AI (append / final regen) — they don't mark a section as edited. */
 export const AI_META = 'lectureAi'
@@ -162,5 +163,39 @@ export const LecturePhotoNode = Node.create({
   },
   addNodeView() {
     return ReactNodeViewRenderer(PhotoView)
+  },
+})
+
+/**
+ * A whiteboard between paragraphs — the call board's scene (JSON, kept for
+ * later edits) plus its snapshot (a LecturePhoto: page, PDF, Word). `spec`
+ * is set only on a block the AI asked for; the view builds the scene from it.
+ */
+export const BoardBlockNode = Node.create({
+  name: 'boardBlock',
+  group: 'block',
+  atom: true,
+  selectable: true,
+  draggable: true,
+  addAttributes() {
+    return {
+      scene: { default: null, rendered: false },
+      spec: { default: null, rendered: false },
+      photoId: { default: '', parseHTML: el => el.getAttribute('data-photo-id') ?? '', renderHTML: a => ({ 'data-photo-id': a.photoId }) },
+      width: { default: 0, rendered: false },
+      height: { default: 0, rendered: false },
+    }
+  },
+  parseHTML() {
+    return [{ tag: 'div[data-board]' }]
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ['div', mergeAttributes(HTMLAttributes, { 'data-board': '' })]
+  },
+  renderText() {
+    return '[доска]\n'
+  },
+  addNodeView() {
+    return ReactNodeViewRenderer(BoardView)
   },
 })

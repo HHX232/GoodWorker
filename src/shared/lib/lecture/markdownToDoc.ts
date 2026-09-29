@@ -1,4 +1,5 @@
 import { Lexer, type MarkedExtension, type Token, type Tokens } from 'marked'
+import { parseBoardSpec } from './boardSpec'
 
 // DeepSeek writes lecture notes as markdown plus four house extensions:
 //   $…$            inline formula (LaTeX)        $$…$$   block formula
@@ -142,7 +143,17 @@ function blocks(tokens: Token[]): PMNode[] {
         break
       }
       case 'blockquote': out.push({ type: 'blockquote', content: blocks((t as Tokens.Blockquote).tokens) }); break
-      case 'code': out.push({ type: 'codeBlock', content: (t as Tokens.Code).text ? [{ type: 'text', text: (t as Tokens.Code).text }] : undefined }); break
+      case 'code': {
+        const code = t as Tokens.Code
+        // ```board {spec}``` — a whiteboard block (3D figure + given values).
+        if (code.lang?.trim() === 'board') {
+          let spec = null
+          try { spec = parseBoardSpec(JSON.parse(code.text)) } catch { spec = null }
+          if (spec) { out.push({ type: 'boardBlock', attrs: { spec } }); break }
+        }
+        out.push({ type: 'codeBlock', content: code.text ? [{ type: 'text', text: code.text }] : undefined })
+        break
+      }
       case 'hr': out.push({ type: 'horizontalRule' }); break
       case 'mathBlock': out.push({ type: 'mathBlock', attrs: { latex: (t as unknown as { latex: string }).latex } }); break
       case 'table': {
@@ -175,6 +186,7 @@ export function nodeText(node: PMNode): string {
   if (node.type === 'mathInline') return `$${node.attrs?.latex ?? ''}$`
   if (node.type === 'mathBlock') return `\n$$${node.attrs?.latex ?? ''}$$\n`
   if (node.type === 'hardBreak') return '\n'
+  if (node.type === 'boardBlock') return '\n[доска]\n'
   const inner = (node.content ?? []).map(nodeText).join('')
   return ['paragraph', 'heading', 'listItem', 'blockquote', 'codeBlock'].includes(node.type) ? `${inner}\n` : inner
 }

@@ -186,7 +186,7 @@ export function StudentDrive({ folderId, onNavigate }: { folderId: string | null
                     <FileCard
                       key={f.id}
                       file={asLibraryFile(f, folderId)}
-                      hint={f.lectureNoteId ? t('driveLectureHint') : undefined}
+                      lecture={f.lectureNoteId ? { onOpen: () => router.push(`/lecture/${f.lectureNoteId}`) } : undefined}
                       onPreview={() => openFile(f)}
                       onDownload={() => download(f)}
                       onDelete={() => setDeleteTarget({ kind: 'file', id: f.id, name: f.name })}

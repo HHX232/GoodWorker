@@ -3775,7 +3775,9 @@
     "driveErrVip": "VIP is required to add files to your drive",
     "driveEmptyTitle": "Nothing here yet",
     "driveEmptyText": "Keep your lecture notes and your own files here — they count toward your quota, not your tutor's.",
-    "driveLectureHint": "Lecture notes — opens in the lecture editor"
+    "driveLectureHint": "Lecture notes — opens in the lecture editor",
+    "lectureFlag": "Lecture notes",
+    "lectureContinue": "Continue editing"
   },
   "lecture": {
     "pageTitle": "Lecture notes",
@@ -3840,7 +3842,8 @@
     "stillQueued": "Part of the recording is still waiting to upload",
     "dailyLimit": "Daily recording limit ({min} min) reached",
     "audioQuotaHit": "Storage is full — audio is no longer kept (notes continue)",
-    "structureFailed": "The AI couldn't process a piece — will retry with the next one",
+    "structureFailed": "The AI couldn't process the recording — press “Write notes now” to retry",
+    "structureEmpty": "The AI found no lecture content in the recording — only noise",
     "refined": "Sections refined: {n}",
     "crumb": "Notes",
     "titleLabel": "Lecture title",
@@ -3980,6 +3983,15 @@
     "ctxSubjectPh": "Calculus",
     "ctxTopicPh": "Derivative of a composite function",
     "ctxSubtopicsPh": "Chain rule; examples",
-    "ctxEditHint": "The AI uses this in every suggestion and in speech recognition; what you correct stays as you set it."
+    "ctxEditHint": "The AI uses this in every suggestion and in speech recognition; what you correct stays as you set it.",
+    "board": "Board",
+    "boardOpen": "Open the board",
+    "boardEditTitle": "Board",
+    "boardEditHint": "The same board as in calls: 3D figures, constructions, angles, formulas",
+    "boardDone": "Save to notes",
+    "boardClose": "Close",
+    "boardBuilding": "The AI is building the board…",
+    "boardEmpty": "Empty board — open it to draw",
+    "boardSaveFailed": "Couldn’t save the board"
   }
 }

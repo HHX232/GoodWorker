@@ -3,7 +3,7 @@
 import type { Editor } from '@tiptap/core'
 import { useEditorState } from '@tiptap/react'
 import {
-  BoldIcon, Heading2Icon, Heading3Icon, ItalicIcon, ListIcon, ListOrderedIcon, QuoteIcon, RedoIcon, SigmaIcon, SquareFunctionIcon, StrikethroughIcon, UnderlineIcon, UndoIcon,
+  BoldIcon, Heading2Icon, PresentationIcon, Heading3Icon, ItalicIcon, ListIcon, ListOrderedIcon, QuoteIcon, RedoIcon, SigmaIcon, SquareFunctionIcon, StrikethroughIcon, UnderlineIcon, UndoIcon,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { mathEditBus } from '../editor/MathView'
@@ -44,6 +44,7 @@ export function FormatPanel({ editor }: { editor: Editor | null }) {
     { key: 'q', icon: <QuoteIcon size={17} />, label: t('quote'), active: s?.quote, run: () => editor.chain().focus().toggleBlockquote().run() },
     { key: 'fi', icon: <SigmaIcon size={17} />, label: t('formulaInline'), run: () => insertFormula(false) },
     { key: 'fb', icon: <SquareFunctionIcon size={17} />, label: t('formulaBlock'), run: () => insertFormula(true) },
+    { key: 'board', icon: <PresentationIcon size={17} />, label: t('board'), run: () => editor.chain().focus().insertContent({ type: 'boardBlock' }).run() },
     { key: 'un', icon: <UndoIcon size={17} />, label: t('undo'), disabled: !s?.canUndo, run: () => editor.chain().focus().undo().run() },
     { key: 're', icon: <RedoIcon size={17} />, label: t('redo'), disabled: !s?.canRedo, run: () => editor.chain().focus().redo().run() },
   ]

@@ -3,7 +3,7 @@
 import type { Editor, JSONContent } from '@tiptap/core'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { appendAiSection, refreshableSections, replaceSection, textBefore } from '../editor/docOps'
+import { appendAiSection, coveredSeqs, refreshableSections, replaceSection, textBefore } from '../editor/docOps'
 import { deleteChunk, pendingChunks } from '../recorder/chunkQueue'
 import { lectureRecorder } from '../recorder/lectureRecorder'
 import { useRecorderState } from '../recorder/useRecorderState'
@@ -12,6 +12,9 @@ import type { ChunkDto, LectureDto, LectureResponse, TariffDto, UploadIssue } fr
 /** Structure every ~60 s of new speech — fewer DeepSeek calls, more context per call. The first section comes sooner, so the page isn't empty for a minute. */
 const STRUCTURE_EVERY_MS = 55_000
 const FIRST_STRUCTURE_MS = 25_000
+/** One DeepSeek call gets at most this much audio — enough context, still a fast answer. */
+const MAX_BATCH_MS = 5 * 60_000
+const MAX_BATCH_CHUNKS = 40
 const AUTOSAVE_MS = 1500
 const POLL_FINAL_MS = 8000
 const localKey = (id: string) => `gw-lecture-doc:${id}`
@@ -26,6 +29,8 @@ function stripPending(doc: JSONContent | null): JSONContent | null {
   })
   return walk(doc)
 }
+
+interface SeqRange { from: number; to: number; ms: number }
 
 export function useLectureSession(lectureId: string, t: (key: string, values?: Record<string, string | number>) => string) {
   const [lecture, setLecture] = useState<LectureDto | null>(null)
@@ -50,6 +55,10 @@ export function useLectureSession(lectureId: string, t: (key: string, values?: R
   const received = useRef(new Map<number, ChunkDto>())
   const pumping = useRef(false)
   const structureBusy = useRef(false)
+  /** Ranges the AI found no lecture content in (this session) — not offered again. */
+  const skipped = useRef(new Set<number>())
+  /** Auto mode got an empty answer for the tail — wait for more speech before retrying it. */
+  const emptyTail = useRef<{ from: number; ms: number } | null>(null)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const latestDoc = useRef<JSONContent | null>(null)
   const refinedFor = useRef(false)
@@ -127,40 +136,101 @@ export function useLectureSession(lectureId: string, t: (key: string, values?: R
   }, [flushSave])
 
   // ── Structuring (DeepSeek) ──────────────────────────────
-  /** Contiguous received chunks after the last structured one. */
-  const pendingRange = useCallback((): { from: number; to: number; ms: number } | null => {
-    const from = lastStructured.current + 1
-    let to = from - 1
-    let ms = 0
-    while (received.current.has(to + 1)) { to++; ms += received.current.get(to)!.durationMs }
-    return to >= from ? { from, to, ms } : null
+  /**
+   * Everything recorded but not yet in the notes, in DeepSeek-sized batches: the tail after
+   * the last structured chunk plus gaps (ranges an earlier pass returned nothing for,
+   * sections the student deleted). Silent chunks join their neighbours but add no time.
+   */
+  const unstructured = useCallback((): SeqRange[] => {
+    const editor = editorRef.current
+    const covered = editor ? coveredSeqs(editor) : new Set<number>()
+    const out: SeqRange[] = []
+    let cur: SeqRange | null = null
+    let prev = -2
+    for (const seq of [...received.current.keys()].sort((a, b) => a - b)) {
+      const c = received.current.get(seq)!
+      const free = !covered.has(seq) && !skipped.current.has(seq)
+      if (cur && (!free || seq !== prev + 1)) { out.push(cur); cur = null }
+      prev = seq
+      if (!free || !c.text.trim()) continue
+      if (cur && (cur.ms + c.durationMs > MAX_BATCH_MS || seq - cur.from >= MAX_BATCH_CHUNKS)) { out.push(cur); cur = null }
+      if (!cur) cur = { from: seq, to: seq, ms: 0 }
+      cur.to = seq
+      cur.ms += c.durationMs
+    }
+    if (cur) out.push(cur)
+    return out
   }, [])
 
+  /** For the "Законспектировать сейчас" badge: how much recorded speech isn't in the notes. */
+  const pendingRange = useCallback((): SeqRange | null => {
+    const ranges = unstructured()
+    if (!ranges.length) return null
+    return { from: ranges[0].from, to: ranges[ranges.length - 1].to, ms: ranges.reduce((a, r) => a + r.ms, 0) }
+  }, [unstructured])
+
+  /** One range → DeepSeek (clean, then notes) → a section in its place. 'empty' = nothing to add. */
+  const structureRange = useCallback(async (editor: Editor, range: SeqRange): Promise<'added' | 'empty'> => {
+    // Notes go before the first section of later audio, so "don't repeat" context is what precedes that spot.
+    let at = editor.state.doc.content.size
+    editor.state.doc.forEach((node, pos) => { if (node.type.name === 'aiSection' && node.attrs.fromSeq > range.to && pos < at) at = pos })
+    const res = await fetch(`/api/lecture/${lectureId}/structure`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fromSeq: range.from, toSeq: range.to, previousNotes: textBefore(editor, at, 2500) }),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) throw new Error(data.error ?? 'AI_FAILED')
+    if (data.context) setLecture(l => l && { ...l, context: data.context })
+    const blocks = data.blocks ?? []
+    if (!blocks.length) return 'empty'
+    appendAiSection(editor, blocks, { fromSeq: range.from, toSeq: range.to, startMs: received.current.get(range.from)?.startMs ?? 0, final: !!data.isFinal })
+    lastStructured.current = Math.max(lastStructured.current, range.to)
+    return 'added'
+  }, [lectureId])
+
+  const skip = (range: SeqRange) => {
+    for (let s = range.from; s <= range.to; s++) skipped.current.add(s)
+    lastStructured.current = Math.max(lastStructured.current, range.to)
+  }
+
+  /**
+   * Auto: the tail once enough new speech piled up. Forced ("Законспектировать сейчас", stop):
+   * every unstructured range, gaps included — so a lecture eaten by empty passes comes back.
+   */
   const structure = useCallback(async (force = false) => {
     const editor = editorRef.current
     if (!editor || structureBusy.current) return
-    const range = pendingRange()
-    if (!range || (!force && range.ms < (lastStructured.current < 0 ? FIRST_STRUCTURE_MS : STRUCTURE_EVERY_MS))) return
+    let ranges = unstructured()
+    if (!force) {
+      const tail = ranges.find(r => r.from > lastStructured.current)
+      if (!tail) return
+      const waited = emptyTail.current?.from === tail.from ? emptyTail.current.ms : 0
+      if (tail.ms - waited < (lastStructured.current < 0 ? FIRST_STRUCTURE_MS : STRUCTURE_EVERY_MS)) return
+      ranges = [tail]
+    }
+    if (!ranges.length) return
     structureBusy.current = true
     setStructuring(true)
+    let added = 0
+    let empty = 0
     try {
-      const res = await fetch(`/api/lecture/${lectureId}/structure`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fromSeq: range.from, toSeq: range.to, previousNotes: textBefore(editor, editor.state.doc.content.size, 2500) }),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data.error ?? 'AI_FAILED')
-      lastStructured.current = range.to
-      if (data.context) setLecture(l => l && { ...l, context: data.context })
-      appendAiSection(editor, data.blocks ?? [], { fromSeq: range.from, toSeq: range.to, startMs: received.current.get(range.from)?.startMs ?? 0, final: !!data.isFinal })
+      for (const range of ranges) {
+        const result = await structureRange(editor, range)
+        if (result === 'added') { added++; if (emptyTail.current?.from === range.from) emptyTail.current = null; continue }
+        empty++
+        // Forced, or a full batch still with nothing in it — give up on it; else wait for more speech.
+        if (force || range.ms >= MAX_BATCH_MS - 30_000) skip(range)
+        else emptyTail.current = { from: range.from, ms: range.ms }
+      }
+      if (force && !added && empty) toast.info(t('structureEmpty'))
     } catch {
       toast.error(t('structureFailed'))
     } finally {
       structureBusy.current = false
       setStructuring(false)
     }
-  }, [lectureId, pendingRange, t])
+  }, [structureRange, t, unstructured])
 
   // ── Upload pump (IndexedDB → server) ────────────────────
   const pump = useCallback(async () => {
@@ -252,6 +322,8 @@ export function useLectureSession(lectureId: string, t: (key: string, values?: R
       await lectureRecorder.stop()
       await pump()
       if ((await pendingChunks(lectureId)).length) { toast.warning(t('stillQueued')); return }
+      // An auto pass may still be running — let it land, then take the rest.
+      while (structureBusy.current) await new Promise(r => setTimeout(r, 300))
       await structure(true)
       await flushSave()
       const res = await fetch(`/api/lecture/${lectureId}/finish`, { method: 'POST' })

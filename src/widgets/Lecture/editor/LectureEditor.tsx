@@ -17,7 +17,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { toast } from 'sonner'
 import { AskAiPanel, type AskTarget } from './AskAiPanel'
 import { docText, fragmentFor, markRange } from './docOps'
-import { AiSection, LectureNoteMark, LecturePhotoNode, MathBlock, MathInline, PendingFixMark } from './extensions'
+import { AiSection, BoardBlockNode, LectureNoteMark, LecturePhotoNode, MathBlock, MathInline, PendingFixMark } from './extensions'
 import { InsertPhotoDialog } from './InsertPhotoDialog'
 import { afterBlock, lectureCtx } from './photoTools'
 import { FormulaDialog } from './FormulaDialog'
@@ -79,6 +79,7 @@ export function LectureEditor({ lectureId, initialDoc, editable, canUseAi, onRea
       MathInline,
       MathBlock,
       LecturePhotoNode,
+      BoardBlockNode,
       AiSection,
       LectureNoteMark,
       PendingFixMark,
@@ -242,7 +243,7 @@ export function LectureEditor({ lectureId, initialDoc, editable, canUseAi, onRea
             // Never taller than the room left on screen — the menu scrolls inside instead.
             size: { padding: 8, apply: ({ availableHeight, elements }) => { elements.floating.style.maxHeight = `${Math.max(180, Math.min(520, availableHeight))}px` } },
           }}
-          shouldShow={({ editor: e, state: s }) => !s.selection.empty && e.isEditable && !ask && !e.isActive('mathInline') && !e.isActive('mathBlock') && !e.isActive('lecturePhoto')}
+          shouldShow={({ editor: e, state: s }) => !s.selection.empty && e.isEditable && !ask && !e.isActive('mathInline') && !e.isActive('mathBlock') && !e.isActive('lecturePhoto') && !e.isActive('boardBlock')}
         >
           <div className={styles.menuSection}>{t('menuActions')}</div>
           <MenuItem icon={<SparklesIcon size={15} />} label={t('askTitle')} onClick={() => openAsk()} ai />

@@ -4,7 +4,7 @@ import type { LibraryFile } from '@/shared/types/TutorFiles/tutorFiles.types'
 import { useLocale, useTranslations } from 'next-intl'
 import type { CSSProperties, ReactNode } from 'react'
 import { CardMenu, type CardMenuItem } from '../CardMenu/CardMenu'
-import { FilesDeleteIcon, FilesDownloadIcon, FilesEditIcon, FilesPlayIcon, FilesPreviewIcon, FilesReviewIcon, FilesShareIcon, FilesTestIcon, FilesTextSearchIcon } from '../icons'
+import { FilesDeleteIcon, FilesDownloadIcon, FilesEditIcon, FilesLectureIcon, FilesPlayIcon, FilesPreviewIcon, FilesReviewIcon, FilesShareIcon, FilesTestIcon, FilesTextSearchIcon } from '../icons'
 import { fileKind, formatBytes, formatDate, KIND_COLOR, KIND_ICON, viewerFor } from '../lib'
 import { AvatarStack } from './AvatarStack'
 import styles from './Cards.module.scss'
@@ -26,6 +26,8 @@ export interface FileCardProps {
   /** Search: the passage where the query was found inside the file (idea 8). */
   contentMatch?: string | null
   query?: string
+  /** Saved /lecture notes: a type of its own — notebook cover, a "Конспект" flag, opens the lecture editor. */
+  lecture?: { onOpen: () => void }
 }
 
 /** The query highlighted inside a search snippet — case-insensitive, every occurrence. */
@@ -45,7 +47,7 @@ function Highlighted({ text, query }: { text: string; query: string }) {
 }
 
 /** Floe workflow-card shape: artwork on top, a white panel riding up over it. */
-export function FileCard({ file, onPreview, onDownload, onShare, onDelete, hint, onReview, onEdit, onMakeTest, contentMatch, query = '' }: FileCardProps) {
+export function FileCard({ file, onPreview, onDownload, onShare, onDelete, hint, onReview, onEdit, onMakeTest, contentMatch, query = '', lecture }: FileCardProps) {
   const t = useTranslations('files')
   const locale = useLocale()
   const kind = fileKind(file.mimeType, file.name)
@@ -54,7 +56,8 @@ export function FileCard({ file, onPreview, onDownload, onShare, onDelete, hint,
   const ext = file.name.includes('.') ? file.name.split('.').pop()!.toUpperCase().slice(0, 4) : kind.toUpperCase()
 
   const items: CardMenuItem[] = []
-  if (viewable) items.push({ label: t('open'), icon: FilesPreviewIcon, onSelect: onPreview })
+  if (lecture) items.push({ label: t('lectureContinue'), icon: FilesLectureIcon, onSelect: lecture.onOpen })
+  else if (viewable) items.push({ label: t('open'), icon: FilesPreviewIcon, onSelect: onPreview })
   items.push({ label: t('download'), icon: FilesDownloadIcon, onSelect: onDownload })
   if (onReview) items.push({ label: file.review ? t('reviewEdit') : t('review'), icon: FilesReviewIcon, onSelect: onReview })
   if (onEdit) items.push({ label: t('editDocx'), icon: FilesEditIcon, onSelect: onEdit })
@@ -63,13 +66,24 @@ export function FileCard({ file, onPreview, onDownload, onShare, onDelete, hint,
   if (onDelete) items.push({ label: t('delete'), icon: FilesDeleteIcon, onSelect: onDelete, danger: true })
 
   return (
-    <div className={styles.fileCard} style={{ '--kind': KIND_COLOR[kind] } as CSSProperties}>
+    <div className={`${styles.fileCard} ${lecture ? styles.lectureCard : ''}`} style={{ '--kind': lecture ? '#7c3aed' : KIND_COLOR[kind] } as CSSProperties}>
       <button
         type="button"
         className={styles.hit}
-        onClick={viewable ? onPreview : onDownload}
-        aria-label={`${viewable ? t('open') : t('download')}: ${file.name}`}
+        onClick={lecture ? lecture.onOpen : viewable ? onPreview : onDownload}
+        aria-label={`${lecture ? t('lectureContinue') : viewable ? t('open') : t('download')}: ${file.name}`}
       />
+      {lecture ? (
+        <div className={`${styles.art} ${styles.artLecture}`} aria-hidden>
+          <span className={styles.lectureSheet}>
+            <span className={styles.lectureSheetIcon}><FilesLectureIcon size={20} strokeWidth={1.8} /></span>
+            <span className={styles.lectureLine} style={{ width: '78%' }} />
+            <span className={styles.lectureLine} style={{ width: '62%' }} />
+            <span className={styles.lectureFormula}>∫ f(x) dx</span>
+            <span className={styles.lectureLine} style={{ width: '70%' }} />
+          </span>
+        </div>
+      ) : (
       <div className={styles.art}>
         {kind === 'image' && (
           // eslint-disable-next-line @next/next/no-img-element
@@ -82,13 +96,14 @@ export function FileCard({ file, onPreview, onDownload, onShare, onDelete, hint,
         {kind !== 'image' && kind !== 'video' && <Icon size={34} strokeWidth={1.4} />}
         {(kind === 'video' || kind === 'audio') && <span className={`${styles.play} ${kind === 'audio' ? styles.playCorner : ''}`}><FilesPlayIcon size={16} /></span>}
       </div>
+      )}
       <div className={styles.panel}>
         <div className={styles.panelTop}>
           <span className={styles.meta}>{formatDate(file.createdAt, locale)} · {formatBytes(file.sizeBytes, locale)}</span>
           <CardMenu items={items} label={t('actions')} />
         </div>
         <div className={styles.fileName} title={file.name}>
-          <span className={styles.nameIcon}><Icon size={15} strokeWidth={2} /></span>
+          <span className={styles.nameIcon}>{lecture ? <FilesLectureIcon size={15} strokeWidth={2} /> : <Icon size={15} strokeWidth={2} />}</span>
           <span className={styles.nameText}>{file.name}</span>
         </div>
         {hint && <div className={styles.fileHint} title={hint}>{hint}</div>}
@@ -107,7 +122,9 @@ export function FileCard({ file, onPreview, onDownload, onShare, onDelete, hint,
                 {file.review.status === 'ACCEPTED' ? t('reviewAccepted') : t('reviewRevision')}{file.review.grade ? ` · ${file.review.grade}` : ''}
               </span>
             : file.uploadedByRole === 'STUDENT' && <span className={styles.chip}>{t('uploadedByStudent')}</span>}
-          <span className={styles.extChip}>{ext}</span>
+          {lecture
+            ? <button type="button" className={styles.lectureFlag} onClick={e => { e.stopPropagation(); lecture.onOpen() }}><FilesLectureIcon size={11} strokeWidth={2.2} /> {t('lectureFlag')}</button>
+            : <span className={styles.extChip}>{ext}</span>}
         </div>
       </div>
     </div>

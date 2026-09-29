@@ -144,6 +144,7 @@ function blocksFor(nodes: PMNode[] | undefined, ctx: Ctx, list?: { ordered: bool
       case 'mathBlock':
         out.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [omml(String(n.attrs?.latex ?? ''), true)] }))
         break
+      case 'boardBlock':
       case 'lecturePhoto': {
         const photo = ctx.photos.get(String(n.attrs?.photoId ?? ''))
         if (photo && photo.mime !== 'image/webp') out.push(photoParagraph(photo))
@@ -167,7 +168,7 @@ let orderedInstance = 0
 /** Photo ids placed in the doc — the export route loads just these. */
 export function photoIdsIn(doc: PMNode | null): string[] {
   const ids: string[] = []
-  const walk = (n: PMNode) => { if (n.type === 'lecturePhoto' && n.attrs?.photoId) ids.push(String(n.attrs.photoId)); n.content?.forEach(walk) }
+  const walk = (n: PMNode) => { if ((n.type === 'lecturePhoto' || n.type === 'boardBlock') && n.attrs?.photoId) ids.push(String(n.attrs.photoId)); n.content?.forEach(walk) }
   if (doc) walk(doc)
   return [...new Set(ids)]
 }
