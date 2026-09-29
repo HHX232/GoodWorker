@@ -9,6 +9,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
+import { LectureTariffCard } from './LectureTariffCard'
 import styles from './StorageAdminTab.module.scss'
 
 interface AdminTutorRow {
@@ -187,6 +188,8 @@ export function StorageAdminTab() {
           <button type="button" className={styles.save} onClick={save} disabled={saving}>{t('storageSave')}</button>
         </div>
       </section>
+
+      <LectureTariffCard />
 
       <div className={styles.stats}>
         <div className={styles.stat}><span className={styles.statLabel}>{t('storageTotalUsed')}</span><span className={styles.statValue}>{size(data.totals.usedBytes)}</span></div>
