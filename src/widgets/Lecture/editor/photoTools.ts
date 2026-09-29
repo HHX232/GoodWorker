@@ -4,6 +4,7 @@ import type { Editor, JSONContent } from '@tiptap/core'
 import type { Node as PMNode } from '@tiptap/pm/model'
 import { docText } from './docOps'
 import { boardSummary, parseBoardSpec } from '@/shared/lib/lecture/boardSpec'
+import { graphSummary, parseGraphSpec } from '@/shared/lib/lecture/graphSpec'
 
 /** Which lecture the editor on this page belongs to — node views read it (they live outside React props). */
 export const lectureCtx: { id: string } = { id: '' }
@@ -93,6 +94,7 @@ export function blockAnchors(doc: PMNode): BlockAnchor[] {
       return
     }
     if (node.type.name === 'boardBlock') { out.push({ text: boardSummary(parseBoardSpec(node.attrs.spec)), end: pos + node.nodeSize }); return }
+    if (node.type.name === 'graphBlock') { out.push({ text: graphSummary(parseGraphSpec(node.attrs.spec)), end: pos + node.nodeSize }); return }
     const text = docText(doc, pos, pos + node.nodeSize).replace(/\s+/g, ' ').trim()
     if (text || node.type.name === 'lecturePhoto') out.push({ text: text || '[фото]', end: pos + node.nodeSize })
   }

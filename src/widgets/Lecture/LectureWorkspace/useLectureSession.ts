@@ -19,13 +19,16 @@ const AUTOSAVE_MS = 1500
 const POLL_FINAL_MS = 8000
 const localKey = (id: string) => `gw-lecture-doc:${id}`
 
-/** A pending "fix by photo"/"ask AI" mark can't survive a reload — its request is gone. */
+/**
+ * A pending "fix by photo"/"ask AI" mark can't survive a reload — its request is gone.
+ * Nor can a graph block inserted but never filled in (its editor was open when the tab closed).
+ */
 function stripPending(doc: JSONContent | null): JSONContent | null {
   if (!doc) return doc
   const walk = (n: JSONContent): JSONContent => ({
     ...n,
     ...(n.marks ? { marks: n.marks.filter(m => m.type !== 'pendingFix') } : {}),
-    ...(n.content ? { content: n.content.map(walk) } : {}),
+    ...(n.content ? { content: n.content.filter(c => !(c.type === 'graphBlock' && !c.attrs?.spec)).map(walk) } : {}),
   })
   return walk(doc)
 }

@@ -1,7 +1,8 @@
 'use client'
 
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
-import { CopyIcon, PencilIcon, SparklesIcon } from 'lucide-react'
+import { AlignCenterIcon, AlignLeftIcon, AlignRightIcon, AArrowDownIcon, AArrowUpIcon, CopyIcon, PencilIcon, SparklesIcon } from 'lucide-react'
+import { stepMathSize, type MathAlign } from './extensions'
 import { useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -52,6 +53,8 @@ export function MathView({ node, updateAttributes, editor, selected }: NodeViewP
   const latex = String(node.attrs.latex ?? '')
   const inline = node.type.name === 'mathInline'
   const editable = editor.isEditable
+  const size = Number(node.attrs.size) || 1
+  const align = (node.attrs.align ?? 'center') as MathAlign
 
   const open = (ai = false) => {
     if (!editable) return
@@ -60,7 +63,7 @@ export function MathView({ node, updateAttributes, editor, selected }: NodeViewP
 
   if (inline) {
     return (
-      <NodeViewWrapper as="span" className={`lecture-math lecture-math-inline ${selected ? 'is-selected' : ''}`} onDoubleClick={() => open()} data-latex={latex} title={latex}>
+      <NodeViewWrapper as="span" className={`lecture-math lecture-math-inline ${selected ? 'is-selected' : ''}`} onDoubleClick={() => open()} data-latex={latex} title={latex} style={size !== 1 ? { zoom: size } : undefined}>
         <MathMarkup latex={latex} inline />
       </NodeViewWrapper>
     )
@@ -68,12 +71,22 @@ export function MathView({ node, updateAttributes, editor, selected }: NodeViewP
 
   return (
     <NodeViewWrapper as="div" className={`lecture-math lecture-math-block ${selected ? 'is-selected' : ''}`} data-latex={latex} onDoubleClick={() => open()}>
-      <div className="lecture-math-body" contentEditable={false}>
-        <MathMarkup latex={latex} inline={false} />
+      {/* zoom, not font-size: the global CSS reset pins every <span> to 15px, so mathlive's markup doesn't inherit a size. */}
+      <div className="lecture-math-body" contentEditable={false} style={{ textAlign: align }}>
+        <span className="lecture-math-zoom" style={size !== 1 ? { zoom: size } : undefined}><MathMarkup latex={latex} inline={false} /></span>
       </div>
       {editable && (
         <div className="lecture-math-actions" contentEditable={false}>
           <button type="button" className="lecture-math-ai" onClick={() => open(true)}><SparklesIcon size={13} /> {t('formulaAi')}</button>
+          <span className="lecture-math-sep" />
+          <button type="button" onClick={() => updateAttributes({ size: stepMathSize(size, -1) })} aria-label={t('sizeDown')} title={t('sizeDown')}><AArrowDownIcon size={13} /></button>
+          <span className="lecture-math-size">{Math.round(size * 100)}%</span>
+          <button type="button" onClick={() => updateAttributes({ size: stepMathSize(size, 1) })} aria-label={t('sizeUp')} title={t('sizeUp')}><AArrowUpIcon size={13} /></button>
+          <span className="lecture-math-sep" />
+          {([['left', AlignLeftIcon, 'alignLeft'], ['center', AlignCenterIcon, 'alignCenter'], ['right', AlignRightIcon, 'alignRight']] as const).map(([a, Icon, key]) => (
+            <button key={a} type="button" className={align === a ? 'is-on' : ''} aria-pressed={align === a} onClick={() => updateAttributes({ align: a })} aria-label={t(key)} title={t(key)}><Icon size={13} /></button>
+          ))}
+          <span className="lecture-math-sep" />
           <button type="button" onClick={() => open()} aria-label={t('formulaEdit')} title={t('formulaEdit')}><PencilIcon size={13} /></button>
           <button type="button" onClick={() => { navigator.clipboard?.writeText(latex).then(() => toast.success(t('latexCopied'))).catch(() => {}) }} aria-label={t('copyLatex')} title={t('copyLatex')}><CopyIcon size={13} /></button>
         </div>

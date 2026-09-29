@@ -298,7 +298,7 @@ export function FilesShell({ role, folderId, onNavigate, admin, drive }: FilesSh
     markOpened(f)
     const kind = viewerFor(f.mimeType, f.name)
     // Saved lecture notes reopen in the lecture editor (formulas, notes, AI sections intact).
-    if (canManage && f.lectureNoteId) { router.push(`/lecture/${f.lectureNoteId}`); return }
+    if (canManage && f.lectureNoteId && !f.mimeType.startsWith('audio/')) { router.push(`/lecture/${f.lectureNoteId}`); return }
     if (canManage && kind === 'docx') { setEditFile(f); return }
     if (canManage && kind === 'pdf') { setReviewFile(f); return }
     setPreviewFile(f)
@@ -383,7 +383,7 @@ export function FilesShell({ role, folderId, onNavigate, admin, drive }: FilesSh
           <h2 className={styles.sectionTitle}>{t('filesSection')} <span className={styles.count}>{files.length}</span></h2>
           <div className={styles.fileGrid}>
             {files.map(f => (
-              <FileCard key={f.id} file={f} lecture={isTeacher && !admin && f.lectureNoteId ? { onOpen: () => router.push(`/lecture/${f.lectureNoteId}`) } : undefined} onPreview={() => openPreview(f)} onDownload={() => downloadFile(f)} hint={opts.hints ? pathOf(f.folderId, treeById) || t('rootCrumb') : undefined} contentMatch={f.contentMatch} query={debouncedQuery} {...fileActions(f)} />
+              <FileCard key={f.id} file={f} lecture={isTeacher && !admin && f.lectureNoteId && !f.mimeType.startsWith('audio/') ? { onOpen: () => router.push(`/lecture/${f.lectureNoteId}`) } : undefined} onPreview={() => openPreview(f)} onDownload={() => downloadFile(f)} hint={opts.hints ? pathOf(f.folderId, treeById) || t('rootCrumb') : undefined} contentMatch={f.contentMatch} query={debouncedQuery} {...fileActions(f)} />
             ))}
           </div>
         </section>

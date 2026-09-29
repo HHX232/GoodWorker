@@ -22,14 +22,36 @@ async function loadMath(): Promise<void> {
   mathMlToOmml = om.mml2omml
 }
 
-function omml(latex: string, block: boolean): ParagraphChild {
+/** Base text size in half-points (12 pt) — the document default below. */
+const BASE_HALF_POINTS = 24
+
+type Align = 'left' | 'center' | 'right' | 'justify'
+const ALIGN = { left: AlignmentType.LEFT, center: AlignmentType.CENTER, right: AlignmentType.RIGHT, justify: AlignmentType.JUSTIFIED } as const
+const alignOf = (v: unknown) => (typeof v === 'string' && v in ALIGN ? ALIGN[v as Align] : undefined)
+
+/** "18px" (TipTap FontSize) → Word half-points (1 px = 0.75 pt). */
+function halfPoints(fontSize: unknown): number | undefined {
+  const px = typeof fontSize === 'string' ? parseFloat(fontSize) : NaN
+  return Number.isFinite(px) && px > 4 && px < 200 ? Math.round(px * 1.5) : undefined
+}
+
+function omml(latex: string, block: boolean, opts: { size?: number; align?: string } = {}): ParagraphChild {
   try {
     if (!latexToMathMl || !mathMlToOmml) throw new Error('math not loaded')
     const convertLatexToMathMl = latexToMathMl
     const mml2omml = mathMlToOmml
     const mathml = convertLatexToMathMl(latex).replace(/<mo>&#x2061;<\/mo>/g, '').replace(/\u2061/g, '')
     let xml = mml2omml(`<math xmlns="http://www.w3.org/1998/Math/MathML">${mathml}</math>`)
-    if (block) xml = `<m:oMathPara xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math">${xml}</m:oMathPara>`
+    // Formula scale → an explicit run size on every math run.
+    const size = Number(opts.size) || 1
+    if (size !== 1) {
+      const sz = Math.round(BASE_HALF_POINTS * size * (block ? 1.15 : 1))
+      xml = xml.replace(/<m:r>(<m:rPr>[\s\S]*?<\/m:rPr>)?/g, (_m, rpr = '') => `<m:r>${rpr}<w:rPr><w:sz w:val="${sz}"/><w:szCs w:val="${sz}"/></w:rPr>`)
+    }
+    if (block) {
+      const jc = opts.align === 'left' || opts.align === 'right' ? `<m:oMathParaPr><m:jc m:val="${opts.align}"/></m:oMathParaPr>` : ''
+      xml = `<m:oMathPara xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math">${jc}${xml}</m:oMathPara>`
+    }
     // fromXmlString wraps the parse in a nameless root (serialises as
     // </undefined>) — its first child is the real <m:oMath>/<m:oMathPara>.
     const root = ImportedXmlComponent.fromXmlString(xml) as unknown as { root: unknown[] }
@@ -93,10 +115,11 @@ function runsFor(nodes: PMNode[] | undefined, ctx: Ctx): ParagraphChild[] {
       openNote = current
     }
 
-    if (n.type === 'mathInline') { out.push(omml(String(n.attrs?.latex ?? ''), false)); continue }
+    if (n.type === 'mathInline') { out.push(omml(String(n.attrs?.latex ?? ''), false, { size: Number(n.attrs?.size) || 1 })); continue }
     if (n.type === 'hardBreak') { out.push(new TextRun({ break: 1 })); continue }
     if (n.type !== 'text' || !n.text) continue
-    const color = hex(marks.find(m => m.type === 'textStyle')?.attrs?.color)
+    const textStyle = marks.find(m => m.type === 'textStyle')?.attrs
+    const color = hex(textStyle?.color)
     const fill = hex(marks.find(m => m.type === 'highlight')?.attrs?.color)
     out.push(new TextRun({
       text: n.text,
@@ -107,6 +130,7 @@ function runsFor(nodes: PMNode[] | undefined, ctx: Ctx): ParagraphChild[] {
       color,
       shading: fill ? { type: ShadingType.CLEAR, fill, color: 'auto' } : undefined,
       font: marks.some(m => m.type === 'code') ? 'Consolas' : undefined,
+      size: halfPoints(textStyle?.fontSize),
     }))
   }
   closeNote()
@@ -122,10 +146,11 @@ function blocksFor(nodes: PMNode[] | undefined, ctx: Ctx, list?: { ordered: bool
         out.push(...blocksFor(n.content, ctx, list))
         break
       case 'heading':
-        out.push(new Paragraph({ heading: HEADINGS[(n.attrs?.level as 2 | 3 | 4) ?? 2] ?? HeadingLevel.HEADING_2, children: runsFor(n.content, ctx) }))
+        out.push(new Paragraph({ heading: HEADINGS[(n.attrs?.level as 2 | 3 | 4) ?? 2] ?? HeadingLevel.HEADING_2, alignment: alignOf(n.attrs?.textAlign), children: runsFor(n.content, ctx) }))
         break
       case 'paragraph':
         out.push(new Paragraph({
+          alignment: alignOf(n.attrs?.textAlign),
           children: runsFor(n.content, ctx),
           ...(list ? (list.ordered ? { numbering: { reference: 'lecture-ordered', level: list.level, instance: list.instance } } : { bullet: { level: list.level } }) : {}),
         }))
@@ -142,9 +167,13 @@ function blocksFor(nodes: PMNode[] | undefined, ctx: Ctx, list?: { ordered: bool
         break
       }
       case 'mathBlock':
-        out.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [omml(String(n.attrs?.latex ?? ''), true)] }))
+        out.push(new Paragraph({
+          alignment: alignOf(n.attrs?.align) ?? AlignmentType.CENTER,
+          children: [omml(String(n.attrs?.latex ?? ''), true, { size: Number(n.attrs?.size) || 1, align: String(n.attrs?.align ?? 'center') })],
+        }))
         break
       case 'boardBlock':
+      case 'graphBlock':
       case 'lecturePhoto': {
         const photo = ctx.photos.get(String(n.attrs?.photoId ?? ''))
         if (photo && photo.mime !== 'image/webp') out.push(photoParagraph(photo))
@@ -168,7 +197,7 @@ let orderedInstance = 0
 /** Photo ids placed in the doc — the export route loads just these. */
 export function photoIdsIn(doc: PMNode | null): string[] {
   const ids: string[] = []
-  const walk = (n: PMNode) => { if ((n.type === 'lecturePhoto' || n.type === 'boardBlock') && n.attrs?.photoId) ids.push(String(n.attrs.photoId)); n.content?.forEach(walk) }
+  const walk = (n: PMNode) => { if ((n.type === 'lecturePhoto' || n.type === 'boardBlock' || n.type === 'graphBlock') && n.attrs?.photoId) ids.push(String(n.attrs.photoId)); n.content?.forEach(walk) }
   if (doc) walk(doc)
   return [...new Set(ids)]
 }
@@ -189,7 +218,7 @@ export async function lectureToDocx(doc: PMNode | null, title: string, author: s
         levels: Array.from({ length: 9 }, (_, level) => ({ level, format: LevelFormat.DECIMAL, text: `%${level + 1}.`, alignment: AlignmentType.START, style: { paragraph: { indent: { left: 720 * (level + 1), hanging: 360 } } } })),
       }],
     },
-    styles: { default: { document: { run: { font: 'Calibri', size: 24 } } } },
+    styles: { default: { document: { run: { font: 'Calibri', size: BASE_HALF_POINTS } } } },
     sections: [{ children: [new Paragraph({ heading: HeadingLevel.TITLE, children: [new TextRun(title || 'Конспект лекции')] }), ...body] }],
   })
   return Packer.toBuffer(document)

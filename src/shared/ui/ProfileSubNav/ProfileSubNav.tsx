@@ -9,9 +9,11 @@ interface ProfileSubNavProps {
   statisticsHref?: string
   /** Owner dashboards only: the tutor file library / files shared with the student. */
   filesHref?: string
+  /** Owner dashboards only: live lecture notes (/lecture). */
+  lectureHref?: string
 }
 
-export function ProfileSubNav({ calendarHref, statisticsHref, filesHref }: ProfileSubNavProps = {}) {
+export function ProfileSubNav({ calendarHref, statisticsHref, filesHref, lectureHref }: ProfileSubNavProps = {}) {
   const t = useTranslations('LandingPage')
   const tFiles = useTranslations('files')
   const links = [
@@ -25,6 +27,7 @@ export function ProfileSubNav({ calendarHref, statisticsHref, filesHref }: Profi
     calendarHref ? { label: t('sub_calendar'), href: calendarHref } : null,
     statisticsHref ? { label: t('sub_stats'), href: statisticsHref } : null,
     filesHref ? { label: tFiles('pageTitle'), href: filesHref } : null,
+    lectureHref ? { label: t('sub_lecture'), href: lectureHref } : null,
   ].filter((l): l is { label: string; href: string } => l !== null)
 
   return (

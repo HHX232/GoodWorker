@@ -1,5 +1,6 @@
 import { Lexer, type MarkedExtension, type Token, type Tokens } from 'marked'
 import { parseBoardSpec } from './boardSpec'
+import { graphSummary, parseGraphSpec } from './graphSpec'
 
 // DeepSeek writes lecture notes as markdown plus four house extensions:
 //   $…$            inline formula (LaTeX)        $$…$$   block formula
@@ -151,6 +152,12 @@ function blocks(tokens: Token[]): PMNode[] {
           try { spec = parseBoardSpec(JSON.parse(code.text)) } catch { spec = null }
           if (spec) { out.push({ type: 'boardBlock', attrs: { spec } }); break }
         }
+        // ```graph {spec}``` — a function graph / chart block.
+        if (code.lang?.trim() === 'graph') {
+          let spec = null
+          try { spec = parseGraphSpec(JSON.parse(code.text)) } catch { spec = null }
+          if (spec) { out.push({ type: 'graphBlock', attrs: { spec } }); break }
+        }
         out.push({ type: 'codeBlock', content: code.text ? [{ type: 'text', text: code.text }] : undefined })
         break
       }
@@ -187,6 +194,7 @@ export function nodeText(node: PMNode): string {
   if (node.type === 'mathBlock') return `\n$$${node.attrs?.latex ?? ''}$$\n`
   if (node.type === 'hardBreak') return '\n'
   if (node.type === 'boardBlock') return '\n[доска]\n'
+  if (node.type === 'graphBlock') return `\n${graphSummary(parseGraphSpec(node.attrs?.spec))}\n`
   const inner = (node.content ?? []).map(nodeText).join('')
   return ['paragraph', 'heading', 'listItem', 'blockquote', 'codeBlock'].includes(node.type) ? `${inner}\n` : inner
 }

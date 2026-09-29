@@ -91,7 +91,7 @@ export function LectureWorkspace({ lectureId }: { lectureId: string }) {
       }
       if (save) {
         const data = await res.json()
-        toast.success(t('savedToFiles'), { action: { label: t('openFiles'), onClick: () => { window.location.href = data.where === 'drive' ? `/files?tab=mine&folder=${data.file.folderId ?? ''}` : `/files?folder=${data.file.folderId ?? ''}` } } })
+        toast.success(t(data.audio === 'pending' ? 'savedToFilesAudio' : 'savedToFiles'), { action: { label: t('openFiles'), onClick: () => { window.location.href = data.where === 'drive' ? `/files?tab=mine&folder=${data.file.folderId ?? ''}` : `/files?folder=${data.file.folderId ?? ''}` } } })
       } else {
         const blob = await res.blob()
         const a = document.createElement('a')

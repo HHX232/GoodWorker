@@ -8,8 +8,13 @@ import { s3, S3_BUCKET } from '@/shared/s3/s3Client'
  * photos placed into the notes. Part of the owner's storage quota.
  */
 export async function lectureStorageBytes(ownerId: string, ownerRole: 'STUDENT' | 'TEACHER'): Promise<number> {
+  // A lecture whose recording is already saved as an .m4a file is paid for by that file — don't count it twice.
+  const audioFiles = ownerRole === 'STUDENT'
+    ? await prisma.studentFile.findMany({ where: { studentId: ownerId, lectureNoteId: { not: null }, mimeType: { startsWith: 'audio/' } }, select: { lectureNoteId: true } })
+    : await prisma.tutorFile.findMany({ where: { teacherId: ownerId, lectureNoteId: { not: null }, mimeType: { startsWith: 'audio/' } }, select: { lectureNoteId: true } })
+  const inFiles = audioFiles.map(f => f.lectureNoteId!).filter(Boolean)
   const [audio, photos] = await Promise.all([
-    prisma.lectureChunk.aggregate({ where: { audioKey: { not: null }, lecture: { ownerId, ownerRole } }, _sum: { audioBytes: true } }),
+    prisma.lectureChunk.aggregate({ where: { audioKey: { not: null }, lectureId: { notIn: inFiles }, lecture: { ownerId, ownerRole } }, _sum: { audioBytes: true } }),
     prisma.lecturePhoto.aggregate({ where: { lecture: { ownerId, ownerRole } }, _sum: { sizeBytes: true } }),
   ])
   return (audio._sum.audioBytes ?? 0) + (photos._sum.sizeBytes ?? 0)
