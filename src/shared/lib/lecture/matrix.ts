@@ -58,12 +58,19 @@ export function cellLatex(raw: string): string {
   return s || '0'
 }
 
+/** Rows with fractions need air between them — mathlive (and the eye) would otherwise stack them into each other. */
+function rowBreak(rows: string[][]): string {
+  return rows.some(r => r.some(c => c.includes('frac'))) ? ' \\\\[6pt] ' : ' \\\\ '
+}
+
 export function matrixLatex(cells: string[][], bracket: Bracket): string {
-  return `\\begin{${bracket}}${cells.map(r => r.map(cellLatex).join(' & ')).join(' \\\\ ')}\\end{${bracket}}`
+  const rows = cells.map(r => r.map(cellLatex))
+  return `\\begin{${bracket}}${rows.map(r => r.join(' & ')).join(rowBreak(rows))}\\end{${bracket}}`
 }
 
 export function fracMatrixLatex(m: Matrix, bracket: Bracket = 'pmatrix'): string {
-  return `\\begin{${bracket}}${m.map(r => r.map(c => c.latex(true)).join(' & ')).join(' \\\\ ')}\\end{${bracket}}`
+  const rows = m.map(r => r.map(c => c.latex(true)))
+  return `\\begin{${bracket}}${rows.map(r => r.join(' & ')).join(rowBreak(rows))}\\end{${bracket}}`
 }
 
 /** Numeric matrix, or null when any cell is symbolic/empty. */
@@ -145,7 +152,7 @@ export function multiply(a: Matrix, b: Matrix): Matrix | null {
 export function parseMatrixLatex(latex: string): { name: string; bracket: Bracket; cells: string[][] } | null {
   const m = /^\s*(?:([A-Za-z](?:_\{?\w+\}?)?)\s*=\s*)?\\begin\{(pmatrix|bmatrix|vmatrix|Bmatrix|matrix)\}([\s\S]*?)\\end\{\2\}\s*$/.exec(latex)
   if (!m) return null
-  const rows = m[3].split(/\\\\/).map(r => r.trim()).filter(Boolean).map(r => r.split('&').map(c => latexCell(c.trim())))
+  const rows = m[3].split(/\\\\(?:\[[^\]]*\])?/).map(r => r.trim()).filter(Boolean).map(r => r.split('&').map(c => latexCell(c.trim())))
   const cols = Math.max(...rows.map(r => r.length))
   if (!rows.length || rows.length > 8 || cols > 8) return null
   return { name: m[1] ?? '', bracket: m[2] as Bracket, cells: rows.map(r => [...r, ...Array(cols - r.length).fill('0')]) }

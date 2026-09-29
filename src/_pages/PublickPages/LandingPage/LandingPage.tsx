@@ -6,7 +6,8 @@ import { useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { slugify } from '@/shared/lib/slugify'
 import { useMediaQuery } from '@/shared/hooks/useMediaQuery'
 import { angleArmsEqual, readThreeDZone, type AngleArm, type SnapRef, type ThreeDZone, type ZoneSelection } from '@/widgets/VideoRoom/CallWhiteboard/shapeGeometry'
@@ -15,6 +16,7 @@ import type { ExcalidrawElement } from '@excalidraw/excalidraw/element/types'
 import type { ExcalidrawImperativeAPI, Zoom } from '@excalidraw/excalidraw/types'
 import s from './LandingPage.module.scss'
 import TypingText from './TypingText'
+import { LECTURE_PROMO_DEFAULT, LecturePromo, type LecturePromoVariant } from './LecturePromo/LecturePromo'
 
 const KnowledgeGlobe    = dynamic(() => import('./KnowledgeGlobe'),    { ssr: false })
 const ThreeShape        = dynamic(() => import('./ThreeShape'),        { ssr: false })
@@ -1756,6 +1758,14 @@ function SubNav() {
   )
 }
 
+// ─── Lecture notes promo ────────────────────────────────────────
+/** `?lecturePromo=a|b|c|d` previews the other looks of the block on the live page. */
+function LecturePromoPreviewable() {
+  const q = useSearchParams().get('lecturePromo')
+  const variant = (['a', 'b', 'c', 'd'] as const).find(v => v === q) ?? LECTURE_PROMO_DEFAULT
+  return <LecturePromo variant={variant as LecturePromoVariant} />
+}
+
 // ─── Page ───────────────────────────────────────────────────────
 export default function LandingPage() {
   return (
@@ -1777,6 +1787,10 @@ export default function LandingPage() {
         <TeachersBlock />
         <Divider />
         <PdfTestPromo />
+        <Divider />
+        <Suspense fallback={<LecturePromo />}>
+          <LecturePromoPreviewable />
+        </Suspense>
         <Divider />
         <PostsSlider />
       </div>

@@ -112,10 +112,16 @@ $aiSoft: #f5f0ff;
   :global(.lecture-math-body) { overflow-x: auto; text-align: center; font-size: 1.15em; }
   :global(.lecture-math-actions) {
     position: absolute;
-    top: 6px;
-    right: 6px;
+    top: -15px;
+    right: 8px;
+    z-index: 2;
     display: flex;
+    align-items: center;
     gap: 4px;
+    padding: 2px 4px;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(20, 20, 40, 0.08);
     opacity: 0;
     transition: opacity 0.15s;
 
@@ -135,6 +141,10 @@ $aiSoft: #f5f0ff;
     }
     :global(.lecture-math-ai) { color: $ai; border-color: rgba(124, 58, 237, 0.25); background: $aiSoft; }
   }
+  :global(.lecture-math-zoom) { display: inline-block; max-width: 100%; }
+  :global(.lecture-math-sep) { width: 1px; height: 18px; margin: 0 2px; background: $line; }
+  :global(.lecture-math-size) { min-width: 38px; color: $muted; font: 600 11.5px/1 system-ui, sans-serif; text-align: center; }
+  :global(.lecture-math-actions) :global(button.is-on) { border-color: rgba(124, 58, 237, 0.35); color: $ai; background: $aiSoft; }
   :global(.lecture-math-block:hover .lecture-math-actions), :global(.lecture-math-block.is-selected .lecture-math-actions) { opacity: 1; }
   @media (hover: none) { :global(.lecture-math-actions) { opacity: 1; } }
 
@@ -716,6 +726,8 @@ $aiSoft: #f5f0ff;
     :global(.lecture-math-inline) { background: rgba(167, 139, 250, 0.1); }
     :global(.lecture-math-block) { border-color: rgba(255, 255, 255, 0.08); background: linear-gradient(180deg, #1c1e27 0%, #1e1a2b 100%); }
     :global(.lecture-math-actions) button { border-color: rgba(255, 255, 255, 0.1); background: #1a1c24; color: #aeb2c2; }
+    :global(.lecture-math-actions) { background: #1a1c24; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4); }
+    :global(.lecture-math-sep) { background: rgba(255, 255, 255, 0.1); }
     :global(.lecture-math-actions) :global(.lecture-math-ai) { background: rgba(167, 139, 250, 0.14); color: #c4b5fd; }
   }
   .menu, .askPanel, .dialog { border-color: rgba(255, 255, 255, 0.08); background: #1a1c24; box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55); }

@@ -450,6 +450,13 @@ video {
   vertical-align: baseline;
 }
 
+/* mathlive's static markup lays itself out in em: the fixed span size above
+   squashed fractions and matrix rows and ignored any scaling of a formula.
+   (.ML__vlist-s keeps its own 1px — mathlive's spacer.) */
+.ML__latex span:not([class*='size']):not(.ML__vlist-s) {
+  font-size: inherit;
+}
+
 /* HTML5 display-role reset for older browsers */
 article,
 aside,

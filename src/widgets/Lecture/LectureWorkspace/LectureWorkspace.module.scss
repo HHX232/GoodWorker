@@ -422,6 +422,27 @@ $rec: #e11d48;
 
 .exportDisabled { opacity: 0.45; pointer-events: none; }
 
+// Size + alignment row above the round tools
+.sizeBar { display: flex; align-items: center; gap: 4px; margin-bottom: 14px; padding: 4px; border: 1px solid $line; border-radius: 12px; background: #fff; }
+.sizeBtn {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: $ink;
+  cursor: pointer;
+  &:hover:not(:disabled) { background: $soft; }
+  &:disabled { opacity: 0.3; cursor: default; }
+}
+.sizeBtnOn { background: $ink; color: #fff; &:hover:not(:disabled) { background: #33333d; } }
+.sizeSelect { flex: 1; min-width: 0; height: 30px; padding: 0 4px; border: 1px solid $line; border-radius: 8px; background: #fff; color: $ink; font: inherit; font-size: 13px; }
+.sizeValue { flex: 1; min-width: 0; text-align: center; color: $ai; font-weight: 600; font-size: 13px; }
+.sizeSep { width: 1px; height: 20px; margin: 0 2px; background: $line; flex-shrink: 0; }
+
 // Round tools (Scribe "Text Editor")
 .toolGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px 4px; }
 
@@ -589,6 +610,10 @@ $rec: #e11d48;
   .exportPrimary { border-color: #e8eaf0; background: #e8eaf0; color: #14151c; svg { color: #14151c; } &:hover:not(:disabled) { background: #fff; } }
   .roundIcon { border-color: rgba(255, 255, 255, 0.08); background: #1c1e27; }
   .roundIconOn { border-color: #e8eaf0; background: #e8eaf0; color: #14151c; }
+  .sizeBar, .sizeSelect { border-color: rgba(255, 255, 255, 0.08); background: #16171e; color: #e8eaf0; }
+  .sizeBtn { color: #e8eaf0; &:hover:not(:disabled) { background: rgba(255, 255, 255, 0.06); } }
+  .sizeBtnOn { background: #e8eaf0; color: #14151c; }
+  .sizeSep { background: rgba(255, 255, 255, 0.08); }
   .roundTool { color: #e8eaf0; }
   .notes button { background: rgba(245, 158, 11, 0.08); &:hover { background: rgba(245, 158, 11, 0.14); } }
   .noteText, .finalText { color: #e8eaf0; }

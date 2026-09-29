@@ -72,6 +72,16 @@ export const AiSection = Node.create({
   },
 })
 
+/** Formula sizes the −/+ steps go through (1 = text size). */
+export const MATH_SIZES = [0.75, 0.9, 1, 1.25, 1.5, 1.75, 2, 2.5] as const
+export type MathAlign = 'left' | 'center' | 'right'
+
+export function stepMathSize(current: number, dir: 1 | -1): number {
+  const i = MATH_SIZES.findIndex(v => v >= current - 1e-6)
+  const at = i < 0 ? MATH_SIZES.length - 1 : i
+  return MATH_SIZES[Math.min(MATH_SIZES.length - 1, Math.max(0, at + dir))]
+}
+
 function mathNode(name: 'mathInline' | 'mathBlock') {
   const inline = name === 'mathInline'
   return Node.create({
@@ -82,7 +92,13 @@ function mathNode(name: 'mathInline' | 'mathBlock') {
     selectable: true,
     draggable: !inline,
     addAttributes() {
-      return { latex: { default: '', parseHTML: el => el.getAttribute('data-latex') ?? '', renderHTML: a => ({ 'data-latex': a.latex }) } }
+      return {
+        latex: { default: '', parseHTML: el => el.getAttribute('data-latex') ?? '', renderHTML: a => ({ 'data-latex': a.latex }) },
+        /** Scale relative to the text (MATH_SIZES). */
+        size: { default: 1, parseHTML: el => Number(el.getAttribute('data-size')) || 1, renderHTML: a => (a.size === 1 ? {} : { 'data-size': a.size }) },
+        // Block formulas only: where the formula sits on the line.
+        ...(inline ? {} : { align: { default: 'center', parseHTML: el => el.getAttribute('data-align') ?? 'center', renderHTML: a => (a.align === 'center' ? {} : { 'data-align': a.align }) } }),
+      }
     },
     parseHTML() {
       return [{ tag: inline ? 'span[data-math-inline]' : 'div[data-math-block]' }]

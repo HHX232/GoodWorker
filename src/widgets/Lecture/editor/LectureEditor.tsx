@@ -5,7 +5,8 @@ import { HIGHLIGHT_COLORS, TEXT_COLORS } from '@/shared/lib/lecture/markdownToDo
 import type { Editor, JSONContent } from '@tiptap/core'
 import Highlight from '@tiptap/extension-highlight'
 import Placeholder from '@tiptap/extension-placeholder'
-import { Color, TextStyle } from '@tiptap/extension-text-style'
+import { Color, FontSize, TextStyle } from '@tiptap/extension-text-style'
+import TextAlign from '@tiptap/extension-text-align'
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react'
 import { BubbleMenu } from '@tiptap/react/menus'
 import StarterKit from '@tiptap/starter-kit'
@@ -75,6 +76,8 @@ export function LectureEditor({ lectureId, initialDoc, editable, canUseAi, onRea
       StarterKit.configure({ heading: { levels: [2, 3, 4] }, link: false }),
       TextStyle,
       Color,
+      FontSize,
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Highlight.configure({ multicolor: true }),
       MathInline,
       MathBlock,
