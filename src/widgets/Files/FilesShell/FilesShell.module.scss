@@ -61,6 +61,37 @@
   letter-spacing: 0;
 }
 
+.driveNav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 6px 0 4px;
+}
+
+.driveNavItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #4A4B57;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover { background: #F4F4F8; }
+}
+
+.driveNavActive {
+  background: #F0EFFB;
+  color: #1E1E24;
+  font-weight: 600;
+}
+
 .sidebarLabel {
   margin: 10px 10px 4px;
   font-size: 11px;
@@ -469,4 +500,6 @@
   .emptyIcon { background: rgba(129, 140, 248, 0.14); color: #a5b4fc; }
   .upsellIcon { background: rgba(251, 191, 36, 0.12); color: #FCD34D; }
   .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 100%); background-size: 200% 100%; }
+  .driveNavItem { color: rgba(255, 255, 255, 0.72); &:hover { background: rgba(255, 255, 255, 0.05); } }
+  .driveNavActive { background: rgba(124, 116, 230, 0.18); color: #fff; }
 }

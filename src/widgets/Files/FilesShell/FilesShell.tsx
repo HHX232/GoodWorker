@@ -25,11 +25,12 @@ import { FilesModal } from '../FilesModal/FilesModal'
 import { FolderTree } from '../FolderTree/FolderTree'
 import {
   FilesChevronDownIcon, FilesChevronIcon, FilesCoverIcon, FilesDeadlineIcon, FilesDropboxIcon, FilesFolderPlusIcon, FilesSearchIcon, FilesShareIcon,
-  FilesStorageIcon, FilesUploadIcon, FilesVipIcon,
+  FilesLectureIcon, FilesSharedIcon, FilesStorageIcon, FilesUploadIcon, FilesVipIcon,
 } from '../icons'
 import { filesFetch, FilesApiError, formatBytes, formatDeadline, initials, jsonInit, triggerDownload, viewerFor } from '../lib'
 import { ShareAccessModal, type ShareTarget } from '../ShareAccessModal/ShareAccessModal'
 import { StorageMeter } from '../StorageMeter/StorageMeter'
+import { StudentDrive } from '../StudentDrive/StudentDrive'
 import { StorageOverageWarningModal } from '../StorageOverageWarningModal/StorageOverageWarningModal'
 import ui from '../ui.module.scss'
 import styles from './FilesShell.module.scss'
@@ -45,6 +46,12 @@ export interface FilesShellProps {
    * rows), no management or upload, no search/usage.
    */
   admin?: { teacherId: string; teacherName: string }
+  /**
+   * Student only: the sidebar switch between what tutors shared and the
+   * student's own drive ("Мои файлы"). While `active`, the main area is the
+   * drive and `folderId` above is null (drive folders live in `drive.folderId`).
+   */
+  drive?: { active: boolean; folderId: string | null; onToggle: (active: boolean) => void; onNavigate: (folderId: string | null) => void }
 }
 
 type NameDialog = { mode: 'create' } | { mode: 'rename'; folder: LibraryFolder }
@@ -73,7 +80,7 @@ function pathOf(parentId: string | null, byId: Map<string, TreeNode>): string {
  * only inside their own "учебная" subfolder. Everything comes from
  * GET /api/tutor-files/library, which already applies the visibility rule.
  */
-export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProps) {
+export function FilesShell({ role, folderId, onNavigate, admin, drive }: FilesShellProps) {
   const t = useTranslations('files')
   const locale = useLocale()
   const queryClient = useQueryClient()
@@ -290,6 +297,8 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
   const openPreview = (f: LibraryFile) => {
     markOpened(f)
     const kind = viewerFor(f.mimeType, f.name)
+    // Saved lecture notes reopen in the lecture editor (formulas, notes, AI sections intact).
+    if (canManage && f.lectureNoteId) { router.push(`/lecture/${f.lectureNoteId}`); return }
     if (canManage && kind === 'docx') { setEditFile(f); return }
     if (canManage && kind === 'pdf') { setReviewFile(f); return }
     setPreviewFile(f)
@@ -473,13 +482,32 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
             {t('pageTitle')}
             {admin && <span className={styles.readOnly}>{t('adminReadOnly')}</span>}
           </div>
-          {showLibraryChrome && (
+          {drive && !isTeacher && (
+            <nav className={styles.driveNav} aria-label={t('driveNavLabel')}>
+              <button type="button" className={`${styles.driveNavItem} ${!drive.active ? styles.driveNavActive : ''}`} aria-current={!drive.active ? 'page' : undefined} onClick={() => drive.onToggle(false)}>
+                <FilesSharedIcon size={15} /> {t('sharedWithMe')}
+              </button>
+              <button type="button" className={`${styles.driveNavItem} ${drive.active ? styles.driveNavActive : ''}`} aria-current={drive.active ? 'page' : undefined} onClick={() => drive.onToggle(true)}>
+                <FilesStorageIcon size={15} /> {t('driveTitle')}
+              </button>
+              <Link href="/lecture" className={styles.driveNavItem}>
+                <FilesLectureIcon size={15} /> {t('driveNewLecture')}
+              </Link>
+            </nav>
+          )}
+          {showLibraryChrome && !drive?.active && (
             <>
               <div className={styles.sidebarLabel}>{t('treeTitle')}</div>
               {tree}
             </>
           )}
         </aside>
+
+        {drive?.active ? (
+          <main className={styles.main}>
+            <StudentDrive folderId={drive.folderId} onNavigate={drive.onNavigate} />
+          </main>
+        ) : (
 
         <main
           className={`${styles.main} ${dragOver ? styles.dragOver : ''}`}
@@ -568,6 +596,7 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
             {body}
           </div>
         </main>
+        )}
       </div>
 
       {nameDialog && (

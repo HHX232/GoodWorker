@@ -78,7 +78,8 @@ function findSource(node: Node): { sourceType: 'post' | null; sourceId: string |
 export function TextSelectionProvider({ children }: { children: ReactNode }) {
   const [selection, setSelection] = useState<SelectionState | null>(null)
   const pathname = usePathname()
-  const isDisabled = pathname.startsWith('/create-post') || pathname.startsWith('/teacher/posts')
+  // /lecture has its own selection menu (AI actions, notes) — the site-wide popup would cover it.
+  const isDisabled = pathname.startsWith('/create-post') || pathname.startsWith('/teacher/posts') || pathname.startsWith('/lecture')
 
   const clearSelection = useCallback(() => setSelection(null), [])
 

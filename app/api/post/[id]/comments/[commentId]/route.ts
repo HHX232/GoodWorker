@@ -57,7 +57,7 @@ export async function PATCH(req: NextRequest, {params}: RouteParams) {
     })
 
     // Re-translate when text changed
-    if (typeof text === 'string' && text.trim() && process.env.OPENROUTER_API_KEY) {
+    if (typeof text === 'string' && text.trim() && process.env.DEEPSEEK_API_KEY) {
       enrichCommentWithAI(updated.id).catch(e => console.error('[commentAI]', e))
     }
 

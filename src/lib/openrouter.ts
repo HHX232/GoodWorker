@@ -1,60 +1,39 @@
+// Every AI request in the app goes to DeepSeek — text via `deepseek-chat`,
+// photos via the vision model. There is deliberately no fallback provider:
+// without DEEPSEEK_API_KEY a call fails loudly instead of silently switching.
 const DEEPSEEK_MODEL        = 'deepseek-chat'
 const DEEPSEEK_VISION_MODEL = 'deepseek-v4-flash-vision-exp'
 const DEEPSEEK_ENDPOINT     = 'https://api.deepseek.com/chat/completions'
-
-const OR_MODEL    = 'openrouter/free'
-const OR_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions'
-const SITE_URL    = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://goodworker.ru'
 const TIMEOUT_MS  = 120_000
 
-type Provider = 'deepseek' | 'openrouter'
+// `json: false` drops response_format so the model can answer in plain
+// text / markdown (e.g. lecture notes); default stays JSON for older callers.
+type CallOpts = { temperature?: number; maxTokens?: number; json?: boolean; onUsage?: (usage: AIUsage) => void }
 
-function getProvider(): Provider {
-  return process.env.DEEPSEEK_API_KEY ? 'deepseek' : 'openrouter'
+export interface AIUsage { promptTokens: number; completionTokens: number }
+
+function deepseekHeaders(): Record<string, string> {
+  return {
+    Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+    'Content-Type': 'application/json',
+  }
 }
 
-function buildRequest(systemPrompt: string, userPrompt: string, opts: { temperature?: number; maxTokens?: number }): { endpoint: string; headers: Record<string, string>; body: string } {
-  const provider = getProvider()
-
-  if (provider === 'deepseek') {
-    return {
-      endpoint: DEEPSEEK_ENDPOINT,
-      headers: {
-        Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: DEEPSEEK_MODEL,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-        temperature: opts.temperature ?? 0.1,
-        ...(opts.maxTokens ? { max_tokens: opts.maxTokens } : {}),
-        response_format: { type: 'json_object' },
-        stream: true,
-      }),
-    }
-  }
-
+function buildRequest(systemPrompt: string, userPrompt: string, opts: CallOpts): { endpoint: string; headers: Record<string, string>; body: string } {
   return {
-    endpoint: OR_ENDPOINT,
-    headers: {
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': SITE_URL,
-      'X-Title': 'GoodWorker',
-    },
+    endpoint: DEEPSEEK_ENDPOINT,
+    headers: deepseekHeaders(),
     body: JSON.stringify({
-      model: OR_MODEL,
+      model: DEEPSEEK_MODEL,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
       temperature: opts.temperature ?? 0.1,
       ...(opts.maxTokens ? { max_tokens: opts.maxTokens } : {}),
-      response_format: { type: 'json_object' },
+      ...(opts.json === false ? {} : { response_format: { type: 'json_object' } }),
       stream: true,
+      stream_options: { include_usage: true },
     }),
   }
 }
@@ -65,14 +44,11 @@ function buildVisionRequest(
   systemPrompt: string,
   images: VisionImage[],
   userPrompt: string,
-  opts: { temperature?: number; maxTokens?: number },
+  opts: CallOpts,
 ): { endpoint: string; headers: Record<string, string>; body: string } {
   return {
     endpoint: DEEPSEEK_ENDPOINT,
-    headers: {
-      Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
+    headers: deepseekHeaders(),
     body: JSON.stringify({
       model: DEEPSEEK_VISION_MODEL,
       messages: [
@@ -87,8 +63,9 @@ function buildVisionRequest(
       ],
       temperature: opts.temperature ?? 0.1,
       ...(opts.maxTokens ? { max_tokens: opts.maxTokens } : {}),
-      response_format: { type: 'json_object' },
+      ...(opts.json === false ? {} : { response_format: { type: 'json_object' } }),
       stream: true,
+      stream_options: { include_usage: true },
     }),
   }
 }
@@ -96,36 +73,32 @@ function buildVisionRequest(
 export async function callAI(
   systemPrompt: string,
   userPrompt: string,
-  opts: { temperature?: number; maxTokens?: number } = {},
+  opts: CallOpts = {},
 ): Promise<string> {
-  const provider = getProvider()
-  if (provider === 'deepseek' && !process.env.DEEPSEEK_API_KEY) throw new Error('DEEPSEEK_API_KEY is not set')
-  if (provider === 'openrouter' && !process.env.OPENROUTER_API_KEY) throw new Error('OPENROUTER_API_KEY is not set')
+  if (!process.env.DEEPSEEK_API_KEY) throw new Error('DEEPSEEK_API_KEY is not set')
 
   const { endpoint, headers, body } = buildRequest(systemPrompt, userPrompt, opts)
   const promptPreview = userPrompt.slice(0, 120).replace(/\n/g, ' ')
-  console.log(`[AI] provider=${provider} prompt="${promptPreview}..."`)
+  console.log(`[AI] provider=deepseek prompt="${promptPreview}..."`)
 
-  return sendChatRequest(endpoint, headers, body, provider)
+  return sendChatRequest(endpoint, headers, body, 'deepseek', opts.onUsage)
 }
 
-// DeepSeek-only: the free OpenRouter fallback model has no vision support, so
-// this feature is simply unavailable when DEEPSEEK_API_KEY isn't configured.
 export async function callVisionAI(
   systemPrompt: string,
   images: VisionImage[],
   userPrompt: string,
-  opts: { temperature?: number; maxTokens?: number } = {},
+  opts: CallOpts = {},
 ): Promise<string> {
   if (!process.env.DEEPSEEK_API_KEY) throw new Error('DEEPSEEK_API_KEY is not set — photo analysis requires the DeepSeek vision model')
 
   const { endpoint, headers, body } = buildVisionRequest(systemPrompt, images, userPrompt, opts)
   console.log(`[AI] provider=deepseek-vision images=${images.length}`)
 
-  return sendChatRequest(endpoint, headers, body, 'deepseek-vision')
+  return sendChatRequest(endpoint, headers, body, 'deepseek-vision', opts.onUsage)
 }
 
-async function sendChatRequest(endpoint: string, headers: Record<string, string>, body: string, providerLabel: string): Promise<string> {
+async function sendChatRequest(endpoint: string, headers: Record<string, string>, body: string, providerLabel: string, onUsage?: (usage: AIUsage) => void): Promise<string> {
   for (let attempt = 0; attempt < 3; attempt++) {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(new Error(`AI timed out after ${TIMEOUT_MS / 1000}s`)), TIMEOUT_MS)
@@ -157,7 +130,7 @@ async function sendChatRequest(endpoint: string, headers: Record<string, string>
     }
 
     try {
-      const content = await readStream(res)
+      const content = await readStream(res, onUsage)
       clearTimeout(timer)
       if (!content) throw new Error(`${providerLabel} returned empty content`)
       console.log(`[AI] ok attempt=${attempt + 1} ms=${Date.now() - t0} chars=${content.length}`)
@@ -177,7 +150,7 @@ async function sendChatRequest(endpoint: string, headers: Record<string, string>
   throw new Error(`${providerLabel}: all retries exhausted`)
 }
 
-async function readStream(res: Response): Promise<string> {
+async function readStream(res: Response, onUsage?: (usage: AIUsage) => void): Promise<string> {
   const reader = res.body!.getReader()
   const decoder = new TextDecoder()
   let content = ''
@@ -198,6 +171,8 @@ async function readStream(res: Response): Promise<string> {
       try {
         const parsed = JSON.parse(data)
         content += parsed.choices?.[0]?.delta?.content ?? ''
+        // With stream_options.include_usage the last chunk carries the totals.
+        if (parsed.usage && onUsage) onUsage({ promptTokens: parsed.usage.prompt_tokens ?? 0, completionTokens: parsed.usage.completion_tokens ?? 0 })
       } catch {
         // ignore malformed SSE chunks
       }
@@ -212,7 +187,7 @@ function sleep(ms: number) {
 }
 
 export function hasAIProvider(): boolean {
-  return !!(process.env.DEEPSEEK_API_KEY || process.env.OPENROUTER_API_KEY)
+  return !!process.env.DEEPSEEK_API_KEY
 }
 
 export function parseJSON<T>(raw: string): T {

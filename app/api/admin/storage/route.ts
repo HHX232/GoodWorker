@@ -14,12 +14,13 @@ export async function GET() {
   const denied = await requireAdmin()
   if (denied) return denied
   try {
-    const [limits, pricing, usage, folderCounts, unindexed] = await Promise.all([
+    const [limits, pricing, usage, folderCounts, unindexed, studentSettings] = await Promise.all([
       getStorageLimits(),
       getStoragePricing(),
       prisma.tutorFile.groupBy({ by: ['teacherId'], _sum: { sizeBytes: true }, _count: { _all: true } }),
       prisma.tutorFolder.groupBy({ by: ['teacherId'], _count: { _all: true } }),
       prisma.tutorFile.count({ where: { contentText: null } }),
+      prisma.storageSettings.findUnique({ where: { id: 'global' }, select: { studentQuotaGb: true } }),
     ])
     const ids = [...new Set([...usage.map(u => u.teacherId), ...folderCounts.map(f => f.teacherId)])]
     const teachers = await prisma.teacher.findMany({
@@ -46,7 +47,7 @@ export async function GET() {
       .sort((a, b) => b.usedBytes - a.usedBytes)
 
     return NextResponse.json({
-      settings: { quotaGb: limits.quotaGb, maxFileMb: limits.maxFileMb },
+      settings: { quotaGb: limits.quotaGb, maxFileMb: limits.maxFileMb, studentQuotaGb: studentSettings?.studentQuotaGb ?? 5 },
       adminQuotaGb: ADMIN_QUOTA_GB,
       billingEnabled: STORAGE_BILLING_ENABLED,
       priceCentsPerGbMonth: pricing?.priceCentsPerGbMonth ?? null,
@@ -66,18 +67,23 @@ export async function GET() {
   }
 }
 
-// PATCH /api/admin/storage {quotaGb?, maxFileMb?, priceCentsPerGbMonth?}
+// PATCH /api/admin/storage {quotaGb?, maxFileMb?, studentQuotaGb?, priceCentsPerGbMonth?}
 export async function PATCH(req: NextRequest) {
   const denied = await requireAdmin()
   if (denied) return denied
   try {
     const body = await req.json().catch(() => ({}))
     const int = (v: unknown) => (typeof v === 'number' && Number.isInteger(v) ? v : null)
-    const data: { quotaGb?: number; maxFileMb?: number } = {}
+    const data: { quotaGb?: number; maxFileMb?: number; studentQuotaGb?: number } = {}
     if (body.quotaGb !== undefined) {
       const v = int(body.quotaGb)
       if (v === null || v < QUOTA_GB_RANGE.min || v > QUOTA_GB_RANGE.max) return NextResponse.json({ error: `quotaGb must be ${QUOTA_GB_RANGE.min}..${QUOTA_GB_RANGE.max}` }, { status: 400 })
       data.quotaGb = v
+    }
+    if (body.studentQuotaGb !== undefined) {
+      const v = int(body.studentQuotaGb)
+      if (v === null || v < QUOTA_GB_RANGE.min || v > QUOTA_GB_RANGE.max) return NextResponse.json({ error: `studentQuotaGb must be ${QUOTA_GB_RANGE.min}..${QUOTA_GB_RANGE.max}` }, { status: 400 })
+      data.studentQuotaGb = v
     }
     if (body.maxFileMb !== undefined) {
       const v = int(body.maxFileMb)
