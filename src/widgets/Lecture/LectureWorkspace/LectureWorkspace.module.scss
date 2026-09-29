@@ -436,28 +436,25 @@ $rec: #e11d48;
 
 @media (max-width: 1100px) {
   .page { padding: 12px 16px 24px; }
-  .grid { grid-template-columns: minmax(0, 1fr); }
-  .left, .right { position: static; max-height: none; overflow: visible; }
-  .left {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    align-items: center;
-    gap: 10px 14px;
-    .back { grid-column: 1 / -1; }
-    .orbBlock { flex-direction: row; padding: 0; }
-    .controls { min-width: 0; }
-    .aiControls, .feed, .alert, .queue { grid-column: 1 / -1; }
-  }
+  .grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  // Phone order: recording bar → the document → AI controls / transcript → panels.
+  .left { display: contents; }
+  .back { order: 0; }
+  .orbBlock { order: 1; flex-direction: row; justify-content: flex-start; gap: 14px; padding: 0; }
+  .controls { order: 2; }
+  .center { order: 3; }
+  .aiControls { order: 4; }
+  .feed { order: 5; }
+  .alert, .queue { order: 2; }
+  .right { order: 6; position: static; max-height: none; overflow: visible; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .orbBlock > div:first-child { width: 88px !important; height: 88px !important; }
   .orbInfo { text-align: left; }
   .clock { font-size: 24px; }
   .docCard { min-height: 60vh; padding: 18px 16px 28px; border-radius: 18px; }
-  .right { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 }
 
 @media (max-width: 640px) {
   .right { grid-template-columns: 1fr; }
-  .left { grid-template-columns: 1fr; .orbBlock { justify-content: flex-start; } }
   .docHead { flex-wrap: wrap; }
 }
 

@@ -69,7 +69,6 @@ $ai: #7c3aed;
 
 .toggle {
   display: flex;
-  align-items: flex-start;
   gap: 10px;
   padding: 10px 12px;
   border: 1px solid $line;
@@ -78,7 +77,27 @@ $ai: #7c3aed;
   text-align: left;
   font-size: 14px;
   cursor: pointer;
-  input { margin-top: 3px; accent-color: $ai; }
+  align-items: center;
+  span { flex: 1; min-width: 0; }
+  // Global form styles reset native checkboxes — draw the switch ourselves (same as the workspace).
+  input {
+    appearance: none;
+    order: 2;
+    flex: none;
+    position: relative;
+    width: 36px;
+    height: 20px;
+    margin: 0;
+    border: 0;
+    border-radius: 999px;
+    background: #d9d9e3;
+    cursor: pointer;
+    transition: background 0.15s;
+    &::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); transition: transform 0.15s; }
+    &:checked { background: $ai; }
+    &:checked::after { transform: translateX(16px); }
+    &:focus-visible { outline: 2px solid rgba(124, 58, 237, 0.4); outline-offset: 2px; }
+  }
   small { display: block; margin-top: 2px; color: $faint; font-size: 12px; }
 }
 

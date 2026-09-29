@@ -9,8 +9,9 @@ import { lectureRecorder } from '../recorder/lectureRecorder'
 import { useRecorderState } from '../recorder/useRecorderState'
 import type { ChunkDto, LectureDto, LectureResponse, TariffDto, UploadIssue } from './types'
 
-/** Structure every ~60 s of new speech — fewer DeepSeek calls, more context per call. */
+/** Structure every ~60 s of new speech — fewer DeepSeek calls, more context per call. The first section comes sooner, so the page isn't empty for a minute. */
 const STRUCTURE_EVERY_MS = 55_000
+const FIRST_STRUCTURE_MS = 25_000
 const AUTOSAVE_MS = 1500
 const POLL_FINAL_MS = 8000
 const localKey = (id: string) => `gw-lecture-doc:${id}`
@@ -139,7 +140,7 @@ export function useLectureSession(lectureId: string, t: (key: string, values?: R
     const editor = editorRef.current
     if (!editor || structureBusy.current) return
     const range = pendingRange()
-    if (!range || (!force && range.ms < STRUCTURE_EVERY_MS)) return
+    if (!range || (!force && range.ms < (lastStructured.current < 0 ? FIRST_STRUCTURE_MS : STRUCTURE_EVERY_MS))) return
     structureBusy.current = true
     setStructuring(true)
     try {

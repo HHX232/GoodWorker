@@ -3,7 +3,7 @@
 import type { JSONContent } from '@tiptap/core'
 import { ArrowRightIcon, RefreshCwIcon, SparklesIcon, XIcon } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
 import { SuggestionPreview } from './SuggestionPreview'
@@ -42,20 +42,29 @@ export function AskAiPanel({ lectureId, target, onApply, onCancel }: Props) {
 
   const chips = [t('askChipFix'), t('askChipShorter'), t('askChipSimpler'), t('askChipFormulas'), t('askChipList')]
 
-  useEffect(() => {
-    // Wide screens: float beside the selection. Narrow: bottom sheet (null).
+  const panelRef = useRef<HTMLDivElement>(null)
+
+  // Wide screens: float beside the selection, measured so the whole panel —
+  // buttons included — stays on screen as the suggestion grows. Narrow: bottom sheet.
+  useLayoutEffect(() => {
+    const el = panelRef.current
     const place = () => {
       const vw = window.innerWidth
-      if (vw < 900) { setPos(null); return }
+      const vh = window.innerHeight
+      if (vw < 900 || !el) { setPos(null); return }
       const width = Math.min(640, vw - 32)
+      const height = el.offsetHeight
       const left = Math.min(Math.max(16, target.rect.left), vw - width - 16)
       const below = target.rect.bottom + 12
-      const top = below + 420 > window.innerHeight ? Math.max(16, target.rect.top - 432) : below
-      setPos({ top, left })
+      const above = target.rect.top - 12 - height
+      const top = below + height <= vh - 16 ? below : above >= 16 ? above : Math.max(16, vh - height - 16)
+      setPos(p => (p && p.top === top && p.left === left ? p : { top, left }))
     }
     place()
+    const ro = el ? new ResizeObserver(place) : null
+    if (el) ro!.observe(el)
     window.addEventListener('resize', place)
-    return () => window.removeEventListener('resize', place)
+    return () => { ro?.disconnect(); window.removeEventListener('resize', place) }
   }, [target.rect])
 
   const run = async (text: string) => {
@@ -91,7 +100,7 @@ export function AskAiPanel({ lectureId, target, onApply, onCancel }: Props) {
   }, [onCancel])
 
   return createPortal(
-    <div className={`${styles.askPanel} ${pos ? '' : styles.askSheet}`} style={pos ? { top: pos.top, left: pos.left } : undefined} role="dialog" aria-label={t('askTitle')}>
+    <div ref={panelRef} className={`${styles.askPanel} ${pos ? '' : styles.askSheet}`} style={pos ? { top: pos.top, left: pos.left } : undefined} role="dialog" aria-label={t('askTitle')}>
       <div className={styles.askHead}>
         <span className={styles.askBadge}><SparklesIcon size={13} /> {t('askTitle')}</span>
         <span className={styles.spacer} />

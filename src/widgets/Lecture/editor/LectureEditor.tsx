@@ -219,7 +219,14 @@ export function LectureEditor({ lectureId, initialDoc, editable, canUseAi, onRea
         <BubbleMenu
           editor={editor}
           className={styles.menu}
-          options={{ placement: 'bottom-start', offset: 8, flip: true, shift: { padding: 8 } }}
+          options={{
+            placement: 'bottom-start',
+            offset: 8,
+            flip: true,
+            shift: { padding: 8 },
+            // Never taller than the room left on screen — the menu scrolls inside instead.
+            size: { padding: 8, apply: ({ availableHeight, elements }) => { elements.floating.style.maxHeight = `${Math.max(180, Math.min(520, availableHeight))}px` } },
+          }}
           shouldShow={({ editor: e, state: s }) => !s.selection.empty && e.isEditable && !ask && !e.isActive('mathInline') && !e.isActive('mathBlock')}
         >
           <div className={styles.menuSection}>{t('menuActions')}</div>
