@@ -3839,6 +3839,7 @@
     "saveToFiles": "फ़ाइलों में सहेजें",
     "updateInFiles": "फ़ाइलों में अपडेट करें",
     "savedToFiles": "फ़ाइलों में सहेजा गया",
+    "savedToFilesAudio": "फ़ाइलों में सहेजा गया। ऑडियो (.m4a) एक मिनट में साथ में दिखेगा",
     "openFiles": "खोलें",
     "exportFailed": "निर्यात विफल",
     "quotaExceeded": "स्टोरेज भरा है",

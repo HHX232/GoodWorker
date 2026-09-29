@@ -3867,6 +3867,7 @@
     "saveToFiles": "Сохранить в файлы",
     "updateInFiles": "Обновить в файлах",
     "savedToFiles": "Сохранено в файлы",
+    "savedToFilesAudio": "Сохранено в файлы. Аудио (.m4a) появится рядом через минуту",
     "openFiles": "Открыть",
     "exportFailed": "Не удалось экспортировать",
     "quotaExceeded": "Хранилище заполнено",

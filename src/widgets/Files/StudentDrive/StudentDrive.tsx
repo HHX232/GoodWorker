@@ -95,7 +95,7 @@ export function StudentDrive({ folderId, onNavigate }: { folderId: string | null
   const download = (f: { id: string; name: string }) => triggerDownload({ url: `/api/student-files/files/${f.id}/download`, name: f.name })
 
   const openFile = (f: DriveFile) => {
-    if (f.lectureNoteId) { router.push(`/lecture/${f.lectureNoteId}`); return }
+    if (f.lectureNoteId && !f.mimeType.startsWith('audio/')) { router.push(`/lecture/${f.lectureNoteId}`); return }
     if (viewerFor(f.mimeType, f.name)) setPreview(asLibraryFile(f, folderId))
     else download(f)
   }
@@ -186,7 +186,7 @@ export function StudentDrive({ folderId, onNavigate }: { folderId: string | null
                     <FileCard
                       key={f.id}
                       file={asLibraryFile(f, folderId)}
-                      lecture={f.lectureNoteId ? { onOpen: () => router.push(`/lecture/${f.lectureNoteId}`) } : undefined}
+                      lecture={f.lectureNoteId && !f.mimeType.startsWith('audio/') ? { onOpen: () => router.push(`/lecture/${f.lectureNoteId}`) } : undefined}
                       onPreview={() => openFile(f)}
                       onDownload={() => download(f)}
                       onDelete={() => setDeleteTarget({ kind: 'file', id: f.id, name: f.name })}

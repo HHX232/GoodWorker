@@ -3840,6 +3840,7 @@
     "saveToFiles": "存入文件",
     "updateInFiles": "更新文件",
     "savedToFiles": "已存入文件",
+    "savedToFilesAudio": "已保存到文件。音频（.m4a）将在一分钟内出现在旁边",
     "openFiles": "打开",
     "exportFailed": "导出失败",
     "quotaExceeded": "存储已满",

@@ -3867,6 +3867,7 @@
     "saveToFiles": "Save to files",
     "updateInFiles": "Update in files",
     "savedToFiles": "Saved to files",
+    "savedToFilesAudio": "Saved to files. The audio (.m4a) will appear next to it in a minute",
     "openFiles": "Open",
     "exportFailed": "Export failed",
     "quotaExceeded": "Storage is full",

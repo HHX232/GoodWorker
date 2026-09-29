@@ -6,6 +6,7 @@ import { publicUrlForKey, s3, S3_BUCKET } from '@/shared/s3/s3Client'
 import { requireOwnLecture } from '@/shared/lib/lecture/access'
 import { lectureToDocx, photoIdsIn, type DocxPhoto } from '@/shared/lib/lecture/docx'
 import { readObject } from '@/shared/lib/lecture/audio'
+import { saveLectureAudioFile } from '@/shared/lib/lecture/audioFile'
 import type { PMNode } from '@/shared/lib/lecture/markdownToDoc'
 import { DriveError, driveErrorResponse, ensureLecturesFolder, isStudentVipActive, putStudentFile, replaceStudentFile } from '@/shared/lib/studentDrive/drive'
 import { hasStorageAccess, vipRequiredResponse } from '@/shared/lib/tutorFiles/access'
@@ -13,7 +14,7 @@ import { extractText } from '@/shared/lib/tutorFiles/extractText'
 import { getTeacherStorageLimits, getUsedBytes } from '@/shared/lib/tutorFiles/storage'
 
 export const runtime = 'nodejs'
-export const maxDuration = 60
+export const maxDuration = 300
 
 interface Params {
   params: Promise<{ id: string }>
@@ -39,6 +40,22 @@ async function ensureTutorLecturesFolder(teacherId: string): Promise<string> {
   const existing = await prisma.tutorFolder.findFirst({ where: { teacherId, parentId: null, name: LECTURES_FOLDER }, select: { id: true } })
   if (existing) return existing.id
   return (await prisma.tutorFolder.create({ data: { teacherId, name: LECTURES_FOLDER } })).id
+}
+
+/**
+ * "Сохранять аудио" on → the recording goes next to the .docx as .m4a. Gluing a long
+ * lecture takes a while, so it runs after the response; the client just says it's coming.
+ */
+function saveAudioAfter(lectureId: string, owner: { id: string; role: 'STUDENT' | 'TEACHER' }, folderId: string | null, docxName: string, keepAudio: boolean): 'pending' | null {
+  if (!keepAudio) return null
+  after(async () => {
+    try {
+      await saveLectureAudioFile({ lectureId, owner, folderId, baseName: docxName.replace(/\.docx$/i, '') })
+    } catch (e) {
+      console.error('[lecture export] audio file failed', lectureId, e)
+    }
+  })
+  return 'pending'
 }
 
 // POST /api/lecture/[id]/export — {save?: boolean}. Builds the .docx from the
@@ -80,7 +97,8 @@ export async function POST(req: NextRequest, { params }: Params) {
         ? await replaceStudentFile(existing, bytes, DOCX_MIME)
         : await putStudentFile({ studentId: user.id, folderId: await ensureLecturesFolder(user.id, LECTURES_FOLDER), name, mimeType: DOCX_MIME, bytes, lectureNoteId: id })
       if (!existing) await prisma.lectureNote.update({ where: { id }, data: { fileId: file.id } })
-      return NextResponse.json({ file: { id: file.id, name: file.name, folderId: file.folderId }, where: 'drive' })
+      const audio = saveAudioAfter(id, { id: user.id, role: 'STUDENT' }, file.folderId, file.name, lecture.keepAudio)
+      return NextResponse.json({ file: { id: file.id, name: file.name, folderId: file.folderId }, where: 'drive', audio })
     }
 
     // Tutor (or admin): their library, their quota.
@@ -102,7 +120,8 @@ export async function POST(req: NextRequest, { params }: Params) {
       const text = await extractText(bytes, name, DOCX_MIME)
       await prisma.tutorFile.update({ where: { id: file.id }, data: { contentText: text } }).catch(() => {})
     })
-    return NextResponse.json({ file: { id: file.id, name: file.name, folderId: file.folderId }, where: 'library' })
+    const audio = saveAudioAfter(id, { id: user.id, role: 'TEACHER' }, file.folderId, file.name, lecture.keepAudio)
+    return NextResponse.json({ file: { id: file.id, name: file.name, folderId: file.folderId }, where: 'library', audio })
   } catch (e) {
     if (e instanceof DriveError) return driveErrorResponse(e)
     console.error('[POST /api/lecture/[id]/export]', e)
