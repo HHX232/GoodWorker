@@ -3748,7 +3748,9 @@
     "driveErrVip": "需要 VIP 才能向个人存储添加文件",
     "driveEmptyTitle": "这里还没有内容",
     "driveEmptyText": "在这里保存课堂笔记和自己的文件——它们计入你的配额，而不是导师的。",
-    "driveLectureHint": "课堂笔记——在笔记编辑器中打开"
+    "driveLectureHint": "课堂笔记——在笔记编辑器中打开",
+    "lectureFlag": "课堂笔记",
+    "lectureContinue": "继续编辑"
   },
   "lecture": {
     "pageTitle": "课堂笔记",
@@ -3813,7 +3815,8 @@
     "stillQueued": "部分录音尚未上传——请等待网络",
     "dailyLimit": "已达到每日录音上限（{min} 分钟）",
     "audioQuotaHit": "存储已满——不再保存音频（笔记继续）",
-    "structureFailed": "AI 未能处理一段——将与下一段一起重试",
+    "structureFailed": "AI 未能处理录音——点击“立即整理”重试",
+    "structureEmpty": "AI 在录音中没有找到讲课内容——只有噪音",
     "refined": "已精修段落：{n}",
     "crumb": "笔记",
     "titleLabel": "讲座标题",
@@ -3953,6 +3956,15 @@
     "ctxSubjectPh": "数学分析",
     "ctxTopicPh": "复合函数求导",
     "ctxSubtopicsPh": "链式法则；例题",
-    "ctxEditHint": "AI 会在所有建议和语音识别中参考这些信息；你修改的内容不会再被 AI 更改。"
+    "ctxEditHint": "AI 会在所有建议和语音识别中参考这些信息；你修改的内容不会再被 AI 更改。",
+    "board": "画板",
+    "boardOpen": "打开画板",
+    "boardEditTitle": "画板",
+    "boardEditHint": "与通话相同的画板：3D 图形、作图、角、公式",
+    "boardDone": "保存到笔记",
+    "boardClose": "关闭",
+    "boardBuilding": "AI 正在绘制画板…",
+    "boardEmpty": "空画板——打开以绘制",
+    "boardSaveFailed": "无法保存画板"
   }
 }

@@ -3,6 +3,7 @@ import { autoCropPagePhoto } from '@/shared/lib/pageAutoCrop'
 import type { Editor, JSONContent } from '@tiptap/core'
 import type { Node as PMNode } from '@tiptap/pm/model'
 import { docText } from './docOps'
+import { boardSummary, parseBoardSpec } from '@/shared/lib/lecture/boardSpec'
 
 /** Which lecture the editor on this page belongs to — node views read it (they live outside React props). */
 export const lectureCtx: { id: string } = { id: '' }
@@ -91,6 +92,7 @@ export function blockAnchors(doc: PMNode): BlockAnchor[] {
       node.forEach((child, offset) => visit(child, pos + 1 + offset))
       return
     }
+    if (node.type.name === 'boardBlock') { out.push({ text: boardSummary(parseBoardSpec(node.attrs.spec)), end: pos + node.nodeSize }); return }
     const text = docText(doc, pos, pos + node.nodeSize).replace(/\s+/g, ' ').trim()
     if (text || node.type.name === 'lecturePhoto') out.push({ text: text || '[фото]', end: pos + node.nodeSize })
   }

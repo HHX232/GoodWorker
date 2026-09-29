@@ -16,18 +16,42 @@ export interface NoteInfo {
   pos: number
 }
 
-/** Appends AI notes at the end, as a section the AI may later refresh. Not in the undo history. */
+/**
+ * Adds AI notes as a section the AI may later refresh, in recording order: after the last
+ * section that covers earlier audio (so a re-conspected gap lands in its place), else at the end.
+ * Not in the undo history.
+ */
 export function appendAiSection(editor: Editor, blocks: JSONContent[], attrs: SectionAttrs): void {
   if (!blocks.length) return
   const node = { type: 'aiSection', attrs: { ...attrs, edited: false }, content: blocks }
   const doc = editor.state.doc
   // An empty doc still has one empty paragraph — replace it instead of leaving a gap.
   const onlyEmpty = doc.childCount === 1 && doc.firstChild?.type.name === 'paragraph' && doc.firstChild.content.size === 0
+  let at = doc.content.size
+  let firstLater = -1
+  let afterEarlier = -1
+  doc.forEach((child, pos) => {
+    if (child.type.name !== 'aiSection') return
+    if (child.attrs.toSeq < attrs.fromSeq) afterEarlier = pos + child.nodeSize
+    else if (firstLater < 0 && child.attrs.fromSeq > attrs.toSeq) firstLater = pos
+  })
+  if (afterEarlier >= 0 && (firstLater < 0 || afterEarlier <= firstLater)) at = afterEarlier
+  else if (firstLater >= 0) at = firstLater
   editor
     .chain()
     .command(({ tr }) => { tr.setMeta(AI_META, true).setMeta('addToHistory', false); return true })
-    .insertContentAt(onlyEmpty ? { from: 0, to: doc.content.size } : doc.content.size, node, { updateSelection: false })
+    .insertContentAt(onlyEmpty ? { from: 0, to: doc.content.size } : at, node, { updateSelection: false })
     .run()
+}
+
+/** Chunk seqs already turned into notes (any AI section, edited or not). */
+export function coveredSeqs(editor: Editor): Set<number> {
+  const out = new Set<number>()
+  editor.state.doc.forEach(node => {
+    if (node.type.name !== 'aiSection') return
+    for (let s = node.attrs.fromSeq; s <= node.attrs.toSeq; s++) out.add(s)
+  })
+  return out
 }
 
 /** The AI sections the student hasn't touched and that still carry draft text. */
