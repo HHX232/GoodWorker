@@ -208,6 +208,9 @@ $aiSoft: #f5f0ff;
     color: $ai;
     font: 600 14px/1 system-ui, sans-serif;
   }
+  // The global reset pins strong/em/mark/… to 15px — inside the notes they take the
+  // size of their text (FontSize), except in mathlive's own markup.
+  :global(.ProseMirror) :is(strong, em, b, i, u, s, mark, a, sub, sup, code, del, ins, :global(span.lecture-note)):not(:global(.lecture-math) *) { font-size: inherit; }
   // ── Board blocks (the call whiteboard, snapshot in the page) ──
   :global(.lecture-board) {
     position: relative;
