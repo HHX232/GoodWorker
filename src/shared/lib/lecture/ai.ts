@@ -246,7 +246,12 @@ export async function readPhoto(opts: { lectureId: string; lecture: string; cont
 
 const PHOTO_MERGE_SYSTEM = `Ты сверяешь фото доски с уже готовым конспектом лекции и решаешь, куда что добавить.
 Тебе дают конспект как пронумерованные блоки [0], [1], … и фото.
-Раздели содержимое фото на смысловые фрагменты (формула, выкладка, определение, пример). Для КАЖДОГО фрагмента реши:
+Просмотри фото целиком и найди ВСЁ учебное содержимое четырёх видов — ни один вид не пропускай:
+1. текст — определения, пояснения, примеры, списки;
+2. формулы и выкладки — точно как на доске, в LaTeX;
+3. фигуры — геометрические/объёмные фигуры с обозначениями и данными → отдельный фрагмент с блоком \`\`\`board;
+4. графики и диаграммы — оси с кривыми, столбчатые/линейные диаграммы → отдельный фрагмент с блоком \`\`\`graph (формула кривой — только если она очевидна, иначе точки с рисунка).
+Каждая фигура и каждый график — свой фрагмент. Раздели остальное на смысловые фрагменты (формула, выкладка, определение, пример). Для КАЖДОГО фрагмента реши:
 - "duplicate" — это уже есть в конспекте (та же формула/мысль, даже если записана иначе). Укажи номер блока, где оно уже есть.
 - "continuation" — это продолжение или уточнение уже записанного (следующий шаг выкладки, дополнение к формуле/примеру). Укажи номер блока, ПОСЛЕ которого вставить.
 - "new" — новое содержание, которого в конспекте нет; вставляется в конец.
@@ -254,16 +259,27 @@ const PHOTO_MERGE_SYSTEM = `Ты сверяешь фото доски с уже 
 Формулы сравнивай по смыслу, а не по записи ($x^2$ и $x\\cdot x$ — одно и то же).
 ${CONTEXT_RULE}
 Возвращай ТОЛЬКО JSON без markdown:
-{"items":[{"action":"duplicate"|"continuation"|"new","block":<номер или null>,"reason":"<коротко по-русски, почему так>","markdown":"<фрагмент в формате ниже; для duplicate — как на фото>"}]}
+{"items":[{"kind":"text"|"formula"|"figure"|"graph","action":"duplicate"|"continuation"|"new","block":<номер или null>,"reason":"<коротко по-русски, почему так>","markdown":"<фрагмент в формате ниже; для duplicate — как на фото>"}]}
 
 Формат поля markdown:
 ${DIALECT}`
 
+export type PhotoFragmentKind = 'text' | 'formula' | 'figure' | 'graph'
+
 export interface PhotoMergeItem {
+  kind: PhotoFragmentKind
   action: 'duplicate' | 'continuation' | 'new'
   block: number | null
   reason: string
   markdown: string
+}
+
+/** What a fragment really is — read from its markdown first (a board/graph block wins), the model's label second. */
+function fragmentKind(markdown: string, claimed: unknown): PhotoFragmentKind {
+  if (/```graph/.test(markdown)) return 'graph'
+  if (/```board/.test(markdown)) return 'figure'
+  if (claimed === 'text' || claimed === 'formula') return /\$/.test(markdown) && claimed === 'text' && markdown.replace(/\$[^$]*\$/g, '').trim().length < 20 ? 'formula' : claimed
+  return /\$\$|\$[^$]+\$/.test(markdown) ? 'formula' : 'text'
 }
 
 /** Left-rail "Обработать фото доски": what on the photo is already in the notes, what continues them, what's new. */
@@ -278,6 +294,7 @@ export async function mergePhoto(opts: { lectureId: string; lecture: string; out
   return (parsed.items ?? [])
     .filter(i => typeof i.markdown === 'string' && i.markdown.trim())
     .map(i => ({
+      kind: fragmentKind(String(i.markdown), i.kind),
       action: i.action === 'duplicate' || i.action === 'continuation' ? i.action : 'new',
       block: Number.isInteger(i.block) && (i.block as number) >= 0 && (i.block as number) < opts.outline.length ? (i.block as number) : null,
       reason: String(i.reason ?? '').slice(0, 300),

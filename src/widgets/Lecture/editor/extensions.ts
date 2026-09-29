@@ -201,6 +201,8 @@ export const BoardBlockNode = Node.create({
       photoId: { default: '', parseHTML: el => el.getAttribute('data-photo-id') ?? '', renderHTML: a => ({ 'data-photo-id': a.photoId }) },
       width: { default: 0, rendered: false },
       height: { default: 0, rendered: false },
+      /** How wide the block sits in the notes (and in Word): s ½, m ¾, l full. */
+      size: { default: 'l', parseHTML: el => el.getAttribute('data-size') ?? 'l', renderHTML: a => ({ 'data-size': a.size }) },
     }
   },
   parseHTML() {
@@ -213,7 +215,14 @@ export const BoardBlockNode = Node.create({
     return '[доска]\n'
   },
   addNodeView() {
-    return ReactNodeViewRenderer(BoardView)
+    return ReactNodeViewRenderer(BoardView, {
+      // The live board inside the block owns every pointer/key event there; controls keep working as usual.
+      stopEvent: ({ event }) => {
+        const target = event.target as HTMLElement | null
+        if (!target?.closest) return false
+        return !!target.closest('.lecture-board-live') || ['INPUT', 'BUTTON', 'SELECT', 'TEXTAREA'].includes(target.tagName) || !!target.closest('button')
+      },
+    })
   },
 })
 

@@ -3,6 +3,7 @@
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
 import { AlignCenterIcon, AlignLeftIcon, AlignRightIcon, AArrowDownIcon, AArrowUpIcon, CopyIcon, PencilIcon, SparklesIcon } from 'lucide-react'
 import { stepMathSize, type MathAlign } from './extensions'
+import { isMatrixFormula, openMatrix } from '../matrix/openMatrix'
 import { useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -48,7 +49,7 @@ export function MathMarkup({ latex, inline }: { latex: string; inline: boolean }
  * the formula centred and, on hover/selection, actions — ✦ AI, edit, copy
  * LaTeX. Double-click edits either.
  */
-export function MathView({ node, updateAttributes, editor, selected }: NodeViewProps) {
+export function MathView({ node, updateAttributes, editor, selected, getPos }: NodeViewProps) {
   const t = useTranslations('lecture')
   const latex = String(node.attrs.latex ?? '')
   const inline = node.type.name === 'mathInline'
@@ -58,6 +59,11 @@ export function MathView({ node, updateAttributes, editor, selected }: NodeViewP
 
   const open = (ai = false) => {
     if (!editable) return
+    // A matrix opens in the matrix tool, with its operations; ✦ and plain formulas — in the formula editor.
+    if (!ai && typeof getPos === 'function' && isMatrixFormula(latex)) {
+      const pos = getPos()
+      if (typeof pos === 'number') { openMatrix(editor, pos); return }
+    }
     mathEditBus.open?.({ latex, ai, apply: next => updateAttributes({ latex: next }) })
   }
 
