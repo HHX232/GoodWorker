@@ -3,7 +3,7 @@
 import type { Editor } from '@tiptap/core'
 import { useEditorState } from '@tiptap/react'
 import {
-  AlertTriangleIcon, AudioLinesIcon, CameraIcon, ChevronLeftIcon, CloudOffIcon, CrownIcon, DownloadIcon, FileTextIcon, FolderInputIcon, MicIcon, NotebookPenIcon,
+  AlertTriangleIcon, AudioLinesIcon, CameraIcon, ChevronLeftIcon, PenToolIcon, CloudOffIcon, CrownIcon, DownloadIcon, FileTextIcon, FolderInputIcon, MicIcon, NotebookPenIcon,
   PrinterIcon, ScrollTextIcon, SparklesIcon, SquareIcon, WandSparklesIcon,
 } from 'lucide-react'
 import Link from 'next/link'
@@ -37,6 +37,9 @@ export function LectureWorkspace({ lectureId }: { lectureId: string }) {
   const [transcriptOpen, setTranscriptOpen] = useState(false)
   const [exporting, setExporting] = useState<null | 'files' | 'word'>(null)
   const [mergeFile, setMergeFile] = useState<File | null>(null)
+  // ≤1100px the side rails become one slide-out drawer with two tabs.
+  const [drawer, setDrawer] = useState<'ai' | 'tools'>('ai')
+  const [drawerOpen, setDrawerOpen] = useState(false)
   const boardInput = useRef<HTMLInputElement>(null)
 
   const onReady = useCallback((e: Editor) => { setEditor(e); s.onEditorReady(e) }, [s])
@@ -135,11 +138,41 @@ export function LectureWorkspace({ lectureId }: { lectureId: string }) {
         <MicIcon size={17} /> {lecture.recordedMs > 0 ? t('resume') : t('start')}
       </button>
 
+  const drawerTabs = (
+    <div className={styles.drawerTabs} role="tablist" aria-label={t('panels')}>
+      <button type="button" role="tab" aria-selected={drawer === 'ai'} className={drawer === 'ai' ? styles.drawerTabOn : ''} onClick={() => setDrawer('ai')}><SparklesIcon size={15} /> {t('tabAi')}</button>
+      <button type="button" role="tab" aria-selected={drawer === 'tools'} className={drawer === 'tools' ? styles.drawerTabOn : ''} onClick={() => setDrawer('tools')}><PenToolIcon size={15} /> {t('tabTools')}</button>
+    </div>
+  )
+
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${drawerOpen ? styles.drawerIsOpen : ''}`}>
+      {/* ≤1100px: the edge tab that slides the rails in, and the dimmed page behind them */}
+      <button
+        type="button"
+        className={`${styles.drawerToggle} ${drawerOpen ? styles.drawerToggleOpen : ''}`}
+        onClick={() => setDrawerOpen(v => !v)}
+        aria-label={drawerOpen ? t('panelsHide') : t('panelsShow')}
+        aria-expanded={drawerOpen}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 6 9 12 15 18" /></svg>
+      </button>
+      {drawerOpen && <div className={styles.drawerBackdrop} onClick={() => setDrawerOpen(false)} />}
+
+      {/* ≤1100px: recording stays on top of the document, outside the drawer */}
+      <div className={styles.mobileRec}>
+        <div className={styles.mobileRecClock}>
+          <span className={`${styles.recDot} ${recording ? styles.recDotOn : ''}`} />
+          <strong>{formatClock(elapsed)}</strong>
+          <small>{status}</small>
+        </div>
+        {recordButton}
+      </div>
+
       <div className={styles.grid}>
-        {/* ── Left: AI orb + controls ── */}
-        <aside className={styles.left}>
+        {/* ── Left: AI orb + controls (drawer tab «ИИ» on small screens) ── */}
+        <aside className={`${styles.left} ${drawerOpen && drawer === 'ai' ? styles.drawerShown : ''}`}>
+          {drawerTabs}
           <Link href="/lecture" className={styles.back}><ChevronLeftIcon size={16} /> {t('allLectures')}</Link>
           <div className={styles.orbBlock}>
             <AiOrb mode={orbMode} level={recording ? rec.level : 0} size={176} label={status} />
@@ -161,7 +194,7 @@ export function LectureWorkspace({ lectureId }: { lectureId: string }) {
               <span className={styles.photoBtnIcon}><CameraIcon size={18} /></span>
               <span className={styles.photoBtnText}>
                 <strong>{t('processPhoto')}</strong>
-                <small>{t('processPhotoHint')}</small>
+                <small>{t('processPhotoSub')}</small>
               </span>
             </button>
             <input ref={boardInput} type="file" accept="image/*" capture="environment" hidden onChange={e => { const f = e.target.files?.[0]; if (f) setMergeFile(f); e.target.value = '' }} />
@@ -231,8 +264,9 @@ export function LectureWorkspace({ lectureId }: { lectureId: string }) {
           </div>
         </main>
 
-        {/* ── Right: stats, export, text tools, notes ── */}
-        <aside className={styles.right}>
+        {/* ── Right: stats, export, text tools, notes (drawer tab «Инструменты» on small screens) ── */}
+        <aside className={`${styles.right} ${drawerOpen && drawer === 'tools' ? styles.drawerShown : ''}`}>
+          {drawerTabs}
           <section className={styles.panel}>
             <div className={styles.panelTitle}>{t('recording')}</div>
             <dl className={styles.stats}>

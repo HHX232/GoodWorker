@@ -72,11 +72,17 @@ $aiSoft: #f5f0ff;
   :global(.lecture-ai-section[data-edited='true']) { border-left-color: transparent; }
   :global(.lecture-ai-section:not([data-edited='true']):hover) { border-left-color: rgba(124, 58, 237, 0.4); }
 
+  // The whole annotated text is tinted, line by line (clone keeps the tint on every wrapped line).
   :global(.lecture-note) {
-    background: linear-gradient(transparent 62%, rgba(245, 158, 11, 0.32) 62%);
+    padding: 0.08em 0;
     border-bottom: 1px dashed #d97706;
+    background: rgba(245, 158, 11, 0.22);
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
     cursor: pointer;
+    transition: background 0.15s;
   }
+  :global(.lecture-note.is-hover) { background: rgba(245, 158, 11, 0.36); }
 
   :global(.lecture-pending-fix) {
     background: linear-gradient(90deg, rgba(124, 58, 237, 0.08), rgba(124, 58, 237, 0.26), rgba(124, 58, 237, 0.08));
@@ -161,7 +167,19 @@ $aiSoft: #f5f0ff;
     img { display: block; width: 100%; height: auto; }
     &.is-half { width: 50%; margin-left: auto; margin-right: auto; @media (max-width: 640px) { width: 100%; } }
     &.is-selected { outline: 2px solid rgba(124, 58, 237, 0.5); outline-offset: 2px; }
+    &[data-size='s'], &[data-size='m'] { margin-left: auto; margin-right: auto; }
+    &.is-live { overflow: visible; border-color: rgba(124, 58, 237, 0.45); box-shadow: 0 10px 30px rgba(124, 58, 237, 0.12); }
+    @media (max-width: 640px) { width: 100% !important; }
   }
+  :global(.lecture-board-sizes) {
+    display: inline-flex;
+    padding: 2px;
+    border-radius: 8px;
+    background: $soft;
+    button { width: 26px; height: 24px; border: 0; border-radius: 6px; background: transparent; color: $faint; font: 700 11px/1 system-ui, sans-serif; cursor: pointer; }
+    button:global(.is-on) { background: #fff; color: $ink; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); }
+  }
+  :global(.lecture-board-icon) { display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 8px; background: transparent; color: $muted; cursor: pointer; &:hover { background: $soft; color: $ink; } }
 
   :global(.lecture-photo-bar) {
     position: absolute;
@@ -233,6 +251,9 @@ $aiSoft: #f5f0ff;
   }
   :global(.lecture-board-tag) { display: inline-flex; align-items: center; gap: 6px; flex: 1; color: $ai; font-size: 12.5px; font-weight: 600; }
   :global(.lecture-board-open) {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     height: 28px;
     padding: 0 12px;
     border: 0;
@@ -710,6 +731,29 @@ $aiSoft: #f5f0ff;
 .mergeTag_continuation { background: #eff6ff; color: #1d4ed8; }
 .mergeTag_new { background: #ecfdf5; color: #047857; }
 
+.noteTip {
+  position: fixed;
+  z-index: 1200;
+  max-width: 320px;
+  padding: 9px 12px;
+  border: 1px solid #fcd34d;
+  border-radius: 10px;
+  background: #fffbeb;
+  box-shadow: 0 10px 28px rgba(24, 24, 40, 0.14);
+  color: #78350f;
+  font: 13.5px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;
+  white-space: pre-wrap;
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 10px));
+  animation: tipIn 0.12s ease-out;
+  &::after { content: ''; position: absolute; left: 50%; bottom: -6px; width: 10px; height: 10px; border-right: 1px solid #fcd34d; border-bottom: 1px solid #fcd34d; background: #fffbeb; transform: translateX(-50%) rotate(45deg); }
+}
+.noteTipBelow { transform: translate(-50%, 10px); &::after { top: -6px; bottom: auto; transform: translateX(-50%) rotate(225deg); } }
+@keyframes tipIn { from { opacity: 0; } }
+.noteTipLabel { display: block; margin-bottom: 2px; color: #b45309; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.mergeFound { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 10px; color: $muted; font-size: 12.5px; }
+.kindChip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border: 1px solid #e4dcfb; border-radius: 999px; background: #faf8ff; color: $ai; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.kindChipNone { border-color: $line; background: transparent; color: $faint; font-weight: 500; }
 .mergeWhere { color: $muted; font-size: 12.5px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
 .mergeReason { margin: 6px 0 8px 24px; color: $faint; font-size: 12.5px; }
 .mergeItem .diffAfter { margin-left: 24px; padding: 8px 10px; border-radius: 10px; background: #faf6ff; }
@@ -762,6 +806,8 @@ $aiSoft: #f5f0ff;
   .modeTabOn { border-color: rgba(167, 139, 250, 0.3); background: #1a1c24; color: #c4b5fd; }
   .aiExplain { color: #ddd6fe; }
   .editor :global(.lecture-board) { border-color: rgba(255, 255, 255, 0.08); }
+  .editor :global(.lecture-board-sizes) { background: #1c1e27; button { color: #7d8194; } button:global(.is-on) { background: #2a2c38; color: #e8eaf0; } }
+  .editor :global(.lecture-board-icon) { color: #aeb2c2; &:hover { background: #1c1e27; color: #e8eaf0; } }
   .editor :global(.lecture-board-head) { border-color: rgba(255, 255, 255, 0.08); background: linear-gradient(90deg, rgba(167, 139, 250, 0.12) 0%, transparent 70%); }
   .editor :global(.lecture-photo) { border-color: rgba(255, 255, 255, 0.08); background: #16171e; }
   .editor :global(.lecture-photo-busy) { background: rgba(20, 21, 28, 0.72); color: #c4b5fd; }
@@ -774,5 +820,9 @@ $aiSoft: #f5f0ff;
   .mergeTag_duplicate { background: rgba(255, 255, 255, 0.06); color: #aeb2c2; }
   .mergeTag_continuation { background: rgba(59, 130, 246, 0.14); color: #93c5fd; }
   .mergeTag_new { background: rgba(16, 185, 129, 0.14); color: #6ee7b7; }
+  .noteTip { border-color: rgba(245, 158, 11, 0.4); background: #2a2214; color: #fde68a; &::after { border-color: rgba(245, 158, 11, 0.4); background: #2a2214; } }
+  .noteTipLabel { color: #fbbf24; }
+  .kindChip { border-color: rgba(167, 139, 250, 0.25); background: rgba(167, 139, 250, 0.1); color: #c4b5fd; }
+  .kindChipNone { border-color: rgba(255, 255, 255, 0.08); background: transparent; color: #6b6f80; }
   .mergeItem .diffAfter { background: rgba(167, 139, 250, 0.08); }
 }

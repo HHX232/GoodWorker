@@ -17,7 +17,8 @@ $rec: #e11d48;
   background: $canvas;
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   color: $ink;
-  overflow-x: hidden;
+  // clip, not hidden: `hidden` makes .page a scroll container and the rails' sticky stops working.
+  overflow-x: clip;
 }
 
 .grid {
@@ -29,16 +30,22 @@ $rec: #e11d48;
   align-items: start;
 }
 
+// Desktop: both rails stay in view while the document scrolls — full height
+// (screen minus site header minus the page gap), scrolling inside.
 .left, .right {
   position: sticky;
   top: 16px;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  max-height: calc(100vh - var(--chat-header-height, 83px) - 32px);
+  height: calc(100vh - var(--chat-header-height, 83px) - 36px);
   overflow-y: auto;
+  overscroll-behavior: contain;
   scrollbar-width: thin;
 }
+
+// Drawer bits — only on ≤1100px (see Responsive).
+.drawerToggle, .drawerBackdrop, .drawerTabs, .mobileRec { display: none; }
 
 .back {
   display: inline-flex;
@@ -571,30 +578,123 @@ $rec: #e11d48;
 @media (max-width: 1100px) {
   .page { padding: 12px 16px 24px; }
   .grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
-  // Phone order: recording bar → the document → AI controls / transcript → panels.
-  .left { display: contents; }
-  .back { order: 0; }
-  .orbBlock { order: 1; flex-direction: row; justify-content: flex-start; gap: 14px; padding: 0; }
-  .controls { order: 2; }
-  .center { order: 3; }
-  .aiControls { order: 4; }
-  .feed { order: 5; }
-  .alert, .queue { order: 2; }
-  .right { order: 6; position: static; max-height: none; overflow: visible; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .orbBlock > div:first-child { width: 88px !important; height: 88px !important; }
-  .orbInfo { text-align: left; }
-  .clock { font-size: 24px; }
   .docCard { min-height: 60vh; padding: 18px 16px 28px; border-radius: 18px; }
+
+  // Recording bar on top of the document.
+  .mobileRec {
+    position: sticky;
+    top: 8px;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 1480px;
+    margin: 0 auto 12px;
+    padding: 8px 8px 8px 14px;
+    border: 1px solid $line;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 6px 18px rgba(24, 24, 40, 0.06);
+    .recBtn { width: auto; height: 42px; margin-left: auto; padding: 0 16px; }
+  }
+  .mobileRecClock {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    strong { font: 600 20px/1 ui-monospace, 'JetBrains Mono', Menlo, monospace; font-variant-numeric: tabular-nums; }
+    small { overflow: hidden; color: $muted; font-size: 12.5px; text-overflow: ellipsis; white-space: nowrap; }
+  }
+  .recDot { width: 9px; height: 9px; flex-shrink: 0; border-radius: 50%; background: #d4d4dc; }
+  .recDotOn { background: $rec; box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.18); animation: recPulse 1.4s ease-in-out infinite; }
+  @keyframes recPulse { 50% { box-shadow: 0 0 0 7px rgba(225, 29, 72, 0.08); } }
+
+  // Both rails live in one drawer on the right; only the active tab's rail slides in.
+  .left, .right {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1101; // above the site header
+    width: 380px;
+    max-width: 88vw;
+    height: auto;
+    padding: 0 16px 24px;
+    background: $canvas;
+    box-shadow: -12px 0 32px rgba(0, 0, 0, 0.15);
+    transform: translateX(105%);
+    transition: transform 0.28s ease, visibility 0s 0.28s;
+    visibility: hidden;
+  }
+  .drawerShown { transform: none; visibility: visible; transition: transform 0.28s ease; }
+  .drawerTabs {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    flex-shrink: 0;
+    gap: 4px;
+    margin: 0 -16px 4px;
+    padding: 12px 16px 10px;
+    background: $canvas;
+    button {
+      display: inline-flex;
+      flex: 1;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 38px;
+      border: 1px solid $line;
+      border-radius: 11px;
+      background: #fff;
+      color: $muted;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .drawerTabOn { border-color: $ink; background: $ink; color: #fff; }
+  }
+  .drawerToggle {
+    position: fixed;
+    top: 50%;
+    right: 0;
+    z-index: 1102;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 56px;
+    border: none;
+    border-radius: 10px 0 0 10px;
+    background: $ai;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-50%);
+    transition: right 0.28s ease;
+    svg { transition: transform 0.25s ease; }
+  }
+  .drawerToggleOpen { right: min(380px, 88vw); svg { transform: rotate(180deg); } }
+  .drawerBackdrop { position: fixed; inset: 0; z-index: 1100; display: block; background: rgba(0, 0, 0, 0.25); }
+
+  .orbBlock > div:first-child { width: 120px !important; height: 120px !important; }
+  .right .panel { flex-shrink: 0; }
 }
 
 @media (max-width: 640px) {
-  .right { grid-template-columns: 1fr; }
+  .mobileRecClock small { display: none; }
   .docHead { flex-wrap: wrap; }
 }
 
 // ─── Dark theme ───────────────────────────────────────────────────────────────
 :global(html.theme-dark), :global(html.pomodoro-dark) {
   .page { background: #0f1015; color: #e8eaf0; }
+  .left, .right, .drawerTabs { @media (max-width: 1100px) { background: #0f1015; } }
+  .drawerTabs button { border-color: rgba(255, 255, 255, 0.08); background: #1a1c24; color: #aeb2c2; }
+  .drawerTabs .drawerTabOn { border-color: #e8eaf0; background: #e8eaf0; color: #14151c; }
+  .mobileRec { border-color: rgba(255, 255, 255, 0.07); background: rgba(22, 23, 30, 0.92); }
   .back, .status, .railLabel, .crumb { color: #8f94a6; }
   .recBtn { background: #e8eaf0; color: #14151c; box-shadow: none; }
   .recStop { background: $rec; color: #fff; }

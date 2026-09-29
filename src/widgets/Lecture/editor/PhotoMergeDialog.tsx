@@ -1,7 +1,7 @@
 'use client'
 
 import type { Editor, JSONContent } from '@tiptap/core'
-import { CheckIcon, CopyCheckIcon, CornerDownRightIcon, ImageIcon, Loader2Icon, PlusIcon, SparklesIcon } from 'lucide-react'
+import { BoxIcon, CheckIcon, CopyCheckIcon, CornerDownRightIcon, ImageIcon, LineChartIcon, Loader2Icon, PlusIcon, SigmaIcon, SparklesIcon, TypeIcon } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -10,7 +10,12 @@ import { blockAnchors, photoNode, preparePhoto, uploadPhoto, type BlockAnchor, t
 import { SuggestionPreview } from './SuggestionPreview'
 import styles from './LectureEditor.module.scss'
 
+type FragmentKind = 'text' | 'formula' | 'figure' | 'graph'
+const KINDS: FragmentKind[] = ['text', 'formula', 'figure', 'graph']
+const KIND_ICON = { text: TypeIcon, formula: SigmaIcon, figure: BoxIcon, graph: LineChartIcon } as const
+
 interface MergeItem {
+  kind: FragmentKind
   action: 'duplicate' | 'continuation' | 'new'
   block: number | null
   reason: string
@@ -128,6 +133,18 @@ export function PhotoMergeDialog({ lectureId, editor, file, onClose }: { lecture
 
         {stage === 'error' && <p className={styles.mergeHint}>{t('photoFailed')}</p>}
 
+        {stage === 'review' && items.length > 0 && (
+          // What the photo held, by kind — text, formulas, figures, graphs are all checked every time.
+          <div className={styles.mergeFound}>
+            <span>{t('mergeFound')}</span>
+            {KINDS.map(k => {
+              const n = items.filter(i => (i.kind ?? 'text') === k).length
+              const Icon = KIND_ICON[k]
+              return <span key={k} className={`${styles.kindChip} ${n ? '' : styles.kindChipNone}`}><Icon size={13} /> {t(`fragment_${k}`)} · {n}</span>
+            })}
+          </div>
+        )}
+
         {stage === 'review' && (
           items.length === 0 ? <p className={styles.mergeHint}>{t('photoNothing')}</p> : (
             <ul className={styles.mergeList}>
@@ -136,6 +153,7 @@ export function PhotoMergeDialog({ lectureId, editor, file, onClose }: { lecture
                   <label className={styles.mergeHead}>
                     <input type="checkbox" checked={!!picked[idx]} onChange={e => setPicked(p => p.map((v, j) => (j === idx ? e.target.checked : v)))} />
                     <span className={`${styles.mergeTag} ${styles[`mergeTag_${item.action}`]}`}>{icon(item.action)} {t(`mergeKind_${item.action}`)}</span>
+                    <span className={styles.kindChip}>{(() => { const Icon = KIND_ICON[item.kind ?? 'text']; return <Icon size={13} /> })()} {t(`fragment_${item.kind ?? 'text'}`)}</span>
                     <span className={styles.mergeWhere}>{where(item)}</span>
                   </label>
                   {item.reason && <p className={styles.mergeReason}>{item.reason}</p>}

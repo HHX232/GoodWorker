@@ -2,7 +2,7 @@
 
 import type { ExcalidrawElement } from '@excalidraw/excalidraw/element/types'
 import type { BinaryFiles } from '@excalidraw/excalidraw/types'
-import { CheckIcon, Loader2Icon, PresentationIcon, XIcon } from 'lucide-react'
+import { CheckIcon, Loader2Icon, Maximize2Icon, PresentationIcon, XIcon } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -23,14 +23,20 @@ interface Props {
   /** `changed` false → nothing to save, just close. */
   onDone: (scene: BoardScene, changed: boolean) => void
   onCancel: () => void
+  /** Inline: the board lives right in the notes (fixed height), not over the page. */
+  inline?: { height: number; onExpand: (scene: BoardScene) => void }
 }
 
 function fingerprint(elements: readonly ExcalidrawElement[]): string {
   return elements.filter(e => !e.isDeleted).map(e => `${e.id}:${e.version}`).sort().join('|')
 }
 
-/** Full-screen board editor for a lecture's board block. */
-export function BoardEditorDialog({ initial, isVip, isAdmin, saving, onDone, onCancel }: Props) {
+/**
+ * A lecture board block's editor: full screen over the page, or `inline` —
+ * the live board right inside the notes, where a figure can be dragged and
+ * turned in place. Same board, same save.
+ */
+export function BoardEditorDialog({ initial, isVip, isAdmin, saving, onDone, onCancel, inline }: Props) {
   const t = useTranslations('lecture')
   // A private deep copy: Excalidraw mutates elements in place, and these
   // came straight out of the document node's attrs.
@@ -43,10 +49,13 @@ export function BoardEditorDialog({ initial, isVip, isAdmin, saving, onDone, onC
   const readLive = useRef<null | (() => BoardScene)>(null)
   const onSceneApi = useCallback((read: () => BoardScene) => { readLive.current = read }, [])
 
-  const finish = () => {
-    // The live scene, not the last broadcast: zone rotations/recolors land via mutateElement.
+  // The live scene, not the last broadcast: zone rotations/recolors land via mutateElement.
+  const current = (): BoardScene => {
     const live = readLive.current?.()
-    const next = live ? { elements: [...live.elements], files: { ...scene.current.files, ...live.files } } : scene.current
+    return live ? { elements: [...live.elements], files: { ...scene.current.files, ...live.files } } : scene.current
+  }
+  const finish = () => {
+    const next = current()
     onDone(next, fingerprint(next.elements) !== startPrint.current)
   }
 
@@ -55,10 +64,31 @@ export function BoardEditorDialog({ initial, isVip, isAdmin, saving, onDone, onC
   }, [])
 
   useEffect(() => {
+    if (inline) return
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = prev }
-  }, [])
+  }, [inline])
+
+  const board = <CallWhiteboard remoteElements={null} remoteFiles={null} initialScene={start} onBroadcast={onBroadcast} onSceneApi={onSceneApi} isVip={isVip} isAdmin={isAdmin} />
+
+  if (inline) {
+    return (
+      // Native drag would pick up the whole block when a figure is dragged — the board handles its own pointer moves.
+      <div className={`lecture-board-live ${styles.inline}`} onDragStart={e => { e.preventDefault(); e.stopPropagation() }}>
+        <div className={styles.inlineBar}>
+          <span className={styles.inlineHint}>{t('boardLiveHint')}</span>
+          <span className={styles.spacer} />
+          <button type="button" className={`${styles.barBtn} ${styles.barIcon}`} onClick={() => inline.onExpand(current())} disabled={saving} aria-label={t('boardFullscreen')} title={t('boardFullscreen')}><Maximize2Icon size={15} /></button>
+          <button type="button" className={`${styles.barBtn} ${styles.barIcon}`} onClick={onCancel} disabled={saving} aria-label={t('cancel')} title={t('cancel')}><XIcon size={15} /></button>
+          <button type="button" className={`${styles.barBtn} ${styles.barPrimary}`} onClick={finish} disabled={saving}>
+            {saving ? <Loader2Icon size={14} className="lecture-spin" /> : <CheckIcon size={14} />} {t('boardDoneShort')}
+          </button>
+        </div>
+        <div className={styles.inlineBody} style={{ height: inline.height }}>{board}</div>
+      </div>
+    )
+  }
 
   return createPortal(
     <div className={styles.editor} role="dialog" aria-label={t('boardEditTitle')}>
@@ -72,7 +102,7 @@ export function BoardEditorDialog({ initial, isVip, isAdmin, saving, onDone, onC
         </button>
       </div>
       <div className={styles.editorBody}>
-        <CallWhiteboard remoteElements={null} remoteFiles={null} initialScene={start} onBroadcast={onBroadcast} onSceneApi={onSceneApi} isVip={isVip} isAdmin={isAdmin} />
+        {board}
       </div>
     </div>,
     document.body,

@@ -145,17 +145,27 @@ export function multiply(a: Matrix, b: Matrix): Matrix | null {
   return a.map(r => b[0].map((_, j) => r.reduce((s, v, k) => s.add(v.mul(b[k][j])), Frac.of(0))))
 }
 
+export interface ParsedMatrix {
+  /** What stands before "=": "A", "A^{-1}", "\\det A" ("" when none). */
+  name: string
+  bracket: Bracket
+  cells: string[][]
+  /** What follows the matrix: "= -3" of a determinant ("" when none). */
+  suffix: string
+}
+
 /**
- * "A = \begin{pmatrix}1 & 2 \\ 3 & 4\end{pmatrix}" → its parts, so a matrix
- * already in the notes opens back in the matrix tool. null for anything else.
+ * A formula that is (mostly) one matrix — "A = (…)", "A^{-1} = (…)",
+ * "\det A = |…| = -3" — split into its parts, so a matrix already in the
+ * notes opens back in the matrix tool with its operations. null otherwise.
  */
-export function parseMatrixLatex(latex: string): { name: string; bracket: Bracket; cells: string[][] } | null {
-  const m = /^\s*(?:([A-Za-z](?:_\{?\w+\}?)?)\s*=\s*)?\\begin\{(pmatrix|bmatrix|vmatrix|Bmatrix|matrix)\}([\s\S]*?)\\end\{\2\}\s*$/.exec(latex)
-  if (!m) return null
+export function parseMatrixLatex(latex: string): ParsedMatrix | null {
+  const m = /^\s*(?:([^=]{1,40}?)\s*=\s*)?\\begin\{(pmatrix|bmatrix|vmatrix|Bmatrix|matrix)\}((?:(?!\\begin\{)[\s\S])*?)\\end\{\2\}\s*((?:=\s*[^=\\]{1,40})?)\s*$/.exec(latex)
+  if (!m || (m[1] ?? '').includes('\\begin')) return null
   const rows = m[3].split(/\\\\(?:\[[^\]]*\])?/).map(r => r.trim()).filter(Boolean).map(r => r.split('&').map(c => latexCell(c.trim())))
   const cols = Math.max(...rows.map(r => r.length))
   if (!rows.length || rows.length > 8 || cols > 8) return null
-  return { name: m[1] ?? '', bracket: m[2] as Bracket, cells: rows.map(r => [...r, ...Array(cols - r.length).fill('0')]) }
+  return { name: (m[1] ?? '').trim(), bracket: m[2] as Bracket, cells: rows.map(r => [...r, ...Array(cols - r.length).fill('0')]), suffix: (m[4] ?? '').trim() }
 }
 
 /** \frac{1}{2} → 1/2, -\frac{3}{4} → -3/4 (the grid shows plain fractions). */

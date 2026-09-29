@@ -78,8 +78,11 @@ interface Ctx {
 /** Page content width ≈ 6.3" at 96 dpi. */
 const MAX_IMAGE_PX = 600
 
-function photoParagraph(photo: DocxPhoto): Paragraph {
-  const scale = Math.min(1, MAX_IMAGE_PX / photo.width)
+/** Board blocks can sit narrower in the notes — Word keeps the same share of the page. */
+const SIZE_SHARE: Record<string, number> = { s: 0.5, m: 0.75, l: 1 }
+
+function photoParagraph(photo: DocxPhoto, share = 1): Paragraph {
+  const scale = Math.min(1, (MAX_IMAGE_PX * share) / photo.width)
   return new Paragraph({
     alignment: AlignmentType.CENTER,
     children: [new ImageRun({
@@ -176,7 +179,7 @@ function blocksFor(nodes: PMNode[] | undefined, ctx: Ctx, list?: { ordered: bool
       case 'graphBlock':
       case 'lecturePhoto': {
         const photo = ctx.photos.get(String(n.attrs?.photoId ?? ''))
-        if (photo && photo.mime !== 'image/webp') out.push(photoParagraph(photo))
+        if (photo && photo.mime !== 'image/webp') out.push(photoParagraph(photo, n.type === 'boardBlock' ? SIZE_SHARE[String(n.attrs?.size ?? 'l')] ?? 1 : 1))
         break
       }
       case 'codeBlock':

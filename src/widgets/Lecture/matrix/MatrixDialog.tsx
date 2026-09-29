@@ -3,7 +3,7 @@
 import {
   determinant, echelon, fracMatrixLatex, inverse, matrixLatex, rank, toNumeric, transpose, type Bracket,
 } from '@/shared/lib/lecture/matrix'
-import { Grid3x3Icon, XIcon } from 'lucide-react'
+import { Grid3x3Icon, SigmaIcon, XIcon } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -20,9 +20,21 @@ const BRACKETS: { id: Bracket; label: string }[] = [
 ]
 type Op = 'T' | 'det' | 'inv' | 'rank' | 'gauss' | 'rref'
 
-export interface MatrixInitial { name: string; bracket: Bracket; cells: string[][] }
+export interface MatrixInitial { name: string; bracket: Bracket; cells: string[][]; suffix?: string }
+
+export interface MatrixEditRequest {
+  initial: MatrixInitial | null
+  onApply: (latex: string) => void
+  onInsertResult: (latex: string) => void
+  /** Open the same formula in the plain formula editor instead. */
+  onEditAsFormula?: () => void
+}
+
+/** Opens the matrix tool — set by LectureEditor (formula node views and the toolbar live outside its state). */
+export const matrixEditBus: { open?: (req: MatrixEditRequest) => void } = {}
 
 interface Props {
+  onEditAsFormula?: () => void
   initial?: MatrixInitial | null
   /** Insert (or, when editing, replace) the matrix itself. */
   onApply: (latex: string) => void
@@ -38,7 +50,7 @@ const empty = (r: number, c: number) => Array.from({ length: r }, () => Array.fr
  * symbols a, x²), a live preview — and exact operations for numeric
  * matrices: transpose, determinant, inverse, rank, Gauss / Gauss–Jordan.
  */
-export function MatrixDialog({ initial, onApply, onInsertResult, onClose }: Props) {
+export function MatrixDialog({ initial, onApply, onInsertResult, onEditAsFormula, onClose }: Props) {
   const t = useTranslations('lecture')
   const [name, setName] = useState(initial?.name ?? 'A')
   const [bracket, setBracket] = useState<Bracket>(initial?.bracket ?? 'pmatrix')
@@ -59,11 +71,16 @@ export function MatrixDialog({ initial, onApply, onInsertResult, onClose }: Prop
   }
   const setCell = (i: number, j: number, v: string) => { setCells(prev => prev.map((row, a) => (a === i ? row.map((x, b) => (b === j ? v : x)) : row))); setResult(null) }
 
-  const nm = name.trim() || 'A'
+  // Operations name the matrix by its letter: "A^{-1}" / "\\det A" → "A".
+  const nm = name.replace(/\\det\s*/, '').replace(/\^\{?[^}]*\}?/, '').trim() || 'A'
   const body = matrixLatex(cells, bracket)
-  const full = name.trim() ? `${name.trim()} = ${body}` : body
   const numeric = useMemo(() => toNumeric(cells), [cells])
   const square = rows === cols
+  // A determinant's "= −3" follows the cells; any other tail is kept as written.
+  const suffix = initial?.suffix
+    ? (bracket === 'vmatrix' && numeric && square && /^=\s*[-−\d\\{}.,/ a-z]+$/i.test(initial.suffix) ? `= ${determinant(numeric).latex()}` : initial.suffix)
+    : ''
+  const full = `${name.trim() ? `${name.trim()} = ` : ''}${body}${suffix ? ` ${suffix}` : ''}`
 
   const run = (op: Op) => {
     if (!numeric) return
@@ -102,7 +119,7 @@ export function MatrixDialog({ initial, onApply, onInsertResult, onClose }: Prop
 
         <div className={styles.form} style={{ borderRight: 0 }}>
           <div className={styles.matrixTop}>
-            <label className={styles.field} style={{ width: 90 }}><span>{t('matrixName')}</span><input value={name} onChange={e => { setName(e.target.value.slice(0, 6)); setResult(null) }} placeholder="A" /></label>
+            <label className={styles.field} style={{ width: 120 }}><span>{t('matrixName')}</span><input value={name} onChange={e => { setName(e.target.value.slice(0, 24)); setResult(null) }} placeholder="A" /></label>
             <div className={styles.field}><span>{t('matrixRows')}</span>
               <div className={styles.stepper}><button type="button" disabled={rows <= 1} onClick={() => resize(rows - 1, cols)}>−</button><span>{rows}</span><button type="button" disabled={rows >= MAX} onClick={() => resize(rows + 1, cols)}>+</button></div>
             </div>
@@ -158,6 +175,7 @@ export function MatrixDialog({ initial, onApply, onInsertResult, onClose }: Prop
         </div>
 
         <div className={styles.foot}>
+          {onEditAsFormula && <button type="button" className={styles.linkBtn} onClick={() => { onClose(); onEditAsFormula() }}><SigmaIcon size={14} /> {t('matrixAsFormula')}</button>}
           <span className={styles.spacer} />
           <button type="button" className={styles.btn} onClick={onClose}>{t('cancel')}</button>
           <button type="button" className={`${styles.btn} ${styles.primary}`} onClick={() => { onApply(full); onClose() }}>{initial ? t('apply') : t('matrixInsert')}</button>

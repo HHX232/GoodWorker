@@ -271,6 +271,7 @@ $ai: #7c3aed;
   cursor: pointer;
   &:disabled { opacity: 0.5; cursor: default; }
 }
+.linkBtn { display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0; background: none; color: $muted; font: inherit; font-size: 13.5px; cursor: pointer; &:hover { color: $ai; } }
 .primary { border-color: $ink; background: $ink; color: #fff; }
 
 // ── Matrix tool ──

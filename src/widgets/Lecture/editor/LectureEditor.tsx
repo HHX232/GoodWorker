@@ -20,6 +20,8 @@ import { AskAiPanel, type AskTarget } from './AskAiPanel'
 import { docText, fragmentFor, markRange } from './docOps'
 import { AiSection, BoardBlockNode, GraphBlockNode, LectureNoteMark, LecturePhotoNode, MathBlock, MathInline, PendingFixMark } from './extensions'
 import { InsertPhotoDialog } from './InsertPhotoDialog'
+import { NoteHoverTip } from './NoteHoverTip'
+import { MatrixDialog, matrixEditBus, type MatrixEditRequest } from '../matrix/MatrixDialog'
 import { afterBlock, lectureCtx } from './photoTools'
 import { FormulaDialog } from './FormulaDialog'
 import { mathEditBus, type MathEditRequest } from './MathView'
@@ -108,6 +110,12 @@ export function LectureEditor({ lectureId, initialDoc, editable, canUseAi, onRea
 
   useEffect(() => { if (editor) onReady(editor) }, [editor, onReady])
   useEffect(() => { editor?.setEditable(editable) }, [editor, editable])
+
+  const [matrixReq, setMatrixReq] = useState<MatrixEditRequest | null>(null)
+  useEffect(() => {
+    matrixEditBus.open = req => setMatrixReq(req)
+    return () => { matrixEditBus.open = undefined }
+  }, [])
 
   useEffect(() => {
     mathEditBus.open = req => {
@@ -279,6 +287,8 @@ export function LectureEditor({ lectureId, initialDoc, editable, canUseAi, onRea
       )}
 
       <EditorContent editor={editor} className={styles.editor} />
+      <NoteHoverTip editor={editor} />
+      {matrixReq && <MatrixDialog initial={matrixReq.initial} onApply={matrixReq.onApply} onInsertResult={matrixReq.onInsertResult} onEditAsFormula={matrixReq.onEditAsFormula} onClose={() => setMatrixReq(null)} />}
 
       <input ref={photoInput} type="file" accept="image/*" capture="environment" hidden onChange={e => { onPhoto(e.target.files?.[0]); e.target.value = '' }} />
       <input ref={insertInput} type="file" accept="image/*" hidden onChange={e => { const f = e.target.files?.[0]; if (f) setInsertPhoto({ file: f, at: insertAt.current }); e.target.value = '' }} />
