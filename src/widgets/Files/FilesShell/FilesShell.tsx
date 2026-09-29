@@ -297,6 +297,8 @@ export function FilesShell({ role, folderId, onNavigate, admin, drive }: FilesSh
   const openPreview = (f: LibraryFile) => {
     markOpened(f)
     const kind = viewerFor(f.mimeType, f.name)
+    // Saved lecture notes reopen in the lecture editor (formulas, notes, AI sections intact).
+    if (canManage && f.lectureNoteId) { router.push(`/lecture/${f.lectureNoteId}`); return }
     if (canManage && kind === 'docx') { setEditFile(f); return }
     if (canManage && kind === 'pdf') { setReviewFile(f); return }
     setPreviewFile(f)

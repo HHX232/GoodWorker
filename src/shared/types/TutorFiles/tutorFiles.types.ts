@@ -49,6 +49,8 @@ export interface LibraryFile {
   review: FileReview | null
   /** Set on a file the in-browser docx editor saved "as new" — the id it was derived from. Editing this file again overwrites it in place instead of spawning another copy. */
   derivedFromId: string | null
+  /** Set on a tutor's saved /lecture notes — opening goes back to /lecture/<id>. */
+  lectureNoteId?: string | null
 }
 
 export interface FileReview {

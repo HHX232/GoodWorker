@@ -20,8 +20,10 @@ import logging
 import os
 import time
 
+import av
 import numpy as np
 from fastapi import FastAPI, File, Form, Header, HTTPException, UploadFile
+from fastapi.responses import Response
 from faster_whisper import WhisperModel, decode_audio
 
 logging.basicConfig(level=logging.INFO)
@@ -158,3 +160,49 @@ async def transcribe(
     finally:
         if acquired:
             _sems[quality].release()
+
+
+MAX_CONCAT_BYTES = 200 * 1024 * 1024
+CONCAT_RATE = 24000
+
+
+def concat_to_m4a(parts: list[bytes]) -> bytes:
+    # Chunks are standalone files (one MediaRecorder each) — they can't be
+    # glued byte-wise, so decode them all and encode one AAC track (.m4a
+    # plays everywhere, iPhone included).
+    pcm = [decode_audio(io.BytesIO(p), sampling_rate=CONCAT_RATE) for p in parts]
+    audio = np.concatenate(pcm) if pcm else np.zeros(0, dtype=np.float32)
+    out_buf = io.BytesIO()
+    out = av.open(out_buf, "w", format="mp4")
+    stream = out.add_stream("aac", rate=CONCAT_RATE)
+    stream.layout = "mono"
+    stream.bit_rate = 48_000
+    frame_size = 1024
+    for i in range(0, len(audio), frame_size * 50):
+        block = audio[i:i + frame_size * 50].astype(np.float32).reshape(1, -1)
+        frame = av.AudioFrame.from_ndarray(block, format="flt", layout="mono")
+        frame.sample_rate = CONCAT_RATE
+        for packet in stream.encode(frame):
+            out.mux(packet)
+    for packet in stream.encode(None):
+        out.mux(packet)
+    out.close()
+    return out_buf.getvalue()
+
+
+@app.post("/concat")
+async def concat(files: list[UploadFile] = File(...), x_stt_key: str = Header(default="")) -> Response:
+    if API_KEY and x_stt_key != API_KEY:
+        raise HTTPException(status_code=401, detail="unauthorized")
+    parts = [await f.read() for f in files]
+    if sum(len(p) for p in parts) > MAX_CONCAT_BYTES:
+        raise HTTPException(status_code=413, detail="too large")
+    parts = [p for p in parts if p]
+    if not parts:
+        raise HTTPException(status_code=400, detail="no audio")
+    try:
+        data = await asyncio.to_thread(concat_to_m4a, parts)
+    except Exception as e:
+        log.exception("concat failed")
+        raise HTTPException(status_code=422, detail=f"concat failed: {e}") from e
+    return Response(content=data, media_type="audio/mp4")

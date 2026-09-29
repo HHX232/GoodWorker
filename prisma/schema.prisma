@@ -347,6 +347,9 @@ model TutorFile {
   // save of a session). A plain marker, not a Prisma relation — nothing reads
   // it in reverse. Lets PATCH .../content refuse to overwrite an original.
   derivedFromId  String?
+  // Set on the .docx a tutor's /lecture notes were saved as — opening it goes
+  // back to the lecture editor instead of the plain docx editor.
+  lectureNoteId  String?
   review         TutorFileReview?
   teacher        Teacher           @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   folder         TutorFolder?      @relation(fields: [folderId], references: [id], onDelete: Cascade)

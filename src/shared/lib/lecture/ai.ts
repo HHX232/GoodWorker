@@ -86,3 +86,67 @@ ${opts.selection.slice(0, 2000)}
   await addUsage(opts.lectureId, usage)
   return stripFence(raw)
 }
+
+const ASK_SYSTEM = `Ты — редактор конспекта лекции. Студент выделил фрагмент конспекта и просит его изменить.
+Верни ТОЛЬКО новую версию выделенного фрагмента — без пояснений, без кавычек, без "Вот исправленный вариант".
+Если просьба — вопрос (например, "что это значит?"), всё равно верни фрагмент, дополненный коротким пояснением в конце (курсивом).
+Сохраняй смысл лекции, ничего не выдумывай сверх просьбы. Формулы — в LaTeX.
+
+${DIALECT}`
+
+/** "Спросить ИИ" on a selection → a suggested replacement (the student confirms or cancels it). */
+export async function askAboutFragment(opts: { lectureId: string; selection: string; context: string; instruction: string }): Promise<string> {
+  let usage: AIUsage | null = null
+  const prompt = `Контекст вокруг фрагмента:
+"""
+${opts.context.slice(0, 2500)}
+"""
+
+Выделенный фрагмент:
+"""
+${opts.selection.slice(0, 3000)}
+"""
+
+Просьба студента: ${opts.instruction.slice(0, 500)}`
+  const raw = await callAI(ASK_SYSTEM, prompt, { json: false, temperature: 0.3, maxTokens: 2000, onUsage: u => { usage = u } })
+  await addUsage(opts.lectureId, usage)
+  return stripFence(raw)
+}
+
+const FORMULA_SYSTEM = `Ты — ассистент по математическим формулам в конспекте лекции. Возвращай ТОЛЬКО валидный JSON без markdown.
+Формат: {"latex": "<LaTeX для редактора MathLive: без $, без \\\\[ \\\\], без окружений документа; \\\\frac, \\\\sqrt, \\\\sum, \\\\int, \\\\lim, \\\\cdot, ^, _, \\\\left(\\\\right), \\\\begin{cases}...\\\\end{cases}, \\\\begin{pmatrix}...\\\\end{pmatrix}>", "explanation": "<1–3 предложения по-русски: что это за формула / что изменено; пусто, если не нужно>"}`
+
+export type FormulaMode = 'describe' | 'edit' | 'explain' | 'photo'
+
+/**
+ * Formula AI (the ✦ button in the formula editor):
+ *   describe — words → LaTeX;  edit — apply an instruction to the current LaTeX;
+ *   explain  — keep LaTeX, explain it;  photo — read the formula off a photo.
+ */
+export async function formulaAssist(opts: {
+  lectureId: string
+  mode: FormulaMode
+  latex: string
+  instruction: string
+  context: string
+  photo?: { mimeType: string; base64: string }
+}): Promise<{ latex: string; explanation: string }> {
+  let usage: AIUsage | null = null
+  const task = {
+    describe: `Составь формулу по описанию: ${opts.instruction}`,
+    edit: `Текущая формула: ${opts.latex}\nИзмени её по просьбе: ${opts.instruction}`,
+    explain: `Объясни формулу простыми словами (latex верни без изменений): ${opts.latex}`,
+    photo: `Распознай формулу с фото${opts.instruction ? ` (уточнение: ${opts.instruction})` : ''}${opts.latex ? `. Сейчас в конспекте: ${opts.latex}` : ''}. Если формул несколько — возьми ту, что ближе к уточнению/текущей.`,
+  }[opts.mode]
+  const prompt = `${task}\n\nКонтекст конспекта:\n"""\n${opts.context.slice(0, 1500)}\n"""`
+  const onUsage = (u: AIUsage) => { usage = u }
+  const raw = opts.mode === 'photo' && opts.photo
+    ? await callVisionAI(FORMULA_SYSTEM, [opts.photo], prompt, { temperature: 0.1, onUsage })
+    : await callAI(FORMULA_SYSTEM, prompt, { temperature: 0.2, onUsage })
+  await addUsage(opts.lectureId, usage)
+  const clean = raw.trim().replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim()
+  const parsed = JSON.parse(clean) as { latex?: string; explanation?: string }
+  const latex = (parsed.latex ?? '').trim().replace(/^\$+|\$+$/g, '')
+  if (!latex) throw new Error('empty latex')
+  return { latex, explanation: (parsed.explanation ?? '').trim() }
+}

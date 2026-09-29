@@ -58,3 +58,19 @@ export function markDoubtful(result: SttResult): string {
     .join(' ')
     .trim()
 }
+
+/** All chunks → one .m4a (stt-server decodes each standalone chunk and re-encodes). */
+export async function concatAudio(parts: { bytes: Buffer; mime: string }[]): Promise<Buffer> {
+  const base = process.env.LECTURE_STT_URL
+  if (!base) throw new Error('LECTURE_STT_URL is not set')
+  const form = new FormData()
+  parts.forEach((p, i) => form.append('files', new Blob([new Uint8Array(p.bytes)], { type: p.mime }), `${i}.${p.mime.includes('mp4') ? 'm4a' : 'webm'}`))
+  const res = await fetch(`${base.replace(/\/$/, '')}/concat`, {
+    method: 'POST',
+    headers: { 'X-STT-Key': process.env.STT_API_KEY ?? '' },
+    body: form,
+    signal: AbortSignal.timeout(300_000),
+  })
+  if (!res.ok) throw new Error(`STT concat ${res.status}`)
+  return Buffer.from(await res.arrayBuffer())
+}
