@@ -2153,7 +2153,9 @@
     "storageReindexRunning": "Indexing… {n} left",
     "storageReindexDone": "Indexing complete",
     "storageAdminBadge": "Admin",
-    "storageAdminQuotaHint": "Admins get {gb} GB without VIP."
+    "storageAdminQuotaHint": "Admins get {gb} GB without VIP.",
+    "storageStudentQuota": "Student quota (My files)",
+    "storageStudentQuotaHint": "A VIP student's own drive: lecture notes and their own uploads. Homework in a tutor's folders counts toward the tutor's quota."
   },
   "tutorial": {
     "prev": "Back",
@@ -3765,6 +3767,14 @@
     "editDocx": "Edit",
     "editSaved": "Saved",
     "saveButton": "Save",
-    "reviewedAt": "Reviewed {date}"
+    "reviewedAt": "Reviewed {date}",
+    "driveTitle": "My files",
+    "driveNavLabel": "Storage sections",
+    "driveNewLecture": "Lecture notes",
+    "driveVipBanner": "Your own drive is part of VIP. Without VIP you can view, download and delete files, but not add new ones.",
+    "driveErrVip": "VIP is required to add files to your drive",
+    "driveEmptyTitle": "Nothing here yet",
+    "driveEmptyText": "Keep your lecture notes and your own files here — they count toward your quota, not your tutor's.",
+    "driveLectureHint": "Lecture notes — opens in the lecture editor"
   }
 }

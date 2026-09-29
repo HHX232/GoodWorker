@@ -1889,7 +1889,9 @@
     "storageReindexRunning": "इंडेक्स हो रहा है… {n} बाकी",
     "storageReindexDone": "इंडेक्सिंग पूरी",
     "storageAdminBadge": "एडमिन",
-    "storageAdminQuotaHint": "एडमिन को VIP के बिना {gb} GB मिलते हैं।"
+    "storageAdminQuotaHint": "एडमिन को VIP के बिना {gb} GB मिलते हैं।",
+    "storageStudentQuota": "छात्र कोटा (मेरी फ़ाइलें)",
+    "storageStudentQuotaHint": "VIP छात्र की अपनी ड्राइव: लेक्चर नोट्स और उनके अपलोड। ट्यूटर के फ़ोल्डर में होमवर्क ट्यूटर के कोटा में गिना जाता है।"
   },
   "tutorial": {
     "prev": "पीछे",
@@ -3737,6 +3739,14 @@
     "editDocx": "संपादित करें",
     "editSaved": "सहेजा गया",
     "saveButton": "सहेजें",
-    "reviewedAt": "{date} को जाँचा गया"
+    "reviewedAt": "{date} को जाँचा गया",
+    "driveTitle": "मेरी फ़ाइलें",
+    "driveNavLabel": "स्टोरेज अनुभाग",
+    "driveNewLecture": "लेक्चर नोट्स",
+    "driveVipBanner": "अपनी ड्राइव VIP का हिस्सा है। VIP के बिना आप फ़ाइलें देख, डाउनलोड और हटा सकते हैं, पर नई नहीं जोड़ सकते।",
+    "driveErrVip": "अपनी ड्राइव में फ़ाइलें जोड़ने के लिए VIP चाहिए",
+    "driveEmptyTitle": "यहाँ अभी कुछ नहीं है",
+    "driveEmptyText": "अपने लेक्चर नोट्स और फ़ाइलें यहाँ रखें — ये आपके कोटा में गिनी जाती हैं, ट्यूटर के नहीं।",
+    "driveLectureHint": "लेक्चर नोट्स — लेक्चर एडिटर में खुलेगा"
   }
 }

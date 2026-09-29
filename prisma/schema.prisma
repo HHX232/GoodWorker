@@ -65,6 +65,8 @@ model Student {
   tutorFolderOpens       TutorFolderOpen[]
   tutorFileOpens         TutorFileOpen[]
   restrictedTutorFolders TutorFolder[]      @relation("TutorFolderRestrictedToStudent")
+  studentFolders         StudentFolder[]
+  studentFiles           StudentFile[]
 }
 
 model Teacher {
@@ -374,6 +376,9 @@ model StorageSettings {
   id         String   @id @default("global")
   quotaGb    Int      @default(15)
   maxFileMb  Int      @default(50)
+  // A VIP student's own drive ("Мои файлы"): lecture notes and their own
+  // uploads. Homework handed in to a tutor still counts toward the tutor.
+  studentQuotaGb Int  @default(5)
   updatedAt  DateTime @updatedAt
 }
 
@@ -1203,4 +1208,115 @@ model SupportRequest {
   teacher Teacher? @relation(fields: [authorId], references: [id], onDelete: Cascade, map: "support_teacher_fk")
 
   @@index([authorId])
+}
+
+// A student's own drive — separate from the tutor library on purpose: every
+// tutor-files access check keys on TutorFile.teacherId, so a student-owned row
+// there would be one forgotten filter away from leaking. Counts toward the
+// student's own quota (StorageSettings.studentQuotaGb), never a tutor's.
+model StudentFolder {
+  id          String          @id @default(uuid())
+  studentId   String
+  parentId    String?
+  name        String
+  ancestorIds String[]        @default([])
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  student     Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  parent      StudentFolder?  @relation("StudentFolderChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children    StudentFolder[] @relation("StudentFolderChildren")
+  files       StudentFile[]
+
+  @@index([studentId])
+  @@index([parentId])
+}
+
+model StudentFile {
+  id            String         @id @default(uuid())
+  studentId     String
+  folderId      String?
+  name          String
+  key           String
+  url           String
+  sizeBytes     Int
+  mimeType      String
+  // Set on the .docx a lecture was saved as — opening it goes back to the
+  // lecture editor (full fidelity) instead of the plain docx editor.
+  lectureNoteId String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  student       Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  folder        StudentFolder? @relation(fields: [folderId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([folderId])
+}
+
+enum LectureStatus {
+  RECORDING
+  FINALIZING
+  READY
+}
+
+// /lecture — live lecture notes (VIP student / VIP tutor / admin). Owner is
+// polymorphic like VideoCallRoom (ownerId + ownerRole), ADMIN stored as TEACHER.
+model LectureNote {
+  id                 String         @id @default(uuid())
+  ownerId            String
+  ownerRole          Role
+  title              String
+  status             LectureStatus  @default(RECORDING)
+  // TipTap/ProseMirror JSON — the source of truth; the .docx is an export.
+  docJson            Json?
+  // Seq of the last chunk already turned into document blocks by DeepSeek.
+  processedSeq       Int            @default(-1)
+  keepAudio          Boolean        @default(false)
+  recordedMs         Int            @default(0)
+  // Metering (LectureSettings tariff): DeepSeek tokens spent and the price
+  // computed from them + recorded time. Charged only once a Wallet exists.
+  aiPromptTokens     Int            @default(0)
+  aiCompletionTokens Int            @default(0)
+  costKopecks        Int            @default(0)
+  // The saved export (StudentFile.id or TutorFile.id, by ownerRole).
+  fileId             String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  chunks             LectureChunk[]
+
+  @@index([ownerId, ownerRole])
+}
+
+model LectureChunk {
+  id         String      @id @default(uuid())
+  lectureId  String
+  seq        Int
+  startMs    Int
+  durationMs Int
+  // Live draft (small model) and, after "Стоп", the final pass (big model).
+  draftText  String      @default("")
+  finalText  String?
+  // S3 key when the lecture keeps audio (toggle), else null.
+  audioKey   String?
+  audioBytes Int         @default(0)
+  createdAt  DateTime    @default(now())
+  lecture    LectureNote @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+
+  @@unique([lectureId, seq])
+}
+
+// Admin-editable tariff (single row "global"): the first `baseMinutes` of a
+// lecture cost `basePer5MinKopecks` per started 5 minutes; after that each 5
+// minutes costs `extraPer5MinKopecks` plus the DeepSeek cost x `aiMarkup`.
+model LectureSettings {
+  id                   String   @id @default("global")
+  baseMinutes          Int      @default(30)
+  basePer5MinKopecks   Int      @default(500)
+  extraPer5MinKopecks  Int      @default(200)
+  aiMarkup             Float    @default(3)
+  // DeepSeek list price, kopecks per 1M tokens (input / output).
+  aiInputPer1MKopecks  Int      @default(2600)
+  aiOutputPer1MKopecks Int      @default(10000)
+  // Safety cap while there's no Wallet to charge: minutes per owner per day (0 = off).
+  maxMinutesPerDay     Int      @default(240)
+  updatedAt            DateTime @updatedAt
 }

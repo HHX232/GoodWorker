@@ -26,7 +26,7 @@ interface AdminTutorRow {
 }
 
 interface AdminStorageResponse {
-  settings: { quotaGb: number; maxFileMb: number }
+  settings: { quotaGb: number; maxFileMb: number; studentQuotaGb: number }
   adminQuotaGb: number
   billingEnabled: boolean
   priceCentsPerGbMonth: number | null
@@ -82,6 +82,7 @@ export function StorageAdminTab() {
   })
   const [quotaGb, setQuotaGb] = useState('')
   const [maxFileMb, setMaxFileMb] = useState('')
+  const [studentQuotaGb, setStudentQuotaGb] = useState('')
   const [price, setPrice] = useState('')
   const [saving, setSaving] = useState(false)
   const [viewing, setViewing] = useState<AdminTutorRow | null>(null)
@@ -113,11 +114,12 @@ export function StorageAdminTab() {
     if (!data) return
     setQuotaGb(String(data.settings.quotaGb))
     setMaxFileMb(String(data.settings.maxFileMb))
+    setStudentQuotaGb(String(data.settings.studentQuotaGb))
     setPrice(data.priceCentsPerGbMonth === null ? '' : (data.priceCentsPerGbMonth / 100).toFixed(2))
   }, [data])
 
   const save = async () => {
-    const body: Record<string, number> = { quotaGb: Number(quotaGb), maxFileMb: Number(maxFileMb) }
+    const body: Record<string, number> = { quotaGb: Number(quotaGb), maxFileMb: Number(maxFileMb), studentQuotaGb: Number(studentQuotaGb) }
     if (data?.billingEnabled) body.priceCentsPerGbMonth = Math.round(Number(price.replace(',', '.')) * 100)
     setSaving(true)
     try {
@@ -153,6 +155,14 @@ export function StorageAdminTab() {
             </span>
             <span className={styles.fieldHint}>{data.billingEnabled ? t('storageQuotaHintBilling') : t('storageQuotaHintHard')}</span>
             <span className={styles.fieldHint}>{t('storageAdminQuotaHint', { gb: data.adminQuotaGb })}</span>
+          </label>
+          <label className={styles.field}>
+            <span className={styles.fieldLabel}>{t('storageStudentQuota')}</span>
+            <span className={styles.inputWrap}>
+              <input type="number" min={QUOTA_GB_RANGE.min} max={QUOTA_GB_RANGE.max} value={studentQuotaGb} onChange={e => setStudentQuotaGb(e.target.value)} />
+              <span className={styles.unit}>GB</span>
+            </span>
+            <span className={styles.fieldHint}>{t('storageStudentQuotaHint')}</span>
           </label>
           <label className={styles.field}>
             <span className={styles.fieldLabel}>{t('storageMaxFile')}</span>

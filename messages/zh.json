@@ -1890,7 +1890,9 @@
     "storageReindexRunning": "正在索引… 剩余 {n}",
     "storageReindexDone": "索引完成",
     "storageAdminBadge": "管理员",
-    "storageAdminQuotaHint": "管理员无需 VIP，配额 {gb} GB。"
+    "storageAdminQuotaHint": "管理员无需 VIP，配额 {gb} GB。",
+    "storageStudentQuota": "学生配额（我的文件）",
+    "storageStudentQuotaHint": "VIP 学生的个人存储：课堂笔记和自己上传的文件。提交到导师文件夹的作业计入导师配额。"
   },
   "tutorial": {
     "prev": "上一步",
@@ -3738,6 +3740,14 @@
     "editDocx": "编辑",
     "editSaved": "已保存",
     "saveButton": "保存",
-    "reviewedAt": "批改于 {date}"
+    "reviewedAt": "批改于 {date}",
+    "driveTitle": "我的文件",
+    "driveNavLabel": "存储分区",
+    "driveNewLecture": "课堂笔记",
+    "driveVipBanner": "个人存储属于 VIP 功能。没有 VIP 时可以查看、下载和删除文件，但不能添加。",
+    "driveErrVip": "需要 VIP 才能向个人存储添加文件",
+    "driveEmptyTitle": "这里还没有内容",
+    "driveEmptyText": "在这里保存课堂笔记和自己的文件——它们计入你的配额，而不是导师的。",
+    "driveLectureHint": "课堂笔记——在笔记编辑器中打开"
   }
 }

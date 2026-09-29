@@ -2153,7 +2153,9 @@
     "storageReindexRunning": "Индексируем… осталось {n}",
     "storageReindexDone": "Индексация завершена",
     "storageAdminBadge": "Админ",
-    "storageAdminQuotaHint": "Администраторам — {gb} ГБ без VIP."
+    "storageAdminQuotaHint": "Администраторам — {gb} ГБ без VIP.",
+    "storageStudentQuota": "Квота ученика (Мои файлы)",
+    "storageStudentQuotaHint": "Личное хранилище VIP-ученика: конспекты лекций и свои загрузки. Домашка в папках репетитора считается в квоту репетитора."
   },
   "tutorial": {
     "prev": "Назад",
@@ -3765,6 +3767,14 @@
     "editDocx": "Редактировать",
     "editSaved": "Сохранено",
     "saveButton": "Сохранить",
-    "reviewedAt": "Проверено {date}"
+    "reviewedAt": "Проверено {date}",
+    "driveTitle": "Мои файлы",
+    "driveNavLabel": "Разделы хранилища",
+    "driveNewLecture": "Конспект лекции",
+    "driveVipBanner": "Своё хранилище — часть VIP. Без VIP файлы можно смотреть, скачивать и удалять, но не добавлять.",
+    "driveErrVip": "Нужен VIP, чтобы добавлять файлы в своё хранилище",
+    "driveEmptyTitle": "Здесь пока пусто",
+    "driveEmptyText": "Сохраняйте сюда конспекты лекций и свои файлы — они считаются в вашу квоту, а не репетитора.",
+    "driveLectureHint": "Конспект — откроется в редакторе лекций"
   }
 }
