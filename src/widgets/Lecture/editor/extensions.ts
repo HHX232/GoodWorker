@@ -261,39 +261,3 @@ export const GraphBlockNode = Node.create({
     return ReactNodeViewRenderer(GraphView)
   },
 })
-
-/**
- * A function graph / chart. The spec (validated JSON) is the source of truth —
- * drawn live with recharts; `photoId` is a PNG snapshot for Word, `snapOf` the
- * spec it was taken from (a changed spec re-snapshots).
- */
-export const GraphBlockNode = Node.create({
-  name: 'graphBlock',
-  group: 'block',
-  atom: true,
-  selectable: true,
-  draggable: true,
-  addAttributes() {
-    return {
-      spec: { default: null, rendered: false },
-      photoId: { default: '', parseHTML: el => el.getAttribute('data-photo-id') ?? '', renderHTML: a => ({ 'data-photo-id': a.photoId }) },
-      width: { default: 0, rendered: false },
-      height: { default: 0, rendered: false },
-      snapOf: { default: '', rendered: false },
-      /** Just inserted from the toolbar — open the editor right away (never true after a reload). */
-      fresh: { default: false, rendered: false },
-    }
-  },
-  parseHTML() {
-    return [{ tag: 'div[data-graph]' }]
-  },
-  renderHTML({ HTMLAttributes }) {
-    return ['div', mergeAttributes(HTMLAttributes, { 'data-graph': '' })]
-  },
-  renderText() {
-    return '[график]\n'
-  },
-  addNodeView() {
-    return ReactNodeViewRenderer(GraphView)
-  },
-})
