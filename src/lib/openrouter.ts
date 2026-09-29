@@ -8,7 +8,9 @@ const TIMEOUT_MS  = 120_000
 
 // `json: false` drops response_format so the model can answer in plain
 // text / markdown (e.g. lecture notes); default stays JSON for older callers.
-type CallOpts = { temperature?: number; maxTokens?: number; json?: boolean }
+type CallOpts = { temperature?: number; maxTokens?: number; json?: boolean; onUsage?: (usage: AIUsage) => void }
+
+export interface AIUsage { promptTokens: number; completionTokens: number }
 
 function deepseekHeaders(): Record<string, string> {
   return {
@@ -31,6 +33,7 @@ function buildRequest(systemPrompt: string, userPrompt: string, opts: CallOpts):
       ...(opts.maxTokens ? { max_tokens: opts.maxTokens } : {}),
       ...(opts.json === false ? {} : { response_format: { type: 'json_object' } }),
       stream: true,
+      stream_options: { include_usage: true },
     }),
   }
 }
@@ -62,6 +65,7 @@ function buildVisionRequest(
       ...(opts.maxTokens ? { max_tokens: opts.maxTokens } : {}),
       ...(opts.json === false ? {} : { response_format: { type: 'json_object' } }),
       stream: true,
+      stream_options: { include_usage: true },
     }),
   }
 }
@@ -77,7 +81,7 @@ export async function callAI(
   const promptPreview = userPrompt.slice(0, 120).replace(/\n/g, ' ')
   console.log(`[AI] provider=deepseek prompt="${promptPreview}..."`)
 
-  return sendChatRequest(endpoint, headers, body, 'deepseek')
+  return sendChatRequest(endpoint, headers, body, 'deepseek', opts.onUsage)
 }
 
 export async function callVisionAI(
@@ -91,10 +95,10 @@ export async function callVisionAI(
   const { endpoint, headers, body } = buildVisionRequest(systemPrompt, images, userPrompt, opts)
   console.log(`[AI] provider=deepseek-vision images=${images.length}`)
 
-  return sendChatRequest(endpoint, headers, body, 'deepseek-vision')
+  return sendChatRequest(endpoint, headers, body, 'deepseek-vision', opts.onUsage)
 }
 
-async function sendChatRequest(endpoint: string, headers: Record<string, string>, body: string, providerLabel: string): Promise<string> {
+async function sendChatRequest(endpoint: string, headers: Record<string, string>, body: string, providerLabel: string, onUsage?: (usage: AIUsage) => void): Promise<string> {
   for (let attempt = 0; attempt < 3; attempt++) {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(new Error(`AI timed out after ${TIMEOUT_MS / 1000}s`)), TIMEOUT_MS)
@@ -126,7 +130,7 @@ async function sendChatRequest(endpoint: string, headers: Record<string, string>
     }
 
     try {
-      const content = await readStream(res)
+      const content = await readStream(res, onUsage)
       clearTimeout(timer)
       if (!content) throw new Error(`${providerLabel} returned empty content`)
       console.log(`[AI] ok attempt=${attempt + 1} ms=${Date.now() - t0} chars=${content.length}`)
@@ -146,7 +150,7 @@ async function sendChatRequest(endpoint: string, headers: Record<string, string>
   throw new Error(`${providerLabel}: all retries exhausted`)
 }
 
-async function readStream(res: Response): Promise<string> {
+async function readStream(res: Response, onUsage?: (usage: AIUsage) => void): Promise<string> {
   const reader = res.body!.getReader()
   const decoder = new TextDecoder()
   let content = ''
@@ -167,6 +171,8 @@ async function readStream(res: Response): Promise<string> {
       try {
         const parsed = JSON.parse(data)
         content += parsed.choices?.[0]?.delta?.content ?? ''
+        // With stream_options.include_usage the last chunk carries the totals.
+        if (parsed.usage && onUsage) onUsage({ promptTokens: parsed.usage.prompt_tokens ?? 0, completionTokens: parsed.usage.completion_tokens ?? 0 })
       } catch {
         // ignore malformed SSE chunks
       }

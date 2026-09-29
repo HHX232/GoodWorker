@@ -1295,8 +1295,11 @@ model LectureChunk {
   // Live draft (small model) and, after "Стоп", the final pass (big model).
   draftText  String      @default("")
   finalText  String?
-  // S3 key when the lecture keeps audio (toggle), else null.
+  // Toggle "сохранять аудио" on: kept in S3 (owner's quota), replayable.
+  // Off: held here only until the final pass, then nulled — never billed.
   audioKey   String?
+  audioData  Bytes?
+  audioMime  String      @default("audio/webm")
   audioBytes Int         @default(0)
   createdAt  DateTime    @default(now())
   lecture    LectureNote @relation(fields: [lectureId], references: [id], onDelete: Cascade)

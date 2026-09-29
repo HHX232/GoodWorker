@@ -1,4 +1,5 @@
 import { prisma } from '@/shared/prisma/prisma'
+import { lectureAudioBytes } from '@/shared/lib/lecture/audio'
 import { ADMIN_QUOTA_GB, DEFAULT_MAX_FILE_MB, DEFAULT_QUOTA_GB, GB, MAX_FOLDER_DEPTH, MB } from './constants'
 
 export { MAX_FOLDER_DEPTH }
@@ -59,10 +60,17 @@ export function assertFolderDepthAllowed(parentAncestorIds: string[]): void {
   if (parentDepth >= MAX_FOLDER_DEPTH) throw new FolderDepthExceededError()
 }
 
-/** `SUM(sizeBytes)` across every file owned by `teacherId` — compared against the quota from `getStorageLimits()`. */
+/**
+ * `SUM(sizeBytes)` across every file owned by `teacherId`, plus the tutor's
+ * own lecture audio kept in S3 (/lecture, "сохранять аудио") — compared
+ * against the quota from `getStorageLimits()`.
+ */
 export async function getUsedBytes(teacherId: string): Promise<number> {
-  const result = await prisma.tutorFile.aggregate({ where: { teacherId }, _sum: { sizeBytes: true } })
-  return result._sum.sizeBytes ?? 0
+  const [files, audio] = await Promise.all([
+    prisma.tutorFile.aggregate({ where: { teacherId }, _sum: { sizeBytes: true } }),
+    lectureAudioBytes(teacherId, 'TEACHER'),
+  ])
+  return (files._sum.sizeBytes ?? 0) + audio
 }
 
 export class RestrictedAncestorError extends Error {
