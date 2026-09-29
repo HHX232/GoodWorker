@@ -15,8 +15,6 @@ $violet2: #6366f1;
 $violetSoft: #f5f0ff;
 
 .red { color: $red; }
-.violet { color: $violet; }
-.eyebrow { color: $violet; }
 
 // Rich-text marks inside the messages.
 .def { color: $violet; font-weight: 600; }
@@ -57,25 +55,6 @@ $violetSoft: #f5f0ff;
 .toolIcon { display: grid; place-items: center; width: 30px; height: 30px; flex-shrink: 0; border-radius: 9px; background: $violetSoft; color: $violet; }
 // The CTA sits centred under the tools, the VIP note under it.
 .ctaRow { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 28px; }
-.cta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  min-width: 240px;
-  height: 54px;
-  padding: 0 30px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, $violet, $violet2);
-  box-shadow: 0 12px 28px rgba(124, 58, 237, 0.32);
-  color: #fff;
-  font-size: 16px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: transform 0.15s, box-shadow 0.15s;
-  &:hover { transform: translateY(-1px); box-shadow: 0 16px 34px rgba(124, 58, 237, 0.4); }
-  &:active { transform: none; }
-}
 .vipNote { color: $faint; font-size: 13px; }
 
 // ─── Card ───────────────────────────────────────────
@@ -192,8 +171,7 @@ $violetSoft: #f5f0ff;
   .hi { background: rgba(250, 204, 21, 0.25); color: #fde68a; }
   .def { color: #7aa2ff; }
   .toolIcon { background: rgba(167, 139, 250, 0.14); color: #c4b5fd; }
-  .violet, .eyebrow, .def { color: #a78bfa; }
-  h2 span.violet { color: #a78bfa; }
+  .def { color: #a78bfa; }
   .card { border-color: rgba(167, 139, 250, 0.2); background: linear-gradient(180deg, #17161f 0%, #1a1726 100%); }
   .raw { background: #1c1a26; }
   .probeTip { border-color: rgba(167, 139, 250, 0.3); background: rgba(22, 23, 30, 0.96); color: #e8eaf0; b, .probeGapText { color: #c4b5fd; } }

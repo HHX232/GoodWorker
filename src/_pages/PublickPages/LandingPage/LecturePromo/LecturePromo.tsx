@@ -49,8 +49,8 @@ export function LecturePromo() {
   return (
     <section ref={ref} className={`${s.section_grid} ${inView ? p.play : ''}`} aria-labelledby="lecture-promo-title">
       <div>
-        <div className={`${s.eyebrow} ${p.eyebrow}`}>{t('eyebrow')}</div>
-        <h2 id="lecture-promo-title" className={s.section_h2}>{t('h2')} <span className={p.violet}>{t('h2_hl')}</span></h2>
+        <div className={s.eyebrow}>{t('eyebrow')}</div>
+        <h2 id="lecture-promo-title" className={s.section_h2}>{t('h2')} <span className={p.red}>{t('h2_hl')}</span></h2>
         <p className={s.section_text}>{t('lead')}</p>
         <div className={p.tools}>
           {tools.map(([k, Icon], i) => (
@@ -60,7 +60,7 @@ export function LecturePromo() {
           ))}
         </div>
         <div className={p.ctaRow}>
-          <Link href={HREF} className={p.cta}><MicIcon size={18} />{t('cta_start')}</Link>
+          <Link href={HREF} className={s.btn_red}><MicIcon size={17} />{t('cta_start')}</Link>
           <span className={p.vipNote}>{t('vip_note')}</span>
         </div>
       </div>
