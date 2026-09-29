@@ -5,6 +5,7 @@ import { putLectureAudio } from '@/shared/lib/lecture/audio'
 import { getLectureSettings, lectureCostKopecks, minutesRecordedToday } from '@/shared/lib/lecture/pricing'
 import { ownerFreeBytes } from '@/shared/lib/lecture/quota'
 import { markDoubtful, SttBusyError, transcribe } from '@/shared/lib/lecture/stt'
+import { parseContext, sttHint } from '@/shared/lib/lecture/context'
 
 export const runtime = 'nodejs'
 export const maxDuration = 120
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     const prev = seq > 0 ? await prisma.lectureChunk.findUnique({ where: { lectureId_seq: { lectureId: id, seq: seq - 1 } }, select: { draftText: true } }) : null
     let text: string
     try {
-      const result = await transcribe(bytes, mime, 'draft', `${lecture.title}. ${prev?.draftText.replace(/[⟨⟩?]/g, '') ?? ''}`)
+      const result = await transcribe(bytes, mime, 'draft', `${sttHint(parseContext(lecture.context), lecture.title)}. ${prev?.draftText.replace(/[⟨⟩?]/g, '') ?? ''}`)
       text = markDoubtful(result)
     } catch (e) {
       if (e instanceof SttBusyError) return NextResponse.json({ error: 'STT_BUSY' }, { status: 429 })

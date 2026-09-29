@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireOwnLecture } from '@/shared/lib/lecture/access'
+import { contextPrompt, parseContext } from '@/shared/lib/lecture/context'
 import { askAboutFragment } from '@/shared/lib/lecture/ai'
 import { markdownToBlocks } from '@/shared/lib/lecture/markdownToDoc'
 
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     const selection = typeof body.selection === 'string' ? body.selection.trim() : ''
     const instruction = typeof body.instruction === 'string' ? body.instruction.trim() : ''
     if (!selection || !instruction) return NextResponse.json({ error: 'selection and instruction required' }, { status: 400 })
-    const markdown = await askAboutFragment({ lectureId: id, selection, instruction, context: typeof body.context === 'string' ? body.context : '' })
+    const markdown = await askAboutFragment({ lectureId: id, lecture: contextPrompt(parseContext(guard.lecture.context), guard.lecture.title), selection, instruction, context: typeof body.context === 'string' ? body.context : '' })
     return NextResponse.json({ markdown, blocks: markdownToBlocks(markdown) })
   } catch (e) {
     console.error('[POST /api/lecture/[id]/ask]', e)

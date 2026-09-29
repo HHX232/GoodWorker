@@ -5,6 +5,7 @@ export interface DriveFolder {
   name: string
   parentId: string | null
   createdAt: string
+  itemCount: number
 }
 
 export interface DriveFile {

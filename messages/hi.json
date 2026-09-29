@@ -3941,6 +3941,17 @@
     "mergeContinuation": "“{text}” के बाद",
     "mergeNew": "नोट्स के अंत में",
     "mergeApply": "नोट्स में जोड़ें",
-    "mergeApplied": "जोड़े गए अंश: {n}"
+    "mergeApplied": "जोड़े गए अंश: {n}",
+    "ctxEmpty": "AI लेक्चर के दौरान विषय और टॉपिक पहचानेगा",
+    "ctxSet": "बताएँ",
+    "ctxEdit": "विषय और टॉपिक बदलें",
+    "ctxPinned": "आपने तय किया — AI नहीं बदलेगा",
+    "ctxSubject": "विषय",
+    "ctxTopic": "लेक्चर का टॉपिक",
+    "ctxSubtopics": "उप-टॉपिक (“;” से अलग)",
+    "ctxSubjectPh": "कैलकुलस",
+    "ctxTopicPh": "संयुक्त फलन का अवकलज",
+    "ctxSubtopicsPh": "चेन रूल; उदाहरण",
+    "ctxEditHint": "AI इसे हर सुझाव और वाक् पहचान में इस्तेमाल करता है; जो आप सुधारेंगे वह वैसा ही रहेगा।"
   }
 }

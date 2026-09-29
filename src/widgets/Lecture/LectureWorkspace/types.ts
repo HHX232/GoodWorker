@@ -7,6 +7,7 @@ export interface LectureDto {
   docJson: unknown
   processedSeq: number
   keepAudio: boolean
+  context: unknown
   recordedMs: number
   costKopecks: number
   fileId: string | null

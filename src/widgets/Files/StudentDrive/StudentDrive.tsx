@@ -22,13 +22,15 @@ import ui from '../ui.module.scss'
 // The shared Floe cards take the tutor-library shapes; a drive item is the
 // same thing minus sharing/review, so it's mapped onto them with those empty.
 function asLibraryFolder(f: DriveFolder): LibraryFolder {
-  return { id: f.id, name: f.name, parentId: f.parentId, allowStudentUpload: false, restrictedToStudentId: null, cover: null, submissionDeadline: null, itemCount: 0, sharedWith: [], updatedAt: f.createdAt }
+  return { id: f.id, name: f.name, parentId: f.parentId, allowStudentUpload: false, restrictedToStudentId: null, cover: null, submissionDeadline: null, itemCount: f.itemCount, sharedWith: [], updatedAt: f.createdAt }
 }
 
 function asLibraryFile(f: DriveFile, folderId: string | null): LibraryFile {
   return {
     id: f.id, name: f.name, folderId, url: f.url, sizeBytes: f.sizeBytes, mimeType: f.mimeType,
-    uploadedByRole: 'STUDENT', uploadedById: '', createdAt: f.updatedAt, sharedWith: [], late: false, review: null, derivedFromId: null,
+    // Everything here is the student's own — 'TEACHER' only keeps the card from
+    // showing the tutor library's "uploaded by a student" chip.
+    uploadedByRole: 'TEACHER', uploadedById: '', createdAt: f.updatedAt, sharedWith: [], late: false, review: null, derivedFromId: null,
   }
 }
 

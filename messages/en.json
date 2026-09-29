@@ -3969,6 +3969,17 @@
     "mergeContinuation": "after “{text}”",
     "mergeNew": "at the end of the notes",
     "mergeApply": "Add to notes",
-    "mergeApplied": "Fragments added: {n}"
+    "mergeApplied": "Fragments added: {n}",
+    "ctxEmpty": "The AI will pick up the subject and topic as the lecture goes",
+    "ctxSet": "Set",
+    "ctxEdit": "Edit subject and topic",
+    "ctxPinned": "Pinned by you — the AI won’t change it",
+    "ctxSubject": "Subject",
+    "ctxTopic": "Lecture topic",
+    "ctxSubtopics": "Subtopics (separated by “;”)",
+    "ctxSubjectPh": "Calculus",
+    "ctxTopicPh": "Derivative of a composite function",
+    "ctxSubtopicsPh": "Chain rule; examples",
+    "ctxEditHint": "The AI uses this in every suggestion and in speech recognition; what you correct stays as you set it."
   }
 }

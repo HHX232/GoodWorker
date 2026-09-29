@@ -12,6 +12,9 @@ const DIALECT = `Формат ответа — markdown с расширения�
 - цветной текст: {red|текст} (цвета: red, orange, green, blue, purple, gray) — для определений, предупреждений, ключевых терминов;
 - без HTML, без ссылок, без картинок, без блоков кода вокруг ответа.`
 
+// Context makes unclear fragments readable — but only where the match is obvious.
+const CONTEXT_RULE = `Используй контекст лекции (предмет, тема, подтемы, обозначения), чтобы правильно понять неразборчивые места: если фрагмент распознан плохо, но явно совпадает с типичной формулой или термином этой темы — восстанови его. Если совпадение не очевидно — НЕ выдумывай, оставь как есть и пометь ==[неразборчиво]==. Никогда не добавляй содержание, которого не было.`
+
 const STRUCTURE_SYSTEM = `Ты конспектируешь лекцию для студента. Тебе дают черновую расшифровку речи преподавателя с микрофона в аудитории.
 
 Расшифровка грязная: ошибки распознавания, повторы, слова-паразиты, реплики студентов и посторонние разговоры, шум. Фрагменты в ⟨?…⟩ распознаватель считает сомнительными.
@@ -19,11 +22,17 @@ const STRUCTURE_SYSTEM = `Ты конспектируешь лекцию для 
 Правила:
 1. Оставь только содержание лекции. Выкидывай посторонние разговоры, реплики не по теме, организационный шум ("откройте окно", "кто отсутствует"), сомнительные ⟨?…⟩ фрагменты, если они не вписываются в тему.
 2. Исправляй явные ошибки распознавания по смыслу (термины, имена, формулы, произнесённые словами: "эф штрих от икс" → $f'(x)$).
-3. Ничего не выдумывай и не добавляй от себя — только то, что сказал преподаватель. Если фрагмент непонятен и важен — оставь его и пометь ==[неразборчиво]==.
+3. ${CONTEXT_RULE}
 4. Структурируй: заголовок ### для новой темы/подтемы, определения — {blue|...}, важные предупреждения — {red|...}, ключевое — ==...==, перечисления — списком.
 5. Пиши кратко, как хороший студенческий конспект, на языке лекции.
-6. Если в новом фрагменте нет содержания лекции — верни пустой ответ.
+6. Если в новом фрагменте нет содержания лекции — markdown пустой.
 
+Также веди КОНТЕКСТ лекции: определи предмет (например "Математический анализ"), общую тему лекции, подтемы, которые реально прошли в этом фрагменте, и ключевые термины/обозначения (например "f'(x)", "цепное правило"). Если контекст уже дан — уточняй его, не меняй без явной причины.
+
+Возвращай ТОЛЬКО JSON без markdown-обёртки:
+{"markdown": "<конспект фрагмента>", "context": {"subject": "...", "topic": "...", "subtopics": ["..."], "terms": ["..."]}}
+
+Формат поля markdown:
 ${DIALECT}`
 
 const PHOTO_SYSTEM = `Ты помогаешь студенту исправить фрагмент конспекта лекции по фото доски или слайда.
@@ -31,6 +40,7 @@ const PHOTO_SYSTEM = `Ты помогаешь студенту исправит�
 Найди на фото то, что соответствует фрагменту, и верни исправленную версию ТОЛЬКО этого фрагмента: формулы — точно как на доске, в LaTeX.
 Если на фото есть относящиеся к фрагменту детали, которых не хватает, — добавь их. Не переписывай то, чего нет в выделении.
 Если на фото ничего относящегося к фрагменту нет — верни фрагмент без изменений.
+${CONTEXT_RULE}
 
 ${DIALECT}`
 
@@ -51,10 +61,10 @@ function stripFence(s: string): string {
   return s.trim().replace(/^```(?:markdown|md)?\n?/i, '').replace(/\n?```$/, '').trim()
 }
 
-/** New transcript → markdown blocks that continue the notes (not rewriting what came before). */
-export async function structureTranscript(opts: { lectureId: string; title: string; previousNotes: string; transcript: string }): Promise<string> {
+/** New transcript → markdown blocks that continue the notes, plus the refreshed lecture context. */
+export async function structureTranscript(opts: { lectureId: string; context: string; previousNotes: string; transcript: string }): Promise<{ markdown: string; context: unknown }> {
   let usage: AIUsage | null = null
-  const prompt = `Тема лекции: ${opts.title || 'не указана'}
+  const prompt = `${opts.context || 'КОНТЕКСТ ЛЕКЦИИ: пока неизвестен — определи по расшифровке.'}
 
 Конец уже готового конспекта (для связности — НЕ повторяй его):
 """
@@ -65,15 +75,23 @@ ${opts.previousNotes.slice(-1500) || '(конспект пока пуст)'}
 """
 ${opts.transcript}
 """`
-  const raw = await callAI(STRUCTURE_SYSTEM, prompt, { json: false, temperature: 0.2, maxTokens: 2500, onUsage: u => { usage = u } })
+  const raw = await callAI(STRUCTURE_SYSTEM, prompt, { temperature: 0.2, maxTokens: 3000, onUsage: u => { usage = u } })
   await addUsage(opts.lectureId, usage)
-  return stripFence(raw)
+  try {
+    const parsed = JSON.parse(raw.trim().replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim()) as { markdown?: unknown; context?: unknown }
+    return { markdown: stripFence(typeof parsed.markdown === 'string' ? parsed.markdown : ''), context: parsed.context ?? null }
+  } catch {
+    // The model broke the JSON contract — keep the notes, skip the context update.
+    return { markdown: stripFence(raw), context: null }
+  }
 }
 
 /** A selected fragment + a board photo → the corrected fragment (vision model). */
-export async function fixFragmentWithPhoto(opts: { lectureId: string; selection: string; context: string; photo: { mimeType: string; base64: string } }): Promise<string> {
+export async function fixFragmentWithPhoto(opts: { lectureId: string; lecture: string; selection: string; context: string; photo: { mimeType: string; base64: string } }): Promise<string> {
   let usage: AIUsage | null = null
-  const prompt = `Контекст конспекта вокруг фрагмента:
+  const prompt = `${opts.lecture}
+
+Контекст конспекта вокруг фрагмента:
 """
 ${opts.context.slice(0, 2000)}
 """
@@ -90,14 +108,16 @@ ${opts.selection.slice(0, 2000)}
 const ASK_SYSTEM = `Ты — редактор конспекта лекции. Студент выделил фрагмент конспекта и просит его изменить.
 Верни ТОЛЬКО новую версию выделенного фрагмента — без пояснений, без кавычек, без "Вот исправленный вариант".
 Если просьба — вопрос (например, "что это значит?"), всё равно верни фрагмент, дополненный коротким пояснением в конце (курсивом).
-Сохраняй смысл лекции, ничего не выдумывай сверх просьбы. Формулы — в LaTeX.
+Сохраняй смысл лекции, ничего не выдумывай сверх просьбы. Формулы — в LaTeX. Учитывай предмет и тему лекции (обозначения, принятые в этой теме).
 
 ${DIALECT}`
 
 /** "Спросить ИИ" on a selection → a suggested replacement (the student confirms or cancels it). */
-export async function askAboutFragment(opts: { lectureId: string; selection: string; context: string; instruction: string }): Promise<string> {
+export async function askAboutFragment(opts: { lectureId: string; lecture: string; selection: string; context: string; instruction: string }): Promise<string> {
   let usage: AIUsage | null = null
-  const prompt = `Контекст вокруг фрагмента:
+  const prompt = `${opts.lecture}
+
+Контекст вокруг фрагмента:
 """
 ${opts.context.slice(0, 2500)}
 """
@@ -114,6 +134,7 @@ ${opts.selection.slice(0, 3000)}
 }
 
 const FORMULA_SYSTEM = `Ты — ассистент по математическим формулам в конспекте лекции. Возвращай ТОЛЬКО валидный JSON без markdown.
+Учитывай предмет и тему лекции: принятые в ней обозначения. Распознавая формулу с фото, неразборчивые символы восстанавливай по типичным формулам темы только при очевидном совпадении; иначе не додумывай, а скажи о сомнении в explanation.
 Формат: {"latex": "<LaTeX для редактора MathLive: без $, без \\\\[ \\\\], без окружений документа; \\\\frac, \\\\sqrt, \\\\sum, \\\\int, \\\\lim, \\\\cdot, ^, _, \\\\left(\\\\right), \\\\begin{cases}...\\\\end{cases}, \\\\begin{pmatrix}...\\\\end{pmatrix}>", "explanation": "<1–3 предложения по-русски: что это за формула / что изменено; пусто, если не нужно>"}`
 
 export type FormulaMode = 'describe' | 'edit' | 'explain' | 'photo'
@@ -129,6 +150,7 @@ export async function formulaAssist(opts: {
   latex: string
   instruction: string
   context: string
+  lecture: string
   photo?: { mimeType: string; base64: string }
 }): Promise<{ latex: string; explanation: string }> {
   let usage: AIUsage | null = null
@@ -138,7 +160,7 @@ export async function formulaAssist(opts: {
     explain: `Объясни формулу простыми словами (latex верни без изменений): ${opts.latex}`,
     photo: `Распознай формулу с фото${opts.instruction ? ` (уточнение: ${opts.instruction})` : ''}${opts.latex ? `. Сейчас в конспекте: ${opts.latex}` : ''}. Если формул несколько — возьми ту, что ближе к уточнению/текущей.`,
   }[opts.mode]
-  const prompt = `${task}\n\nКонтекст конспекта:\n"""\n${opts.context.slice(0, 1500)}\n"""`
+  const prompt = `${opts.lecture}\n\n${task}\n\nКонтекст конспекта:\n"""\n${opts.context.slice(0, 1500)}\n"""`
   const onUsage = (u: AIUsage) => { usage = u }
   const raw = opts.mode === 'photo' && opts.photo
     ? await callVisionAI(FORMULA_SYSTEM, [opts.photo], prompt, { temperature: 0.1, onUsage })
@@ -155,13 +177,14 @@ const PHOTO_READ_SYSTEM = `Ты переносишь в конспект лек�
 Перепиши содержимое фото аккуратно и структурированно: формулы — точно как на фото, в LaTeX; текст — как есть, без пересказа; выкладки — по шагам.
 Игнорируй то, что не относится к учебному материалу (посторонние предметы, отражения, стёртые фрагменты).
 Если на фото нет учебного содержимого — верни пустой ответ.
+${CONTEXT_RULE}
 
 ${DIALECT}`
 
 /** "Вставить с фото": the photo's content as notes, placed where the student chose. */
-export async function readPhoto(opts: { lectureId: string; context: string; photo: { mimeType: string; base64: string } }): Promise<string> {
+export async function readPhoto(opts: { lectureId: string; lecture: string; context: string; photo: { mimeType: string; base64: string } }): Promise<string> {
   let usage: AIUsage | null = null
-  const prompt = `Контекст конспекта в месте вставки (для терминов и обозначений):\n"""\n${opts.context.slice(0, 2000)}\n"""\n\nПерепиши содержимое фото.`
+  const prompt = `${opts.lecture}\n\nКонтекст конспекта в месте вставки (для терминов и обозначений):\n"""\n${opts.context.slice(0, 2000)}\n"""\n\nПерепиши содержимое фото.`
   const raw = await callVisionAI(PHOTO_READ_SYSTEM, [opts.photo], prompt, { json: false, temperature: 0.1, maxTokens: 2500, onUsage: u => { usage = u } })
   await addUsage(opts.lectureId, usage)
   return stripFence(raw)
@@ -174,6 +197,7 @@ const PHOTO_MERGE_SYSTEM = `Ты сверяешь фото доски с уже 
 - "continuation" — это продолжение или уточнение уже записанного (следующий шаг выкладки, дополнение к формуле/примеру). Укажи номер блока, ПОСЛЕ которого вставить.
 - "new" — новое содержание, которого в конспекте нет; вставляется в конец.
 Формулы сравнивай по смыслу, а не по записи ($x^2$ и $x\\cdot x$ — одно и то же).
+${CONTEXT_RULE}
 Возвращай ТОЛЬКО JSON без markdown:
 {"items":[{"action":"duplicate"|"continuation"|"new","block":<номер или null>,"reason":"<коротко по-русски, почему так>","markdown":"<фрагмент в формате ниже; для duplicate — как на фото>"}]}
 
@@ -188,10 +212,10 @@ export interface PhotoMergeItem {
 }
 
 /** Left-rail "Обработать фото доски": what on the photo is already in the notes, what continues them, what's new. */
-export async function mergePhoto(opts: { lectureId: string; outline: string[]; photo: { mimeType: string; base64: string } }): Promise<PhotoMergeItem[]> {
+export async function mergePhoto(opts: { lectureId: string; lecture: string; outline: string[]; photo: { mimeType: string; base64: string } }): Promise<PhotoMergeItem[]> {
   let usage: AIUsage | null = null
   const outline = opts.outline.slice(-80).map((t, i, arr) => `[${opts.outline.length - arr.length + i}] ${t.slice(0, 220)}`).join('\n')
-  const prompt = `Конспект (блоки):\n${outline || '(конспект пока пуст)'}\n\nРазбери фото.`
+  const prompt = `${opts.lecture}\n\nКонспект (блоки):\n${outline || '(конспект пока пуст)'}\n\nРазбери фото.`
   const raw = await callVisionAI(PHOTO_MERGE_SYSTEM, [opts.photo], prompt, { temperature: 0.1, maxTokens: 3000, onUsage: u => { usage = u } })
   await addUsage(opts.lectureId, usage)
   const clean = raw.trim().replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim()

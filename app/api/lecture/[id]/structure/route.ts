@@ -3,6 +3,8 @@ import { prisma } from '@/shared/prisma/prisma'
 import { requireOwnLecture } from '@/shared/lib/lecture/access'
 import { structureTranscript } from '@/shared/lib/lecture/ai'
 import { markdownToBlocks } from '@/shared/lib/lecture/markdownToDoc'
+import { contextPrompt, mergeContext, parseContext } from '@/shared/lib/lecture/context'
+import type { Prisma } from '@prisma/client'
 
 export const maxDuration = 120
 
@@ -37,9 +39,14 @@ export async function POST(req: NextRequest, { params }: Params) {
     const transcript = chunks.map(c => c.finalText ?? c.draftText).join(' ').trim()
     if (!transcript) return NextResponse.json({ blocks: [], markdown: '', isFinal: false })
 
-    const markdown = await structureTranscript({ lectureId: id, title: lecture.title, previousNotes, transcript })
-    if (lecture.processedSeq < toSeq) await prisma.lectureNote.update({ where: { id }, data: { processedSeq: toSeq } })
-    return NextResponse.json({ blocks: markdownToBlocks(markdown), markdown, isFinal: chunks.every(c => c.finalText !== null) })
+    const current = parseContext(lecture.context)
+    const { markdown, context: aiContext } = await structureTranscript({ lectureId: id, context: contextPrompt(current, lecture.title), previousNotes, transcript })
+    const context = aiContext ? mergeContext(current, aiContext) : current
+    await prisma.lectureNote.update({
+      where: { id },
+      data: { ...(lecture.processedSeq < toSeq ? { processedSeq: toSeq } : {}), context: context as unknown as Prisma.InputJsonValue },
+    })
+    return NextResponse.json({ blocks: markdownToBlocks(markdown), markdown, context, isFinal: chunks.every(c => c.finalText !== null) })
   } catch (e) {
     console.error('[POST /api/lecture/[id]/structure]', e)
     return NextResponse.json({ error: 'AI_FAILED' }, { status: 502 })

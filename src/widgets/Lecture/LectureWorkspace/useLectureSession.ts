@@ -152,6 +152,7 @@ export function useLectureSession(lectureId: string, t: (key: string, values?: R
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error ?? 'AI_FAILED')
       lastStructured.current = range.to
+      if (data.context) setLecture(l => l && { ...l, context: data.context })
       appendAiSection(editor, data.blocks ?? [], { fromSeq: range.from, toSeq: range.to, startMs: received.current.get(range.from)?.startMs ?? 0, final: !!data.isFinal })
     } catch {
       toast.error(t('structureFailed'))
@@ -313,6 +314,14 @@ export function useLectureSession(lectureId: string, t: (key: string, values?: R
     await fetch(`/api/lecture/${lectureId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ keepAudio }) }).catch(() => {})
   }, [lectureId])
 
+  /** The student corrects subject/topic/subtopics — the server pins what was sent. */
+  const setContext = useCallback(async (patch: { subject?: string; topic?: string; subtopics?: string[] }) => {
+    const res = await fetch(`/api/lecture/${lectureId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ context: patch }) }).catch(() => null)
+    const data = res?.ok ? await res.json().catch(() => null) : null
+    if (data?.lecture?.context) setLecture(l => l && { ...l, context: data.lecture.context })
+    else toast.error(t('saveError'))
+  }, [lectureId, t])
+
   const setTitle = useCallback(async (title: string) => {
     setLecture(l => l && { ...l, title })
     await fetch(`/api/lecture/${lectureId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title }) }).catch(() => {})
@@ -328,6 +337,6 @@ export function useLectureSession(lectureId: string, t: (key: string, values?: R
     saveState, flushSave, onDocChange, onEditorReady, editorRef,
     queued, issue, structuring, autoStructure, setAutoStructure, structureNow: () => structure(true), pendingRange,
     recorder, isRecordingHere, startRecording, stopRecording, stopping, finalize, refining,
-    setKeepAudio, setTitle, reload: load,
+    setKeepAudio, setTitle, setContext, reload: load,
   }
 }

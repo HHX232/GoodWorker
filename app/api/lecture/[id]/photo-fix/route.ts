@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireOwnLecture } from '@/shared/lib/lecture/access'
+import { contextPrompt, parseContext } from '@/shared/lib/lecture/context'
 import { fixFragmentWithPhoto } from '@/shared/lib/lecture/ai'
 import { markdownToBlocks } from '@/shared/lib/lecture/markdownToDoc'
 
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     const context = (form?.get('context') ?? '').toString()
 
     const base64 = Buffer.from(await photo.arrayBuffer()).toString('base64')
-    const markdown = await fixFragmentWithPhoto({ lectureId: id, selection, context, photo: { mimeType: photo.type, base64 } })
+    const markdown = await fixFragmentWithPhoto({ lectureId: id, lecture: contextPrompt(parseContext(guard.lecture.context), guard.lecture.title), selection, context, photo: { mimeType: photo.type, base64 } })
     return NextResponse.json({ blocks: markdownToBlocks(markdown), markdown })
   } catch (e) {
     console.error('[POST /api/lecture/[id]/photo-fix]', e)

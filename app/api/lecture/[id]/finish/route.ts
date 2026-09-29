@@ -3,6 +3,7 @@ import { prisma } from '@/shared/prisma/prisma'
 import { requireOwnLecture } from '@/shared/lib/lecture/access'
 import { readChunkAudio } from '@/shared/lib/lecture/audio'
 import { markDoubtful, transcribe } from '@/shared/lib/lecture/stt'
+import { parseContext, sttHint } from '@/shared/lib/lecture/context'
 
 export const runtime = 'nodejs'
 
@@ -21,14 +22,14 @@ const STALE_MS = 10 * 60_000
  * ("сохранять аудио") stays. Chunks the big model fails on keep their draft
  * and their audio, so calling finish again on a READY lecture retries them.
  */
-async function finalPass(lectureId: string, title: string): Promise<void> {
+async function finalPass(lectureId: string, hint: string): Promise<void> {
   const chunks = await prisma.lectureChunk.findMany({ where: { lectureId, finalText: null }, orderBy: { seq: 'asc' }, select: { id: true, seq: true, audioKey: true, audioData: true, audioMime: true } })
   let prevText = ''
   for (const chunk of chunks) {
     try {
       const audio = await readChunkAudio(chunk)
       if (audio) {
-        const result = await transcribe(audio, chunk.audioMime, 'final', `${title}. ${prevText}`)
+        const result = await transcribe(audio, chunk.audioMime, 'final', `${hint}. ${prevText}`)
         prevText = result.text
         await prisma.lectureChunk.update({ where: { id: chunk.id }, data: { finalText: markDoubtful(result), audioData: null } })
       }
@@ -63,7 +64,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
     })
     if (!count) return NextResponse.json({ status: 'FINALIZING' })
 
-    after(() => finalPass(id, lecture.title).catch(async e => {
+    after(() => finalPass(id, sttHint(parseContext(lecture.context), lecture.title)).catch(async e => {
       console.error('[lecture finish] final pass crashed', e)
       await prisma.lectureNote.update({ where: { id }, data: { status: 'READY' } }).catch(() => {})
     }))

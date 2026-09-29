@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireOwnLecture } from '@/shared/lib/lecture/access'
+import { contextPrompt, parseContext } from '@/shared/lib/lecture/context'
 import { mergePhoto } from '@/shared/lib/lecture/ai'
 import { markdownToBlocks } from '@/shared/lib/lecture/markdownToDoc'
 import { photoFromForm } from '@/shared/lib/lecture/photoInput'
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       const parsed = JSON.parse(String(form?.get('outline') ?? '[]'))
       if (Array.isArray(parsed)) outline = parsed.filter((x): x is string => typeof x === 'string').slice(0, 2000)
     } catch { /* empty outline */ }
-    const items = await mergePhoto({ lectureId: id, outline, photo })
+    const items = await mergePhoto({ lectureId: id, lecture: contextPrompt(parseContext(guard.lecture.context), guard.lecture.title), outline, photo })
     return NextResponse.json({ items: items.map(i => ({ ...i, blocks: markdownToBlocks(i.markdown) })) })
   } catch (e) {
     console.error('[POST /api/lecture/[id]/photo-merge]', e)

@@ -3942,6 +3942,17 @@
     "mergeContinuation": "在“{text}”之后",
     "mergeNew": "笔记末尾",
     "mergeApply": "加入笔记",
-    "mergeApplied": "已添加片段：{n}"
+    "mergeApplied": "已添加片段：{n}",
+    "ctxEmpty": "AI 会在讲课过程中识别学科和主题",
+    "ctxSet": "设置",
+    "ctxEdit": "编辑学科和主题",
+    "ctxPinned": "已由你固定——AI 不会修改",
+    "ctxSubject": "学科",
+    "ctxTopic": "讲座主题",
+    "ctxSubtopics": "子主题（用“;”分隔）",
+    "ctxSubjectPh": "数学分析",
+    "ctxTopicPh": "复合函数求导",
+    "ctxSubtopicsPh": "链式法则；例题",
+    "ctxEditHint": "AI 会在所有建议和语音识别中参考这些信息；你修改的内容不会再被 AI 更改。"
   }
 }

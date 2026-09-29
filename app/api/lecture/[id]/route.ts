@@ -3,6 +3,7 @@ import { prisma } from '@/shared/prisma/prisma'
 import { hasLectureAccess, requireOwnLecture } from '@/shared/lib/lecture/access'
 import { getLectureSettings, LECTURE_BILLING_ENABLED } from '@/shared/lib/lecture/pricing'
 import { isSttConfigured } from '@/shared/lib/lecture/stt'
+import { parseContext } from '@/shared/lib/lecture/context'
 import type { Prisma } from '@prisma/client'
 
 interface Params {
@@ -64,12 +65,24 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const data: Prisma.LectureNoteUpdateInput = {}
     if (typeof body.title === 'string') data.title = body.title.trim().slice(0, 200)
     if (typeof body.keepAudio === 'boolean') data.keepAudio = body.keepAudio
+    // The student corrected subject/topic/subtopics by hand → pin exactly those fields.
+    if (body.context && typeof body.context === 'object') {
+      const current = parseContext(guard.lecture.context)
+      const edit = parseContext(body.context)
+      const raw = body.context as Record<string, unknown>
+      const pinned = new Set(current.pinned)
+      const next = { ...current }
+      if ('subject' in raw) { next.subject = edit.subject; pinned.add('subject') }
+      if ('topic' in raw) { next.topic = edit.topic; pinned.add('topic') }
+      if ('subtopics' in raw) { next.subtopics = edit.subtopics; pinned.add('subtopics') }
+      data.context = { ...next, pinned: [...pinned] } as unknown as Prisma.InputJsonValue
+    }
     if (body.docJson !== undefined) {
       const doc = body.docJson as { type?: unknown } | null
       if (!doc || typeof doc !== 'object' || doc.type !== 'doc') return NextResponse.json({ error: 'docJson must be a ProseMirror doc' }, { status: 400 })
       data.docJson = doc as Prisma.InputJsonValue
     }
-    const lecture = await prisma.lectureNote.update({ where: { id }, data, select: { id: true, title: true, keepAudio: true, updatedAt: true } })
+    const lecture = await prisma.lectureNote.update({ where: { id }, data, select: { id: true, title: true, keepAudio: true, context: true, updatedAt: true } })
     return NextResponse.json({ lecture })
   } catch (e) {
     console.error('[PATCH /api/lecture/[id]]', e)

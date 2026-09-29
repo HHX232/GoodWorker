@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireOwnLecture } from '@/shared/lib/lecture/access'
+import { contextPrompt, parseContext } from '@/shared/lib/lecture/context'
 import { readPhoto } from '@/shared/lib/lecture/ai'
 import { markdownToBlocks } from '@/shared/lib/lecture/markdownToDoc'
 import { photoFromForm } from '@/shared/lib/lecture/photoInput'
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     const form = await req.formData().catch(() => null)
     const photo = await photoFromForm(form)
     if (photo instanceof NextResponse) return photo
-    const markdown = await readPhoto({ lectureId: id, context: String(form?.get('context') ?? ''), photo })
+    const markdown = await readPhoto({ lectureId: id, lecture: contextPrompt(parseContext(guard.lecture.context), guard.lecture.title), context: String(form?.get('context') ?? ''), photo })
     return NextResponse.json({ blocks: markdownToBlocks(markdown), markdown })
   } catch (e) {
     console.error('[POST /api/lecture/[id]/photo-read]', e)

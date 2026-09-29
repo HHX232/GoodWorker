@@ -16,6 +16,7 @@ import { lectureRecorder } from '../recorder/lectureRecorder'
 import { AiOrb, type OrbMode } from '../ui/AiOrb'
 import { FormatPanel } from '../ui/FormatPanel'
 import { PhotoMergeDialog } from '../editor/PhotoMergeDialog'
+import { ContextBar } from './ContextBar'
 import { TranscriptModal } from './TranscriptModal'
 import { formatClock } from './format'
 import { useLectureSession } from './useLectureSession'
@@ -221,6 +222,7 @@ export function LectureWorkspace({ lectureId }: { lectureId: string }) {
                 {s.saveState === 'saving' ? t('saving') : s.saveState === 'dirty' ? t('unsaved') : s.saveState === 'error' ? t('saveError') : t('saved')}
               </span>
             </div>
+            <ContextBar raw={lecture.context} onSave={s.setContext} editable />
             <h1 className={styles.printTitle}>{lecture.title || t('untitled')}</h1>
             <LectureEditor lectureId={lectureId} initialDoc={s.initialDoc as never} editable canUseAi={canUseAi} onReady={onReady} onChange={s.onDocChange} />
           </div>

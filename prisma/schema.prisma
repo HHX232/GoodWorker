@@ -1274,6 +1274,10 @@ model LectureNote {
   // Seq of the last chunk already turned into document blocks by DeepSeek.
   processedSeq       Int            @default(-1)
   keepAudio          Boolean        @default(false)
+  // What the lecture is about — subject, topic, subtopics, key notation.
+  // DeepSeek keeps it current while structuring; fields the student
+  // edited are pinned. Fed into every AI prompt and the STT hint.
+  context            Json?
   recordedMs         Int            @default(0)
   // Metering (LectureSettings tariff): DeepSeek tokens spent and the price
   // computed from them + recorded time. Charged only once a Wallet exists.
