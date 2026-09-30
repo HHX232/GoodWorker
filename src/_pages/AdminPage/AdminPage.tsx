@@ -1206,6 +1206,11 @@ interface IdentityVerifItem {
   pasportConfirmed: boolean | null
 }
 
+// Verification documents open through our API, never the bucket's public
+// domain (browsers flag it as unsafe) — see app/api/admin/verifications/doc.
+const expDocUrl = (experienceId: string, i: number) => `/api/admin/verifications/doc?kind=experience&id=${encodeURIComponent(experienceId)}&i=${i}`
+const passportDocUrl = (teacherId: string) => `/api/admin/verifications/doc?kind=passport&id=${encodeURIComponent(teacherId)}`
+
 function VerificationsTab() {
   const t = useTranslations('admin')
   const [experiences, setExperiences] = useState<ExperienceVerifItem[]>([])
@@ -1270,8 +1275,8 @@ function VerificationsTab() {
                   {exp.documentUrls.length > 0 && (
                     <div className={styles.verif_doc_previews}>
                       {exp.documentUrls.map((url, i) => (
-                        <a key={i} href={url} target="_blank" rel="noreferrer" className={styles.verif_doc_link}>
-                          <img src={url} alt={`doc ${i+1}`} className={styles.verif_doc_thumb} />
+                        <a key={url} href={expDocUrl(exp.id, i)} target="_blank" rel="noreferrer" className={styles.verif_doc_link}>
+                          <img src={expDocUrl(exp.id, i)} alt={`doc ${i+1}`} className={styles.verif_doc_thumb} />
                         </a>
                       ))}
                     </div>
@@ -1310,10 +1315,10 @@ function VerificationsTab() {
                 <div className={styles.verif_actions}>
                   <button
                     className={styles.passport_thumb_btn}
-                    onClick={() => setPassportViewUrl(item.passportDocumentUrl)}
+                    onClick={() => setPassportViewUrl(passportDocUrl(item.id))}
                     title={t('passportView')}
                   >
-                    <img src={item.passportDocumentUrl} alt="passport" className={styles.passport_thumb} />
+                    <img src={passportDocUrl(item.id)} alt="passport" className={styles.passport_thumb} />
                     <span className={styles.passport_thumb_overlay}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
                         <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
