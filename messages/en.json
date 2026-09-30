@@ -4139,5 +4139,429 @@
     "arrow": "AI cleans up and takes notes",
     "note_title": "Area between curves",
     "note_text": "Given <d>y = x² − 4</d> and <d>y = 2x</d>. The limits are the roots of <h>x² − 2x − 4 = 0</h>."
+  },
+  "lectureLanding": {
+    "metaTitle": "Lecture notes — AI writes notes for you | GoodWorker",
+    "metaDescription": "Put your phone on the desk: AI hears the professor, filters out noise, and builds notes with formulas, graphs, matrices, and boards. Notes file themselves into subject folders.",
+    "eyebrow": "Lecture notes",
+    "h1": "Put your phone on the desk.",
+    "h1Hl": "Notes write themselves.",
+    "lead": "AI listens to the professor, drops the noise and chatter from the back rows, and builds notes right during class — with formulas, graphs, matrices, and boards.",
+    "cta": "Start recording",
+    "ctaNote": "Included in VIP · works in your phone browser",
+    "ctaFiles": "My notes",
+    "files": {
+      "eyebrow": "Notes + Files",
+      "h2": "Every lecture files itself",
+      "h2Hl": "onto its subject shelf",
+      "lead": "You tap 'Save to files' — and the notes are already in the folder 'Lecture notes / Linear algebra': a Word document and a class recording with chapters. Nothing to sort.",
+      "points": [
+        {
+          "t": "Folders by subject",
+          "d": "AI determines the subject itself. If you have a 'Physics' folder, the notes go there."
+        },
+        {
+          "t": "'Subject' filter",
+          "d": "One click — and you see all lectures, photos, and files for the subject."
+        },
+        {
+          "t": "Word + audio with chapters",
+          "d": "Next to the .docx — a class recording marked by topics, formulas, and boards."
+        },
+        {
+          "t": "Links for the group",
+          "d": "View only or collaborative editing — classmates see the notes live."
+        }
+      ],
+      "tree": "Lecture notes",
+      "all": "All subjects",
+      "subjects": [
+        "Linear algebra",
+        "Calculus",
+        "Physics"
+      ],
+      "items": [
+        {
+          "s": 0,
+          "name": "SLE and Cramer's rule.docx",
+          "kind": "doc",
+          "meta": "12 pages · 28 formulas"
+        },
+        {
+          "s": 0,
+          "name": "SLE and Cramer's rule.m4a",
+          "kind": "audio",
+          "meta": "1:24:10 · 9 chapters"
+        },
+        {
+          "s": 0,
+          "name": "Inverse matrix.docx",
+          "kind": "doc",
+          "meta": "8 pages · 3 matrices"
+        },
+        {
+          "s": 1,
+          "name": "Area between curves.docx",
+          "kind": "doc",
+          "meta": "9 pages · 2 graphs"
+        },
+        {
+          "s": 1,
+          "name": "Area between curves.m4a",
+          "kind": "audio",
+          "meta": "1:18:42 · 7 chapters"
+        },
+        {
+          "s": 2,
+          "name": "Kinematics of a point.docx",
+          "kind": "doc",
+          "meta": "6 pages · 1 board"
+        }
+      ],
+      "chapters": "Recording chapters",
+      "chapterList": [
+        "04:12 · SLE: matrix form",
+        "23:40 · Cramer's formula",
+        "51:05 · 2×2 example",
+        "78:30 · Board"
+      ],
+      "share": "Share",
+      "shareView": "View only",
+      "shareEdit": "View and edit",
+      "tutor": "For tutors: open the subject folder to your students — they'll get your notes in 'Available to me'.",
+      "noteTag": "Notes"
+    },
+    "examples": {
+      "eyebrow": "Examples",
+      "h2": "This is what finished notes look like",
+      "lead": "Not a word-for-word transcript, but notes: headings, definitions, formulas, graphs, and drawings — like the best student in the class.",
+      "tabs": [
+        "Calculus",
+        "Linear algebra",
+        "Physics",
+        "History"
+      ],
+      "docs": [
+        [
+          {
+            "t": "h",
+            "v": "Derivative of a composite function"
+          },
+          {
+            "t": "def",
+            "v": "If $y = f(g(x))$, the derivative equals the product of derivatives:"
+          },
+          {
+            "t": "math",
+            "v": "\\bigl(f(g(x))\\bigr)' = f'(g(x))\\cdot g'(x)"
+          },
+          {
+            "t": "p",
+            "v": "Example: $\\bigl(\\sin x^2\\bigr)' = \\cos x^2 \\cdot 2x$."
+          },
+          {
+            "t": "graph"
+          }
+        ],
+        [
+          {
+            "t": "h",
+            "v": "Inverse matrix"
+          },
+          {
+            "t": "def",
+            "v": "$A^{-1}$ exists only if ==$\\det A \\neq 0$==."
+          },
+          {
+            "t": "math",
+            "v": "A = \\begin{pmatrix} 2 & 1 \\\\ 5 & 3 \\end{pmatrix},\\quad A^{-1} = \\begin{pmatrix} 3 & -1 \\\\ -5 & 2 \\end{pmatrix}"
+          },
+          {
+            "t": "table",
+            "v": [
+              [
+                "Operation",
+                "Result"
+              ],
+              [
+                "$\\det A$",
+                "$1$"
+              ],
+              [
+                "$\\operatorname{rank} A$",
+                "$2$"
+              ],
+              [
+                "$A\\cdot A^{-1}$",
+                "$E$"
+              ]
+            ]
+          }
+        ],
+        [
+          {
+            "t": "h",
+            "v": "Volume and center of mass of a pyramid"
+          },
+          {
+            "t": "board"
+          },
+          {
+            "t": "math",
+            "v": "V = \\dfrac{1}{3}\\,S\\,h = \\dfrac{1}{3}\\cdot 36 \\cdot 8 = 96\\ \\text{см}^3"
+          },
+          {
+            "t": "warn",
+            "v": "The center of mass lies on the height, at $\\tfrac{1}{4}h$ from the base — don't confuse it with the center of the inscribed sphere."
+          }
+        ],
+        [
+          {
+            "t": "h",
+            "v": "Reforms of Peter I"
+          },
+          {
+            "t": "li",
+            "v": [
+              "1699 — city reform, Burmister Chamber",
+              "1711 — Senate established",
+              "1718–1721 — collegia instead of prikazes"
+            ]
+          },
+          {
+            "t": "table",
+            "v": [
+              [
+                "Sphere",
+                "What changed"
+              ],
+              [
+                "Army",
+                "Recruitment duty, regular army"
+              ],
+              [
+                "Administration",
+                "Senate, collegia, governorates"
+              ],
+              [
+                "Church",
+                "Synod instead of patriarchate"
+              ]
+            ]
+          },
+          {
+            "t": "p",
+            "v": "The lecturer's main point: ==reforms came from military needs==, not from a ready plan."
+          }
+        ]
+      ],
+      "exports": "Export: Word with real formulas · PDF · audio with chapters"
+    },
+    "how": {
+      "eyebrow": "How it works",
+      "h2": "Four steps, and one of them is yours",
+      "steps": [
+        {
+          "t": "Record",
+          "d": "Tap 'Start recording' and put your phone on the desk. Recording goes in chunks and won't be lost even if the network drops."
+        },
+        {
+          "t": "AI cleans",
+          "d": "Fixes recognition errors, drops chatter, 'open a window', and mic hallucinations."
+        },
+        {
+          "t": "Notes are written",
+          "d": "Headings, definitions, formulas, graphs — as the class goes. A new topic goes to the end, a return to an old one goes to its section."
+        },
+        {
+          "t": "Add from the board",
+          "d": "Take a photo of the board — AI figures out what's already there and what to add and where."
+        }
+      ]
+    },
+    "features": {
+      "eyebrow": "Features",
+      "h2": "Everything usually written by hand — and what you don't have time for",
+      "items": [
+        {
+          "i": "sigma",
+          "t": "Formulas",
+          "d": "Real formulas, editable in Word — not images."
+        },
+        {
+          "i": "chart",
+          "t": "Graphs",
+          "d": "Functions, areas, points, and data — from the professor's speech or from the board."
+        },
+        {
+          "i": "grid",
+          "t": "Matrices",
+          "d": "Determinant, inverse, rank, Gauss — precisely, in fractions."
+        },
+        {
+          "i": "box",
+          "t": "3D board",
+          "d": "Pyramids and prisms you can rotate right in the text."
+        },
+        {
+          "i": "camera",
+          "t": "Board photo",
+          "d": "Up to six photos at once — AI adds only what's missing."
+        },
+        {
+          "i": "sparkles",
+          "t": "Ask AI",
+          "d": "Explain simpler, shorten, make a table — based on selected text."
+        },
+        {
+          "i": "layers",
+          "t": "Compression",
+          "d": "Detailed like good notes or just formulas and conclusions."
+        },
+        {
+          "i": "audio",
+          "t": "Audio with chapters",
+          "d": "Class recording with markers for topics, formulas, and boards — easy to find the right spot."
+        },
+        {
+          "i": "link",
+          "t": "Links",
+          "d": "Share notes for viewing or collaborative editing."
+        }
+      ]
+    },
+    "who": {
+      "student": {
+        "t": "For students",
+        "d": "Listen to the lecture instead of taking shorthand. Notes, formulas, and the class recording — in one place, by subject."
+      },
+      "tutor": {
+        "t": "For tutors",
+        "d": "Record lessons and explanations — notes file themselves into folders and open to students."
+      }
+    },
+    "final": {
+      "h2": "Next class — already with notes",
+      "lead": "Open GoodWorker on your phone before the lecture and tap one button.",
+      "cta": "Start recording"
+    },
+    "hero": {
+      "hint": "Tap record or take a photo of the board",
+      "recording": "Recording",
+      "paused": "Paused",
+      "pause": "Pause recording",
+      "resume": "Resume recording",
+      "snap": "Photograph the board",
+      "scanning": "Reading the board…",
+      "added": "In your notes",
+      "notesTitle": "Calculus · Area between curves",
+      "writing": "AI is writing",
+      "ready": "Done",
+      "empty": "Notes appear as soon as the lecturer starts speaking…",
+      "replay": "Start over",
+      "chalk": [
+        "y = x² − 4,  y = 2x",
+        "x² − 2x − 4 = 0",
+        "S = ∫ (2x − x² + 4) dx"
+      ],
+      "notes": [
+        {
+          "t": "h",
+          "v": "Area between curves"
+        },
+        {
+          "t": "def",
+          "v": "The area of the region between the graphs of $f$ and $g$ on $[a;\\,b]$ is ==the integral of their difference==, where $f$ lies above $g$:"
+        },
+        {
+          "t": "math",
+          "v": "S = \\int_a^b \\bigl(f(x) - g(x)\\bigr)\\,dx"
+        },
+        {
+          "t": "p",
+          "v": "Example: $f(x) = 2x$, $g(x) = x^2 - 4$. The limits of integration are the points where the graphs intersect."
+        }
+      ],
+      "fromBoard": [
+        {
+          "t": "p",
+          "v": "Intersection points: $x^2 - 2x - 4 = 0$, so $x = 1 \\pm \\sqrt{5}$."
+        },
+        {
+          "t": "graph"
+        },
+        {
+          "t": "math",
+          "v": "S = \\int_{1-\\sqrt{5}}^{1+\\sqrt{5}} \\bigl(2x - x^2 + 4\\bigr)\\,dx = \\dfrac{20\\sqrt{5}}{3}"
+        }
+      ]
+    },
+    "seo": {
+      "keywords": [
+        "lecture notes",
+        "automatic lecture notes",
+        "AI note taker for lectures",
+        "lecture transcription",
+        "record lectures on your phone",
+        "recognize formulas from a whiteboard photo",
+        "lecture notes to Word",
+        "AI notes for students"
+      ],
+      "h": "Automatic lecture notes with AI",
+      "intro": [
+        "GoodWorker turns a lecture recording into finished notes. Put your phone on the desk and tap “Start recording” — the AI listens to the lecturer, transcribes the speech and builds structured notes during the class: headings, definitions, formulas and graphs.",
+        "It is more than a transcript: slips of the tongue, classroom noise and back-row chatter are left out, and the content is organised into sections — the way an attentive student in the front row would write it down."
+      ],
+      "blocks": [
+        {
+          "h": "Formulas, graphs and matrices — real ones, not pictures",
+          "p": [
+            "The AI writes maths as formulas: integrals, fractions, limits and matrices stay editable, so you can fix, enlarge or align them. Function graphs are plotted from the equation with the area under the curve shaded, and a matrix gets its determinant, inverse and rank in one click — in exact fractions.",
+            "If the lecturer writes on the board, take a photo: the AI reads the formulas and drawings, compares them with your notes and adds only what is new — a continuation goes right after its section, repeats are dropped."
+          ]
+        },
+        {
+          "h": "Notes that are easy to study from",
+          "p": [
+            "Shrink the notes down to the essentials with one switch, ask the AI about a paragraph you did not get, insert an explanation or a table, leave your own notes in the margin. Everything is editable like a normal document."
+          ]
+        },
+        {
+          "h": "Export to Word, PDF and audio with chapters",
+          "p": [
+            "Download the notes as .docx with native Word equations or as a PDF, or save them to “My files” — into a subject folder created automatically. The lecture audio is saved as .m4a with chapters for each section, so you can replay the right moment in seconds."
+          ]
+        },
+        {
+          "h": "For students and tutors",
+          "p": [
+            "Students get notes for every class without rewriting anything or missing a word. Tutors turn a lesson recording into neat material for their student and share it by link — view-only or for editing together."
+          ]
+        }
+      ],
+      "faqTitle": "FAQ",
+      "faq": [
+        {
+          "q": "How do I make lecture notes automatically?",
+          "a": "Open “Lecture notes”, tap “Start recording” and put your phone on the desk. The AI transcribes the lecturer and builds the notes during the lecture; when you stop, the text is refined by a more accurate speech recognition model."
+        },
+        {
+          "q": "Does the AI recognize formulas and graphs?",
+          "a": "Yes. Formulas are written in math markup and stay editable, graphs are plotted from equations. Formulas and drawings from the board can be added from a photo."
+        },
+        {
+          "q": "Can I download the notes in Word?",
+          "a": "Yes, the notes download as .docx with Word equations, and as PDF. You can also save them to “My files” — they go into their subject folder by themselves."
+        },
+        {
+          "q": "What if the lecture hall is noisy?",
+          "a": "Side conversations, noise and recognition errors are filtered out: the AI first restores what the lecturer said and only then writes the notes."
+        },
+        {
+          "q": "Who can use it?",
+          "a": "Lecture notes are available to GoodWorker VIP students and VIP tutors."
+        }
+      ]
+    }
   }
 }
