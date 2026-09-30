@@ -3,7 +3,7 @@
 import type { Editor, JSONContent } from '@tiptap/core'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { appendAiSection, coveredSeqs, refreshableSections, replaceSection, sectionInsertPos, stripPending, textBefore } from '../editor/docOps'
+import { appendAiSection, coveredSeqs, refreshableSections, replaceSection, sectionInsertPos, sectionTitles, stripPending, textBefore } from '../editor/docOps'
 import { deleteChunk, pendingChunks } from '../recorder/chunkQueue'
 import { lectureRecorder } from '../recorder/lectureRecorder'
 import { useRecorderState } from '../recorder/useRecorderState'
@@ -201,20 +201,25 @@ export function useLectureSession(lectureId: string, t: (key: string, values?: R
   const structureRange = useCallback(async (editor: Editor, range: SeqRange, markEmpty: boolean): Promise<'added' | 'empty'> => {
     // Notes go before the first section of later audio, so "don't repeat" context is what precedes that spot.
     const at = sectionInsertPos(editor.state.doc, range.to)
+    // Earlier sections only: the AI may say this fragment just adds to one of them (strict — usually null).
+    const sections = sectionTitles(editor.state.doc).filter(x => x.fromSeq < range.from)
     const res = await fetch(`/api/lecture/${lectureId}/structure`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fromSeq: range.from, toSeq: range.to, previousNotes: textBefore(editor, at, 2500), compression: compressionRef.current, markEmpty }),
+      body: JSON.stringify({ fromSeq: range.from, toSeq: range.to, previousNotes: textBefore(editor, at, 2500), compression: compressionRef.current, markEmpty, sections: sections.map(x => x.title) }),
     })
     const data = await res.json().catch(() => ({}))
     if (!res.ok) throw new Error(data.error ?? 'AI_FAILED')
     if (data.context) setLecture(l => l && { ...l, context: data.context })
     const blocks = data.blocks ?? []
     if (!blocks.length) return 'empty'
-    appendAiSection(editor, blocks, { fromSeq: range.from, toSeq: range.to, startMs: received.current.get(range.from)?.startMs ?? 0, final: !!data.isFinal })
+    const target = Number.isInteger(data.continues) ? sections[data.continues] : undefined
+    appendAiSection(editor, blocks, { fromSeq: range.from, toSeq: range.to, startMs: received.current.get(range.from)?.startMs ?? 0, final: !!data.isFinal }, target?.fromSeq)
+    // Out of chronological order on purpose — say where it went, or the student won't find it.
+    if (target) toast.info(t('structureAddedTo', { title: target.title.slice(0, 60) }))
     lastStructured.current = Math.max(lastStructured.current, range.to)
     return 'added'
-  }, [lectureId])
+  }, [lectureId, t])
 
   const skip = (range: SeqRange) => {
     for (let s = range.from; s <= range.to; s++) skipped.current.add(s)

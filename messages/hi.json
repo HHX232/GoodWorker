@@ -4077,7 +4077,21 @@
     "shareFailed": "लिंक नहीं बदला जा सका",
     "shareConflict": "नोट्स अभी लिंक से बदले गए — नवीनतम संस्करण दिखाया गया है",
     "shareGoneTitle": "यह लिंक काम नहीं करता",
-    "shareGoneText": "लेखक ने इसे बंद कर दिया या लेक्चर हटा दिया।"
+    "shareGoneText": "लेखक ने इसे बंद कर दिया या लेक्चर हटा दिया।",
+    "photoN": "फ़ोटो {n}",
+    "photoReady": "तैयार",
+    "photoRetry": "फिर से करें",
+    "photosSomeFailed": "{total} में से {ok} फ़ोटो खुलीं। टूटी हुई फ़ोटो फिर से आज़माएँ या उनके बिना जारी रखें।",
+    "photosAllFailed": "कोई भी फ़ोटो नहीं खुली — फिर से आज़माएँ या दूसरी चुनें।",
+    "photosContinueWithout": "उनके बिना जारी रखें",
+    "photosUploadFailed": "सभी फ़ोटो अपलोड नहीं हुईं — फिर से आज़माएँ या “फ़ोटो डालें” हटाएँ।",
+    "photoErr_UNREADABLE": "खुल नहीं रही: फ़ॉर्मैट समर्थित नहीं (जैसे HEIC) या फ़ाइल खराब है",
+    "photoErr_PHOTO_TOO_LARGE": "बहुत बड़ी — संपीड़न के बाद भी 15 MB से अधिक",
+    "photoErr_UNSUPPORTED_PHOTO": "फ़ॉर्मैट समर्थित नहीं — JPG, PNG या WebP चाहिए",
+    "photoErr_UPLOAD_FAILED": "फ़ोटो अपलोड नहीं हो सकी",
+    "photoErr_AI_FAILED": "AI फ़ोटो नहीं पढ़ सका — फिर से आज़माएँ",
+    "photoErr_TOO_MANY_PHOTOS": "एक बार में बहुत अधिक फ़ोटो — अधिकतम 6",
+    "structureAddedTo": "यह “{title}” का पूरक है — ठीक उसके बाद जोड़ा गया"
   },
   "lecturePromo": {
     "eyebrow": "नया टूल · VIP",

@@ -1,7 +1,7 @@
 'use client'
 
 import type { Editor, JSONContent } from '@tiptap/core'
-import { BoxIcon, CheckIcon, CopyCheckIcon, CornerDownRightIcon, ImageIcon, LineChartIcon, Loader2Icon, PlusIcon, SigmaIcon, SparklesIcon, TypeIcon } from 'lucide-react'
+import { AlertTriangleIcon, BoxIcon, CheckIcon, CopyCheckIcon, CornerDownRightIcon, ImageIcon, LineChartIcon, Loader2Icon, PlusIcon, RotateCcwIcon, SigmaIcon, SparklesIcon, TypeIcon } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -22,13 +22,28 @@ interface MergeItem {
   blocks: JSONContent[]
 }
 
-type Stage = 'preparing' | 'thinking' | 'review' | 'error'
+type Stage = 'preparing' | 'photos' | 'thinking' | 'review' | 'error'
+
+/** One board photo: prepared (cropped + compressed) or failed with an error code (photoErr_*). */
+interface Shot {
+  file: File
+  status: 'preparing' | 'ready' | 'error'
+  error?: string
+  prepared?: PreparedPhoto
+  /** LecturePhoto id once attached — a retried "apply" doesn't upload it twice. */
+  photoId?: string
+}
+
+// Same cap as the server (photoInput.ts) — a bigger one is named here, before any upload.
+const MAX_PHOTO_BYTES = 15 * 1024 * 1024
+const errCode = (e: unknown, fallback: string) => (e instanceof Error && e.message ? e.message : fallback)
 
 /**
- * Left-rail "Обработать фото доски": DeepSeek vision compares the photo with
+ * Left-rail "Обработать фото доски": DeepSeek vision compares the photos with
  * the notes and sorts every fragment — already there (skipped by default),
  * a continuation of block N (inserted right after it), or new (appended).
- * The student reviews the plan and applies it.
+ * The student reviews the plan and applies it. Each photo has its own status:
+ * one that won't open, is too big or fails to upload is named, with «Повторить».
  */
 export function PhotoMergeDialog({ lectureId, editor, files, onClose }: { lectureId: string; editor: Editor; files: File[]; onClose: () => void }) {
   const t = useTranslations('lecture')
@@ -38,40 +53,98 @@ export function PhotoMergeDialog({ lectureId, editor, files, onClose }: { lectur
   // Off by default: the notes get what's on the board, not the snapshots themselves.
   const [attachPhoto, setAttachPhoto] = useState(false)
   const [applying, setApplying] = useState(false)
-  const prepared = useRef<PreparedPhoto[]>([])
+  const [error, setError] = useState<string | null>(null)
+  const [shots, setShots] = useState<Shot[]>(() => files.map(file => ({ file, status: 'preparing' })))
+  const [thumbs, setThumbs] = useState<string[]>([])
+  const started = useRef(false)
+  const shotsRef = useRef(shots)
   const anchors = useRef<BlockAnchor[]>([])
   const [labels, setLabels] = useState<string[]>([])
+  const alive = useRef(true)
+
+  const patch = (idx: number, p: Partial<Shot>) => {
+    shotsRef.current = shotsRef.current.map((s, i) => (i === idx ? { ...s, ...p } : s))
+    if (alive.current) setShots(shotsRef.current)
+  }
 
   useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      try {
-        const shots: PreparedPhoto[] = []
-        for (const f of files) shots.push(await preparePhoto(f, true))
-        if (cancelled) return
-        prepared.current = shots
-        anchors.current = blockAnchors(editor.state.doc)
-        setStage('thinking')
-        const form = new FormData()
-        for (const p of shots) form.append('photo', p.file)
-        form.append('outline', JSON.stringify(anchors.current.map(a => a.text)))
-        const res = await fetch(`/api/lecture/${lectureId}/photo-merge`, { method: 'POST', body: form })
-        const data = await res.json().catch(() => ({}))
-        if (!res.ok) throw new Error(data.error ?? 'AI_FAILED')
-        if (cancelled) return
-        const list = (data.items ?? []) as MergeItem[]
-        setLabels(anchors.current.map(a => a.text.replace(/\$+/g, '').slice(0, 60)))
-        setItems(list)
-        setPicked(list.map(i => i.action !== 'duplicate'))
-        setStage('review')
-      } catch (e) {
-        if (cancelled) return
-        toast.error(e instanceof Error && e.message === 'VIP_REQUIRED' ? t('vipOnly') : t('photoFailed'))
-        setStage('error')
+    alive.current = true
+    return () => { alive.current = false }
+  }, [])
+
+  // Thumbnails: made and revoked by the same effect (dev StrictMode mounts twice).
+  useEffect(() => {
+    const urls = files.map(f => URL.createObjectURL(f))
+    setThumbs(urls)
+    return () => { for (const u of urls) URL.revokeObjectURL(u) }
+  }, [files])
+
+  const prepareOne = async (idx: number) => {
+    patch(idx, { status: 'preparing', error: undefined })
+    try {
+      const p = await preparePhoto(shotsRef.current[idx].file, true)
+      if (p.file.size > MAX_PHOTO_BYTES) throw new Error('PHOTO_TOO_LARGE')
+      patch(idx, { status: 'ready', prepared: p })
+    } catch (e) {
+      // A file the browser can't decode (HEIC on desktop, a broken download) throws while measuring.
+      patch(idx, { status: 'error', error: errCode(e, 'UNREADABLE') === 'PHOTO_TOO_LARGE' ? 'PHOTO_TOO_LARGE' : 'UNREADABLE' })
+    }
+  }
+
+  /** Photos that are ready go to DeepSeek together (the ones that failed are left out). */
+  const analyse = async () => {
+    const ready = shotsRef.current.map((s, i) => ({ s, i })).filter(x => x.s.status === 'ready')
+    if (!ready.length) { setStage('photos'); return }
+    setError(null)
+    setStage('thinking')
+    try {
+      anchors.current = blockAnchors(editor.state.doc)
+      const form = new FormData()
+      for (const { s } of ready) form.append('photo', s.prepared!.file)
+      form.append('outline', JSON.stringify(anchors.current.map(a => a.text)))
+      const res = await fetch(`/api/lecture/${lectureId}/photo-merge`, { method: 'POST', body: form })
+      const data = await res.json().catch(() => ({}))
+      if (!alive.current) return
+      if (!res.ok) {
+        // The server names the photo it rejected — mark that one, keep the rest.
+        if (Number.isInteger(data.index) && ready[data.index]) {
+          patch(ready[data.index].i, { status: 'error', error: data.error ?? 'UNSUPPORTED_PHOTO' })
+          setStage('photos')
+          return
+        }
+        throw new Error(data.error ?? 'AI_FAILED')
       }
+      const list = (data.items ?? []) as MergeItem[]
+      setLabels(anchors.current.map(a => a.text.replace(/\$+/g, '').slice(0, 60)))
+      setItems(list)
+      setPicked(list.map(i => i.action !== 'duplicate'))
+      setStage('review')
+    } catch (e) {
+      if (!alive.current) return
+      const code = errCode(e, 'AI_FAILED')
+      if (code === 'VIP_REQUIRED') { toast.error(t('vipOnly')); onClose(); return }
+      setError(code)
+      setStage('error')
+    }
+  }
+
+  // Prepare every photo, then — if they all opened — analyse right away; otherwise show which failed.
+  useEffect(() => {
+    if (started.current) return
+    started.current = true
+    ;(async () => {
+      await Promise.all(shotsRef.current.map((_, i) => prepareOne(i)))
+      if (!alive.current) return
+      if (shotsRef.current.every(s => s.status === 'ready')) analyse()
+      else setStage('photos')
     })()
-    return () => { cancelled = true }
-  }, [editor, files, lectureId, t])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const retryPhoto = async (idx: number) => {
+    await prepareOne(idx)
+    if (stage === 'photos' && shotsRef.current.every(s => s.status === 'ready')) analyse()
+  }
 
   const where = (i: MergeItem) => {
     const text = i.block !== null ? labels[i.block] ?? '' : ''
@@ -85,7 +158,19 @@ export function PhotoMergeDialog({ lectureId, editor, files, onClose }: { lectur
     try {
       const chosen = items.filter((_, idx) => picked[idx])
       const photoNodes: JSONContent[] = []
-      if (attachPhoto) for (const p of prepared.current) photoNodes.push(photoNode(await uploadPhoto(lectureId, p), p))
+      if (attachPhoto) {
+        let failed = false
+        for (const [idx, shot] of shotsRef.current.entries()) {
+          if (shot.status !== 'ready' || !shot.prepared) continue
+          if (!shot.photoId) {
+            try { patch(idx, { photoId: await uploadPhoto(lectureId, shot.prepared) }) } catch (e) { patch(idx, { error: errCode(e, 'UPLOAD_FAILED') }); failed = true; continue }
+          }
+          const done = shotsRef.current[idx]
+          photoNodes.push(photoNode(done.photoId!, done.prepared!))
+        }
+        // Nothing inserted yet — the student retries the failed upload (or unticks «Вставить фото»).
+        if (failed) { setApplying(false); return }
+      }
       // Positions come from the doc as it was when the photo was analysed —
       // insert from the bottom up so earlier positions stay valid.
       const size = editor.state.doc.content.size
@@ -108,11 +193,16 @@ export function PhotoMergeDialog({ lectureId, editor, files, onClose }: { lectur
       chain.run()
       toast.success(t('mergeApplied', { n: chosen.length }))
       onClose()
-    } catch (e) {
-      toast.error(e instanceof Error && e.message === 'QUOTA_EXCEEDED' ? t('quotaExceeded') : t('photoFailed'))
+    } catch {
+      toast.error(t('photoFailed'))
       setApplying(false)
     }
   }
+
+  /** Error line for one photo (photoErr_*), with the quota wording the rest of the page uses. */
+  const photoError = (code: string) => (code === 'QUOTA_EXCEEDED' ? t('quotaExceeded') : t.has(`photoErr_${code}`) ? t(`photoErr_${code}`) : t('photoErr_UPLOAD_FAILED'))
+  const readyCount = shots.filter(s => s.status === 'ready').length
+  const uploadFailed = shots.some(s => s.status === 'ready' && s.error)
 
   const icon = (a: MergeItem['action']) => a === 'duplicate' ? <CopyCheckIcon size={13} /> : a === 'continuation' ? <CornerDownRightIcon size={13} /> : <PlusIcon size={13} />
 
@@ -122,6 +212,39 @@ export function PhotoMergeDialog({ lectureId, editor, files, onClose }: { lectur
         <div className={styles.dialogHead}>
           <span className={styles.askBadge}><SparklesIcon size={13} /> {t('processPhoto')}</span>
         </div>
+
+        {shots.length > 0 && (
+          <ul className={styles.shotList}>
+            {shots.map((shot, idx) => {
+              const err = shot.status === 'error' ? shot.error : shot.error && attachPhoto ? shot.error : undefined
+              return (
+                <li key={idx} className={`${styles.shot} ${err ? styles.shotBad : ''}`}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={thumbs[idx]} alt="" className={styles.shotThumb} onError={e => { e.currentTarget.style.visibility = 'hidden' }} />
+                  <div className={styles.shotInfo}>
+                    <strong>{t('photoN', { n: idx + 1 })}</strong>
+                    <span className={styles.shotName}>{shot.file.name}</span>
+                    {err
+                      ? <span className={styles.shotErr}><AlertTriangleIcon size={13} /> {photoError(err)}</span>
+                      : shot.status === 'preparing'
+                        ? <span className={styles.shotOk}><Loader2Icon size={13} className="lecture-spin" /> {t('cropping')}</span>
+                        : <span className={styles.shotOk}><CheckIcon size={13} /> {t('photoReady')}</span>}
+                  </div>
+                  {err && (
+                    <button
+                      type="button"
+                      className={styles.btn}
+                      disabled={shot.status === 'preparing' || applying}
+                      onClick={() => (shot.status === 'error' ? retryPhoto(idx) : (patch(idx, { error: undefined }), apply()))}
+                    >
+                      <RotateCcwIcon size={14} /> {t('photoRetry')}
+                    </button>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+        )}
 
         {(stage === 'preparing' || stage === 'thinking') && (
           <div className={styles.mergeProgress}>
@@ -133,7 +256,17 @@ export function PhotoMergeDialog({ lectureId, editor, files, onClose }: { lectur
           </div>
         )}
 
-        {stage === 'error' && <p className={styles.mergeHint}>{t('photoFailed')}</p>}
+        {stage === 'photos' && (
+          <p className={styles.mergeHint}>{readyCount ? t('photosSomeFailed', { ok: readyCount, total: shots.length }) : t('photosAllFailed')}</p>
+        )}
+        {stage === 'error' && (
+          <div className={styles.mergeError}>
+            <AlertTriangleIcon size={16} />
+            <span>{photoError(error ?? 'AI_FAILED')}</span>
+            <button type="button" className={styles.btn} onClick={analyse}><RotateCcwIcon size={14} /> {t('photoRetry')}</button>
+          </div>
+        )}
+        {stage === 'review' && uploadFailed && attachPhoto && <p className={styles.mergeHint}>{t('photosUploadFailed')}</p>}
 
         {stage === 'review' && items.length > 0 && (
           // What the photo held, by kind — text, formulas, figures, graphs are all checked every time.
@@ -168,10 +301,13 @@ export function PhotoMergeDialog({ lectureId, editor, files, onClose }: { lectur
 
         <div className={styles.dialogActions}>
           {stage === 'review' && (
-            <label className={styles.option}><input type="checkbox" checked={attachPhoto} onChange={e => setAttachPhoto(e.target.checked)} /><ImageIcon size={15} /> {t('optInsertImage')}{files.length > 1 ? ` (${files.length})` : ''}</label>
+            <label className={styles.option}><input type="checkbox" checked={attachPhoto} onChange={e => setAttachPhoto(e.target.checked)} /><ImageIcon size={15} /> {t('optInsertImage')}{readyCount > 1 ? ` (${readyCount})` : ''}</label>
           )}
           <span className={styles.spacer} />
           <button type="button" className={styles.btn} onClick={onClose} disabled={applying}>{t('cancel')}</button>
+          {stage === 'photos' && readyCount > 0 && (
+            <button type="button" className={`${styles.btn} ${styles.primary}`} onClick={analyse}><SparklesIcon size={15} /> {t('photosContinueWithout')}</button>
+          )}
           {stage === 'review' && (
             <button type="button" className={`${styles.btn} ${styles.primary}`} onClick={apply} disabled={applying || (!picked.some(Boolean) && !attachPhoto)}>
               {applying ? <Loader2Icon size={15} className="lecture-spin" /> : <CheckIcon size={15} />} {t('mergeApply')}

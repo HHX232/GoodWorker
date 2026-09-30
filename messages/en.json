@@ -4105,7 +4105,21 @@
     "shareFailed": "Couldn't change the link",
     "shareConflict": "The notes were just changed via the link — showing the latest version",
     "shareGoneTitle": "This link doesn't work",
-    "shareGoneText": "The author turned it off or deleted the lecture."
+    "shareGoneText": "The author turned it off or deleted the lecture.",
+    "photoN": "Photo {n}",
+    "photoReady": "Ready",
+    "photoRetry": "Retry",
+    "photosSomeFailed": "{ok} of {total} photos opened. Retry the broken ones or continue without them.",
+    "photosAllFailed": "None of the photos opened — retry or pick others.",
+    "photosContinueWithout": "Continue without them",
+    "photosUploadFailed": "Some photos didn’t upload — retry or untick “Insert photo”.",
+    "photoErr_UNREADABLE": "Can't open it: unsupported format (e.g. HEIC) or a damaged file",
+    "photoErr_PHOTO_TOO_LARGE": "Too large — over 15 MB even after compression",
+    "photoErr_UNSUPPORTED_PHOTO": "Unsupported format — use JPG, PNG or WebP",
+    "photoErr_UPLOAD_FAILED": "Couldn't upload the photo",
+    "photoErr_AI_FAILED": "The AI couldn't read the photos — try again",
+    "photoErr_TOO_MANY_PHOTOS": "Too many photos at once — 6 at most",
+    "structureAddedTo": "This adds to “{title}” — inserted right after it"
   },
   "lecturePromo": {
     "eyebrow": "New tool · VIP",

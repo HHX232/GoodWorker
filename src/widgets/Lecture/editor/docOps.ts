@@ -30,14 +30,36 @@ export function sectionInsertPos(doc: PMNode, toSeq: number): number {
   return at
 }
 
-/** Adds AI notes as a section the AI may later refresh, in recording order (sectionInsertPos). Not in the undo history. */
-export function appendAiSection(editor: Editor, blocks: JSONContent[], attrs: SectionAttrs): void {
+/** An AI section's title for the model: its first heading, else its opening words. */
+export function sectionTitles(doc: PMNode): { fromSeq: number; title: string }[] {
+  const out: { fromSeq: number; title: string }[] = []
+  doc.forEach(child => {
+    if (child.type.name !== 'aiSection') return
+    let heading = ''
+    child.forEach(b => { if (!heading && b.type.name === 'heading') heading = b.textContent })
+    const title = (heading || child.textContent).replace(/\s+/g, ' ').trim().slice(0, 100)
+    out.push({ fromSeq: child.attrs.fromSeq, title: title || '…' })
+  })
+  return out
+}
+
+/**
+ * Adds AI notes as a section the AI may later refresh, in recording order (sectionInsertPos).
+ * `afterFromSeq`: the AI was sure this only adds to that earlier section — put it right after
+ * it (ignored if the section is gone). Not in the undo history.
+ */
+export function appendAiSection(editor: Editor, blocks: JSONContent[], attrs: SectionAttrs, afterFromSeq?: number): void {
   if (!blocks.length) return
   const node = { type: 'aiSection', attrs: { ...attrs, edited: false }, content: blocks }
   const doc = editor.state.doc
   // An empty doc still has one empty paragraph — replace it instead of leaving a gap.
   const onlyEmpty = doc.childCount === 1 && doc.firstChild?.type.name === 'paragraph' && doc.firstChild.content.size === 0
-  const at = sectionInsertPos(doc, attrs.toSeq)
+  let at = sectionInsertPos(doc, attrs.toSeq)
+  if (afterFromSeq !== undefined) {
+    doc.forEach((child, pos) => {
+      if (child.type.name === 'aiSection' && child.attrs.fromSeq === afterFromSeq && child.attrs.toSeq < attrs.fromSeq) at = pos + child.nodeSize
+    })
+  }
   editor
     .chain()
     .command(({ tr }) => { tr.setMeta(AI_META, true).setMeta('addToHistory', false); return true })
