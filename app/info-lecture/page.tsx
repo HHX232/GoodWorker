@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server'
 import { LectureLanding } from '@/_pages/PublickPages/LectureLanding/LectureLanding'
 import type { FaqItem } from '@/_pages/PublickPages/LectureLanding/Seo'
 import { SITE_URL } from '@/shared/lib/seo/siteUrl'
+import Footer from '@/widgets/Footer/Footer'
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('lectureLanding')
@@ -30,6 +31,7 @@ export default async function LectureInfoPage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
       <LectureLanding />
+      <Footer />
     </>
   )
 }

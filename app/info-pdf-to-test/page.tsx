@@ -419,7 +419,7 @@ html.theme-dark, html.pomodoro-dark{
 @media (max-width:820px){ .faq__grid{ grid-template-columns:1fr; gap:2rem; } .faq__title{ position:static; } }
 
 /* ============ ФИНАЛ + ФУТЕР ============ */
-/* .final (with the .foot footer nested inside it) is a permanently-dark band — see --dark-bg/--dark-fg above. */
+/* .final is a permanently-dark band — see --dark-bg/--dark-fg above. */
 .final{ background:var(--dark-bg); color:var(--dark-fg); text-align:center; }
 .final__inner{ padding-top:clamp(6rem,16vh,14rem); padding-bottom:clamp(6rem,16vh,14rem); }
 .final__phrase{ font-family:var(--serif); font-weight:900; font-size:min(var(--fs-hero), 13vw); line-height:.95; letter-spacing:var(--tracking-display); color:var(--dark-fg); margin:0 auto; max-width:14ch; }
@@ -427,12 +427,6 @@ html.theme-dark, html.pomodoro-dark{
 .final__cta{ margin-top:3rem; display:flex; flex-wrap:wrap; gap:.9rem; justify-content:center; }
 .final__note{ margin:1.4rem 0 0; font-size:.82rem; letter-spacing:.02em; color:#b8b2a6; }
 .final__note b{ color:var(--accent-soft); font-weight:600; }
-.foot{ border-top:1px solid #35312b; }
-.foot__inner{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:1.2rem; padding:2rem var(--pad); }
-.foot__brand{ font-family:var(--serif); font-size:.98rem; color:#b8b2a6; }
-.foot__links{ display:flex; gap:1.8rem; }
-.foot__links a{ font-size:.82rem; color:#b8b2a6; text-decoration:none; transition:color .4s var(--ease); }
-.foot__links a:hover{ color:var(--dark-fg); }
 
 /* ============ БЛОК B — scrub ============ */
 /* .scrub is a permanently-dark band regardless of site theme — see --dark-bg/--dark-fg above. */
@@ -1472,16 +1466,6 @@ function FinalSection({ onOpenUpload }: { onOpenUpload: () => void }) {
         </div>
         <p className="final__note" data-reveal style={{ '--rd': '.18s' } as React.CSSProperties}>{t('final_note_pre')} <b>{t('final_note_b')}</b> {t('final_note_post')}</p>
       </div>
-      <footer className="foot">
-        <div className="foot__inner">
-          <div className="foot__brand">{t('foot_brand')}</div>
-          <nav className="foot__links" aria-label={t('foot_brand')}>
-            <Link href="/privacy">{t('foot_privacy')}</Link>
-            <Link href="/terms">{t('foot_terms')}</Link>
-            <a href="#top">{t('foot_contacts')}</a>
-          </nav>
-        </div>
-      </footer>
     </section>
   )
 }

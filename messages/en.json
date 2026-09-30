@@ -4566,247 +4566,121 @@
   },
   "filesPromo": {
     "eyebrow": "File storage",
-    "variant": "Block variant",
+    "h2": "All your materials —",
+    "h2_hl": "in one folder",
+    "lead": "Any files — PDF, Word, slides, photos, video, audio and lecture notes — shared with the right students for the right period. Every student gets a personal folder to hand in homework: a deadline, a pen review, and you see who has already opened the materials.",
+    "points": [
+      "Access per student and per period",
+      "Personal homework hand-in with a deadline and review",
+      "Search the text inside files"
+    ],
     "cta": "Open files",
     "vip": "Included in VIP · 15 GB per tutor",
-    "a": {
-      "h2": "All your materials —",
-      "h2_hl": "in one folder",
-      "lead": "Textbooks, homework and notes live in subject folders. Open a folder to the right students for the right period — they won’t see anything else.",
-      "search": "Search inside files",
-      "try": "Try:",
-      "found": "Found in the text of files",
-      "quota": "3.2 of 15 GB used",
-      "folders": [
-        {
-          "name": "Algebra · Grade 9A",
-          "access": "Open to 12 students until May 31",
-          "files": [
-            {
-              "name": "Textbook, chapter 4.pdf",
-              "kind": "pdf",
-              "meta": "38 MB"
-            },
-            {
-              "name": "Quadratic equations — theory.docx",
-              "kind": "docx",
-              "meta": "1.2 MB"
-            },
-            {
-              "name": "Quiz #3.pdf",
-              "kind": "pdf",
-              "meta": "640 KB"
-            },
-            {
-              "name": "Mistakes review.m4a",
-              "kind": "audio",
-              "meta": "24 min"
-            }
-          ]
-        },
-        {
-          "name": "Physics · Exam prep",
-          "access": "Open to 4 students",
-          "files": [
-            {
-              "name": "Kinematics cheat sheet.pdf",
-              "kind": "pdf",
-              "meta": "2.1 MB"
-            },
-            {
-              "name": "Practice test 12 with solutions.pdf",
-              "kind": "pdf",
-              "meta": "5.4 MB"
-            },
-            {
-              "name": "Board photo Sep 14.jpg",
-              "kind": "img",
-              "meta": "cropped to the page"
-            }
-          ]
-        },
-        {
-          "name": "Lecture notes · Calculus",
-          "access": "Only you",
-          "files": [
-            {
-              "name": "Area between curves.docx",
-              "kind": "docx",
-              "meta": "notes"
-            },
-            {
-              "name": "Area between curves.m4a",
-              "kind": "audio",
-              "meta": "1 h 12 min · 6 chapters"
-            }
-          ]
-        },
-        {
-          "name": "Homework #7 · Derivatives",
-          "access": "Due October 12",
-          "files": [
-            {
-              "name": "Assignment.pdf",
-              "kind": "pdf",
-              "meta": "310 KB"
-            },
-            {
-              "name": "Anya — solution.pdf",
-              "kind": "pdf",
-              "meta": "handed in Oct 11"
-            },
-            {
-              "name": "Misha — solution.jpg",
-              "kind": "img",
-              "meta": "handed in Oct 13 · late"
-            }
-          ]
-        }
-      ],
-      "queries": [
-        {
-          "q": "discriminant",
-          "hits": [
-            {
-              "file": "Quadratic equations — theory.docx",
-              "folder": "Algebra · Grade 9A",
-              "snippet": "…if the ==discriminant== is greater than zero, the equation has two roots…"
-            },
-            {
-              "file": "Quiz #3.pdf",
-              "folder": "Algebra · Grade 9A",
-              "snippet": "…find the ==discriminant== and the number of roots…"
-            }
-          ]
-        },
-        {
-          "q": "integral",
-          "hits": [
-            {
-              "file": "Area between curves.docx",
-              "folder": "Lecture notes · Calculus",
-              "snippet": "…the area of the region is the ==integral== of the difference of the functions…"
-            }
-          ]
-        },
-        {
-          "q": "acceleration",
-          "hits": [
-            {
-              "file": "Kinematics cheat sheet.pdf",
-              "folder": "Physics · Exam prep",
-              "snippet": "…==acceleration== is the rate of change of velocity…"
-            },
-            {
-              "file": "Practice test 12 with solutions.pdf",
-              "folder": "Physics · Exam prep",
-              "snippet": "…a body moves with a constant ==acceleration== of 2 m/s²…"
-            }
-          ]
-        }
-      ]
-    },
-    "b": {
-      "h2": "Homework is handed in",
-      "h2_hl": "and checked right here",
-      "lead": "A folder with a deadline shows up in your calendar and your students’ calendars by itself. You see who handed in and who was late, mark the work with a pen right in the PDF — and the corrected file lands in the student’s folder.",
-      "steps": [
-        "Folder with a deadline",
-        "Students hand in",
-        "Pen review",
-        "Work sent back"
-      ],
-      "folder": "Homework #7 · Derivatives",
-      "deadline": "Due October 12, 23:59",
-      "inCalendar": "In 4 students’ calendars",
-      "task": "Find the derivative: f(x) = x³ − 2x² + 5",
-      "summary": "3 of 4 handed in · 1 late",
-      "students": [
-        {
-          "name": "Anya K.",
-          "status": "ok",
-          "label": "Handed in Oct 11"
-        },
-        {
-          "name": "Dima S.",
-          "status": "ok",
-          "label": "Handed in Oct 10"
-        },
-        {
-          "name": "Misha L.",
-          "status": "late",
-          "label": "Handed in Oct 13 · late"
-        },
-        {
-          "name": "Katya R.",
-          "status": "none",
-          "label": "Not handed in"
-        }
-      ],
-      "workTitle": "Misha L. — solution.pdf",
-      "work": [
-        "f′(x) = 3x² − 4x ==+ 5==",
-        "f′(2) = 12 − 8 ==+ 5== = 9"
-      ],
-      "remark": "the derivative of a constant is 0",
-      "upload": "Upload to the folder",
-      "returned": "Misha L. — solution (checked).pdf",
-      "returnedMeta": "In the student’s folder · marks printed into the PDF",
-      "seen": "Misha opened the review"
-    },
-    "c": {
-      "h2": "One archive —",
-      "h2_hl": "two sides",
-      "lead": "The tutor runs the library and decides who gets what. The student sees only their own: folders from tutors, their handed-in work and “My files” with lecture notes.",
-      "tutor": "Tutor",
-      "student": "Student",
-      "tutorTitle": "My library",
-      "studentTitle": "Files from tutors",
-      "mineTitle": "My files",
-      "tutorRows": [
-        {
-          "name": "Algebra · Grade 9A",
-          "meta": "12 students · until May 31"
-        },
-        {
-          "name": "Physics · Exam prep",
-          "meta": "4 students"
-        },
-        {
-          "name": "Homework #7 · Derivatives",
-          "meta": "due Oct 12 · 3 of 4 handed in"
-        },
-        {
-          "name": "Drafts",
-          "meta": "only you"
-        }
-      ],
-      "studentRows": [
-        {
-          "name": "Algebra · Grade 9A",
-          "meta": "from Elena · access for 32 more days"
-        },
-        {
-          "name": "Homework #7 · Derivatives",
-          "meta": "handed in Oct 11 · checked"
-        }
-      ],
-      "mineRows": [
-        {
-          "name": "Lecture notes / Calculus",
-          "meta": "3 notes · audio with chapters"
-        },
-        {
-          "name": "Lecture notes / History",
-          "meta": "2 notes"
-        }
-      ],
-      "quota": "3.2 of 15 GB used",
-      "points": [
-        "Search the text inside PDF and Word",
-        "Edit .docx right in the browser",
-        "Notebook photos are cropped to the page"
-      ]
-    }
+    "library": "Library",
+    "quota": "3.2 of 15 GB",
+    "filesIn": "Files",
+    "share": "Folder access",
+    "until": "until May 31",
+    "done": "Done",
+    "opened": "Opened by {name}",
+    "students": [
+      "Anya K.",
+      "Dima S.",
+      "Misha L.",
+      "Katya R."
+    ],
+    "folders": [
+      {
+        "name": "Algebra · Grade 9A",
+        "cover": "preset:aurora",
+        "files": [
+          {
+            "name": "Textbook, chapter 4.pdf",
+            "kind": "pdf",
+            "size": 39845888
+          },
+          {
+            "name": "Quadratic equations.docx",
+            "kind": "docx",
+            "size": 1258291
+          },
+          {
+            "name": "Mistakes review.m4a",
+            "kind": "audio",
+            "size": 11534336
+          }
+        ]
+      },
+      {
+        "name": "Homework #7 · Derivatives",
+        "cover": "preset:sunset",
+        "deadline": true,
+        "files": [
+          {
+            "name": "Assignment.pdf",
+            "kind": "pdf",
+            "size": 317440
+          },
+          {
+            "name": "Anya K. — solution.pdf",
+            "kind": "pdf",
+            "size": 2202009,
+            "student": true,
+            "review": "ACCEPTED",
+            "grade": "5"
+          },
+          {
+            "name": "Misha L. — solution.pdf",
+            "kind": "pdf",
+            "size": 1782579,
+            "student": true,
+            "late": true,
+            "review": "REVISION"
+          }
+        ]
+      },
+      {
+        "name": "Physics · Exam prep",
+        "cover": "preset:peach",
+        "files": [
+          {
+            "name": "Kinematics cheat sheet.pdf",
+            "kind": "pdf",
+            "size": 2202009
+          },
+          {
+            "name": "Practice test 12 with solutions.pdf",
+            "kind": "pdf",
+            "size": 5662310
+          },
+          {
+            "name": "Kinematics — slides.pptx",
+            "kind": "pptx",
+            "size": 8912896
+          }
+        ]
+      },
+      {
+        "name": "Lecture notes",
+        "cover": "preset:meadow",
+        "files": [
+          {
+            "name": "Area between curves.docx",
+            "kind": "lecture",
+            "size": 845824
+          },
+          {
+            "name": "Area between curves.m4a",
+            "kind": "audio",
+            "size": 34603008
+          },
+          {
+            "name": "Limits of functions.docx",
+            "kind": "lecture",
+            "size": 612352
+          }
+        ]
+      }
+    ]
   }
 }
