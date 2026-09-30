@@ -5,7 +5,7 @@ import { mergePhoto } from '@/shared/lib/lecture/ai'
 import { markdownToBlocks } from '@/shared/lib/lecture/markdownToDoc'
 import { photosFromForm } from '@/shared/lib/lecture/photoInput'
 
-export const maxDuration = 120
+export const maxDuration = 180
 
 interface Params {
   params: Promise<{ id: string }>

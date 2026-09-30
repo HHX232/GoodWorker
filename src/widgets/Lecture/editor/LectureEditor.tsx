@@ -23,7 +23,7 @@ import { AiSection, BoardBlockNode, GraphBlockNode, LectureNoteMark, LecturePhot
 import { InsertPhotoDialog } from './InsertPhotoDialog'
 import { NoteHoverTip } from './NoteHoverTip'
 import { MatrixDialog, matrixEditBus, type MatrixEditRequest } from '../matrix/MatrixDialog'
-import { afterBlock, lectureCtx } from './photoTools'
+import { afterBlock, lectureCtx, photoFailedToast } from './photoTools'
 import { FormulaDialog } from './FormulaDialog'
 import { mathEditBus, type MathEditRequest } from './MathView'
 import styles from './LectureEditor.module.scss'
@@ -236,6 +236,11 @@ export function LectureEditor({ lectureId, initialDoc, editable, canUseAi, onRea
     pendingPhoto.current = null
     if (!job) return
     if (!file) { clearMark('pendingFix', job.id); return }
+    runPhotoFix(job, file)
+  }
+
+  /** One photo-fix request; on failure the marked fragment waits for «Повторить» (same photo). */
+  const runPhotoFix = async (job: NonNullable<typeof pendingPhoto.current>, file: File) => {
     const toastId = toast.loading(t('photoWorking'))
     try {
       const photo = file.size > 2.5 * 1024 * 1024 || !/^image\/(jpeg|png|webp)$/.test(file.type) ? await compressImageForUpload(file, 2200, 2200, 0.85) : file
@@ -252,8 +257,8 @@ export function LectureEditor({ lectureId, initialDoc, editable, canUseAi, onRea
       editor.chain().insertContentAt(range, fragmentFor(data.blocks), { updateSelection: false }).run()
       toast.success(t('photoDone'), { id: toastId })
     } catch (e) {
-      clearMark('pendingFix', job.id)
-      toast.error(e instanceof Error && e.message === 'VIP_REQUIRED' ? t('vipOnly') : t('photoFailed'), { id: toastId })
+      if (e instanceof Error && e.message === 'VIP_REQUIRED') { clearMark('pendingFix', job.id); toast.error(t('vipOnly'), { id: toastId }); return }
+      photoFailedToast({ id: toastId, message: t('photoFailed'), retryLabel: t('photoRetry'), retry: () => runPhotoFix(job, file), onGiveUp: () => clearMark('pendingFix', job.id) })
     }
   }
 

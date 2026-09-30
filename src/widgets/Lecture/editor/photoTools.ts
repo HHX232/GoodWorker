@@ -1,6 +1,7 @@
 import { compressImageForUpload } from '@/shared/helpers/compressImageForUpload'
 import { autoCropPagePhoto } from '@/shared/lib/pageAutoCrop'
 import type { Editor, JSONContent } from '@tiptap/core'
+import { toast } from 'sonner'
 import type { Node as PMNode } from '@tiptap/pm/model'
 import { docText } from './docOps'
 import { boardSummary, parseBoardSpec } from '@/shared/lib/lecture/boardSpec'
@@ -10,6 +11,22 @@ import { graphSummary, parseGraphSpec } from '@/shared/lib/lecture/graphSpec'
 export const lectureCtx: { id: string } = { id: '' }
 
 export const photoUrl = (lectureId: string, photoId: string) => `/api/lecture/${lectureId}/photos/${photoId}`
+
+/**
+ * The AI couldn't read the photo even after its three tries on the server (vision ×2, then
+ * deepseek-chat): say so, with «Повторить» that sends the same photo(s) again right away.
+ * `onGiveUp` runs if the student lets the notice go without retrying.
+ */
+export function photoFailedToast(opts: { message: string; retryLabel: string; retry: () => void; onGiveUp?: () => void; id?: string | number }): void {
+  let retried = false
+  toast.error(opts.message, {
+    id: opts.id,
+    duration: 15000,
+    action: { label: opts.retryLabel, onClick: () => { retried = true; opts.retry() } },
+    onDismiss: () => { if (!retried) opts.onGiveUp?.() },
+    onAutoClose: () => { if (!retried) opts.onGiveUp?.() },
+  })
+}
 
 export interface PreparedPhoto {
   file: File

@@ -8,7 +8,19 @@ const TIMEOUT_MS  = 120_000
 
 // `json: false` drops response_format so the model can answer in plain
 // text / markdown (e.g. lecture notes); default stays JSON for older callers.
-type CallOpts = { temperature?: number; maxTokens?: number; json?: boolean; onUsage?: (usage: AIUsage) => void }
+type CallOpts = {
+  temperature?: number
+  maxTokens?: number
+  json?: boolean
+  onUsage?: (usage: AIUsage) => void
+  /** Vision only: an answer this rejects counts as a failed try (the next model gets the photo). */
+  validate?: (content: string) => boolean
+}
+
+// A photo gets three tries: the vision model twice, then deepseek-chat — the vision model
+// sometimes streams back an empty answer for a photo deepseek-chat reads at once. Each try
+// has its own, shorter, timeout so all three fit into one request.
+const VISION_TIMEOUT_MS = 50_000
 
 export interface AIUsage { promptTokens: number; completionTokens: number }
 
@@ -45,12 +57,13 @@ function buildVisionRequest(
   images: VisionImage[],
   userPrompt: string,
   opts: CallOpts,
+  model: string = DEEPSEEK_VISION_MODEL,
 ): { endpoint: string; headers: Record<string, string>; body: string } {
   return {
     endpoint: DEEPSEEK_ENDPOINT,
     headers: deepseekHeaders(),
     body: JSON.stringify({
-      model: DEEPSEEK_VISION_MODEL,
+      model,
       messages: [
         { role: 'system', content: systemPrompt },
         {
@@ -92,16 +105,45 @@ export async function callVisionAI(
 ): Promise<string> {
   if (!process.env.DEEPSEEK_API_KEY) throw new Error('DEEPSEEK_API_KEY is not set — photo analysis requires the DeepSeek vision model')
 
-  const { endpoint, headers, body } = buildVisionRequest(systemPrompt, images, userPrompt, opts)
-  console.log(`[AI] provider=deepseek-vision images=${images.length}`)
-
-  return sendChatRequest(endpoint, headers, body, 'deepseek-vision', opts.onUsage)
+  const plan = [DEEPSEEK_VISION_MODEL, DEEPSEEK_VISION_MODEL, DEEPSEEK_MODEL]
+  let lastError: unknown = null
+  for (const [i, model] of plan.entries()) {
+    const { endpoint, headers, body } = buildVisionRequest(systemPrompt, images, userPrompt, opts, model)
+    console.log(`[AI] provider=deepseek-vision try=${i + 1}/${plan.length} model=${model} images=${images.length}`)
+    try {
+      const content = await sendChatRequest(endpoint, headers, body, `deepseek-vision(${model})`, opts.onUsage, { timeoutMs: VISION_TIMEOUT_MS, attempts: 1 })
+      if (!usableAnswer(content, opts)) throw new Error(`${model} returned an unusable answer`)
+      return content
+    } catch (err) {
+      lastError = err
+      console.warn(`[AI] vision try ${i + 1}/${plan.length} failed: ${(err as Error).message?.slice(0, 200)}`)
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error('deepseek-vision: all tries failed')
 }
 
-async function sendChatRequest(endpoint: string, headers: Record<string, string>, body: string, providerLabel: string, onUsage?: (usage: AIUsage) => void): Promise<string> {
-  for (let attempt = 0; attempt < 3; attempt++) {
+/** Non-empty; valid JSON when JSON was asked for; and whatever the caller checks on top. */
+function usableAnswer(content: string, opts: CallOpts): boolean {
+  if (!content.trim()) return false
+  if (opts.json !== false) {
+    try { JSON.parse(content.trim().replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim()) } catch { return false }
+  }
+  return opts.validate ? opts.validate(content) : true
+}
+
+async function sendChatRequest(
+  endpoint: string,
+  headers: Record<string, string>,
+  body: string,
+  providerLabel: string,
+  onUsage?: (usage: AIUsage) => void,
+  limits: { timeoutMs?: number; attempts?: number } = {},
+): Promise<string> {
+  const timeoutMs = limits.timeoutMs ?? TIMEOUT_MS
+  const attempts = limits.attempts ?? 3
+  for (let attempt = 0; attempt < attempts; attempt++) {
     const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(new Error(`AI timed out after ${TIMEOUT_MS / 1000}s`)), TIMEOUT_MS)
+    const timer = setTimeout(() => controller.abort(new Error(`AI timed out after ${timeoutMs / 1000}s`)), timeoutMs)
     const t0 = Date.now()
 
     let res: Response
@@ -110,14 +152,14 @@ async function sendChatRequest(endpoint: string, headers: Record<string, string>
     } catch (err) {
       clearTimeout(timer)
       console.warn(`[AI] attempt=${attempt + 1} network error: ${(err as Error).message}`)
-      if (attempt < 2) { await sleep(3000 * (attempt + 1)); continue }
+      if (attempt < attempts - 1) { await sleep(3000 * (attempt + 1)); continue }
       throw new Error(`${providerLabel} network error: ${(err as Error).message}`)
     }
 
     if (res.status === 429) {
       clearTimeout(timer)
       console.warn(`[AI] attempt=${attempt + 1} rate limited (429)`)
-      if (attempt < 2) { await sleep(2000 * (attempt + 1)); continue }
+      if (attempt < attempts - 1) { await sleep(2000 * (attempt + 1)); continue }
       const text = await res.text()
       throw new Error(`${providerLabel} 429 (rate limit): ${text}`)
     }
@@ -139,7 +181,7 @@ async function sendChatRequest(endpoint: string, headers: Record<string, string>
       clearTimeout(timer)
       const msg = (err as Error).message ?? ''
       console.warn(`[AI] attempt=${attempt + 1} stream error: ${msg}`)
-      if (attempt < 2 && (msg.includes('timed out') || msg.includes('abort') || msg.includes('TIMEOUT'))) {
+      if (attempt < attempts - 1 && (msg.includes('timed out') || msg.includes('abort') || msg.includes('TIMEOUT'))) {
         await sleep(3000 * (attempt + 1))
         continue
       }

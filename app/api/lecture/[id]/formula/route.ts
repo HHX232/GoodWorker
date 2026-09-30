@@ -3,7 +3,7 @@ import { requireOwnLecture } from '@/shared/lib/lecture/access'
 import { contextPrompt, parseContext } from '@/shared/lib/lecture/context'
 import { formulaAssist, type FormulaMode } from '@/shared/lib/lecture/ai'
 
-export const maxDuration = 90
+export const maxDuration = 180
 
 interface Params {
   params: Promise<{ id: string }>

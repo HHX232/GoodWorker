@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
+import { photoFailedToast } from './photoTools'
 import { MathMarkup } from './MathView'
 import styles from './LectureEditor.module.scss'
 
@@ -87,11 +88,17 @@ export function FormulaDialog({ lectureId, canUseAi, initial, context, startWith
       if (!res.ok) throw new Error(data.error ?? 'AI_FAILED')
       setResult({ latex: data.latex, explanation: data.explanation ?? '' })
     } catch (e) {
-      toast.error(e instanceof Error && e.message === 'VIP_REQUIRED' ? t('vipOnly') : t('aiFailed'))
+      if (e instanceof Error && e.message === 'VIP_REQUIRED') toast.error(t('vipOnly'))
+      // With a photo: the same photo goes again on «Повторить».
+      else if (photo) photoFailedToast({ message: t('photoFailed'), retryLabel: t('photoRetry'), retry: () => { void runRef.current(m, photo) } })
+      else toast.error(t('aiFailed'))
     } finally {
       setBusy(false)
     }
-  }
+  }  // «Повторить» in the notice calls the latest version (fresh state), not the failed closure.
+  const runRef = useRef(run)
+  useEffect(() => { runRef.current = run })
+
 
   const take = () => {
     if (!result) return

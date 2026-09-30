@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
+import { photoFailedToast } from '../editor/photoTools'
 import { GraphChart } from './GraphChart'
 import styles from '../ui/ToolDialog.module.scss'
 
@@ -134,11 +135,19 @@ export function GraphEditorDialog({ lectureId, canUseAi, initial, isNew, onApply
       setDraft(toDraft(data.spec as GraphSpec))
       setAsk('')
     } catch (e) {
-      toast.error(e instanceof Error && e.message === 'VIP_REQUIRED' ? t('vipOnly') : e instanceof Error && e.message === 'NO_GRAPH' ? t('graphAiNothing') : t('aiFailed'))
+      const code = e instanceof Error ? e.message : ''
+      if (code === 'VIP_REQUIRED') toast.error(t('vipOnly'))
+      else if (code === 'NO_GRAPH') toast.error(t('graphAiNothing'))
+      // With a photo: the same photo goes again on «Повторить».
+      else if (photo) photoFailedToast({ message: t('photoFailed'), retryLabel: t('photoRetry'), retry: () => { void runRef.current(photo) } })
+      else toast.error(t('aiFailed'))
     } finally {
       setBusy(false)
     }
-  }
+  }  // «Повторить» in the notice calls the latest version (fresh state), not the failed closure.
+  const runRef = useRef(runAi)
+  useEffect(() => { runRef.current = runAi })
+
 
   const kindHas = (k: PlotSeriesKind) => ({ expr: k === 'fn' || k === 'area', range: k === 'fn' || k === 'area', points: k === 'points' || k === 'line', value: k === 'vline' || k === 'hline' })
 

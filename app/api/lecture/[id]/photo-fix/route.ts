@@ -4,7 +4,7 @@ import { contextPrompt, parseContext } from '@/shared/lib/lecture/context'
 import { fixFragmentWithPhoto } from '@/shared/lib/lecture/ai'
 import { markdownToBlocks } from '@/shared/lib/lecture/markdownToDoc'
 
-export const maxDuration = 120
+export const maxDuration = 180
 
 interface Params {
   params: Promise<{ id: string }>
