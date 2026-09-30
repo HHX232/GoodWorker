@@ -3,7 +3,7 @@
 import type { Editor } from '@tiptap/core'
 import { CropIcon, ImageIcon, Loader2Icon, ScanTextIcon } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
 import { docText } from './docOps'
@@ -22,6 +22,10 @@ interface Props {
 /** "Вставить с фото": preview (optionally cropped to the sheet), then insert the photo and/or its recognised content. */
 export function InsertPhotoDialog({ lectureId, editor, file, at, onClose }: Props) {
   const t = useTranslations('lecture')
+  // Kept in refs: an inline onClose from the parent must not restart the photo preparation.
+  const closeRef = useRef(onClose)
+  const tRef = useRef(t)
+  useEffect(() => { closeRef.current = onClose; tRef.current = t }, [onClose, t])
   const [crop, setCrop] = useState(true)
   const [prepared, setPrepared] = useState<PreparedPhoto | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
@@ -38,6 +42,11 @@ export function InsertPhotoDialog({ lectureId, editor, file, at, onClose }: Prop
       url = URL.createObjectURL(p.file)
       setPrepared(p)
       setPreview(url)
+    }).catch(() => {
+      // HEIC on desktop / a broken file — say what's wrong instead of spinning forever.
+      if (cancelled) return
+      toast.error(tRef.current('photoErr_UNREADABLE'))
+      closeRef.current()
     })
     return () => { cancelled = true; if (url) URL.revokeObjectURL(url) }
   }, [file, crop])

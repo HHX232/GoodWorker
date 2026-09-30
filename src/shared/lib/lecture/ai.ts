@@ -55,8 +55,14 @@ const STRUCTURE_SYSTEM = `Ты конспектируешь лекцию для 
 
 Также веди КОНТЕКСТ лекции: определи предмет (например "Математический анализ"), общую тему лекции, подтемы, которые реально прошли в этом фрагменте, и ключевые термины/обозначения (например "f'(x)", "цепное правило"). Если контекст уже дан — уточняй его, не меняй без явной причины.
 
+КУДА ВСТАВИТЬ. По умолчанию новый конспект идёт в КОНЕЦ — "continues": null. Тебе дан пронумерованный список уже готовых разделов конспекта. Указывай номер раздела в "continues" ТОЛЬКО если выполнены ВСЕ условия:
+- преподаватель явно возвращается к уже пройденному: "вернёмся к теореме…", "дополню определение из начала", "в том примере я забыл…", доказательство той же теоремы после отступления;
+- ВЕСЬ новый фрагмент — это дополнение именно этого раздела, без новой темы;
+- раздел в списке однозначно тот самый (не просто похожая тема).
+Новая тема, продолжение текущего рассказа, следующий пример, сомнения — всегда null. Лучше null, чем ошибиться: студент ждёт хронологический порядок.
+
 Возвращай ТОЛЬКО JSON без markdown-обёртки:
-{"markdown": "<конспект фрагмента>", "context": {"subject": "...", "topic": "...", "subtopics": ["..."], "terms": ["..."]}}
+{"markdown": "<конспект фрагмента>", "continues": null, "context": {"subject": "...", "topic": "...", "subtopics": ["..."], "terms": ["..."]}}
 
 Формат поля markdown:
 ${DIALECT}`
@@ -148,9 +154,18 @@ const COMPRESSION_RULE: Record<Compression, string> = {
   strong: 'Степень сжатия: СИЛЬНОЕ. Только суть тезисами: определения, формулы, ключевые выводы и важные предупреждения. Без примеров, историй и отступлений.',
 }
 
-export async function structureTranscript(opts: { lectureId: string; context: string; previousNotes: string; transcript: string; compression?: Compression }): Promise<{ markdown: string; context: unknown }> {
+/**
+ * `sections` — titles of the notes' AI sections (doc order). The model may name one in
+ * `continues` when the fragment only adds to that earlier topic (strict, see STRUCTURE_SYSTEM);
+ * null — the usual case — means "after everything".
+ */
+export async function structureTranscript(opts: { lectureId: string; context: string; previousNotes: string; transcript: string; compression?: Compression; sections?: string[] }): Promise<{ markdown: string; context: unknown; continues: number | null }> {
   let usage: AIUsage | null = null
+  const sections = (opts.sections ?? []).slice(0, 60)
   const prompt = `${opts.context || 'КОНТЕКСТ ЛЕКЦИИ: пока неизвестен — определи по расшифровке.'}
+
+Разделы конспекта (номер — для поля "continues"):
+${sections.length ? sections.map((t, i) => `${i}. ${t}`).join('\n') : '(разделов пока нет — continues всегда null)'}
 
 Конец уже готового конспекта (для связности — НЕ повторяй его):
 """
@@ -166,11 +181,13 @@ ${opts.transcript}
   const raw = await callAI(STRUCTURE_SYSTEM, prompt, { temperature: 0.2, maxTokens: 3000, onUsage: u => { usage = u } })
   await addUsage(opts.lectureId, usage)
   try {
-    const parsed = JSON.parse(raw.trim().replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim()) as { markdown?: unknown; context?: unknown }
-    return { markdown: stripFence(typeof parsed.markdown === 'string' ? parsed.markdown : ''), context: parsed.context ?? null }
+    const parsed = JSON.parse(raw.trim().replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim()) as { markdown?: unknown; context?: unknown; continues?: unknown }
+    const c = parsed.continues
+    const continues = Number.isInteger(c) && (c as number) >= 0 && (c as number) < sections.length ? (c as number) : null
+    return { markdown: stripFence(typeof parsed.markdown === 'string' ? parsed.markdown : ''), context: parsed.context ?? null, continues }
   } catch {
-    // The model broke the JSON contract — keep the notes, skip the context update.
-    return { markdown: stripFence(raw), context: null }
+    // The model broke the JSON contract — keep the notes, skip the context update, append at the end.
+    return { markdown: stripFence(raw), context: null, continues: null }
   }
 }
 

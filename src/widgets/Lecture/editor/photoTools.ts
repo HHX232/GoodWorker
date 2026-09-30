@@ -41,7 +41,13 @@ export async function preparePhoto(original: File, crop: boolean): Promise<Prepa
     const c = await autoCropPagePhoto(original).catch(() => null)
     if (c) { file = c; cropped = true }
   }
-  const jpeg = await compressImageForUpload(file, 2400, 2400, 0.85).catch(() => file)
+  const compressed = await compressImageForUpload(file, 2400, 2400, 0.85).catch(() => null)
+  // Couldn't re-encode it: send the original only if the browser can at least decode it —
+  // otherwise it's a HEIC on desktop or a broken file, and DeepSeek would fail the whole batch on it.
+  if (!compressed) {
+    try { (await createImageBitmap(file)).close() } catch { throw new PhotoError('UNREADABLE') }
+  }
+  const jpeg = compressed ?? file
   const out = jpeg.type === 'image/jpeg' ? jpeg : new File([jpeg], 'photo.jpg', { type: 'image/jpeg' })
   return { file: out, ...(await dims(out)), cropped }
 }

@@ -14,15 +14,18 @@ export async function photoFromForm(form: FormData | null): Promise<{ mimeType: 
 
 export const MAX_PHOTOS = 6
 
-/** Every `photo` field (several board shots at once), each validated like photoFromForm. */
+/**
+ * Every `photo` field (several board shots at once), each validated like photoFromForm.
+ * A rejected one is named by `index` (0-based, form order), so the page can mark that photo.
+ */
 export async function photosFromForm(form: FormData | null): Promise<{ mimeType: string; base64: string }[] | NextResponse> {
   const all = (form?.getAll('photo') ?? []).filter((p): p is File => p instanceof Blob)
   if (!all.length) return NextResponse.json({ error: 'photo required' }, { status: 400 })
   if (all.length > MAX_PHOTOS) return NextResponse.json({ error: 'TOO_MANY_PHOTOS' }, { status: 400 })
   const out: { mimeType: string; base64: string }[] = []
-  for (const photo of all) {
-    if (!ALLOWED_MIMES.has(photo.type)) return NextResponse.json({ error: 'UNSUPPORTED_PHOTO' }, { status: 400 })
-    if (photo.size === 0 || photo.size > MAX_PHOTO_SIZE) return NextResponse.json({ error: 'PHOTO_TOO_LARGE' }, { status: 400 })
+  for (const [index, photo] of all.entries()) {
+    if (!ALLOWED_MIMES.has(photo.type)) return NextResponse.json({ error: 'UNSUPPORTED_PHOTO', index }, { status: 400 })
+    if (photo.size === 0 || photo.size > MAX_PHOTO_SIZE) return NextResponse.json({ error: 'PHOTO_TOO_LARGE', index }, { status: 400 })
     out.push({ mimeType: photo.type, base64: Buffer.from(await photo.arrayBuffer()).toString('base64') })
   }
   return out

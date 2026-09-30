@@ -720,6 +720,25 @@ $aiSoft: #f5f0ff;
 
 .mergeDialog { width: min(720px, 100%); }
 
+// Photos of «Обработать фото доски», each with its own status / error / «Повторить».
+.shotList { display: flex; flex-direction: column; gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; max-height: 34vh; overflow-y: auto; }
+.shot { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border: 1px solid $line; border-radius: 12px; background: #fff; }
+.shotBad { border-color: rgba(220, 38, 38, 0.35); background: #fef6f6; }
+.shotThumb { flex: none; width: 44px; height: 44px; border-radius: 8px; background: $soft; object-fit: cover; }
+.shotInfo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+  strong { font-size: 13px; }
+}
+.shotName { overflow: hidden; color: $faint; font-size: 11.5px; text-overflow: ellipsis; white-space: nowrap; }
+.shotErr, .shotOk { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; }
+.shotErr { color: #b91c1c; }
+.shotOk { color: $muted; }
+.mergeError { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: #fef6f6; color: #b91c1c; font-size: 13.5px; span { flex: 1; } }
+
 .mergeProgress { display: flex; align-items: center; gap: 14px; padding: 18px 4px; color: $ai; }
 .mergeStep { color: $ink; font-weight: 600; font-size: 15px; }
 .mergeHint { margin: 4px 0 0; color: $muted; font-size: 13px; line-height: 1.5; }
@@ -774,6 +793,10 @@ $aiSoft: #f5f0ff;
 
 // ─── Dark theme ───────────────────────────────────────────────────────────────
 :global(html.theme-dark), :global(html.pomodoro-dark) {
+  .shot { border-color: rgba(255, 255, 255, 0.08); background: #1a1c24; }
+  .shotBad, .mergeError { border-color: rgba(248, 113, 113, 0.35); background: rgba(248, 113, 113, 0.08); }
+  .shotErr, .mergeError { color: #fca5a5; }
+  .shotThumb { background: #22242e; }
   .skeleton { background: linear-gradient(90deg, #1a1c24 0%, #20222c 50%, #1a1c24 100%); background-size: 200% 100%; }
   .editor {
     :global(.ProseMirror) {

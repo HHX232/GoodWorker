@@ -17,26 +17,49 @@ export interface NoteInfo {
 }
 
 /**
- * Adds AI notes as a section the AI may later refresh, in recording order: after the last
- * section that covers earlier audio (so a re-conspected gap lands in its place), else at the end.
- * Not in the undo history.
+ * Where notes for this stretch of audio go: before the first section of later audio (a
+ * re-conspected gap lands in its place), otherwise — the live case — at the very end.
+ * Never "right after the previous section": whatever the student added or moved after
+ * it (own text, board photos, a topic dragged to the end) would end up below the new notes.
  */
-export function appendAiSection(editor: Editor, blocks: JSONContent[], attrs: SectionAttrs): void {
+export function sectionInsertPos(doc: PMNode, toSeq: number): number {
+  let at = doc.content.size
+  doc.forEach((child, pos) => {
+    if (child.type.name === 'aiSection' && child.attrs.fromSeq > toSeq && pos < at) at = pos
+  })
+  return at
+}
+
+/** An AI section's title for the model: its first heading, else its opening words. */
+export function sectionTitles(doc: PMNode): { fromSeq: number; title: string }[] {
+  const out: { fromSeq: number; title: string }[] = []
+  doc.forEach(child => {
+    if (child.type.name !== 'aiSection') return
+    let heading = ''
+    child.forEach(b => { if (!heading && b.type.name === 'heading') heading = b.textContent })
+    const title = (heading || child.textContent).replace(/\s+/g, ' ').trim().slice(0, 100)
+    out.push({ fromSeq: child.attrs.fromSeq, title: title || '…' })
+  })
+  return out
+}
+
+/**
+ * Adds AI notes as a section the AI may later refresh, in recording order (sectionInsertPos).
+ * `afterFromSeq`: the AI was sure this only adds to that earlier section — put it right after
+ * it (ignored if the section is gone). Not in the undo history.
+ */
+export function appendAiSection(editor: Editor, blocks: JSONContent[], attrs: SectionAttrs, afterFromSeq?: number): void {
   if (!blocks.length) return
   const node = { type: 'aiSection', attrs: { ...attrs, edited: false }, content: blocks }
   const doc = editor.state.doc
   // An empty doc still has one empty paragraph — replace it instead of leaving a gap.
   const onlyEmpty = doc.childCount === 1 && doc.firstChild?.type.name === 'paragraph' && doc.firstChild.content.size === 0
-  let at = doc.content.size
-  let firstLater = -1
-  let afterEarlier = -1
-  doc.forEach((child, pos) => {
-    if (child.type.name !== 'aiSection') return
-    if (child.attrs.toSeq < attrs.fromSeq) afterEarlier = pos + child.nodeSize
-    else if (firstLater < 0 && child.attrs.fromSeq > attrs.toSeq) firstLater = pos
-  })
-  if (afterEarlier >= 0 && (firstLater < 0 || afterEarlier <= firstLater)) at = afterEarlier
-  else if (firstLater >= 0) at = firstLater
+  let at = sectionInsertPos(doc, attrs.toSeq)
+  if (afterFromSeq !== undefined) {
+    doc.forEach((child, pos) => {
+      if (child.type.name === 'aiSection' && child.attrs.fromSeq === afterFromSeq && child.attrs.toSeq < attrs.fromSeq) at = pos + child.nodeSize
+    })
+  }
   editor
     .chain()
     .command(({ tr }) => { tr.setMeta(AI_META, true).setMeta('addToHistory', false); return true })

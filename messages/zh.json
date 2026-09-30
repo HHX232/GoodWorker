@@ -4078,7 +4078,21 @@
     "shareFailed": "无法更改链接",
     "shareConflict": "笔记刚刚通过链接被修改——已显示最新版本",
     "shareGoneTitle": "此链接已失效",
-    "shareGoneText": "作者已关闭该链接或删除了讲座。"
+    "shareGoneText": "作者已关闭该链接或删除了讲座。",
+    "photoN": "照片 {n}",
+    "photoReady": "就绪",
+    "photoRetry": "重试",
+    "photosSomeFailed": "{total} 张照片中已打开 {ok} 张。重试损坏的照片，或不含它们继续。",
+    "photosAllFailed": "没有照片能打开——请重试或选择其他照片。",
+    "photosContinueWithout": "不含它们继续",
+    "photosUploadFailed": "部分照片未上传——请重试或取消勾选“插入照片”。",
+    "photoErr_UNREADABLE": "无法打开：格式不受支持（如 HEIC）或文件已损坏",
+    "photoErr_PHOTO_TOO_LARGE": "太大——压缩后仍超过 15 MB",
+    "photoErr_UNSUPPORTED_PHOTO": "格式不受支持——请使用 JPG、PNG 或 WebP",
+    "photoErr_UPLOAD_FAILED": "照片上传失败",
+    "photoErr_AI_FAILED": "AI 无法读取照片——请重试",
+    "photoErr_TOO_MANY_PHOTOS": "一次照片太多——最多 6 张",
+    "structureAddedTo": "这是对“{title}”的补充——已插入其后"
   },
   "lecturePromo": {
     "eyebrow": "新工具 · VIP",

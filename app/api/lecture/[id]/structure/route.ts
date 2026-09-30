@@ -12,7 +12,9 @@ interface Params {
   params: Promise<{ id: string }>
 }
 
-// POST /api/lecture/[id]/structure — {fromSeq, toSeq, previousNotes, compression?: none|medium|strong, markEmpty?} →
+// POST /api/lecture/[id]/structure — {fromSeq, toSeq, previousNotes, compression?: none|medium|strong, markEmpty?, sections?: string[]} →
+// {blocks, continues: index into `sections` | null, …}. `continues` is set only when the AI is sure the
+// fragment merely adds to that earlier section (the client then puts it right after it).
 // {blocks} (TipTap JSON) for that transcript range. The client wraps them in
 // an AI section tagged with the range; after the final pass it calls this
 // again for sections the student hasn't edited, and the final text is used.
@@ -31,6 +33,8 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
     const previousNotes = typeof body.previousNotes === 'string' ? body.previousNotes.slice(-3000) : ''
     const compression: Compression = COMPRESSIONS.includes(body.compression) ? body.compression : 'none'
+    // Titles of the notes' sections (doc order) — the AI may say the fragment only adds to one of them.
+    const sections: string[] = Array.isArray(body.sections) ? body.sections.filter((x: unknown): x is string => typeof x === 'string').slice(0, 60).map((x: string) => x.slice(0, 120)) : []
     // The client gives up on an empty range (forced run / full batch) — remember it, so it isn't offered after a reload.
     const markEmpty = body.markEmpty === true
     const giveUp = () => markEmpty
@@ -51,7 +55,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     // Pass 1 — restore what the teacher said (misheard words, junk out); pass 2 — notes.
     const cleaned = await cleanTranscript({ lectureId: id, context: ctx, transcript })
     if (!cleaned) { await giveUp(); return NextResponse.json({ blocks: [], markdown: '', cleaned, empty: true, isFinal }) }
-    const { markdown, context: aiContext } = await structureTranscript({ lectureId: id, context: ctx, previousNotes, transcript: cleaned, compression })
+    const { markdown, context: aiContext, continues } = await structureTranscript({ lectureId: id, context: ctx, previousNotes, transcript: cleaned, compression, sections })
     const context = aiContext ? mergeContext(current, aiContext) : current
     const blocks = markdownToBlocks(markdown)
     // An empty result doesn't advance processedSeq: the range stays available to the next attempt.
@@ -60,7 +64,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       data: { ...(blocks.length && lecture.processedSeq < toSeq ? { processedSeq: toSeq } : {}), context: context as unknown as Prisma.InputJsonValue },
     })
     if (!blocks.length) await giveUp()
-    return NextResponse.json({ blocks, markdown, cleaned, context, empty: !blocks.length, isFinal })
+    return NextResponse.json({ blocks, markdown, cleaned, context, empty: !blocks.length, isFinal, continues })
   } catch (e) {
     console.error('[POST /api/lecture/[id]/structure]', e)
     return NextResponse.json({ error: 'AI_FAILED' }, { status: 502 })
