@@ -2,8 +2,8 @@ import type { MetadataRoute } from 'next'
 import { prisma } from '@/shared/prisma/prisma'
 
 import { SITE_URL } from '@/shared/lib/seo/siteUrl'
-// Rebuilt at most once an hour — posts appear without a redeploy.
-export const revalidate = 3600
+// Built per request: the DB is not reachable during the Railway build, a prerendered sitemap would have no posts.
+export const dynamic = 'force-dynamic'
 
 const STATIC: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]['changeFrequency'] }[] = [
   { path: '/', priority: 1, changeFrequency: 'daily' },
