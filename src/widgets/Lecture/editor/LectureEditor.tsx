@@ -7,6 +7,7 @@ import Highlight from '@tiptap/extension-highlight'
 import Placeholder from '@tiptap/extension-placeholder'
 import { Color, FontSize, TextStyle } from '@tiptap/extension-text-style'
 import TextAlign from '@tiptap/extension-text-align'
+import { TableKit } from '@tiptap/extension-table'
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react'
 import { BubbleMenu } from '@tiptap/react/menus'
 import StarterKit from '@tiptap/starter-kit'
@@ -28,6 +29,10 @@ import { mathEditBus, type MathEditRequest } from './MathView'
 import styles from './LectureEditor.module.scss'
 
 interface Props {
+  /**
+   * The lecture's API path under /api/lecture/: its id, or `shared/<token>`
+   * on a public link (photos then go through that link's routes).
+   */
   lectureId: string
   initialDoc: JSONContent | null
   editable: boolean
@@ -80,6 +85,7 @@ export function LectureEditor({ lectureId, initialDoc, editable, canUseAi, onRea
       Color,
       FontSize,
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      TableKit.configure({ table: { resizable: false } }),
       Highlight.configure({ multicolor: true }),
       MathInline,
       MathBlock,
@@ -94,6 +100,12 @@ export function LectureEditor({ lectureId, initialDoc, editable, canUseAi, onRea
     content: initialDoc ?? '',
     onUpdate: ({ editor: e }) => onChange(e.getJSON()),
     editorProps: {
+      // Working inside a live board (dragging, rotating a figure) moves the DOM selection;
+      // ProseMirror would then scroll the page to it. Nothing to reveal there — don't scroll.
+      handleScrollToSelection: () => {
+        const active = document.activeElement
+        return !!(active?.closest?.('.lecture-board-live') || document.querySelector('.lecture-board-live:hover'))
+      },
       handleClickOn: (_view, _pos, _node, _nodePos, event) => {
         const el = (event.target as HTMLElement).closest?.('[data-note-id]') as HTMLElement | null
         if (el?.dataset.noteId && editor) {
@@ -170,11 +182,15 @@ export function LectureEditor({ lectureId, initialDoc, editable, canUseAi, onRea
     setAsk({ id, selection, context, preset, rect: rect ? { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right } : { top: 120, bottom: 140, left: 40, right: 400 } })
   }
 
-  const applyAsk = (blocks: JSONContent[]) => {
+  const applyAsk = (blocks: JSONContent[], insertAfter: boolean) => {
     if (!ask) return
     const range = markRange(editor.state.doc, 'pendingFix', ask.id)
-    if (range) editor.chain().focus().insertContentAt(range, fragmentFor(blocks)).run()
-    else toast.message(t('photoTargetGone'))
+    if (!range) toast.message(t('photoTargetGone'))
+    else if (insertAfter) {
+      // The selection stays; the answer goes in as its own blocks right after the block the selection ends in.
+      clearMark('pendingFix', ask.id)
+      editor.chain().focus().insertContentAt(afterBlock(editor, range.to), blocks).run()
+    } else editor.chain().focus().insertContentAt(range, fragmentFor(blocks)).run()
     setAsk(null)
   }
 

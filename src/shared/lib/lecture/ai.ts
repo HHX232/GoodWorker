@@ -23,6 +23,7 @@ const DIALECT = `Формат ответа — markdown с расширения�
 - формулы строго в LaTeX: в строке $...$, отдельной строкой $$...$$ (никаких формул "словами");
 - выделение маркером: ==важное== (или =={green}...==, цвета: yellow, green, blue, pink, orange);
 - цветной текст: {red|текст} (цвета: red, orange, green, blue, purple, gray) — для определений, предупреждений, ключевых терминов;
+- таблицы — обычной markdown-таблицей (| Столбец | Столбец |, строка |---|---|), когда данные табличные или просят таблицу; в ячейках можно $формулы$;
 - без HTML, без ссылок, без картинок, без блоков кода вокруг ответа;
 - если на фото/доске нарисована (или преподаватель строит) геометрическая фигура — вставь блок доски, и в нём ТОЛЬКО то, что реально есть:
 \`\`\`board
@@ -36,7 +37,8 @@ const DIALECT = `Формат ответа — markdown с расширения�
 ${GRAPH_FORMAT}`
 
 // Context makes unclear fragments readable — but only where the match is obvious.
-const CONTEXT_RULE = `Используй контекст лекции (предмет, тема, подтемы, обозначения), чтобы правильно понять неразборчивые места: если фрагмент распознан плохо, но явно совпадает с типичной формулой или термином этой темы — восстанови его. Если совпадение не очевидно — НЕ выдумывай, оставь как есть и пометь ==[неразборчиво]==. Никогда не добавляй содержание, которого не было.`
+const CONTEXT_RULE = `Используй контекст лекции (предмет, тема, подтемы, обозначения), чтобы правильно понять неразборчивые места: если фрагмент распознан плохо, но явно совпадает с типичной формулой или термином этой темы — восстанови его. Если совпадение не очевидно — просто не включай этот кусок, ничего не выдумывай. Никогда не добавляй содержание, которого не было.
+Никаких служебных пометок и примечаний в ответе: не пиши «[неразборчиво]», «(по контексту не восстановить)», «Примечание: фрагмент содержит ошибки распознавания…», «восстановлены только очевидные места» и т.п. — в ответе только сам конспект.`
 
 const STRUCTURE_SYSTEM = `Ты конспектируешь лекцию для студента. Тебе дают черновую расшифровку речи преподавателя с микрофона в аудитории.
 
@@ -48,7 +50,7 @@ const STRUCTURE_SYSTEM = `Ты конспектируешь лекцию для 
 3. Исправляй ошибки распознавания по смыслу и теме (термины, имена, формулы, произнесённые словами: "эф штрих от икс" → $f'(x)$).
 4. ${CONTEXT_RULE}
 5. Структурируй: заголовок ### для новой темы/подтемы, определения — {blue|...}, важные предупреждения — {red|...}, ключевое — ==...==, перечисления — списком.
-6. Пиши кратко, как хороший студенческий конспект, на языке лекции.
+6. Пиши на языке лекции. Насколько подробно — сказано ниже в «Степени сжатия».
 7. markdown пустой ТОЛЬКО если во фрагменте вообще нет речи преподавателя по делу (одни шумы и обрывки). Если сомневаешься — конспектируй.
 
 Также веди КОНТЕКСТ лекции: определи предмет (например "Математический анализ"), общую тему лекции, подтемы, которые реально прошли в этом фрагменте, и ключевые термины/обозначения (например "f'(x)", "цепное правило"). Если контекст уже дан — уточняй его, не меняй без явной причины.
@@ -83,7 +85,28 @@ async function addUsage(lectureId: string, usage: AIUsage | null): Promise<void>
 }
 
 function stripFence(s: string): string {
-  return s.trim().replace(/^```(?:markdown|md)?\n?/i, '').replace(/\n?```$/, '').trim()
+  return stripMeta(s.trim().replace(/^```(?:markdown|md)?\n?/i, '').replace(/\n?```$/, '').trim())
+}
+
+/**
+ * The model's notes about itself never belong in a student's notes: "[неразборчиво] — …"
+ * lines and "Примечание: …ошибки распознавания…" remarks are dropped, inline markers removed.
+ */
+export function stripMeta(md: string): string {
+  return md
+    .split('\n')
+    .filter(line => {
+      const l = line.replace(/^[\s>*_\-–—•]+/, '')
+      // A line that is only "about" an unclear place: starts with the marker, or says it can't be recovered.
+      if (/^=*\[\s*неразборчиво[^\]]*\]=*\s*([—–\-:]|$)/i.test(l) || /по контексту не восстановить/i.test(l)) return false
+      if (/^примечани[ея]\s*:/i.test(l) && /распозна|неразборчив|восстановл/i.test(l)) return false
+      return true
+    })
+    .join('\n')
+    .replace(/ ?=*\[\s*неразборчиво[^\]]*\]=*/gi, '')
+    .replace(/\(\s*по контексту не восстановить\s*\)/gi, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
 }
 
 const CLEAN_SYSTEM = `Ты чистишь черновую расшифровку речи преподавателя на лекции (микрофон в аудитории, распознавание Whisper) перед конспектированием.
@@ -115,7 +138,17 @@ ${opts.transcript}
 }
 
 /** New transcript → markdown blocks that continue the notes, plus the refreshed lecture context. */
-export async function structureTranscript(opts: { lectureId: string; context: string; previousNotes: string; transcript: string }): Promise<{ markdown: string; context: unknown }> {
+export type Compression = 'none' | 'medium' | 'strong'
+export const COMPRESSIONS: Compression[] = ['none', 'medium', 'strong']
+
+// How much of the lecture survives into the notes — the student picks it on the page.
+const COMPRESSION_RULE: Record<Compression, string> = {
+  none: 'Степень сжатия: БЕЗ СЖАТИЯ. Подробный конспект: сохрани каждую мысль преподавателя — объяснения, рассуждения, примеры, оговорки, связки между идеями, почти в полном объёме (переформулируй только для ясности). Убирай лишь мусор, повторы и слова-паразиты.',
+  medium: 'Степень сжатия: СРЕДНЕЕ. Хороший студенческий конспект: все определения, формулы и выводы, объяснения — кратко, из примеров — главное.',
+  strong: 'Степень сжатия: СИЛЬНОЕ. Только суть тезисами: определения, формулы, ключевые выводы и важные предупреждения. Без примеров, историй и отступлений.',
+}
+
+export async function structureTranscript(opts: { lectureId: string; context: string; previousNotes: string; transcript: string; compression?: Compression }): Promise<{ markdown: string; context: unknown }> {
   let usage: AIUsage | null = null
   const prompt = `${opts.context || 'КОНТЕКСТ ЛЕКЦИИ: пока неизвестен — определи по расшифровке.'}
 
@@ -123,6 +156,8 @@ export async function structureTranscript(opts: { lectureId: string; context: st
 """
 ${opts.previousNotes.slice(-1500) || '(конспект пока пуст)'}
 """
+
+${COMPRESSION_RULE[opts.compression ?? 'none']}
 
 Новый фрагмент (расшифровка уже очищена от мусора) — законспектируй его как продолжение:
 """
@@ -158,15 +193,18 @@ ${opts.selection.slice(0, 2000)}
   return stripFence(raw)
 }
 
-const ASK_SYSTEM = `Ты — редактор конспекта лекции. Студент выделил фрагмент конспекта и просит его изменить.
-Верни ТОЛЬКО новую версию выделенного фрагмента — без пояснений, без кавычек, без "Вот исправленный вариант".
-Если просьба — вопрос (например, "что это значит?"), всё равно верни фрагмент, дополненный коротким пояснением в конце (курсивом).
+const ASK_SYSTEM = `Ты — редактор конспекта лекции. Студент выделил фрагмент конспекта и о чём-то просит.
+Режим ответа указан в запросе:
+- «ЗАМЕНА» — верни ТОЛЬКО новую версию выделенного фрагмента. Если просьба — вопрос (например, "что это значит?"), всё равно верни фрагмент, дополненный коротким пояснением в конце (курсивом).
+- «ДОБАВЛЕНИЕ» — фрагмент остаётся как есть, твой ответ вставят сразу ПОСЛЕ него: верни только новое (таблицу, пояснение, пример, вывод), не повторяя сам фрагмент.
+Без пояснений от себя, без кавычек, без "Вот исправленный вариант".
+Если просят таблицу (сравнить, свести, разложить по столбцам) — верни markdown-таблицу.
 Сохраняй смысл лекции, ничего не выдумывай сверх просьбы. Формулы — в LaTeX. Учитывай предмет и тему лекции (обозначения, принятые в этой теме).
 
 ${DIALECT}`
 
 /** "Спросить ИИ" on a selection → a suggested replacement (the student confirms or cancels it). */
-export async function askAboutFragment(opts: { lectureId: string; lecture: string; selection: string; context: string; instruction: string }): Promise<string> {
+export async function askAboutFragment(opts: { lectureId: string; lecture: string; selection: string; context: string; instruction: string; insertAfter?: boolean }): Promise<string> {
   let usage: AIUsage | null = null
   const prompt = `${opts.lecture}
 
@@ -179,6 +217,8 @@ ${opts.context.slice(0, 2500)}
 """
 ${opts.selection.slice(0, 3000)}
 """
+
+Режим ответа: ${opts.insertAfter ? 'ДОБАВЛЕНИЕ (вставят после фрагмента)' : 'ЗАМЕНА (заменит фрагмент)'}
 
 Просьба студента: ${opts.instruction.slice(0, 500)}`
   const raw = await callAI(ASK_SYSTEM, prompt, { json: false, temperature: 0.3, maxTokens: 2000, onUsage: u => { usage = u } })
@@ -283,11 +323,12 @@ function fragmentKind(markdown: string, claimed: unknown): PhotoFragmentKind {
 }
 
 /** Left-rail "Обработать фото доски": what on the photo is already in the notes, what continues them, what's new. */
-export async function mergePhoto(opts: { lectureId: string; lecture: string; outline: string[]; photo: { mimeType: string; base64: string } }): Promise<PhotoMergeItem[]> {
+export async function mergePhoto(opts: { lectureId: string; lecture: string; outline: string[]; photos: { mimeType: string; base64: string }[] }): Promise<PhotoMergeItem[]> {
   let usage: AIUsage | null = null
   const outline = opts.outline.slice(-80).map((t, i, arr) => `[${opts.outline.length - arr.length + i}] ${t.slice(0, 220)}`).join('\n')
-  const prompt = `${opts.lecture}\n\nКонспект (блоки):\n${outline || '(конспект пока пуст)'}\n\nРазбери фото.`
-  const raw = await callVisionAI(PHOTO_MERGE_SYSTEM, [opts.photo], prompt, { temperature: 0.1, maxTokens: 3000, onUsage: u => { usage = u } })
+  const many = opts.photos.length > 1
+  const prompt = `${opts.lecture}\n\nКонспект (блоки):\n${outline || '(конспект пока пуст)'}\n\n${many ? `Разбери все ${opts.photos.length} фото вместе, в порядке их следования: это одна доска или соседние доски. То, что видно сразу на нескольких фото, переноси один раз.` : 'Разбери фото.'}`
+  const raw = await callVisionAI(PHOTO_MERGE_SYSTEM, opts.photos, prompt, { temperature: 0.1, maxTokens: 5000, onUsage: u => { usage = u } })
   await addUsage(opts.lectureId, usage)
   const clean = raw.trim().replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim()
   const parsed = JSON.parse(clean) as { items?: Partial<PhotoMergeItem>[] }
@@ -298,7 +339,7 @@ export async function mergePhoto(opts: { lectureId: string; lecture: string; out
       action: i.action === 'duplicate' || i.action === 'continuation' ? i.action : 'new',
       block: Number.isInteger(i.block) && (i.block as number) >= 0 && (i.block as number) < opts.outline.length ? (i.block as number) : null,
       reason: String(i.reason ?? '').slice(0, 300),
-      markdown: String(i.markdown),
+      markdown: stripMeta(String(i.markdown)),
     }))
 }
 

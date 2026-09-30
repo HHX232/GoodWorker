@@ -29,6 +29,7 @@ import {
 } from '../icons'
 import { filesFetch, FilesApiError, formatBytes, formatDeadline, initials, jsonInit, triggerDownload, viewerFor } from '../lib'
 import { ShareAccessModal, type ShareTarget } from '../ShareAccessModal/ShareAccessModal'
+import { SubjectFilter } from '../SubjectFilter/SubjectFilter'
 import { StorageMeter } from '../StorageMeter/StorageMeter'
 import { StudentDrive } from '../StudentDrive/StudentDrive'
 import { StorageOverageWarningModal } from '../StorageOverageWarningModal/StorageOverageWarningModal'
@@ -104,6 +105,8 @@ export function FilesShell({ role, folderId, onNavigate, admin, drive }: FilesSh
   const [shortcut, setShortcut] = useState('Ctrl F')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
+  // Teacher: the subject of their lecture notes («Конспекты лекций/<Предмет>»).
+  const [subject, setSubject] = useState('')
 
   useEffect(() => {
     const id = setTimeout(() => setDebouncedQuery(query.trim()), 250)
@@ -136,9 +139,9 @@ export function FilesShell({ role, folderId, onNavigate, admin, drive }: FilesSh
   const isVip = !!data?.isVip
 
   const search = useQuery({
-    queryKey: ['tutor-files', 'search', debouncedQuery],
-    queryFn: () => filesFetch<{ folders: LibraryFolder[]; files: SearchFile[] }>(`/api/tutor-files/search?q=${encodeURIComponent(debouncedQuery)}`),
-    enabled: debouncedQuery.length > 0 && !admin,
+    queryKey: ['tutor-files', 'search', debouncedQuery, subject],
+    queryFn: () => filesFetch<{ folders: LibraryFolder[]; files: SearchFile[] }>(`/api/tutor-files/search?q=${encodeURIComponent(debouncedQuery)}${subject ? `&subject=${encodeURIComponent(subject)}` : ''}`),
+    enabled: (debouncedQuery.length > 0 || !!subject) && !admin,
   })
 
   const usage = useQuery({
@@ -163,6 +166,7 @@ export function FilesShell({ role, folderId, onNavigate, admin, drive }: FilesSh
     onNavigate(id)
     setQuery('')
     setDebouncedQuery('')
+    setSubject('')
     setTreeOpen(false)
   }
 
@@ -337,7 +341,7 @@ export function FilesShell({ role, folderId, onNavigate, admin, drive }: FilesSh
   // ── Render ────────────────────────────────────────────────
   const canUpload = !!data?.canUpload
   const myId = session?.user?.id
-  const searching = debouncedQuery.length > 0
+  const searching = debouncedQuery.length > 0 || !!subject
 
   const folderActions = (f: LibraryFolder) => canManage
     ? {
@@ -413,7 +417,7 @@ export function FilesShell({ role, folderId, onNavigate, admin, drive }: FilesSh
     )
   } else if (searching) {
     body = search.data && search.data.folders.length + search.data.files.length === 0
-      ? <p className={styles.muted}>{t('searchEmpty', { q: debouncedQuery })}</p>
+      ? <p className={styles.muted}>{debouncedQuery ? t('searchEmpty', { q: debouncedQuery }) : t('subjectEmpty', { subject })}</p>
       : search.data && sections(search.data.folders, search.data.files, { hints: true })
   } else {
     const totalItems = data.groups.reduce((n, g) => n + g.folders.length + g.files.length, 0)
@@ -466,7 +470,7 @@ export function FilesShell({ role, folderId, onNavigate, admin, drive }: FilesSh
   }
 
   const rootLabel = admin ? admin.teacherName : isTeacher ? t('myFiles') : t('sharedWithMe')
-  const title = searching ? t('searchResults') : data?.folder?.name ?? rootLabel
+  const title = searching ? (debouncedQuery ? t('searchResults') : subject) : data?.folder?.name ?? rootLabel
   const current = data?.folder
   const tree = data && (
     <FolderTree nodes={data.tree} teachers={data.teachers} currentId={folderId} openPath={openPath} rootLabel={rootLabel} onSelect={navigate} />
@@ -531,6 +535,7 @@ export function FilesShell({ role, folderId, onNavigate, admin, drive }: FilesSh
                 <kbd className={styles.kbd}>{shortcut}</kbd>
               </label>
             )}
+            {showLibraryChrome && !admin && isTeacher && <SubjectFilter value={subject} onChange={setSubject} />}
             {usage.data && <div className={styles.meterSlot}><StorageMeter usage={usage.data} /></div>}
           </div>
 

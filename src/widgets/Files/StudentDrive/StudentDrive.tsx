@@ -7,15 +7,16 @@ import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-quer
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useRef, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
 import { FileCard } from '../Cards/FileCard'
 import { FolderCard, NewFolderCard } from '../Cards/FolderCard'
 import { FilePreviewModal } from '../FilePreviewModal/FilePreviewModal'
 import { FilesModal } from '../FilesModal/FilesModal'
-import { FilesChevronIcon, FilesFolderPlusIcon, FilesLectureIcon, FilesStorageIcon, FilesUploadIcon, FilesVipIcon } from '../icons'
+import { FilesChevronIcon, FilesFolderPlusIcon, FilesLectureIcon, FilesSearchIcon, FilesStorageIcon, FilesUploadIcon, FilesVipIcon } from '../icons'
 import { filesFetch, FilesApiError, jsonInit, triggerDownload, viewerFor } from '../lib'
 import { StorageMeter } from '../StorageMeter/StorageMeter'
+import { SubjectFilter } from '../SubjectFilter/SubjectFilter'
 import shell from '../FilesShell/FilesShell.module.scss'
 import ui from '../ui.module.scss'
 
@@ -51,6 +52,22 @@ export function StudentDrive({ folderId, onNavigate }: { folderId: string | null
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null)
   const [preview, setPreview] = useState<LibraryFile | null>(null)
   const [uploading, setUploading] = useState<{ done: number; total: number } | null>(null)
+  // Search across the whole drive, optionally by subject («Конспекты лекций/<Предмет>»).
+  const [query, setQuery] = useState('')
+  const [debouncedQuery, setDebouncedQuery] = useState('')
+  const [subject, setSubject] = useState('')
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedQuery(query.trim()), 250)
+    return () => clearTimeout(id)
+  }, [query])
+  const searching = debouncedQuery.length > 0 || !!subject
+  const results = useQuery({
+    queryKey: ['student-files', 'search', debouncedQuery, subject],
+    queryFn: () => filesFetch<{ folders: DriveFolder[]; files: (DriveFile & { folderId: string | null })[] }>(`/api/student-files/search?q=${encodeURIComponent(debouncedQuery)}${subject ? `&subject=${encodeURIComponent(subject)}` : ''}`),
+    enabled: searching,
+    placeholderData: keepPreviousData,
+  })
+  const go = (id: string | null) => { setQuery(''); setDebouncedQuery(''); setSubject(''); onNavigate(id) }
 
   const library = useQuery({
     queryKey: ['student-files', folderId],
@@ -94,9 +111,9 @@ export function StudentDrive({ folderId, onNavigate }: { folderId: string | null
   // Through our API, never the bucket's public URL — browsers flag that domain as dangerous.
   const download = (f: { id: string; name: string }) => triggerDownload({ url: `/api/student-files/files/${f.id}/download`, name: f.name })
 
-  const openFile = (f: DriveFile) => {
+  const openFile = (f: DriveFile, inFolder: string | null = folderId) => {
     if (f.lectureNoteId && !f.mimeType.startsWith('audio/')) { router.push(`/lecture/${f.lectureNoteId}`); return }
-    if (viewerFor(f.mimeType, f.name)) setPreview(asLibraryFile(f, folderId))
+    if (viewerFor(f.mimeType, f.name)) setPreview(asLibraryFile(f, inFolder))
     else download(f)
   }
 
@@ -117,10 +134,55 @@ export function StudentDrive({ folderId, onNavigate }: { folderId: string | null
   return (
     <>
       <div className={shell.topbar}>
+        <label className={shell.search}>
+          <FilesSearchIcon size={16} className={shell.searchIcon} />
+          <input type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder={t('driveSearchPlaceholder')} aria-label={t('driveSearchPlaceholder')} />
+        </label>
+        <SubjectFilter value={subject} onChange={setSubject} />
         <div className={shell.meterSlot}>
           <StorageMeter usage={{ usedBytes: data.usedBytes, quotaBytes: data.quotaBytes, maxFileBytes: data.maxFileBytes, overageGb: 0, billing: null }} />
         </div>
       </div>
+      {searching ? (
+        <div className={shell.content}>
+          <div className={shell.titleRow}>
+            <h1 className={shell.title}>{debouncedQuery ? t('searchResults') : subject}</h1>
+          </div>
+          {!results.data ? (
+            <div className={shell.skeletonGrid} aria-busy="true">{Array.from({ length: 3 }, (_, i) => <div key={i} className={shell.skeleton} />)}</div>
+          ) : results.data.folders.length + results.data.files.length === 0 ? (
+            <p className={shell.muted}>{debouncedQuery ? t('searchEmpty', { q: debouncedQuery }) : t('subjectEmpty', { subject })}</p>
+          ) : (
+            <>
+              {results.data.folders.length > 0 && (
+                <section className={shell.section}>
+                  <h2 className={shell.sectionTitle}>{t('foldersSection')} <span className={shell.count}>{results.data.folders.length}</span></h2>
+                  <div className={shell.folderGrid}>
+                    {results.data.folders.map(f => <FolderCard key={f.id} folder={asLibraryFolder(f)} onOpen={() => go(f.id)} />)}
+                  </div>
+                </section>
+              )}
+              {results.data.files.length > 0 && (
+                <section className={shell.section}>
+                  <h2 className={shell.sectionTitle}>{t('filesSection')} <span className={shell.count}>{results.data.files.length}</span></h2>
+                  <div className={shell.fileGrid}>
+                    {results.data.files.map(f => (
+                      <FileCard
+                        key={f.id}
+                        file={asLibraryFile(f, f.folderId)}
+                        lecture={f.lectureNoteId && !f.mimeType.startsWith('audio/') ? { onOpen: () => router.push(`/lecture/${f.lectureNoteId}`) } : undefined}
+                        onPreview={() => openFile(f, f.folderId)}
+                        onDownload={() => download(f)}
+                        onDelete={() => setDeleteTarget({ kind: 'file', id: f.id, name: f.name })}
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
+            </>
+          )}
+        </div>
+      ) : (
       <div className={shell.content}>
         {data.folder && (
           <nav className={shell.crumbs} aria-label="breadcrumbs">
@@ -198,6 +260,7 @@ export function StudentDrive({ folderId, onNavigate }: { folderId: string | null
           </>
         )}
       </div>
+      )}
 
       {nameDialog && <DriveNameDialog dialog={nameDialog} parentId={folderId} onClose={() => setNameDialog(null)} onDone={() => { setNameDialog(null); refresh() }} />}
       {deleteTarget && (

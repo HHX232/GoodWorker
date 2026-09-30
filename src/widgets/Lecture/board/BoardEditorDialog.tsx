@@ -70,7 +70,7 @@ export function BoardEditorDialog({ initial, isVip, isAdmin, saving, onDone, onC
     return () => { document.body.style.overflow = prev }
   }, [inline])
 
-  const board = <CallWhiteboard remoteElements={null} remoteFiles={null} initialScene={start} onBroadcast={onBroadcast} onSceneApi={onSceneApi} isVip={isVip} isAdmin={isAdmin} />
+  const board = <CallWhiteboard remoteElements={null} remoteFiles={null} initialScene={start} onBroadcast={onBroadcast} onSceneApi={onSceneApi} isVip={isVip} isAdmin={isAdmin} hideTemplates={!!inline} />
 
   if (inline) {
     return (

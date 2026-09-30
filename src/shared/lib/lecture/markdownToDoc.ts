@@ -164,9 +164,18 @@ function blocks(tokens: Token[]): PMNode[] {
       case 'hr': out.push({ type: 'horizontalRule' }); break
       case 'mathBlock': out.push({ type: 'mathBlock', attrs: { latex: (t as unknown as { latex: string }).latex } }); break
       case 'table': {
-        // Tables become one paragraph per row — the lecture editor has no table node.
+        // A real table: header row of tableHeader cells, then tableCell rows (each cell one paragraph).
         const tb = t as Tokens.Table
-        for (const row of [tb.header, ...tb.rows]) out.push(paragraph(row.flatMap((c, i) => [...(i ? [{ type: 'text', text: ' | ' }] : []), ...inline(c.tokens)])))
+        const cells = (row: Tokens.TableCell[], type: 'tableHeader' | 'tableCell') => row.map(c => ({ type, content: [paragraph(inline(c.tokens))] }))
+        const width = tb.header.length
+        const pad = (row: Tokens.TableCell[]) => [...row.slice(0, width), ...Array.from({ length: Math.max(0, width - row.length) }, () => ({ text: '', tokens: [] } as unknown as Tokens.TableCell))]
+        out.push({
+          type: 'table',
+          content: [
+            { type: 'tableRow', content: cells(tb.header, 'tableHeader') },
+            ...tb.rows.map(r => ({ type: 'tableRow', content: cells(pad(r), 'tableCell') })),
+          ],
+        })
         break
       }
       case 'space': break
@@ -183,8 +192,22 @@ function decode(s: string): string {
 }
 
 /** Markdown (house dialect) → a list of TipTap block nodes. */
+/**
+ * In a table row every `|` splits cells — also the one in `{red|…}` and in
+ * `$|x|$`. Those are escaped (`\\|`), which GFM turns back into a plain `|`
+ * inside the cell.
+ */
+function protectTablePipes(md: string): string {
+  return md.split('\n').map(line => {
+    if (!/^\s*\|.*\|\s*$/.test(line)) return line
+    return line
+      .replace(/\{([a-z]+)(?<!\\)\|/g, '{$1\\|')
+      .replace(/\$[^$\n]+\$/g, m => m.replace(/(?<!\\)\|/g, '\\|'))
+  }).join('\n')
+}
+
 export function markdownToBlocks(markdown: string): PMNode[] {
-  return blocks(lexer().lex(markdown.replace(/\r\n?/g, '\n')))
+  return blocks(lexer().lex(protectTablePipes(markdown.replace(/\r\n?/g, '\n'))))
 }
 
 /** Plain text of a ProseMirror JSON subtree — for DeepSeek context and search. */
@@ -195,6 +218,7 @@ export function nodeText(node: PMNode): string {
   if (node.type === 'hardBreak') return '\n'
   if (node.type === 'boardBlock') return '\n[доска]\n'
   if (node.type === 'graphBlock') return `\n${graphSummary(parseGraphSpec(node.attrs?.spec))}\n`
+  if (node.type === 'tableRow') return `${(node.content ?? []).map(c => nodeText(c).trim()).join(' | ')}\n`
   const inner = (node.content ?? []).map(nodeText).join('')
   return ['paragraph', 'heading', 'listItem', 'blockquote', 'codeBlock'].includes(node.type) ? `${inner}\n` : inner
 }

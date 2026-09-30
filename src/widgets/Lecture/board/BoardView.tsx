@@ -70,9 +70,27 @@ export function BoardView({ node, updateAttributes, deleteNode, editor, selected
 
   const editable = editor.isEditable
   const live = mode === 'live'
+  const wrapRef = useRef<HTMLDivElement>(null)
+
+  // TipTap marks the whole block `draggable` (drag it between paragraphs). With the live
+  // board inside, dragging a figure would start a native drag of the block and scroll the
+  // page — so while it's live the block isn't draggable and a stray dragstart is dropped.
+  useEffect(() => {
+    const outer = wrapRef.current?.closest('.react-renderer') as HTMLElement | null
+    if (!outer || !live) return
+    const was = outer.getAttribute('draggable')
+    outer.setAttribute('draggable', 'false')
+    const stop = (e: DragEvent) => { e.preventDefault(); e.stopPropagation() }
+    outer.addEventListener('dragstart', stop, true)
+    return () => {
+      outer.removeEventListener('dragstart', stop, true)
+      if (was !== null) outer.setAttribute('draggable', was)
+    }
+  }, [live])
 
   return (
     <NodeViewWrapper
+      ref={wrapRef}
       className={`lecture-board ${selected ? 'is-selected' : ''} ${live ? 'is-live' : ''}`}
       style={{ width: live ? '100%' : WIDTH[size] }}
       data-size={size}

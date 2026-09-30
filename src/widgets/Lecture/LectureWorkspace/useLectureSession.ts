@@ -3,11 +3,13 @@
 import type { Editor, JSONContent } from '@tiptap/core'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { appendAiSection, coveredSeqs, refreshableSections, replaceSection, textBefore } from '../editor/docOps'
+import { appendAiSection, coveredSeqs, refreshableSections, replaceSection, stripPending, textBefore } from '../editor/docOps'
 import { deleteChunk, pendingChunks } from '../recorder/chunkQueue'
 import { lectureRecorder } from '../recorder/lectureRecorder'
 import { useRecorderState } from '../recorder/useRecorderState'
 import type { ChunkDto, LectureDto, LectureResponse, TariffDto, UploadIssue } from './types'
+
+export type Compression = 'none' | 'medium' | 'strong'
 
 /** Structure every ~60 s of new speech — fewer DeepSeek calls, more context per call. The first section comes sooner, so the page isn't empty for a minute. */
 const STRUCTURE_EVERY_MS = 55_000
@@ -18,20 +20,6 @@ const MAX_BATCH_CHUNKS = 40
 const AUTOSAVE_MS = 1500
 const POLL_FINAL_MS = 8000
 const localKey = (id: string) => `gw-lecture-doc:${id}`
-
-/**
- * A pending "fix by photo"/"ask AI" mark can't survive a reload — its request is gone.
- * Nor can a graph block inserted but never filled in (its editor was open when the tab closed).
- */
-function stripPending(doc: JSONContent | null): JSONContent | null {
-  if (!doc) return doc
-  const walk = (n: JSONContent): JSONContent => ({
-    ...n,
-    ...(n.marks ? { marks: n.marks.filter(m => m.type !== 'pendingFix') } : {}),
-    ...(n.content ? { content: n.content.filter(c => !(c.type === 'graphBlock' && !c.attrs?.spec)).map(walk) } : {}),
-  })
-  return walk(doc)
-}
 
 interface SeqRange { from: number; to: number; ms: number }
 
@@ -49,6 +37,20 @@ export function useLectureSession(lectureId: string, t: (key: string, values?: R
   const [issue, setIssue] = useState<UploadIssue>(null)
   const [structuring, setStructuring] = useState(false)
   const [autoStructure, setAutoStructure] = useState(true)
+  // How detailed the notes are — remembered per lecture on this device; no compression by default.
+  const [compression, setCompressionState] = useState<Compression>('none')
+  const compressionRef = useRef<Compression>('none')
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(`gw-lecture-compression:${lectureId}`)
+      if (saved === 'none' || saved === 'medium' || saved === 'strong') { compressionRef.current = saved; setCompressionState(saved) }
+    } catch { /* storage unavailable */ }
+  }, [lectureId])
+  const setCompression = useCallback((c: Compression) => {
+    compressionRef.current = c
+    setCompressionState(c)
+    try { localStorage.setItem(`gw-lecture-compression:${lectureId}`, c) } catch { /* storage unavailable */ }
+  }, [lectureId])
   const [refining, setRefining] = useState(false)
   const [stopping, setStopping] = useState(false)
   const recorder = useRecorderState()
@@ -58,12 +60,14 @@ export function useLectureSession(lectureId: string, t: (key: string, values?: R
   const received = useRef(new Map<number, ChunkDto>())
   const pumping = useRef(false)
   const structureBusy = useRef(false)
-  /** Ranges the AI found no lecture content in (this session) — not offered again. */
+  /** Ranges the AI found no lecture content in — not offered again (the server keeps them as `noContent` across reloads). */
   const skipped = useRef(new Set<number>())
   /** Auto mode got an empty answer for the tail — wait for more speech before retrying it. */
   const emptyTail = useRef<{ from: number; ms: number } | null>(null)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const latestDoc = useRef<JSONContent | null>(null)
+  /** docVersion the editor's content is based on (edit links can save in between). */
+  const docVersion = useRef(0)
   const refinedFor = useRef(false)
   const autoStructureRef = useRef(autoStructure)
   useEffect(() => { autoStructureRef.current = autoStructure }, [autoStructure])
@@ -88,6 +92,7 @@ export function useLectureSession(lectureId: string, t: (key: string, values?: R
     load().then(data => {
       if (cancelled) return
       lastStructured.current = data.lecture.processedSeq
+      docVersion.current = data.lecture.docVersion ?? 0
       // Local backup wins when it's newer than the server copy (closed tab mid-save).
       let doc = data.lecture.docJson as JSONContent | null
       try {
@@ -103,6 +108,15 @@ export function useLectureSession(lectureId: string, t: (key: string, values?: R
   }, [load, lectureId])
 
   // ── Autosave ────────────────────────────────────────────
+  /** Someone on the edit link saved a newer doc — show it (without echoing it back as a save). */
+  const applyRemoteDoc = useCallback((doc: JSONContent | null, version: number) => {
+    docVersion.current = version
+    const editor = editorRef.current
+    if (!editor || !doc) return
+    editor.commands.setContent(stripPending(doc) ?? { type: 'doc', content: [] }, { emitUpdate: false })
+    try { localStorage.removeItem(localKey(lectureId)) } catch { /* storage unavailable */ }
+  }, [lectureId])
+
   const flushSave = useCallback(async (keepalive = false) => {
     if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null }
     const doc = latestDoc.current
@@ -112,16 +126,27 @@ export function useLectureSession(lectureId: string, t: (key: string, values?: R
       const res = await fetch(`/api/lecture/${lectureId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ docJson: doc }),
+        body: JSON.stringify({ docJson: doc, baseVersion: docVersion.current }),
         keepalive: keepalive && JSON.stringify(doc).length < 60_000,
       })
+      if (res.status === 409) {
+        // Saved meanwhile through the edit link: theirs wins, ours is dropped.
+        const data = await res.json().catch(() => ({}))
+        latestDoc.current = null
+        applyRemoteDoc(data.docJson ?? null, Number(data.docVersion) || 0)
+        setSaveState('saved')
+        toast.info(t('shareConflict'))
+        return
+      }
       if (!res.ok) throw new Error(String(res.status))
+      const saved = await res.json().catch(() => ({}))
+      if (Number.isInteger(saved.lecture?.docVersion)) docVersion.current = saved.lecture.docVersion
       latestDoc.current = latestDoc.current === doc ? null : latestDoc.current
       setSaveState(latestDoc.current ? 'dirty' : 'saved')
     } catch {
       setSaveState('error')
     }
-  }, [lectureId])
+  }, [applyRemoteDoc, lectureId, t])
 
   const onDocChange = useCallback((doc: JSONContent) => {
     latestDoc.current = doc
@@ -152,7 +177,7 @@ export function useLectureSession(lectureId: string, t: (key: string, values?: R
     let prev = -2
     for (const seq of [...received.current.keys()].sort((a, b) => a - b)) {
       const c = received.current.get(seq)!
-      const free = !covered.has(seq) && !skipped.current.has(seq)
+      const free = !covered.has(seq) && !skipped.current.has(seq) && !c.noContent
       if (cur && (!free || seq !== prev + 1)) { out.push(cur); cur = null }
       prev = seq
       if (!free || !c.text.trim()) continue
@@ -173,14 +198,14 @@ export function useLectureSession(lectureId: string, t: (key: string, values?: R
   }, [unstructured])
 
   /** One range → DeepSeek (clean, then notes) → a section in its place. 'empty' = nothing to add. */
-  const structureRange = useCallback(async (editor: Editor, range: SeqRange): Promise<'added' | 'empty'> => {
+  const structureRange = useCallback(async (editor: Editor, range: SeqRange, markEmpty: boolean): Promise<'added' | 'empty'> => {
     // Notes go before the first section of later audio, so "don't repeat" context is what precedes that spot.
     let at = editor.state.doc.content.size
     editor.state.doc.forEach((node, pos) => { if (node.type.name === 'aiSection' && node.attrs.fromSeq > range.to && pos < at) at = pos })
     const res = await fetch(`/api/lecture/${lectureId}/structure`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fromSeq: range.from, toSeq: range.to, previousNotes: textBefore(editor, at, 2500) }),
+      body: JSON.stringify({ fromSeq: range.from, toSeq: range.to, previousNotes: textBefore(editor, at, 2500), compression: compressionRef.current, markEmpty }),
     })
     const data = await res.json().catch(() => ({}))
     if (!res.ok) throw new Error(data.error ?? 'AI_FAILED')
@@ -219,11 +244,12 @@ export function useLectureSession(lectureId: string, t: (key: string, values?: R
     let empty = 0
     try {
       for (const range of ranges) {
-        const result = await structureRange(editor, range)
+        // Forced, or a full batch — an empty answer means give up on it; else wait for more speech.
+        const giveUp = force || range.ms >= MAX_BATCH_MS - 30_000
+        const result = await structureRange(editor, range, giveUp)
         if (result === 'added') { added++; if (emptyTail.current?.from === range.from) emptyTail.current = null; continue }
         empty++
-        // Forced, or a full batch still with nothing in it — give up on it; else wait for more speech.
-        if (force || range.ms >= MAX_BATCH_MS - 30_000) skip(range)
+        if (giveUp) skip(range)
         else emptyTail.current = { from: range.from, ms: range.ms }
       }
       if (force && !added && empty) toast.info(t('structureEmpty'))
@@ -356,7 +382,7 @@ export function useLectureSession(lectureId: string, t: (key: string, values?: R
         const res = await fetch(`/api/lecture/${lectureId}/structure`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fromSeq: s.fromSeq, toSeq: s.toSeq, previousNotes: textBefore(editor, s.pos, 2500) }),
+          body: JSON.stringify({ fromSeq: s.fromSeq, toSeq: s.toSeq, previousNotes: textBefore(editor, s.pos, 2500), compression: compressionRef.current }),
         })
         const data = await res.json().catch(() => ({}))
         if (res.ok && data.isFinal && replaceSection(editor, s.fromSeq, s.toSeq, data.blocks ?? [])) done++
@@ -402,6 +428,23 @@ export function useLectureSession(lectureId: string, t: (key: string, values?: R
     await fetch(`/api/lecture/${lectureId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title }) }).catch(() => {})
   }, [lectureId])
 
+  // While an edit link is out, pull what others saved (only when nothing of ours is unsaved).
+  const editLink = !!lecture?.shareEditToken
+  useEffect(() => {
+    if (!editLink) return
+    const id = setInterval(async () => {
+      if (document.visibilityState !== 'visible' || latestDoc.current || saveTimer.current) return
+      const res = await fetch(`/api/lecture/${lectureId}/doc?since=${docVersion.current}`).catch(() => null)
+      const data = res?.ok ? await res.json().catch(() => null) : null
+      if (data && 'docJson' in data && !latestDoc.current) applyRemoteDoc(data.docJson, Number(data.docVersion) || 0)
+    }, 5000)
+    return () => clearInterval(id)
+  }, [applyRemoteDoc, editLink, lectureId])
+
+  const setShareToken = useCallback((mode: 'view' | 'edit', token: string | null) => {
+    setLecture(l => l && { ...l, [mode === 'edit' ? 'shareEditToken' : 'shareViewToken']: token })
+  }, [])
+
   const onEditorReady = useCallback((editor: Editor) => {
     editorRef.current = editor
     if (lecture?.status === 'READY' && !refinedFor.current) { refinedFor.current = true; refineSections() }
@@ -410,8 +453,8 @@ export function useLectureSession(lectureId: string, t: (key: string, values?: R
   return {
     lecture, chunks, tariff, access, isAdmin, sttConfigured, initialDoc, loadError,
     saveState, flushSave, onDocChange, onEditorReady, editorRef,
-    queued, issue, structuring, autoStructure, setAutoStructure, structureNow: () => structure(true), pendingRange,
+    queued, issue, structuring, autoStructure, setAutoStructure, compression, setCompression, structureNow: () => structure(true), pendingRange,
     recorder, isRecordingHere, startRecording, stopRecording, stopping, finalize, refining,
-    setKeepAudio, setTitle, setContext, reload: load,
+    setKeepAudio, setTitle, setContext, reload: load, setShareToken,
   }
 }

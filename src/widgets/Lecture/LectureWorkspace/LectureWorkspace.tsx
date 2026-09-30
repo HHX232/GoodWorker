@@ -4,13 +4,14 @@ import type { Editor } from '@tiptap/core'
 import { useEditorState } from '@tiptap/react'
 import {
   AlertTriangleIcon, AudioLinesIcon, CameraIcon, ChevronLeftIcon, PenToolIcon, CloudOffIcon, CrownIcon, DownloadIcon, FileTextIcon, FolderInputIcon, MicIcon, NotebookPenIcon,
-  PrinterIcon, ScrollTextIcon, SparklesIcon, SquareIcon, WandSparklesIcon,
+  PrinterIcon, ScrollTextIcon, Share2Icon, SparklesIcon, SquareIcon, WandSparklesIcon,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { collectNotes } from '../editor/docOps'
+import { ShareLinks } from './ShareLinks'
 import { LectureEditor } from '../editor/LectureEditor'
 import { lectureRecorder } from '../recorder/lectureRecorder'
 import { AiOrb, type OrbMode } from '../ui/AiOrb'
@@ -22,6 +23,9 @@ import { TranscriptModal } from './TranscriptModal'
 import { formatClock } from './format'
 import { useLectureSession } from './useLectureSession'
 import styles from './LectureWorkspace.module.scss'
+
+/** Matches the photo-merge API's limit (MAX_PHOTOS in photoInput.ts). */
+const MAX_BOARD_PHOTOS = 6
 
 /**
  * /lecture/[id] — three columns (after the Scribe reference):
@@ -36,11 +40,25 @@ export function LectureWorkspace({ lectureId }: { lectureId: string }) {
   const [editor, setEditor] = useState<Editor | null>(null)
   const [transcriptOpen, setTranscriptOpen] = useState(false)
   const [exporting, setExporting] = useState<null | 'files' | 'word'>(null)
-  const [mergeFile, setMergeFile] = useState<File | null>(null)
+  const [mergeFiles, setMergeFiles] = useState<File[] | null>(null)
   // ≤1100px the side rails become one slide-out drawer with two tabs.
   const [drawer, setDrawer] = useState<'ai' | 'tools'>('ai')
   const [drawerOpen, setDrawerOpen] = useState(false)
   const boardInput = useRef<HTMLInputElement>(null)
+  const pageRef = useRef<HTMLDivElement>(null)
+  const loaded = !!s.lecture && s.initialDoc !== undefined
+
+  // Desktop: the page fills exactly the screen under the site header (see
+  // .page in the SCSS) — how far down it starts is measured, not guessed.
+  useEffect(() => {
+    const el = pageRef.current
+    if (!el) return
+    const measure = () => el.style.setProperty('--lecture-top', `${Math.max(0, Math.round(el.getBoundingClientRect().top + window.scrollY))}px`)
+    measure()
+    const late = setTimeout(measure, 600)
+    window.addEventListener('resize', measure)
+    return () => { clearTimeout(late); window.removeEventListener('resize', measure) }
+  }, [loaded])
 
   const onReady = useCallback((e: Editor) => { setEditor(e); s.onEditorReady(e) }, [s])
 
@@ -146,7 +164,7 @@ export function LectureWorkspace({ lectureId }: { lectureId: string }) {
   )
 
   return (
-    <div className={`${styles.page} ${drawerOpen ? styles.drawerIsOpen : ''}`}>
+    <div ref={pageRef} className={`${styles.page} ${drawerOpen ? styles.drawerIsOpen : ''}`}>
       {/* ≤1100px: the edge tab that slides the rails in, and the dimmed page behind them */}
       <button
         type="button"
@@ -197,7 +215,30 @@ export function LectureWorkspace({ lectureId }: { lectureId: string }) {
                 <small>{t('processPhotoSub')}</small>
               </span>
             </button>
-            <input ref={boardInput} type="file" accept="image/*" capture="environment" hidden onChange={e => { const f = e.target.files?.[0]; if (f) setMergeFile(f); e.target.value = '' }} />
+            {/* Several shots at once (a long board, both halves) — no `capture`, so phones offer the gallery too. */}
+            <input
+              ref={boardInput}
+              type="file"
+              accept="image/*"
+              multiple
+              hidden
+              onChange={e => {
+                const list = [...(e.target.files ?? [])]
+                if (list.length > MAX_BOARD_PHOTOS) toast.warning(t('photosTooMany', { n: MAX_BOARD_PHOTOS }))
+                if (list.length) setMergeFiles(list.slice(0, MAX_BOARD_PHOTOS))
+                e.target.value = ''
+              }}
+            />
+            <div className={styles.compressRow}>
+              <span className={styles.compressLabel}>{t('compression')}</span>
+              <div className={styles.compressTabs} role="tablist" aria-label={t('compression')}>
+                {(['none', 'medium', 'strong'] as const).map(c => (
+                  <button key={c} type="button" role="tab" aria-selected={s.compression === c} className={s.compression === c ? styles.compressOn : ''} onClick={() => s.setCompression(c)} title={t(`compressionHint_${c}`)}>
+                    {t(`compression_${c}`)}
+                  </button>
+                ))}
+              </div>
+            </div>
             <label className={styles.switchRow}>
               <span>{t('autoStructure')}</span>
               <input type="checkbox" className={styles.switch} checked={s.autoStructure} onChange={e => { s.setAutoStructure(e.target.checked); if (e.target.checked) s.structureNow() }} />
@@ -294,6 +335,11 @@ export function LectureWorkspace({ lectureId }: { lectureId: string }) {
           </section>
 
           <section className={styles.panel}>
+            <div className={styles.panelTitle}><Share2Icon size={14} /> {t('share')}</div>
+            <ShareLinks lectureId={lectureId} viewToken={lecture.shareViewToken} editToken={lecture.shareEditToken} onChange={s.setShareToken} />
+          </section>
+
+          <section className={styles.panel}>
             <div className={styles.panelTitle}>{t('textTools')}</div>
             <FormatPanel editor={editor} />
           </section>
@@ -316,7 +362,7 @@ export function LectureWorkspace({ lectureId }: { lectureId: string }) {
         </aside>
       </div>
 
-      {mergeFile && editor && <PhotoMergeDialog lectureId={lectureId} editor={editor} file={mergeFile} onClose={() => setMergeFile(null)} />}
+      {mergeFiles && editor && <PhotoMergeDialog lectureId={lectureId} editor={editor} files={mergeFiles} onClose={() => setMergeFiles(null)} />}
       {transcriptOpen && <TranscriptModal lectureId={lectureId} chunks={s.chunks} onClose={() => setTranscriptOpen(false)} />}
     </div>
   )

@@ -7,13 +7,14 @@ import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { useEffect } from 'react'
 import { BoardBlockNode, GraphBlockNode, MathBlock, MathInline } from './extensions'
+import { TableKit } from '@tiptap/extension-table'
 
 /** Read-only render of AI blocks with the real editor schema — formulas and colours look exactly as they will once applied. */
 export function SuggestionPreview({ blocks, className }: { blocks: JSONContent[]; className?: string }) {
   const editor = useEditor({
     immediatelyRender: false,
     editable: false,
-    extensions: [StarterKit.configure({ link: false }), TextStyle, Color, Highlight.configure({ multicolor: true }), MathInline, MathBlock, BoardBlockNode, GraphBlockNode],
+    extensions: [StarterKit.configure({ link: false }), TextStyle, Color, Highlight.configure({ multicolor: true }), MathInline, MathBlock, BoardBlockNode, GraphBlockNode, TableKit.configure({ table: { resizable: false } })],
     content: { type: 'doc', content: blocks.length ? blocks : [{ type: 'paragraph' }] },
   })
   useEffect(() => {

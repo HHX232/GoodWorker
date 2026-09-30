@@ -1,6 +1,6 @@
 import {
   AlignmentType, CommentRangeEnd, CommentRangeStart, CommentReference, Document, HeadingLevel, ImageRun, ImportedXmlComponent,
-  LevelFormat, Packer, Paragraph, ShadingType, TextRun, type ParagraphChild,
+  BorderStyle, LevelFormat, Packer, Paragraph, ShadingType, Table, TableCell, TableRow, TextRun, WidthType, type ParagraphChild,
 } from 'docx'
 import type { PMMark, PMNode } from './markdownToDoc'
 
@@ -140,8 +140,13 @@ function runsFor(nodes: PMNode[] | undefined, ctx: Ctx): ParagraphChild[] {
   return out
 }
 
-function blocksFor(nodes: PMNode[] | undefined, ctx: Ctx, list?: { ordered: boolean; level: number; instance: number }): Paragraph[] {
-  const out: Paragraph[] = []
+/** Header cells: every text run bold. */
+function boldAll(nodes: PMNode[] | undefined): PMNode[] | undefined {
+  return nodes?.map(n => (n.type === 'text' && !(n.marks ?? []).some(m => m.type === 'bold') ? { ...n, marks: [...(n.marks ?? []), { type: 'bold' }] } : n))
+}
+
+function blocksFor(nodes: PMNode[] | undefined, ctx: Ctx, list?: { ordered: boolean; level: number; instance: number }): (Paragraph | Table)[] {
+  const out: (Paragraph | Table)[] = []
   for (const n of nodes ?? []) {
     switch (n.type) {
       case 'aiSection':
@@ -180,6 +185,21 @@ function blocksFor(nodes: PMNode[] | undefined, ctx: Ctx, list?: { ordered: bool
       case 'lecturePhoto': {
         const photo = ctx.photos.get(String(n.attrs?.photoId ?? ''))
         if (photo && photo.mime !== 'image/webp') out.push(photoParagraph(photo, n.type === 'boardBlock' ? SIZE_SHARE[String(n.attrs?.size ?? 'l')] ?? 1 : 1))
+        break
+      }
+      case 'table': {
+        // Header row shaded and bold, thin grey grid — like the table in the notes.
+        const border = { style: BorderStyle.SINGLE, size: 4, color: 'D0D0DA' }
+        const rows = (n.content ?? []).filter(r => r.type === 'tableRow').map(r => new TableRow({
+          tableHeader: (r.content ?? []).every(c => c.type === 'tableHeader'),
+          children: (r.content ?? []).map(c => new TableCell({
+            shading: c.type === 'tableHeader' ? { type: ShadingType.CLEAR, fill: 'F3F0FF', color: 'auto' } : undefined,
+            children: (c.content ?? []).length
+              ? (c.content ?? []).map(p => new Paragraph({ children: runsFor(c.type === 'tableHeader' ? boldAll(p.content) : p.content, ctx) }))
+              : [new Paragraph({ children: [] })],
+          })),
+        }))
+        if (rows.length) out.push(new Table({ rows, width: { size: 100, type: WidthType.PERCENTAGE }, borders: { top: border, bottom: border, left: border, right: border, insideHorizontal: border, insideVertical: border } }))
         break
       }
       case 'codeBlock':
