@@ -3,7 +3,7 @@
 import type { Editor, JSONContent } from '@tiptap/core'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { appendAiSection, coveredSeqs, refreshableSections, replaceSection, stripPending, textBefore } from '../editor/docOps'
+import { appendAiSection, coveredSeqs, refreshableSections, replaceSection, sectionInsertPos, stripPending, textBefore } from '../editor/docOps'
 import { deleteChunk, pendingChunks } from '../recorder/chunkQueue'
 import { lectureRecorder } from '../recorder/lectureRecorder'
 import { useRecorderState } from '../recorder/useRecorderState'
@@ -200,8 +200,7 @@ export function useLectureSession(lectureId: string, t: (key: string, values?: R
   /** One range → DeepSeek (clean, then notes) → a section in its place. 'empty' = nothing to add. */
   const structureRange = useCallback(async (editor: Editor, range: SeqRange, markEmpty: boolean): Promise<'added' | 'empty'> => {
     // Notes go before the first section of later audio, so "don't repeat" context is what precedes that spot.
-    let at = editor.state.doc.content.size
-    editor.state.doc.forEach((node, pos) => { if (node.type.name === 'aiSection' && node.attrs.fromSeq > range.to && pos < at) at = pos })
+    const at = sectionInsertPos(editor.state.doc, range.to)
     const res = await fetch(`/api/lecture/${lectureId}/structure`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
