@@ -30,14 +30,15 @@ type Stage = 'preparing' | 'thinking' | 'review' | 'error'
  * a continuation of block N (inserted right after it), or new (appended).
  * The student reviews the plan and applies it.
  */
-export function PhotoMergeDialog({ lectureId, editor, file, onClose }: { lectureId: string; editor: Editor; file: File; onClose: () => void }) {
+export function PhotoMergeDialog({ lectureId, editor, files, onClose }: { lectureId: string; editor: Editor; files: File[]; onClose: () => void }) {
   const t = useTranslations('lecture')
   const [stage, setStage] = useState<Stage>('preparing')
   const [items, setItems] = useState<MergeItem[]>([])
   const [picked, setPicked] = useState<boolean[]>([])
-  const [attachPhoto, setAttachPhoto] = useState(true)
+  // Off by default: the notes get what's on the board, not the snapshots themselves.
+  const [attachPhoto, setAttachPhoto] = useState(false)
   const [applying, setApplying] = useState(false)
-  const prepared = useRef<PreparedPhoto | null>(null)
+  const prepared = useRef<PreparedPhoto[]>([])
   const anchors = useRef<BlockAnchor[]>([])
   const [labels, setLabels] = useState<string[]>([])
 
@@ -45,13 +46,14 @@ export function PhotoMergeDialog({ lectureId, editor, file, onClose }: { lecture
     let cancelled = false
     ;(async () => {
       try {
-        const p = await preparePhoto(file, true)
+        const shots: PreparedPhoto[] = []
+        for (const f of files) shots.push(await preparePhoto(f, true))
         if (cancelled) return
-        prepared.current = p
+        prepared.current = shots
         anchors.current = blockAnchors(editor.state.doc)
         setStage('thinking')
         const form = new FormData()
-        form.append('photo', p.file)
+        for (const p of shots) form.append('photo', p.file)
         form.append('outline', JSON.stringify(anchors.current.map(a => a.text)))
         const res = await fetch(`/api/lecture/${lectureId}/photo-merge`, { method: 'POST', body: form })
         const data = await res.json().catch(() => ({}))
@@ -69,7 +71,7 @@ export function PhotoMergeDialog({ lectureId, editor, file, onClose }: { lecture
       }
     })()
     return () => { cancelled = true }
-  }, [editor, file, lectureId, t])
+  }, [editor, files, lectureId, t])
 
   const where = (i: MergeItem) => {
     const text = i.block !== null ? labels[i.block] ?? '' : ''
@@ -82,7 +84,8 @@ export function PhotoMergeDialog({ lectureId, editor, file, onClose }: { lecture
     setApplying(true)
     try {
       const chosen = items.filter((_, idx) => picked[idx])
-      const photoId = attachPhoto && prepared.current ? await uploadPhoto(lectureId, prepared.current) : null
+      const photoNodes: JSONContent[] = []
+      if (attachPhoto) for (const p of prepared.current) photoNodes.push(photoNode(await uploadPhoto(lectureId, p), p))
       // Positions come from the doc as it was when the photo was analysed —
       // insert from the bottom up so earlier positions stay valid.
       const size = editor.state.doc.content.size
@@ -94,11 +97,10 @@ export function PhotoMergeDialog({ lectureId, editor, file, onClose }: { lecture
         else if (item.action === 'duplicate' && anchor) inserts.push({ at: Math.min(anchor.end, size), content: item.blocks })
         else appended.push(...item.blocks)
       }
-      if (photoId && prepared.current) {
-        // The photo goes before the first thing taken from it.
-        const photo = photoNode(photoId, prepared.current)
-        if (inserts.length) inserts.sort((a, b) => a.at - b.at)[0].content.unshift(photo)
-        else appended.unshift(photo)
+      if (photoNodes.length) {
+        // The photos go before the first thing taken from them.
+        if (inserts.length) inserts.sort((a, b) => a.at - b.at)[0].content.unshift(...photoNodes)
+        else appended.unshift(...photoNodes)
       }
       const chain = editor.chain()
       for (const ins of inserts.sort((a, b) => b.at - a.at)) chain.insertContentAt(ins.at, ins.content)
@@ -166,7 +168,7 @@ export function PhotoMergeDialog({ lectureId, editor, file, onClose }: { lecture
 
         <div className={styles.dialogActions}>
           {stage === 'review' && (
-            <label className={styles.option}><input type="checkbox" checked={attachPhoto} onChange={e => setAttachPhoto(e.target.checked)} /><ImageIcon size={15} /> {t('optInsertImage')}</label>
+            <label className={styles.option}><input type="checkbox" checked={attachPhoto} onChange={e => setAttachPhoto(e.target.checked)} /><ImageIcon size={15} /> {t('optInsertImage')}{files.length > 1 ? ` (${files.length})` : ''}</label>
           )}
           <span className={styles.spacer} />
           <button type="button" className={styles.btn} onClick={onClose} disabled={applying}>{t('cancel')}</button>

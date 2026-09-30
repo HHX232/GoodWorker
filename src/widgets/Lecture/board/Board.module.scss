@@ -50,7 +50,7 @@
 }
 
 // Inline: the live board inside the notes.
-.inline { display: flex; flex-direction: column; border-top: 1px solid #ececf2; background: #f3f3f6; }
+.inline { display: flex; flex-direction: column; user-select: none; -webkit-user-select: none; border-top: 1px solid #ececf2; background: #f3f3f6; }
 .inlineBar { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid #ececf2; background: #fff; .barBtn { height: 32px; padding: 0 10px; font-size: 13px; } }
 .inlineHint { overflow: hidden; color: #9a9cab; font-size: 12.5px; text-overflow: ellipsis; white-space: nowrap; }
 .inlineBody { position: relative; min-height: 0; > * { height: 100%; } }

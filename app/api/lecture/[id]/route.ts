@@ -4,6 +4,7 @@ import { hasLectureAccess, requireOwnLecture } from '@/shared/lib/lecture/access
 import { getLectureSettings, LECTURE_BILLING_ENABLED } from '@/shared/lib/lecture/pricing'
 import { isSttConfigured } from '@/shared/lib/lecture/stt'
 import { parseContext } from '@/shared/lib/lecture/context'
+import { baseVersionOf, saveDoc } from '@/shared/lib/lecture/share'
 import type { Prisma } from '@prisma/client'
 
 interface Params {
@@ -23,7 +24,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       prisma.lectureChunk.findMany({
         where: { lectureId: id },
         orderBy: { seq: 'asc' },
-        select: { seq: true, startMs: true, durationMs: true, draftText: true, finalText: true, audioKey: true, audioBytes: true, createdAt: true },
+        select: { seq: true, startMs: true, durationMs: true, draftText: true, finalText: true, audioKey: true, audioBytes: true, noContent: true, createdAt: true },
       }),
       getLectureSettings(),
       hasLectureAccess(user),
@@ -36,6 +37,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
         seq: c.seq, startMs: c.startMs, durationMs: c.durationMs,
         text: c.finalText ?? c.draftText, isFinal: c.finalText !== null,
         hasAudio: !!c.audioKey || held.has(c.seq),
+        noContent: c.noContent,
       })),
       // The tariff's internals (markup, token prices, tiers) are for admins only —
       // everyone else just sees the resulting price.
@@ -50,7 +52,9 @@ export async function GET(_req: NextRequest, { params }: Params) {
   }
 }
 
-// PATCH /api/lecture/[id] — autosave {docJson?, title?, keepAudio?}.
+// PATCH /api/lecture/[id] — autosave {docJson?, baseVersion?, title?, keepAudio?}.
+// With baseVersion, a doc saved meanwhile through an edit link wins: 409
+// {error: 'CONFLICT', docJson, docVersion} and the client shows that one.
 // Saving your own notes stays open without VIP (only recording/AI need it).
 export async function PATCH(req: NextRequest, { params }: Params) {
   try {
@@ -80,9 +84,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     if (body.docJson !== undefined) {
       const doc = body.docJson as { type?: unknown } | null
       if (!doc || typeof doc !== 'object' || doc.type !== 'doc') return NextResponse.json({ error: 'docJson must be a ProseMirror doc' }, { status: 400 })
-      data.docJson = doc as Prisma.InputJsonValue
+      const saved = await saveDoc(id, doc as Prisma.InputJsonValue, baseVersionOf(body.baseVersion))
+      if (!saved.ok) return NextResponse.json({ error: 'CONFLICT', docJson: saved.docJson, docVersion: saved.docVersion }, { status: 409 })
     }
-    const lecture = await prisma.lectureNote.update({ where: { id }, data, select: { id: true, title: true, keepAudio: true, context: true, updatedAt: true } })
+    const lecture = await prisma.lectureNote.update({ where: { id }, data, select: { id: true, title: true, keepAudio: true, context: true, updatedAt: true, docVersion: true } })
     return NextResponse.json({ lecture })
   } catch (e) {
     console.error('[PATCH /api/lecture/[id]]', e)

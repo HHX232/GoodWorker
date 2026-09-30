@@ -229,6 +229,18 @@ $aiSoft: #f5f0ff;
   // The global reset pins strong/em/mark/… to 15px — inside the notes they take the
   // size of their text (FontSize), except in mathlive's own markup.
   :global(.ProseMirror) :is(strong, em, b, i, u, s, mark, a, sub, sup, code, del, ins, :global(span.lecture-note)):not(:global(.lecture-math) *) { font-size: inherit; }
+  // ── Tables (AI answers «сделай таблицей», pasted tables) ──
+  :global(.ProseMirror) table {
+    width: 100%;
+    margin: 0.8em 0;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 0.95em;
+    td, th { padding: 6px 10px; border: 1px solid #d9d9e3; vertical-align: top; text-align: left; }
+    th { background: #f5f0ff; color: $ink; font-weight: 600; }
+    p { margin: 0; }
+    :global(.selectedCell) { background: rgba(124, 58, 237, 0.1); }
+  }
   // ── Board blocks (the call whiteboard, snapshot in the page) ──
   :global(.lecture-board) {
     position: relative;
@@ -751,6 +763,8 @@ $aiSoft: #f5f0ff;
 .noteTipBelow { transform: translate(-50%, 10px); &::after { top: -6px; bottom: auto; transform: translateX(-50%) rotate(225deg); } }
 @keyframes tipIn { from { opacity: 0; } }
 .noteTipLabel { display: block; margin-bottom: 2px; color: #b45309; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+// The site's global reset flattens inputs (appearance: none, full width) — bring the checkbox back.
+.askAfterOpt { display: flex; align-items: center; gap: 8px; margin: 2px 0 10px; color: $muted; font-size: 13px; cursor: pointer; input { flex: none; width: 16px; height: 16px; margin: 0; accent-color: $ai; appearance: auto; } }
 .mergeFound { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 10px; color: $muted; font-size: 12.5px; }
 .kindChip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border: 1px solid #e4dcfb; border-radius: 999px; background: #faf8ff; color: $ai; font-size: 12px; font-weight: 600; white-space: nowrap; }
 .kindChipNone { border-color: $line; background: transparent; color: $faint; font-weight: 500; }
@@ -820,6 +834,7 @@ $aiSoft: #f5f0ff;
   .mergeTag_duplicate { background: rgba(255, 255, 255, 0.06); color: #aeb2c2; }
   .mergeTag_continuation { background: rgba(59, 130, 246, 0.14); color: #93c5fd; }
   .mergeTag_new { background: rgba(16, 185, 129, 0.14); color: #6ee7b7; }
+  .editor :global(.ProseMirror) table { td, th { border-color: rgba(255, 255, 255, 0.12); } th { background: rgba(167, 139, 250, 0.12); color: #e8eaf0; } }
   .noteTip { border-color: rgba(245, 158, 11, 0.4); background: #2a2214; color: #fde68a; &::after { border-color: rgba(245, 158, 11, 0.4); background: #2a2214; } }
   .noteTipLabel { color: #fbbf24; }
   .kindChip { border-color: rgba(167, 139, 250, 0.25); background: rgba(167, 139, 250, 0.1); color: #c4b5fd; }

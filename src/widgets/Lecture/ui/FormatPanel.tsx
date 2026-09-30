@@ -23,8 +23,11 @@ function mathSelection(e: Editor): { pos: number; size: number; align: MathAlign
   return { pos: sel.from, size: Number(sel.node.attrs.size) || 1, align: sel.node.type.name === 'mathBlock' ? (sel.node.attrs.align ?? 'center') : null }
 }
 
-/** Right-column "Текст" block — round tool buttons after the Scribe reference. */
-export function FormatPanel({ editor }: { editor: Editor | null }) {
+/**
+ * Right-column "Текст" block — round tool buttons after the Scribe reference.
+ * `compact`: one slim row of icon buttons (the public link page's toolbar).
+ */
+export function FormatPanel({ editor, compact = false }: { editor: Editor | null; compact?: boolean }) {
   const t = useTranslations('lecture')
   const s = useEditorState({
     editor,
@@ -106,7 +109,7 @@ export function FormatPanel({ editor }: { editor: Editor | null }) {
   ]
 
   return (
-    <>
+    <div className={compact ? styles.formatCompact : styles.formatStack}>
     <div className={styles.sizeBar} role="toolbar" aria-label={t('sizeAndAlign')}>
       <button type="button" className={styles.sizeBtn} onMouseDown={e => e.preventDefault()} onClick={() => stepSize(-1)} aria-label={t('sizeDown')} title={t('sizeDown')}><AArrowDownIcon size={16} /></button>
       {s?.math
@@ -137,12 +140,12 @@ export function FormatPanel({ editor }: { editor: Editor | null }) {
     </div>
     <div className={styles.toolGrid} role="toolbar" aria-label={t('toolbar')}>
       {tools.map(tool => (
-        <button key={tool.key} type="button" className={styles.roundTool} aria-pressed={!!tool.active} disabled={tool.disabled} onMouseDown={e => e.preventDefault()} onClick={tool.run}>
+        <button key={tool.key} type="button" className={styles.roundTool} aria-pressed={!!tool.active} aria-label={tool.label} title={compact ? tool.label : undefined} disabled={tool.disabled} onMouseDown={e => e.preventDefault()} onClick={tool.run}>
           <span className={`${styles.roundIcon} ${tool.active ? styles.roundIconOn : ''}`}>{tool.icon}</span>
           <span className={styles.roundLabel}>{tool.label}</span>
         </button>
       ))}
     </div>
-    </>
+    </div>
   )
 }

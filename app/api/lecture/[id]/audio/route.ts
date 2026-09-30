@@ -9,15 +9,16 @@ interface Params {
   params: Promise<{ id: string }>
 }
 
-// GET /api/lecture/[id]/audio — the whole recording as one .m4a download.
+// GET /api/lecture/[id]/audio — the whole recording as one .m4a download, with chapter markers from the notes.
 // Available while audio exists: kept in S3 ("сохранять аудио"), or still
 // held in the DB before the final pass.
-export async function GET(_req: NextRequest, { params }: Params) {
+export async function GET(req: NextRequest, { params }: Params) {
   try {
     const { id } = await params
     const guard = await requireOwnLecture(id)
     if (guard.response) return guard.response
-    const m4a = await buildLectureAudio(id)
+    // Chapter labels ("Формула", "График"…) in the UI language.
+    const m4a = await buildLectureAudio(id, req.cookies.get('NEXT_LOCALE')?.value ?? 'ru')
     if (!m4a) return NextResponse.json({ error: 'NO_AUDIO' }, { status: 404 })
     const name = `${(guard.lecture.title || 'lecture').replace(/[^\p{L}\p{N} _.-]/gu, '').slice(0, 80) || 'lecture'}.m4a`
     return new NextResponse(new Uint8Array(m4a), {

@@ -151,9 +151,11 @@ interface Props {
    * onBroadcast by themselves, so a saver needs the real current state.
    */
   onSceneApi?: (read: () => { elements: readonly ExcalidrawElement[]; files: BinaryFiles }) => void
+  /** A lecture's in-text board: no templates tab (no room for it, and it would replace the figure). */
+  hideTemplates?: boolean
 }
 
-export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomName, isVip, isAdmin, initialScene, onSceneApi }: Props) {
+export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomName, isVip, isAdmin, initialScene, onSceneApi, hideTemplates }: Props) {
   const apiRef = useRef<ExcalidrawImperativeAPI | null>(null)
   const formulaWrapRef = useRef<HTMLDivElement>(null)
   const broadcastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -982,7 +984,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
         {/* Right-side counterpart to .formulaWrap — same "float over the
             canvas, below Excalidraw's own toolbar" reasoning, mirrored to
             the right edge since the left side is already crowded. */}
-        <div className={styles.templatesWrap}>
+        {!hideTemplates && <div className={styles.templatesWrap}>
           <button
             type="button"
             className={styles.templatesButton}
@@ -1002,7 +1004,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
               {savingTemplate ? '…' : `💾 ${t('toolbar.saveTemplate')}`}
             </button>
           )}
-        </div>
+        </div>}
         {templatesModalOpen && (
           <TemplatesModal
             hasContent={sceneElements.some(el => !el.isDeleted)}

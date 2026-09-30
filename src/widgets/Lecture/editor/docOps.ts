@@ -128,3 +128,17 @@ export function fragmentFor(blocks: JSONContent[]): JSONContent | JSONContent[] 
   if (blocks.length === 1 && blocks[0].type === 'paragraph') return blocks[0].content ?? []
   return blocks
 }
+
+/**
+ * A pending "fix by photo"/"ask AI" mark can't survive a reload — its request is gone.
+ * Nor can a graph block inserted but never filled in (its editor was open when the tab closed).
+ */
+export function stripPending(doc: JSONContent | null): JSONContent | null {
+  if (!doc) return doc
+  const walk = (n: JSONContent): JSONContent => ({
+    ...n,
+    ...(n.marks ? { marks: n.marks.filter(m => m.type !== 'pendingFix') } : {}),
+    ...(n.content ? { content: n.content.filter(c => !(c.type === 'graphBlock' && !c.attrs?.spec)).map(walk) } : {}),
+  })
+  return walk(doc)
+}

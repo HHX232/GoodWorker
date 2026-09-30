@@ -11,6 +11,11 @@ export interface LectureDto {
   recordedMs: number
   costKopecks: number
   fileId: string | null
+  /** Public links (owner only sees these): /lecture/shared/<token>. */
+  shareViewToken: string | null
+  shareEditToken: string | null
+  /** Bumped on every doc save — autosave sends it back as baseVersion. */
+  docVersion: number
   createdAt: string
   updatedAt: string
 }
@@ -22,6 +27,8 @@ export interface ChunkDto {
   text: string
   isFinal: boolean
   hasAudio: boolean
+  /** The AI found nothing to note here — not offered to «Законспектировать» again. */
+  noContent?: boolean
 }
 
 /** Only `billingEnabled` for non-admins — the tariff's internals stay server-side. */

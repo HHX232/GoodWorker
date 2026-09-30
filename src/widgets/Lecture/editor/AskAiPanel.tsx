@@ -22,7 +22,8 @@ export interface AskTarget {
 interface Props {
   lectureId: string
   target: AskTarget
-  onApply: (blocks: JSONContent[]) => void
+  /** insertAfter: keep the selection and put the answer right after it. */
+  onApply: (blocks: JSONContent[], insertAfter: boolean) => void
   onCancel: () => void
 }
 
@@ -36,6 +37,9 @@ export function AskAiPanel({ lectureId, target, onApply, onCancel }: Props) {
   const [instruction, setInstruction] = useState(target.preset ?? '')
   const [busy, setBusy] = useState(false)
   const [blocks, setBlocks] = useState<JSONContent[] | null>(null)
+  // Replace the selection (default) or add the answer after it — the AI answers differently for each.
+  const [insertAfter, setInsertAfter] = useState(false)
+  const lastInstruction = useRef('')
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const ranPreset = useRef(false)
@@ -67,15 +71,16 @@ export function AskAiPanel({ lectureId, target, onApply, onCancel }: Props) {
     return () => { ro?.disconnect(); window.removeEventListener('resize', place) }
   }, [target.rect])
 
-  const run = async (text: string) => {
+  const run = async (text: string, after = insertAfter) => {
     const instr = text.trim()
     if (!instr || busy) return
+    lastInstruction.current = instr
     setBusy(true)
     try {
       const res = await fetch(`/api/lecture/${lectureId}/ask`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ selection: target.selection, context: target.context, instruction: instr }),
+        body: JSON.stringify({ selection: target.selection, context: target.context, instruction: instr, insertAfter: after }),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error ?? 'AI_FAILED')
@@ -130,11 +135,25 @@ export function AskAiPanel({ lectureId, target, onApply, onCancel }: Props) {
         </div>
       </div>
 
+      <label className={styles.askAfterOpt}>
+        <input
+          type="checkbox"
+          checked={insertAfter}
+          onChange={e => {
+            const next = e.target.checked
+            setInsertAfter(next)
+            // A replacement and an addition are different answers — ask again for the new mode.
+            if (blocks && lastInstruction.current) run(lastInstruction.current, next)
+          }}
+        />
+        {t('askInsertAfter')}
+      </label>
+
       <div className={styles.dialogActions}>
         {blocks && <button type="button" className={styles.btn} disabled={busy} onClick={() => run(instruction)}><RefreshCwIcon size={14} /> {t('askAgain')}</button>}
         <span className={styles.spacer} />
         <button type="button" className={styles.btn} onClick={onCancel}>{t('cancel')}</button>
-        <button type="button" className={`${styles.btn} ${styles.primary}`} disabled={!blocks?.length || busy} onClick={() => blocks && onApply(blocks)}>{t('askApply')}</button>
+        <button type="button" className={`${styles.btn} ${styles.primary}`} disabled={!blocks?.length || busy} onClick={() => blocks && onApply(blocks, insertAfter)}>{insertAfter ? t('askInsert') : t('askApply')}</button>
       </div>
     </div>,
     document.body,

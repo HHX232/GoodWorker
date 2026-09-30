@@ -8,6 +8,8 @@ import { lectureToDocx, photoIdsIn, type DocxPhoto } from '@/shared/lib/lecture/
 import { readObject } from '@/shared/lib/lecture/audio'
 import { saveLectureAudioFile } from '@/shared/lib/lecture/audioFile'
 import type { PMNode } from '@/shared/lib/lecture/markdownToDoc'
+import { parseContext } from '@/shared/lib/lecture/context'
+import { studentSubjectFolder, tutorSubjectFolder } from '@/shared/lib/lecture/subjects'
 import { DriveError, driveErrorResponse, ensureLecturesFolder, isStudentVipActive, putStudentFile, replaceStudentFile } from '@/shared/lib/studentDrive/drive'
 import { hasStorageAccess, vipRequiredResponse } from '@/shared/lib/tutorFiles/access'
 import { extractText } from '@/shared/lib/tutorFiles/extractText'
@@ -46,11 +48,11 @@ async function ensureTutorLecturesFolder(teacherId: string): Promise<string> {
  * "Сохранять аудио" on → the recording goes next to the .docx as .m4a. Gluing a long
  * lecture takes a while, so it runs after the response; the client just says it's coming.
  */
-function saveAudioAfter(lectureId: string, owner: { id: string; role: 'STUDENT' | 'TEACHER' }, folderId: string | null, docxName: string, keepAudio: boolean): 'pending' | null {
+function saveAudioAfter(lectureId: string, owner: { id: string; role: 'STUDENT' | 'TEACHER' }, folderId: string | null, docxName: string, keepAudio: boolean, lang: string): 'pending' | null {
   if (!keepAudio) return null
   after(async () => {
     try {
-      await saveLectureAudioFile({ lectureId, owner, folderId, baseName: docxName.replace(/\.docx$/i, '') })
+      await saveLectureAudioFile({ lectureId, owner, folderId, baseName: docxName.replace(/\.docx$/i, ''), lang })
     } catch (e) {
       console.error('[lecture export] audio file failed', lectureId, e)
     }
@@ -90,14 +92,24 @@ export async function POST(req: NextRequest, { params }: Params) {
       })
     }
 
+    // Filed by subject: «Конспекты лекций/<Предмет>» (see subjects.ts).
+    const subject = parseContext(lecture.context).subject
+
     if (user.role === 'STUDENT') {
       if (!user.isAdmin && !(await isStudentVipActive(user.id))) return NextResponse.json({ error: 'VIP_REQUIRED' }, { status: 403 })
       const existing = lecture.fileId ? await prisma.studentFile.findFirst({ where: { id: lecture.fileId, studentId: user.id } }) : null
-      const file = existing
+      const root = await ensureLecturesFolder(user.id, LECTURES_FOLDER)
+      const target = await studentSubjectFolder(user.id, root, subject)
+      let file = existing
         ? await replaceStudentFile(existing, bytes, DOCX_MIME)
-        : await putStudentFile({ studentId: user.id, folderId: await ensureLecturesFolder(user.id, LECTURES_FOLDER), name, mimeType: DOCX_MIME, bytes, lectureNoteId: id })
+        : await putStudentFile({ studentId: user.id, folderId: target, name, mimeType: DOCX_MIME, bytes, lectureNoteId: id })
+      // Saved before the subject was known → still in the root: move it (and its audio) in.
+      if (existing && file.folderId === root && target !== root) {
+        await prisma.studentFile.updateMany({ where: { studentId: user.id, lectureNoteId: id, folderId: root }, data: { folderId: target } })
+        file = { ...file, folderId: target }
+      }
       if (!existing) await prisma.lectureNote.update({ where: { id }, data: { fileId: file.id } })
-      const audio = saveAudioAfter(id, { id: user.id, role: 'STUDENT' }, file.folderId, file.name, lecture.keepAudio)
+      const audio = saveAudioAfter(id, { id: user.id, role: 'STUDENT' }, file.folderId, file.name, lecture.keepAudio, req.cookies.get('NEXT_LOCALE')?.value ?? 'ru')
       return NextResponse.json({ file: { id: file.id, name: file.name, folderId: file.folderId }, where: 'drive', audio })
     }
 
@@ -109,18 +121,24 @@ export async function POST(req: NextRequest, { params }: Params) {
     const key = `tutor-files/${user.id}/${randomUUID()}.docx`
     await s3.send(new PutObjectCommand({ Bucket: S3_BUCKET, Key: key, Body: bytes, ContentType: DOCX_MIME, ACL: 'public-read' }))
     const data = { key, url: publicUrlForKey(key), sizeBytes: bytes.length, mimeType: DOCX_MIME, contentText: null }
-    const file = existing
+    const root = await ensureTutorLecturesFolder(user.id)
+    const target = await tutorSubjectFolder(user.id, root, subject)
+    let file = existing
       ? await prisma.tutorFile.update({ where: { id: existing.id }, data })
       : await prisma.tutorFile.create({
-          data: { ...data, teacherId: user.id, folderId: await ensureTutorLecturesFolder(user.id), name, uploadedByRole: 'TEACHER', uploadedById: user.id, lectureNoteId: id },
+          data: { ...data, teacherId: user.id, folderId: target, name, uploadedByRole: 'TEACHER', uploadedById: user.id, lectureNoteId: id },
         })
+    if (existing && file.folderId === root && target !== root) {
+      await prisma.tutorFile.updateMany({ where: { teacherId: user.id, lectureNoteId: id, folderId: root }, data: { folderId: target } })
+      file = { ...file, folderId: target }
+    }
     if (!existing) await prisma.lectureNote.update({ where: { id }, data: { fileId: file.id } })
     // Search inside files (same as uploads) — after the response.
     after(async () => {
       const text = await extractText(bytes, name, DOCX_MIME)
       await prisma.tutorFile.update({ where: { id: file.id }, data: { contentText: text } }).catch(() => {})
     })
-    const audio = saveAudioAfter(id, { id: user.id, role: 'TEACHER' }, file.folderId, file.name, lecture.keepAudio)
+    const audio = saveAudioAfter(id, { id: user.id, role: 'TEACHER' }, file.folderId, file.name, lecture.keepAudio, req.cookies.get('NEXT_LOCALE')?.value ?? 'ru')
     return NextResponse.json({ file: { id: file.id, name: file.name, folderId: file.folderId }, where: 'library', audio })
   } catch (e) {
     if (e instanceof DriveError) return driveErrorResponse(e)

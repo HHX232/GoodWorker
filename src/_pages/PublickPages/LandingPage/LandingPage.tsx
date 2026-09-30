@@ -1767,19 +1767,20 @@ export default function LandingPage() {
         <SubNav />
         <HeroSection />
         <Divider />
+        {/* Order: board → calendar → teachers → lecture notes → courses → the rest */}
         <VideoSection />
         <Divider />
         <CalendarSection />
+        <Divider />
+        <TeachersBlock />
+        <Divider />
+        <LecturePromo />
         <Divider />
         <CourseSection />
         <Divider />
         <FeaturesBlock />
         <Divider />
-        <TeachersBlock />
-        <Divider />
         <PdfTestPromo />
-        <Divider />
-        <LecturePromo />
         <Divider />
         <PostsSlider />
       </div>

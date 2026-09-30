@@ -1286,6 +1286,12 @@ model LectureNote {
   costKopecks        Int            @default(0)
   // The saved export (StudentFile.id or TutorFile.id, by ownerRole).
   fileId             String?
+  // Public links (/lecture/shared/<token>): read-only and read-write. Null = off.
+  shareViewToken     String?        @unique
+  shareEditToken     String?        @unique
+  // Bumped on every docJson save — a save based on an older version gets 409
+  // (the owner and people with the edit link may type at the same time).
+  docVersion         Int            @default(0)
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
   chunks             LectureChunk[]
@@ -1309,6 +1315,9 @@ model LectureChunk {
   audioData  Bytes?
   audioMime  String      @default("audio/webm")
   audioBytes Int         @default(0)
+  // A forced / full-batch "Законспектировать" found no lecture content here —
+  // not offered again (survives reloads, unlike the client's session skip set).
+  noContent  Boolean     @default(false)
   createdAt  DateTime    @default(now())
   lecture    LectureNote @relation(fields: [lectureId], references: [id], onDelete: Cascade)
 

@@ -10,8 +10,8 @@ interface Params {
   params: Promise<{ id: string }>
 }
 
-// POST /api/lecture/[id]/ask — {selection, context, instruction} → a
-// suggested replacement {markdown, blocks}. Nothing is written: the page
+// POST /api/lecture/[id]/ask — {selection, context, instruction, insertAfter?} → a
+// suggested replacement (or, with insertAfter, an addition) {markdown, blocks}. Nothing is written: the page
 // shows it next to the original and the student applies or cancels.
 export async function POST(req: NextRequest, { params }: Params) {
   try {
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     const selection = typeof body.selection === 'string' ? body.selection.trim() : ''
     const instruction = typeof body.instruction === 'string' ? body.instruction.trim() : ''
     if (!selection || !instruction) return NextResponse.json({ error: 'selection and instruction required' }, { status: 400 })
-    const markdown = await askAboutFragment({ lectureId: id, lecture: contextPrompt(parseContext(guard.lecture.context), guard.lecture.title), selection, instruction, context: typeof body.context === 'string' ? body.context : '' })
+    const markdown = await askAboutFragment({ lectureId: id, lecture: contextPrompt(parseContext(guard.lecture.context), guard.lecture.title), selection, instruction, context: typeof body.context === 'string' ? body.context : '', insertAfter: body.insertAfter === true })
     return NextResponse.json({ markdown, blocks: markdownToBlocks(markdown) })
   } catch (e) {
     console.error('[POST /api/lecture/[id]/ask]', e)

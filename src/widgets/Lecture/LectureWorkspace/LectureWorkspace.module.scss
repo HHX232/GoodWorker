@@ -143,6 +143,18 @@ $rec: #e11d48;
   &:checked::after { transform: translateX(16px); }
 }
 
+.compressRow { display: flex; flex-direction: column; gap: 6px; }
+.compressLabel { color: $muted; font-size: 12.5px; }
+.compressTabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 3px;
+  border-radius: 11px;
+  background: $soft;
+  button { height: 30px; border: 0; border-radius: 8px; background: transparent; color: $muted; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+  .compressOn { background: #fff; color: $ai; box-shadow: 0 1px 3px rgba(24, 24, 40, 0.1); }
+}
+
 .railBtn {
   display: flex;
   align-items: center;
@@ -453,6 +465,19 @@ $rec: #e11d48;
 // Round tools (Scribe "Text Editor")
 .toolGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px 4px; }
 
+// FormatPanel wrappers: the rail's stacked block, or one slim row (public link page).
+.formatStack { display: contents; }
+.formatCompact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  .sizeBar { flex: 0 1 330px; margin: 0; }
+  .toolGrid { display: flex; flex-wrap: wrap; gap: 4px; }
+  .roundIcon { width: 34px; height: 34px; }
+  .roundLabel { display: none; }
+}
+
 .roundTool {
   display: flex;
   flex-direction: column;
@@ -567,6 +592,54 @@ $rec: #e11d48;
   }
   :global(body.lecture-print) .docHead, :global(body.lecture-print) .ctxBar { display: none; }
   :global(body.lecture-print) .printTitle { display: block; margin: 0 0 16px; font-family: Georgia, serif; font-size: 26px; }
+}
+
+// ── Public links (ShareLinks) ──
+.share { display: flex; flex-direction: column; gap: 10px; }
+.shareRow { display: flex; flex-direction: column; gap: 8px; }
+.shareHead { display: flex; align-items: center; gap: 10px; }
+.shareIcon { display: grid; place-items: center; flex-shrink: 0; width: 30px; height: 30px; border-radius: 9px; background: $aiSoft; color: $ai; }
+.shareText {
+  flex: 1;
+  min-width: 0;
+  strong { display: block; font-size: 13.5px; font-weight: 600; }
+  small { display: block; margin-top: 1px; color: $faint; font-size: 11.5px; line-height: 1.35; }
+}
+.shareLink {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  input { flex: 1; min-width: 0; height: 32px; padding: 0 10px; border: 1px solid $line; border-radius: 9px; background: $soft; color: $muted; font: inherit; font-size: 12.5px; outline: none; &:focus { border-color: rgba(124, 58, 237, 0.5); color: $ink; } }
+  button { display: grid; place-items: center; flex-shrink: 0; width: 32px; height: 32px; border: 1px solid $line; border-radius: 9px; background: #fff; color: $ink; cursor: pointer; &:hover { border-color: rgba(124, 58, 237, 0.5); color: $ai; } }
+}
+
+// ── Desktop: an app-like screen ──
+// The page is exactly the space under the site header (--lecture-top is measured
+// in LectureWorkspace); the window doesn't scroll — the left rail, the document
+// and the right rail each scroll on their own.
+@media (min-width: 1101px) {
+  .page {
+    display: flex;
+    flex-direction: column;
+    height: calc(100dvh - var(--lecture-top, 83px));
+    min-height: 0;
+    padding-bottom: 0;
+    overflow: hidden;
+  }
+  .grid { flex: 1; width: 100%; min-height: 0; align-items: stretch; }
+  .left, .right { position: static; height: auto; min-height: 0; padding-bottom: 20px; }
+  .center {
+    min-height: 0;
+    padding-bottom: 20px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  .docCard { min-height: 100%; }
+}
+
+@media print {
+  .page, .grid, .center { height: auto !important; overflow: visible !important; }
 }
 
 // ── Responsive ──
@@ -701,6 +774,9 @@ $rec: #e11d48;
   .aiControls, .feed { border-color: rgba(255, 255, 255, 0.07); background: rgba(255, 255, 255, 0.02); }
   .railBtn { border-color: rgba(255, 255, 255, 0.08); background: #1a1c24; color: #e8eaf0; &:hover:not(:disabled) { background: rgba(167, 139, 250, 0.12); } }
   .switch { background: #3a3d4a; }
+  .compressTabs { background: #1a1c24; button { color: #8f94a6; } .compressOn { background: #2a2c38; color: #c4b5fd; } }
+  .shareIcon { background: rgba(167, 139, 250, 0.14); color: #c4b5fd; }
+  .shareLink { input { border-color: rgba(255, 255, 255, 0.08); background: #1a1c24; color: #aeb2c2; } button { border-color: rgba(255, 255, 255, 0.08); background: #1c1e27; color: #e8eaf0; } }
   .feedLine { color: #8f94a6; &:last-of-type { color: #e8eaf0; } }
   .alert { background: rgba(245, 158, 11, 0.1); color: #fcd34d; button { color: #fcd34d; } }
   .docCard, .panel, .transcript { border-color: rgba(255, 255, 255, 0.07); background: #16171e; box-shadow: none; }
