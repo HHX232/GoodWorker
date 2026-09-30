@@ -4143,7 +4143,6 @@
   "lectureLanding": {
     "metaTitle": "Lecture notes — AI writes notes for you | GoodWorker",
     "metaDescription": "Put your phone on the desk: AI hears the professor, filters out noise, and builds notes with formulas, graphs, matrices, and boards. Notes file themselves into subject folders.",
-    "variantLabel": "First screen variant",
     "eyebrow": "Lecture notes",
     "h1": "Put your phone on the desk.",
     "h1Hl": "Notes write themselves.",
@@ -4151,367 +4150,6 @@
     "cta": "Start recording",
     "ctaNote": "Included in VIP · works in your phone browser",
     "ctaFiles": "My notes",
-    "live": {
-      "idle": "Tap — we'll show it on a real lecture",
-      "recording": "Recording",
-      "done": "Class recorded",
-      "heard": "What the mic hears",
-      "notes": "Notes",
-      "ai": "AI cleans and takes notes",
-      "replay": "Listen again",
-      "compression": "Compression",
-      "none": "No compression",
-      "medium": "Medium",
-      "strong": "Strong",
-      "emptyNotes": "Notes will appear as soon as the professor says something relevant"
-    },
-    "demo": {
-      "title": "Systems of linear equations",
-      "transcript": [
-        {
-          "v": "okay, quiet, let's start"
-        },
-        {
-          "v": "someone open a window please",
-          "noise": true
-        },
-        {
-          "v": "today we have systems of linear algebraic equations, s l a e"
-        },
-        {
-          "v": "the system can be written in matrix form: a x equals b"
-        },
-        {
-          "v": "subtitles by DimaTorzok",
-          "noise": true
-        },
-        {
-          "v": "if the determinant is not zero, the solution is unique, that's Cramer's rule"
-        },
-        {
-          "v": "x i equals delta i over delta"
-        },
-        {
-          "v": "were you at the match yesterday?",
-          "noise": true
-        },
-        {
-          "v": "example: two x plus y equals three, five x plus three y equals seven"
-        }
-      ],
-      "notes": {
-        "none": [
-          {
-            "t": "h",
-            "v": "Systems of linear equations (SLE)"
-          },
-          {
-            "t": "def",
-            "v": "A system of $m$ equations with $n$ unknowns is written in matrix form:"
-          },
-          {
-            "t": "math",
-            "v": "A\\,x = b"
-          },
-          {
-            "t": "p",
-            "v": "If ==determinant $\\Delta = \\det A \\neq 0$==, the solution is unique and given by Cramer's rule:"
-          },
-          {
-            "t": "math",
-            "v": "x_i = \\dfrac{\\Delta_i}{\\Delta}"
-          },
-          {
-            "t": "p",
-            "v": "Example: $2x + y = 3$, $5x + 3y = 7$."
-          },
-          {
-            "t": "math",
-            "v": "\\Delta = \\begin{vmatrix} 2 & 1 \\\\ 5 & 3 \\end{vmatrix} = 1,\\quad x = 2,\\ y = -1"
-          }
-        ],
-        "medium": [
-          {
-            "t": "h",
-            "v": "SLE"
-          },
-          {
-            "t": "math",
-            "v": "A\\,x = b"
-          },
-          {
-            "t": "li",
-            "v": [
-              "$\\det A \\neq 0$ — unique solution",
-              "Cramer's rule: $x_i = \\Delta_i / \\Delta$"
-            ]
-          },
-          {
-            "t": "p",
-            "v": "Example: $\\Delta = 1$, $x = 2$, $y = -1$."
-          }
-        ],
-        "strong": [
-          {
-            "t": "h",
-            "v": "SLE"
-          },
-          {
-            "t": "math",
-            "v": "A x = b,\\quad x_i = \\dfrac{\\Delta_i}{\\Delta}\\ (\\Delta \\neq 0)"
-          }
-        ]
-      }
-    },
-    "desk": {
-      "file": "Calculus — area between curves",
-      "allLectures": "All lectures",
-      "state": "Listening",
-      "aiControl": "AI control",
-      "auto": "Auto-notes",
-      "photo": "Process board photo",
-      "text": "Text",
-      "hint": "Click a paragraph, choose 'Ask AI' or paste a graph and board on the right",
-      "ask": "Ask AI",
-      "askAfter": "Insert result after selected text",
-      "askTable": "Make a table",
-      "askExplain": "Explain simpler",
-      "tools": {
-        "graph": "Graph",
-        "board": "Board",
-        "matrix": "Matrix",
-        "formula": "Formula",
-        "reset": "Reset"
-      },
-      "notes": {
-        "none": [
-          {
-            "t": "h",
-            "v": "Area between curves"
-          },
-          {
-            "t": "def",
-            "v": "Area of the region between graphs $f$ and $g$ on $[a, b]$, where $f \\ge g$:"
-          },
-          {
-            "t": "math",
-            "v": "S = \\int_a^b \\bigl(f(x) - g(x)\\bigr)\\,dx"
-          },
-          {
-            "t": "p",
-            "v": "The limits $a$ and $b$ are the intersection points of the graphs: solve $x^2 - 4 = 2x$, get $x = 1 \\pm \\sqrt{5}$."
-          },
-          {
-            "t": "warn",
-            "v": "The top function must be the one that's larger on the whole interval — otherwise the area comes out negative."
-          }
-        ],
-        "medium": [
-          {
-            "t": "h",
-            "v": "Area between curves"
-          },
-          {
-            "t": "math",
-            "v": "S = \\int_a^b (f - g)\\,dx,\\quad f \\ge g"
-          },
-          {
-            "t": "p",
-            "v": "$a, b$ — roots of $x^2 - 4 = 2x$: $x = 1 \\pm \\sqrt{5}$."
-          }
-        ],
-        "strong": [
-          {
-            "t": "math",
-            "v": "S = \\int_{1-\\sqrt5}^{1+\\sqrt5} \\bigl(2x - x^2 + 4\\bigr)\\,dx"
-          }
-        ]
-      },
-      "table": [
-        [
-          "Step",
-          "What we do"
-        ],
-        [
-          "1",
-          "Find intersection points: $x = 1 \\pm \\sqrt{5}$"
-        ],
-        [
-          "2",
-          "Determine which function is on top: $2x \\ge x^2 - 4$"
-        ],
-        [
-          "3",
-          "Integrate the difference from $a$ to $b$"
-        ]
-      ],
-      "explain": "Simply put: area is the 'sum of heights' between two graphs. Subtract the bottom function from the top and add up over the whole interval.",
-      "matrix": "A = \\begin{pmatrix} 2 & 1 \\\\ 5 & 3 \\end{pmatrix},\\quad A^{-1} = \\begin{pmatrix} 3 & -1 \\\\ -5 & 2 \\end{pmatrix}",
-      "formula": "\\int x^2\\,dx = \\dfrac{x^3}{3} + C"
-    },
-    "board": {
-      "pick": "Board photo",
-      "snap": "Process photo",
-      "scanning": "AI is comparing the board with the notes…",
-      "found": "What was found in the photo",
-      "apply": "Apply",
-      "applied": "Added to notes — in the right places",
-      "again": "Another photo",
-      "notesTitle": "Notes before photo",
-      "notesAfter": "Notes after photo",
-      "tags": {
-        "duplicate": "Already there",
-        "continuation": "Continuation",
-        "new": "New"
-      },
-      "shots": [
-        {
-          "name": "Geometry",
-          "chalk": [
-            "Pyramid SABCD",
-            "AB = 6 cm, SO = 8 cm",
-            "V = ⅓ · S · h"
-          ],
-          "notes": [
-            {
-              "t": "h",
-              "v": "Volume of a pyramid"
-            },
-            {
-              "t": "def",
-              "v": "The volume of a pyramid is one third of the base area times the height."
-            }
-          ],
-          "plan": [
-            {
-              "action": "duplicate",
-              "where": "'Volume of a pyramid'",
-              "reason": "Definition already in notes",
-              "blocks": []
-            },
-            {
-              "action": "continuation",
-              "where": "after 'Volume of a pyramid'",
-              "reason": "Formula for the definition",
-              "blocks": [
-                {
-                  "t": "math",
-                  "v": "V = \\dfrac{1}{3}\\,S_{\\text{осн}}\\,h"
-                }
-              ]
-            },
-            {
-              "action": "new",
-              "where": "at the end",
-              "reason": "Drawing and problem data",
-              "blocks": [
-                {
-                  "t": "board"
-                },
-                {
-                  "t": "p",
-                  "v": "Given: $AB = 6$ cm, $SO = 8$ cm."
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "Calculus",
-          "chalk": [
-            "y = x² − 4,  y = 2x",
-            "x = 1 ± √5",
-            "S = ∫ (2x − x² + 4) dx"
-          ],
-          "notes": [
-            {
-              "t": "h",
-              "v": "Area between curves"
-            },
-            {
-              "t": "math",
-              "v": "S = \\int_a^b \\bigl(f(x) - g(x)\\bigr)\\,dx"
-            }
-          ],
-          "plan": [
-            {
-              "action": "duplicate",
-              "where": "'Area between curves'",
-              "reason": "General formula already there",
-              "blocks": []
-            },
-            {
-              "action": "continuation",
-              "where": "after the formula",
-              "reason": "Limits of integration",
-              "blocks": [
-                {
-                  "t": "p",
-                  "v": "Intersection points: $x = 1 \\pm \\sqrt{5}$."
-                }
-              ]
-            },
-            {
-              "action": "new",
-              "where": "at the end",
-              "reason": "Graph from the board",
-              "blocks": [
-                {
-                  "t": "graph"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "Linear algebra",
-          "chalk": [
-            "2x + y = 3",
-            "5x + 3y = 7",
-            "Δ = 1,  x = 2,  y = −1"
-          ],
-          "notes": [
-            {
-              "t": "h",
-              "v": "Cramer's rule"
-            },
-            {
-              "t": "math",
-              "v": "x_i = \\dfrac{\\Delta_i}{\\Delta}"
-            }
-          ],
-          "plan": [
-            {
-              "action": "continuation",
-              "where": "after 'Cramer's rule'",
-              "reason": "Example for the method",
-              "blocks": [
-                {
-                  "t": "math",
-                  "v": "\\begin{cases} 2x + y = 3 \\\\ 5x + 3y = 7 \\end{cases}"
-                },
-                {
-                  "t": "math",
-                  "v": "\\Delta = \\begin{vmatrix} 2 & 1 \\\\ 5 & 3 \\end{vmatrix} = 1"
-                }
-              ]
-            },
-            {
-              "action": "new",
-              "where": "at the end",
-              "reason": "Answer",
-              "blocks": [
-                {
-                  "t": "p",
-                  "v": "Answer: ==$x = 2$, $y = -1$==."
-                }
-              ]
-            }
-          ]
-        }
-      ],
-      "hint": "Pick a board and press “Read the photo”"
-    },
     "files": {
       "eyebrow": "Notes + Files",
       "h2": "Every lecture files itself",
@@ -4806,6 +4444,124 @@
       "h2": "Next class — already with notes",
       "lead": "Open GoodWorker on your phone before the lecture and tap one button.",
       "cta": "Start recording"
+    },
+    "hero": {
+      "hint": "Tap record or take a photo of the board",
+      "recording": "Recording",
+      "paused": "Paused",
+      "pause": "Pause recording",
+      "resume": "Resume recording",
+      "snap": "Photograph the board",
+      "scanning": "Reading the board…",
+      "added": "In your notes",
+      "notesTitle": "Calculus · Area between curves",
+      "writing": "AI is writing",
+      "ready": "Done",
+      "empty": "Notes appear as soon as the lecturer starts speaking…",
+      "replay": "Start over",
+      "chalk": [
+        "y = x² − 4,  y = 2x",
+        "x² − 2x − 4 = 0",
+        "S = ∫ (2x − x² + 4) dx"
+      ],
+      "notes": [
+        {
+          "t": "h",
+          "v": "Area between curves"
+        },
+        {
+          "t": "def",
+          "v": "The area of the region between the graphs of $f$ and $g$ on $[a;\\,b]$ is ==the integral of their difference==, where $f$ lies above $g$:"
+        },
+        {
+          "t": "math",
+          "v": "S = \\int_a^b \\bigl(f(x) - g(x)\\bigr)\\,dx"
+        },
+        {
+          "t": "p",
+          "v": "Example: $f(x) = 2x$, $g(x) = x^2 - 4$. The limits of integration are the points where the graphs intersect."
+        }
+      ],
+      "fromBoard": [
+        {
+          "t": "p",
+          "v": "Intersection points: $x^2 - 2x - 4 = 0$, so $x = 1 \\pm \\sqrt{5}$."
+        },
+        {
+          "t": "graph"
+        },
+        {
+          "t": "math",
+          "v": "S = \\int_{1-\\sqrt{5}}^{1+\\sqrt{5}} \\bigl(2x - x^2 + 4\\bigr)\\,dx = \\dfrac{20\\sqrt{5}}{3}"
+        }
+      ]
+    },
+    "seo": {
+      "keywords": [
+        "lecture notes",
+        "automatic lecture notes",
+        "AI note taker for lectures",
+        "lecture transcription",
+        "record lectures on your phone",
+        "recognize formulas from a whiteboard photo",
+        "lecture notes to Word",
+        "AI notes for students"
+      ],
+      "h": "Automatic lecture notes with AI",
+      "intro": [
+        "GoodWorker turns a lecture recording into finished notes. Put your phone on the desk and tap “Start recording” — the AI listens to the lecturer, transcribes the speech and builds structured notes during the class: headings, definitions, formulas and graphs.",
+        "It is more than a transcript: slips of the tongue, classroom noise and back-row chatter are left out, and the content is organised into sections — the way an attentive student in the front row would write it down."
+      ],
+      "blocks": [
+        {
+          "h": "Formulas, graphs and matrices — real ones, not pictures",
+          "p": [
+            "The AI writes maths as formulas: integrals, fractions, limits and matrices stay editable, so you can fix, enlarge or align them. Function graphs are plotted from the equation with the area under the curve shaded, and a matrix gets its determinant, inverse and rank in one click — in exact fractions.",
+            "If the lecturer writes on the board, take a photo: the AI reads the formulas and drawings, compares them with your notes and adds only what is new — a continuation goes right after its section, repeats are dropped."
+          ]
+        },
+        {
+          "h": "Notes that are easy to study from",
+          "p": [
+            "Shrink the notes down to the essentials with one switch, ask the AI about a paragraph you did not get, insert an explanation or a table, leave your own notes in the margin. Everything is editable like a normal document."
+          ]
+        },
+        {
+          "h": "Export to Word, PDF and audio with chapters",
+          "p": [
+            "Download the notes as .docx with native Word equations or as a PDF, or save them to “My files” — into a subject folder created automatically. The lecture audio is saved as .m4a with chapters for each section, so you can replay the right moment in seconds."
+          ]
+        },
+        {
+          "h": "For students and tutors",
+          "p": [
+            "Students get notes for every class without rewriting anything or missing a word. Tutors turn a lesson recording into neat material for their student and share it by link — view-only or for editing together."
+          ]
+        }
+      ],
+      "faqTitle": "FAQ",
+      "faq": [
+        {
+          "q": "How do I make lecture notes automatically?",
+          "a": "Open “Lecture notes”, tap “Start recording” and put your phone on the desk. The AI transcribes the lecturer and builds the notes during the lecture; when you stop, the text is refined by a more accurate speech recognition model."
+        },
+        {
+          "q": "Does the AI recognize formulas and graphs?",
+          "a": "Yes. Formulas are written in math markup and stay editable, graphs are plotted from equations. Formulas and drawings from the board can be added from a photo."
+        },
+        {
+          "q": "Can I download the notes in Word?",
+          "a": "Yes, the notes download as .docx with Word equations, and as PDF. You can also save them to “My files” — they go into their subject folder by themselves."
+        },
+        {
+          "q": "What if the lecture hall is noisy?",
+          "a": "Side conversations, noise and recognition errors are filtered out: the AI first restores what the lecturer said and only then writes the notes."
+        },
+        {
+          "q": "Who can use it?",
+          "a": "Lecture notes are available to GoodWorker VIP students and VIP tutors."
+        }
+      ]
     }
   }
 }
