@@ -1,4 +1,3 @@
-// Canonical origin for robots/sitemap. NEXT_PUBLIC_APP_URL wins only when it is a real https origin
-// (a dev value like http://localhost:3000 must never end up in the production sitemap).
-const env = process.env.NEXT_PUBLIC_APP_URL
-export const SITE_URL = (env && env.startsWith('https://') ? env : 'https://goodworker.online').replace(/\/$/, '')
+// Canonical origin for robots/sitemap/canonical links. Not NEXT_PUBLIC_APP_URL: on Railway that is the
+// *.up.railway.app service domain, and search engines must see the public one. SITE_URL overrides.
+export const SITE_URL = (process.env.SITE_URL || 'https://goodworker.online').replace(/\/$/, '')
