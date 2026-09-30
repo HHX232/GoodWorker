@@ -16,6 +16,7 @@ import type { ExcalidrawImperativeAPI, Zoom } from '@excalidraw/excalidraw/types
 import s from './LandingPage.module.scss'
 import TypingText from './TypingText'
 import { LecturePromo } from './LecturePromo/LecturePromo'
+import { FilesPromo } from './FilesPromo/FilesPromo'
 
 const KnowledgeGlobe    = dynamic(() => import('./KnowledgeGlobe'),    { ssr: false })
 const ThreeShape        = dynamic(() => import('./ThreeShape'),        { ssr: false })
@@ -1767,7 +1768,7 @@ export default function LandingPage() {
         <SubNav />
         <HeroSection />
         <Divider />
-        {/* Order: board → calendar → teachers → lecture notes → courses → the rest */}
+        {/* Order: board → calendar → teachers → lecture notes → files → courses → the rest */}
         <VideoSection />
         <Divider />
         <CalendarSection />
@@ -1775,6 +1776,8 @@ export default function LandingPage() {
         <TeachersBlock />
         <Divider />
         <LecturePromo />
+        <Divider />
+        <FilesPromo />
         <Divider />
         <CourseSection />
         <Divider />
