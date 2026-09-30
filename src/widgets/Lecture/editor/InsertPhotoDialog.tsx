@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
 import { docText } from './docOps'
-import { photoNode, preparePhoto, readPhotoContent, uploadPhoto, type PreparedPhoto } from './photoTools'
+import { photoFailedToast, photoNode, preparePhoto, readPhotoContent, uploadPhoto, type PreparedPhoto } from './photoTools'
 import styles from './LectureEditor.module.scss'
 
 interface Props {
@@ -67,10 +67,14 @@ export function InsertPhotoDialog({ lectureId, editor, file, at, onClose }: Prop
       onClose()
     } catch (e) {
       const code = e instanceof Error ? e.message : ''
-      toast.error(code === 'VIP_REQUIRED' ? t('vipOnly') : code === 'QUOTA_EXCEEDED' ? t('quotaExceeded') : t('photoFailed'))
+      if (code === 'VIP_REQUIRED' || code === 'QUOTA_EXCEEDED') toast.error(code === 'VIP_REQUIRED' ? t('vipOnly') : t('quotaExceeded'))
+      else photoFailedToast({ message: t('photoFailed'), retryLabel: t('photoRetry'), retry: () => { void insertRef.current() } })
       setBusy(false)
     }
-  }
+  }  // «Повторить» in the notice calls the latest insert (fresh state), not the failed closure.
+  const insertRef = useRef(insert)
+  useEffect(() => { insertRef.current = insert })
+
 
   return createPortal(
     <div className={styles.overlay} onMouseDown={e => { if (e.target === e.currentTarget && !busy) onClose() }}>

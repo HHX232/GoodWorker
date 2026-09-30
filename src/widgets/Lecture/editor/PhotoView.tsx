@@ -5,7 +5,7 @@ import { CropIcon, Loader2Icon, MaximizeIcon, MinimizeIcon, ScanTextIcon, Trash2
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { afterBlock, lectureCtx, photoUrl, preparePhoto, readPhotoContent, uploadPhoto } from './photoTools'
+import { afterBlock, lectureCtx, photoFailedToast, photoUrl, preparePhoto, readPhotoContent, uploadPhoto } from './photoTools'
 
 /**
  * A photo placed into the notes. Selected → a small toolbar: crop to the
@@ -49,7 +49,8 @@ export function PhotoView({ node, updateAttributes, deleteNode, editor, selected
       const at = pos === undefined ? editor.state.doc.content.size : afterBlock(editor, pos + 1)
       editor.chain().insertContentAt(at, blocks).run()
     } catch (e) {
-      toast.error(e instanceof Error && e.message === 'VIP_REQUIRED' ? t('vipOnly') : t('photoFailed'))
+      if (e instanceof Error && e.message === 'VIP_REQUIRED') toast.error(t('vipOnly'))
+      else photoFailedToast({ message: t('photoFailed'), retryLabel: t('photoRetry'), retry: read })
     } finally {
       setBusy(null)
     }
