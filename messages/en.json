@@ -4510,7 +4510,19 @@
     "photoErr_TOO_MANY_PHOTOS": "Too many photos at once — 6 at most",
     "structureAddedTo": "This adds to “{title}” — inserted right after it",
     "stateNoBalance": "Balance is empty — top up your wallet to keep recording",
-    "photoErr_INSUFFICIENT_BALANCE": "Not enough money on the balance — top up your wallet"
+    "photoErr_INSUFFICIENT_BALANCE": "Not enough money on the balance — top up your wallet",
+    "balance": {
+      "title": "Your balance has run out",
+      "stopped": "Recording stopped. To continue, please top up your balance — everything recorded so far is saved.",
+      "text": "To continue, please top up your balance.",
+      "giftTitle": "Out of balance — here’s a gift",
+      "giftText": "We’re giving you a small balance so you can finish what you’re doing.",
+      "giftNote": "{amount} is already on your balance. It’s a one-time gift — after that, top up in your wallet.",
+      "continue": "Continue recording",
+      "ok": "Thanks",
+      "topUp": "Top up",
+      "close": "Close"
+    }
   },
   "lecturePromo": {
     "eyebrow": "New tool · VIP",

@@ -13,7 +13,7 @@ import { toast } from 'sonner'
 import { collectNotes } from '../editor/docOps'
 import { ShareLinks } from './ShareLinks'
 import { LECTURE_BALANCE_EVENT, watchLectureBalance, type BalanceShortfall } from '../billing'
-import { InsufficientBalanceModal } from '@/widgets/Wallet/InsufficientBalanceModal/InsufficientBalanceModal'
+import { LectureBalanceModal } from '../LectureBalanceModal/LectureBalanceModal'
 import { formatCents } from '@/widgets/Wallet/useTopUpForm'
 import { LectureEditor } from '../editor/LectureEditor'
 import { lectureRecorder } from '../recorder/lectureRecorder'
@@ -49,14 +49,24 @@ export function LectureWorkspace({ lectureId }: { lectureId: string }) {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const boardInput = useRef<HTMLInputElement>(null)
   const pageRef = useRef<HTMLDivElement>(null)
-  // Wallet: any /api/lecture/* 402 opens one "top up" modal (billing.ts).
+  // Wallet: any /api/lecture/* 402 (a new minute, or an AI call — auto-notes
+  // included) stops the recording and opens one modal (billing.ts). Several
+  // 402s at once keep the gift and "was recording" of whichever carried them.
   const [shortfall, setShortfall] = useState<BalanceShortfall | null>(null)
   useEffect(() => {
-    const undo = watchLectureBalance()
-    const onShort = (e: Event) => setShortfall((e as CustomEvent<BalanceShortfall>).detail)
+    const recordingHere = () => {
+      const st = lectureRecorder.getState()
+      return st.lectureId === lectureId && (st.status === 'recording' || st.status === 'starting')
+    }
+    const undo = watchLectureBalance(recordingHere)
+    const onShort = (e: Event) => {
+      const detail = (e as CustomEvent<BalanceShortfall>).detail
+      if (recordingHere()) void lectureRecorder.stop()
+      setShortfall(prev => ({ ...detail, giftCents: Math.max(prev?.giftCents ?? 0, detail.giftCents), wasRecording: !!prev?.wasRecording || detail.wasRecording }))
+    }
     window.addEventListener(LECTURE_BALANCE_EVENT, onShort)
     return () => { undo(); window.removeEventListener(LECTURE_BALANCE_EVENT, onShort) }
-  }, [])
+  }, [lectureId])
   const loaded = !!s.lecture && s.initialDoc !== undefined
 
   // Desktop: the page fills exactly the screen under the site header (see
@@ -178,7 +188,7 @@ export function LectureWorkspace({ lectureId }: { lectureId: string }) {
 
   return (
     <div ref={pageRef} className={`${styles.page} ${drawerOpen ? styles.drawerIsOpen : ''}`}>
-      {shortfall && <InsufficientBalanceModal neededCents={shortfall.neededCents} availableCents={shortfall.availableCents} onClose={() => setShortfall(null)} />}
+      {shortfall && <LectureBalanceModal giftCents={shortfall.giftCents} wasRecording={shortfall.wasRecording} onContinue={() => void s.startRecording()} onClose={() => setShortfall(null)} />}
       {/* ≤1100px: the edge tab that slides the rails in, and the dimmed page behind them */}
       <button
         type="button"

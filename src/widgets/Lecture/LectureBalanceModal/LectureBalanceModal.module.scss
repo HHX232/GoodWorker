@@ -1,0 +1,64 @@
+// Same layer and shape as InsufficientBalanceModal, plus the gift state.
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1400000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 400px;
+  max-width: 100%;
+  padding: 26px 24px 22px;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.28);
+  text-align: center;
+}
+
+.icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: #f3f4f6; color: #141416; }
+.iconGift { background: #f5f0ff; color: #7c3aed; animation: pop 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes pop { from { transform: scale(0.6); opacity: 0; } to { transform: none; opacity: 1; } }
+
+.title { font-size: 18px; font-weight: 700; color: #141416; }
+.message { margin: 0; color: #4b5563; font-size: 14.5px; line-height: 1.55; }
+.giftAmount { margin: 4px 0 0; color: #7c3aed; font-size: 30px; font-weight: 800; letter-spacing: -0.02em; }
+.note { margin: 0; color: #9ca3af; font-size: 12.5px; }
+
+.actions { display: flex; gap: 10px; width: 100%; margin-top: 10px; }
+.primary, .secondary {
+  flex: 1;
+  padding: 11px 14px;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+.primary { border: 0; background: #141416; color: #fff; &:hover { background: #2b2b2f; } }
+.secondary { border: 1px solid #d1d5db; background: #fff; color: #141416; &:hover { background: #f5f5f7; } }
+
+@media (prefers-reduced-motion: reduce) { .iconGift { animation: none; } }
+
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .modal { background: #1c1d24; }
+  .icon { background: #2a2b35; color: #e8eaf0; }
+  .iconGift { background: rgba(167, 139, 250, 0.16); color: #c4b5fd; }
+  .title { color: #f3f4f6; }
+  .message { color: #b7bac8; }
+  .giftAmount { color: #c4b5fd; }
+  .note { color: #7c7f8e; }
+  .primary { background: #e8eaf0; color: #14151c; &:hover { background: #fff; } }
+  .secondary { border-color: rgba(255, 255, 255, 0.14); background: transparent; color: #e8eaf0; &:hover { background: #262730; } }
+}

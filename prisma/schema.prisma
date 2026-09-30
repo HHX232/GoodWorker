@@ -31,6 +31,8 @@ model Student {
   password                String?
   isVip                   Boolean                  @default(false)
   vipExpiresAt            DateTime?
+  /// /lecture: when the one-time $1 "finish your lecture" gift was given (once per account, VIP only).
+  lectureGiftAt           DateTime?
   schoolGrade             Int?
   courseNumber            Int?
   complaints              Complaint[]
@@ -90,6 +92,8 @@ model Teacher {
   phone                   String?
   isVip                   Boolean                  @default(false)
   vipExpiresAt            DateTime?
+  /// /lecture: when the one-time $1 "finish your lecture" gift was given (once per account, VIP only).
+  lectureGiftAt           DateTime?
   bio                     String?
   coverPhotoUrl           String?
   socialLinks             Json?

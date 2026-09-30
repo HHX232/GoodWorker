@@ -126,11 +126,14 @@ export async function getBalanceCents(user: WalletUser): Promise<number> {
 export class InsufficientBalanceError extends Error {
   neededCents: number
   availableCents: number
-  constructor(neededCents: number, availableCents: number) {
+  /** /lecture: a one-time gift just credited to the balance (the client says so and offers to go on). */
+  giftCents: number
+  constructor(neededCents: number, availableCents: number, giftCents = 0) {
     super(`Insufficient balance: need ${neededCents} more cent(s), have ${availableCents}`)
     this.name = 'InsufficientBalanceError'
     this.neededCents = neededCents
     this.availableCents = availableCents
+    this.giftCents = giftCents
   }
 }
 
@@ -146,6 +149,7 @@ export function insufficientBalanceResponse(err: InsufficientBalanceError): Next
       message: `Недостаточно средств: нужно ещё $${(err.neededCents / 100).toFixed(2)}`,
       neededCents: err.neededCents,
       availableCents: err.availableCents,
+      ...(err.giftCents > 0 ? { giftCents: err.giftCents } : {}),
     },
     { status: 402 },
   )

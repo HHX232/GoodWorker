@@ -84,7 +84,40 @@ export async function assertLectureBalance(lecture: Owner, needCents: number): P
   const user = await payer(lecture)
   if (!user || needCents <= 0) return
   const balance = await getBalanceCents(user)
-  if (balance < needCents) throw new InsufficientBalanceError(needCents - balance, balance)
+  if (balance >= needCents) return
+  // Still a 402 even when the gift lands: the recording stops and the page says
+  // what happened ("we're giving you a little balance") before going on.
+  const gift = await grantLectureGift(user)
+  throw new InsufficientBalanceError(Math.max(0, needCents - balance - gift), balance + gift, gift)
+}
+
+/** One-time gift when a VIP runs out of money mid-lecture: enough to finish what they were doing. */
+export const LECTURE_GIFT_CENTS = 100
+
+/**
+ * Credits LECTURE_GIFT_CENTS once per account, VIP only. The claim is one
+ * conditional update (lectureGiftAt still empty + VIP active), so two 402s
+ * at once can't both give it. Returns the cents credited (0 = not eligible).
+ */
+async function grantLectureGift(user: WalletUser): Promise<number> {
+  const now = new Date()
+  const where = { id: user.id, lectureGiftAt: null, isVip: true, OR: [{ vipExpiresAt: null }, { vipExpiresAt: { gt: now } }] }
+  const data = { lectureGiftAt: now, balanceCents: { increment: LECTURE_GIFT_CENTS } }
+  const claimed = user.role === 'TEACHER'
+    ? await prisma.teacher.updateMany({ where, data })
+    : await prisma.student.updateMany({ where, data })
+  if (!claimed.count) return 0
+  await prisma.walletTransaction.create({
+    data: {
+      ...(user.role === 'TEACHER' ? { teacherId: user.id } : { studentId: user.id }),
+      userRole: user.role,
+      type: 'PROMO_BONUS',
+      amountCents: LECTURE_GIFT_CENTS,
+      balanceAfterCents: await getBalanceCents(user),
+      description: 'Подарок: баланс, чтобы завершить конспект',
+    },
+  })
+  return LECTURE_GIFT_CENTS
 }
 
 /** One minute's price, rounded up to a whole cent — what a chunk needs on the balance. */

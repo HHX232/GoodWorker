@@ -4483,7 +4483,19 @@
     "photoErr_TOO_MANY_PHOTOS": "一次照片太多——最多 6 张",
     "structureAddedTo": "这是对“{title}”的补充——已插入其后",
     "stateNoBalance": "余额已用完——充值钱包后可继续录音",
-    "photoErr_INSUFFICIENT_BALANCE": "余额不足——请为钱包充值"
+    "photoErr_INSUFFICIENT_BALANCE": "余额不足——请为钱包充值",
+    "balance": {
+      "title": "余额已用完",
+      "stopped": "录音已停止。如需继续，请充值——已录制的内容都已保存。",
+      "text": "如需继续，请充值。",
+      "giftTitle": "余额用完了——送您一份小礼物",
+      "giftText": "我们赠送您一点余额，让您能完成手头的事情。",
+      "giftNote": "{amount} 已到账。这是一次性赠送——之后请在钱包中充值。",
+      "continue": "继续录音",
+      "ok": "谢谢",
+      "topUp": "充值",
+      "close": "关闭"
+    }
   },
   "lecturePromo": {
     "eyebrow": "新工具 · VIP",
