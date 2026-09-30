@@ -1274,6 +1274,8 @@ model LectureNote {
   // Seq of the last chunk already turned into document blocks by DeepSeek.
   processedSeq       Int            @default(-1)
   keepAudio          Boolean        @default(false)
+  /// Speech language: "ru" | "en" | "auto" (mixed, e.g. a foreign-language class — Whisper detects per chunk).
+  language           String   @default("ru")
   // What the lecture is about — subject, topic, subtopics, key notation.
   // DeepSeek keeps it current while structuring; fields the student
   // edited are pinned. Fed into every AI prompt and the STT hint.

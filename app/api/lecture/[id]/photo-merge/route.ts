@@ -29,7 +29,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       const parsed = JSON.parse(String(form?.get('outline') ?? '[]'))
       if (Array.isArray(parsed)) outline = parsed.filter((x): x is string => typeof x === 'string').slice(0, 2000)
     } catch { /* empty outline */ }
-    const items = await mergePhoto({ lectureId: id, lecture: contextPrompt(parseContext(guard.lecture.context), guard.lecture.title), outline, photos })
+    const items = await mergePhoto({ lectureId: id, lecture: contextPrompt(parseContext(guard.lecture.context), guard.lecture.title, guard.lecture.language), outline, photos })
     return NextResponse.json({ items: items.map(i => ({ ...i, blocks: markdownToBlocks(i.markdown) })) })
   } catch (e) {
     console.error('[POST /api/lecture/[id]/photo-merge]', e)

@@ -36,7 +36,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       if (p instanceof NextResponse) return p
       photo = p
     }
-    const raw = await graphAssist({ lectureId: id, mode, lecture: contextPrompt(parseContext(guard.lecture.context), guard.lecture.title), instruction, spec: current, photo })
+    const raw = await graphAssist({ lectureId: id, mode, lecture: contextPrompt(parseContext(guard.lecture.context), guard.lecture.title, guard.lecture.language), instruction, spec: current, photo })
     const spec = parseGraphSpec(raw)
     if (!spec) return NextResponse.json({ error: 'NO_GRAPH' }, { status: 422 })
     return NextResponse.json({ spec })

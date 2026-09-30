@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/shared/prisma/prisma'
 import { hasLectureAccess, requireOwnLecture } from '@/shared/lib/lecture/access'
 import { getLectureSettings, LECTURE_BILLING_ENABLED } from '@/shared/lib/lecture/pricing'
-import { isSttConfigured } from '@/shared/lib/lecture/stt'
+import { isSttConfigured, LECTURE_LANGUAGES, type LectureLanguage } from '@/shared/lib/lecture/stt'
 import { parseContext } from '@/shared/lib/lecture/context'
 import { baseVersionOf, saveDoc } from '@/shared/lib/lecture/share'
 import type { Prisma } from '@prisma/client'
@@ -52,7 +52,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
   }
 }
 
-// PATCH /api/lecture/[id] — autosave {docJson?, baseVersion?, title?, keepAudio?}.
+// PATCH /api/lecture/[id] — autosave {docJson?, baseVersion?, title?, keepAudio?, language?}.
 // With baseVersion, a doc saved meanwhile through an edit link wins: 409
 // {error: 'CONFLICT', docJson, docVersion} and the client shows that one.
 // Saving your own notes stays open without VIP (only recording/AI need it).
@@ -69,6 +69,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const data: Prisma.LectureNoteUpdateInput = {}
     if (typeof body.title === 'string') data.title = body.title.trim().slice(0, 200)
     if (typeof body.keepAudio === 'boolean') data.keepAudio = body.keepAudio
+    if ((LECTURE_LANGUAGES as unknown[]).includes(body.language)) data.language = body.language as LectureLanguage
     // The student corrected subject/topic/subtopics by hand → pin exactly those fields.
     if (body.context && typeof body.context === 'object') {
       const current = parseContext(guard.lecture.context)
@@ -87,7 +88,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       const saved = await saveDoc(id, doc as Prisma.InputJsonValue, baseVersionOf(body.baseVersion))
       if (!saved.ok) return NextResponse.json({ error: 'CONFLICT', docJson: saved.docJson, docVersion: saved.docVersion }, { status: 409 })
     }
-    const lecture = await prisma.lectureNote.update({ where: { id }, data, select: { id: true, title: true, keepAudio: true, context: true, updatedAt: true, docVersion: true } })
+    const lecture = await prisma.lectureNote.update({ where: { id }, data, select: { id: true, title: true, keepAudio: true, language: true, context: true, updatedAt: true, docVersion: true } })
     return NextResponse.json({ lecture })
   } catch (e) {
     console.error('[PATCH /api/lecture/[id]]', e)

@@ -26,7 +26,12 @@ export function isSttConfigured(): boolean {
   return !!process.env.LECTURE_STT_URL
 }
 
-export async function transcribe(audio: Buffer, mime: string, quality: 'draft' | 'final', prompt: string): Promise<SttResult> {
+/** A lecture's speech language: Whisper gets it as is, 'auto' = detect per chunk (mixed lectures). */
+export type LectureLanguage = 'ru' | 'en' | 'auto'
+export const LECTURE_LANGUAGES: LectureLanguage[] = ['ru', 'en', 'auto']
+export const asLectureLanguage = (v: unknown): LectureLanguage => (LECTURE_LANGUAGES as unknown[]).includes(v) ? (v as LectureLanguage) : 'ru'
+
+export async function transcribe(audio: Buffer, mime: string, quality: 'draft' | 'final', prompt: string, language: LectureLanguage = 'ru'): Promise<SttResult> {
   const base = process.env.LECTURE_STT_URL
   if (!base) throw new Error('LECTURE_STT_URL is not set')
   const form = new FormData()
@@ -34,6 +39,7 @@ export async function transcribe(audio: Buffer, mime: string, quality: 'draft' |
   form.append('audio', new Blob([new Uint8Array(audio)], { type: mime }), `chunk.${ext}`)
   form.append('quality', quality)
   form.append('prompt', prompt.slice(-400))
+  form.append('language', language)
   const res = await fetch(`${base.replace(/\/$/, '')}/transcribe`, {
     method: 'POST',
     headers: { 'X-STT-Key': process.env.STT_API_KEY ?? '' },

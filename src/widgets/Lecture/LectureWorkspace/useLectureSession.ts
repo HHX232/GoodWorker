@@ -419,6 +419,12 @@ export function useLectureSession(lectureId: string, t: (key: string, values?: R
     await fetch(`/api/lecture/${lectureId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ keepAudio }) }).catch(() => {})
   }, [lectureId])
 
+  /** Speech language — used from the next recorded chunk on (and by the final pass, the AI). */
+  const setLanguage = useCallback(async (language: LectureDto['language']) => {
+    setLecture(l => l && { ...l, language })
+    await fetch(`/api/lecture/${lectureId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ language }) }).catch(() => {})
+  }, [lectureId])
+
   /** The student corrects subject/topic/subtopics — the server pins what was sent. */
   const setContext = useCallback(async (patch: { subject?: string; topic?: string; subtopics?: string[] }) => {
     const res = await fetch(`/api/lecture/${lectureId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ context: patch }) }).catch(() => null)
@@ -459,6 +465,6 @@ export function useLectureSession(lectureId: string, t: (key: string, values?: R
     saveState, flushSave, onDocChange, onEditorReady, editorRef,
     queued, issue, structuring, autoStructure, setAutoStructure, compression, setCompression, structureNow: () => structure(true), pendingRange,
     recorder, isRecordingHere, startRecording, stopRecording, stopping, finalize, refining,
-    setKeepAudio, setTitle, setContext, reload: load, setShareToken,
+    setKeepAudio, setLanguage, setTitle, setContext, reload: load, setShareToken,
   }
 }

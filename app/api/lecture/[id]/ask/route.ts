@@ -22,7 +22,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     const selection = typeof body.selection === 'string' ? body.selection.trim() : ''
     const instruction = typeof body.instruction === 'string' ? body.instruction.trim() : ''
     if (!selection || !instruction) return NextResponse.json({ error: 'selection and instruction required' }, { status: 400 })
-    const markdown = await askAboutFragment({ lectureId: id, lecture: contextPrompt(parseContext(guard.lecture.context), guard.lecture.title), selection, instruction, context: typeof body.context === 'string' ? body.context : '', insertAfter: body.insertAfter === true })
+    const markdown = await askAboutFragment({ lectureId: id, lecture: contextPrompt(parseContext(guard.lecture.context), guard.lecture.title, guard.lecture.language), selection, instruction, context: typeof body.context === 'string' ? body.context : '', insertAfter: body.insertAfter === true })
     return NextResponse.json({ markdown, blocks: markdownToBlocks(markdown) })
   } catch (e) {
     console.error('[POST /api/lecture/[id]/ask]', e)
