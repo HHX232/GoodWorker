@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/shared/prisma/prisma'
+import { assertLectureBalance } from './pricing'
+import { InsufficientBalanceError, insufficientBalanceResponse } from '@/shared/lib/wallet/wallet'
 import { isTeacherVipActive } from '@/shared/lib/tutorFiles/access'
 import { isStudentVipActive } from '@/shared/lib/studentDrive/drive'
 import type { LectureNote } from '@prisma/client'
@@ -33,8 +35,12 @@ export function vipRequired(): NextResponse {
 
 type Guard = { user: LectureUser; lecture: LectureNote; response?: undefined } | { response: NextResponse; user?: undefined; lecture?: undefined }
 
-/** Session + ownership of one lecture. `write` also requires active VIP (reading your own stays open). */
-export async function requireOwnLecture(id: string, opts: { write?: boolean } = {}): Promise<Guard> {
+/**
+ * Session + ownership of one lecture. `write` also requires active VIP (reading your own stays open).
+ * `ai` — the route calls DeepSeek, paid from the owner's balance: an empty balance answers 402
+ * (INSUFFICIENT_BALANCE, the wallet's shape) before the call is made.
+ */
+export async function requireOwnLecture(id: string, opts: { write?: boolean; ai?: boolean } = {}): Promise<Guard> {
   const user = await getLectureUser()
   if (!user) return { response: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
   const lecture = await prisma.lectureNote.findUnique({ where: { id } })
@@ -42,5 +48,13 @@ export async function requireOwnLecture(id: string, opts: { write?: boolean } = 
     return { response: NextResponse.json({ error: 'Not found' }, { status: 404 }) }
   }
   if (opts.write && !(await hasLectureAccess(user))) return { response: vipRequired() }
+  if (opts.ai) {
+    try {
+      await assertLectureBalance(lecture, 1)
+    } catch (e) {
+      if (e instanceof InsufficientBalanceError) return { response: insufficientBalanceResponse(e) }
+      throw e
+    }
+  }
   return { user, lecture }
 }

@@ -21,7 +21,7 @@ interface Params {
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { id } = await params
-    const guard = await requireOwnLecture(id, { write: true })
+    const guard = await requireOwnLecture(id, { write: true, ai: true })
     if (guard.response) return guard.response
     const { lecture } = guard
 

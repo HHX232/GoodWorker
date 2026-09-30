@@ -11,6 +11,8 @@ export interface LectureDto {
   recordedMs: number
   costKopecks: number
   fileId: string | null
+  /** Wallet: everything this lecture has cost so far (minutes + AI), in wallet cents. */
+  chargedCents: number
   /** Public links (owner only sees these): /lecture/shared/<token>. */
   shareViewToken: string | null
   shareEditToken: string | null
@@ -45,4 +47,5 @@ export interface LectureResponse {
   sttConfigured: boolean
 }
 
-export type UploadIssue = 'offline' | 'busy' | 'stt' | 'limit' | null
+/** `balance` — the wallet ran out: recording stopped, chunks wait in the phone's queue. */
+export type UploadIssue = 'offline' | 'busy' | 'stt' | 'limit' | 'balance' | null

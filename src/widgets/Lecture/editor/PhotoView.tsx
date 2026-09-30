@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { afterBlock, lectureCtx, photoFailedToast, photoUrl, preparePhoto, readPhotoContent, uploadPhoto } from './photoTools'
+import { isBalanceError } from '../billing'
 
 /**
  * A photo placed into the notes. Selected → a small toolbar: crop to the
@@ -49,6 +50,8 @@ export function PhotoView({ node, updateAttributes, deleteNode, editor, selected
       const at = pos === undefined ? editor.state.doc.content.size : afterBlock(editor, pos + 1)
       editor.chain().insertContentAt(at, blocks).run()
     } catch (e) {
+      // No money on the balance: the page's InsufficientBalanceModal says so — nothing more here.
+      if (isBalanceError(e)) return
       if (e instanceof Error && e.message === 'VIP_REQUIRED') toast.error(t('vipOnly'))
       else photoFailedToast({ message: t('photoFailed'), retryLabel: t('photoRetry'), retry: read })
     } finally {

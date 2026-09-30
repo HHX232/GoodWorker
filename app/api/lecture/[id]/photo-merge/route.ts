@@ -18,7 +18,7 @@ interface Params {
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { id } = await params
-    const guard = await requireOwnLecture(id, { write: true })
+    const guard = await requireOwnLecture(id, { write: true, ai: true })
     if (guard.response) return guard.response
     const form = await req.formData().catch(() => null)
     // Several shots of one board go in one request — the AI sees them together and doesn't repeat what two photos share.

@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import { docText } from './docOps'
 import { photoFailedToast, photoNode, preparePhoto, readPhotoContent, uploadPhoto, type PreparedPhoto } from './photoTools'
 import styles from './LectureEditor.module.scss'
+import { isBalanceError } from '../billing'
 
 interface Props {
   lectureId: string
@@ -67,6 +68,8 @@ export function InsertPhotoDialog({ lectureId, editor, file, at, onClose }: Prop
       onClose()
     } catch (e) {
       const code = e instanceof Error ? e.message : ''
+      // No money on the balance: the page's InsufficientBalanceModal says so — nothing more here.
+      if (isBalanceError(e)) { setBusy(false); return }
       if (code === 'VIP_REQUIRED' || code === 'QUOTA_EXCEEDED') toast.error(code === 'VIP_REQUIRED' ? t('vipOnly') : t('quotaExceeded'))
       else photoFailedToast({ message: t('photoFailed'), retryLabel: t('photoRetry'), retry: () => { void insertRef.current() } })
       setBusy(false)

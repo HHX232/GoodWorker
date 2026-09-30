@@ -3715,7 +3715,8 @@
         "PINNED_LISTING_PURCHASE": "Pinned listing",
         "STORAGE_OVERAGE_DEBIT": "Storage",
         "MONTHLY_FEE": "VIP fee",
-        "PROMO_BONUS": "Promo bonus"
+        "PROMO_BONUS": "Promo bonus",
+        "LECTURE_DEBIT": "Lecture notes"
       },
       "desc": {
         "DEPOSIT": "Balance top-up",
@@ -3733,7 +3734,8 @@
           "tests_import-pdf": "Test import from PDF",
           "teacher_lesson-plan": "Lesson plan",
           "teacher_lesson-plan_revise": "Lesson plan revision"
-        }
+        },
+        "LECTURE_DEBIT": "Lecture notes"
       }
     },
     "insufficientModal": {
@@ -4506,7 +4508,9 @@
     "photoErr_UPLOAD_FAILED": "Couldn't upload the photo",
     "photoErr_AI_FAILED": "The AI couldn't read the photos — try again",
     "photoErr_TOO_MANY_PHOTOS": "Too many photos at once — 6 at most",
-    "structureAddedTo": "This adds to “{title}” — inserted right after it"
+    "structureAddedTo": "This adds to “{title}” — inserted right after it",
+    "stateNoBalance": "Balance is empty — top up your wallet to keep recording",
+    "photoErr_INSUFFICIENT_BALANCE": "Not enough money on the balance — top up your wallet"
   },
   "lecturePromo": {
     "eyebrow": "New tool · VIP",

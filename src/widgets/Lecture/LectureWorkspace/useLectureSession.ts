@@ -8,6 +8,7 @@ import { deleteChunk, pendingChunks } from '../recorder/chunkQueue'
 import { lectureRecorder } from '../recorder/lectureRecorder'
 import { useRecorderState } from '../recorder/useRecorderState'
 import type { ChunkDto, LectureDto, LectureResponse, TariffDto, UploadIssue } from './types'
+import { isBalanceError } from '../billing'
 
 export type Compression = 'none' | 'medium' | 'strong'
 
@@ -257,8 +258,9 @@ export function useLectureSession(lectureId: string, t: (key: string, values?: R
         else emptyTail.current = { from: range.from, ms: range.ms }
       }
       if (force && !added && empty) toast.info(t('structureEmpty'))
-    } catch {
-      toast.error(t('structureFailed'))
+    } catch (e) {
+      // No money on the balance: the page's InsufficientBalanceModal says so — nothing more here.
+      if (!isBalanceError(e)) toast.error(t('structureFailed'))
     } finally {
       structureBusy.current = false
       setStructuring(false)
@@ -298,10 +300,17 @@ export function useLectureSession(lectureId: string, t: (key: string, values?: R
           const dto: ChunkDto = { seq: c.seq, startMs: c.startMs, durationMs: c.durationMs, text: data.text ?? '', isFinal: false, hasAudio: true }
           received.current.set(c.seq, dto)
           setChunks(prev => [...prev.filter(p => p.seq !== c.seq), dto].sort((a, b) => a.seq - b.seq))
-          setLecture(l => l && { ...l, recordedMs: data.recordedMs ?? l.recordedMs, costKopecks: data.costKopecks ?? l.costKopecks })
+          setLecture(l => l && { ...l, recordedMs: data.recordedMs ?? l.recordedMs, costKopecks: data.costKopecks ?? l.costKopecks, chargedCents: data.chargedCents ?? l.chargedCents })
           if (data.audioQuotaHit) toast.warning(t('audioQuotaHit'))
           if (autoStructureRef.current) structure()
           continue
+        }
+        if (res.status === 402 && data.error === 'INSUFFICIENT_BALANCE') {
+          // Out of money: stop recording; the chunk stays queued and goes up after a top-up
+          // (the page shows InsufficientBalanceModal — see billing.ts).
+          setIssue('balance')
+          await lectureRecorder.stop()
+          break
         }
         if (res.status === 429 && data.error === 'DAILY_LIMIT') {
           setIssue('limit')

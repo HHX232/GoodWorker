@@ -8,6 +8,7 @@ import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
 import { SuggestionPreview } from './SuggestionPreview'
 import styles from './LectureEditor.module.scss'
+import { isBalanceError } from '../billing'
 
 export interface AskTarget {
   id: string
@@ -86,6 +87,8 @@ export function AskAiPanel({ lectureId, target, onApply, onCancel }: Props) {
       if (!res.ok) throw new Error(data.error ?? 'AI_FAILED')
       setBlocks(data.blocks ?? [])
     } catch (e) {
+      // No money on the balance: the page's InsufficientBalanceModal says so — nothing more here.
+      if (isBalanceError(e)) return
       toast.error(e instanceof Error && e.message === 'VIP_REQUIRED' ? t('vipOnly') : t('aiFailed'))
     } finally {
       setBusy(false)

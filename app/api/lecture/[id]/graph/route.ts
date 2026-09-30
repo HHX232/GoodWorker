@@ -19,7 +19,7 @@ const MODES: GraphMode[] = ['describe', 'edit', 'photo']
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { id } = await params
-    const guard = await requireOwnLecture(id, { write: true })
+    const guard = await requireOwnLecture(id, { write: true, ai: true })
     if (guard.response) return guard.response
     const form = await req.formData().catch(() => null)
     if (!form) return NextResponse.json({ error: 'Invalid form' }, { status: 400 })

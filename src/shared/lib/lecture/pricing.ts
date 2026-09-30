@@ -1,10 +1,16 @@
 import { prisma } from '@/shared/prisma/prisma'
-import type { LectureSettings } from '@prisma/client'
+import type { LectureNote, LectureSettings } from '@prisma/client'
+import type { AIUsage } from '@/lib/openrouter'
+import { isStorageAdmin } from '@/shared/lib/tutorFiles/storage'
+import { computeCostCents } from '@/shared/lib/wallet/pricing'
+import { debitBalance, getBalanceCents, InsufficientBalanceError, type WalletUser } from '@/shared/lib/wallet/wallet'
 
-// The ONE place /lecture would touch a Wallet (same pattern as
-// tutorFiles/billing.ts). This build has no Wallet: the price is computed
-// and shown, nothing is charged; `maxMinutesPerDay` is the safety cap.
-export const LECTURE_BILLING_ENABLED = false
+// The ONE place /lecture touches the Wallet (same pattern as
+// tutorFiles/billing.ts). Wallet build: the owner pays from their balance —
+// `pricePerMinuteCents` per started minute of recording (charged as chunks
+// arrive) and DeepSeek's own cost of every lecture AI call + `aiMarkupPercent`.
+// Admins (AdminEmail) aren't charged. `maxMinutesPerDay` stays a safety cap.
+export const LECTURE_BILLING_ENABLED = true
 
 export const LECTURE_SETTINGS_DEFAULTS = {
   baseMinutes: 30,
@@ -14,6 +20,8 @@ export const LECTURE_SETTINGS_DEFAULTS = {
   aiInputPer1MKopecks: 2600,
   aiOutputPer1MKopecks: 10000,
   maxMinutesPerDay: 240,
+  pricePerMinuteCents: 1,
+  aiMarkupPercent: 200,
 } as const
 
 export type LectureTariff = Omit<LectureSettings, 'id' | 'updatedAt'>
@@ -53,4 +61,75 @@ export async function minutesRecordedToday(ownerId: string, ownerRole: 'STUDENT'
     _sum: { durationMs: true },
   })
   return (rows._sum.durationMs ?? 0) / 60_000
+}
+
+// ─── Wallet ─────────────────────────────────────────────────────────────
+
+type Owner = Pick<LectureNote, 'ownerId' | 'ownerRole'>
+
+/** Who pays for a lecture: its owner — null for admins, who use /lecture for free. */
+async function payer(lecture: Owner): Promise<WalletUser | null> {
+  const role = lecture.ownerRole === 'STUDENT' ? 'STUDENT' : 'TEACHER'
+  if (role === 'TEACHER' && (await isStorageAdmin(lecture.ownerId))) return null
+  return { id: lecture.ownerId, role }
+}
+
+/**
+ * Before recording a chunk / calling the AI: the balance must cover at least
+ * `needCents` (one minute of recording, or a cent for an AI call — its real
+ * cost is only known afterwards; the debit is zero-floor). Throws
+ * InsufficientBalanceError → the route answers 402 (insufficientBalanceResponse).
+ */
+export async function assertLectureBalance(lecture: Owner, needCents: number): Promise<void> {
+  const user = await payer(lecture)
+  if (!user || needCents <= 0) return
+  const balance = await getBalanceCents(user)
+  if (balance < needCents) throw new InsufficientBalanceError(needCents - balance, balance)
+}
+
+/** One minute's price, rounded up to a whole cent — what a chunk needs on the balance. */
+export async function minuteNeedCents(): Promise<number> {
+  const t = await getLectureSettings()
+  return t.pricePerMinuteCents > 0 ? Math.ceil(t.pricePerMinuteCents) : 0
+}
+
+/**
+ * Charges the minutes recorded since the last charge (per started minute).
+ * The minutes are claimed first with a conditional update, so two chunks
+ * landing together never charge the same minute twice.
+ */
+export async function chargeLectureMinutes(lectureId: string): Promise<void> {
+  const lecture = await prisma.lectureNote.findUnique({ where: { id: lectureId }, select: { ownerId: true, ownerRole: true, title: true, recordedMs: true, chargedMinutes: true } })
+  if (!lecture) return
+  const minutes = Math.ceil(lecture.recordedMs / 60_000)
+  if (minutes <= lecture.chargedMinutes) return
+  const user = await payer(lecture)
+  const claimed = await prisma.lectureNote.updateMany({ where: { id: lectureId, chargedMinutes: lecture.chargedMinutes }, data: { chargedMinutes: minutes } })
+  if (!claimed.count || !user) return
+  const { pricePerMinuteCents: price } = await getLectureSettings()
+  const cost = Math.round(minutes * price) - Math.round(lecture.chargedMinutes * price)
+  const res = await debitBalance(user, cost, {
+    type: 'LECTURE_DEBIT',
+    endpoint: 'lecture/minutes',
+    description: `Конспект «${lecture.title || 'Лекция'}»: ${minutes - lecture.chargedMinutes} мин записи`,
+  })
+  if (res.costCents > 0) await prisma.lectureNote.update({ where: { id: lectureId }, data: { chargedCents: { increment: res.costCents } } })
+}
+
+/** Charges one lecture AI call: DeepSeek's cost of its tokens + the lecture markup. After a successful call only. */
+export async function chargeLectureAI(lectureId: string, usage: AIUsage): Promise<void> {
+  const lecture = await prisma.lectureNote.findUnique({ where: { id: lectureId }, select: { ownerId: true, ownerRole: true, title: true } })
+  if (!lecture) return
+  const user = await payer(lecture)
+  if (!user) return
+  const { aiMarkupPercent } = await getLectureSettings()
+  const now = new Date()
+  const res = await debitBalance(user, computeCostCents(usage, now, aiMarkupPercent), {
+    type: 'LECTURE_DEBIT',
+    endpoint: 'lecture/ai',
+    description: `Конспект «${lecture.title || 'Лекция'}»: ИИ`,
+    rawCostCents: computeCostCents(usage, now, 0),
+    totalTokens: usage.promptCacheHitTokens + usage.promptCacheMissTokens + usage.completionTokens,
+  })
+  if (res.costCents > 0) await prisma.lectureNote.update({ where: { id: lectureId }, data: { chargedCents: { increment: res.costCents } } })
 }

@@ -11,6 +11,7 @@ import { toast } from 'sonner'
 import { photoFailedToast } from '../editor/photoTools'
 import { GraphChart } from './GraphChart'
 import styles from '../ui/ToolDialog.module.scss'
+import { isBalanceError } from '../billing'
 
 // The form keeps what the student typed (strings) — the spec is rebuilt and
 // validated on every change, so the preview is always what will be saved.
@@ -136,6 +137,8 @@ export function GraphEditorDialog({ lectureId, canUseAi, initial, isNew, onApply
       setAsk('')
     } catch (e) {
       const code = e instanceof Error ? e.message : ''
+      // No money on the balance: the page's InsufficientBalanceModal says so — nothing more here.
+      if (isBalanceError(e)) return
       if (code === 'VIP_REQUIRED') toast.error(t('vipOnly'))
       else if (code === 'NO_GRAPH') toast.error(t('graphAiNothing'))
       // With a photo: the same photo goes again on «Повторить».

@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import { photoFailedToast } from './photoTools'
 import { MathMarkup } from './MathView'
 import styles from './LectureEditor.module.scss'
+import { isBalanceError } from '../billing'
 
 type MathField = HTMLElement & { value: string; focus: () => void }
 type Mode = 'describe' | 'edit' | 'photo' | 'explain'
@@ -88,6 +89,8 @@ export function FormulaDialog({ lectureId, canUseAi, initial, context, startWith
       if (!res.ok) throw new Error(data.error ?? 'AI_FAILED')
       setResult({ latex: data.latex, explanation: data.explanation ?? '' })
     } catch (e) {
+      // No money on the balance: the page's InsufficientBalanceModal says so — nothing more here.
+      if (isBalanceError(e)) return
       if (e instanceof Error && e.message === 'VIP_REQUIRED') toast.error(t('vipOnly'))
       // With a photo: the same photo goes again on «Повторить».
       else if (photo) photoFailedToast({ message: t('photoFailed'), retryLabel: t('photoRetry'), retry: () => { void runRef.current(m, photo) } })

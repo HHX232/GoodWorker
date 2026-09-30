@@ -1,4 +1,5 @@
 import { prisma } from '@/shared/prisma/prisma'
+import type { WalletTransactionType } from '@prisma/client'
 import type { BilledUsage } from '@/lib/openrouter'
 import { auth } from '../../../../auth'
 import {
@@ -225,7 +226,40 @@ async function zeroIfBelowCost(
  * a failed call never reaches here, that's the caller's job to guarantee by
  * only calling this on success). `usage: null` (or a $0 cost) is a no-op:
  * nothing is debited and no ledger row is written — there is nothing to
- * record.
+ * record. The debit itself (atomic, zero-floor) is `debitBalance`.
+ */
+export async function chargeForAICall(
+  user: WalletUser,
+  endpoint: string,
+  usage: BilledUsage,
+  at: Date,
+): Promise<ChargeResult> {
+  const markupPercent = await getMarkupPercent()
+  const costCents = computeCostCents(usage, at, markupPercent)
+  const rawCostCents = computeCostCents(usage, at, 0)
+  const totalTokens = usage === null ? null : usage.promptCacheHitTokens + usage.promptCacheMissTokens + usage.completionTokens
+  return debitBalance(user, costCents, {
+    type: 'AI_DEBIT',
+    endpoint,
+    description: `Списание за: ${HUMAN_ENDPOINT_DESCRIPTION[endpoint] ?? endpoint}`,
+    rawCostCents,
+    totalTokens,
+  })
+}
+
+export interface DebitEntry {
+  type: WalletTransactionType
+  endpoint: string
+  description: string
+  rawCostCents?: number | null
+  totalTokens?: number | null
+}
+
+/**
+ * Takes `costCents` from the balance and writes the ledger row — the core of
+ * every usage charge (AI calls, /lecture minutes). Zero-floor: a balance that
+ * no longer covers the cost is zeroed and the rest recorded as a shortfall,
+ * never driven negative. A cost of 0 or less is a no-op (no ledger row).
  *
  * Race safety (R14i.2): the decrement is a single conditional `updateMany`
  * (`balanceCents: {gte: cost}`) — Postgres' row-level lock inside that one
@@ -244,16 +278,7 @@ async function zeroIfBelowCost(
  * refuses to fire in that case (`zeroed: false`), and the loop just retries
  * the decrement, which should now succeed against the topped-up balance.
  */
-export async function chargeForAICall(
-  user: WalletUser,
-  endpoint: string,
-  usage: BilledUsage,
-  at: Date,
-): Promise<ChargeResult> {
-  const markupPercent = await getMarkupPercent()
-  const costCents = computeCostCents(usage, at, markupPercent)
-  const rawCostCents = computeCostCents(usage, at, 0)
-  const totalTokens = usage === null ? null : usage.promptCacheHitTokens + usage.promptCacheMissTokens + usage.completionTokens
+export async function debitBalance(user: WalletUser, costCents: number, entry: DebitEntry): Promise<ChargeResult> {
   if (costCents <= 0) {
     const balanceAfterCents = await getBalanceCents(user)
     return { costCents: 0, balanceAfterCents, shortfallCents: 0 }
@@ -261,7 +286,6 @@ export async function chargeForAICall(
 
   const isTeacher = user.role === 'TEACHER'
   const table: WalletTable = isTeacher ? 'Teacher' : 'Student'
-  const description = `Списание за: ${HUMAN_ENDPOINT_DESCRIPTION[endpoint] ?? endpoint}`
 
   const MAX_ATTEMPTS = 5
   let balanceAfterCents: number | null = null
@@ -297,11 +321,11 @@ export async function chargeForAICall(
   if (balanceAfterCents === null) {
     // ponytail: MAX_ATTEMPTS exhausted means a deposit raced in on every
     // single attempt — never observed, only theoretically possible. Fail
-    // open (this one AI call goes unbilled) rather than risk an
+    // open (this one charge goes unbilled) rather than risk an
     // unconditional write that could re-introduce the clobbering bug this
     // function exists to avoid. Upgrade path: run the whole retry loop
     // inside one SERIALIZABLE transaction if this warning ever fires.
-    console.warn(`[wallet] chargeForAICall: gave up after ${MAX_ATTEMPTS} attempts (endpoint=${endpoint}, user=${user.id})`)
+    console.warn(`[wallet] debitBalance: gave up after ${MAX_ATTEMPTS} attempts (endpoint=${entry.endpoint}, user=${user.id})`)
     return { costCents: 0, balanceAfterCents: await getBalanceCents(user), shortfallCents: 0 }
   }
 
@@ -309,14 +333,14 @@ export async function chargeForAICall(
     data: {
       ...(isTeacher ? { teacherId: user.id } : { studentId: user.id }),
       userRole: user.role,
-      type: 'AI_DEBIT',
+      type: entry.type,
       amountCents: costCents,
       balanceAfterCents,
-      endpoint,
+      endpoint: entry.endpoint,
       shortfallCents: shortfallCents > 0 ? shortfallCents : null,
-      description,
-      rawCostCents,
-      totalTokens,
+      description: entry.description,
+      rawCostCents: entry.rawCostCents ?? null,
+      totalTokens: entry.totalTokens ?? null,
     },
   })
 
@@ -744,7 +768,7 @@ export async function getMonthlyFeeStatus(user: WalletUser, now: Date = new Date
 
 export interface WalletTransactionItem {
   id: string
-  type: 'DEPOSIT' | 'AI_DEBIT' | 'FEATURED_POSTS_PURCHASE' | 'PINNED_LISTING_PURCHASE' | 'STORAGE_OVERAGE_DEBIT' | 'MONTHLY_FEE' | 'PROMO_BONUS'
+  type: 'DEPOSIT' | 'AI_DEBIT' | 'FEATURED_POSTS_PURCHASE' | 'PINNED_LISTING_PURCHASE' | 'STORAGE_OVERAGE_DEBIT' | 'MONTHLY_FEE' | 'PROMO_BONUS' | 'LECTURE_DEBIT'
   amountCents: number
   balanceAfterCents: number
   endpoint: string | null

@@ -7,7 +7,7 @@ import styles from './TransactionsTable.module.scss'
 
 interface TransactionItem {
   id: string
-  type: 'DEPOSIT' | 'AI_DEBIT' | 'FEATURED_POSTS_PURCHASE' | 'PINNED_LISTING_PURCHASE' | 'STORAGE_OVERAGE_DEBIT' | 'MONTHLY_FEE' | 'PROMO_BONUS'
+  type: 'DEPOSIT' | 'AI_DEBIT' | 'FEATURED_POSTS_PURCHASE' | 'PINNED_LISTING_PURCHASE' | 'STORAGE_OVERAGE_DEBIT' | 'MONTHLY_FEE' | 'PROMO_BONUS' | 'LECTURE_DEBIT'
   amountCents: number
   balanceAfterCents: number
   endpoint: string | null
@@ -32,6 +32,7 @@ const TYPE_BADGE_CLASS: Record<TransactionItem['type'], string> = {
   STORAGE_OVERAGE_DEBIT: styles.badgeStorage,
   MONTHLY_FEE: styles.badgeFee,
   PROMO_BONUS: styles.badgeDeposit,
+  LECTURE_DEBIT: styles.badgeDebit,
 }
 
 // Money coming IN — rendered green with a "+" (top-ups and promo-code bonus).

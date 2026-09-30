@@ -27,6 +27,7 @@ import { afterBlock, lectureCtx, photoFailedToast } from './photoTools'
 import { FormulaDialog } from './FormulaDialog'
 import { mathEditBus, type MathEditRequest } from './MathView'
 import styles from './LectureEditor.module.scss'
+import { isBalanceError } from '../billing'
 
 interface Props {
   /**
@@ -257,6 +258,8 @@ export function LectureEditor({ lectureId, initialDoc, editable, canUseAi, onRea
       editor.chain().insertContentAt(range, fragmentFor(data.blocks), { updateSelection: false }).run()
       toast.success(t('photoDone'), { id: toastId })
     } catch (e) {
+      // No money on the balance: the page's InsufficientBalanceModal says so — nothing more here.
+      if (isBalanceError(e)) { clearMark('pendingFix', job.id); toast.dismiss(toastId); return }
       if (e instanceof Error && e.message === 'VIP_REQUIRED') { clearMark('pendingFix', job.id); toast.error(t('vipOnly'), { id: toastId }); return }
       photoFailedToast({ id: toastId, message: t('photoFailed'), retryLabel: t('photoRetry'), retry: () => runPhotoFix(job, file), onGiveUp: () => clearMark('pendingFix', job.id) })
     }

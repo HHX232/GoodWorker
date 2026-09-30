@@ -3687,7 +3687,8 @@
         "PINNED_LISTING_PURCHASE": "प्रोफ़ाइल पिन",
         "STORAGE_OVERAGE_DEBIT": "स्टोरेज",
         "MONTHLY_FEE": "VIP शुल्क",
-        "PROMO_BONUS": "प्रोमो बोनस"
+        "PROMO_BONUS": "प्रोमो बोनस",
+        "LECTURE_DEBIT": "लेक्चर नोट्स"
       },
       "desc": {
         "DEPOSIT": "बैलेंस टॉप-अप",
@@ -3705,7 +3706,8 @@
           "tests_import-pdf": "PDF से टेस्ट आयात",
           "teacher_lesson-plan": "पाठ योजना",
           "teacher_lesson-plan_revise": "पाठ योजना संशोधन"
-        }
+        },
+        "LECTURE_DEBIT": "लेक्चर नोट्स"
       }
     },
     "insufficientModal": {
@@ -4478,7 +4480,9 @@
     "photoErr_UPLOAD_FAILED": "फ़ोटो अपलोड नहीं हो सकी",
     "photoErr_AI_FAILED": "AI फ़ोटो नहीं पढ़ सका — फिर से आज़माएँ",
     "photoErr_TOO_MANY_PHOTOS": "एक बार में बहुत अधिक फ़ोटो — अधिकतम 6",
-    "structureAddedTo": "यह “{title}” का पूरक है — ठीक उसके बाद जोड़ा गया"
+    "structureAddedTo": "यह “{title}” का पूरक है — ठीक उसके बाद जोड़ा गया",
+    "stateNoBalance": "बैलेंस खत्म हो गया — रिकॉर्डिंग जारी रखने के लिए वॉलेट टॉप-अप करें",
+    "photoErr_INSUFFICIENT_BALANCE": "बैलेंस में पर्याप्त राशि नहीं — वॉलेट टॉप-अप करें"
   },
   "lecturePromo": {
     "eyebrow": "नया टूल · VIP",

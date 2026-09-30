@@ -3,6 +3,12 @@
 // pricing mechanism (tiers, DeepSeek markup) is internal.
 export const TARIFF_LABELS = {
   "ru": {
+    "lectureTariffHintWallet": "Списывается с баланса владельца лекции: цена за каждую начатую минуту записи (по мере записи) и стоимость DeepSeek по каждому вызову ИИ плюс наценка. Админов не касается.",
+    "lecturePricePerMinute": "Цена минуты записи",
+    "lectureUnitPerMin": "$ / мин",
+    "lectureTokenMarkup": "Наценка на токены",
+    "lectureTokenMarkupHint": "К реальной стоимости DeepSeek (с учётом кэша и пиковых часов): 200 % — в 3 раза дороже себестоимости",
+    "lectureMonthWallet": "В этом месяце: {lectures} лекций, {minutes} мин, списано {charged}, {tokens} токенов DeepSeek",
     "lectureTariff": "Конспекты лекций — тариф",
     "lectureTariffHint": "Первые минуты лекции — по базовой цене за каждые начатые 5 минут; дальше — доплата за 5 минут плюс стоимость DeepSeek × наценка.",
     "lectureModeNoWallet": "Без Кошелька: считается, не списывается",
@@ -20,6 +26,12 @@ export const TARIFF_LABELS = {
     "lectureUnitPer5Min": "₽ / 5 мин"
   },
   "en": {
+    "lectureTariffHintWallet": "Charged to the lecture owner's balance: a price per started minute of recording (as it records) and DeepSeek's cost of every AI call plus a markup. Admins are exempt.",
+    "lecturePricePerMinute": "Price per recording minute",
+    "lectureUnitPerMin": "$ / min",
+    "lectureTokenMarkup": "Token markup",
+    "lectureTokenMarkupHint": "On DeepSeek's real cost (cache and peak hours included): 200% means 3× the cost price",
+    "lectureMonthWallet": "This month: {lectures} lectures, {minutes} min, {charged} charged, {tokens} DeepSeek tokens",
     "lectureTariff": "Lecture notes — pricing",
     "lectureTariffHint": "The first minutes of a lecture cost the base price per started 5 minutes; after that, a per-5-minute fee plus the DeepSeek cost × markup.",
     "lectureModeNoWallet": "No Wallet: metered, not charged",
@@ -37,6 +49,12 @@ export const TARIFF_LABELS = {
     "lectureUnitPer5Min": "₽ / 5 min"
   },
   "hi": {
+    "lectureTariffHintWallet": "लेक्चर मालिक के बैलेंस से काटा जाता है: रिकॉर्डिंग के हर शुरू हुए मिनट की कीमत और हर AI कॉल की DeepSeek लागत के साथ मार्कअप। एडमिन पर लागू नहीं।",
+    "lecturePricePerMinute": "रिकॉर्डिंग मिनट की कीमत",
+    "lectureUnitPerMin": "$ / मिनट",
+    "lectureTokenMarkup": "टोकन मार्कअप",
+    "lectureTokenMarkupHint": "DeepSeek की वास्तविक लागत पर (कैश और पीक घंटे सहित): 200% यानी लागत का 3 गुना",
+    "lectureMonthWallet": "इस महीने: {lectures} लेक्चर, {minutes} मिनट, {charged} काटा गया, {tokens} DeepSeek टोकन",
     "lectureTariff": "लेक्चर नोट्स — मूल्य",
     "lectureTariffHint": "लेक्चर के पहले मिनट हर शुरू हुए 5 मिनट के आधार मूल्य पर; उसके बाद 5 मिनट का शुल्क और DeepSeek लागत × मार्कअप।",
     "lectureModeNoWallet": "वॉलेट नहीं: गिना जाता है, काटा नहीं जाता",
@@ -54,6 +72,12 @@ export const TARIFF_LABELS = {
     "lectureUnitPer5Min": "₽ / 5 मिनट"
   },
   "zh": {
+    "lectureTariffHintWallet": "从讲座所有者的余额中扣费：录音每开始一分钟的价格（边录边扣），以及每次 AI 调用的 DeepSeek 成本加价。管理员免费。",
+    "lecturePricePerMinute": "每分钟录音价格",
+    "lectureUnitPerMin": "$ / 分钟",
+    "lectureTokenMarkup": "Token 加价",
+    "lectureTokenMarkupHint": "基于 DeepSeek 实际成本（含缓存与高峰时段）：200% 即成本价的 3 倍",
+    "lectureMonthWallet": "本月：{lectures} 场讲座，{minutes} 分钟，已扣费 {charged}，DeepSeek {tokens} 个 token",
     "lectureTariff": "课堂笔记——资费",
     "lectureTariffHint": "讲座前若干分钟按每开始的 5 分钟基础价计费；之后按每 5 分钟附加费加 DeepSeek 成本 × 加价倍数计费。",
     "lectureModeNoWallet": "无钱包：只计量，不扣费",

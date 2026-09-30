@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/shared/prisma/prisma'
 import { requireOwnLecture } from '@/shared/lib/lecture/access'
 import { putLectureAudio } from '@/shared/lib/lecture/audio'
-import { getLectureSettings, lectureCostKopecks, minutesRecordedToday } from '@/shared/lib/lecture/pricing'
+import { assertLectureBalance, chargeLectureMinutes, getLectureSettings, lectureCostKopecks, minuteNeedCents, minutesRecordedToday } from '@/shared/lib/lecture/pricing'
+import { InsufficientBalanceError, insufficientBalanceResponse } from '@/shared/lib/wallet/wallet'
 import { ownerFreeBytes } from '@/shared/lib/lecture/quota'
 import { markDoubtful, SttBusyError, transcribe } from '@/shared/lib/lecture/stt'
 import { parseContext, sttHint } from '@/shared/lib/lecture/context'
@@ -51,6 +52,16 @@ export async function POST(req: NextRequest, { params }: Params) {
     if (!user.isAdmin && tariff.maxMinutesPerDay > 0 && (await minutesRecordedToday(user.id, user.role)) + durationMs / 60_000 > tariff.maxMinutesPerDay) {
       return NextResponse.json({ error: 'DAILY_LIMIT', maxMinutesPerDay: tariff.maxMinutesPerDay }, { status: 429 })
     }
+    // Wallet: a chunk that starts a not-yet-paid minute needs that minute on the balance (402 otherwise —
+    // the page stops recording and offers a top-up; the chunk stays in the phone's queue).
+    if (Math.ceil((lecture.recordedMs + durationMs) / 60_000) > lecture.chargedMinutes) {
+      try {
+        await assertLectureBalance(lecture, await minuteNeedCents())
+      } catch (e) {
+        if (e instanceof InsufficientBalanceError) return insufficientBalanceResponse(e)
+        throw e
+      }
+    }
 
     const bytes = Buffer.from(await audio.arrayBuffer())
     const mime = (audio.type || 'audio/webm').split(';')[0]
@@ -93,7 +104,10 @@ export async function POST(req: NextRequest, { params }: Params) {
       data: { recordedMs, costKopecks: lectureCostKopecks(tariff, recordedMs, lecture.aiPromptTokens, lecture.aiCompletionTokens) },
       select: { recordedMs: true, costKopecks: true },
     })
-    return NextResponse.json({ seq, text, ...updated, audioQuotaHit })
+    // The chunk is stored either way — a failed charge is logged, not turned into a lost chunk.
+    await chargeLectureMinutes(id).catch(e => console.error('[chunks] charge minutes', id, e))
+    const charged = await prisma.lectureNote.findUnique({ where: { id }, select: { chargedCents: true } })
+    return NextResponse.json({ seq, text, ...updated, chargedCents: charged?.chargedCents ?? 0, audioQuotaHit })
   } catch (e) {
     console.error('[POST /api/lecture/[id]/chunks]', e)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })

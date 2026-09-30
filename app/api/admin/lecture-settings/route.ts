@@ -22,13 +22,15 @@ export async function GET() {
     const monthStart = new Date()
     monthStart.setDate(1)
     monthStart.setHours(0, 0, 0, 0)
-    const [settings, month] = await Promise.all([
+    const [settings, month, charged] = await Promise.all([
       getLectureSettings(),
       prisma.lectureNote.aggregate({
         where: { createdAt: { gte: monthStart } },
         _count: { _all: true },
         _sum: { recordedMs: true, costKopecks: true, aiPromptTokens: true, aiCompletionTokens: true },
       }),
+      // Wallet: what was actually charged this month (the ledger, not an estimate).
+      prisma.walletTransaction.aggregate({ where: { type: 'LECTURE_DEBIT', createdAt: { gte: monthStart } }, _sum: { amountCents: true } }),
     ])
     const locale = (await getLocale().catch(() => 'ru')) as TariffLocale
     return NextResponse.json({
@@ -41,6 +43,7 @@ export async function GET() {
         costKopecks: month._sum.costKopecks ?? 0,
         promptTokens: month._sum.aiPromptTokens ?? 0,
         completionTokens: month._sum.aiCompletionTokens ?? 0,
+        chargedCents: charged._sum.amountCents ?? 0,
       },
     })
   } catch (e) {
@@ -66,6 +69,16 @@ export async function PATCH(req: NextRequest) {
       const v = body.aiMarkup
       if (typeof v !== 'number' || !Number.isFinite(v) || v < 0 || v > 100) return NextResponse.json({ error: 'aiMarkup must be 0..100' }, { status: 400 })
       data.aiMarkup = v
+    }
+    if (body.pricePerMinuteCents !== undefined) {
+      const v = body.pricePerMinuteCents
+      if (typeof v !== 'number' || !Number.isFinite(v) || v < 0 || v > 10_000) return NextResponse.json({ error: 'pricePerMinuteCents must be 0..10000' }, { status: 400 })
+      data.pricePerMinuteCents = v
+    }
+    if (body.aiMarkupPercent !== undefined) {
+      const v = body.aiMarkupPercent
+      if (typeof v !== 'number' || !Number.isInteger(v) || v < 0 || v > 10_000) return NextResponse.json({ error: 'aiMarkupPercent must be an integer 0..10000' }, { status: 400 })
+      data.aiMarkupPercent = v
     }
     if (Object.keys(data).length) await prisma.lectureSettings.upsert({ where: { id: 'global' }, update: data, create: { id: 'global', ...data } })
     return NextResponse.json({ ok: true })

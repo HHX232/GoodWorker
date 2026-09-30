@@ -14,22 +14,26 @@ interface Tariff {
   aiInputPer1MKopecks: number
   aiOutputPer1MKopecks: number
   maxMinutesPerDay: number
+  pricePerMinuteCents: number
+  aiMarkupPercent: number
 }
 
-type Labels = Record<'lectureTariff' | 'lectureTariffHint' | 'lectureModeNoWallet' | 'lectureBaseMinutes' | 'lectureBasePrice' | 'lectureExtraPrice' | 'lectureAiMarkup' | 'lectureAiMarkupHint' | 'lectureAiInput' | 'lectureAiOutput' | 'lectureDailyCap' | 'lectureDailyCapHint' | 'lectureUnitMin' | 'lectureMonth' | 'lectureUnitPer5Min', string>
+type Labels = Record<'lectureTariff' | 'lectureTariffHint' | 'lectureModeNoWallet' | 'lectureBaseMinutes' | 'lectureBasePrice' | 'lectureExtraPrice' | 'lectureAiMarkup' | 'lectureAiMarkupHint' | 'lectureAiInput' | 'lectureAiOutput' | 'lectureDailyCap' | 'lectureDailyCapHint' | 'lectureUnitMin' | 'lectureMonth' | 'lectureUnitPer5Min'
+  | 'lectureTariffHintWallet' | 'lecturePricePerMinute' | 'lectureUnitPerMin' | 'lectureTokenMarkup' | 'lectureTokenMarkupHint' | 'lectureMonthWallet', string>
 
 interface Response {
   /** Card copy comes from the admin API, not messages/*.json (those reach every visitor). */
   labels: Labels
   settings: Tariff
   billingEnabled: boolean
-  month: { lectures: number; minutes: number; costKopecks: number; promptTokens: number; completionTokens: number }
+  month: { lectures: number; minutes: number; costKopecks: number; promptTokens: number; completionTokens: number; chargedCents?: number }
 }
 
 const QUERY_KEY = ['admin', 'lecture-settings']
 const rub = (kopecks: number) => (kopecks / 100).toFixed(2)
 
 type Field = { key: keyof Tariff; label: string; unit: string; money?: boolean; step?: string; hint?: string }
+const dollars = (cents: number) => `$${(cents / 100).toFixed(2)}`
 
 /** /lecture tariff (admin → Хранилище). The pricing mechanism is internal — its copy is served by the admin API only. */
 export function LectureTariffCard() {
@@ -50,12 +54,21 @@ export function LectureTariffCard() {
       aiInputPer1MKopecks: rub(s.aiInputPer1MKopecks),
       aiOutputPer1MKopecks: rub(s.aiOutputPer1MKopecks),
       maxMinutesPerDay: String(s.maxMinutesPerDay),
+      // Wallet build: cents → dollars in the form (a minute may cost a fraction of a cent).
+      pricePerMinuteCents: String(+(s.pricePerMinuteCents / 100).toFixed(4)),
+      aiMarkupPercent: String(s.aiMarkupPercent),
     })
   }, [data])
 
   const L = data?.labels
   const fill = (tpl: string, v: Record<string, string | number>) => tpl.replace(/\{(\w+)\}/g, (_, k) => String(v[k] ?? ''))
-  const fields: Field[] = !L ? [] : [
+  const wallet = !!data?.billingEnabled
+  // Wallet build: per started minute + token markup (what is charged). Without it: the metered 5-minute tiers.
+  const fields: Field[] = !L ? [] : wallet ? [
+    { key: 'pricePerMinuteCents', label: L.lecturePricePerMinute, unit: L.lectureUnitPerMin, money: true, step: '0.001' },
+    { key: 'aiMarkupPercent', label: L.lectureTokenMarkup, unit: '%', hint: L.lectureTokenMarkupHint },
+    { key: 'maxMinutesPerDay', label: L.lectureDailyCap, unit: L.lectureUnitMin, hint: L.lectureDailyCapHint },
+  ] : [
     { key: 'baseMinutes', label: L.lectureBaseMinutes, unit: L.lectureUnitMin },
     { key: 'basePer5MinKopecks', label: L.lectureBasePrice, unit: L.lectureUnitPer5Min, money: true, step: '0.01' },
     { key: 'extraPer5MinKopecks', label: L.lectureExtraPrice, unit: L.lectureUnitPer5Min, money: true, step: '0.01' },
@@ -69,7 +82,7 @@ export function LectureTariffCard() {
     const body: Record<string, number> = {}
     for (const f of fields) {
       const n = Number((form[f.key] ?? '').replace(',', '.'))
-      body[f.key] = f.money ? Math.round(n * 100) : f.key === 'aiMarkup' ? n : Math.round(n)
+      body[f.key] = f.key === 'pricePerMinuteCents' ? Math.round(n * 100 * 1000) / 1000 : f.money ? Math.round(n * 100) : f.key === 'aiMarkup' ? n : Math.round(n)
     }
     setSaving(true)
     try {
@@ -91,7 +104,7 @@ export function LectureTariffCard() {
         <h2 className={styles.cardTitle}>{L.lectureTariff}</h2>
         <span className={styles.mode}>{data.billingEnabled ? t('storageModeBilling') : L.lectureModeNoWallet}</span>
       </div>
-      <p className={styles.fieldHint}>{L.lectureTariffHint}</p>
+      <p className={styles.fieldHint}>{wallet ? L.lectureTariffHintWallet : L.lectureTariffHint}</p>
       <div className={styles.fields}>
         {fields.map(f => (
           <label key={f.key} className={styles.field}>
@@ -105,7 +118,9 @@ export function LectureTariffCard() {
         ))}
       </div>
       <p className={styles.fieldHint}>
-        {fill(L.lectureMonth, { lectures: data.month.lectures, minutes: data.month.minutes, cost: rub(data.month.costKopecks), tokens: data.month.promptTokens + data.month.completionTokens })}
+        {wallet
+          ? fill(L.lectureMonthWallet, { lectures: data.month.lectures, minutes: data.month.minutes, charged: dollars(data.month.chargedCents ?? 0), tokens: data.month.promptTokens + data.month.completionTokens })
+          : fill(L.lectureMonth, { lectures: data.month.lectures, minutes: data.month.minutes, cost: rub(data.month.costKopecks), tokens: data.month.promptTokens + data.month.completionTokens })}
       </p>
       <div className={styles.actions}>
         <button type="button" className={styles.save} onClick={save} disabled={saving}>{t('storageSave')}</button>

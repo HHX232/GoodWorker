@@ -12,6 +12,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { collectNotes } from '../editor/docOps'
 import { ShareLinks } from './ShareLinks'
+import { LECTURE_BALANCE_EVENT, watchLectureBalance, type BalanceShortfall } from '../billing'
+import { InsufficientBalanceModal } from '@/widgets/Wallet/InsufficientBalanceModal/InsufficientBalanceModal'
+import { formatCents } from '@/widgets/Wallet/useTopUpForm'
 import { LectureEditor } from '../editor/LectureEditor'
 import { lectureRecorder } from '../recorder/lectureRecorder'
 import { AiOrb, type OrbMode } from '../ui/AiOrb'
@@ -46,6 +49,14 @@ export function LectureWorkspace({ lectureId }: { lectureId: string }) {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const boardInput = useRef<HTMLInputElement>(null)
   const pageRef = useRef<HTMLDivElement>(null)
+  // Wallet: any /api/lecture/* 402 opens one "top up" modal (billing.ts).
+  const [shortfall, setShortfall] = useState<BalanceShortfall | null>(null)
+  useEffect(() => {
+    const undo = watchLectureBalance()
+    const onShort = (e: Event) => setShortfall((e as CustomEvent<BalanceShortfall>).detail)
+    window.addEventListener(LECTURE_BALANCE_EVENT, onShort)
+    return () => { undo(); window.removeEventListener(LECTURE_BALANCE_EVENT, onShort) }
+  }, [])
   const loaded = !!s.lecture && s.initialDoc !== undefined
 
   // Desktop: the page fills exactly the screen under the site header (see
@@ -95,6 +106,7 @@ export function LectureWorkspace({ lectureId }: { lectureId: string }) {
       : orbMode === 'finalizing' ? (s.refining ? t('stateRefining') : t('stateFinalizing'))
       : s.stopping ? t('stateStopping')
       : s.structuring ? t('stateStructuring')
+      : s.issue === 'balance' && !recording ? t('stateNoBalance')
       : recording ? (s.issue === 'busy' || s.issue === 'stt' ? t('stateSttBusy') : t('stateListening'))
       : s.lecture?.status === 'READY' ? t('stateReady')
       : t('stateIdle')
@@ -147,7 +159,8 @@ export function LectureWorkspace({ lectureId }: { lectureId: string }) {
   if (!s.lecture || s.initialDoc === undefined) return <div className={styles.page}><div className={styles.loadingCard} aria-busy="true" /></div>
 
   const lecture = s.lecture
-  const cost = (lecture.costKopecks / 100).toFixed(2)
+  // Wallet build: what was actually charged (wallet dollars); otherwise the metered estimate in ₽.
+  const cost = s.tariff?.billingEnabled ? formatCents(lecture.chargedCents ?? 0) : `${(lecture.costKopecks / 100).toFixed(2)} ₽`
   const liveChunks = s.chunks.slice(-5)
 
   const recordButton = recording
@@ -165,6 +178,7 @@ export function LectureWorkspace({ lectureId }: { lectureId: string }) {
 
   return (
     <div ref={pageRef} className={`${styles.page} ${drawerOpen ? styles.drawerIsOpen : ''}`}>
+      {shortfall && <InsufficientBalanceModal neededCents={shortfall.neededCents} availableCents={shortfall.availableCents} onClose={() => setShortfall(null)} />}
       {/* ≤1100px: the edge tab that slides the rails in, and the dimmed page behind them */}
       <button
         type="button"
@@ -316,7 +330,7 @@ export function LectureWorkspace({ lectureId }: { lectureId: string }) {
               <div><dt>{t('statAudio')}</dt><dd>{lecture.keepAudio ? t('statAudioKept') : hasAudio ? t('statAudioTemp') : '—'}</dd></div>
               <div><dt>{t('statWords')}</dt><dd>{docStats?.words ?? 0}</dd></div>
               <div><dt>{t('statFormulas')}</dt><dd>{docStats?.formulas ?? 0}</dd></div>
-              <div><dt>{t('statCost')}</dt><dd>{s.isAdmin ? t('costAdmin') : `${cost} ₽`}{!s.isAdmin && !s.tariff?.billingEnabled ? <small>{t('costNotCharged')}</small> : null}</dd></div>
+              <div><dt>{t('statCost')}</dt><dd>{s.isAdmin ? t('costAdmin') : cost}{!s.isAdmin && !s.tariff?.billingEnabled ? <small>{t('costNotCharged')}</small> : null}</dd></div>
             </dl>
           </section>
 

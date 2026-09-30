@@ -3715,7 +3715,8 @@
         "PINNED_LISTING_PURCHASE": "Закрепление анкеты",
         "STORAGE_OVERAGE_DEBIT": "Хранилище",
         "MONTHLY_FEE": "Плата VIP",
-        "PROMO_BONUS": "Бонус по промокоду"
+        "PROMO_BONUS": "Бонус по промокоду",
+        "LECTURE_DEBIT": "Конспект лекции"
       },
       "desc": {
         "DEPOSIT": "Пополнение баланса",
@@ -3733,7 +3734,8 @@
           "tests_import-pdf": "Импорт теста из PDF",
           "teacher_lesson-plan": "План урока",
           "teacher_lesson-plan_revise": "Правка плана урока"
-        }
+        },
+        "LECTURE_DEBIT": "Конспект лекции"
       }
     },
     "insufficientModal": {
@@ -4506,7 +4508,9 @@
     "photoErr_UPLOAD_FAILED": "Не удалось загрузить фото",
     "photoErr_AI_FAILED": "ИИ не смог разобрать фото — попробуйте ещё раз",
     "photoErr_TOO_MANY_PHOTOS": "Слишком много фото за раз — не больше 6",
-    "structureAddedTo": "Это дополнение к разделу «{title}» — вставил сразу после него"
+    "structureAddedTo": "Это дополнение к разделу «{title}» — вставил сразу после него",
+    "stateNoBalance": "Баланс закончился — пополните кошелёк, и запись продолжится",
+    "photoErr_INSUFFICIENT_BALANCE": "Недостаточно средств на балансе — пополните кошелёк"
   },
   "lecturePromo": {
     "eyebrow": "Новый инструмент · VIP",

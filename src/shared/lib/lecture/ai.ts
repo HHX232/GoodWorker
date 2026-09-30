@@ -1,6 +1,6 @@
 import { callAI, callVisionAI, type AIUsage } from '@/lib/openrouter'
 import { prisma } from '@/shared/prisma/prisma'
-import { getLectureSettings, lectureCostKopecks } from './pricing'
+import { chargeLectureAI, getLectureSettings, LECTURE_BILLING_ENABLED, lectureCostKopecks } from './pricing'
 
 // Every /lecture AI call goes to DeepSeek (text: deepseek-chat, photos: the
 // vision model). The house markdown dialect is parsed by markdownToDoc.ts.
@@ -88,6 +88,8 @@ async function addUsage(lectureId: string, usage: AIUsage | null): Promise<void>
     where: { id: lectureId },
     data: { costKopecks: lectureCostKopecks(tariff, lecture.recordedMs, lecture.aiPromptTokens, lecture.aiCompletionTokens) },
   })
+  // Wallet: the call already succeeded — a failed charge is logged, the notes still reach the student.
+  if (LECTURE_BILLING_ENABLED) await chargeLectureAI(lectureId, usage).catch(e => console.error('[lecture] charge AI', lectureId, e))
 }
 
 function stripFence(s: string): string {

@@ -1050,6 +1050,8 @@ enum WalletTransactionType {
   STORAGE_OVERAGE_DEBIT
   MONTHLY_FEE
   PROMO_BONUS
+  /// /lecture: recorded minutes (price per started minute) and its DeepSeek tokens (cost + lecture markup).
+  LECTURE_DEBIT
 }
 
 /// Money ledger for the AI-usage wallet — separate from VipTransaction, which
@@ -1365,6 +1367,10 @@ model LectureNote {
   costKopecks        Int            @default(0)
   // The saved export (StudentFile.id or TutorFile.id, by ownerRole).
   fileId             String?
+  // Wallet: whole minutes already charged for, and everything this lecture has
+  // cost so far (minutes + AI), in wallet cents — shown on the lecture page.
+  chargedMinutes     Int            @default(0)
+  chargedCents       Int            @default(0)
   // Public links (/lecture/shared/<token>): read-only and read-write. Null = off.
   shareViewToken     String?        @unique
   shareEditToken     String?        @unique
@@ -1415,8 +1421,13 @@ model LectureSettings {
   // DeepSeek list price, kopecks per 1M tokens (input / output).
   aiInputPer1MKopecks  Int      @default(2600)
   aiOutputPer1MKopecks Int      @default(10000)
-  // Safety cap while there's no Wallet to charge: minutes per owner per day (0 = off).
+  // Safety cap: minutes per owner per day (0 = off).
   maxMinutesPerDay     Int      @default(240)
+  // Wallet build: what is actually charged. Per started minute of recording, in
+  // wallet cents (fractional allowed — rounded per charge), and the markup on
+  // DeepSeek's own token cost (wallet/pricing.ts computeCostCents), in percent.
+  pricePerMinuteCents  Float    @default(1)
+  aiMarkupPercent      Int      @default(200)
   updatedAt            DateTime @updatedAt
 }
 
