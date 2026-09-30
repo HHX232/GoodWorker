@@ -1,5 +1,5 @@
 import { prisma } from '@/shared/prisma/prisma'
-import { callAI, parseJSON } from '@/lib/openrouter'
+import { callAIResult, parseJSON } from '@/lib/openrouter'
 import { CATEGORY_ROOT_SLUG_TO_SUBJECT } from '@/lib/curriculumSubjects'
 import { getCurriculumContextForPrompt } from '@/lib/curriculumContext'
 import { NextRequest, NextResponse } from 'next/server'
@@ -203,7 +203,7 @@ ${additionalNotes.trim()}` : ''}`
       }
     }
 
-    const {content: raw, usage} = await callAI(systemPrompt, userPrompt, {temperature: 0.3})
+    const {content: raw, usage} = await callAIResult(systemPrompt, userPrompt, {temperature: 0.3})
     const plan = parseJSON<{
       subject: string
       summary: string

@@ -1,4 +1,4 @@
-import { callAI, parseJSON } from '@/lib/openrouter'
+import { callAIResult, parseJSON } from '@/lib/openrouter'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -58,9 +58,6 @@ export async function analyzeTranscriptErrors(
   participants: Participant[],
   categories: CategoryRef[]
 ): Promise<DetectedError[]> {
-  const apiKey = process.env.OPENROUTER_API_KEY
-  if (!apiKey) throw new Error('OPENROUTER_API_KEY is not set')
-
   const categoriesBlock = categories.map(c => `  - id="${c.id}" name="${c.name}"`).join('\n')
   const participantsBlock = participants
     .map(p => `  - ${p.role === 'TEACHER' ? '[Учитель]' : '[Ученик]'} ${p.name}`)
@@ -68,7 +65,7 @@ export async function analyzeTranscriptErrors(
 
   const prompt = `Список категорий для классификации ошибок:\n${categoriesBlock}\n\n=== УЧАСТНИКИ ===\n${participantsBlock}\n\n=== ТРАНСКРИПТ ===\n${transcript}`
 
-  const { content: raw } = await callAI(SYSTEM_INSTRUCTION, prompt, { temperature: 0.2 })
+  const { content: raw } = await callAIResult(SYSTEM_INSTRUCTION, prompt, { temperature: 0.2 })
 
   let parsed: DetectedError[]
   try {

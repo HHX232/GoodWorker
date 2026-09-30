@@ -1,6 +1,10 @@
 'use client'
 import {InfoTextPayload} from '@/shared/types/Tasks/TaskPayload.type'
 import Placeholder from '@tiptap/extension-placeholder'
+import {Table} from '@tiptap/extension-table'
+import TableCell from '@tiptap/extension-table-cell'
+import TableHeader from '@tiptap/extension-table-header'
+import TableRow from '@tiptap/extension-table-row'
 import {EditorContent, useEditor} from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import {BoldIcon, Heading2Icon, Heading3Icon, ItalicIcon, ListIcon, ListOrderedIcon} from 'lucide-react'
@@ -21,7 +25,14 @@ export const InfoTextEditor = ({payload, onChange, viewOnly = false, titleNode}:
   const editor = useEditor({
     immediatelyRender: false,
     editable,
-    extensions: [StarterKit, ...(editable ? [Placeholder.configure({placeholder: t('placeholder')})] : [])],
+    extensions: [
+      StarterKit,
+      Table.configure({resizable: false}),
+      TableRow,
+      TableHeader,
+      TableCell,
+      ...(editable ? [Placeholder.configure({placeholder: t('placeholder')})] : [])
+    ],
     content: payload.content ?? '',
     onUpdate({editor}) {
       onChange?.({content: editor.getJSON()})

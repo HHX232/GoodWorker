@@ -68,6 +68,8 @@ export interface PostFileEntry {
   size: number
   mimeType: string
   url: string
+  /** A whole library folder attached by link (widgets/Files SharedFolderBlock); `url` is unused then. */
+  folder?: { token: string; folderId: string; itemCount: number }
 }
 
 export interface PostFileListPayload {

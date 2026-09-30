@@ -1,0 +1,56 @@
+.meter {
+  min-width: 0;
+  width: 100%;
+  max-width: 380px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.icon { color: #534AB7; flex-shrink: 0; }
+.main { font-weight: 600; color: #141416; overflow: hidden; text-overflow: ellipsis; }
+.muted { margin-left: auto; color: #868897; }
+.overLabel { margin-left: auto; color: #B45309; font-weight: 600; }
+
+.bar {
+  position: relative;
+  height: 6px;
+  margin-top: 7px;
+  border-radius: 999px;
+  background: #ECECF4;
+  overflow: hidden;
+}
+
+.free, .over {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.free { background: linear-gradient(90deg, #8B82E8 0%, #534AB7 100%); border-radius: 999px; }
+.isOver .free { border-radius: 999px 0 0 999px; }
+.over { background: repeating-linear-gradient(135deg, #F59E0B 0 6px, #F7B24A 6px 12px); border-radius: 0 999px 999px 0; }
+.mark { position: absolute; top: -2px; bottom: -2px; width: 2px; margin-left: -1px; background: #fff; }
+
+.charge {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #92400E;
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .icon { color: #a5b4fc; }
+  .main { color: #e8eaf0; }
+  .muted { color: #9ea4b5; }
+  .overLabel, .charge { color: #FBBF24; }
+  .bar { background: rgba(255, 255, 255, 0.08); }
+  .free { background: linear-gradient(90deg, #a5b4fc 0%, #818cf8 100%); }
+  .mark { background: #1a1c24; }
+}

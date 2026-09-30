@@ -1,4 +1,4 @@
-import type { AIUsage } from '@/lib/openrouter'
+import type { BilledUsage } from '@/lib/openrouter'
 
 // ─── DeepSeek token rates, $ per 1,000,000 tokens ──────────────────────────
 // Source: user-provided rate card (see .autopilot/wallet-balance/spec.md
@@ -39,7 +39,7 @@ function markupMultiplier(markupPercent: number): number {
  * from the admin panel) — this function stays a pure function with no Prisma
  * access of its own.
  */
-export function computeCostCents(usage: AIUsage, at: Date, markupPercent: number): number {
+export function computeCostCents(usage: BilledUsage, at: Date, markupPercent: number): number {
   if (usage === null) return 0
 
   const rates = isPeak(at) ? RATES.peak : RATES.nonPeak
@@ -84,7 +84,7 @@ const DEFAULT_OUTPUT_TOKEN_CEILING = 2000
 export function estimateMaxCostCents(endpoint: string, promptChars: number, at: Date, markupPercent: number): number {
   const promptTokens = Math.ceil(promptChars / CHARS_PER_TOKEN_ESTIMATE)
   const outputCeiling = OUTPUT_TOKEN_CEILING[endpoint] ?? DEFAULT_OUTPUT_TOKEN_CEILING
-  const usage: AIUsage = { promptCacheHitTokens: 0, promptCacheMissTokens: promptTokens, completionTokens: outputCeiling }
+  const usage: BilledUsage = { promptCacheHitTokens: 0, promptCacheMissTokens: promptTokens, completionTokens: outputCeiling }
   return computeCostCents(usage, at, markupPercent)
 }
 

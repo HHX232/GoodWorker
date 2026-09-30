@@ -4,7 +4,7 @@
 **Blocked by:** 03, 05
 **Зона:** `src/widgets/Files/` (студенческие подкомпоненты, использующие `FilesShell role="student"` из тикета 05), подключение вкладки в дашборд ученика, `src/widgets/Chat/EventCard/EventCard.tsx`, `messages/*.json` (остаток namespace `files`)
 **Волна:** 4
-**Status:** ready
+**Status:** done
 
 ## Что должно заработать
 

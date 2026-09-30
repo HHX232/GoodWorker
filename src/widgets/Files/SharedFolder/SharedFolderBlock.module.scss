@@ -1,0 +1,92 @@
+.block { border: 1px solid #E6E6EF; border-radius: 16px; background: #fff; overflow: hidden; }
+
+.head { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: #FAFAFD; border-bottom: 1px solid #EEEEF4; }
+.swatch { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 11px; color: rgba(20, 20, 40, 0.55); flex-shrink: 0; }
+.headText { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.title { font-size: 14px; font-weight: 700; color: #141416; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.meta { font-size: 12px; color: #868897; }
+
+.remove, .download {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #868897;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  &:hover { background: #F1F1F6; color: #141416; }
+}
+
+.remove:hover { color: #DC2626; background: #FEF2F2; }
+
+.body { padding: 8px 8px 10px; max-height: 520px; overflow-y: auto; }
+
+.files { list-style: none; margin: 0; padding: 0; li { display: flex; align-items: center; gap: 2px; } }
+
+.file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  padding: 7px 8px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: #141416;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover { background: #F5F5F9; }
+  &:focus-visible { outline: 2px solid #534AB7; outline-offset: -2px; }
+}
+
+.fileIcon { display: flex; flex-shrink: 0; }
+.fileName { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fileSize { font-size: 12px; color: #868897; white-space: nowrap; }
+
+.sub { margin-top: 2px; }
+
+.subHead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 7px 8px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: #3F3A8A;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover { background: #F4F3FF; }
+}
+
+.chevron { transition: transform 0.15s; color: #ABABAB; }
+.chevronOpen { transform: rotate(90deg); }
+.subBody { margin-left: 12px; padding-left: 8px; border-left: 1px dashed #DADCEB; }
+.empty { margin: 8px; color: #868897; font-size: 13px; }
+
+@media (prefers-reduced-motion: reduce) { .chevron { transition: none; } }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .block { background: #1a1c24; border-color: rgba(255, 255, 255, 0.08); }
+  .head { background: rgba(255, 255, 255, 0.03); border-color: rgba(255, 255, 255, 0.06); }
+  .title, .file { color: #e8eaf0; }
+  .meta, .fileSize, .empty { color: #9ea4b5; }
+  .file:hover, .remove:hover, .download:hover { background: rgba(255, 255, 255, 0.05); }
+  .subHead { color: #c7cbff; &:hover { background: rgba(129, 140, 248, 0.1); } }
+  .subBody { border-color: rgba(255, 255, 255, 0.12); }
+}

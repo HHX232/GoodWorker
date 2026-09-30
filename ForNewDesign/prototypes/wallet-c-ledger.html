@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Кошелёк · Гроссбух (C)</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;0,6..96,700;0,6..96,900;1,6..96,400;1,6..96,700&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   Кошелёк C — «Гроссбух / Редакционный».
+   Тёплая светлая бумага. Дисплей-цифры — Bodoni Moda.
+   Текст — Archivo. Акцент — терракота, только в диаграмме
+   и в положительных суммах. Разделители — рукописные линии,
+   не карточные рамки.
+   ============================================================ */
+
+:root{
+  --bg:#f6f1e7;
+  --paper:#fbf7ee;
+  --ink:#241d14;
+  --ink-2:#6f6552;
+  --line:#d9cfb8;
+  --accent:#b5502e;
+  --accent-soft:#c98a5b;
+
+  --serif:"Bodoni Moda", Georgia, "Times New Roman", serif;
+  --sans:"Archivo", "Helvetica Neue", Arial, sans-serif;
+  --mono:"Courier New", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --ease:cubic-bezier(.22,.68,.16,1);
+  --pad: clamp(1.1rem, 4vw, 3.4rem);
+}
+
+*{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  line-height:1.55;
+  font-size:clamp(1rem, .96rem + .25vw, 1.1rem);
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit;}
+button{font:inherit;}
+
+/* ---- рукописная разделительная линия ---- */
+.hr{
+  height:10px;
+  margin:0;
+  border:0;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='10'><path d='M0 5 Q 8 1 16 5 T 32 5 T 48 5 T 64 5' fill='none' stroke='%23241d14' stroke-width='1.3' stroke-linecap='round'/></svg>");
+  background-repeat:repeat-x;
+  background-position:left center;
+  background-size:64px 10px;
+  opacity:.32;
+}
+.hr--accent{
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='10'><path d='M0 5 Q 8 1 16 5 T 32 5 T 48 5 T 64 5' fill='none' stroke='%23b5502e' stroke-width='1.3' stroke-linecap='round'/></svg>");
+  opacity:.55;
+}
+
+/* ---- layout ---- */
+.wrap{ max-width:1280px; margin:0 auto; padding:0 var(--pad); }
+
+.masthead{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:1rem;
+  padding:1.6rem var(--pad) 0;
+}
+.brand{
+  font-family:var(--serif); font-weight:700; font-size:1.15rem;
+  letter-spacing:-.01em; text-decoration:none;
+}
+.brand small{
+  display:block; font-family:var(--mono); font-size:.62rem;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--ink-2);
+  font-weight:400; margin-top:.2rem;
+}
+
+main{ padding-top:clamp(2rem,5vw,3.6rem); padding-bottom:clamp(4rem,8vw,7rem); }
+
+.grid{
+  display:grid;
+  grid-template-columns: minmax(0,1fr);
+  gap:clamp(2.6rem,6vw,4.4rem);
+}
+@media (min-width:900px){
+  .grid{ grid-template-columns: minmax(0,1.05fr) minmax(0,1fr); align-items:start; }
+}
+
+/* ---- reveal: чернила впитываются в бумагу ---- */
+[data-reveal]{
+  opacity:0;
+  filter:blur(6px);
+  transform:translateY(18px);
+  transition:opacity .9s var(--ease), filter .9s var(--ease), transform .9s var(--ease);
+}
+[data-reveal].is-in{
+  opacity:1; filter:blur(0); transform:translateY(0);
+}
+
+/* ---- баланс ---- */
+.eyebrow{
+  font-family:var(--mono); font-size:.68rem; letter-spacing:.22em;
+  text-transform:uppercase; color:var(--ink-2); margin:0 0 .7rem;
+}
+.balance{
+  margin:0;
+  font-family:var(--serif); font-weight:900;
+  font-size:clamp(3.4rem, 12vw, 7.2rem);
+  line-height:.92;
+  letter-spacing:-.03em;
+  white-space:nowrap;
+}
+.balance .cur{
+  font-size:.5em; font-weight:500; color:var(--ink-2); margin-left:.08em;
+}
+.balance-block{ padding-bottom:clamp(1.8rem,4vw,2.6rem); }
+
+/* ---- предложения ---- */
+.offers{ display:flex; flex-direction:column; }
+.offer{
+  padding:1.6rem 0;
+  display:grid;
+  grid-template-columns:2.2rem 1fr auto;
+  gap:1rem 1.2rem;
+  align-items:start;
+  transition:transform .5s var(--ease);
+}
+.offer:hover{ transform:translateX(6px); }
+.offer__index{
+  font-family:var(--mono); font-size:.78rem; color:var(--accent-soft);
+  padding-top:.25rem;
+}
+.offer__title{
+  font-family:var(--serif); font-weight:700; font-size:1.3rem;
+  margin:0 0 .35rem; letter-spacing:-.01em;
+  display:flex; align-items:baseline; gap:.55rem; flex-wrap:wrap;
+}
+.badge{
+  font-family:var(--mono); font-size:.62rem; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--accent);
+  border:1px solid var(--accent-soft); border-radius:999px;
+  padding:.15rem .55rem;
+}
+.offer__text{
+  margin:0; color:var(--ink-2); font-size:.94rem; max-width:44ch;
+}
+.offer__price{
+  font-family:var(--mono); font-size:.86rem; color:var(--ink);
+  margin-top:.5rem; display:block;
+}
+.offer__cta{
+  grid-column:2 / -1;
+  justify-self:start;
+  margin-top:.85rem;
+  display:inline-flex; align-items:center; gap:.5rem;
+  font-family:var(--sans); font-weight:600; font-size:.86rem;
+  text-decoration:none; color:var(--ink);
+  padding:.6rem 1.1rem;
+  border:1px solid var(--ink);
+  border-radius:999px;
+  transition:background .4s var(--ease), color .4s var(--ease), border-color .4s var(--ease);
+}
+.offer__cta:hover{ background:var(--accent); border-color:var(--accent); color:var(--paper); }
+.offer__cta svg{ width:13px; height:13px; }
+
+/* ---- правая колонка ---- */
+.panel{ padding-bottom:clamp(2rem,4vw,3rem); }
+.panel h2{
+  font-family:var(--serif); font-weight:700; font-size:1.35rem;
+  margin:0 0 1.4rem; letter-spacing:-.01em;
+}
+.panel h2 .unit{
+  font-family:var(--mono); font-size:.6rem; color:var(--ink-2);
+  letter-spacing:.1em; text-transform:uppercase; margin-left:.6rem;
+  vertical-align:middle;
+}
+
+/* ---- диаграмма-гроссбух ---- */
+.chart{
+  --barmax:220px;
+  padding:1.4rem 0 0;
+}
+.chart__bars{
+  display:flex; align-items:flex-end; justify-content:space-between;
+  gap:clamp(.5rem,2vw,1.1rem);
+  height:var(--barmax);
+  border-bottom:1.5px solid var(--ink);
+  position:relative;
+}
+.bar{
+  flex:1 1 0;
+  display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+  height:100%;
+}
+.bar__value{
+  font-family:var(--mono); font-size:.64rem; color:var(--ink-2);
+  margin-bottom:.4rem; white-space:nowrap;
+  opacity:0; transform:translateY(4px);
+  transition:opacity .5s var(--ease) .55s, transform .5s var(--ease) .55s;
+}
+[data-reveal].is-in .bar__value{ opacity:1; transform:translateY(0); }
+.bar__col{
+  width:100%;
+  max-width:34px;
+  height:var(--h);
+  background:var(--ink);
+  border-radius:2px 2px 0 0;
+  transform:scaleY(0);
+  transform-origin:bottom;
+  transition:transform .8s var(--ease), background .3s var(--ease);
+}
+.bar--peak .bar__col{ background:var(--accent); }
+[data-reveal].is-in .bar__col{ transform:scaleY(1); }
+.bar:nth-child(1) .bar__col{ transition-delay:.05s; }
+.bar:nth-child(2) .bar__col{ transition-delay:.12s; }
+.bar:nth-child(3) .bar__col{ transition-delay:.19s; }
+.bar:nth-child(4) .bar__col{ transition-delay:.26s; }
+.bar:nth-child(5) .bar__col{ transition-delay:.33s; }
+.bar:nth-child(6) .bar__col{ transition-delay:.4s; }
+.bar:nth-child(7) .bar__col{ transition-delay:.47s; }
+.bar:hover .bar__col{ background:var(--accent); }
+.bar__label{
+  font-family:var(--mono); font-size:.66rem; letter-spacing:.05em;
+  color:var(--ink-2); margin-top:.55rem; text-transform:uppercase;
+}
+
+/* ---- список операций ---- */
+.ops{ list-style:none; margin:0; padding:0; }
+.op{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:.15rem 1rem;
+  padding:1rem 0;
+  transition:background .4s var(--ease);
+}
+.op:hover{ background:rgba(181,80,46,.06); }
+.op__desc{ font-size:.96rem; }
+.op__date{
+  grid-column:1; font-family:var(--mono); font-size:.72rem; color:var(--ink-2);
+  margin-top:.2rem;
+}
+.op__amount{
+  grid-column:2; grid-row:1;
+  font-family:var(--mono); font-weight:700; font-size:1rem;
+  justify-self:end;
+}
+.op__amount--pos{ color:var(--accent); }
+.op__amount--neg{ color:var(--ink); }
+.op__status{
+  grid-column:2; grid-row:2; justify-self:end;
+  font-family:var(--mono); font-size:.6rem; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--ink-2);
+  border:1px dashed var(--line);
+  border-radius:3px;
+  padding:.12rem .4rem;
+  transform:rotate(-2deg);
+}
+.op__status--wait{ color:var(--accent); border-color:var(--accent-soft); }
+
+/* ---- свитчер ---- */
+nav[data-wallet-switcher]{
+  position:fixed; z-index:80;
+  right:clamp(.8rem,2vw,1.4rem); bottom:clamp(.8rem,2vw,1.4rem);
+  display:flex; gap:2px;
+  background:var(--paper); border:1px solid var(--line); padding:4px;
+  border-radius:999px;
+  box-shadow:0 8px 22px -10px rgba(36,29,20,.35);
+}
+nav[data-wallet-switcher] a{
+  font-family:var(--mono); font-size:.72rem; font-weight:600;
+  letter-spacing:.04em; text-decoration:none; color:var(--ink-2);
+  padding:.42rem .7rem; line-height:1;
+  border-radius:999px;
+  transition:background .3s var(--ease), color .3s var(--ease);
+}
+nav[data-wallet-switcher] a:hover{ color:var(--ink); }
+nav[data-wallet-switcher] a[aria-current="page"]{ background:var(--ink); color:var(--paper); }
+
+/* ---- reduced motion ---- */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;
+    transition-delay:0s !important;
+    scroll-behavior:auto !important;
+  }
+  [data-reveal]{ filter:none; }
+}
+
+@media (max-width:480px){
+  .balance{ white-space:normal; }
+  .offer{ grid-template-columns:1.6rem 1fr; }
+  .offer__cta{ grid-column:1 / -1; }
+}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <a href="#" class="brand">GoodWorker<small>Гроссбух · Кошелёк репетитора</small></a>
+</header>
+
+<main class="wrap">
+  <div class="grid">
+
+    <div>
+      <section class="balance-block" data-reveal>
+        <p class="eyebrow">Баланс</p>
+        <p class="balance">48&nbsp;200<span class="cur">₽</span></p>
+      </section>
+
+      <hr class="hr hr--accent">
+
+      <section class="offers" data-reveal>
+        <div class="offer">
+          <span class="offer__index">01</span>
+          <div>
+            <p class="offer__title">VIP <span class="badge">VIP 30д</span></p>
+            <p class="offer__text">Снимает лимиты PDF → Тест: DOCX/TXT/RTF/ODT и до 50 страниц вместо 5.</p>
+            <a class="offer__cta" href="#">
+              Приобрести VIP
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="offer">
+          <span class="offer__index">02</span>
+          <div>
+            <p class="offer__title">Pro план</p>
+            <p class="offer__text">Безлимитные ученики, аналитика и экспорт расписания.
+              <span class="offer__price">990 ₽ / месяц</span>
+            </p>
+            <a class="offer__cta" href="#">
+              Перейти на Pro
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="offer">
+          <span class="offer__index">03</span>
+          <div>
+            <p class="offer__title">Личная услуга ученику</p>
+            <p class="offer__text">Настройте разовое задание под конкретного ученика.</p>
+            <a class="offer__cta" href="#">
+              Создать
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div>
+      <section class="panel chart" data-reveal>
+        <h2>Операции за неделю <span class="unit">₽</span></h2>
+        <div class="chart__bars">
+          <div class="bar">
+            <span class="bar__value">1 200</span>
+            <span class="bar__col" style="--h:29%"></span>
+            <span class="bar__label">Пн</span>
+          </div>
+          <div class="bar">
+            <span class="bar__value">2 400</span>
+            <span class="bar__col" style="--h:57%"></span>
+            <span class="bar__label">Вт</span>
+          </div>
+          <div class="bar">
+            <span class="bar__value">1 800</span>
+            <span class="bar__col" style="--h:43%"></span>
+            <span class="bar__label">Ср</span>
+          </div>
+          <div class="bar">
+            <span class="bar__value">3 100</span>
+            <span class="bar__col" style="--h:74%"></span>
+            <span class="bar__label">Чт</span>
+          </div>
+          <div class="bar">
+            <span class="bar__value">2 900</span>
+            <span class="bar__col" style="--h:69%"></span>
+            <span class="bar__label">Пт</span>
+          </div>
+          <div class="bar bar--peak">
+            <span class="bar__value">4 200</span>
+            <span class="bar__col" style="--h:100%"></span>
+            <span class="bar__label">Сб</span>
+          </div>
+          <div class="bar">
+            <span class="bar__value">1 600</span>
+            <span class="bar__col" style="--h:38%"></span>
+            <span class="bar__label">Вс</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="hr"></div>
+
+      <section class="panel" data-reveal>
+        <h2>Последние операции</h2>
+        <ul class="ops">
+          <li class="op">
+            <span class="op__desc">Оплата урока — Иванова А.</span>
+            <span class="op__amount op__amount--pos">+2 400 ₽</span>
+            <span class="op__date">сегодня</span>
+            <span class="op__status">Оплачено</span>
+          </li>
+          <li class="op">
+            <span class="op__desc">VIP — продление подписки</span>
+            <span class="op__amount op__amount--neg">−499 ₽</span>
+            <span class="op__date">вчера</span>
+            <span class="op__status">Оплачено</span>
+          </li>
+          <li class="op">
+            <span class="op__desc">Личная услуга — Петров С.</span>
+            <span class="op__amount op__amount--pos">+1 800 ₽</span>
+            <span class="op__date">2 дня назад</span>
+            <span class="op__status">Оплачено</span>
+          </li>
+          <li class="op">
+            <span class="op__desc">Pro план — подписка</span>
+            <span class="op__amount op__amount--neg">−990 ₽</span>
+            <span class="op__date">5 дней назад</span>
+            <span class="op__status">Оплачено</span>
+          </li>
+          <li class="op">
+            <span class="op__desc">Оплата урока — Смирнова К.</span>
+            <span class="op__amount op__amount--pos">+2 400 ₽</span>
+            <span class="op__date">6 дней назад</span>
+            <span class="op__status op__status--wait">Ожидает</span>
+          </li>
+        </ul>
+      </section>
+    </div>
+
+  </div>
+</main>
+
+<nav data-wallet-switcher aria-label="Варианты кошелька">
+  <a data-wallet="a" href="wallet-a-3d.html">3D</a>
+  <a data-wallet="b" href="wallet-b-mono.html">Ч/Б</a>
+  <a data-wallet="c" href="wallet-c-ledger.html">Гроссбух</a>
+</nav>
+
+<script src="shared/reveal-core.js" defer></script>
+<script>
+(function(){
+  var file = location.pathname.split('/').pop();
+  var links = document.querySelectorAll('nav[data-wallet-switcher] a');
+  for (var i = 0; i < links.length; i++) {
+    if (links[i].getAttribute('href') === file) links[i].setAttribute('aria-current', 'page');
+  }
+})();
+</script>
+
+</body>
+</html>

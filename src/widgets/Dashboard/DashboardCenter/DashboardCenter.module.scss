@@ -80,8 +80,15 @@
 }
 
 @media (max-width: 600px) {
+  // Four cells don't fit one row on a phone — 2×2 grid, separators hidden
   .statsMerged {
     padding: 12px 14px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .statsSep {
+    display: none;
   }
   .statsItem {
     gap: 6px;

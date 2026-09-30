@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
-import { callVisionAI, parseJSON } from '@/lib/openrouter'
+import { callVisionAIResult, parseJSON } from '@/lib/openrouter'
 import { chargeForAICall, getWalletSessionUser, InsufficientBalanceError, insufficientBalanceResponse, preflightCheck } from '@/shared/lib/wallet/wallet'
 
 export const maxDuration = 60
@@ -101,7 +101,7 @@ Rules:
   let parsed: { title?: string; questions?: unknown[] }
   let chargedCents = 0
   try {
-    const { content: raw, usage } = await callVisionAI(
+    const { content: raw, usage } = await callVisionAIResult(
       'You are an educational test parser with vision. Return ONLY valid JSON without markdown.',
       images,
       aiPrompt,

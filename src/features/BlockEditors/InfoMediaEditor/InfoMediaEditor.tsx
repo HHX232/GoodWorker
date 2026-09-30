@@ -1,6 +1,7 @@
 'use client'
 import { InfoMediaKind, InfoMediaPayload } from '@/shared/types/Tasks/TaskPayload.type'
 import { uploadFile } from '@/shared/lib/uploadFile'
+import { LibraryPickButton } from '@/widgets/Files/LibraryPicker/LibraryPicker'
 import { ImageIcon, Loader2Icon, UploadIcon, VideoIcon, XIcon } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'
@@ -111,6 +112,13 @@ export const InfoMediaEditor = ({payload, onChange, viewOnly = false}: Props) =>
               {uploading ? <Loader2Icon size={16} className={styles.spin} /> : <UploadIcon size={16} />}
               {uploading ? t('uploading') : t('uploadFile')}
             </button>
+            <LibraryPickButton
+              accept='media'
+              multiple={false}
+              max={1}
+              disabled={uploading}
+              onPick={([f]) => f && update({url: f.url, kind: f.mimeType.startsWith('video/') ? 'video' : 'image'})}
+            />
             <span className={styles.or}>{t('orPasteLink')}</span>
             <input
               className={styles.url_input}

@@ -1,5 +1,5 @@
 import { prisma } from '@/shared/prisma/prisma'
-import type { AIUsage } from '@/lib/openrouter'
+import type { BilledUsage } from '@/lib/openrouter'
 import { auth } from '../../../../auth'
 import {
   computeCostCents, computeMonthlyFeeCents, computeVipMonthsGranted, DEFAULT_FEATURED_POSTS_PRICE_CENTS_PER_MONTH,
@@ -247,7 +247,7 @@ async function zeroIfBelowCost(
 export async function chargeForAICall(
   user: WalletUser,
   endpoint: string,
-  usage: AIUsage,
+  usage: BilledUsage,
   at: Date,
 ): Promise<ChargeResult> {
   const markupPercent = await getMarkupPercent()
@@ -499,7 +499,7 @@ export async function purchaseAddon(user: WalletUser, kind: AddonKind, months: n
 
 /**
  * Monthly storage-overage debit for a VIP teacher whose tutor-file storage
- * exceeds `QUOTA_BYTES` (`tutorFiles/storage.ts`) — called by the
+ * exceeds the admin-set quota (`getTeacherStorageLimits`, `tutorFiles/storage.ts`) — called by the
  * `storage-overage-billing` cron, one teacher at a time. Unlike
  * `purchaseAddon` (throws `InsufficientBalanceError` on a short balance),
  * this applies the same zero-floor `chargeForAICall` uses: the cron has no

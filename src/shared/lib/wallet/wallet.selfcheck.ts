@@ -4,7 +4,7 @@
 // tears down its own throwaway Teacher row — does not touch seed accounts.
 import { prisma } from '@/shared/prisma/prisma'
 import { chargeForAICall, depositMock, InsufficientBalanceError, purchaseAddon, type WalletUser } from './wallet'
-import type { AIUsage } from '@/lib/openrouter'
+import type { BilledUsage } from '@/lib/openrouter'
 
 let failures = 0
 function assert(condition: boolean, label: string) {
@@ -40,7 +40,7 @@ async function main() {
     // $0.9999996 -> ceil to exactly 100 cents. Picked to land just under the
     // cent boundary so the ceil is unambiguous (not an artifact of float
     // rounding landing exactly on 100.0).
-    const usageForExactly100Cents: AIUsage = { promptCacheMissTokens: 0, promptCacheHitTokens: 0, completionTokens: 1_666_666 }
+    const usageForExactly100Cents: BilledUsage = { promptCacheMissTokens: 0, promptCacheHitTokens: 0, completionTokens: 1_666_666 }
 
     const [a, b] = await Promise.all([
       chargeForAICall(user, 'wallet-selfcheck/race', usageForExactly100Cents, NOW),
@@ -102,7 +102,7 @@ async function main() {
   const user2: WalletUser = { id: teacher2.id, role: 'TEACHER' }
 
   try {
-    const usageForExactly100Cents: AIUsage = { promptCacheMissTokens: 0, promptCacheHitTokens: 0, completionTokens: 1_666_666 }
+    const usageForExactly100Cents: BilledUsage = { promptCacheMissTokens: 0, promptCacheHitTokens: 0, completionTokens: 1_666_666 }
 
     const [chargeResult] = await Promise.all([
       chargeForAICall(user2, 'wallet-selfcheck/race-vs-deposit', usageForExactly100Cents, NOW),

@@ -1,0 +1,69 @@
+// Full-screen board editor (the call whiteboard over a lecture board block).
+
+.editor {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  background: #f3f3f6;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+.editorBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #ececf2;
+  background: #fff;
+}
+
+.editorTitle { display: inline-flex; align-items: center; gap: 8px; color: #1e1e24; font-weight: 600; font-size: 15px; white-space: nowrap; svg { color: #7c3aed; } }
+.editorHint { color: #9a9cab; font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; @media (max-width: 720px) { display: none; } }
+.spacer { flex: 1; }
+
+.barBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid #ececf2;
+  border-radius: 10px;
+  background: #fff;
+  color: #1e1e24;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  &:disabled { opacity: 0.5; cursor: default; }
+}
+
+.barPrimary { border-color: #1e1e24; background: #1e1e24; color: #fff; }
+
+.editorBody {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  padding: 10px;
+  > * { height: 100%; }
+}
+
+// Inline: the live board inside the notes.
+.inline { display: flex; flex-direction: column; user-select: none; -webkit-user-select: none; border-top: 1px solid #ececf2; background: #f3f3f6; }
+.inlineBar { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid #ececf2; background: #fff; .barBtn { height: 32px; padding: 0 10px; font-size: 13px; } }
+.inlineHint { overflow: hidden; color: #9a9cab; font-size: 12.5px; text-overflow: ellipsis; white-space: nowrap; }
+.inlineBody { position: relative; min-height: 0; > * { height: 100%; } }
+.barIcon { width: 32px; padding: 0 !important; justify-content: center; }
+.inlineBar .barBtn { white-space: nowrap; flex-shrink: 0; }
+.inlineHint { flex: 1; min-width: 0; }
+
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .inline { border-color: rgba(255, 255, 255, 0.07); background: #0f1015; }
+  .inlineBar { border-color: rgba(255, 255, 255, 0.07); background: #16171e; }
+  .editor { background: #0f1015; }
+  .editorBar { border-color: rgba(255, 255, 255, 0.07); background: #16171e; }
+  .editorTitle { color: #e8eaf0; }
+  .barBtn { border-color: rgba(255, 255, 255, 0.1); background: transparent; color: #e8eaf0; }
+  .barPrimary { border-color: #e8eaf0; background: #e8eaf0; color: #14151c; }
+}

@@ -1,74 +1,97 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
-import { canStudentSee, getFilesSessionUser } from '@/shared/lib/tutorFiles/access'
+import { getFilesSessionUser, loadStudentVisibility } from '@/shared/lib/tutorFiles/access'
+import { snippetAround } from '@/shared/lib/tutorFiles/extractText'
+import { grantStudentSelect, loadOpens, studentItemCounter, toFile, toFolder } from '@/shared/lib/tutorFiles/readModel'
+import type { LibraryFile } from '@/shared/types/TutorFiles/tutorFiles.types'
+import { lectureSubjects, sameSubject } from '@/shared/lib/lecture/subjects'
+import type { Prisma } from '@prisma/client'
 
-// GET /api/tutor-files/search?q=... — teacher searches their whole library by
-// name; student searches only their granted subset, via the same
-// canStudentSee() rule from ticket 01 (not a re-derived heuristic): the DB
-// query narrows to items that could possibly pass (direct grant, or a
-// granted ancestor folder), then canStudentSee is the actual filter, so this
-// stays correct if the visibility rule ever changes shape.
+const MAX_CONTENT_HITS = 60
+
+/** Attach "found inside" snippets to files whose text matches (idea 8). */
+async function withContentMatches(files: LibraryFile[], extraIds: string[], q: string): Promise<{ matchedIds: string[]; snippets: Map<string, string> }> {
+  const snippets = new Map<string, string>()
+  const ids = [...new Set([...files.map(f => f.id), ...extraIds])]
+  if (!ids.length) return { matchedIds: [], snippets }
+  const hits = await prisma.tutorFile.findMany({
+    where: { id: { in: ids }, contentText: { contains: q, mode: 'insensitive' } },
+    select: { id: true, contentText: true },
+    take: MAX_CONTENT_HITS,
+  })
+  for (const h of hits) {
+    const snip = h.contentText ? snippetAround(h.contentText, q) : null
+    if (snip) snippets.set(h.id, snip)
+  }
+  return { matchedIds: hits.map(h => h.id), snippets }
+}
+
+// GET /api/tutor-files/search?q=... — by name AND inside the files' text
+// (PDF/Word/Excel/PowerPoint/text, extracted at upload). A content hit comes
+// back with `contentMatch` — the passage around the first occurrence — so the
+// card can show *where* it was found. Teacher: whole library; student: only
+// what canStudentSee() allows (loadStudentVisibility).
 export async function GET(req: NextRequest) {
   try {
     const user = await getFilesSessionUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const q = (req.nextUrl.searchParams.get('q') ?? '').trim()
-    if (!q) return NextResponse.json({ folders: [], files: [] })
+    // Teacher only: narrow to one subject of their lectures (see lecture/subjects.ts).
+    const subject = user.role === 'TEACHER' ? (req.nextUrl.searchParams.get('subject') ?? '').trim().slice(0, 80) : ''
+    if (!q && !subject) return NextResponse.json({ folders: [], files: [] })
 
     if (user.role === 'TEACHER') {
+      const fileInclude = { grants: { include: grantStudentSelect, orderBy: { grantedAt: 'asc' as const } }, review: true }
+      let folderWhere: Prisma.TutorFolderWhereInput = { teacherId: user.id, ...(q ? { name: { contains: q, mode: 'insensitive' } } : {}) }
+      let fileWhere: Prisma.TutorFileWhereInput = { teacherId: user.id, ...(q ? { OR: [{ name: { contains: q, mode: 'insensitive' } }, { contentText: { contains: q, mode: 'insensitive' } }] } : {}) }
+      if (subject) {
+        const [lectures, roots] = await Promise.all([
+          lectureSubjects(user.id, 'TEACHER'),
+          prisma.tutorFolder.findMany({ where: { teacherId: user.id, name: { equals: subject, mode: 'insensitive' } }, select: { id: true } }),
+        ])
+        const lectureIds = lectures.filter(l => sameSubject(l.subject, subject)).map(l => l.id)
+        const rootIds = roots.map(f => f.id)
+        const insideIds = rootIds.length
+          ? (await prisma.tutorFolder.findMany({ where: { teacherId: user.id, OR: [{ id: { in: rootIds } }, { ancestorIds: { hasSome: rootIds } }] }, select: { id: true } })).map(f => f.id)
+          : []
+        folderWhere = q ? { ...folderWhere, id: { in: insideIds } } : { teacherId: user.id, id: { in: rootIds } }
+        fileWhere = { AND: [fileWhere, { OR: [{ lectureNoteId: { in: lectureIds } }, { folderId: { in: insideIds } }] }] }
+      }
       const [folders, files] = await Promise.all([
-        prisma.tutorFolder.findMany({ where: { teacherId: user.id, name: { contains: q, mode: 'insensitive' } }, orderBy: { name: 'asc' } }),
-        prisma.tutorFile.findMany({ where: { teacherId: user.id, name: { contains: q, mode: 'insensitive' } }, orderBy: { name: 'asc' } }),
+        prisma.tutorFolder.findMany({
+          where: folderWhere,
+          include: { _count: { select: { children: true, files: true } }, grants: { include: grantStudentSelect, orderBy: { grantedAt: 'asc' } } },
+          orderBy: { name: 'asc' },
+        }),
+        prisma.tutorFile.findMany({
+          where: fileWhere,
+          include: fileInclude,
+          orderBy: { name: 'asc' },
+          take: 200,
+        }),
       ])
-      return NextResponse.json({ folders, files })
+      const opened = await loadOpens(folders.map(f => f.id), files.map(f => f.id))
+      const libFiles = files.map(f => toFile(f, f.grants, opened))
+      const { snippets } = q ? await withContentMatches(libFiles, [], q) : { snippets: new Map<string, string>() }
+      return NextResponse.json({
+        folders: folders.map(f => toFolder(f, f._count.children + f._count.files, f.grants, opened)),
+        files: libFiles.map(f => ({ ...f, contentMatch: snippets.get(f.id) ?? null })),
+      })
     }
 
-    // STUDENT
-    const [folderGrants, fileGrants] = await Promise.all([
-      prisma.tutorFolderGrant.findMany({ where: { studentId: user.id }, select: { folderId: true } }),
-      prisma.tutorFileGrant.findMany({ where: { studentId: user.id }, select: { fileId: true } }),
-    ])
-    const grantedFolderIds = folderGrants.map(g => g.folderId)
-    const grantedFileIds = fileGrants.map(g => g.fileId)
-    if (grantedFolderIds.length === 0 && grantedFileIds.length === 0) return NextResponse.json({ folders: [], files: [] })
-    const grantedIds = new Set([...grantedFolderIds, ...grantedFileIds])
-
-    // Every folder that could pass canStudentSee: granted directly, or a
-    // descendant of a granted folder (its ancestorIds contains one).
-    const visibleFolders = grantedFolderIds.length
-      ? await prisma.tutorFolder.findMany({ where: { OR: [{ id: { in: grantedFolderIds } }, { ancestorIds: { hasSome: grantedFolderIds } }] } })
-      : []
-
+    const { folders, files } = await loadStudentVisibility(user.id)
     const lowerQ = q.toLowerCase()
-    const matchedFolders = visibleFolders.filter(
-      f => f.name.toLowerCase().includes(lowerQ) && canStudentSee({ id: f.id, ancestorIds: f.ancestorIds, restrictedToStudentId: f.restrictedToStudentId }, user.id, grantedIds)
-    )
-
-    const candidateFolderIds = visibleFolders.map(f => f.id)
-    const fileOr = [
-      ...(grantedFileIds.length ? [{ id: { in: grantedFileIds } }] : []),
-      ...(candidateFolderIds.length ? [{ folderId: { in: candidateFolderIds } }] : []),
-    ]
-    const candidateFiles = fileOr.length
-      ? await prisma.tutorFile.findMany({
-          where: { OR: fileOr },
-          include: { folder: { select: { id: true, ancestorIds: true, restrictedToStudentId: true } } },
-        })
-      : []
-
-    const matchedFiles = candidateFiles.filter(file => {
-      if (!file.name.toLowerCase().includes(lowerQ)) return false
-      // A file has no ancestorIds/restrictedToStudentId of its own —
-      // interfaces.md "Правило видимости" requires deriving both from the
-      // containing folder (its own id counts as an "ancestor" for a grant
-      // placed directly on that folder).
-      const ancestorIds = file.folder ? [...file.folder.ancestorIds, file.folder.id] : []
-      const restrictedToStudentId = file.folder?.restrictedToStudentId ?? null
-      return canStudentSee({ id: file.id, ancestorIds, restrictedToStudentId }, user.id, grantedIds)
+    const countOf = studentItemCounter(folders, files)
+    const all = files.map(f => toFile(f))
+    const { matchedIds, snippets } = await withContentMatches([], all.map(f => f.id), q)
+    const matched = new Set(matchedIds)
+    return NextResponse.json({
+      folders: folders.filter(f => f.name.toLowerCase().includes(lowerQ)).map(f => toFolder(f, countOf(f.id))),
+      files: all
+        .filter(f => f.name.toLowerCase().includes(lowerQ) || matched.has(f.id))
+        .map(f => ({ ...f, contentMatch: snippets.get(f.id) ?? null })),
     })
-
-    return NextResponse.json({ folders: matchedFolders, files: matchedFiles })
   } catch (e) {
     console.error('[GET /api/tutor-files/search]', e)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })

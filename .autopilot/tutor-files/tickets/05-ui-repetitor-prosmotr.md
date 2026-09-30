@@ -4,7 +4,7 @@
 **Blocked by:** 02, 03
 **Зона:** `src/widgets/Files/` (кроме `ShareAccessModal`, `StorageOverageWarningModal` — тикет 06; кроме студенческих компонентов и `EventCard` — тикет 07), подключение вкладки в дашборд репетитора, `messages/*.json` (namespace `files`, базовые ключи)
 **Волна:** 3
-**Status:** ready
+**Status:** done
 
 ## Что должно заработать
 

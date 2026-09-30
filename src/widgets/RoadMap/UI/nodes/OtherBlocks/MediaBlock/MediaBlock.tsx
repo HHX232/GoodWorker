@@ -4,6 +4,7 @@
 import {RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
 import {useViewMode} from '@/shared/ui/RoadMap/context/ViewModeContext'
 import {uploadFile} from '@/shared/lib/uploadFile'
+import {LibraryPickButton, type PickedFile} from '@/widgets/Files/LibraryPicker/LibraryPicker'
 import {useReactFlow, useStore} from '@xyflow/react'
 import {
   ChevronLeftIcon,
@@ -105,6 +106,20 @@ export default function MediaBlock({nodeId}: {nodeId: string}) {
     if (fileRef.current) fileRef.current.value = ''
   }
 
+  // Same point budget as uploads: images cost POINTS_IMAGE, videos POINTS_VIDEO.
+  const addFromLibrary = (picked: PickedFile[]) => {
+    const newItems: MediaItem[] = []
+    let pts = usedPoints
+    for (const f of picked) {
+      const isVideo = f.mimeType.startsWith('video/')
+      const cost = isVideo ? POINTS_VIDEO : POINTS_IMAGE
+      if (pts + cost > MAX_POINTS) continue
+      newItems.push({ url: f.url, type: isVideo ? 'video' : 'image', points: cost })
+      pts += cost
+    }
+    update({mediaItems: [...mediaData.items, ...newItems]})
+  }
+
   const removeItem = (index: number) => {
     const next = mediaData.items.filter((_, i) => i !== index)
     update({mediaItems: next})
@@ -142,6 +157,10 @@ export default function MediaBlock({nodeId}: {nodeId: string}) {
           <span className={styles.uploadHint}>JPG, PNG, GIF · MP4, MOV, WEBM</span>
           <span className={styles.uploadHint}>{t('mediaPoints') + ` ${MAX_POINTS}`}</span>
         </button>
+      )}
+
+      {!viewOnly && canAddMore && (
+        <LibraryPickButton accept='media' multiple max={Math.max(1, Math.floor(remainingPoints / POINTS_IMAGE))} onPick={addFromLibrary} />
       )}
 
       {hasMedia && (

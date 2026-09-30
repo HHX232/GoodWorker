@@ -7,6 +7,23 @@
   padding: 0 8px;
 }
 
+// Admin menu (AdminSidebar) + section content, in place of the site NavBar grid.
+.admin_layout {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+  padding-top: 16px;
+
+  .page_header { margin-top: 4px; }
+
+  @media (max-width: 900px) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px 12px 0;
+  }
+}
+
 // ── Header ────────────────────────────────────────────────
 .page_header {
   display: flex;

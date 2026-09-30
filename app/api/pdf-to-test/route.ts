@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../auth'
-import { callAI, parseJSON, type AIUsage } from '@/lib/openrouter'
+import { callAIResult, parseJSON, type BilledUsage } from '@/lib/openrouter'
 import { resolveVip } from '@/lib/vipStatus'
 import { getWalletSessionUser, preflightCheck, chargeForAICall, InsufficientBalanceError, type WalletUser } from '@/shared/lib/wallet/wallet'
 
@@ -194,10 +194,10 @@ ${truncated}`
   }
 
   let parsed: { title?: string; questions?: unknown[] }
-  let usage: AIUsage = null
+  let usage: BilledUsage = null
   try {
     console.log(`[pdf-to-test] "${fileName}": asking AI for up to ${maxQ} questions (${truncated.length} chars)`)
-    const result = await callAI(
+    const result = await callAIResult(
       'You are an educational test parser. Return ONLY valid JSON without markdown.',
       aiPrompt,
       { temperature: 0.1 },

@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Кошелёк · вариант A — 3D / Дашборд</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   КОШЕЛЁК — вариант A, «3D / Дашборд»: объёмный тёмный мир,
+   техника многослойных теней + точечная сетка + красный акцент
+   из LandingPage.module.scss, карточка баланса с наклоном на курсор.
+   ============================================================ */
+
+:root{
+  --bg:#12131a;
+  --card:#1a1c26;
+  --card-2:#1f2230;
+  --ink:#f2f3f7;
+  --ink-dim:#9a9aab;
+  --ink-faint:#5c5d6e;
+  --line:rgba(255,255,255,.08);
+
+  --red:#ED0606;
+  --red-soft:rgba(237,6,6,.16);
+
+  --sans:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --ease:cubic-bezier(.19,1,.22,1);
+
+  --shadow-sm:0 1px 2px rgba(0,0,0,.5), 0 8px 22px -10px rgba(0,0,0,.6);
+  --shadow-md:0 4px 10px rgba(0,0,0,.5), 0 18px 42px -14px rgba(0,0,0,.68);
+  --shadow-red-sm:0 12px 32px -14px rgba(237,6,6,.55);
+  --shadow-red-md:0 16px 40px -14px rgba(237,6,6,.7);
+}
+
+*{ box-sizing:border-box; }
+html{ -webkit-text-size-adjust:100%; }
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at 1px 1px, rgba(255,255,255,.055) 1px, transparent 0) 0 0/24px 24px,
+    var(--bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-weight:400;
+  line-height:1.5;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+a{ color:inherit; }
+button{ font-family:inherit; }
+svg{ display:block; flex-shrink:0; }
+
+/* ---- Reveal (contract: shared/reveal-core.js) ---- */
+[data-reveal]{
+  opacity:0;
+  transform:translateY(18px);
+  transition:opacity .7s var(--ease), transform .7s var(--ease);
+}
+[data-reveal].is-in{ opacity:1; transform:none; }
+
+/* ============================================================
+   Свитчер (контракт interfaces.md, разметка дословная)
+   ============================================================ */
+nav[data-wallet-switcher]{
+  position:fixed; z-index:80;
+  right:clamp(.8rem,2vw,1.4rem); top:clamp(.8rem,2vw,1.4rem);
+  display:flex; gap:2px;
+  background:var(--card); border:1px solid var(--line); padding:4px;
+  border-radius:999px;
+  box-shadow:var(--shadow-sm);
+}
+nav[data-wallet-switcher] a{
+  font-family:var(--sans); font-size:.74rem; font-weight:600;
+  letter-spacing:.03em; text-decoration:none; color:var(--ink-dim);
+  padding:.42rem .75rem; line-height:1;
+  border-radius:999px;
+  transition:background .25s var(--ease), color .25s var(--ease);
+}
+nav[data-wallet-switcher] a:hover{ color:var(--ink); }
+nav[data-wallet-switcher] a[aria-current="page"]{ background:var(--red); color:#fff; }
+
+/* ============================================================
+   Каркас страницы
+   ============================================================ */
+.page{
+  max-width:1280px;
+  margin:0 auto;
+  padding:clamp(4.6rem,8vw,5.6rem) clamp(1.1rem,3.4vw,2.4rem) 4rem;
+}
+
+.eyebrow{
+  font-size:.78rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--red); margin:0 0 .6rem;
+}
+.page-title{
+  margin:0 0 2.4rem;
+  font-size:clamp(1.5rem,3vw,2rem);
+  font-weight:800; letter-spacing:-.01em; color:var(--ink);
+}
+
+.wallet-shell{
+  display:grid;
+  grid-template-columns: minmax(0,1.05fr) minmax(0,1fr);
+  gap:clamp(1.4rem,3vw,2.2rem);
+  align-items:start;
+}
+@media (max-width:900px){
+  .wallet-shell{ grid-template-columns:1fr; }
+}
+
+.col{ display:flex; flex-direction:column; gap:1.6rem; min-width:0; }
+
+/* ============================================================
+   Карточка баланса — обычная плашка (без мотива банковской карты),
+   3D-наклон на курсор остаётся (R14)
+   ============================================================ */
+.card-tilt-zone{
+  perspective:1100px;
+}
+.balance-card{
+  position:relative;
+  width:100%;
+  min-height:180px;
+  border-radius:22px;
+  padding:clamp(1.6rem,4vw,2.3rem) clamp(1.5rem,3.6vw,2.1rem);
+  display:flex; flex-direction:column; justify-content:center; gap:.5rem;
+  color:var(--ink);
+  background:
+    radial-gradient(120% 140% at 8% 0%, rgba(237,6,6,.18), transparent 55%),
+    linear-gradient(155deg, #22242f 0%, #15161e 70%, #101017 100%);
+  border:1px solid rgba(255,255,255,.09);
+  box-shadow:var(--shadow-md);
+  transform-style:preserve-3d;
+  will-change:transform;
+  transition:box-shadow .35s var(--ease), transform .12s linear;
+  overflow:hidden;
+}
+.balance-card::after{
+  /* тонкий блик поверх плашки — часть общей «объёмной» техники варианта A */
+  content:"";
+  position:absolute; inset:0;
+  background:linear-gradient(115deg, rgba(255,255,255,.09) 0%, transparent 30%, transparent 70%, rgba(255,255,255,.04) 100%);
+  pointer-events:none;
+}
+.balance-card:hover{ box-shadow:0 6px 14px rgba(0,0,0,.55), 0 26px 60px -16px rgba(0,0,0,.72); }
+
+.balance-card__label{ position:relative; z-index:1; font-size:.82rem; font-weight:600; color:var(--ink-dim); letter-spacing:.04em; margin:0; }
+.balance-card__sum{
+  position:relative; z-index:1;
+  margin:0;
+  font-size:clamp(2.6rem,5.6vw,3.6rem);
+  font-weight:900;
+  letter-spacing:-.02em;
+  line-height:1;
+  color:var(--ink);
+}
+
+/* ============================================================
+   Предложения — три реальных блока со страницы /wallet, сразу
+   под балансом (R12)
+   ============================================================ */
+.upsell-stack{
+  display:flex;
+  flex-direction:column;
+  gap:.9rem;
+}
+
+.upsell-card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:1.2rem 1.2rem 1.3rem;
+  box-shadow:var(--shadow-sm);
+  transition:box-shadow .3s var(--ease), border-color .3s var(--ease);
+}
+.upsell-card:hover{
+  box-shadow:var(--shadow-md);
+  border-color:rgba(255,255,255,.16);
+}
+.upsell-card__head{ display:flex; align-items:center; justify-content:space-between; gap:.6rem; margin-bottom:.55rem; }
+.upsell-card__title{ font-size:.98rem; font-weight:700; margin:0; color:var(--ink); }
+.upsell-card__badge{
+  font-size:.64rem; font-weight:700; letter-spacing:.04em;
+  color:var(--red); background:var(--red-soft);
+  padding:.22rem .5rem; border-radius:999px; white-space:nowrap;
+}
+.upsell-card__badge--inline{ margin-left:.4rem; padding:.14rem .4rem; font-size:.58rem; }
+.upsell-card__text{ font-size:.82rem; line-height:1.5; color:var(--ink-dim); margin:0 0 .9rem; }
+.upsell-card__status{
+  display:inline-flex; align-items:center; gap:.4rem;
+  font-size:.72rem; font-weight:700; letter-spacing:.02em;
+  color:#8fe0a8; background:rgba(143,224,168,.1);
+  padding:.28rem .6rem; border-radius:999px; margin-bottom:.9rem;
+}
+
+/* Пополнить баланс */
+.topup-field{ margin-bottom:.9rem; }
+.topup-field label{ display:block; font-size:.72rem; color:var(--ink-faint); margin-bottom:.35rem; }
+.topup-field input{
+  width:100%; background:var(--card-2); border:1px solid rgba(255,255,255,.12);
+  border-radius:10px; padding:.62rem .75rem; color:var(--ink); font:inherit; font-size:.88rem;
+}
+.topup-field input:focus{ outline:none; border-color:var(--red); }
+
+.topup-amounts{ display:grid; grid-template-columns:repeat(2,1fr); gap:.6rem; margin-bottom:1rem; }
+.topup-amount{
+  position:relative;
+  display:flex; flex-direction:column; align-items:center; gap:.15rem;
+  padding:.65rem .5rem; border-radius:12px;
+  border:1px solid rgba(255,255,255,.12); background:var(--card-2); color:var(--ink);
+  font:inherit; cursor:pointer;
+  transition:border-color .25s var(--ease), transform .2s var(--ease), box-shadow .25s var(--ease);
+}
+.topup-amount:hover{ transform:translateY(-2px); border-color:rgba(255,255,255,.24); }
+.topup-amount__sum{ font-size:.92rem; font-weight:700; }
+.topup-amount__bonus{ font-size:.66rem; color:var(--ink-dim); }
+.topup-amount--best{ border-color:var(--red); box-shadow:var(--shadow-red-sm); }
+.topup-amount--best:hover{ box-shadow:var(--shadow-red-md); }
+.topup-amount__flag{
+  position:absolute; top:-9px; left:50%; transform:translateX(-50%);
+  font-size:.56rem; font-weight:700; letter-spacing:.03em; color:#fff; background:var(--red);
+  padding:.15rem .45rem; border-radius:999px; white-space:nowrap;
+}
+
+.offer-btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:.4rem;
+  width:100%;
+  padding:.62rem .8rem;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.12);
+  background:var(--card-2);
+  color:var(--ink);
+  font-size:.86rem; font-weight:600;
+  text-decoration:none; cursor:pointer;
+  transition:background .25s var(--ease), border-color .25s var(--ease), box-shadow .25s var(--ease), transform .2s var(--ease);
+}
+.offer-btn:hover{ transform:translateY(-1px); border-color:rgba(255,255,255,.22); }
+.offer-btn--accent{
+  background:var(--red); border-color:var(--red); color:#fff;
+  box-shadow:var(--shadow-red-sm);
+}
+.offer-btn--accent:hover{ box-shadow:var(--shadow-red-md); background:#d90505; }
+
+/* Закрепить меня в списке репетиторов */
+.pin-tariffs{ display:flex; flex-direction:column; gap:.5rem; }
+.pin-tariff{
+  display:flex; align-items:center; justify-content:space-between; gap:.6rem;
+  padding:.55rem .7rem; border-radius:10px; background:var(--card-2);
+}
+.pin-tariff__period{ display:inline-flex; align-items:center; gap:.3rem; font-size:.82rem; color:var(--ink); font-weight:600; }
+.pin-tariff__price{ display:flex; align-items:baseline; gap:.4rem; font-variant-numeric:tabular-nums; }
+.pin-tariff__old{ font-size:.74rem; color:var(--ink-faint); text-decoration:line-through; }
+.pin-tariff__new{ font-size:.88rem; font-weight:700; color:var(--ink); }
+.pin-tariff--best .pin-tariff__new{ color:var(--red); }
+
+/* Сделать мои посты выделенными */
+.toggle{ position:relative; display:inline-block; width:44px; height:24px; flex-shrink:0; }
+.toggle input{ position:absolute; opacity:0; width:100%; height:100%; margin:0; cursor:pointer; }
+.toggle__track{
+  position:absolute; inset:0; background:var(--card-2); border:1px solid rgba(255,255,255,.14);
+  border-radius:999px; transition:background .25s var(--ease), border-color .25s var(--ease); pointer-events:none;
+}
+.toggle__track::before{
+  content:""; position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%;
+  background:var(--ink-dim); transition:transform .25s var(--ease), background .25s var(--ease);
+}
+.toggle input:checked + .toggle__track{ background:var(--red-soft); border-color:var(--red); }
+.toggle input:checked + .toggle__track::before{ transform:translateX(20px); background:var(--red); }
+
+/* ============================================================
+   Диаграмма — столбчатая, растёт по скроллу (R01, R05, R07)
+   ============================================================ */
+.chart-card, .list-card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:1.3rem 1.3rem 1.5rem;
+  box-shadow:var(--shadow-sm);
+}
+.chart-card__head{ display:flex; align-items:baseline; justify-content:space-between; gap:.6rem; margin-bottom:1.4rem; }
+.chart-card__title{ font-size:.92rem; font-weight:700; color:var(--ink); margin:0; }
+.chart-card__peak{ font-size:.76rem; color:var(--ink-dim); }
+.chart-card__peak strong{ color:var(--red); font-weight:700; }
+
+.chart-bars{
+  display:flex;
+  align-items:flex-end;
+  gap:clamp(.4rem,1.6vw,.9rem);
+  height:180px;
+}
+.bar{
+  flex:1;
+  min-width:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+  height:100%;
+}
+.bar__track{
+  width:100%;
+  height:100%;
+  display:flex; align-items:flex-end;
+  border-radius:8px;
+  overflow:hidden;
+}
+.bar__fill{
+  width:100%;
+  height:var(--h);
+  border-radius:8px 8px 3px 3px;
+  background:linear-gradient(180deg, #3a3d4d 0%, #26283533 100%), var(--card-2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+  transform:scaleY(0);
+  transform-origin:bottom;
+  transition:transform .85s var(--ease);
+}
+.bar--peak .bar__fill{
+  background:linear-gradient(180deg, #ff4a3d 0%, var(--red) 100%);
+  box-shadow:0 10px 26px -10px rgba(237,6,6,.55), inset 0 1px 0 rgba(255,255,255,.15);
+}
+.chart-card.is-in .bar__fill{ transform:scaleY(1); }
+.bar:nth-child(1) .bar__fill{ transition-delay:.02s; }
+.bar:nth-child(2) .bar__fill{ transition-delay:.09s; }
+.bar:nth-child(3) .bar__fill{ transition-delay:.16s; }
+.bar:nth-child(4) .bar__fill{ transition-delay:.23s; }
+.bar:nth-child(5) .bar__fill{ transition-delay:.30s; }
+.bar:nth-child(6) .bar__fill{ transition-delay:.37s; }
+.bar:nth-child(7) .bar__fill{ transition-delay:.44s; }
+
+.bar__label{ margin-top:.55rem; font-size:.72rem; color:var(--ink-faint); font-weight:600; }
+.bar__value{ margin-top:.1rem; font-size:.66rem; color:var(--ink-dim); font-variant-numeric:tabular-nums; }
+
+/* ============================================================
+   Список операций — 12+ строк с пагинацией (R13)
+   ============================================================ */
+.list-card{ margin-top:1.6rem; }
+.list-card__title{ font-size:.92rem; font-weight:700; color:var(--ink); margin:0 0 1rem; }
+.ops-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.ops-list > [data-page]{ display:none; }
+.ops-list[data-ops-page="1"] > [data-page="1"],
+.ops-list[data-ops-page="2"] > [data-page="2"],
+.ops-list[data-ops-page="3"] > [data-page="3"]{ display:flex; }
+.ops-row{
+  align-items:center; gap:.8rem;
+  padding:.7rem 0;
+  border-top:1px solid var(--line);
+}
+.ops-row:first-child{ border-top:none; }
+.ops-row__icon{
+  width:34px; height:34px; border-radius:10px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--card-2); color:var(--ink-dim);
+}
+.ops-row__body{ min-width:0; flex:1; }
+.ops-row__title{ font-size:.86rem; font-weight:600; color:var(--ink); margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ops-row__meta{ display:flex; align-items:center; flex-wrap:wrap; gap:.4rem; row-gap:.3rem; margin-top:.3rem; }
+.ops-row__date{ font-size:.74rem; color:var(--ink-faint); }
+.ops-row__type{
+  font-size:.62rem; font-weight:700; letter-spacing:.03em;
+  padding:.16rem .5rem; border-radius:999px; white-space:nowrap;
+}
+.ops-row__type--topup{ color:#d8b46a; background:rgba(216,180,106,.14); }
+.ops-row__type--ai{ color:#8f9ee8; background:rgba(143,158,232,.14); }
+.ops-row__type--promo{ color:#7fd0c9; background:rgba(127,208,201,.14); }
+.ops-row__type--pin{ color:#e08fa8; background:rgba(224,143,168,.14); }
+.ops-row__status{
+  font-size:.68rem; font-weight:700; letter-spacing:.02em;
+  padding:.14rem .46rem; border-radius:999px;
+}
+.ops-row__status--paid{ color:#8fe0a8; background:rgba(143,224,168,.1); }
+.ops-row__status--pending{ color:#e0c78f; background:rgba(224,199,143,.1); }
+.ops-row__sum{ font-size:.9rem; font-weight:700; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.ops-row__sum--pos{ color:var(--red); }
+.ops-row__sum--neg{ color:var(--ink-dim); }
+
+.ops-pagination{
+  display:flex; align-items:center; justify-content:center; gap:.5rem;
+  margin-top:1.1rem; padding-top:1rem; border-top:1px solid var(--line);
+}
+.ops-page-btn{
+  width:30px; height:30px; border-radius:9px;
+  border:1px solid rgba(255,255,255,.12); background:var(--card-2); color:var(--ink);
+  font-size:.95rem; line-height:1; font-family:inherit; cursor:pointer;
+  display:inline-flex; align-items:center; justify-content:center;
+  transition:border-color .25s var(--ease), opacity .25s var(--ease);
+}
+.ops-page-btn:hover:not(:disabled){ border-color:rgba(255,255,255,.28); }
+.ops-page-btn:disabled{ opacity:.35; cursor:default; }
+.ops-page-numbers{ display:flex; gap:.35rem; }
+.ops-page-num{
+  min-width:28px; height:28px; padding:0 .3rem; border-radius:8px;
+  border:1px solid transparent; background:transparent; color:var(--ink-dim);
+  font-size:.8rem; font-weight:600; font-family:inherit; cursor:pointer;
+  transition:background .25s var(--ease), color .25s var(--ease);
+}
+.ops-page-num:hover{ color:var(--ink); }
+.ops-page-num.is-active{ background:var(--red); color:#fff; }
+
+/* ============================================================
+   Reduced motion — глобальный блок (проект-конвенция)
+   ============================================================ */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;
+    transition-delay:0s !important;
+    scroll-behavior:auto !important;
+  }
+  .balance-card{ transform:none !important; }
+}
+
+/* Узкие экраны: наклон карты в любом случае гасится JS по pointer/hover,
+   здесь только гарантируем компактные отступы блоков предложений (R10i) */
+@media (max-width:420px){
+  .upsell-stack{ gap:.7rem; }
+  .topup-amounts{ gap:.5rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- Свитчер вариантов кошелька (контракт interfaces.md) -->
+<nav data-wallet-switcher aria-label="Варианты кошелька">
+  <a data-wallet="a" href="wallet-a-3d.html">3D</a>
+  <a data-wallet="b" href="wallet-b-mono.html">Ч/Б</a>
+  <a data-wallet="c" href="wallet-c-ledger.html">Гроссбух</a>
+</nav>
+<script>
+(function(){
+  var file = location.pathname.split('/').pop();
+  var links = document.querySelectorAll('nav[data-wallet-switcher] a');
+  for (var i = 0; i < links.length; i++) {
+    if (links[i].getAttribute('href') === file) links[i].setAttribute('aria-current', 'page');
+  }
+})();
+</script>
+
+<div class="page">
+  <p class="eyebrow" data-reveal>Кошелёк</p>
+  <h1 class="page-title" data-reveal>Баланс, предложения и операции — вариант A</h1>
+
+  <div class="wallet-shell">
+
+    <!-- ============================================================
+         Левая колонка: баланс-плашка + реальные предложения /wallet
+         ============================================================ -->
+    <div class="col">
+      <div class="card-tilt-zone" data-reveal>
+        <div class="balance-card" id="balanceCard">
+          <p class="balance-card__label">Текущий баланс</p>
+          <p class="balance-card__sum">48 200 ₽</p>
+        </div>
+      </div>
+
+      <div class="upsell-stack" data-reveal>
+
+        <!-- Пополнить баланс -->
+        <article class="upsell-card">
+          <div class="upsell-card__head">
+            <h3 class="upsell-card__title">Пополнить баланс</h3>
+          </div>
+          <p class="upsell-card__text">От $5 — плюс месяц VIP</p>
+          <div class="topup-field">
+            <label for="topupCustomSum">Своя сумма</label>
+            <input type="text" id="topupCustomSum" inputmode="decimal" placeholder="$0.00">
+          </div>
+          <div class="topup-amounts">
+            <button type="button" class="topup-amount">
+              <span class="topup-amount__sum">$5.00</span>
+              <span class="topup-amount__bonus">1 VIP-месяц</span>
+            </button>
+            <button type="button" class="topup-amount">
+              <span class="topup-amount__sum">$25.00</span>
+              <span class="topup-amount__bonus">5 VIP-месяцев</span>
+            </button>
+            <button type="button" class="topup-amount">
+              <span class="topup-amount__sum">$50.00</span>
+              <span class="topup-amount__bonus">12 VIP-месяцев</span>
+            </button>
+            <button type="button" class="topup-amount topup-amount--best">
+              <span class="topup-amount__flag">САМЫЙ ВЫГОДНЫЙ</span>
+              <span class="topup-amount__sum">$100.00</span>
+              <span class="topup-amount__bonus">30 VIP-месяцев</span>
+            </button>
+          </div>
+          <a href="#" class="offer-btn offer-btn--accent">Пополнить</a>
+        </article>
+
+        <!-- Закрепить меня в списке репетиторов -->
+        <article class="upsell-card">
+          <div class="upsell-card__head">
+            <h3 class="upsell-card__title">Закрепить меня в списке репетиторов</h3>
+            <span class="upsell-card__badge">ПОПУЛЯРНАЯ УСЛУГА</span>
+          </div>
+          <p class="upsell-card__text">Профиль закрепляется вверху каталога репетиторов и рейтинга на платформе на весь срок действия.</p>
+          <span class="upsell-card__status">Закреплено до 24.10.2026</span>
+          <div class="pin-tariffs">
+            <div class="pin-tariff">
+              <span class="pin-tariff__period">1 месяц</span>
+              <span class="pin-tariff__price"><span class="pin-tariff__new">16.00 BYN</span></span>
+            </div>
+            <div class="pin-tariff">
+              <span class="pin-tariff__period">2 месяца</span>
+              <span class="pin-tariff__price"><span class="pin-tariff__old">41.60 BYN</span><span class="pin-tariff__new">32.00 BYN</span></span>
+            </div>
+            <div class="pin-tariff">
+              <span class="pin-tariff__period">3 месяца</span>
+              <span class="pin-tariff__price"><span class="pin-tariff__old">48.00 BYN</span><span class="pin-tariff__new">38.40 BYN</span></span>
+            </div>
+            <div class="pin-tariff">
+              <span class="pin-tariff__period">6 месяцев</span>
+              <span class="pin-tariff__price"><span class="pin-tariff__old">96.00 BYN</span><span class="pin-tariff__new">67.20 BYN</span></span>
+            </div>
+            <div class="pin-tariff pin-tariff--best">
+              <span class="pin-tariff__period">12 месяцев<span class="upsell-card__badge upsell-card__badge--inline">САМЫЙ ВЫГОДНЫЙ</span></span>
+              <span class="pin-tariff__price"><span class="pin-tariff__old">192.00 BYN</span><span class="pin-tariff__new">115.20 BYN</span></span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Сделать мои посты выделенными -->
+        <article class="upsell-card">
+          <div class="upsell-card__head">
+            <h3 class="upsell-card__title">Сделать мои посты выделенными</h3>
+            <label class="toggle">
+              <input type="checkbox" checked aria-label="Включить выделение постов">
+              <span class="toggle__track"></span>
+            </label>
+          </div>
+          <p class="upsell-card__text">Посты в общей ленте получают заметное оформление — их проще заметить среди остальных.</p>
+          <span class="upsell-card__status">Активно до 22.01.2027</span>
+        </article>
+
+      </div>
+    </div>
+
+    <!-- ============================================================
+         Правая колонка: диаграмма + список операций
+         ============================================================ -->
+    <div class="col">
+      <section class="chart-card" data-reveal id="chartCard">
+        <div class="chart-card__head">
+          <h2 class="chart-card__title">Операции за неделю, ₽</h2>
+          <span class="chart-card__peak">пик — <strong>сб, 4 200 ₽</strong></span>
+        </div>
+        <div class="chart-bars">
+          <div class="bar"><div class="bar__track"><div class="bar__fill" style="--h:28.6%"></div></div><span class="bar__label">Пн</span><span class="bar__value">1 200</span></div>
+          <div class="bar"><div class="bar__track"><div class="bar__fill" style="--h:57.1%"></div></div><span class="bar__label">Вт</span><span class="bar__value">2 400</span></div>
+          <div class="bar"><div class="bar__track"><div class="bar__fill" style="--h:42.9%"></div></div><span class="bar__label">Ср</span><span class="bar__value">1 800</span></div>
+          <div class="bar"><div class="bar__track"><div class="bar__fill" style="--h:73.8%"></div></div><span class="bar__label">Чт</span><span class="bar__value">3 100</span></div>
+          <div class="bar"><div class="bar__track"><div class="bar__fill" style="--h:69%"></div></div><span class="bar__label">Пт</span><span class="bar__value">2 900</span></div>
+          <div class="bar bar--peak"><div class="bar__track"><div class="bar__fill" style="--h:100%"></div></div><span class="bar__label">Сб</span><span class="bar__value">4 200</span></div>
+          <div class="bar"><div class="bar__track"><div class="bar__fill" style="--h:38.1%"></div></div><span class="bar__label">Вс</span><span class="bar__value">1 600</span></div>
+        </div>
+      </section>
+
+      <section class="list-card" data-reveal>
+        <h2 class="list-card__title">Последние операции</h2>
+        <ul class="ops-list" data-ops-page="1">
+
+          <li class="ops-row" data-page="1">
+            <span class="ops-row__icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span>
+            <div class="ops-row__body">
+              <p class="ops-row__title">Пополнение баланса</p>
+              <div class="ops-row__meta">
+                <span class="ops-row__date">сегодня</span>
+                <span class="ops-row__type ops-row__type--topup">Пополнение</span>
+                <span class="ops-row__status ops-row__status--paid">Оплачено</span>
+              </div>
+            </div>
+            <span class="ops-row__sum ops-row__sum--pos">+5 000 ₽</span>
+          </li>
+          <li class="ops-row" data-page="1">
+            <span class="ops-row__icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5z"/></svg></span>
+            <div class="ops-row__body">
+              <p class="ops-row__title">Расход на ИИ-проверку — генерация теста</p>
+              <div class="ops-row__meta">
+                <span class="ops-row__date">сегодня</span>
+                <span class="ops-row__type ops-row__type--ai">Расход на ИИ</span>
+                <span class="ops-row__status ops-row__status--paid">Оплачено</span>
+              </div>
+            </div>
+            <span class="ops-row__sum ops-row__sum--neg">−120 ₽</span>
+          </li>
+          <li class="ops-row" data-page="1">
+            <span class="ops-row__icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4a1 1 0 0 0 1 1h2l5 4V5L6 9H4a1 1 0 0 0-1 1z"/><path d="M15.5 8.5a4.5 4.5 0 0 1 0 7"/></svg></span>
+            <div class="ops-row__body">
+              <p class="ops-row__title">Продвижение постов — 7 дней</p>
+              <div class="ops-row__meta">
+                <span class="ops-row__date">вчера</span>
+                <span class="ops-row__type ops-row__type--promo">Продвижение постов</span>
+                <span class="ops-row__status ops-row__status--paid">Оплачено</span>
+              </div>
+            </div>
+            <span class="ops-row__sum ops-row__sum--neg">−350 ₽</span>
+          </li>
+          <li class="ops-row" data-page="1">
+            <span class="ops-row__icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 0 0-5 5c0 3.8 5 11 5 11s5-7.2 5-11a5 5 0 0 0-5-5z"/><circle cx="12" cy="7" r="2"/></svg></span>
+            <div class="ops-row__body">
+              <p class="ops-row__title">Закрепление анкеты — 1 месяц</p>
+              <div class="ops-row__meta">
+                <span class="ops-row__date">вчера</span>
+                <span class="ops-row__type ops-row__type--pin">Закрепление анкеты</span>
+                <span class="ops-row__status ops-row__status--paid">Оплачено</span>
+              </div>
+            </div>
+            <span class="ops-row__sum ops-row__sum--neg">−800 ₽</span>
+          </li>
+          <li class="ops-row" data-page="1">
+            <span class="ops-row__icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span>
+            <div class="ops-row__body">
+              <p class="ops-row__title">Пополнение баланса</p>
+              <div class="ops-row__meta">
+                <span class="ops-row__date">2 дня назад</span>
+                <span class="ops-row__type ops-row__type--topup">Пополнение</span>
+                <span class="ops-row__status ops-row__status--paid">Оплачено</span>
+              </div>
+            </div>
+            <span class="ops-row__sum ops-row__sum--pos">+2 000 ₽</span>
+          </li>
+
+          <li class="ops-row" data-page="2">
+            <span class="ops-row__icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5z"/></svg></span>
+            <div class="ops-row__body">
+              <p class="ops-row__title">Расход на ИИ-проверку — распознавание PDF</p>
+              <div class="ops-row__meta">
+                <span class="ops-row__date">3 дня назад</span>
+                <span class="ops-row__type ops-row__type--ai">Расход на ИИ</span>
+                <span class="ops-row__status ops-row__status--paid">Оплачено</span>
+              </div>
+            </div>
+            <span class="ops-row__sum ops-row__sum--neg">−85 ₽</span>
+          </li>
+          <li class="ops-row" data-page="2">
+            <span class="ops-row__icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4a1 1 0 0 0 1 1h2l5 4V5L6 9H4a1 1 0 0 0-1 1z"/><path d="M15.5 8.5a4.5 4.5 0 0 1 0 7"/></svg></span>
+            <div class="ops-row__body">
+              <p class="ops-row__title">Продвижение постов — 3 дня</p>
+              <div class="ops-row__meta">
+                <span class="ops-row__date">4 дня назад</span>
+                <span class="ops-row__type ops-row__type--promo">Продвижение постов</span>
+                <span class="ops-row__status ops-row__status--pending">Ожидает</span>
+              </div>
+            </div>
+            <span class="ops-row__sum ops-row__sum--neg">−180 ₽</span>
+          </li>
+          <li class="ops-row" data-page="2">
+            <span class="ops-row__icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 0 0-5 5c0 3.8 5 11 5 11s5-7.2 5-11a5 5 0 0 0-5-5z"/><circle cx="12" cy="7" r="2"/></svg></span>
+            <div class="ops-row__body">
+              <p class="ops-row__title">Закрепление анкеты — 3 месяца</p>
+              <div class="ops-row__meta">
+                <span class="ops-row__date">5 дней назад</span>
+                <span class="ops-row__type ops-row__type--pin">Закрепление анкеты</span>
+                <span class="ops-row__status ops-row__status--paid">Оплачено</span>
+              </div>
+            </div>
+            <span class="ops-row__sum ops-row__sum--neg">−1 900 ₽</span>
+          </li>
+          <li class="ops-row" data-page="2">
+            <span class="ops-row__icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span>
+            <div class="ops-row__body">
+              <p class="ops-row__title">Пополнение баланса</p>
+              <div class="ops-row__meta">
+                <span class="ops-row__date">6 дней назад</span>
+                <span class="ops-row__type ops-row__type--topup">Пополнение</span>
+                <span class="ops-row__status ops-row__status--paid">Оплачено</span>
+              </div>
+            </div>
+            <span class="ops-row__sum ops-row__sum--pos">+1 000 ₽</span>
+          </li>
+          <li class="ops-row" data-page="2">
+            <span class="ops-row__icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5z"/></svg></span>
+            <div class="ops-row__body">
+              <p class="ops-row__title">Расход на ИИ-проверку — генерация теста</p>
+              <div class="ops-row__meta">
+                <span class="ops-row__date">неделю назад</span>
+                <span class="ops-row__type ops-row__type--ai">Расход на ИИ</span>
+                <span class="ops-row__status ops-row__status--paid">Оплачено</span>
+              </div>
+            </div>
+            <span class="ops-row__sum ops-row__sum--neg">−120 ₽</span>
+          </li>
+
+          <li class="ops-row" data-page="3">
+            <span class="ops-row__icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4a1 1 0 0 0 1 1h2l5 4V5L6 9H4a1 1 0 0 0-1 1z"/><path d="M15.5 8.5a4.5 4.5 0 0 1 0 7"/></svg></span>
+            <div class="ops-row__body">
+              <p class="ops-row__title">Продвижение постов — 7 дней</p>
+              <div class="ops-row__meta">
+                <span class="ops-row__date">9 дней назад</span>
+                <span class="ops-row__type ops-row__type--promo">Продвижение постов</span>
+                <span class="ops-row__status ops-row__status--paid">Оплачено</span>
+              </div>
+            </div>
+            <span class="ops-row__sum ops-row__sum--neg">−350 ₽</span>
+          </li>
+          <li class="ops-row" data-page="3">
+            <span class="ops-row__icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 0 0-5 5c0 3.8 5 11 5 11s5-7.2 5-11a5 5 0 0 0-5-5z"/><circle cx="12" cy="7" r="2"/></svg></span>
+            <div class="ops-row__body">
+              <p class="ops-row__title">Закрепление анкеты — 1 месяц</p>
+              <div class="ops-row__meta">
+                <span class="ops-row__date">10 дней назад</span>
+                <span class="ops-row__type ops-row__type--pin">Закрепление анкеты</span>
+                <span class="ops-row__status ops-row__status--paid">Оплачено</span>
+              </div>
+            </div>
+            <span class="ops-row__sum ops-row__sum--neg">−800 ₽</span>
+          </li>
+          <li class="ops-row" data-page="3">
+            <span class="ops-row__icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span>
+            <div class="ops-row__body">
+              <p class="ops-row__title">Пополнение баланса</p>
+              <div class="ops-row__meta">
+                <span class="ops-row__date">12 дней назад</span>
+                <span class="ops-row__type ops-row__type--topup">Пополнение</span>
+                <span class="ops-row__status ops-row__status--paid">Оплачено</span>
+              </div>
+            </div>
+            <span class="ops-row__sum ops-row__sum--pos">+3 000 ₽</span>
+          </li>
+          <li class="ops-row" data-page="3">
+            <span class="ops-row__icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.5 6.5L21 11l-6.5 2.5L12 20l-2.5-6.5L3 11l6.5-2.5z"/></svg></span>
+            <div class="ops-row__body">
+              <p class="ops-row__title">Расход на ИИ-проверку — распознавание PDF</p>
+              <div class="ops-row__meta">
+                <span class="ops-row__date">2 недели назад</span>
+                <span class="ops-row__type ops-row__type--ai">Расход на ИИ</span>
+                <span class="ops-row__status ops-row__status--paid">Оплачено</span>
+              </div>
+            </div>
+            <span class="ops-row__sum ops-row__sum--neg">−85 ₽</span>
+          </li>
+          <li class="ops-row" data-page="3">
+            <span class="ops-row__icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4a1 1 0 0 0 1 1h2l5 4V5L6 9H4a1 1 0 0 0-1 1z"/><path d="M15.5 8.5a4.5 4.5 0 0 1 0 7"/></svg></span>
+            <div class="ops-row__body">
+              <p class="ops-row__title">Продвижение постов — 3 дня</p>
+              <div class="ops-row__meta">
+                <span class="ops-row__date">3 недели назад</span>
+                <span class="ops-row__type ops-row__type--promo">Продвижение постов</span>
+                <span class="ops-row__status ops-row__status--pending">Ожидает</span>
+              </div>
+            </div>
+            <span class="ops-row__sum ops-row__sum--neg">−180 ₽</span>
+          </li>
+
+        </ul>
+
+        <div class="ops-pagination">
+          <button type="button" class="ops-page-btn ops-page-btn--prev" aria-label="Предыдущая страница">‹</button>
+          <div class="ops-page-numbers">
+            <button type="button" class="ops-page-num is-active" data-page="1" aria-current="page">1</button>
+            <button type="button" class="ops-page-num" data-page="2">2</button>
+            <button type="button" class="ops-page-num" data-page="3">3</button>
+          </div>
+          <button type="button" class="ops-page-btn ops-page-btn--next" aria-label="Следующая страница">›</button>
+        </div>
+      </section>
+    </div>
+
+  </div>
+</div>
+
+<script src="shared/reveal-core.js" defer></script>
+<script>
+(function(){
+  'use strict';
+
+  // 3D-наклон карты баланса на курсор (R06.1, R07) — только на устройствах
+  // с точным указателем и наведением, и только без prefers-reduced-motion.
+  var card = document.getElementById('balanceCard');
+  if (!card) return;
+
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var hasHover = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (reduced || !hasHover) return;
+
+  var MAX_DEG = 9;
+
+  card.addEventListener('mousemove', function (e) {
+    var rect = card.getBoundingClientRect();
+    var px = (e.clientX - rect.left) / rect.width;  // 0..1
+    var py = (e.clientY - rect.top) / rect.height;  // 0..1
+    var rotY = (px - 0.5) * 2 * MAX_DEG;
+    var rotX = (0.5 - py) * 2 * MAX_DEG;
+    card.style.transform = 'perspective(1100px) rotateX(' + rotX.toFixed(2) + 'deg) rotateY(' + rotY.toFixed(2) + 'deg)';
+  });
+
+  card.addEventListener('mouseleave', function () {
+    card.style.transform = 'perspective(1100px) rotateX(0deg) rotateY(0deg)';
+  });
+})();
+</script>
+<script>
+(function(){
+  'use strict';
+
+  // Пагинация списка операций (R13) — чистый JS, переключение видимости
+  // строк по data-page, без перезагрузки.
+  var opsList = document.querySelector('.ops-list');
+  var pageButtons = document.querySelectorAll('.ops-page-num');
+  var prevBtn = document.querySelector('.ops-page-btn--prev');
+  var nextBtn = document.querySelector('.ops-page-btn--next');
+  if (!opsList || !pageButtons.length) return;
+
+  var totalPages = pageButtons.length;
+
+  function setPage(page) {
+    page = Math.max(1, Math.min(totalPages, page));
+    opsList.setAttribute('data-ops-page', String(page));
+
+    for (var i = 0; i < pageButtons.length; i++) {
+      var isActive = pageButtons[i].getAttribute('data-page') === String(page);
+      pageButtons[i].classList.toggle('is-active', isActive);
+      if (isActive) {
+        pageButtons[i].setAttribute('aria-current', 'page');
+      } else {
+        pageButtons[i].removeAttribute('aria-current');
+      }
+    }
+    if (prevBtn) prevBtn.disabled = page <= 1;
+    if (nextBtn) nextBtn.disabled = page >= totalPages;
+  }
+
+  for (var j = 0; j < pageButtons.length; j++) {
+    (function (btn) {
+      btn.addEventListener('click', function () {
+        setPage(parseInt(btn.getAttribute('data-page'), 10));
+      });
+    })(pageButtons[j]);
+  }
+
+  if (prevBtn) {
+    prevBtn.addEventListener('click', function () {
+      setPage(parseInt(opsList.getAttribute('data-ops-page'), 10) - 1);
+    });
+  }
+  if (nextBtn) {
+    nextBtn.addEventListener('click', function () {
+      setPage(parseInt(opsList.getAttribute('data-ops-page'), 10) + 1);
+    });
+  }
+
+  setPage(1);
+})();
+</script>
+
+</body>
+</html>

@@ -1,39 +1,44 @@
 window.STATE =
 {
-  "slug": "tutor-files",
-  "title": "Хранилище файлов репетитора: папки, вложенность, доступ ученикам, биллинг перелимита через Кошелёк",
+  "slug": "russian-course",
+  "title": "Курс «Русский язык» — посты, тесты, шпаргалки, фото (первая волна: Орфография/Морфология/Синтаксис/Пунктуация)",
   "mode": "interview",
   "depth": "normal",
-  "tier": null,
-  "briefFile": "2026-09-24-brief.md",
+  "briefFile": "2026-09-28-brief.md",
   "memoryFile": "CLAUDE.md",
-  "startedAt": "2026-09-24T21:17:10+03:00",
-  "updatedAt": "2026-09-25T00:05:00+03:00",
-  "finishedAt": null,
+  "startedAt": "2026-09-28T00:00:00+03:00",
+  "updatedAt": "2026-09-28T00:00:00+03:00",
+  "finishedAt": "2026-09-28T00:00:00+03:00",
   "stages": [
-    { "id": "preflight", "status": "done",    "startedAt": "2026-09-24T21:17:10+03:00", "finishedAt": "2026-09-24T21:18:30+03:00", "note": "перенесено в worktree GoodWorker-wallet-wt (feature/wallet-balance-topup) — билинг требует ещё не влитого Кошелька" },
-    { "id": "manifest",  "status": "done",    "startedAt": "2026-09-24T21:18:30+03:00", "finishedAt": "2026-09-24T21:20:00+03:00" },
-    { "id": "briefing",  "status": "done",    "startedAt": "2026-09-24T21:20:00+03:00", "finishedAt": "2026-09-24T22:05:00+03:00", "note": "режим интервью — 8 раундов вопросов, самая крупная развилка — биллинг перелимита через ещё не влитый Кошелёк" },
-    { "id": "spec",      "status": "done",    "startedAt": "2026-09-24T22:05:00+03:00", "finishedAt": "2026-09-24T22:20:00+03:00", "note": "G2: 1 находка (боковая навигация из референса) — закрыта" },
-    { "id": "plan",      "status": "done",    "startedAt": "2026-09-24T22:20:00+03:00", "finishedAt": "2026-09-24T22:35:00+03:00", "note": "7 тасков, ярус T2, 3 волны (волна 2 и 4 — по 2-3 таска параллельно)" },
-    { "id": "build",     "status": "active",  "startedAt": "2026-09-24T22:35:00+03:00", "note": "4 из 7 тасков закоммичены (02-04 без завершённого независимого ревью) — передано облачной сессии на продолжение" },
-    { "id": "review",    "status": "pending" },
-    { "id": "final",     "status": "pending" }
+    { "id": "preflight", "status": "done",   "startedAt": "2026-09-28T00:00:00+03:00", "finishedAt": "2026-09-28T00:00:00+03:00", "note": "новый прогон в настроенном репо: новый слаг, стейт прошлого прогона (tutor-files-reupload-edit) заархивирован" },
+    { "id": "manifest",  "status": "done",   "startedAt": "2026-09-28T00:00:00+03:00", "finishedAt": "2026-09-28T00:00:00+03:00", "note": "10 требований, R05 deferred (цитата пользователя)" },
+    { "id": "briefing",  "status": "done",   "startedAt": "2026-09-28T00:00:00+03:00", "finishedAt": "2026-09-28T00:00:00+03:00", "note": "режим переключён на interview («прожарь меня»); 6 вопросов: порядок блоков, охват по классам, объём на тему, формат шпаргалок (2 захода), пакет @pdf-lib/fontkit" },
+    { "id": "spec",      "status": "done",   "startedAt": "2026-09-28T00:00:00+03:00", "finishedAt": "2026-09-28T00:00:00+03:00", "note": "T2 — первая волна: 4 блока, 35 листовых тем" },
+    { "id": "plan",      "status": "done",   "startedAt": "2026-09-28T00:00:00+03:00", "finishedAt": "2026-09-28T00:00:00+03:00", "note": "4 тикета, по одному на блок, независимые файлы" },
+    { "id": "build",     "status": "done", "startedAt": "2026-09-28T00:00:00+03:00", "finishedAt": "2026-09-28T00:00:00+03:00", "note": "все 4 тикета готовы; смена провайдера картинок kie.ai→bycom.by в середине сборки (кредиты кончились у всех троих параллельных тикетов почти одновременно)" },
+    { "id": "review",    "status": "done", "startedAt": "2026-09-28T00:00:00+03:00", "finishedAt": "2026-09-28T00:00:00+03:00", "note": "T2 — орк-ром: сверка счётчиков постов/тестов по всем 35 темам (без расхождений), проверка на дубли тестов (4 пары совпавших заголовков — не дубли, разные темы двух блоков с пересекающимся явлением), выборочная проверка переводов (не копии ru)" },
+    { "id": "final",     "status": "done", "startedAt": "2026-09-28T00:00:00+03:00", "finishedAt": "2026-09-28T00:00:00+03:00", "note": "первая волна из запланированных (Фонетика и новые ветки — Лексика/Словообразование/Стилистика/Развитие речи/ОГЭ/ЕГЭ — вне этого прогона, R07)" }
   ],
-  "requirements": { "total": 19, "done": 5, "inTicket": 14, "inSpec": 0, "placeholder": 0, "deferred": 0, "dropped": 0 },
+  "requirements": { "total": 10, "done": 9, "inTicket": 0, "inSpec": 0, "placeholder": 0, "deferred": 1, "dropped": 0 },
+  "coverage": { "found": 1, "fixed": 0, "deferred": 0, "notes": "1 находка на ревью — совпадающие заголовки тестов между introductory-words/introductory-punctuation и isolated-members/comma-isolation; проверено — не баг, разные категории, дизайн пересечения был заложен в тикетах" },
   "tickets": [
-    { "id": "01", "title": "Модель данных, доступ, квота", "requirements": ["R02","R02i","R05i","G04","G02","G03"], "blockedBy": [], "wave": 1, "zone": ["prisma/schema.prisma", "prisma/migrations/", "src/shared/lib/tutorFiles/access.ts", "src/shared/lib/tutorFiles/storage.ts"], "status": "done", "startedAt": "2026-09-24T22:37:00+03:00", "finishedAt": "2026-09-24T23:10:00+03:00", "retries": 0, "repairs": 1, "files": ["prisma/schema.prisma", "prisma/migrations/20260924190538_add_tutor_files/migration.sql", "src/shared/lib/chat/access.ts", "src/shared/lib/tutorFiles/access.ts", "src/shared/lib/tutorFiles/storage.ts", "src/shared/lib/tutorFiles/access.selfcheck.ts", "src/shared/lib/tutorFiles/storage.selfcheck.ts"], "tests": { "passed": 17, "failed": 0 }, "commit": "7a498fa", "concerns": ["craft: инвариант restrictedToStudentId изначально был только в комментарии — почищено дозапросом, теперь enforced функцией assertNotUnderRestrictedFolder", "рабочее дерево worktree делят несколько сессий одновременно — при коммите пришлось аккуратно отделять чужие незакоммиченные правки Кошелька (featured posts/pinned listing), см. .autopilot/README"] },
-    { "id": "02", "title": "API: папки, файлы, загрузка, удаление", "requirements": ["R01i","R01i.1","R02.1","R02.2","R07i","R08i","R08i.1"], "blockedBy": ["01"], "wave": 2, "zone": ["app/api/tutor-files/folders/", "app/api/tutor-files/files/"], "status": "done", "startedAt": "2026-09-24T23:12:00+03:00", "finishedAt": "2026-09-25T00:00:00+03:00", "retries": 1, "repairs": 0, "files": ["app/api/tutor-files/folders/route.ts", "app/api/tutor-files/folders/[id]/route.ts", "app/api/tutor-files/files/route.ts", "app/api/tutor-files/files/[id]/route.ts"], "commit": "70b4db4", "concerns": ["retries:1 — первая попытка оборвалась по rate-limit сессии, не по дефекту кода", "закоммичено БЕЗ завершённого независимого ревью (манифест+спека/craft прерваны на середине) — проверено только вручную curl+psql"] },
-    { "id": "03", "title": "API: доступ, учебные подпапки, поиск, чат-уведомление", "requirements": ["R03","R03.1","R04i","R05i","R06i","R06i.1","G03","G03.1","G03.2","R03i.3"], "blockedBy": ["01"], "wave": 2, "zone": ["app/api/tutor-files/grants/", "app/api/tutor-files/search/", "app/api/tutor-files/usage/"], "status": "done", "startedAt": "2026-09-24T23:12:00+03:00", "finishedAt": "2026-09-25T00:00:00+03:00", "retries": 1, "repairs": 0, "files": ["app/api/tutor-files/grants/route.ts", "app/api/tutor-files/search/route.ts", "app/api/tutor-files/usage/route.ts"], "commit": "d1412a5", "concerns": ["retries:1 — первая попытка оборвалась по rate-limit сессии, не по дефекту кода", "исполнитель не успел вернуть формальный DONE-контракт (остановлен на этапе уборки scratch-файлов) — закоммичено по факту готового кода, без завершённого независимого ревью"] },
-    { "id": "04", "title": "Биллинг перелимита: списание, крон, admin-цена", "requirements": ["G02","G02.1","G02.2"], "blockedBy": ["01"], "wave": 2, "zone": ["src/shared/lib/wallet/wallet.ts", "app/api/cron/storage-overage-billing/", "app/api/admin/wallet-settings/", "vercel.json"], "status": "done", "startedAt": "2026-09-24T23:12:00+03:00", "finishedAt": "2026-09-25T00:05:00+03:00", "retries": 1, "repairs": 0, "files": ["src/shared/lib/wallet/wallet.ts", "src/shared/lib/wallet/storage-overage.selfcheck.ts", "app/api/cron/storage-overage-billing/route.ts", "app/api/admin/wallet-settings/route.ts", "src/_pages/AdminPage/AdminPage.tsx", "vercel.json"], "tests": { "passed": 36, "failed": 0 }, "commit": "2fdcf4c", "concerns": ["retries:1 — первая попытка оборвалась по rate-limit сессии, не по дефекту кода", "закоммичено БЕЗ завершённого независимого ревью", "коммит вперемешку содержит чужую незакоммиченную инфраструктуру цен Кошелька (getWalletPricingSettings/setWalletPricingSettings — VIP-бонусы/featured posts/pinned listing) — не разделялось, см. сообщение коммита 2fdcf4c", "исполнитель случайно убил next dev на :3002 (этот worktree) и :3000 (main-репозиторий GoodWorkerRemaster) через слишком широкий pkill во время верификации — main-сервер придётся поднять вручную, если он был кому-то нужен", "3 незелёных теста в wallet.selfcheck.ts (не в зоне этого тикета) из-за дрейфа общей dev-БД — не чинится этим тикетом"] },
-    { "id": "05", "title": "UI репетитора: просмотр и организация файлов", "requirements": ["R01","R01.1","G01","R02.2","R08i","R06i","G05","G06"], "blockedBy": ["02","03"], "wave": 3, "zone": ["src/widgets/Files/"], "status": "pending", "retries": 0, "repairs": 0, "files": [], "concerns": [] },
-    { "id": "06", "title": "UI репетитора: доступ и предупреждение о перелимите", "requirements": ["R03","R03.1","R04i","G03","G03.1","G02"], "blockedBy": ["03","04","05"], "wave": 4, "zone": ["src/widgets/Files/ShareAccessModal/", "src/widgets/Files/StorageOverageWarningModal/"], "status": "pending", "retries": 0, "repairs": 0, "files": [], "concerns": [] },
-    { "id": "07", "title": "UI ученика и уведомление в чате", "requirements": ["R03i","R03i.1","R03i.2","R03i.3","R06i.1","G03.2"], "blockedBy": ["03","05"], "wave": 4, "zone": ["src/widgets/Files/ (студенческая часть)", "src/widgets/Chat/EventCard/"], "status": "pending", "retries": 0, "repairs": 0, "files": [], "concerns": [] }
+    { "id": "01", "title": "Блок «Орфография» — 8 тем", "status": "done", "startedAt": "2026-09-28T00:00:00+03:00", "finishedAt": "2026-09-28T00:00:00+03:00", "commit": "81316fe, 74ad73f" },
+    { "id": "02", "title": "Блок «Морфология» — 10 тем", "status": "done", "startedAt": "2026-09-28T00:00:00+03:00", "finishedAt": "2026-09-28T00:00:00+03:00", "commit": "097fb56, a15cc94", "note": "картинки — bycom.by/z-image-turbo после исчерпания kie.ai" },
+    { "id": "03", "title": "Блок «Синтаксис» — 10 тем", "status": "done", "startedAt": "2026-09-28T00:00:00+03:00", "finishedAt": "2026-09-28T00:00:00+03:00", "commit": "d34780a, 5f36c14", "note": "обложки дозалиты бэкфилл-скриптом после смены провайдера на bycom.by" },
+    { "id": "04", "title": "Блок «Пунктуация» — 7 тем", "status": "done", "startedAt": "2026-09-28T00:00:00+03:00", "finishedAt": "2026-09-28T00:00:00+03:00", "commit": "f00981b, 9d50a62", "note": "картинки — bycom.by/z-image-turbo после исчерпания kie.ai" }
   ],
-  "singlePass": null,
   "tests": { "passed": 0, "failed": 0 },
-  "debt": { "placeholders": ["G02 — цена за ГБ/мес перелимита (WalletSettings.storageOveragePriceCentsPerGbMonth, дефолт 0)"], "assumptions": [], "emptyEnv": [] },
-  "additions": [],
-  "coverage": { "found": 1, "fixed": 1, "deferred": 0, "notes": "боковая навигация (дерево папок) из референса Floe не попала в первый черновик спецификации — дописана в §UI и в FilesShell" },
-  "blind": null
+  "debt": {
+    "placeholders": [
+      "35 обложек тем ждут перегенерации в сжатом виде (russian-course-images-v3, sharp resize+JPEG) — bycom.by баланс 0 BYN. Скрипты идемпотентны и сами доделают на следующий рестарт после пополнения ключа BYCOM_API_KEY в Railway."
+    ],
+    "notes": [
+      "Ключ kie.ai получен в чате 2026-09-28, сразу настроен локально (~/.velsvisual/config.json), в бриф записан редактированным.",
+      "@pdf-lib/fontkit добавлен как devDependency-компаньон pdf-lib для кириллицы в PDF-шпаргалках, с подтверждения пользователя.",
+      "Блок «Фонетика/графика/орфоэпия» (R05) сознательно не в этой волне — отдельный будущий курс для начальной школы.",
+      "Продакшен: курс выложен на прод через entrypoint.sh (миграции идемпотентны, гоняются на каждом старте). «Курс» на этой платформе = Roadmap, не просто Category+Post — создан отдельным тикетом после того, как пользователь заметил «посты есть, а курса нет».",
+      "Ревью-раунд 2 (после первого деплоя): человечный текст с bold/italic/blockquote/table (TipTap Table-расширение добавлено), честные многопробельные FILL_TEXT вместо пачки одногэповых блоков, добавлены DIALOGUE/MATCH_PAIRS для разнообразия, PDF-шпаргалки редизайн (секции/таблицы/акцентный цвет), исправлен баг вьювера Roadmap (посты не грузились в режиме просмотра) и баг кросс-доменной кнопки скачивания шпор.",
+      "@tiptap/* держать на одной версии (^3.31.3) — рассинхрон core/react версий уже один раз ронял прод-билд (react@3.22.3 импортировал API, которого нет в core@3.31.3, затронуло test-player и регистрацию, не только курс)."
+    ]
+  }
 }

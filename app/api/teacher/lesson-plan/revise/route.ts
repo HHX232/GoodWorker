@@ -1,4 +1,4 @@
-import { callAI, parseJSON } from '@/lib/openrouter'
+import { callAIResult, parseJSON } from '@/lib/openrouter'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../../auth'
 import { chargeForAICall, getWalletSessionUser, InsufficientBalanceError, insufficientBalanceResponse, preflightCheck } from '@/shared/lib/wallet/wallet'
@@ -68,7 +68,7 @@ ${instructions.trim()}`
       }
     }
 
-    const {content: raw, usage} = await callAI(SYSTEM_PROMPT, userPrompt, {temperature: 0.3})
+    const {content: raw, usage} = await callAIResult(SYSTEM_PROMPT, userPrompt, {temperature: 0.3})
     const revised = parseJSON<{
       reviewSteps: {title: string; description: string; status?: string; recommendation?: string}[]
       activeSteps: {title: string; description: string}[]

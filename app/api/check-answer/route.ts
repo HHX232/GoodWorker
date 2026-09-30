@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { callAI, parseJSON } from '@/lib/openrouter'
+import { callAIResult, parseJSON } from '@/lib/openrouter'
 
 export async function POST(req: NextRequest) {
   const { userAnswer, correctAnswer, question } = await req.json()
@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { content: raw } = await callAI(
+    const { content: raw } = await callAIResult(
       'You are a lenient educational quiz checker. Return ONLY valid JSON, no markdown.',
       `Check if the student's answer is essentially correct.
 Be LENIENT: accept typos, synonyms, different word forms, abbreviations, and partially correct phrasing.

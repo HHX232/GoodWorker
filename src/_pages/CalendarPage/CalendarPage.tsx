@@ -24,6 +24,7 @@ import {GoogleCalendarImportModal} from '@/widgets/Calendar/Modals/GoogleCalenda
 import {CalendarTaskCreateModal} from '@/widgets/Calendar/Modals/CalendarTaskCreateModal/CalendarTaskCreateModal'
 import {CalendarTaskModal} from '@/widgets/Calendar/Modals/CalendarTaskModal/CalendarTaskModal'
 import {PaymentReminderModal} from '@/widgets/Calendar/Modals/PaymentReminderModal/PaymentReminderModal'
+import {SubmissionStatusModal, type SubmissionStatus} from '@/widgets/Calendar/Modals/SubmissionStatusModal/SubmissionStatusModal'
 import {MonthCalendar} from '@/widgets/Calendar/MonthCalendar/MonthCalendar'
 import {WeekCalendar} from '@/widgets/Calendar/WeekCalendar/WeekCalendar'
 import {useLocale, useTranslations} from 'next-intl'
@@ -75,6 +76,8 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
     assignmentCount: number
   }
   const [homeworks, setHomeworks] = useState<HomeworkCalendarItem[]>([])
+  const [fileDeadlines, setFileDeadlines] = useState<SubmissionStatus[]>([])
+  const [deadlineStatus, setDeadlineStatus] = useState<SubmissionStatus | null>(null)
 
   const loaded = useRef(false)
   useEffect(() => {
@@ -123,6 +126,11 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
           })))
         }
       })
+      .catch(() => {})
+
+    fetch('/api/tutor-files/deadlines')
+      .then(r => r.json())
+      .then(d => { if (Array.isArray(d.deadlines)) setFileDeadlines(d.deadlines) })
       .catch(() => {})
   }, [setEvents, setTasks, setStudents, teacherId])
 
@@ -324,9 +332,11 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
             events={events}
             tasks={tasks}
             homeworks={homeworks}
+            fileDeadlines={fileDeadlines.map(d => ({ id: d.folderId, title: `${d.folderName} — ${d.students.filter(s => s.submitted).length}/${d.students.length}`, dueAt: d.deadline }))}
             onEventClick={(event: any) => selectEvent(event.id)}
             onDayClick={(date: any) => openCreateModal({date})}
             onTaskToggle={(id) => toggleCalendarTask(id)}
+            onDeadlineClick={item => setDeadlineStatus(fileDeadlines.find(d => d.folderId === item.id) ?? null)}
           />
         )}
       </div>
@@ -397,6 +407,8 @@ export function CalendarPage({ teacherId, isVip = false }: { teacherId: string; 
         isVip={isVip}
         initialStudentId={createModal.initialStudentId}
       />
+
+      <SubmissionStatusModal status={deadlineStatus} onClose={() => setDeadlineStatus(null)} />
     </div>
   )
 }

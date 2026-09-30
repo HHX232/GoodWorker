@@ -1,0 +1,90 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  // Same layer as InsufficientBalanceModal — above every app modal.
+  z-index: 1400000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.modal {
+  display: flex;
+  flex-direction: column;
+  width: 400px;
+  max-width: 100%;
+  max-height: calc(100dvh - 32px);
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.28);
+  overflow: hidden;
+}
+
+.default {}
+.wide { width: 480px; }
+.viewer { width: min(1080px, 100%); height: calc(100dvh - 32px); }
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 18px 12px 22px;
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #141416;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #868897;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  &:hover { background: #f5f5f7; color: #141416; }
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  padding: 0 22px 18px;
+  overflow-y: auto;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #4b5563;
+}
+
+.viewer .body { padding: 0; display: flex; }
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 22px 18px;
+  border-top: 1px solid #eeeef4;
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .modal { background: #141620; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); }
+  .title { color: #e8eaf0; }
+  .close { color: #9ea4b5; &:hover { background: rgba(255, 255, 255, 0.06); color: #e8eaf0; } }
+  .body { color: #9ea4b5; }
+  .footer { border-color: rgba(255, 255, 255, 0.08); }
+}

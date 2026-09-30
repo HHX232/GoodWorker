@@ -1,5 +1,5 @@
 import { prisma } from '@/shared/prisma/prisma'
-import { AIUsage, callVisionAI, parseJSON } from '@/lib/openrouter'
+import { BilledUsage, callVisionAIResult, parseJSON } from '@/lib/openrouter'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
 import { chargeForAICall, InsufficientBalanceError, insufficientBalanceResponse, preflightCheck, WalletUser } from '@/shared/lib/wallet/wallet'
@@ -70,9 +70,9 @@ export async function POST(req: NextRequest) {
     }
 
     let raw: string
-    let usage: AIUsage
+    let usage: BilledUsage
     try {
-      ;({ content: raw, usage } = await callVisionAI(systemPrompt, [{ mimeType: photo.type, base64 }], userPrompt, { temperature: 0.1 }))
+      ;({ content: raw, usage } = await callVisionAIResult(systemPrompt, [{ mimeType: photo.type, base64 }], userPrompt, { temperature: 0.1 }))
     } catch (e) {
       console.error('[POST /api/whiteboard/formula-photo] vision AI error:', e)
       return NextResponse.json({ error: 'Не удалось распознать фото' }, { status: 500 })

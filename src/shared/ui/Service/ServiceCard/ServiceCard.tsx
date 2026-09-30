@@ -26,6 +26,7 @@ export interface ServiceCardProps {
   onDelete?: () => void
   onEdit?: () => void
   onBook?: () => void
+  onClick?: () => void
 }
 
 const LANG_NAMES: Record<string, string> = {
@@ -116,6 +117,7 @@ export function ServiceCard({
   onDelete,
   onEdit,
   onBook,
+  onClick,
 }: ServiceCardProps) {
   const tDash = useTranslations('dashboard')
   const categoryName = getCategoryName(category, locale)
@@ -142,7 +144,7 @@ export function ServiceCard({
     .filter(Boolean) as { code: string; symbol: string; flag: string; label: string }[]
 
   return (
-    <div className={styles.card}>
+    <div className={styles.card} onClick={onClick}>
       {isOwner && onDelete && (
         <CardOwnerMenu
           onDelete={onDelete}

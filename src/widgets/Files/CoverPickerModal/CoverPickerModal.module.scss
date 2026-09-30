@@ -1,0 +1,93 @@
+.preview {
+  max-width: 260px;
+  margin: 2px auto 18px;
+}
+
+.previewName {
+  margin-top: 14px;
+  font-family: var(--files-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+  font-size: 14px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.label {
+  margin: 14px 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #868897;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(62px, 1fr));
+  gap: 10px;
+}
+
+.swatch {
+  padding: 3px;
+  border: 2px solid transparent;
+  border-radius: 14px;
+  background: transparent;
+  cursor: pointer;
+
+  &:hover { border-color: #DADCEB; }
+  &:focus-visible { outline: 2px solid #534AB7; outline-offset: 2px; }
+}
+
+.selected, .selected:hover { border-color: #534AB7; }
+
+.swatch .swatchShape { height: 48px; }
+.swatch .swatchShape > div:last-child { padding: 0; align-items: center; justify-content: center; }
+
+.tick {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: #534AB7;
+  color: #fff;
+}
+
+.upload {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px dashed #C9CBDB;
+  border-radius: 14px;
+  background: #FAFAFD;
+  color: #141416;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover:not(:disabled) { border-color: #534AB7; color: #534AB7; }
+  &:disabled { opacity: 0.6; cursor: default; }
+}
+
+.uploadActive { border-style: solid; border-color: #534AB7; }
+
+.uploadHint { margin-left: auto; font-size: 12px; font-weight: 400; color: #868897; }
+
+.footerSpacer { flex: 1; }
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .label, .uploadHint { color: #9ea4b5; }
+  .swatch:hover { border-color: rgba(255, 255, 255, 0.14); }
+  .selected, .selected:hover { border-color: #818cf8; }
+  .tick { background: #818cf8; }
+  .upload { border-color: rgba(255, 255, 255, 0.18); background: rgba(255, 255, 255, 0.03); color: #e8eaf0; &:hover:not(:disabled) { border-color: #818cf8; color: #c7cbff; } }
+  .uploadActive { border-color: #818cf8; }
+}

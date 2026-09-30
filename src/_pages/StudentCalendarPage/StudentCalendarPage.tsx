@@ -22,6 +22,7 @@ import {GoogleCalendarImportModal} from '@/widgets/Calendar/Modals/GoogleCalenda
 import {MonthCalendar} from '@/widgets/Calendar/MonthCalendar/MonthCalendar'
 import {WeekCalendar} from '@/widgets/Calendar/WeekCalendar/WeekCalendar'
 import {useLocale, useTranslations} from 'next-intl'
+import {useRouter} from 'next/navigation'
 import {useEffect, useRef, useState} from 'react'
 import {toast} from 'sonner'
 import styles from '../CalendarPage/CalendarPage.module.scss'
@@ -82,9 +83,14 @@ export function StudentCalendarPage({isVip = false, studentId}: StudentCalendarP
   interface HomeworkCalItem {
     id: string; title: string; dueAt: string | null; sendAt: string | null; href?: string; status?: string
   }
+  interface FileDeadlineItem {
+    folderId: string; folderName: string; deadline: string; submitted: boolean; submittedAt: string | null; late: boolean
+  }
 
+  const router = useRouter()
   const [teachers, setTeachers] = useState<CalendarStudent[]>([])
   const [homeworks, setHomeworks] = useState<HomeworkCalItem[]>([])
+  const [fileDeadlines, setFileDeadlines] = useState<FileDeadlineItem[]>([])
 
   const loaded = useRef(false)
   useEffect(() => {
@@ -103,6 +109,11 @@ export function StudentCalendarPage({isVip = false, studentId}: StudentCalendarP
     fetch('/api/homework/mine')
       .then(r => r.json())
       .then(d => { if (Array.isArray(d.homeworks)) setHomeworks(d.homeworks) })
+      .catch(() => {})
+
+    fetch('/api/tutor-files/deadlines/mine')
+      .then(r => r.json())
+      .then(d => { if (Array.isArray(d.deadlines)) setFileDeadlines(d.deadlines) })
       .catch(() => {})
   }, [setEvents, setTasks])
 
@@ -169,9 +180,11 @@ export function StudentCalendarPage({isVip = false, studentId}: StudentCalendarP
             events={events}
             tasks={tasks}
             homeworks={homeworks}
+            fileDeadlines={fileDeadlines.map(d => ({ id: d.folderId, title: d.submitted ? `✓ ${d.folderName}` : d.folderName, dueAt: d.deadline }))}
             onEventClick={(event: any) => selectEvent(event.id)}
             onDayClick={() => setCreateTaskModalStatus(true)}
             onTaskToggle={(id) => toggleCalendarTask(id)}
+            onDeadlineClick={item => router.push(`/files?folder=${item.id}`)}
           />
         )}
       </div>

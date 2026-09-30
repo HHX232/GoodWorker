@@ -1,5 +1,5 @@
 import { prisma } from '@/shared/prisma/prisma'
-import { callAI, parseJSON } from '@/lib/openrouter'
+import { callAIResult, parseJSON } from '@/lib/openrouter'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
 import { chargeForAICall, InsufficientBalanceError, insufficientBalanceResponse, preflightCheck, WalletUser } from '@/shared/lib/wallet/wallet'
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       throw e
     }
 
-    const { content: raw, usage } = await callAI(SYSTEM_PROMPT, desc, { temperature: 0.2 })
+    const { content: raw, usage } = await callAIResult(SYSTEM_PROMPT, desc, { temperature: 0.2 })
     const { latex } = parseJSON<{ latex: string }>(raw)
 
     // Reached only once the AI's response parsed as valid JSON — real tokens

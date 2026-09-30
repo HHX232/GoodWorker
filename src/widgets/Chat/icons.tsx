@@ -25,4 +25,5 @@ export {
   Gift as ChatServiceIcon,
   Wallet as ChatPaymentIcon,
   Video as ChatMeetingIcon,
+  FolderOpen as ChatFilesIcon,
 } from 'lucide-react'

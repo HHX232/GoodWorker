@@ -17,106 +17,110 @@ model RateLimit {
 }
 
 model Student {
-  id                     String                   @id @default(uuid())
-  name                   String
-  nameTransliterated     String?
-  email                  String                   @unique
-  phone                  String?
-  langCode               String                   @default("ru")
-  telegramChatId         BigInt?
-  telegramLinkToken      String?                  @unique
-  createdAt              DateTime                 @default(now())
-  updatedAt              DateTime                 @updatedAt
-  avatarUrl              String?
-  password               String?
-  isVip                  Boolean                  @default(false)
-  vipExpiresAt           DateTime?
-  schoolGrade            Int?
-  courseNumber           Int?
-  complaints             Complaint[]
-  errors                 StudentError[]
-  favoritePosts          StudentFavoritePost[]
-  roadmapProgress        StudentRoadmapProgress[]
-  savedTexts             StudentSavedText[]
-  testAttempts           StudentTestAttempt[]
-  teachers               TeacherStudent[]
-  postViews              PostView[]
-  conferenceParticipants ConferenceParticipant[]
-  postAllowedStudents    PostAllowedStudent[]
-  lastSeenAt             DateTime?
-  isBanned               Boolean   @default(false)
-  bannedAt               DateTime?
-  banReason              String?
-  transactions           VipTransaction[]
-  roadmapAccess          RoadmapAccess[]
-  nodeFeedbacks          RoadmapNodeFeedback[]
-  roadmapViews           RoadmapView[]
-  notifications          Notification[]
-  serviceBookings        ServiceBooking[]
-  personalServices       Service[]        @relation("PersonalServices")
-  supportRequests        SupportRequest[]
-  feedbackPromoGiven     Boolean          @default(false)
-  homeworkAssignments    HomeworkAssignment[]
-  referralCode           String?          @unique
+  id                      String                   @id @default(uuid())
+  name                    String
+  nameTransliterated      String?
+  email                   String                   @unique
+  phone                   String?
+  langCode                String                   @default("ru")
+  telegramChatId          BigInt?
+  telegramLinkToken       String?                  @unique
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  avatarUrl               String?
+  password                String?
+  isVip                   Boolean                  @default(false)
+  vipExpiresAt            DateTime?
+  schoolGrade             Int?
+  courseNumber            Int?
+  complaints              Complaint[]
+  errors                  StudentError[]
+  favoritePosts           StudentFavoritePost[]
+  roadmapProgress         StudentRoadmapProgress[]
+  savedTexts              StudentSavedText[]
+  testAttempts            StudentTestAttempt[]
+  teachers                TeacherStudent[]
+  postViews               PostView[]
+  conferenceParticipants  ConferenceParticipant[]
+  postAllowedStudents     PostAllowedStudent[]
+  lastSeenAt              DateTime?
+  isBanned                Boolean                  @default(false)
+  bannedAt                DateTime?
+  banReason               String?
+  transactions            VipTransaction[]
+  roadmapAccess           RoadmapAccess[]
+  nodeFeedbacks           RoadmapNodeFeedback[]
+  roadmapViews            RoadmapView[]
+  notifications           Notification[]
+  serviceBookings         ServiceBooking[]
+  personalServices        Service[]                @relation("PersonalServices")
+  supportRequests         SupportRequest[]
+  feedbackPromoGiven      Boolean                  @default(false)
+  homeworkAssignments     HomeworkAssignment[]
+  referralCode            String?                  @unique
   paymentReminderSettings PaymentReminderSetting[]
-  conversationsAsStudent Conversation[]
-  balanceCents           Int              @default(0)
+  conversationsAsStudent  Conversation[]
+  balanceCents            Int                      @default(0)
   // See Teacher.vipFeePeriodStart.
-  vipFeePeriodStart      DateTime?
-  walletTransactions     WalletTransaction[]
-  tutorFolderGrants      TutorFolderGrant[]
-  tutorFileGrants        TutorFileGrant[]
-  restrictedTutorFolders TutorFolder[]      @relation("TutorFolderRestrictedToStudent")
+  vipFeePeriodStart       DateTime?
+  walletTransactions      WalletTransaction[]
+  tutorFolderGrants       TutorFolderGrant[]
+  tutorFileGrants         TutorFileGrant[]
+  restrictedTutorFolders  TutorFolder[]            @relation("TutorFolderRestrictedToStudent")
+  tutorFolderOpens        TutorFolderOpen[]
+  tutorFileOpens          TutorFileOpen[]
+  studentFolders          StudentFolder[]
+  studentFiles            StudentFile[]
 }
 
 model Teacher {
-  id                 String            @id @default(uuid())
-  name               String
-  nameTransliterated String?
-  email              String            @unique
-  avatarUrl          String?
-  langCode           String            @default("ru")
-  telegramChatId     BigInt?
-  telegramLinkToken  String?           @unique
-  calendar           Json?
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
-  password           String?
-  pasportConfirmed   Boolean?
-  phone              String?
-  isVip              Boolean           @default(false)
-  vipExpiresAt       DateTime?
-  bio                String?
-  coverPhotoUrl      String?
-  socialLinks        Json?
-  languages          String[]          @default(["ru"])
-  transactions       VipTransaction[]
-  complaints         Complaint[]
-  posts              Post[]
-  roadmaps           Roadmap[]
-  categories         TeacherCategory[]
-  students           TeacherStudent[]
-  tests              Test[]
-  conferences        Conference[]
-  lastSeenAt         DateTime?
-  isBanned           Boolean   @default(false)
-  bannedAt           DateTime?
-  banReason          String?
-  roadmapViews       RoadmapView[]
-  notifications      Notification[]
-  reviews            TeacherReview[]
-  services           Service[]
-  passportDocumentUrl String?
-  homeworks          Homework[]
-  experiences         TeacherExperience[]
-  supportRequests     SupportRequest[]
-  serviceLabels       String[]            @default([])
-  feedbackPromoGiven  Boolean             @default(false)
-  referralCode        String?             @unique
+  id                      String                   @id @default(uuid())
+  name                    String
+  nameTransliterated      String?
+  email                   String                   @unique
+  avatarUrl               String?
+  langCode                String                   @default("ru")
+  telegramChatId          BigInt?
+  telegramLinkToken       String?                  @unique
+  calendar                Json?
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  password                String?
+  pasportConfirmed        Boolean?
+  phone                   String?
+  isVip                   Boolean                  @default(false)
+  vipExpiresAt            DateTime?
+  bio                     String?
+  coverPhotoUrl           String?
+  socialLinks             Json?
+  languages               String[]                 @default(["ru"])
+  transactions            VipTransaction[]
+  complaints              Complaint[]
+  posts                   Post[]
+  roadmaps                Roadmap[]
+  categories              TeacherCategory[]
+  students                TeacherStudent[]
+  tests                   Test[]
+  conferences             Conference[]
+  lastSeenAt              DateTime?
+  isBanned                Boolean                  @default(false)
+  bannedAt                DateTime?
+  banReason               String?
+  roadmapViews            RoadmapView[]
+  notifications           Notification[]
+  reviews                 TeacherReview[]
+  services                Service[]
+  passportDocumentUrl     String?
+  homeworks               Homework[]
+  experiences             TeacherExperience[]
+  supportRequests         SupportRequest[]
+  serviceLabels           String[]                 @default([])
+  feedbackPromoGiven      Boolean                  @default(false)
+  referralCode            String?                  @unique
   paymentReminderSettings PaymentReminderSetting[]
-  conversationsAsTeacher Conversation[]
+  conversationsAsTeacher  Conversation[]
   whiteboardTemplates     WhiteboardTemplate[]
-  balanceCents            Int                 @default(0)
+  balanceCents            Int                      @default(0)
   walletTransactions      WalletTransaction[]
   postsHighlightedUntil   DateTime?
   pinnedInListUntil       DateTime?
@@ -171,30 +175,30 @@ model TeacherReview {
 }
 
 model Service {
-  id                     String             @id @default(uuid())
-  teacherId              String
-  title                  String
-  description            String?
-  photoUrl               String?
-  categoryId             String?
-  duration               Int
-  timeFrom               String
-  timeTo                 String
-  isGroup                Boolean            @default(false)
-  price                  Float
-  currency               String             @default("BYN")
-  createdAt              DateTime           @default(now())
-  targetStudentId        String?
-  isPersonal             Boolean            @default(false)
+  id                      String             @id @default(uuid())
+  teacherId               String
+  title                   String
+  description             String?
+  photoUrl                String?
+  categoryId              String?
+  duration                Int
+  timeFrom                String
+  timeTo                  String
+  isGroup                 Boolean            @default(false)
+  price                   Float
+  currency                String             @default("BYN")
+  createdAt               DateTime           @default(now())
+  targetStudentId         String?
+  isPersonal              Boolean            @default(false)
   titleTranslations       Json?
   descriptionTranslations Json?
   originalLang            String?
-  teacher         Teacher            @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  category        Category?          @relation(fields: [categoryId], references: [id])
-  promoCodes      ServicePromoCode[]
-  bookings        ServiceBooking[]
-  conferences     Conference[]
-  targetStudent   Student?           @relation("PersonalServices", fields: [targetStudentId], references: [id], onDelete: SetNull)
+  teacher                 Teacher            @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  category                Category?          @relation(fields: [categoryId], references: [id])
+  promoCodes              ServicePromoCode[]
+  bookings                ServiceBooking[]
+  conferences             Conference[]
+  targetStudent           Student?           @relation("PersonalServices", fields: [targetStudentId], references: [id], onDelete: SetNull)
 }
 
 enum BookingStatus {
@@ -226,16 +230,16 @@ model ServiceBooking {
 // Per (teacher, student) cadence for "remind about payment after N lessons"
 // (calendar payment-reminder feature — see PaymentReminder API routes).
 model PaymentReminderSetting {
-  teacherId              String
-  studentId              String
-  everyNLessons          Int
+  teacherId               String
+  studentId               String
+  everyNLessons           Int
   // Unpaid-booking count at the last reminder sent (tg-bot scheduler) — reminders
   // fire again only once the unpaid count grows past this, so it doesn't repeat daily.
   lastRemindedUnpaidCount Int      @default(0)
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
-  teacher                Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  student                Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  teacher                 Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  student                 Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@id([teacherId, studentId])
 }
@@ -265,11 +269,11 @@ model TeacherStudent {
 }
 
 model Conversation {
-  id            String   @id @default(uuid())
+  id            String        @id @default(uuid())
   teacherId     String
   studentId     String
-  createdAt     DateTime @default(now())
-  lastMessageAt DateTime @default(now())
+  createdAt     DateTime      @default(now())
+  lastMessageAt DateTime      @default(now())
   teacher       Teacher       @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   student       Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
   messages      ChatMessage[]
@@ -316,6 +320,10 @@ model TutorFolder {
   parentId              String?
   name                  String
   allowStudentUpload    Boolean            @default(false)
+  // "preset:<id>" (src/shared/lib/tutorFiles/covers.ts) or a public S3 URL; null = colour derived from the id
+  cover                 String?
+  // Submissions folder (allowStudentUpload): uploads after this are marked late.
+  submissionDeadline    DateTime?
   restrictedToStudentId String?
   ancestorIds           String[]           @default([])
   createdAt             DateTime           @default(now())
@@ -326,13 +334,15 @@ model TutorFolder {
   restrictedToStudent   Student?           @relation("TutorFolderRestrictedToStudent", fields: [restrictedToStudentId], references: [id], onDelete: SetNull)
   files                 TutorFile[]
   grants                TutorFolderGrant[]
+  opens                 TutorFolderOpen[]
+  links                 TutorFolderLink[]
 
   @@index([teacherId])
   @@index([parentId])
 }
 
 model TutorFile {
-  id             String            @id @default(uuid())
+  id             String           @id @default(uuid())
   teacherId      String
   folderId       String?
   name           String
@@ -342,31 +352,105 @@ model TutorFile {
   mimeType       String
   uploadedByRole Role
   uploadedById   String
-  createdAt      DateTime          @default(now())
-  teacher        Teacher           @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  folder         TutorFolder?      @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  createdAt      DateTime         @default(now())
+  // Plain text pulled out of PDF/DOCX/XLSX/TXT at upload, for search inside files.
+  contentText    String?
+  // Set only on a file the in-browser docx editor saved "as new" (the first
+  // save of a session). A plain marker, not a Prisma relation — nothing reads
+  // it in reverse. Lets PATCH .../content refuse to overwrite an original.
+  derivedFromId  String?
+  // Set on the .docx a tutor's /lecture notes were saved as — opening it goes
+  // back to the lecture editor instead of the plain docx editor.
+  lectureNoteId  String?
+  review         TutorFileReview?
+  teacher        Teacher          @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  folder         TutorFolder?     @relation(fields: [folderId], references: [id], onDelete: Cascade)
   grants         TutorFileGrant[]
+  opens          TutorFileOpen[]
 
   @@index([teacherId])
   @@index([folderId])
 }
 
 model TutorFolderGrant {
-  folderId  String
-  studentId String
-  grantedAt DateTime    @default(now())
-  folder    TutorFolder @relation(fields: [folderId], references: [id], onDelete: Cascade)
-  student   Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  folderId       String
+  studentId      String
+  grantedAt      DateTime    @default(now())
+  // Scheduled access: hidden before availableFrom, gone after availableUntil (null = no bound).
+  availableFrom  DateTime?
+  availableUntil DateTime?
+  folder         TutorFolder @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  student        Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@id([folderId, studentId])
 }
 
+// Admin-editable storage settings (single row, id "global"): the VIP quota
+// (a hard cap in this build) and the per-file limit.
+model StorageSettings {
+  id             String   @id @default("global")
+  quotaGb        Int      @default(15)
+  maxFileMb      Int      @default(50)
+  // A VIP student's own drive ("Мои файлы"): lecture notes and their own
+  // uploads. Homework handed in to a tutor still counts toward the tutor.
+  studentQuotaGb Int      @default(5)
+  updatedAt      DateTime @updatedAt
+}
+
+// The tutor's check of a student submission (a file uploaded into a personal
+// subfolder): verdict, grade, comment, and pen marks drawn over the pages.
+model TutorFileReview {
+  fileId      String    @id
+  status      String // ACCEPTED | REVISION
+  grade       String?
+  comment     String?
+  // [{ page: number, url: string }] — transparent PNG overlays, one per marked page (images: page 1)
+  annotations Json      @default("[]")
+  reviewedAt  DateTime  @updatedAt
+  file        TutorFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+}
+
+// A folder attached "by link" to homework / posts / tests / courses: whoever
+// is logged in and holds the token sees the folder's subtree read-only
+// (other students' personal subfolders excluded). One link per folder.
+model TutorFolderLink {
+  token     String      @id
+  folderId  String      @unique
+  createdAt DateTime    @default(now())
+  folder    TutorFolder @relation(fields: [folderId], references: [id], onDelete: Cascade)
+}
+
+// When a student first opened a shared folder / file — shown to the tutor on
+// hover over the student's avatar. One row per (item, student), never updated.
+model TutorFolderOpen {
+  folderId      String
+  studentId     String
+  firstOpenedAt DateTime    @default(now())
+  folder        TutorFolder @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  student       Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([folderId, studentId])
+}
+
+model TutorFileOpen {
+  fileId        String
+  studentId     String
+  firstOpenedAt DateTime  @default(now())
+  file          TutorFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  student       Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([fileId, studentId])
+}
+
 model TutorFileGrant {
-  fileId    String
-  studentId String
-  grantedAt DateTime  @default(now())
-  file      TutorFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
-  student   Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  fileId         String
+  studentId      String
+  grantedAt      DateTime  @default(now())
+  // Scheduled access: hidden before availableFrom, gone after availableUntil (null = no bound).
+  availableFrom  DateTime?
+  availableUntil DateTime?
+  file           TutorFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  student        Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@id([fileId, studentId])
 }
@@ -430,18 +514,18 @@ model Post {
   favoritedBy    StudentFavoritePost[]
   views          PostView[]
 
-  additionalTitle String?
-  isVip           Boolean   @default(false)
-  vipExpiresAt    DateTime?
+  additionalTitle  String?
+  isVip            Boolean          @default(false)
+  vipExpiresAt     DateTime?
   moderationStatus ModerationStatus @default(PUBLISHED)
 
   titleTranslations           Json?
   additionalTitleTranslations Json?
   contentTranslations         Json?
 
-  hasMiniTest      Boolean   @default(false)
-  originalLang     String?
-  slug             String?   @unique
+  hasMiniTest  Boolean @default(false)
+  originalLang String?
+  slug         String? @unique
 
   allowedStudents  PostAllowedStudent[]
   miniTestAttempts PostTestAttempt[]
@@ -455,16 +539,16 @@ model Post {
 }
 
 model PostTestAttempt {
-  id         String   @id @default(uuid())
-  postId     String
-  testId     String
-  studentId  String?
-  teacherId  String?
-  score      Float?
-  maxScore   Float?
-  percent    Float?
-  createdAt  DateTime @default(now())
-  post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  id        String   @id @default(uuid())
+  postId    String
+  testId    String
+  studentId String?
+  teacherId String?
+  score     Float?
+  maxScore  Float?
+  percent   Float?
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
 
 model Bookmark {
@@ -474,7 +558,7 @@ model Bookmark {
   sourceType  String // "post" | "text" | "roadmap"
   sourceId    String
   text        String
-  xpath       String  @default("")
+  xpath       String   @default("")
   contextText String   @default("") // весь параграф
   offset      Int      @default(0)
   length      Int
@@ -547,11 +631,11 @@ model StudentFavoritePost {
 }
 
 model Roadmap {
-  id                  String                    @id @default(uuid())
+  id                  String                   @id @default(uuid())
   teacherId           String
   title               String
-  price               Float                     @default(0)
-  currency            String                    @default("BYN")
+  price               Float                    @default(0)
+  currency            String                   @default("BYN")
   content             Json
   previewImageUrl     String?
   treeSnapshotUrl     String?
@@ -559,19 +643,19 @@ model Roadmap {
   titleTranslations   Json?
   contentTranslations Json?
   originalLang        String?
-  createdAt           DateTime                  @default(now())
-  updatedAt           DateTime                  @updatedAt
-  moderationStatus    ModerationStatus          @default(PUBLISHED)
-  complaints      Complaint[]
-  teacher         Teacher                   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  progress        StudentRoadmapProgress[]
-  comments        RoadmapComment[]
-  ratings         RoadmapRating[]
-  accessList      RoadmapAccess[]
-  nodeFeedbacks   RoadmapNodeFeedback[]
-  views           RoadmapView[]
-  roadmapCategories RoadmapCategory[]
-  outline         RoadmapOutline?
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
+  moderationStatus    ModerationStatus         @default(PUBLISHED)
+  complaints          Complaint[]
+  teacher             Teacher                  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  progress            StudentRoadmapProgress[]
+  comments            RoadmapComment[]
+  ratings             RoadmapRating[]
+  accessList          RoadmapAccess[]
+  nodeFeedbacks       RoadmapNodeFeedback[]
+  views               RoadmapView[]
+  roadmapCategories   RoadmapCategory[]
+  outline             RoadmapOutline?
 }
 
 model RoadmapCategory {
@@ -654,14 +738,14 @@ model RoadmapComment {
 }
 
 model RoadmapRating {
-  id        String   @id @default(uuid())
-  roadmapId String
-  authorId  String
+  id         String   @id @default(uuid())
+  roadmapId  String
+  authorId   String
   authorRole Role
-  stars     Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  roadmap   Roadmap  @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  stars      Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  roadmap    Roadmap  @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
 
   @@unique([roadmapId, authorId])
   @@index([roadmapId])
@@ -754,19 +838,19 @@ model StudentSavedText {
 }
 
 model StudentError {
-  id          String                 @id @default(uuid())
-  studentId   String
-  sourceType  String
-  sourceId    String
-  attemptId   String?
-  description  String?
-  fragment     String?
-  isCorrection Boolean                @default(false)
+  id             String                 @id @default(uuid())
+  studentId      String
+  sourceType     String
+  sourceId       String
+  attemptId      String?
+  description    String?
+  fragment       String?
+  isCorrection   Boolean                @default(false)
   teacherComment String?
-  createdAt    DateTime               @default(now())
-  attempt      StudentTestAttempt?    @relation(fields: [attemptId], references: [id], onDelete: SetNull)
-  student     Student                @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  categories  StudentErrorCategory[]
+  createdAt      DateTime               @default(now())
+  attempt        StudentTestAttempt?    @relation(fields: [attemptId], references: [id], onDelete: SetNull)
+  student        Student                @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  categories     StudentErrorCategory[]
 }
 
 model StudentErrorCategory {
@@ -779,25 +863,25 @@ model StudentErrorCategory {
 }
 
 model Complaint {
-  id           String   @id @default(uuid())
+  id           String    @id @default(uuid())
   reporterId   String
   reporterRole Role
   targetType   String
   targetId     String
   text         String
   photoUrl     String?
-  status       String   @default("pending")
+  status       String    @default("pending")
   reply        String?
   repliedAt    DateTime?
-  createdAt    DateTime @default(now())
+  createdAt    DateTime  @default(now())
   teacherId    String?
   studentId    String?
   postId       String?
   roadmapId    String?
-  post         Post?    @relation(fields: [postId], references: [id])
-  roadmap      Roadmap? @relation(fields: [roadmapId], references: [id])
-  student      Student? @relation(fields: [studentId], references: [id])
-  teacher      Teacher? @relation(fields: [teacherId], references: [id])
+  post         Post?     @relation(fields: [postId], references: [id])
+  roadmap      Roadmap?  @relation(fields: [roadmapId], references: [id])
+  student      Student?  @relation(fields: [studentId], references: [id])
+  teacher      Teacher?  @relation(fields: [teacherId], references: [id])
 }
 
 model OtpCode {
@@ -867,21 +951,21 @@ model ConferenceParticipant {
 }
 
 model PromoCode {
-  id              String          @id @default(uuid())
-  code            String          @unique
-  rewardType      PromoRewardType
-  discountPercent Int?
-  vipDays         Int             @default(30)
+  id                String           @id @default(uuid())
+  code              String           @unique
+  rewardType        PromoRewardType
+  discountPercent   Int?
+  vipDays           Int              @default(30)
   // "Бесплатный доп. баланс": credited to the wallet (PROMO_BONUS ledger row)
   // on top of the VIP days when the code is activated. 0 = none.
-  bonusBalanceCents Int           @default(0)
-  description     String
-  maxUses         Int?
-  usedCount       Int             @default(0)
-  expiresAt       DateTime?
-  isActive        Boolean         @default(true)
-  createdAt       DateTime        @default(now())
-  transactions    VipTransaction[]
+  bonusBalanceCents Int              @default(0)
+  description       String
+  maxUses           Int?
+  usedCount         Int              @default(0)
+  expiresAt         DateTime?
+  isActive          Boolean          @default(true)
+  createdAt         DateTime         @default(now())
+  transactions      VipTransaction[]
 }
 
 model Referral {
@@ -907,30 +991,30 @@ model ReferralSettings {
 }
 
 model WalletSettings {
-  id            String   @id @default("global")
-  markupPercent Int      @default(0)
+  id                                 String   @id @default("global")
+  markupPercent                      Int      @default(0)
   // BYN per 1 USD, for display/input only on the ru locale — the ledger
   // itself always stays in USD cents (AI cost table is USD-denominated).
-  usdToBynRate  Float    @default(3.2)
+  usdToBynRate                       Float    @default(3.2)
   // Admin-editable volume bonus: [{minAmountCents, monthsPer500Cents}],
   // ascending by minAmountCents. See computeVipMonthsGranted() in pricing.ts.
-  vipBonusTiers Json     @default("[{\"minAmountCents\":500,\"monthsPer500Cents\":1},{\"minAmountCents\":2500,\"monthsPer500Cents\":1.1},{\"minAmountCents\":5000,\"monthsPer500Cents\":1.25},{\"minAmountCents\":10000,\"monthsPer500Cents\":1.5}]")
+  vipBonusTiers                      Json     @default("[{\"minAmountCents\":500,\"monthsPer500Cents\":1},{\"minAmountCents\":2500,\"monthsPer500Cents\":1.1},{\"minAmountCents\":5000,\"monthsPer500Cents\":1.25},{\"minAmountCents\":10000,\"monthsPer500Cents\":1.5}]")
   // Flat rate, admin-editable — "Сделать мои посты выделенными" (slider by
   // month count, price = months * this).
-  featuredPostsPriceCentsPerMonth Int @default(300)
+  featuredPostsPriceCentsPerMonth    Int      @default(300)
   // Admin-editable duration presets for "Закрепить меня в списке
   // репетиторов": [{months, priceCents, oldPriceCents?}], ascending by
   // months — oldPriceCents (optional) renders as a strikethrough price.
-  pinnedListingTiers Json @default("[{\"months\":1,\"priceCents\":500},{\"months\":3,\"priceCents\":1200,\"oldPriceCents\":1500},{\"months\":6,\"priceCents\":2100,\"oldPriceCents\":3000},{\"months\":12,\"priceCents\":3600,\"oldPriceCents\":6000}]")
+  pinnedListingTiers                 Json     @default("[{\"months\":1,\"priceCents\":500},{\"months\":3,\"priceCents\":1200,\"oldPriceCents\":1500},{\"months\":6,\"priceCents\":2100,\"oldPriceCents\":3000},{\"months\":12,\"priceCents\":3600,\"oldPriceCents\":6000}]")
   // Per-GB/month price for VIP tutor-file storage beyond QUOTA_BYTES
   // (src/shared/lib/tutorFiles/storage.ts) — 0 until an admin sets it, in
   // which case no overage billing happens (chargeStorageOverage no-ops).
-  storageOveragePriceCentsPerGbMonth Int @default(0)
+  storageOveragePriceCentsPerGbMonth Int      @default(0)
   // Monthly VIP fee: at the end of each 30-day period (anchored to when VIP
   // was obtained, see vipFeePeriodStart) the wallet is debited
   // max(0, monthlyFeeCents - spent on features in that period).
-  monthlyFeeCents Int @default(500)
-  updatedAt     DateTime @updatedAt
+  monthlyFeeCents                    Int      @default(500)
+  updatedAt                          DateTime @updatedAt
 }
 
 model VipTransaction {
@@ -1107,19 +1191,19 @@ model HomeworkBlockProgress {
 // ─── Notifications ────────────────────────────────────────
 
 model Notification {
-  id                 String   @id @default(uuid())
-  type               String
-  title              String
-  body               String
-  titleTranslations  Json?
-  bodyTranslations   Json?
-  payload            Json?
-  isRead             Boolean  @default(false)
-  createdAt          DateTime @default(now())
-  teacherId          String?
-  studentId          String?
-  teacher            Teacher? @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  student            Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id                String   @id @default(uuid())
+  type              String
+  title             String
+  body              String
+  titleTranslations Json?
+  bodyTranslations  Json?
+  payload           Json?
+  isRead            Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  teacherId         String?
+  studentId         String?
+  teacher           Teacher? @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  student           Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([teacherId, isRead])
   @@index([studentId, isRead])
@@ -1127,12 +1211,12 @@ model Notification {
 }
 
 model VideoCallRoom {
-  id            String         @id @default(cuid())
-  name          String         @unique
+  id            String    @id @default(cuid())
+  name          String    @unique
   ownerIdentity String
   ownerId       String
   ownerRole     Role
-  createdAt     DateTime       @default(now())
+  createdAt     DateTime  @default(now())
   endedAt       DateTime?
 
   topic         String?
@@ -1143,7 +1227,7 @@ model VideoCallRoom {
   transcriptRaw  String?
   transcriptJson Json?
 
-  participants   VideoCallParticipant[]
+  participants VideoCallParticipant[]
 
   @@index([ownerId])
   @@index([endedAt])
@@ -1206,4 +1290,150 @@ model SupportRequest {
   teacher Teacher? @relation(fields: [authorId], references: [id], onDelete: Cascade, map: "support_teacher_fk")
 
   @@index([authorId])
+}
+
+// A student's own drive — separate from the tutor library on purpose: every
+// tutor-files access check keys on TutorFile.teacherId, so a student-owned row
+// there would be one forgotten filter away from leaking. Counts toward the
+// student's own quota (StorageSettings.studentQuotaGb), never a tutor's.
+model StudentFolder {
+  id          String          @id @default(uuid())
+  studentId   String
+  parentId    String?
+  name        String
+  ancestorIds String[]        @default([])
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  student     Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  parent      StudentFolder?  @relation("StudentFolderChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children    StudentFolder[] @relation("StudentFolderChildren")
+  files       StudentFile[]
+
+  @@index([studentId])
+  @@index([parentId])
+}
+
+model StudentFile {
+  id            String         @id @default(uuid())
+  studentId     String
+  folderId      String?
+  name          String
+  key           String
+  url           String
+  sizeBytes     Int
+  mimeType      String
+  // Set on the .docx a lecture was saved as — opening it goes back to the
+  // lecture editor (full fidelity) instead of the plain docx editor.
+  lectureNoteId String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  student       Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  folder        StudentFolder? @relation(fields: [folderId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([folderId])
+}
+
+enum LectureStatus {
+  RECORDING
+  FINALIZING
+  READY
+}
+
+// /lecture — live lecture notes (VIP student / VIP tutor / admin). Owner is
+// polymorphic like VideoCallRoom (ownerId + ownerRole), ADMIN stored as TEACHER.
+model LectureNote {
+  id                 String         @id @default(uuid())
+  ownerId            String
+  ownerRole          Role
+  title              String
+  status             LectureStatus  @default(RECORDING)
+  // TipTap/ProseMirror JSON — the source of truth; the .docx is an export.
+  docJson            Json?
+  // Seq of the last chunk already turned into document blocks by DeepSeek.
+  processedSeq       Int            @default(-1)
+  keepAudio          Boolean        @default(false)
+  // What the lecture is about — subject, topic, subtopics, key notation.
+  // DeepSeek keeps it current while structuring; fields the student
+  // edited are pinned. Fed into every AI prompt and the STT hint.
+  context            Json?
+  recordedMs         Int            @default(0)
+  // Metering (LectureSettings tariff): DeepSeek tokens spent and the price
+  // computed from them + recorded time. Charged only once a Wallet exists.
+  aiPromptTokens     Int            @default(0)
+  aiCompletionTokens Int            @default(0)
+  costKopecks        Int            @default(0)
+  // The saved export (StudentFile.id or TutorFile.id, by ownerRole).
+  fileId             String?
+  // Public links (/lecture/shared/<token>): read-only and read-write. Null = off.
+  shareViewToken     String?        @unique
+  shareEditToken     String?        @unique
+  // Bumped on every docJson save — a save based on an older version gets 409
+  // (the owner and people with the edit link may type at the same time).
+  docVersion         Int            @default(0)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  chunks             LectureChunk[]
+  photos             LecturePhoto[]
+
+  @@index([ownerId, ownerRole])
+}
+
+model LectureChunk {
+  id         String      @id @default(uuid())
+  lectureId  String
+  seq        Int
+  startMs    Int
+  durationMs Int
+  // Live draft (small model) and, after "Стоп", the final pass (big model).
+  draftText  String      @default("")
+  finalText  String?
+  // Toggle "сохранять аудио" on: kept in S3 (owner's quota), replayable.
+  // Off: held here only until the final pass, then nulled — never billed.
+  audioKey   String?
+  audioData  Bytes?
+  audioMime  String      @default("audio/webm")
+  audioBytes Int         @default(0)
+  // A forced / full-batch "Законспектировать" found no lecture content here —
+  // not offered again (survives reloads, unlike the client's session skip set).
+  noContent  Boolean     @default(false)
+  createdAt  DateTime    @default(now())
+  lecture    LectureNote @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+
+  @@unique([lectureId, seq])
+}
+
+// Admin-editable tariff (single row "global"): the first `baseMinutes` of a
+// lecture cost `basePer5MinKopecks` per started 5 minutes; after that each 5
+// minutes costs `extraPer5MinKopecks` plus the DeepSeek cost x `aiMarkup`.
+model LectureSettings {
+  id                   String   @id @default("global")
+  baseMinutes          Int      @default(30)
+  basePer5MinKopecks   Int      @default(500)
+  extraPer5MinKopecks  Int      @default(200)
+  aiMarkup             Float    @default(3)
+  // DeepSeek list price, kopecks per 1M tokens (input / output).
+  aiInputPer1MKopecks  Int      @default(2600)
+  aiOutputPer1MKopecks Int      @default(10000)
+  // Safety cap while there's no Wallet to charge: minutes per owner per day (0 = off).
+  maxMinutesPerDay     Int      @default(240)
+  updatedAt            DateTime @updatedAt
+}
+
+// A board/notebook photo placed into the lecture document. Private S3 object
+// (never a public URL — the bucket's website domain trips browsers' Safe
+// Browsing), served through /api/lecture/[id]/photos/[photoId]; counts
+// toward the owner's storage quota.
+model LecturePhoto {
+  id        String      @id @default(uuid())
+  lectureId String
+  key       String
+  mimeType  String      @default("image/jpeg")
+  sizeBytes Int
+  width     Int
+  height    Int
+  createdAt DateTime    @default(now())
+  lecture   LectureNote @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+
+  @@index([lectureId])
 }

@@ -1,0 +1,22 @@
+// Full-bleed app surface right under the site header — no outer backdrop or
+// floating frame (user feedback: the empty margin around the page was noise).
+.page {
+  min-height: calc(100vh - var(--chat-header-height, 83px));
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-top: 1px solid #EDEDF3;
+}
+
+.frame {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+
+  > * { flex: 1; }
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .page { background: #14151c; border-color: rgba(255, 255, 255, 0.07); }
+}

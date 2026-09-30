@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
-import { callAI, parseJSON } from '@/lib/openrouter'
+import { callAIResult, parseJSON } from '@/lib/openrouter'
 
 function extractTiptapText(content: unknown): string {
   const c = content as { content?: { content?: { text?: string }[] }[] } | null
@@ -67,7 +67,7 @@ ${content}
 
 Return ONLY a valid JSON object: {"title": "..."}`
 
-    const { content: raw } = await callAI(
+    const { content: raw } = await callAIResult(
       'You are a concise, expert namer of educational test/quiz titles. Return ONLY valid JSON, no markdown.',
       prompt,
       { temperature: 0.6, maxTokens: 60 },

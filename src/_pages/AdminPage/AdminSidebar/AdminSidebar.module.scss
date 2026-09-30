@@ -1,0 +1,121 @@
+.sidebar {
+  position: sticky;
+  top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px 12px;
+  background: #fff;
+  border: 1px solid #ECECF2;
+  border-radius: 18px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 10px 14px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #141416;
+}
+
+.brandIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: #141416;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.group + .group { margin-top: 10px; }
+
+.groupLabel {
+  padding: 6px 12px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #ABABAB;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 38px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: #4b5563;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  svg { flex-shrink: 0; color: #868897; }
+  &:hover { background: #F5F5F9; color: #141416; }
+  &:focus-visible { outline: 2px solid #534AB7; outline-offset: -2px; }
+}
+
+.itemActive, .itemActive:hover {
+  background: #EEEDFE;
+  color: #3F3A8A;
+  font-weight: 600;
+
+  svg { color: #534AB7; }
+}
+
+.itemLabel { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.badge {
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #FF5470;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 10px 12px 2px;
+  border-top: 1px solid #F0F0F5;
+  color: #868897;
+  font-size: 13px;
+  text-decoration: none;
+
+  &:hover { color: #141416; }
+}
+
+// Narrow screens: one horizontal, scrollable strip of items.
+@media (max-width: 900px) {
+  .sidebar { position: static; flex-direction: row; align-items: center; gap: 4px; padding: 8px; overflow-x: auto; border-radius: 14px; }
+  .brand, .groupLabel, .back { display: none; }
+  .group { display: contents; }
+  .item { width: auto; flex-shrink: 0; }
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .sidebar { background: #1a1c24; border-color: rgba(255, 255, 255, 0.07); }
+  .brand { color: #e8eaf0; }
+  .brandIcon { background: #e8eaf0; color: #14151c; }
+  .groupLabel { color: #6b7080; }
+  .item { color: #9ea4b5; svg { color: #6b7080; } &:hover { background: rgba(255, 255, 255, 0.05); color: #e8eaf0; } }
+  .itemActive, .itemActive:hover { background: rgba(129, 140, 248, 0.14); color: #c7cbff; svg { color: #a5b4fc; } }
+  .back { border-color: rgba(255, 255, 255, 0.07); color: #9ea4b5; &:hover { color: #e8eaf0; } }
+}

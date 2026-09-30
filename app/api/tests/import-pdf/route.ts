@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '../../../../auth'
-import { callAI, callVisionAI, parseJSON, type AIUsage } from '@/lib/openrouter'
+import { callAIResult, callVisionAIResult, parseJSON, type BilledUsage } from '@/lib/openrouter'
 import { resolveVip } from '@/lib/vipStatus'
 import { kindOf, extOf, MAX_PHOTOS } from '@/shared/constants/pdfImport'
 import { nanoid } from 'nanoid'
@@ -178,7 +178,7 @@ Return ONLY a valid JSON object {"blocks":[...]}:
 ]}`
 }
 
-async function extractBlocksFromImages(files: File[]): Promise<{ blocks: unknown[]; usage: AIUsage }> {
+async function extractBlocksFromImages(files: File[]): Promise<{ blocks: unknown[]; usage: BilledUsage }> {
   const images: { mimeType: string; base64: string }[] = []
   for (const file of files) {
     const buf = Buffer.from(await file.arrayBuffer())
@@ -186,7 +186,7 @@ async function extractBlocksFromImages(files: File[]): Promise<{ blocks: unknown
     images.push({ mimeType, base64: buf.toString('base64') })
   }
 
-  const { content, usage } = await callVisionAI(
+  const { content, usage } = await callVisionAIResult(
     'You are an expert educational test generator with vision. Return ONLY valid JSON, no markdown.',
     images,
     buildVisionPrompt(images.length),
@@ -199,8 +199,8 @@ async function extractBlocksFromImages(files: File[]): Promise<{ blocks: unknown
 /** Merges usage from several AI calls into one for a single wallet charge — a
  * `null` entry (no usage reported, e.g. openrouter fallback) contributes $0
  * and is skipped, not treated as poisoning the whole sum. */
-function sumUsage(list: AIUsage[]): AIUsage {
-  const known = list.filter((u): u is NonNullable<AIUsage> => u !== null)
+function sumUsage(list: BilledUsage[]): BilledUsage {
+  const known = list.filter((u): u is NonNullable<BilledUsage> => u !== null)
   if (known.length === 0) return null
   return known.reduce(
     (acc, u) => ({
@@ -308,7 +308,7 @@ export async function POST(req: NextRequest) {
 
     const pdfServiceUrl = process.env.PDF_SERVICE_URL
     if (!pdfServiceUrl) return NextResponse.json({ error: 'PDF service not configured' }, { status: 503 })
-    if (!process.env.OPENROUTER_API_KEY && !process.env.DEEPSEEK_API_KEY)
+    if (!process.env.DEEPSEEK_API_KEY)
       return NextResponse.json({ error: 'AI service not configured' }, { status: 503 })
 
     console.log(`[import-pdf] Processing ${pdfFiles.length} pdf, ${docFiles.length} doc, ${imageFiles.length} image file(s)`)
@@ -374,7 +374,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const usages: AIUsage[] = []
+    const usages: BilledUsage[] = []
 
     let aiBlocks: unknown[] = []
     if (combinedContent.trim()) {
@@ -388,7 +388,7 @@ export async function POST(req: NextRequest) {
         console.log(`[import-pdf] VIP/ADMIN: ${toProcess.length} chunk(s)`)
         for (let i = 0; i < toProcess.length; i++) {
           console.log(`[import-pdf] AI chunk ${i + 1}/${toProcess.length}: asking...`)
-          const { content, usage } = await callAI(SYSTEM, buildPrompt(toProcess[i], i, toProcess.length, docLikeFiles.length), { temperature: 0.2 })
+          const { content, usage } = await callAIResult(SYSTEM, buildPrompt(toProcess[i], i, toProcess.length, docLikeFiles.length), { temperature: 0.2 })
           usages.push(usage)
           const parsed = parseJSON<{ blocks: unknown[] }>(content)
           aiBlocks.push(...normalizeBlocks(parsed.blocks ?? []))
@@ -396,7 +396,7 @@ export async function POST(req: NextRequest) {
         }
       } else {
         console.log(`[import-pdf] AI: asking for blocks from ${combinedContent.length} char(s)...`)
-        const { content, usage } = await callAI(SYSTEM, buildPrompt(combinedContent.slice(0, CHUNK_SIZE), 0, 1, docLikeFiles.length), { temperature: 0.2 })
+        const { content, usage } = await callAIResult(SYSTEM, buildPrompt(combinedContent.slice(0, CHUNK_SIZE), 0, 1, docLikeFiles.length), { temperature: 0.2 })
         usages.push(usage)
         const parsed = parseJSON<{ blocks: unknown[] }>(content)
         aiBlocks = normalizeBlocks(parsed.blocks ?? [])

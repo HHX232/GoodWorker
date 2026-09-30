@@ -33,14 +33,25 @@ interface HomeworkCalItem {
   href?: string
 }
 
+/** A submission-dropbox deadline (tutor-files idea 2). `title` already carries
+ * any "3/5 сдали" summary the caller wants to show — this component doesn't
+ * know about submission counts, just renders what it's given. */
+interface FileDeadlineCalItem {
+  id: string
+  title: string
+  dueAt: string
+}
+
 interface MonthCalendarProps {
   currentDate: Date
   events: any[]
   tasks?: CalendarTask[]
   homeworks?: HomeworkCalItem[]
+  fileDeadlines?: FileDeadlineCalItem[]
   onEventClick: (event: any) => void
   onDayClick: (date: string) => void
   onTaskToggle?: (id: string) => void
+  onDeadlineClick?: (item: FileDeadlineCalItem) => void
 }
 
 export function MonthCalendar({
@@ -48,9 +59,11 @@ export function MonthCalendar({
   events,
   tasks = [],
   homeworks = [],
+  fileDeadlines = [],
   onEventClick,
   onDayClick,
-  onTaskToggle
+  onTaskToggle,
+  onDeadlineClick,
 }: MonthCalendarProps) {
   const locale = useLocale()
   const dayShorts = useMemo(() => getLocaleDayShorts(locale), [locale])
@@ -86,6 +99,7 @@ export function MonthCalendar({
           // Use string slice to avoid timezone conversion issues
           return dateStr.slice(0, 10) === dateKey
         })
+        const dayDeadlines = fileDeadlines.filter(d => d.dueAt.slice(0, 10) === dateKey)
 
         const isWeekend = day.getDay() === 0 || day.getDay() === 6
 
@@ -160,8 +174,19 @@ export function MonthCalendar({
               </a>
             ))}
 
-            {dayEvents.length + dayTasks.length + dayHw.length > 4 && (
-              <span className={styles.monthMore}>+{dayEvents.length + dayTasks.length + dayHw.length - 4}</span>
+            {dayDeadlines.slice(0, 2).map(d => (
+              <div
+                key={d.id}
+                className={styles.monthDeadline}
+                onClick={ev => { ev.stopPropagation(); onDeadlineClick?.(d) }}
+              >
+                <span className={styles.monthDeadlineDot} />
+                {d.title}
+              </div>
+            ))}
+
+            {dayEvents.length + dayTasks.length + dayHw.length + dayDeadlines.length > 4 && (
+              <span className={styles.monthMore}>+{dayEvents.length + dayTasks.length + dayHw.length + dayDeadlines.length - 4}</span>
             )}
           </div>
         )

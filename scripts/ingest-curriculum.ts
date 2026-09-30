@@ -8,7 +8,7 @@ import { PrismaClient } from '@prisma/client'
 import { createHash } from 'crypto'
 import { readdir, readFile, stat } from 'fs/promises'
 import path from 'path'
-import { callAI, parseJSON } from '../src/lib/openrouter'
+import { callAIResult, parseJSON } from '../src/lib/openrouter'
 
 const prisma = new PrismaClient()
 
@@ -148,7 +148,7 @@ const MIN_SPLITTABLE_LENGTH = 3000
  * и повторяет рекурсивно — не роняет весь батч из-за одного плотного куска. */
 async function summarizeChunk(text: string): Promise<Summary> {
   try {
-    const { content: raw } = await callAI(SUMMARY_SYSTEM_PROMPT, text, { temperature: 0, maxTokens: MAX_TOKENS })
+    const { content: raw } = await callAIResult(SUMMARY_SYSTEM_PROMPT, text, { temperature: 0, maxTokens: MAX_TOKENS })
     return parseJSON<Summary>(raw)
   } catch (err) {
     if (text.length < MIN_SPLITTABLE_LENGTH) throw err

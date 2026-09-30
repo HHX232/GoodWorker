@@ -1,10 +1,10 @@
 import { prisma } from '@/shared/prisma/prisma'
-import { getUsedBytes, QUOTA_BYTES } from '@/shared/lib/tutorFiles/storage'
+import { getTeacherStorageLimits, getUsedBytes } from '@/shared/lib/tutorFiles/storage'
 import { chargeStorageOverage, getWalletPricingSettings } from '@/shared/lib/wallet/wallet'
 import { NextRequest, NextResponse } from 'next/server'
 
 // Runs once a month (see vercel.json: 03:00 UTC on the 1st). Every VIP
-// teacher over QUOTA_BYTES (src/shared/lib/tutorFiles/storage.ts) gets
+// teacher over the admin-set quota (getTeacherStorageLimits) gets
 // charged priceCentsPerGb * overageGb via chargeStorageOverage — zero-floor,
 // never blocks storage, never throws (see interfaces.md "Контракт между
 // тикетами: квота"). Same VIP-expiry check as
@@ -26,10 +26,11 @@ export async function GET(req: NextRequest) {
 
   let billed = 0
   for (const teacher of vipTeachers) {
-    const usedBytes = await getUsedBytes(teacher.id)
-    if (usedBytes <= QUOTA_BYTES) continue
+    // The quota is admin-set (StorageSettings); admins aren't billed — for them it stays a hard cap.
+    const [usedBytes, limits] = await Promise.all([getUsedBytes(teacher.id), getTeacherStorageLimits(teacher.id)])
+    if (limits.isAdmin || usedBytes <= limits.quotaBytes) continue
 
-    const overageGb = Math.ceil((usedBytes - QUOTA_BYTES) / 1024 ** 3)
+    const overageGb = Math.ceil((usedBytes - limits.quotaBytes) / 1024 ** 3)
     await chargeStorageOverage(teacher.id, overageGb, storageOveragePriceCentsPerGbMonth, now)
     billed++
   }

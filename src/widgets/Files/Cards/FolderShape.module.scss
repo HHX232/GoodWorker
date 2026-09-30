@@ -1,0 +1,55 @@
+.shape {
+  position: relative;
+  min-width: 0;
+  height: 156px;
+  color: #141416;
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+.back, .front {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px; // fallback until the path is measured
+}
+
+// Artwork/images have no explicit back colour: same material, one shade deeper.
+.backShaded { filter: brightness(0.82) saturate(1.2); }
+
+.dark { color: #fff; }
+
+// Only the dashed "new folder" slot draws an outline; filled folders have none.
+.outline {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+
+  path { fill: none; }
+}
+
+.ghost .outline path {
+  stroke: #C9CBDB;
+  stroke-width: 1.5;
+  stroke-dasharray: 6 6;
+}
+
+.content {
+  position: relative;
+  height: 100%;
+  padding: 26px 14px 12px 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shape { transition: none; }
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  // Pastel covers stay pastel (they're content, like a photo), just a touch dimmer.
+  .shape:not(.dark):not(.ghost) .back,
+  .shape:not(.dark):not(.ghost) .front { filter: brightness(0.88); }
+  .ghost { color: #9ea4b5; }
+  .ghost .outline path { stroke: rgba(255, 255, 255, 0.18); }
+}

@@ -1,0 +1,698 @@
+'use client'
+
+import { DEFAULT_MAX_FILE_MB, MAX_FOLDER_DEPTH, MB } from '@/shared/lib/tutorFiles/constants'
+import { kindOf as importKindOf } from '@/shared/constants/pdfImport'
+import { autoCropPagePhoto } from '@/shared/lib/pageAutoCrop'
+import type { LibraryFile, LibraryFolder, LibraryResponse, SearchFile, TreeNode, UsageResponse } from '@/shared/types/TutorFiles/tutorFiles.types'
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useSession } from 'next-auth/react'
+import Link from 'next/link'
+import dynamic from 'next/dynamic'
+import { useRouter } from 'next/navigation'
+import { useLocale, useTranslations } from 'next-intl'
+import { useEffect, useMemo, useRef, useState, type DragEvent, type FormEvent, type ReactNode } from 'react'
+import { toast } from 'sonner'
+import { FileCard } from '../Cards/FileCard'
+import { FolderCard, NewFolderCard } from '../Cards/FolderCard'
+import { CoverPickerModal } from '../CoverPickerModal/CoverPickerModal'
+import { FilePreviewModal } from '../FilePreviewModal/FilePreviewModal'
+import { ReviewModal } from '../ReviewModal/ReviewModal'
+
+// The docx editor engine (~7MB) only ever fetches once a docx is actually
+// opened for editing — never part of the FilesShell bundle.
+const DocxEditorModal = dynamic(() => import('../DocxEditorModal/DocxEditorModal').then(m => m.DocxEditorModal), { ssr: false })
+import { FilesModal } from '../FilesModal/FilesModal'
+import { FolderTree } from '../FolderTree/FolderTree'
+import {
+  FilesChevronDownIcon, FilesChevronIcon, FilesCoverIcon, FilesDeadlineIcon, FilesDropboxIcon, FilesFolderPlusIcon, FilesSearchIcon, FilesShareIcon,
+  FilesLectureIcon, FilesSharedIcon, FilesStorageIcon, FilesUploadIcon, FilesVipIcon,
+} from '../icons'
+import { filesFetch, FilesApiError, formatBytes, formatDeadline, initials, jsonInit, triggerDownload, viewerFor } from '../lib'
+import { ShareAccessModal, type ShareTarget } from '../ShareAccessModal/ShareAccessModal'
+import { SubjectFilter } from '../SubjectFilter/SubjectFilter'
+import { StorageMeter } from '../StorageMeter/StorageMeter'
+import { StudentDrive } from '../StudentDrive/StudentDrive'
+import { StorageOverageWarningModal } from '../StorageOverageWarningModal/StorageOverageWarningModal'
+import ui from '../ui.module.scss'
+import styles from './FilesShell.module.scss'
+
+export interface FilesShellProps {
+  role: 'teacher' | 'student'
+  /** The open folder — owned by the page (it lives in `?folder=`), so browser back works. */
+  folderId: string | null
+  onNavigate: (folderId: string | null) => void
+  /**
+   * Admin's silent read-only view of a tutor's library (admin panel →
+   * Хранилище). Reads through /api/admin/*, records nothing (no first-open
+   * rows), no management or upload, no search/usage.
+   */
+  admin?: { teacherId: string; teacherName: string }
+  /**
+   * Student only: the sidebar switch between what tutors shared and the
+   * student's own drive ("Мои файлы"). While `active`, the main area is the
+   * drive and `folderId` above is null (drive folders live in `drive.folderId`).
+   */
+  drive?: { active: boolean; folderId: string | null; onToggle: (active: boolean) => void; onNavigate: (folderId: string | null) => void }
+}
+
+type NameDialog = { mode: 'create' } | { mode: 'rename'; folder: LibraryFolder }
+type DeleteTarget = { itemType: 'folder'; item: LibraryFolder } | { itemType: 'file'; item: LibraryFile }
+type CoverTarget = { id: string; name: string; cover: string | null }
+
+const LIBRARY_KEY = ['tutor-files', 'library'] as const
+
+function pathOf(parentId: string | null, byId: Map<string, TreeNode>): string {
+  const names: string[] = []
+  let id = parentId
+  while (id) {
+    const node = byId.get(id)
+    if (!node) break
+    names.unshift(node.name)
+    id = node.parentId
+  }
+  return names.join(' / ')
+}
+
+/**
+ * The /files page body for both sides (Floe layout): sidebar with the folder
+ * tree, a top bar with global search and the storage line, then "Папки" and
+ * "Файлы" sections. Teacher: create/rename/delete, covers, upload, share, VIP
+ * gate. Student: read-only browse of what's shared, grouped by tutor, upload
+ * only inside their own "учебная" subfolder. Everything comes from
+ * GET /api/tutor-files/library, which already applies the visibility rule.
+ */
+export function FilesShell({ role, folderId, onNavigate, admin, drive }: FilesShellProps) {
+  const t = useTranslations('files')
+  const locale = useLocale()
+  const queryClient = useQueryClient()
+  const { data: session } = useSession()
+  const isTeacher = role === 'teacher'
+
+  const [query, setQuery] = useState('')
+  const [debouncedQuery, setDebouncedQuery] = useState('')
+  const [treeOpen, setTreeOpen] = useState(false)
+  const [nameDialog, setNameDialog] = useState<NameDialog | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null)
+  const [shareTarget, setShareTarget] = useState<ShareTarget | null>(null)
+  const [coverTarget, setCoverTarget] = useState<CoverTarget | null>(null)
+  const [previewFile, setPreviewFile] = useState<LibraryFile | null>(null)
+  const [reviewFile, setReviewFile] = useState<LibraryFile | null>(null)
+  const [editFile, setEditFile] = useState<LibraryFile | null>(null)
+  const router = useRouter()
+  const [overage, setOverage] = useState<UsageResponse | null>(null)
+  const [uploading, setUploading] = useState<{ done: number; total: number } | null>(null)
+  const [dragOver, setDragOver] = useState(false)
+  const [shortcut, setShortcut] = useState('Ctrl F')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
+  // Teacher: the subject of their lecture notes («Конспекты лекций/<Предмет>»).
+  const [subject, setSubject] = useState('')
+
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedQuery(query.trim()), 250)
+    return () => clearTimeout(id)
+  }, [query])
+
+  // ⌘F / Ctrl+F focuses the library search (Floe's search hint).
+  useEffect(() => {
+    if (/Mac|iPhone|iPad/.test(navigator.userAgent)) setShortcut('⌘ F')
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'f' && searchRef.current) {
+        e.preventDefault()
+        searchRef.current.focus()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  const libraryUrl = admin
+    ? `/api/admin/tutor-files/library?teacherId=${admin.teacherId}${folderId ? `&folderId=${folderId}` : ''}`
+    : `/api/tutor-files/library${folderId ? `?folderId=${folderId}` : ''}`
+  const library = useQuery({
+    queryKey: admin ? ['tutor-files', 'admin', admin.teacherId, folderId] : [...LIBRARY_KEY, folderId],
+    queryFn: () => filesFetch<LibraryResponse>(libraryUrl),
+    placeholderData: keepPreviousData,
+    retry: false,
+  })
+  const data = library.data
+  const isVip = !!data?.isVip
+
+  const search = useQuery({
+    queryKey: ['tutor-files', 'search', debouncedQuery, subject],
+    queryFn: () => filesFetch<{ folders: LibraryFolder[]; files: SearchFile[] }>(`/api/tutor-files/search?q=${encodeURIComponent(debouncedQuery)}${subject ? `&subject=${encodeURIComponent(subject)}` : ''}`),
+    enabled: (debouncedQuery.length > 0 || !!subject) && !admin,
+  })
+
+  const usage = useQuery({
+    queryKey: ['tutor-files', 'usage'],
+    queryFn: () => filesFetch<UsageResponse>('/api/tutor-files/usage'),
+    enabled: isTeacher && isVip && !admin,
+  })
+
+  // An open folder that vanished (deleted, access revoked, bad link) → back to the root.
+  useEffect(() => {
+    if (folderId && library.error instanceof FilesApiError && (library.error.status === 403 || library.error.status === 404)) onNavigate(null)
+  }, [library.error, folderId, onNavigate])
+
+  const treeById = useMemo(() => new Map((data?.tree ?? []).map(n => [n.id, n])), [data])
+  const openPath = useMemo(() => [...(data?.breadcrumbs ?? []).map(b => b.id), ...(data?.folder ? [data.folder.id] : [])], [data])
+
+  const refresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['tutor-files'] })
+  }
+
+  const navigate = (id: string | null) => {
+    onNavigate(id)
+    setQuery('')
+    setDebouncedQuery('')
+    setSubject('')
+    setTreeOpen(false)
+  }
+
+  const errorText = (e: unknown) => {
+    if (e instanceof FilesApiError) {
+      if (e.code === 'VIP_REQUIRED') return t('errVip')
+      if (e.code === 'MAX_DEPTH') return t('errMaxDepth', { max: MAX_FOLDER_DEPTH })
+    }
+    return t('errGeneric')
+  }
+
+  // ── Upload ────────────────────────────────────────────────
+  const uploadErrorToast = (e: unknown, fileName: string) => {
+    const code = e instanceof FilesApiError ? e.code : ''
+    toast.error(code === 'VIP_REQUIRED' ? t('errVip') : code === 'QUOTA_EXCEEDED' ? t('errQuota') : code === 'FILE_TOO_LARGE' ? t('errTooLarge', { name: fileName }) : t('errUpload', { name: fileName }))
+  }
+
+  // Returns the created rows, or null if any file failed — callers that need
+  // to know (the reupload button in ReviewModal, the docx editor's "save as
+  // new") get a real signal instead of guessing from the toast that already ran.
+  //
+  // Photos of a notebook/paper page are auto-cropped to the sheet and
+  // straightened before upload (pageAutoCrop.ts); the toast then offers to
+  // swap the result back for the untouched original. `keepOriginal` is that
+  // swap-back path; derived files (docx editor, review re-upload) never crop.
+  const uploadFiles = async (list: File[], opts?: { derivedFromId?: string; keepOriginal?: boolean }): Promise<LibraryFile[] | null> => {
+    if (list.length === 0 || uploading) return null
+    let crossedQuota = false
+    let allOk = true
+    const created: LibraryFile[] = []
+    const cropped: { created: LibraryFile; original: File }[] = []
+    setUploading({ done: 0, total: list.length })
+    for (let i = 0; i < list.length; i++) {
+      const original = list[i]
+      let file = original
+      if (!opts?.derivedFromId && !opts?.keepOriginal && original.type.startsWith('image/')) {
+        try {
+          file = (await autoCropPagePhoto(original)) ?? original
+        } catch (e) {
+          console.error('[FilesShell] page auto-crop failed, uploading original', e)
+        }
+      }
+      // Students don't get /usage; the server re-checks anyway.
+      if (file.size > (usage.data?.maxFileBytes ?? DEFAULT_MAX_FILE_MB * MB)) {
+        toast.error(t('errTooLarge', { name: file.name }))
+        allOk = false
+      } else {
+        const form = new FormData()
+        form.append('file', file)
+        if (folderId) form.append('folderId', folderId)
+        if (opts?.derivedFromId) form.append('derivedFromId', opts.derivedFromId)
+        try {
+          const res = await filesFetch<{ file: LibraryFile; usedBytes?: number; quotaBytes?: number }>('/api/tutor-files/files', { method: 'POST', body: form })
+          created.push(res.file)
+          if (file !== original) cropped.push({ created: res.file, original })
+          // G02 (Wallet build): warn only on the upload that *first* crosses
+          // the quota — "was the library already over before this file?"
+          // comes straight from the post-write usedBytes minus this file's size.
+          const { usedBytes, quotaBytes } = res
+          if (usedBytes !== undefined && quotaBytes !== undefined && usedBytes > quotaBytes && usedBytes - res.file.sizeBytes <= quotaBytes) crossedQuota = true
+        } catch (e) {
+          uploadErrorToast(e, file.name)
+          allOk = false
+        }
+      }
+      setUploading({ done: i + 1, total: list.length })
+    }
+    setUploading(null)
+    refresh()
+    if (cropped.length > 0) {
+      toast.success(t('pageCropped', { count: cropped.length }), {
+        duration: 10000,
+        action: { label: t('pageCropUndo'), onClick: () => { void restoreOriginals(cropped) } },
+      })
+    }
+    if (crossedQuota) {
+      try {
+        setOverage(await queryClient.fetchQuery({ queryKey: ['tutor-files', 'usage'], queryFn: () => filesFetch<UsageResponse>('/api/tutor-files/usage'), staleTime: 0 }))
+      } catch (e) {
+        console.error('[FilesShell] usage after overage failed', e)
+      }
+    }
+    return allOk ? created : null
+  }
+
+  // "Keep the original" from the auto-crop toast: drop the cropped copies,
+  // upload the untouched photos in their place.
+  const restoreOriginals = async (pairs: { created: LibraryFile; original: File }[]) => {
+    const originals: File[] = []
+    for (const { created, original } of pairs) {
+      try {
+        await filesFetch(`/api/tutor-files/files/${created.id}`, { method: 'DELETE' })
+        originals.push(original)
+      } catch (e) {
+        console.error('[FilesShell] delete of cropped copy failed', e)
+        toast.error(t('errGeneric'))
+      }
+    }
+    if (originals.length > 0) await uploadFiles(originals, { keepOriginal: true })
+  }
+
+  // The docx editor's overwrite path (target already has `derivedFromId` set).
+  const overwriteFile = async (fileId: string, file: File): Promise<boolean> => {
+    const form = new FormData()
+    form.append('file', file)
+    try {
+      await filesFetch(`/api/tutor-files/files/${fileId}/content`, { method: 'PATCH', body: form })
+      refresh()
+      return true
+    } catch (e) {
+      uploadErrorToast(e, file.name)
+      return false
+    }
+  }
+
+  const onDrop = (e: DragEvent) => {
+    e.preventDefault()
+    setDragOver(false)
+    if (data?.canUpload) uploadFiles(Array.from(e.dataTransfer.files))
+  }
+
+  // ── Open / download ───────────────────────────────────────
+  // A student's first preview or download is what the tutor sees on hover
+  // over that student's avatar; the server keeps only the first time.
+  const markOpened = (f: LibraryFile) => {
+    if (!isTeacher && !admin) fetch(`/api/tutor-files/files/${f.id}/open`, { method: 'POST' }).catch(() => {})
+  }
+  const canManage = isTeacher && isVip && !admin
+  // Opening a pdf/docx you can manage goes straight to its editor — no
+  // separate "Edit" click needed. Read-only viewers (students, admin's
+  // silent browsing) still get the plain preview; they couldn't save anyway.
+  const openPreview = (f: LibraryFile) => {
+    markOpened(f)
+    const kind = viewerFor(f.mimeType, f.name)
+    // Saved lecture notes reopen in the lecture editor (formulas, notes, AI sections intact).
+    if (canManage && f.lectureNoteId && !f.mimeType.startsWith('audio/')) { router.push(`/lecture/${f.lectureNoteId}`); return }
+    if (canManage && kind === 'docx') { setEditFile(f); return }
+    if (canManage && kind === 'pdf') { setReviewFile(f); return }
+    setPreviewFile(f)
+  }
+  // Through our own API, never the bucket's raw public URL — that domain has
+  // no reputation of its own and browsers' Safe Browsing flags a top-level
+  // navigation to it as a dangerous site. The API route already forces
+  // Content-Disposition: attachment, so this is a real download, not a tab.
+  const contentUrl = (f: LibraryFile) => admin ? `/api/admin/tutor-files/files/${f.id}/content` : `/api/tutor-files/files/${f.id}/content`
+  const downloadFile = (f: LibraryFile) => {
+    markOpened(f)
+    triggerDownload({ url: contentUrl(f), name: f.name })
+  }
+
+  // ── Folder create / rename, delete ────────────────────────
+  const openCreate = () => {
+    if (data?.folder && data.folder.depth >= MAX_FOLDER_DEPTH) {
+      toast.error(t('errMaxDepth', { max: MAX_FOLDER_DEPTH }))
+      return
+    }
+    setNameDialog({ mode: 'create' })
+  }
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return
+    const target = deleteTarget
+    setDeleteTarget(null)
+    try {
+      await filesFetch(`/api/tutor-files/${target.itemType === 'folder' ? 'folders' : 'files'}/${target.item.id}`, { method: 'DELETE' })
+    } catch (e) {
+      toast.error(errorText(e))
+    }
+    refresh()
+  }
+
+  // ── Render ────────────────────────────────────────────────
+  const canUpload = !!data?.canUpload
+  const myId = session?.user?.id
+  const searching = debouncedQuery.length > 0 || !!subject
+
+  const folderActions = (f: LibraryFolder) => canManage
+    ? {
+        onShare: () => setShareTarget({ itemType: 'folder', id: f.id, name: f.name, allowStudentUpload: f.allowStudentUpload, submissionDeadline: f.submissionDeadline }),
+        onCover: () => setCoverTarget({ id: f.id, name: f.name, cover: f.cover }),
+        onRename: () => setNameDialog({ mode: 'rename', folder: f }),
+        onDelete: () => setDeleteTarget({ itemType: 'folder', item: f }),
+      }
+    : {}
+  const fileActions = (f: LibraryFile) => {
+    if (canManage) {
+      return {
+        onShare: () => setShareTarget({ itemType: 'file', id: f.id, name: f.name }),
+        onDelete: () => setDeleteTarget({ itemType: 'file', item: f }),
+        onReview: f.uploadedByRole === 'STUDENT' ? () => setReviewFile(f) : undefined,
+        onEdit: viewerFor(f.mimeType, f.name) === 'docx' ? () => setEditFile(f) : undefined,
+        // PDF → test (idea 3): the same importer as on /create-test, pre-filled with this file.
+        onMakeTest: importKindOf(f.name) !== 'unknown'
+          ? () => router.push(`/create-test?fromLibraryFile=${f.id}&name=${encodeURIComponent(f.name)}`)
+          : undefined,
+      }
+    }
+    // Student: may take back only their own submission, inside their own subfolder.
+    if (canUpload && f.uploadedByRole === 'STUDENT' && f.uploadedById === myId) return { onDelete: () => setDeleteTarget({ itemType: 'file', item: f }) }
+    return {}
+  }
+
+  const sections = (folders: LibraryFolder[], files: (LibraryFile & { contentMatch?: string | null })[], opts: { hints?: boolean; newFolder?: boolean } = {}) => (
+    <>
+      {(folders.length > 0 || opts.newFolder) && (
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>{t('foldersSection')} <span className={styles.count}>{folders.length}</span></h2>
+          <div className={styles.folderGrid}>
+            {folders.map(f => (
+              <FolderCard key={f.id} folder={f} onOpen={() => navigate(f.id)} hint={opts.hints ? pathOf(f.parentId, treeById) || t('rootCrumb') : undefined} {...folderActions(f)} />
+            ))}
+            {opts.newFolder && <NewFolderCard onCreate={openCreate} />}
+          </div>
+        </section>
+      )}
+      {files.length > 0 && (
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>{t('filesSection')} <span className={styles.count}>{files.length}</span></h2>
+          <div className={styles.fileGrid}>
+            {files.map(f => (
+              <FileCard key={f.id} file={f} lecture={isTeacher && !admin && f.lectureNoteId && !f.mimeType.startsWith('audio/') ? { onOpen: () => router.push(`/lecture/${f.lectureNoteId}`) } : undefined} onPreview={() => openPreview(f)} onDownload={() => downloadFile(f)} hint={opts.hints ? pathOf(f.folderId, treeById) || t('rootCrumb') : undefined} contentMatch={f.contentMatch} query={debouncedQuery} {...fileActions(f)} />
+            ))}
+          </div>
+        </section>
+      )}
+    </>
+  )
+
+  let body: ReactNode
+  if (library.isError && !data) {
+    body = (
+      <div className={styles.state}>
+        <p className={styles.stateText}>{t('errLoad')}</p>
+        <button type="button" className={ui.btn} onClick={() => library.refetch()}>{t('retry')}</button>
+      </div>
+    )
+  } else if (!data) {
+    body = <div className={styles.skeletonGrid} aria-busy="true">{Array.from({ length: 6 }, (_, i) => <div key={i} className={styles.skeleton} />)}</div>
+  } else if (isTeacher && !isVip && !admin) {
+    // G01: the page is open to every tutor, the library itself only with VIP.
+    body = (
+      <div className={styles.upsell}>
+        <span className={styles.upsellIcon}><FilesVipIcon size={26} strokeWidth={1.8} /></span>
+        <h3 className={styles.upsellTitle}>{t('upsellTitle')}</h3>
+        <p className={styles.upsellText}>{t('upsellText', { quota: formatBytes(data.quotaBytes, locale) })}</p>
+        <Link href="/vip" className={`${ui.btn} ${ui.primary}`}>{t('upsellCta')}</Link>
+      </div>
+    )
+  } else if (searching) {
+    body = search.data && search.data.folders.length + search.data.files.length === 0
+      ? <p className={styles.muted}>{debouncedQuery ? t('searchEmpty', { q: debouncedQuery }) : t('subjectEmpty', { subject })}</p>
+      : search.data && sections(search.data.folders, search.data.files, { hints: true })
+  } else {
+    const totalItems = data.groups.reduce((n, g) => n + g.folders.length + g.files.length, 0)
+    const showGroupHeaders = !isTeacher && data.folder === null && data.groups.length > 1
+    const inPersonal = !!data.folder?.restrictedToStudentId
+    if (totalItems === 0) {
+      body = (
+        <div className={styles.empty}>
+          {isTeacher && data.folder === null ? (
+            <>
+              <span className={styles.emptyIcon}><FilesFolderPlusIcon size={26} strokeWidth={1.6} /></span>
+              <div className={styles.emptyTitle}>{t('emptyTitle')}</div>
+              <p className={styles.emptyText}>{t('emptyText')}</p>
+            </>
+          ) : !isTeacher && data.folder === null ? (
+            <>
+              <span className={styles.emptyIcon}><FilesStorageIcon size={26} strokeWidth={1.6} /></span>
+              <div className={styles.emptyTitle}>{t('studentEmptyTitle')}</div>
+              <p className={styles.emptyText}>{t('studentEmptyText')}</p>
+            </>
+          ) : (
+            <div className={styles.emptyTitle}>{t('emptyFolder')}</div>
+          )}
+          {(canManage || canUpload) && (
+            <div className={styles.emptyActions}>
+              {canManage && !inPersonal && <button type="button" className={ui.btn} onClick={openCreate}><FilesFolderPlusIcon size={15} /> {t('newFolder')}</button>}
+              {canUpload && <button type="button" className={`${ui.btn} ${ui.primary}`} onClick={() => fileInputRef.current?.click()}><FilesUploadIcon size={15} /> {t('upload')}</button>}
+            </div>
+          )}
+        </div>
+      )
+    } else {
+      // A student's personal subfolder is a leaf (no subfolders allowed), so no "new folder" slot there.
+      const newFolderSlot = canManage && !inPersonal && (data.folder?.depth ?? 0) < MAX_FOLDER_DEPTH
+      body = data.groups.map(group => (
+        <div key={group.teacher?.id ?? 'own'} className={styles.group}>
+          {showGroupHeaders && group.teacher && (
+            <div className={styles.groupHeader}>
+              {group.teacher.avatarUrl
+                // eslint-disable-next-line @next/next/no-img-element
+                ? <img src={group.teacher.avatarUrl} alt="" className={styles.groupAvatar} />
+                : <span className={styles.groupAvatar}>{initials(group.teacher.name)}</span>}
+              {t('fromTeacher', { name: group.teacher.name })}
+            </div>
+          )}
+          {sections(group.folders, group.files, { newFolder: newFolderSlot })}
+        </div>
+      ))
+    }
+  }
+
+  const rootLabel = admin ? admin.teacherName : isTeacher ? t('myFiles') : t('sharedWithMe')
+  const title = searching ? (debouncedQuery ? t('searchResults') : subject) : data?.folder?.name ?? rootLabel
+  const current = data?.folder
+  const tree = data && (
+    <FolderTree nodes={data.tree} teachers={data.teachers} currentId={folderId} openPath={openPath} rootLabel={rootLabel} onSelect={navigate} />
+  )
+  const showLibraryChrome = !!data && (!!admin || !(isTeacher && !isVip))
+
+  return (
+    <div className={styles.shell}>
+      <div className={styles.layout}>
+        <aside className={styles.sidebar}>
+          <div className={styles.brand}>
+            <span className={styles.brandIcon}><FilesStorageIcon size={16} /></span>
+            {t('pageTitle')}
+            {admin && <span className={styles.readOnly}>{t('adminReadOnly')}</span>}
+          </div>
+          {drive && !isTeacher && (
+            <nav className={styles.driveNav} aria-label={t('driveNavLabel')}>
+              <button type="button" className={`${styles.driveNavItem} ${!drive.active ? styles.driveNavActive : ''}`} aria-current={!drive.active ? 'page' : undefined} onClick={() => drive.onToggle(false)}>
+                <FilesSharedIcon size={15} /> {t('sharedWithMe')}
+              </button>
+              <button type="button" className={`${styles.driveNavItem} ${drive.active ? styles.driveNavActive : ''}`} aria-current={drive.active ? 'page' : undefined} onClick={() => drive.onToggle(true)}>
+                <FilesStorageIcon size={15} /> {t('driveTitle')}
+              </button>
+              <Link href="/lecture" className={styles.driveNavItem}>
+                <FilesLectureIcon size={15} /> {t('driveNewLecture')}
+              </Link>
+            </nav>
+          )}
+          {showLibraryChrome && !drive?.active && (
+            <>
+              <div className={styles.sidebarLabel}>{t('treeTitle')}</div>
+              {tree}
+            </>
+          )}
+        </aside>
+
+        {drive?.active ? (
+          <main className={styles.main}>
+            <StudentDrive folderId={drive.folderId} onNavigate={drive.onNavigate} />
+          </main>
+        ) : (
+
+        <main
+          className={`${styles.main} ${dragOver ? styles.dragOver : ''}`}
+          onDragOver={canUpload ? e => { e.preventDefault(); setDragOver(true) } : undefined}
+          onDragLeave={canUpload ? e => { if (e.currentTarget === e.target) setDragOver(false) } : undefined}
+          onDrop={canUpload ? onDrop : undefined}
+        >
+          <div className={styles.topbar}>
+            {showLibraryChrome && (
+              <div className={styles.treeToggleWrap}>
+                <button type="button" className={`${ui.btn} ${styles.treeToggle}`} onClick={() => setTreeOpen(v => !v)} aria-expanded={treeOpen}>
+                  {t('treeTitle')} <FilesChevronDownIcon size={14} />
+                </button>
+                {treeOpen && <div className={styles.treePopover}>{tree}</div>}
+              </div>
+            )}
+            {showLibraryChrome && !admin && (
+              <label className={styles.search}>
+                <FilesSearchIcon size={16} className={styles.searchIcon} />
+                <input ref={searchRef} type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder={t('searchPlaceholder')} aria-label={t('searchPlaceholder')} />
+                <kbd className={styles.kbd}>{shortcut}</kbd>
+              </label>
+            )}
+            {showLibraryChrome && !admin && isTeacher && <SubjectFilter value={subject} onChange={setSubject} />}
+            {usage.data && <div className={styles.meterSlot}><StorageMeter usage={usage.data} /></div>}
+          </div>
+
+          <div className={styles.content}>
+            {showLibraryChrome && !searching && current && (
+              <nav className={styles.crumbs} aria-label="breadcrumbs">
+                <button type="button" className={styles.crumb} onClick={() => navigate(null)}>{rootLabel}</button>
+                {data.breadcrumbs.map(b => (
+                  <span key={b.id} className={styles.crumbItem}>
+                    <FilesChevronIcon size={13} className={styles.crumbSep} />
+                    <button type="button" className={styles.crumb} onClick={() => navigate(b.id)}>{b.name}</button>
+                  </span>
+                ))}
+              </nav>
+            )}
+
+            <div className={styles.titleRow}>
+              <h1 className={styles.title}>{title}</h1>
+              {showLibraryChrome && !searching && (
+                <div className={styles.actions}>
+                  {canManage && current && !current.restrictedToStudentId && (
+                    <button type="button" className={styles.pill} onClick={() => setShareTarget({ itemType: 'folder', id: current.id, name: current.name, allowStudentUpload: current.allowStudentUpload })}>
+                      <FilesShareIcon size={14} /> <span className={styles.pillLabel}>{t('share')}</span>
+                    </button>
+                  )}
+                  {canManage && current && (
+                    <button type="button" className={styles.pill} onClick={() => setCoverTarget({ id: current.id, name: current.name, cover: treeById.get(current.id)?.cover ?? null })}>
+                      <FilesCoverIcon size={14} /> <span className={styles.pillLabel}>{t('cover')}</span>
+                    </button>
+                  )}
+                  {canManage && !current?.restrictedToStudentId && (
+                    <button type="button" className={styles.pill} onClick={openCreate}>
+                      <FilesFolderPlusIcon size={14} /> <span className={styles.pillLabel}>{t('newFolder')}</span>
+                    </button>
+                  )}
+                  {canUpload && (
+                    <button type="button" className={`${styles.pill} ${styles.pillPrimary}`} onClick={() => fileInputRef.current?.click()} disabled={!!uploading}>
+                      <FilesUploadIcon size={14} />
+                      <span className={styles.pillLabel}>{uploading ? t('uploading', uploading) : t('upload')}</span>
+                    </button>
+                  )}
+                  <input ref={fileInputRef} type="file" multiple hidden onChange={e => { uploadFiles(Array.from(e.target.files ?? [])); e.target.value = '' }} />
+                </div>
+              )}
+            </div>
+
+            {!searching && !isTeacher && canUpload && (
+              <div className={styles.banner}><FilesDropboxIcon size={16} /> {t('dropboxHint')}</div>
+            )}
+            {!searching && data?.folder?.deadline && (() => {
+              const overdue = new Date(data.folder.deadline) < new Date()
+              const date = formatDeadline(data.folder.deadline, locale)
+              return (
+                <div className={`${styles.banner} ${overdue ? styles.bannerOverdue : styles.bannerDeadline}`}>
+                  <FilesDeadlineIcon size={16} />
+                  {overdue ? t('deadlinePassed', { date }) : t('deadlineUntil', { date })}
+                  {!isTeacher && overdue && <span className={styles.bannerNote}>{t('deadlineLateNote')}</span>}
+                </div>
+              )
+            })()}
+            {dragOver && <div className={styles.dropHint}><FilesUploadIcon size={18} /> {t('dropHint')}</div>}
+
+            {body}
+          </div>
+        </main>
+        )}
+      </div>
+
+      {nameDialog && (
+        <FolderNameDialog
+          dialog={nameDialog}
+          parentId={folderId}
+          onClose={() => setNameDialog(null)}
+          onDone={() => { setNameDialog(null); refresh() }}
+          errorText={errorText}
+        />
+      )}
+
+      {deleteTarget && (
+        <FilesModal
+          title={t('deleteTitle')}
+          closeLabel={t('close')}
+          onClose={() => setDeleteTarget(null)}
+          footer={
+            <>
+              <button type="button" className={ui.btn} onClick={e => { e.stopPropagation(); setDeleteTarget(null) }}>{t('cancel')}</button>
+              <button type="button" className={`${ui.btn} ${ui.danger}`} onClick={confirmDelete}>{t('delete')}</button>
+            </>
+          }
+        >
+          <p className={styles.dialogText}>
+            {deleteTarget.itemType === 'folder' ? t('deleteFolderConfirm', { name: deleteTarget.item.name }) : t('deleteFileConfirm', { name: deleteTarget.item.name })}
+          </p>
+        </FilesModal>
+      )}
+
+      {shareTarget && <ShareAccessModal target={shareTarget} onClose={() => setShareTarget(null)} onChanged={refresh} />}
+      {coverTarget && <CoverPickerModal folder={coverTarget} onClose={() => setCoverTarget(null)} onSaved={() => { setCoverTarget(null); refresh() }} />}
+      {previewFile && <FilePreviewModal file={previewFile} contentUrl={admin ? `/api/admin/tutor-files/files/${previewFile.id}/content` : undefined} onClose={() => setPreviewFile(null)} onDownload={() => downloadFile(previewFile)} />}
+      {reviewFile && <ReviewModal file={reviewFile} onClose={() => setReviewFile(null)} onSaved={() => { setReviewFile(null); refresh() }} onReupload={async f => (await uploadFiles([f])) !== null} />}
+      {editFile && (
+        <DocxEditorModal
+          file={editFile}
+          onClose={() => setEditFile(null)}
+          onCreateDerived={async (f, derivedFromId) => (await uploadFiles([f], { derivedFromId }))?.[0] ?? null}
+          onOverwrite={overwriteFile}
+        />
+      )}
+      {overage && <StorageOverageWarningModal usage={overage} onClose={() => setOverage(null)} />}
+    </div>
+  )
+}
+
+function FolderNameDialog({ dialog, parentId, onClose, onDone, errorText }: {
+  dialog: NameDialog
+  parentId: string | null
+  onClose: () => void
+  onDone: () => void
+  errorText: (e: unknown) => string
+}) {
+  const t = useTranslations('files')
+  const [name, setName] = useState(dialog.mode === 'rename' ? dialog.folder.name : '')
+  const [error, setError] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault()
+    const trimmed = name.trim()
+    if (!trimmed) return
+    setBusy(true)
+    setError(null)
+    try {
+      if (dialog.mode === 'create') await filesFetch('/api/tutor-files/folders', jsonInit('POST', { name: trimmed, parentId }))
+      else await filesFetch(`/api/tutor-files/folders/${dialog.folder.id}`, jsonInit('PATCH', { name: trimmed }))
+      onDone()
+    } catch (err) {
+      setError(errorText(err))
+      setBusy(false)
+    }
+  }
+
+  return (
+    <FilesModal
+      title={dialog.mode === 'create' ? t('newFolderTitle') : t('renameTitle')}
+      closeLabel={t('close')}
+      onClose={onClose}
+    >
+      <form onSubmit={submit} className={styles.nameForm}>
+        <input className={ui.input} value={name} onChange={e => setName(e.target.value)} placeholder={t('folderNamePlaceholder')} maxLength={120} autoFocus />
+        {error && <div className={ui.error} role="alert">{error}</div>}
+        <div className={styles.nameActions}>
+          <button type="button" className={ui.btn} onClick={e => { e.stopPropagation(); onClose() }}>{t('cancel')}</button>
+          <button type="submit" className={`${ui.btn} ${ui.primary}`} disabled={busy || !name.trim()}>
+            {dialog.mode === 'create' ? t('create') : t('save')}
+          </button>
+        </div>
+      </form>
+    </FilesModal>
+  )
+}

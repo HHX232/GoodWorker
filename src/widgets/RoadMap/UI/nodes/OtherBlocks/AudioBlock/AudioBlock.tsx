@@ -4,6 +4,7 @@
 import {RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
 import {useViewMode} from '@/shared/ui/RoadMap/context/ViewModeContext'
 import {uploadFile} from '@/shared/lib/uploadFile'
+import {LibraryPickButton, pickedFileAsFile, type PickedFile} from '@/widgets/Files/LibraryPicker/LibraryPicker'
 import {useReactFlow, useStore} from '@xyflow/react'
 import {Mic2Icon, PauseIcon, PlayIcon, UploadIcon, XIcon} from 'lucide-react'
 import {useCallback, useEffect, useRef, useState} from 'react'
@@ -207,6 +208,17 @@ export default function AudioBlock({nodeId}: {nodeId: string}) {
     }
   }
 
+  const pickFromLibrary = async ([picked]: PickedFile[]) => {
+    if (!picked) return
+    setExtracting(true)
+    try {
+      const waveform = await pickedFileAsFile(picked).then(extractWaveform).catch(() => Array(80).fill(0.5))
+      update({audioUrl: picked.url, audioFilename: picked.name, audioWaveform: waveform})
+    } finally {
+      setExtracting(false)
+    }
+  }
+
   const remove = () => {
     update({audioUrl: null, audioFilename: null, audioWaveform: null})
     if (fileRef.current) fileRef.current.value = ''
@@ -225,6 +237,8 @@ export default function AudioBlock({nodeId}: {nodeId: string}) {
           <span className={styles.uploadHint}>{t('audioFormats')}</span>
         </button>
       )}
+
+      {!hasAudio && !extracting && !viewOnly && <LibraryPickButton accept='audio' multiple={false} max={1} onPick={pickFromLibrary} />}
 
       {extracting && (
         <div className={styles.extracting}>

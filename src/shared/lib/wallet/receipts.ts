@@ -1,5 +1,5 @@
 import { prisma } from '@/shared/prisma/prisma'
-import { getUsedBytes, QUOTA_BYTES } from '@/shared/lib/tutorFiles/storage'
+import { getTeacherStorageLimits, getUsedBytes } from '@/shared/lib/tutorFiles/storage'
 import { getMonthlyFeeStatus, getWalletPricingSettings, type WalletUser } from './wallet'
 
 /**
@@ -151,11 +151,13 @@ async function addonReceipt(
 }
 
 async function storageReceipt(teacherId: string, isVip: boolean, now: Date): Promise<Receipt> {
-  const [usedBytes, { storageOveragePriceCentsPerGbMonth: price }] = await Promise.all([
+  const [usedBytes, limits, { storageOveragePriceCentsPerGbMonth: price }] = await Promise.all([
     getUsedBytes(teacherId),
+    getTeacherStorageLimits(teacherId),
     getWalletPricingSettings(),
   ])
-  const overGb = usedBytes > QUOTA_BYTES ? Math.ceil((usedBytes - QUOTA_BYTES) / 1024 ** 3) : 0
+  // Admins aren't billed (their quota stays a hard cap) — same rule as the cron.
+  const overGb = !limits.isAdmin && usedBytes > limits.quotaBytes ? Math.ceil((usedBytes - limits.quotaBytes) / 1024 ** 3) : 0
   // Same conditions as the storage-overage cron: VIP only, price must be set.
   const dueCents = isVip && price > 0 ? overGb * price : 0
   return {

@@ -4,7 +4,7 @@
 **Blocked by:** 03, 04, 05
 **Зона:** `src/widgets/Files/ShareAccessModal/`, `src/widgets/Files/StorageOverageWarningModal/`, точка вызова внутри `FolderCard`/`FileCard`/`FilesShell` из тикета 05
 **Волна:** 4
-**Status:** ready
+**Status:** done
 
 ## Что должно заработать
 
