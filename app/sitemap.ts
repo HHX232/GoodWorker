@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { prisma } from '@/shared/prisma/prisma'
+import { slugify } from '@/shared/lib/slugify'
 
 import { SITE_URL } from '@/shared/lib/seo/siteUrl'
 // Built per request: the DB is not reachable during the Railway build, a prerendered sitemap would have no posts.
@@ -23,12 +24,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const pages: MetadataRoute.Sitemap = STATIC.map(p => ({ url: `${SITE_URL}${p.path === '/' ? '' : p.path}`, lastModified: now, changeFrequency: p.changeFrequency, priority: p.priority }))
   try {
     const posts = await prisma.post.findMany({
-      where: { visibility: 'PUBLIC', moderationStatus: 'PUBLISHED', slug: { not: null } },
-      select: { slug: true, updatedAt: true },
+      where: { visibility: 'PUBLIC', moderationStatus: 'PUBLISHED' },
+      select: { id: true, slug: true, title: true, updatedAt: true },
       orderBy: { updatedAt: 'desc' },
       take: 5000,
     })
-    for (const p of posts) pages.push({ url: `${SITE_URL}/post/${encodeURIComponent(p.slug!)}`, lastModified: p.updatedAt, changeFrequency: 'weekly', priority: 0.6 })
+    // Same URL as the post card: the slug when there is one, else /post/<title>/<id> (older posts).
+    for (const p of posts) pages.push({ url: `${SITE_URL}/post/${p.slug ? encodeURIComponent(p.slug) : `${slugify(p.title)}/${p.id}`}`, lastModified: p.updatedAt, changeFrequency: 'weekly', priority: 0.6 })
   } catch (e) {
     // The DB being down must not take the static part of the sitemap with it.
     console.error('[sitemap] posts failed', e)
