@@ -123,7 +123,17 @@ def normalize(audio: np.ndarray) -> tuple[np.ndarray, float]:
     return audio, rms
 
 
-def run(audio_bytes: bytes, quality: str, prompt: str | None) -> dict:
+def resolve_language(requested: str) -> str | None:
+    """'' → the server default; 'auto' → Whisper detects per chunk (mixed lectures); else a 2-letter code."""
+    requested = (requested or "").strip().lower()
+    if not requested:
+        return LANGUAGE
+    if requested == "auto":
+        return None
+    return requested if len(requested) == 2 and requested.isalpha() else LANGUAGE
+
+
+def run(audio_bytes: bytes, quality: str, prompt: str | None, language: str | None = LANGUAGE) -> dict:
     t0 = time.time()
     # PyAV (bundled with faster-whisper) decodes webm/opus from Chrome and
     # mp4/aac from iOS Safari alike — no system ffmpeg needed.
@@ -135,7 +145,7 @@ def run(audio_bytes: bytes, quality: str, prompt: str | None) -> dict:
 
     segments, info = model_for(quality).transcribe(
         audio,
-        language=LANGUAGE,
+        language=language,
         beam_size=5 if quality == "final" else 1,
         vad_filter=True,
         # Lenient VAD: short pauses stay inside a phrase, quiet speech passes.
@@ -174,6 +184,7 @@ async def transcribe(
     audio: UploadFile = File(...),
     quality: str = Form("draft"),
     prompt: str = Form(""),
+    language: str = Form(""),
     x_stt_key: str = Header(default=""),
 ) -> dict:
     if API_KEY and x_stt_key != API_KEY:
@@ -199,7 +210,7 @@ async def transcribe(
     if quality == "final":
         _final_busy += 1
     try:
-        return await asyncio.to_thread(run, data, quality, prompt[-400:] if prompt else None)
+        return await asyncio.to_thread(run, data, quality, prompt[-400:] if prompt else None, resolve_language(language))
     except Exception as e:  # undecodable chunk etc. — the caller retries or skips
         log.exception("transcribe failed")
         raise HTTPException(status_code=422, detail=f"decode/transcribe failed: {e}") from e

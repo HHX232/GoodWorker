@@ -34,7 +34,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       if (!(file instanceof Blob) || !ALLOWED_MIMES.has(file.type) || file.size === 0 || file.size > MAX_PHOTO_SIZE) return NextResponse.json({ error: 'UNSUPPORTED_PHOTO' }, { status: 400 })
       photo = { mimeType: file.type, base64: Buffer.from(await file.arrayBuffer()).toString('base64') }
     }
-    const result = await formulaAssist({ lectureId: id, lecture: contextPrompt(parseContext(guard.lecture.context), guard.lecture.title), mode, latex, instruction, context: String(form.get('context') ?? ''), photo })
+    const result = await formulaAssist({ lectureId: id, lecture: contextPrompt(parseContext(guard.lecture.context), guard.lecture.title, guard.lecture.language), mode, latex, instruction, context: String(form.get('context') ?? ''), photo })
     return NextResponse.json(result)
   } catch (e) {
     console.error('[POST /api/lecture/[id]/formula]', e)

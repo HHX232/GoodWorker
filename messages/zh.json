@@ -4093,7 +4093,14 @@
     "photoErr_UPLOAD_FAILED": "照片上传失败",
     "photoErr_AI_FAILED": "AI 无法读取照片——请重试",
     "photoErr_TOO_MANY_PHOTOS": "一次照片太多——最多 6 张",
-    "structureAddedTo": "这是对“{title}”的补充——已插入其后"
+    "structureAddedTo": "这是对“{title}”的补充——已插入其后",
+    "language": "讲座语言",
+    "language_ru": "Русский",
+    "language_en": "English",
+    "language_auto": "混合",
+    "languageHint_ru": "讲座使用俄语",
+    "languageHint_en": "讲座使用英语——笔记也用英语",
+    "languageHint_auto": "两种语言，例如英语课：每段录音的语言自动识别，例句和词汇保留英语"
   },
   "lecturePromo": {
     "eyebrow": "新工具 · VIP",

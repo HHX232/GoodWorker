@@ -239,6 +239,16 @@ export function LectureWorkspace({ lectureId }: { lectureId: string }) {
                 ))}
               </div>
             </div>
+            <div className={styles.compressRow}>
+              <span className={styles.compressLabel}>{t('language')}</span>
+              <div className={styles.compressTabs} role="tablist" aria-label={t('language')}>
+                {(['ru', 'en', 'auto'] as const).map(l => (
+                  <button key={l} type="button" role="tab" aria-selected={lecture.language === l} className={lecture.language === l ? styles.compressOn : ''} onClick={() => s.setLanguage(l)} title={t(`languageHint_${l}`)}>
+                    {t(`language_${l}`)}
+                  </button>
+                ))}
+              </div>
+            </div>
             <label className={styles.switchRow}>
               <span>{t('autoStructure')}</span>
               <input type="checkbox" className={styles.switch} checked={s.autoStructure} onChange={e => { s.setAutoStructure(e.target.checked); if (e.target.checked) s.structureNow() }} />

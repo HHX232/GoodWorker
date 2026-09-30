@@ -7,6 +7,8 @@ export interface LectureDto {
   docJson: unknown
   processedSeq: number
   keepAudio: boolean
+  /** Speech language: 'ru' | 'en' | 'auto' (mixed — detected per chunk). */
+  language: 'ru' | 'en' | 'auto'
   context: unknown
   recordedMs: number
   costKopecks: number

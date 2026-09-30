@@ -4092,7 +4092,14 @@
     "photoErr_UPLOAD_FAILED": "फ़ोटो अपलोड नहीं हो सकी",
     "photoErr_AI_FAILED": "AI फ़ोटो नहीं पढ़ सका — फिर से आज़माएँ",
     "photoErr_TOO_MANY_PHOTOS": "एक बार में बहुत अधिक फ़ोटो — अधिकतम 6",
-    "structureAddedTo": "यह “{title}” का पूरक है — ठीक उसके बाद जोड़ा गया"
+    "structureAddedTo": "यह “{title}” का पूरक है — ठीक उसके बाद जोड़ा गया",
+    "language": "लेक्चर की भाषा",
+    "language_ru": "Русский",
+    "language_en": "English",
+    "language_auto": "मिश्रित",
+    "languageHint_ru": "लेक्चर रूसी में है",
+    "languageHint_en": "लेक्चर अंग्रेज़ी में है — नोट्स भी अंग्रेज़ी में",
+    "languageHint_auto": "दो भाषाएँ, जैसे अंग्रेज़ी की क्लास: रिकॉर्डिंग के हर हिस्से की भाषा अपने-आप पहचानी जाती है, उदाहरण और शब्दावली अंग्रेज़ी में रहते हैं"
   },
   "lecturePromo": {
     "eyebrow": "नया टूल · VIP",

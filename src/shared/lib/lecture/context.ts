@@ -40,8 +40,15 @@ export function mergeContext(current: LectureContext, incoming: unknown): Lectur
 }
 
 /** The context as a prompt block (empty string when nothing is known yet). */
-export function contextPrompt(ctx: LectureContext, title: string): string {
+// What the AI is told about the lecture's language (the student picks it on the page).
+const LANGUAGE_NOTE: Record<string, string> = {
+  en: 'Язык лекции: английский. Расшифровка — английская речь: исправляй её как английскую и пиши конспект на английском.',
+  auto: 'Язык лекции: смешанный (например, пара иностранного языка: преподаватель говорит и на иностранном, и по-русски). Каждую фразу понимай на том языке, на котором она сказана. Лексику, примеры, фразы, правила и цитаты на изучаемом языке оставляй на нём, не переводи; пояснения пиши на том языке, на котором объяснял преподаватель.',
+}
+
+export function contextPrompt(ctx: LectureContext, title: string, language?: string): string {
   const lines = [
+    language && LANGUAGE_NOTE[language],
     title && `Название лекции (дал студент): ${title}`,
     ctx.subject && `Предмет: ${ctx.subject}`,
     ctx.topic && `Тема: ${ctx.topic}`,

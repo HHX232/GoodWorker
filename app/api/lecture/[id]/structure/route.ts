@@ -51,7 +51,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     if (!transcript) { await giveUp(); return NextResponse.json({ blocks: [], markdown: '', empty: true, isFinal }) }
 
     const current = parseContext(lecture.context)
-    const ctx = contextPrompt(current, lecture.title)
+    const ctx = contextPrompt(current, lecture.title, lecture.language)
     // Pass 1 — restore what the teacher said (misheard words, junk out); pass 2 — notes.
     const cleaned = await cleanTranscript({ lectureId: id, context: ctx, transcript })
     if (!cleaned) { await giveUp(); return NextResponse.json({ blocks: [], markdown: '', cleaned, empty: true, isFinal }) }

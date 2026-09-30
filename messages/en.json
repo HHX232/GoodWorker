@@ -4120,7 +4120,14 @@
     "photoErr_UPLOAD_FAILED": "Couldn't upload the photo",
     "photoErr_AI_FAILED": "The AI couldn't read the photos — try again",
     "photoErr_TOO_MANY_PHOTOS": "Too many photos at once — 6 at most",
-    "structureAddedTo": "This adds to “{title}” — inserted right after it"
+    "structureAddedTo": "This adds to “{title}” — inserted right after it",
+    "language": "Lecture language",
+    "language_ru": "Русский",
+    "language_en": "English",
+    "language_auto": "Mixed",
+    "languageHint_ru": "The lecture is in Russian",
+    "languageHint_en": "The lecture is in English — so are the notes",
+    "languageHint_auto": "Two languages, e.g. an English class: each piece of the recording is detected on its own, examples and vocabulary stay in English"
   },
   "lecturePromo": {
     "eyebrow": "New tool · VIP",

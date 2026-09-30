@@ -20,7 +20,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     const form = await req.formData().catch(() => null)
     const photo = await photoFromForm(form)
     if (photo instanceof NextResponse) return photo
-    const markdown = await readPhoto({ lectureId: id, lecture: contextPrompt(parseContext(guard.lecture.context), guard.lecture.title), context: String(form?.get('context') ?? ''), photo })
+    const markdown = await readPhoto({ lectureId: id, lecture: contextPrompt(parseContext(guard.lecture.context), guard.lecture.title, guard.lecture.language), context: String(form?.get('context') ?? ''), photo })
     return NextResponse.json({ blocks: markdownToBlocks(markdown), markdown })
   } catch (e) {
     console.error('[POST /api/lecture/[id]/photo-read]', e)
