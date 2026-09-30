@@ -4536,5 +4536,124 @@
         }
       ]
     }
+  },
+  "filesPromo": {
+    "eyebrow": "文件存储",
+    "h2": "所有资料——",
+    "h2_hl": "都在一个文件夹里",
+    "lead": "任何文件——PDF、Word、演示文稿、照片、视频、音频和课堂笔记——按需开放给指定的学生、指定的期限。每位学生都有自己的作业提交文件夹：截止日期、用笔批改，还能看到谁已经打开了资料。",
+    "points": [
+      "按学生、按期限开放",
+      "个人作业提交：截止日期与批改",
+      "在文件正文中搜索"
+    ],
+    "cta": "打开文件",
+    "vip": "VIP 包含 · 每位老师 15 GB",
+    "library": "资料库",
+    "quota": "3.2 / 15 GB",
+    "filesIn": "文件",
+    "share": "文件夹访问权限",
+    "until": "至 5 月 31 日",
+    "done": "完成",
+    "opened": "{name} 已查看",
+    "students": [
+      "安娜 K.",
+      "季马 S.",
+      "米沙 L.",
+      "卡佳 R."
+    ],
+    "folders": [
+      {
+        "name": "代数 · 九年级 A 班",
+        "cover": "preset:aurora",
+        "files": [
+          {
+            "name": "教材 第 4 章.pdf",
+            "kind": "pdf",
+            "size": 39845888
+          },
+          {
+            "name": "一元二次方程.docx",
+            "kind": "docx",
+            "size": 1258291
+          },
+          {
+            "name": "错题讲解.m4a",
+            "kind": "audio",
+            "size": 11534336
+          }
+        ]
+      },
+      {
+        "name": "作业 7 · 导数",
+        "cover": "preset:sunset",
+        "deadline": true,
+        "files": [
+          {
+            "name": "作业题.pdf",
+            "kind": "pdf",
+            "size": 317440
+          },
+          {
+            "name": "安娜 K.——解答.pdf",
+            "kind": "pdf",
+            "size": 2202009,
+            "student": true,
+            "review": "ACCEPTED",
+            "grade": "5"
+          },
+          {
+            "name": "米沙 L.——解答.pdf",
+            "kind": "pdf",
+            "size": 1782579,
+            "student": true,
+            "late": true,
+            "review": "REVISION"
+          }
+        ]
+      },
+      {
+        "name": "物理 · 高考备考",
+        "cover": "preset:peach",
+        "files": [
+          {
+            "name": "运动学速查.pdf",
+            "kind": "pdf",
+            "size": 2202009
+          },
+          {
+            "name": "模拟卷 12（含解答）.pdf",
+            "kind": "pdf",
+            "size": 5662310
+          },
+          {
+            "name": "运动学——演示文稿.pptx",
+            "kind": "pptx",
+            "size": 8912896
+          }
+        ]
+      },
+      {
+        "name": "课堂笔记",
+        "cover": "preset:meadow",
+        "files": [
+          {
+            "name": "曲线间的面积.docx",
+            "kind": "lecture",
+            "size": 845824
+          },
+          {
+            "name": "曲线间的面积.m4a",
+            "kind": "audio",
+            "size": 34603008
+          },
+          {
+            "name": "函数的极限.docx",
+            "kind": "lecture",
+            "size": 612352
+          }
+        ]
+      }
+    ]
   }
 }
