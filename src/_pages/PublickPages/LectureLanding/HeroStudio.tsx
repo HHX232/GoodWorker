@@ -4,7 +4,8 @@ import { CameraIcon, CheckIcon, MicIcon, PauseIcon, RotateCcwIcon, SparklesIcon 
 import { useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
 import { DocBlocks, type Block } from './Doc'
-import { HeroCopy, useReducedMotion } from './shared'
+import Link from 'next/link'
+import { HeroCopy, LECTURE_HREF, useReducedMotion } from './shared'
 import s from './LectureLanding.module.scss'
 
 type BoardState = 'idle' | 'scanning' | 'added'
@@ -24,6 +25,7 @@ export function HeroStudio() {
   const chalk = t.raw('chalk') as string[]
   const spoken = t.raw('notes') as Block[]
   const fromBoard = t.raw('fromBoard') as Block[]
+  const heard = t.raw('heard') as { v: string; noise?: boolean }[]
   const reduced = useReducedMotion()
   const [ticks, setTicks] = useState(0)
   const [recording, setRecording] = useState(true)
@@ -63,6 +65,8 @@ export function HeroStudio() {
     setRecording(true)
   }
 
+  // One heard line every two ticks; the notes trail behind it.
+  const heardCount = reduced ? heard.length : Math.min(heard.length, Math.ceil(ticks / 2))
   const blocks = [...spoken.slice(0, written), ...(boardShown ? fromBoard : [])]
   const fresh = new Set<number>()
   if (!reduced) {
@@ -103,9 +107,17 @@ export function HeroStudio() {
               {board === 'scanning' && <><div className={s.flash} /><div className={s.scan} /></>}
               {boardShown && <span className={s.photoDone}><CheckIcon size={13} /> {t('added')}</span>}
             </div>
-            <button type="button" className={s.photoBtn} onClick={snap} disabled={board !== 'idle' || reduced}>
+            <Link href={LECTURE_HREF} className={s.photoBtn}>
               <CameraIcon size={18} /> {board === 'scanning' ? t('scanning') : t('snap')}
-            </button>
+            </Link>
+
+            {/* What the microphone hears right now — junk struck out, the notes are made from the rest. */}
+            <div className={s.heardCard} aria-live="off">
+              <div className={s.paneLabel}><MicIcon size={12} /> {t('heardTitle')}</div>
+              {heard.slice(0, heardCount).slice(-5).map((l, i, shown) => (
+                <p key={heardCount - shown.length + i} className={`${s.heardLine} ${l.noise ? s.noise : ''}`}>{l.v}</p>
+              ))}
+            </div>
           </div>
 
           <div className={s.studioNotes}>

@@ -105,7 +105,10 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
 .waveWide { flex: 1; justify-content: flex-end; min-width: 0; overflow: hidden; span { flex: none; } }
 .photoCompact { border-radius: 20px; .chalk { inset: 26px 28px; gap: 10px; font-size: clamp(15px, 1.5vw, 20px); } }
 .photoDone { position: absolute; right: 12px; bottom: 12px; display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; background: rgba(255, 255, 255, 0.92); color: $green; font-size: 12px; font-weight: 700; animation: rise 0.4s $ease both; }
-.photoBtn:disabled { opacity: 0.55; cursor: default; transform: none; }
+.heardCard { display: flex; flex: 1; flex-direction: column; min-height: 150px; padding: 14px 16px; overflow: hidden; border: 1px solid $line; border-radius: 20px; background: #fff; }
+.paneLabel { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; color: $faint; font-size: 11.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+.heardLine { margin: 0 0 7px; color: #4b4d58; font: 13px/1.5 ui-monospace, 'SF Mono', Menlo, monospace; animation: rise 0.4s $ease both; }
+.noise { color: #b1b3c0; text-decoration: line-through; text-decoration-color: rgba(225, 29, 72, 0.7); text-decoration-thickness: 1.5px; }
 .studioNotes { min-width: 0; min-height: 640px; padding: 18px 20px 20px; border: 1px solid $line; border-radius: 20px; background: #fff; }
 .studioTitle { color: $ink; font-size: 13px; font-weight: 700; }
 
@@ -215,6 +218,7 @@ $ease: cubic-bezier(0.22, 1, 0.36, 1);
   font-size: 13.5px;
   font-weight: 700;
   text-align: left;
+  text-decoration: none;
   cursor: pointer;
   transition: transform 0.2s $ease;
   &:hover { transform: translateY(-1px); }
@@ -327,7 +331,7 @@ button.fileRow { cursor: pointer; }
 
 @media (prefers-reduced-motion: reduce) {
   .orbIdle i, .orbRec i, .waveOn span, .scan, .recDot { animation: none; }
-  .fresh, .fileRow, .chapters, .photoDone { animation: none; }
+  .fresh, .fileRow, .chapters, .photoDone, .heardLine { animation: none; }
 }
 
 :global(html.theme-dark), :global(html.pomodoro-dark) {
@@ -349,11 +353,13 @@ button.fileRow { cursor: pointer; }
   .exTabOn { border-color: #e8eaf0; background: #e8eaf0; color: #14151c; }
   .cta { background: #e8eaf0; color: #14151c; }
   .studio { border-color: rgba(255, 255, 255, 0.06); background: #0f1015; }
-  .recCard, .studioNotes, .faqItem { border-color: rgba(255, 255, 255, 0.08); background: #16171e; }
+  .recCard, .studioNotes, .faqItem, .heardCard { border-color: rgba(255, 255, 255, 0.08); background: #16171e; }
   .studioTitle, .faqItem summary { color: #e8eaf0; }
   .seo { border-color: rgba(255, 255, 255, 0.08); }
   .seoText { color: #b7bac8; .h2, h3 { color: #e8eaf0; } }
   .faqItem p { color: #9ea2b3; }
+  .heardLine { color: #b7bac8; }
+  .noise { color: #5c5e6c; }
   .photoDone { background: rgba(22, 23, 30, 0.9); color: #6ee7b7; }
   .final { background: #16171e; .cta { background: #e8eaf0; } }
   .stepNum { background: #e8eaf0; color: #14151c; }
