@@ -4502,6 +4502,32 @@
           "t": "math",
           "v": "S = \\int_{1-\\sqrt{5}}^{1+\\sqrt{5}} \\bigl(2x - x^2 + 4\\bigr)\\,dx = \\dfrac{20\\sqrt{5}}{3}"
         }
+      ],
+      "heardTitle": "Hearing now",
+      "heard": [
+        {
+          "v": "okay, moving on — the area between curves"
+        },
+        {
+          "v": "quiet down at the back, please",
+          "noise": true
+        },
+        {
+          "v": "if f lies above g on the interval from a to b"
+        },
+        {
+          "v": "then the area is the integral of f minus g"
+        },
+        {
+          "v": "Subtitles by the Amara.org community",
+          "noise": true
+        },
+        {
+          "v": "example: f equals two x, g is x squared minus four"
+        },
+        {
+          "v": "the limits are the intersection points, look at the board"
+        }
       ]
     },
     "seo": {
