@@ -1,6 +1,6 @@
 'use client'
 
-import { ART_PRESETS, MAX_COVER_BYTES, PASTEL_PRESETS, PRESET_PREFIX, type CoverPreset } from '@/shared/lib/tutorFiles/covers'
+import { ART_PRESETS, MAX_COVER_BYTES, PASTEL_PRESETS, PHOTO_PRESETS, PRESET_PREFIX, type CoverPreset } from '@/shared/lib/tutorFiles/covers'
 import { uploadFile } from '@/shared/lib/uploadFile'
 import { useTranslations } from 'next-intl'
 import { useRef, useState } from 'react'
@@ -15,6 +15,36 @@ interface CoverPickerModalProps {
   folder: { id: string; name: string; cover: string | null }
   onClose: () => void
   onSaved: () => void
+}
+
+/** The preset swatches (pastel / artwork / landscapes), shared by the cover picker and the create-folder dialog. */
+export function CoverPresetGrid({ folderId, value, onChange }: { folderId: string; value: string | null; onChange: (v: string) => void }) {
+  const t = useTranslations('files')
+  const section = (label: string, presets: CoverPreset[]) => (
+    <>
+      <div className={styles.label}>{label}</div>
+      <div className={styles.grid}>
+        {presets.map(preset => {
+          const id = `${PRESET_PREFIX}${preset.id}`
+          const selected = value === id
+          return (
+            <button key={preset.id} type="button" className={`${styles.swatch} ${selected ? styles.selected : ''}`} onClick={() => onChange(id)} aria-label={preset.id} aria-pressed={selected}>
+              <FolderShape folderId={folderId} cover={id} className={styles.swatchShape}>
+                {selected && <span className={styles.tick}><FilesCheckIcon size={12} strokeWidth={3} /></span>}
+              </FolderShape>
+            </button>
+          )
+        })}
+      </div>
+    </>
+  )
+  return (
+    <>
+      {section(t('coverPastel'), PASTEL_PRESETS)}
+      {section(t('coverArt'), ART_PRESETS)}
+      {section(t('coverPhotos'), PHOTO_PRESETS)}
+    </>
+  )
 }
 
 /** Pick a folder background: a preset (pastel / artwork) or the tutor's own image. */
@@ -54,25 +84,6 @@ export function CoverPickerModal({ folder, onClose, onSaved }: CoverPickerModalP
     }
   }
 
-  const swatch = (preset: CoverPreset) => {
-    const id = `${PRESET_PREFIX}${preset.id}`
-    const selected = value === id
-    return (
-      <button
-        key={preset.id}
-        type="button"
-        className={`${styles.swatch} ${selected ? styles.selected : ''}`}
-        onClick={() => setValue(id)}
-        aria-label={preset.id}
-        aria-pressed={selected}
-      >
-        <FolderShape folderId={folder.id} cover={id} className={styles.swatchShape}>
-          {selected && <span className={styles.tick}><FilesCheckIcon size={12} strokeWidth={3} /></span>}
-        </FolderShape>
-      </button>
-    )
-  }
-
   const isImage = !!value && !value.startsWith(PRESET_PREFIX)
 
   return (
@@ -96,11 +107,7 @@ export function CoverPickerModal({ folder, onClose, onSaved }: CoverPickerModalP
         </FolderShape>
       </div>
 
-      <div className={styles.label}>{t('coverPastel')}</div>
-      <div className={styles.grid}>{PASTEL_PRESETS.map(swatch)}</div>
-
-      <div className={styles.label}>{t('coverArt')}</div>
-      <div className={styles.grid}>{ART_PRESETS.map(swatch)}</div>
+      <CoverPresetGrid folderId={folder.id} value={value} onChange={setValue} />
 
       <div className={styles.label}>{t('coverOwn')}</div>
       <button type="button" className={`${styles.upload} ${isImage ? styles.uploadActive : ''}`} onClick={() => inputRef.current?.click()} disabled={busy}>

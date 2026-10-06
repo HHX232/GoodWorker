@@ -1,9 +1,10 @@
 import { prisma } from '@/shared/prisma/prisma'
+import { isAllowedCover } from '@/shared/lib/tutorFiles/covers'
 import { NextRequest, NextResponse } from 'next/server'
 import { getFilesSessionUser, hasStorageAccess, vipRequiredResponse } from '@/shared/lib/tutorFiles/access'
 import { assertFolderDepthAllowed, assertNotUnderRestrictedFolder, FolderDepthExceededError, RestrictedAncestorError } from '@/shared/lib/tutorFiles/storage'
 
-// POST /api/tutor-files/folders {name, parentId?} — creates a TutorFolder for the
+// POST /api/tutor-files/folders {name, parentId?, cover?} — creates a TutorFolder for the
 // current teacher. `ancestorIds` is computed once from the parent
 // (`[...parent.ancestorIds, parent.id]`) and never recomputed later
 // (interfaces.md "Правило видимости"). Root folders (no parentId) have
@@ -17,6 +18,10 @@ export async function POST(req: NextRequest) {
     const name = typeof body?.name === 'string' ? body.name.trim() : ''
     const parentId = typeof body?.parentId === 'string' ? body.parentId : null
     if (!name) return NextResponse.json({ error: 'name required' }, { status: 400 })
+    const cover = typeof body?.cover === 'string' ? body.cover : null
+    if (cover && !isAllowedCover(cover, process.env.NEXT_PUBLIC_S3_PUBLIC_URL)) {
+      return NextResponse.json({ error: 'INVALID_COVER' }, { status: 400 })
+    }
     if (!(await hasStorageAccess(user.id))) return vipRequiredResponse()
 
     let ancestorIds: string[] = []
@@ -39,7 +44,7 @@ export async function POST(req: NextRequest) {
     }
 
     const folder = await prisma.tutorFolder.create({
-      data: { teacherId: user.id, name, parentId, ancestorIds },
+      data: { teacherId: user.id, name, parentId, ancestorIds, cover },
     })
 
     return NextResponse.json({ folder })

@@ -31,7 +31,16 @@ export const ART_PRESETS: CoverPreset[] = [
   { id: 'graphite', background: 'radial-gradient(80% 70% at 85% 10%, #6D7390 0%, transparent 60%), linear-gradient(160deg, #3A3F55 0%, #121420 100%)', dark: true },
 ]
 
-export const COVER_PRESETS: CoverPreset[] = [...PASTEL_PRESETS, ...ART_PRESETS]
+// Landscape photos, pre-compressed (720x540 webp) and uploaded once to
+// `tutor-file-covers/templates/` in the bucket.
+const PHOTO_BASE = (process.env.NEXT_PUBLIC_S3_PUBLIC_URL ?? '').replace(/\/$/, '')
+export const PHOTO_PRESETS: CoverPreset[] = Array.from({ length: 10 }, (_, i) => ({
+  id: `landscape-${i + 1}`,
+  background: `center / cover no-repeat url("${PHOTO_BASE}/tutor-file-covers/templates/landscape-${i + 1}.webp")`,
+  dark: true,
+}))
+
+export const COVER_PRESETS: CoverPreset[] = [...PASTEL_PRESETS, ...ART_PRESETS, ...PHOTO_PRESETS]
 const PRESET_BY_ID = new Map(COVER_PRESETS.map(p => [p.id, p]))
 
 export const PRESET_PREFIX = 'preset:'
