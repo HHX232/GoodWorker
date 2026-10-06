@@ -14,7 +14,7 @@ import { useEffect, useMemo, useRef, useState, type DragEvent, type FormEvent, t
 import { toast } from 'sonner'
 import { FileCard } from '../Cards/FileCard'
 import { FolderCard, NewFolderCard } from '../Cards/FolderCard'
-import { CoverPickerModal } from '../CoverPickerModal/CoverPickerModal'
+import { CoverPickerModal, CoverPresetGrid } from '../CoverPickerModal/CoverPickerModal'
 import { FilePreviewModal } from '../FilePreviewModal/FilePreviewModal'
 import { ReviewModal } from '../ReviewModal/ReviewModal'
 
@@ -660,6 +660,7 @@ function FolderNameDialog({ dialog, parentId, onClose, onDone, errorText }: {
   const [name, setName] = useState(dialog.mode === 'rename' ? dialog.folder.name : '')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [cover, setCover] = useState<string | null>(null)
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
@@ -668,7 +669,7 @@ function FolderNameDialog({ dialog, parentId, onClose, onDone, errorText }: {
     setBusy(true)
     setError(null)
     try {
-      if (dialog.mode === 'create') await filesFetch('/api/tutor-files/folders', jsonInit('POST', { name: trimmed, parentId }))
+      if (dialog.mode === 'create') await filesFetch('/api/tutor-files/folders', jsonInit('POST', { name: trimmed, parentId, cover }))
       else await filesFetch(`/api/tutor-files/folders/${dialog.folder.id}`, jsonInit('PATCH', { name: trimmed }))
       onDone()
     } catch (err) {
@@ -685,6 +686,7 @@ function FolderNameDialog({ dialog, parentId, onClose, onDone, errorText }: {
     >
       <form onSubmit={submit} className={styles.nameForm}>
         <input className={ui.input} value={name} onChange={e => setName(e.target.value)} placeholder={t('folderNamePlaceholder')} maxLength={120} autoFocus />
+        {dialog.mode === 'create' && <div className={styles.nameCovers}><CoverPresetGrid folderId="new" value={cover} onChange={setCover} /></div>}
         {error && <div className={ui.error} role="alert">{error}</div>}
         <div className={styles.nameActions}>
           <button type="button" className={ui.btn} onClick={e => { e.stopPropagation(); onClose() }}>{t('cancel')}</button>
