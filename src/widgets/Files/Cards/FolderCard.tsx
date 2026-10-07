@@ -7,6 +7,7 @@ import { FilesCoverIcon, FilesDeadlineIcon, FilesDeleteIcon, FilesPlusIcon, File
 import { formatDeadline } from '../lib'
 import { AvatarStack } from './AvatarStack'
 import styles from './Cards.module.scss'
+import { ProgressLines } from './ProgressLines'
 import { FolderShape } from './FolderShape'
 
 export interface FolderCardProps {
@@ -49,10 +50,18 @@ export function FolderCard({ folder, onOpen, onShare, onCover, onRename, onDelet
         </div>
         <div className={styles.folderName} title={folder.name}>{folder.name}</div>
         {hint && <div className={styles.folderHint} title={hint}>{hint}</div>}
-        <div className={styles.folderFoot}>
-          <AvatarStack people={folder.sharedWith} />
-          <span className={styles.folderCount}>{t('itemsCount', { count: folder.itemCount })}</span>
-        </div>
+        {folder.progress ? (
+          // Homework folder (teacher): progress lines left, avatars right; the item count moves into the lines' popup.
+          <div className={`${styles.folderFoot} ${styles.folderFootProgress}`}>
+            <ProgressLines progress={folder.progress} itemCount={folder.itemCount} />
+            <AvatarStack people={folder.sharedWith} />
+          </div>
+        ) : (
+          <div className={styles.folderFoot}>
+            <AvatarStack people={folder.sharedWith} />
+            <span className={styles.folderCount}>{t('itemsCount', { count: folder.itemCount })}</span>
+          </div>
+        )}
       </FolderShape>
     </div>
   )

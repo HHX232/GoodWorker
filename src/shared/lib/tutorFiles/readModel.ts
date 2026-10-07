@@ -2,7 +2,7 @@ import type { TutorFile, TutorFileReview, TutorFolder } from '@prisma/client'
 
 /** A TutorFile as queries return it: the big `contentText` is omitted by default (shared/prisma/prisma.ts). */
 export type TutorFileRow = Omit<TutorFile, 'contentText'>
-import type { FilesPerson, LibraryFile, LibraryFolder, TreeNode } from '@/shared/types/TutorFiles/tutorFiles.types'
+import type { FilesPerson, LibraryFile, LibraryFolder, SubmissionProgress, TreeNode } from '@/shared/types/TutorFiles/tutorFiles.types'
 
 // Row → client-shape mappers shared by GET /library and GET /search, so a
 // search hit renders with the same card data (counts, grant avatars) as the
@@ -38,7 +38,7 @@ function people(itemId: string, grants: GrantRow[], opened: OpenLookup): FilesPe
 }
 export const grantStudentSelect = { student: { select: { id: true, name: true, avatarUrl: true } } }
 
-export function toFolder(f: TutorFolder, itemCount: number, grants: GrantRow[] = [], opened: OpenLookup = noOpens): LibraryFolder {
+export function toFolder(f: TutorFolder, itemCount: number, grants: GrantRow[] = [], opened: OpenLookup = noOpens, progress: SubmissionProgress | null = null): LibraryFolder {
   return {
     id: f.id,
     name: f.name,
@@ -49,6 +49,7 @@ export function toFolder(f: TutorFolder, itemCount: number, grants: GrantRow[] =
     submissionDeadline: f.submissionDeadline?.toISOString() ?? null,
     itemCount,
     sharedWith: people(f.id, grants, opened),
+    progress,
     updatedAt: f.updatedAt.toISOString(),
   }
 }

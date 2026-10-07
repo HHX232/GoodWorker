@@ -13,6 +13,25 @@ export interface FilesPerson {
   availableUntil?: string | null
 }
 
+/**
+ * Teacher view, homework folders only: how far the submissions are. On a
+ * submissions folder (`unit: 'students'`) the units are the students holding
+ * access; on a student's personal subfolder (`unit: 'files'`) they are that
+ * student's uploads. `total` = done + waiting + working + notStarted.
+ */
+export interface SubmissionProgress {
+  unit: 'students' | 'files'
+  /** Submitted and accepted. */
+  done: number
+  /** Submitted, not reviewed yet. */
+  waiting: number
+  /** Sent back for revision — the student is working on it. */
+  working: number
+  /** Nothing submitted (students only). */
+  notStarted: number
+  total: number
+}
+
 export interface LibraryFolder {
   id: string
   name: string
@@ -28,6 +47,8 @@ export interface LibraryFolder {
   itemCount: number
   /** Teacher view only: students holding a direct grant. */
   sharedWith: FilesPerson[]
+  /** Teacher view, homework folders only. */
+  progress?: SubmissionProgress | null
   updatedAt: string
 }
 

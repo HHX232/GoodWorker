@@ -1,0 +1,89 @@
+// Homework progress lines on a folder card. Segments share one row; the popup
+// mirrors AvatarStack's tooltip (dark chip above, inverted in the dark theme).
+
+.wrap {
+  position: relative;
+  z-index: 3; // above the card's stretched hit target, so hover reaches the bar
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  pointer-events: auto;
+  outline: none;
+  cursor: default;
+
+  &:focus-visible { outline: 2px solid #534AB7; outline-offset: 3px; border-radius: 6px; }
+}
+
+.bar {
+  display: flex;
+  gap: 3px;
+  width: 86px;
+}
+
+.seg {
+  flex-basis: 0;
+  min-width: 10px;
+  height: 6px;
+  border-radius: 3px;
+}
+
+.done { background: #16a34a; }
+.active { background: #F2B93B; }
+.idle { background: #CBCDDB; }
+
+.tip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 190px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #141416;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.35;
+  white-space: nowrap;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.25);
+  pointer-events: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 16px;
+    border: 5px solid transparent;
+    border-top-color: #141416;
+  }
+
+  .wrap:hover &, .wrap:focus-visible & { display: flex; }
+}
+
+.tipTitle { font-weight: 600; }
+.tipMuted { color: #ABABB8; }
+
+.row { display: flex; align-items: center; gap: 8px; }
+.dot { flex: none; width: 8px; height: 8px; border-radius: 50%; }
+.label { flex: 1; }
+.count { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.tipFoot {
+  margin-top: 2px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  color: #ABABB8;
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .done { background: #22c55e; }
+  .idle { background: #4b5060; }
+  .tip { background: #e8eaf0; color: #141416; &::after { border-top-color: #e8eaf0; } }
+  .tipMuted, .tipFoot { color: #5b6070; }
+  .tipFoot { border-top-color: rgba(20, 20, 22, 0.14); }
+}
+
+// Folder covers can be dark artwork: the grey track needs to stay visible on them.
+:global([data-dark]) .idle { background: rgba(255, 255, 255, 0.4); }

@@ -4,6 +4,7 @@ import type { LibraryResponse } from '@/shared/types/TutorFiles/tutorFiles.types
 import { hasStorageAccess } from './access'
 import { grantStudentSelect, loadOpens, submissionDeadlineFor, toFile, toFolder, toTreeNode } from './readModel'
 import { getTeacherStorageLimits } from './storage'
+import { loadSubmissionProgress } from './submissionProgress'
 
 export type LibraryError = { status: 403 | 404; error: string }
 
@@ -39,7 +40,7 @@ export async function buildTeacherLibrary(teacherId: string, folderId: string | 
     }),
   ])
 
-  const opened = await loadOpens(folders.map(f => f.id), files.map(f => f.id))
+  const [opened, progress] = await Promise.all([loadOpens(folders.map(f => f.id), files.map(f => f.id)), loadSubmissionProgress(folders)])
   const deadline = submissionDeadlineFor(current ?? null, byId)
   return {
     role: 'TEACHER',
@@ -47,7 +48,7 @@ export async function buildTeacherLibrary(teacherId: string, folderId: string | 
     breadcrumbs: (current?.ancestorIds ?? []).map(id => byId.get(id)).filter((f): f is TutorFolder => !!f).map(f => ({ id: f.id, name: f.name })),
     groups: [{
       teacher: null,
-      folders: folders.map(f => toFolder(f, f._count.children + f._count.files, f.grants, opened)),
+      folders: folders.map(f => toFolder(f, f._count.children + f._count.files, f.grants, opened, progress.get(f.id) ?? null)),
       files: files.map(f => toFile(f, f.grants, opened, deadline)),
     }],
     tree: allFolders.map(f => toTreeNode(f, true)),

@@ -28,7 +28,7 @@
 
 .folderTop {
   position: relative;
-  z-index: 2;
+  z-index: 4; // above the footer row (avatars/progress are z 3) so the ⋮ menu is never covered
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -91,6 +91,8 @@
   min-height: 34px;
   pointer-events: none;
 }
+
+.folderFootProgress { justify-content: space-between; }
 
 .folderCount { font-size: 12px; opacity: 0.7; white-space: nowrap; margin-left: auto; }
 
