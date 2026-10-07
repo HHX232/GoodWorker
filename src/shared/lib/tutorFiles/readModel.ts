@@ -28,7 +28,7 @@ export async function loadOpens(folderIds: string[], fileIds: string[]): Promise
   return (itemId, studentId) => map.get(`${itemId}:${studentId}`)
 }
 
-function people(itemId: string, grants: GrantRow[], opened: OpenLookup): FilesPerson[] {
+export function people(itemId: string, grants: GrantRow[], opened: OpenLookup): FilesPerson[] {
   return grants.map(g => ({
     ...g.student,
     firstOpenedAt: opened(itemId, g.student.id)?.toISOString() ?? null,
