@@ -1,37 +1,85 @@
 .wrap {
   position: relative;
+  flex-shrink: 0;
+  max-width: 220px;
+  color: #1a1a24;
+}
+
+.trigger {
   display: flex;
   align-items: center;
-  flex-shrink: 0;
+  gap: 8px;
+  width: 100%;
   height: 40px;
-  max-width: 220px;
+  padding: 0 14px 0 12px; // right gap keeps the chevron off the border
   border: 1px solid #E3E3EC;
   border-radius: 12px;
   background: #fff;
-  color: #1a1a24;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
 
-  &:focus-within { border-color: #534AB7; box-shadow: 0 0 0 3px rgba(83, 74, 183, 0.12); }
-
-  select {
-    width: 100%;
-    height: 100%;
-    padding: 0 12px 0 34px;
-    border: 0;
-    border-radius: 12px;
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    font-size: 14px;
-    text-overflow: ellipsis;
-    outline: none;
-    cursor: pointer;
-  }
+  &:hover { border-color: #cfcfdd; }
+  &:focus-visible, &[aria-expanded='true'] { border-color: #534AB7; box-shadow: 0 0 0 3px rgba(83, 74, 183, 0.12); outline: none; }
 }
-.icon { position: absolute; left: 12px; color: #8a8a99; pointer-events: none; }
-.on { border-color: #534AB7; background: #F4F3FF; .icon { color: #534AB7; } }
+
+.icon { flex: none; color: #8a8a99; }
+.value { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chevron { flex: none; color: #8a8a99; transition: transform 0.2s ease; }
+.chevronOpen { transform: rotate(180deg); }
+.on .trigger { border-color: #534AB7; background: #F4F3FF; }
+.on .icon, .on .chevron { color: #534AB7; }
+
+.panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 30;
+  min-width: max(100%, 280px);
+  max-width: 340px;
+  max-height: 320px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  overflow-y: auto;
+  border: 1px solid #E3E3EC;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 12px 32px rgba(20, 20, 40, 0.14);
+  animation: panelIn 0.14s ease-out;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  font-size: 14px;
+  line-height: 1.3;
+  cursor: pointer;
+}
+.optionLabel { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.optionActive { background: #F4F3FF; }
+.optionSelected { color: #534AB7; font-weight: 600; }
+.check { flex: none; color: #534AB7; }
+
+@keyframes panelIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .panel { animation: none; } .chevron { transition: none; } }
+
+@media (max-width: 900px) { .wrap { max-width: none; flex: 1 1 200px; } .panel { min-width: 100%; max-width: none; } }
 
 :global(html.theme-dark) {
-  .wrap { border-color: rgba(255, 255, 255, 0.1); background: #1b1c24; color: #e8eaf0; select option { background: #1b1c24; } }
-  .on { border-color: #8b84e8; background: rgba(139, 132, 232, 0.14); .icon { color: #b3aef5; } }
+  .wrap { color: #e8eaf0; }
+  .trigger { border-color: rgba(255, 255, 255, 0.1); background: #1b1c24; &:hover { border-color: rgba(255, 255, 255, 0.2); } }
+  .trigger:focus-visible, .trigger[aria-expanded='true'] { border-color: #8b84e8; box-shadow: 0 0 0 3px rgba(139, 132, 232, 0.2); }
+  .icon, .chevron { color: #9a9cab; }
+  .on .trigger { border-color: #8b84e8; background: rgba(139, 132, 232, 0.14); }
+  .on .icon, .on .chevron { color: #b3aef5; }
+  .panel { border-color: rgba(255, 255, 255, 0.1); background: #1b1c24; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5); }
+  .optionActive { background: rgba(139, 132, 232, 0.16); }
+  .optionSelected, .check { color: #b3aef5; }
 }
