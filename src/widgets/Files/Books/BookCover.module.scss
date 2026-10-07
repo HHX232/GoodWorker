@@ -82,7 +82,8 @@
 .base {
   position: relative;
   height: 4.8cqw;
-  margin-top: -0.2cqw;
+  width: 96%; // exactly the cover's width — the shelf never sticks out past the spine or the right edge
+  margin: -0.2cqw auto 0;
   border-radius: 0.8cqw 0.8cqw 3.4cqw 3.4cqw;
   background: var(--spine);
   overflow: hidden;

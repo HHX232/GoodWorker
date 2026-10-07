@@ -1,4 +1,5 @@
 // Thin wrappers over the books API (app/api/tutor-files/books/**). Errors are FilesApiError(status, code) like the rest of Files.
+import { parseSpineColor } from '@/shared/lib/tutorFiles/bookModel'
 import type { LibraryBook } from '@/shared/types/TutorFiles/tutorFiles.types'
 import { filesFetch, FilesApiError, jsonInit } from '../lib'
 import { blobToDataUrl } from './coverCanvas'
@@ -64,22 +65,27 @@ export const bookContentUrl = (id: string) => `/api/tutor-files/files/${id}/cont
 
 export type CoverCheck = 'cover' | 'plain' | 'unavailable'
 
+/** The verdict, plus the spine colour the model suggested (valid `#rrggbb` only). */
+export interface CoverCheckResult { verdict: CoverCheck; spineColor?: string }
+
 /** Server-side vision check of page 1. Any failure (no key, timeout, network) is "unavailable", never an error. */
-export async function checkBookCover(page: Blob, signal?: AbortSignal): Promise<CoverCheck> {
+export async function checkBookCover(page: Blob, signal?: AbortSignal): Promise<CoverCheckResult> {
   try {
     const dataUrl = await blobToDataUrl(page)
     const timeout = AbortSignal.timeout(20_000) // the server gives up after 12 s; this only guards a hung connection
     // AbortSignal.any is missing before Safari 17.4 — then the timeout alone guards the request (cancel just drops the late answer in the modal).
     const combined = signal && typeof AbortSignal.any === 'function' ? AbortSignal.any([signal, timeout]) : timeout
-    const res = await filesFetch<{ isCover?: boolean; error?: string }>('/api/tutor-files/books/cover-check', {
+    const res = await filesFetch<{ isCover?: boolean; spineColor?: string; error?: string }>('/api/tutor-files/books/cover-check', {
       ...jsonInit('POST', { imageBase64: dataUrl.slice(dataUrl.indexOf(',') + 1), mimeType: page.type || 'image/jpeg' }),
       signal: combined,
     })
-    return typeof res.isCover === 'boolean' ? (res.isCover ? 'cover' : 'plain') : 'unavailable'
+    if (typeof res.isCover !== 'boolean') return { verdict: 'unavailable' }
+    const spineColor = parseSpineColor(res.spineColor) ?? undefined
+    return { verdict: res.isCover ? 'cover' : 'plain', spineColor }
   } catch (e) {
     // Network, abort, timeout and a server-side UNAVAILABLE are expected; a 4xx (bad request, no access) is worth a trace.
     if (e instanceof FilesApiError) console.warn('[checkBookCover] request refused', e.status, e.code)
-    return 'unavailable'
+    return { verdict: 'unavailable' }
   }
 }
 

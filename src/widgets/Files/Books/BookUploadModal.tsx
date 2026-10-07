@@ -10,9 +10,9 @@ import { FilesCheckIcon, FilesCoverIcon, FilesUploadIcon, FilesUndoIcon } from '
 import { formatBytes } from '../lib'
 import ui from '../ui.module.scss'
 import { BookCover } from './BookCover'
-import { checkBookCover, FilesApiError, uploadBook, type CoverCheck } from './bookFetch'
+import { checkBookCover, FilesApiError, uploadBook, type CoverCheckResult, type CoverCheck } from './bookFetch'
 import { BookModal } from './BookModal'
-import { CoverEditor, type CoverValue } from './CoverEditor'
+import { CoverEditor, SpineColorPicker, type CoverValue } from './CoverEditor'
 import { blobToDataUrl } from './coverCanvas'
 import { renderPdfFirstPage } from './renderPdfFirstPage'
 import styles from './BookUploadModal.module.scss'
@@ -63,6 +63,7 @@ function UploadFlow({ onClose, onUploaded, initialFile }: { onClose: () => void;
   const photoInput = useRef<HTMLInputElement>(null)
   const run = useRef(0) // bumps on cancel / a new file — a late answer from the old run is dropped
   const abort = useRef<AbortController | null>(null)
+  const colorTouched = useRef(false) // the user chose a colour — the model's suggestion no longer overrides it
   const uploaded = useRef(false) // POST /books succeeded — never upload again from this modal
 
   useEffect(() => () => { run.current++; abort.current?.abort() }, [])
@@ -85,7 +86,7 @@ function UploadFlow({ onClose, onUploaded, initialFile }: { onClose: () => void;
     if (run.current !== id) return
     // Anything that fails from here on (FileReader, the request) ends in "could not check", never in an endless "checking".
     let ready: { blob: Blob; previewUrl: string } | null = null
-    let result: CoverCheck = 'unavailable'
+    let checked: CoverCheckResult = { verdict: 'unavailable' }
     try {
       if (first) {
         const [thumb, coverUrl] = await Promise.all([blobToDataUrl(first.page), blobToDataUrl(first.cover)])
@@ -94,19 +95,20 @@ function UploadFlow({ onClose, onUploaded, initialFile }: { onClose: () => void;
         setPageThumb(thumb)
         setPage1(ready)
         setNumPages(first.numPages)
-        result = await checkBookCover(first.page, ctrl.signal)
+        checked = await checkBookCover(first.page, ctrl.signal)
       } else {
         setNumPages(null)
       }
     } catch {
-      result = 'unavailable'
+      checked = { verdict: 'unavailable' }
       ready = null
     }
     if (run.current !== id) return
     const found = ready
+    const { verdict: result, spineColor } = checked
     setVerdict(result)
     setCover(c => ({
-      ...c,
+      spineColor: spineColor && !colorTouched.current ? spineColor : c.spineColor,
       image: result === 'cover' && found ? { kind: 'found', previewUrl: found.previewUrl, getBlob: async () => found.blob } : null,
     }))
     setStep('result')
@@ -117,6 +119,7 @@ function UploadFlow({ onClose, onUploaded, initialFile }: { onClose: () => void;
     if (!isPdf(f)) { setPickError(t('booksKitNotPdf', { name: f.name })); return }
     const name = titleOf(f.name) || f.name
     setPickError(null)
+    colorTouched.current = false
     setPhoto(null)
     setEditorSeen(false)
     setFileSeq(n => n + 1)
@@ -282,6 +285,10 @@ function UploadFlow({ onClose, onUploaded, initialFile }: { onClose: () => void;
               </>
             )}
           </div>
+          <div className={styles.colors}>
+            <span className={styles.lbl}>{t('booksKitColorTitle')}</span>
+            <SpineColorPicker value={cover.spineColor} onChange={c => { colorTouched.current = true; setCover(v => ({ ...v, spineColor: c })) }} />
+          </div>
         </div>
       </div>
     )
@@ -325,7 +332,7 @@ function UploadFlow({ onClose, onUploaded, initialFile }: { onClose: () => void;
       {body}
       {editorSeen && (
         <div style={step === 'edit' ? undefined : { display: 'none' }}>
-          <CoverEditor key={fileSeq} title={preview.title} value={cover} onChange={setCover} loadPage1={page1 ? async () => page1 : undefined} initialPhoto={photo} />
+          <CoverEditor key={fileSeq} title={preview.title} value={cover} onChange={setCover} onColorPick={() => { colorTouched.current = true }} loadPage1={page1 ? async () => page1 : undefined} initialPhoto={photo} />
         </div>
       )}
       <input ref={pdfInput} type="file" accept="application/pdf,.pdf" hidden onChange={e => { pickPdf(e.target.files?.[0]); e.target.value = '' }} />

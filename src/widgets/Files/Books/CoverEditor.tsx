@@ -31,6 +31,8 @@ export interface CoverEditorProps {
   loadPage1?: () => Promise<{ blob: Blob; previewUrl: string }>
   /** A picture already chosen by the caller (the upload modal's "Загрузить обложку") — opened on mount. */
   initialPhoto?: File | null
+  /** Fires on every click in the colour picker, even when the colour does not change. */
+  onColorPick?: () => void
 }
 
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024
@@ -38,8 +40,30 @@ const COLOR_KEYS = ['booksKitColor0', 'booksKitColor1', 'booksKitColor2', 'books
 
 interface Photo { src: CoverSource; crop: CoverCrop }
 
+/** The preset swatches + a custom colour — shared by the editor and the upload modal's result step. */
+export function SpineColorPicker({ value, onChange }: { value: string; onChange: (color: string) => void }) {
+  const t = useTranslations('files')
+  const spine = safeSpine(value)
+  return (
+    <div className={styles.sw} role="group" aria-label={t('booksKitColorTitle')}>
+      {SPINE_PRESETS.map((c, i) => {
+        const on = spine.toLowerCase() === c
+        return (
+          <button key={c} type="button" className={styles.swb} style={{ background: c, color: inkOn(c) }} aria-pressed={on} aria-label={t(COLOR_KEYS[i])} title={t(COLOR_KEYS[i])} onClick={() => onChange(c)}>
+            {on && <FilesCheckIcon size={16} strokeWidth={3} />}
+          </button>
+        )
+      })}
+      <label className={styles.swc}>
+        <input type="color" value={spine} onChange={e => onChange(e.target.value)} aria-label={t('booksKitColorCustom')} />
+        {t('booksKitColorCustom')}
+      </label>
+    </div>
+  )
+}
+
 /** Colour of the book + a photo framed to 2:3 (zoom, shift), with a live preview of the finished book. */
-export function CoverEditor({ title, value, onChange, loadPage1, initialPhoto }: CoverEditorProps) {
+export function CoverEditor({ title, value, onChange, loadPage1, initialPhoto, onColorPick }: CoverEditorProps) {
   const t = useTranslations('files')
   const [photo, setPhoto] = useState<Photo | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -129,20 +153,7 @@ export function CoverEditor({ title, value, onChange, loadPage1, initialPhoto }:
         <section>
           <h3>{t('booksKitColorTitle')}</h3>
           <p className={styles.hint}>{t('booksKitColorHint')}</p>
-          <div className={styles.sw} role="group" aria-label={t('booksKitColorTitle')}>
-            {SPINE_PRESETS.map((c, i) => {
-              const on = spine.toLowerCase() === c
-              return (
-                <button key={c} type="button" className={styles.swb} style={{ background: c, color: inkOn(c) }} aria-pressed={on} aria-label={t(COLOR_KEYS[i])} title={t(COLOR_KEYS[i])} onClick={() => onChange({ ...value, spineColor: c })}>
-                  {on && <FilesCheckIcon size={16} strokeWidth={3} />}
-                </button>
-              )
-            })}
-            <label className={styles.swc}>
-              <input type="color" value={spine} onChange={e => onChange({ ...value, spineColor: e.target.value })} aria-label={t('booksKitColorCustom')} />
-              {t('booksKitColorCustom')}
-            </label>
-          </div>
+          <SpineColorPicker value={value.spineColor} onChange={c => { onColorPick?.(); onChange({ ...value, spineColor: c }) }} />
         </section>
 
         <section>
