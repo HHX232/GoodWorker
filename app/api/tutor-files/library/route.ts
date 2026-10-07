@@ -2,6 +2,7 @@ import { prisma } from '@/shared/prisma/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import type { TutorFolder } from '@prisma/client'
 import { canStudentSee, getFilesSessionUser, loadStudentVisibility } from '@/shared/lib/tutorFiles/access'
+import { loadBooksFor } from '@/shared/lib/tutorFiles/books'
 import { buildTeacherLibrary } from '@/shared/lib/tutorFiles/teacherLibrary'
 import type { LibraryGroup, LibraryResponse } from '@/shared/types/TutorFiles/tutorFiles.types'
 import { studentItemCounter, submissionDeadlineFor, toFile, toFolder, toTreeNode } from '@/shared/lib/tutorFiles/readModel'
@@ -38,9 +39,9 @@ export async function GET(req: NextRequest) {
       const groups: LibraryGroup[] = teachers.map(teacher => ({
         teacher,
         folders: visibleFolders.filter(f => f.teacherId === teacher.id && !(f.parentId && visibleById.has(f.parentId))).map(f => toFolder(f, countOf(f.id))),
-        files: visibleFiles.filter(f => f.teacherId === teacher.id && !(f.folderId && visibleById.has(f.folderId))).map(f => toFile(f)),
+        files: visibleFiles.filter(f => !f.isBook && f.teacherId === teacher.id && !(f.folderId && visibleById.has(f.folderId))).map(f => toFile(f)),
       }))
-      const body: LibraryResponse = { role: 'STUDENT', folder: null, breadcrumbs: [], groups, tree, teachers, canUpload: false, isVip: false, quotaBytes: 0 }
+      const body: LibraryResponse = { role: 'STUDENT', folder: null, breadcrumbs: [], groups, tree, teachers, books: await loadBooksFor(user, visibleFiles), canUpload: false, isVip: false, quotaBytes: 0 }
       return NextResponse.json(body)
     }
 
@@ -59,10 +60,11 @@ export async function GET(req: NextRequest) {
       groups: [{
         teacher: teacherById.get(current.teacherId) ?? null,
         folders: visibleFolders.filter(f => f.parentId === current.id).map(f => toFolder(f, countOf(f.id))),
-        files: visibleFiles.filter(f => f.folderId === current.id).map(f => toFile(f, [], undefined, deadline)),
+        files: visibleFiles.filter(f => !f.isBook && f.folderId === current.id).map(f => toFile(f, [], undefined, deadline)),
       }],
       tree,
       teachers,
+      books: [],
       canUpload: current.restrictedToStudentId === user.id,
       isVip: false,
       quotaBytes: 0,

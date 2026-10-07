@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     if (fileGuard?.response) return fileGuard.response
     const folder = folderGuard?.folder
     const file = fileGuard?.file
-    const itemName = (folder ?? file)!.name
+    const itemName = file?.isBook ? (file.bookTitle ?? file.name) : (folder ?? file)!.name
     // A student's own "учебная" subfolder already belongs to exactly one
     // student — sharing it onward would be invisible anyway (canStudentSee).
     if (folder?.restrictedToStudentId) return NextResponse.json({ error: 'Restricted folder cannot be shared' }, { status: 400 })

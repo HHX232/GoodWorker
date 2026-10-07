@@ -1,0 +1,88 @@
+.card {
+  position: relative;
+  min-width: 0;
+  width: min(100%, 150px);
+  color: #141416;
+}
+.md { width: min(100%, 150px); }
+.lg { width: min(100%, 200px); }
+
+// The whole card is one big button; the ribbon (inside the cover) keeps its own clicks.
+.hit {
+  position: absolute;
+  z-index: 1;
+  inset: -8px;
+  border: 0;
+  border-radius: 18px;
+  background: transparent;
+  cursor: pointer;
+
+  &:focus-visible { outline: 2px solid #534AB7; outline-offset: 0; }
+}
+
+.book {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
+  display: block;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card:hover .book { transform: translateY(-8px) rotate(-0.5deg); }
+
+.title {
+  margin: 16px 0 0;
+  font: 500 14px / 1.3 ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  letter-spacing: -0.01em;
+  color: inherit;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #534AB7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.prog {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #6b6e80;
+
+  b { font-weight: 700; color: #141416; }
+  .done { color: #1f7a4d; }
+}
+.bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 6px;
+  background: #f0f0f6;
+  border: 1px solid #DADCEB;
+  overflow: hidden;
+
+  i { display: block; height: 100%; background: #534AB7; border-radius: 6px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card:hover .book { transform: none; }
+  .book { transition: none; }
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .card { color: #e8eaf0; }
+  .meta { color: #a5adff; }
+  .prog { color: #9aa0b4; b { color: #e8eaf0; } .done { color: #6fd3a0; } }
+  .bar { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.12); i { background: #818cf8; } }
+  .hit:focus-visible { outline-color: #a5adff; }
+}

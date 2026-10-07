@@ -355,9 +355,71 @@ model TutorFile {
   folder         TutorFolder?      @relation(fields: [folderId], references: [id], onDelete: Cascade)
   grants         TutorFileGrant[]
   opens          TutorFileOpen[]
+  // Books ("Книги"): a PDF in the library root flagged isBook. Cover is a ready 2:3 image on S3.
+  isBook         Boolean           @default(false)
+  bookTitle      String?
+  pageCount      Int?
+  coverUrl       String?
+  // found | page1 | photo; null = typographic cover from spineColor.
+  coverKind      String?
+  spineColor     String?
+  bookSaves      TutorBookSave[]
+  bookmarks      TutorBookmark[]
+  bookProgress   TutorBookProgress[]
+  bookReads      TutorBookRead[]
 
   @@index([teacherId])
   @@index([folderId])
+  @@index([teacherId, isBook])
+}
+
+// "Мои книги" — a bookmark on a book (not a copy). ownerId is a teacher or student id.
+model TutorBookSave {
+  fileId    String
+  ownerId   String
+  ownerRole Role
+  createdAt DateTime  @default(now())
+  file      TutorFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@id([fileId, ownerId])
+}
+
+// A page bookmark inside a book (own per user).
+model TutorBookmark {
+  id        String    @id @default(uuid())
+  fileId    String
+  ownerId   String
+  ownerRole Role
+  page      Int
+  label     String?
+  createdAt DateTime  @default(now())
+  file      TutorFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@unique([fileId, ownerId, page])
+}
+
+// Where the viewer stopped reading (own per user).
+model TutorBookProgress {
+  fileId    String
+  ownerId   String
+  ownerRole Role
+  lastPage  Int
+  updatedAt DateTime  @updatedAt
+  file      TutorFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@id([fileId, ownerId])
+}
+
+// Which pages a student has read, and when — what the tutor sees as reader marks.
+model TutorBookRead {
+  fileId      String
+  studentId   String
+  page        Int
+  firstReadAt DateTime  @default(now())
+  lastReadAt  DateTime  @default(now())
+  file        TutorFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@id([fileId, studentId, page])
 }
 
 model TutorFolderGrant {

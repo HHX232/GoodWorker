@@ -312,6 +312,35 @@
   font-weight: 600;
 }
 
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 0 0 14px;
+
+  .sectionTitle { margin: 0; }
+}
+
+.allLink {
+  color: #6b6e80; // ≥4.5:1 on white at 13px
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.15s;
+
+  &:hover { color: #534AB7; }
+  &:focus-visible { outline: 2px solid #534AB7; outline-offset: 2px; border-radius: 4px; }
+}
+
+// Books are 3D covers ≈150px wide (BookCard md), so the grid packs tighter than folders.
+.bookGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  justify-items: start;
+  gap: 22px 16px;
+}
+
 .folderGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -466,7 +495,7 @@
   .kbd { display: none; }
   .title { font-size: 22px; }
   .pillLabel { display: none; }
-  .folderGrid, .fileGrid, .skeletonGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 10px; }
+  .folderGrid, .fileGrid, .skeletonGrid, .bookGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 10px; }
 }
 
 @container (max-width: 360px) {
@@ -488,6 +517,7 @@
   .pill { border-color: rgba(255, 255, 255, 0.1); background: transparent; color: #e8eaf0; svg { color: #9ea4b5; } &:hover:not(:disabled) { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.18); } }
   .pillPrimary { border-color: #e8eaf0; background: #e8eaf0; color: #14151c; svg { color: #14151c; } &:hover:not(:disabled) { background: #818cf8; border-color: #818cf8; color: #fff; svg { color: #fff; } } }
   .count { background: rgba(255, 255, 255, 0.07); color: #9ea4b5; }
+  .allLink { color: #9ea4b5; &:hover { color: #818cf8; } }
   .group + .group { border-color: rgba(255, 255, 255, 0.07); }
   .groupAvatar { background: rgba(129, 140, 248, 0.18); color: #c7cbff; }
   .banner { background: rgba(52, 211, 153, 0.1); color: #6ee7b7; }

@@ -1,0 +1,83 @@
+.qv {
+  display: grid;
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+  gap: clamp(20px, 4vw, 48px);
+  align-items: start;
+}
+
+.art {
+  display: flex;
+  justify-content: center;
+  padding: clamp(22px, 4vw, 40px);
+  border-radius: 18px;
+  background: #f5f5f7;
+  border: 1px solid #DADCEB;
+}
+
+.info { min-width: 0; }
+
+.name {
+  margin: 0;
+  font: 500 clamp(18px, 2.4vw, 23px) / 1.25 ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  letter-spacing: -0.015em;
+  color: #141416;
+  overflow-wrap: anywhere;
+}
+
+.by { margin: 6px 0 0; font-weight: 500; color: #534AB7; }
+
+.dl {
+  margin: 20px 0 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 20px;
+  font-size: 14px;
+
+  dt { color: #868897; }
+  dd { margin: 0; font-weight: 500; color: #141416; }
+}
+
+.prog {
+  margin-top: 20px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #f5f5f7;
+  border: 1px solid #DADCEB;
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #4b5563;
+
+  b { font-size: 17px; color: #141416; }
+}
+.prog .row:only-child { margin-bottom: 0; }
+.bar {
+  height: 8px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #DADCEB;
+  overflow: hidden;
+
+  i { display: block; height: 100%; background: #534AB7; border-radius: 8px; }
+}
+
+.acts { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 10px; }
+.confirm { margin: 0; font-size: 14px; }
+
+@media (max-width: 620px) {
+  .qv { grid-template-columns: 1fr; }
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .art, .prog { background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.12); }
+  .name, .dl dd, .row b { color: #e8eaf0; }
+  .by { color: #a5adff; }
+  .dl dt { color: #9aa0b4; }
+  .row { color: #b1b6c8; }
+  .bar { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.12); i { background: #818cf8; } }
+}

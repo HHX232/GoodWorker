@@ -2,6 +2,7 @@ import { prisma } from '@/shared/prisma/prisma'
 import type { TutorFolder } from '@prisma/client'
 import type { LibraryResponse } from '@/shared/types/TutorFiles/tutorFiles.types'
 import { hasStorageAccess } from './access'
+import { loadBooksFor } from './books'
 import { grantStudentSelect, loadOpens, people, submissionDeadlineFor, toFile, toFolder, toTreeNode } from './readModel'
 import { getTeacherStorageLimits } from './storage'
 import { loadSubmissionProgress } from './submissionProgress'
@@ -27,17 +28,18 @@ export async function buildTeacherLibrary(teacherId: string, folderId: string | 
     return exists ? { status: 403, error: 'Forbidden' } : { status: 404, error: 'Not found' }
   }
 
-  const [folders, files] = await Promise.all([
+  const [folders, files, books] = await Promise.all([
     prisma.tutorFolder.findMany({
       where: { teacherId, parentId: folderId },
       include: { _count: { select: { children: true, files: true } }, grants: { include: grantStudentSelect, orderBy: { grantedAt: 'asc' } } },
       orderBy: { name: 'asc' },
     }),
     prisma.tutorFile.findMany({
-      where: { teacherId, folderId },
+      where: { teacherId, folderId, isBook: false }, // books have their own section, not repeated among files
       include: { grants: { include: grantStudentSelect, orderBy: { grantedAt: 'asc' } }, review: true },
       orderBy: { createdAt: 'desc' },
     }),
+    folderId ? [] : loadBooksFor({ id: teacherId, role: 'TEACHER' }),
   ])
 
   const [opened, progress, nested] = await Promise.all([
@@ -57,6 +59,7 @@ export async function buildTeacherLibrary(teacherId: string, folderId: string | 
     }],
     tree: allFolders.map(f => toTreeNode(f, true)),
     teachers: [],
+    books,
     canUpload: isVip,
     isVip,
     quotaBytes: limits.quotaBytes,
