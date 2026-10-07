@@ -11,6 +11,9 @@
   outline: none;
   cursor: default;
 
+  // the popup must rise above the card header (badges / ⋮ menu, z 4) while it is open
+  &:hover, &:focus-visible { z-index: 5; }
+
   &:focus-visible { outline: 2px solid #534AB7; outline-offset: 3px; border-radius: 6px; }
 }
 

@@ -47,6 +47,8 @@ export interface LibraryFolder {
   itemCount: number
   /** Teacher view only: students holding a direct grant. */
   sharedWith: FilesPerson[]
+  /** Teacher view: students with access to something inside this folder but no direct grant on it. */
+  nestedWith?: FilesPerson[]
   /** Teacher view, homework folders only. */
   progress?: SubmissionProgress | null
   updatedAt: string

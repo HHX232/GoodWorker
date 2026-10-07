@@ -26,6 +26,7 @@ export function FolderCard({ folder, onOpen, onShare, onCover, onRename, onDelet
   const t = useTranslations('files')
   const locale = useLocale()
   const personal = !!folder.restrictedToStudentId
+  const avatars = [...folder.sharedWith, ...(folder.nestedWith ?? [])]
   const items: CardMenuItem[] = []
   if (onShare && !personal) items.push({ label: t('share'), icon: FilesShareIcon, onSelect: onShare })
   if (onCover) items.push({ label: t('cover'), icon: FilesCoverIcon, onSelect: onCover })
@@ -54,11 +55,11 @@ export function FolderCard({ folder, onOpen, onShare, onCover, onRename, onDelet
           // Homework folder (teacher): progress lines left, avatars right; the item count moves into the lines' popup.
           <div className={`${styles.folderFoot} ${styles.folderFootProgress}`}>
             <ProgressLines progress={folder.progress} itemCount={folder.itemCount} />
-            <AvatarStack people={folder.sharedWith} />
+            <AvatarStack people={avatars} />
           </div>
         ) : (
           <div className={styles.folderFoot}>
-            <AvatarStack people={folder.sharedWith} />
+            <AvatarStack people={avatars} />
             <span className={styles.folderCount}>{t('itemsCount', { count: folder.itemCount })}</span>
           </div>
         )}
