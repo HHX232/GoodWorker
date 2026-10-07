@@ -132,6 +132,29 @@ export interface BookBookmark {
   createdAt: string
 }
 
+export const HIGHLIGHT_COLORS = ['yellow', 'green', 'pink', 'blue'] as const
+export type HighlightColor = (typeof HIGHLIGHT_COLORS)[number]
+
+/** One rectangle of a highlight, as fractions (0..1) of the page's width/height. */
+export interface HighlightRect {
+  x: number
+  y: number
+  w: number
+  h: number
+}
+
+/** A personal text highlight (with an optional single comment) in a book. */
+export interface BookHighlight {
+  id: string
+  page: number
+  text: string
+  rects: HighlightRect[]
+  color: HighlightColor
+  note: string | null
+  /** ISO. */
+  createdAt: string
+}
+
 /** GET /api/tutor-files/books/[id]/presence (owner only). Keys of `pages` are page numbers; pages nobody touched are absent. */
 export interface BookPresencePage {
   /** Students whose last page is this one; `stoppedAt` = when (ISO). */

@@ -118,7 +118,7 @@ $muted: #868897;
   &:hover { background: #F0F0F8; }
 }
 
-.iconBtn, .segBtn, .zoomPct, .pageInput, .ribbon, .markBtn, .btn, .itemMain, .resume button, .labelInput {
+.iconBtn, .segBtn, .zoomPct, .pageInput, .ribbon, .markBtn, .btn, .itemMain, .resume button, .labelInput, .tab, .hlDot, .hlBarBtn, .hlTextBtn, .hlNote, .hlMarker {
   &:focus-visible { outline: 2px solid $accent; outline-offset: 2px; }
 }
 
@@ -147,6 +147,7 @@ $muted: #868897;
   background: #fff;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12), 0 10px 30px rgba(15, 23, 42, 0.14);
   overflow: hidden;
+  isolation: isolate; // the highlight fills multiply with the page, not with the stage behind it
 }
 .canvas { display: block; width: 100%; height: 100%; }
 .pageError {
@@ -374,6 +375,214 @@ $muted: #868897;
   .ribbon { opacity: 0.55; }
 }
 
+// ─── Highlights ───────────────────────────────────────────
+// fill = the translucent page marker, dot = the saturated swatch / stripe.
+$hl-colors: (
+  yellow: (#ffe14d, #f5c400),
+  green: (#86e29a, #2fbf5a),
+  pink: (#ff9fc6, #f0579a),
+  blue: (#8ec5ff, #3b8eea),
+);
+@each $name, $pair in $hl-colors {
+  .hl, .hlDot, .hlMarker, .hlQuote, .hlStripe { &[data-color='#{$name}'] { --hl-fill: #{nth($pair, 1)}; --hl-dot: #{nth($pair, 2)}; } }
+}
+
+// Under the text layer (which is z-index 1): fills never get in the way of selecting text.
+.hlFills { position: absolute; inset: 0; pointer-events: none; }
+.hl {
+  position: absolute;
+  inset: 0;
+  opacity: 0.85;
+  mix-blend-mode: multiply;
+  span { position: absolute; border-radius: 2px; background: var(--hl-fill); }
+}
+.hlFlash span { animation: hlPulse 0.55s ease-in-out 3; box-shadow: 0 0 0 2px $accent; }
+@keyframes hlPulse { 50% { box-shadow: 0 0 0 5px rgba(83, 74, 183, 0.55); } }
+@media (prefers-reduced-motion: reduce) { .hlFlash span { animation: none; } }
+
+.hlMarker {
+  position: absolute;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 50% 50% 50% 2px;
+  background: var(--hl-dot);
+  color: #fff;
+  cursor: pointer;
+  transform: translateY(-50%);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.35);
+}
+.noText {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  z-index: 2;
+  max-width: calc(100% - 20px);
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(20, 20, 22, 0.78);
+  color: #fff;
+  font-size: 11px;
+  line-height: 1.3;
+  text-align: center;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+// Mini-bar over a selection and popup over a saved highlight — fixed to the viewport, positioned in px by placeFloating().
+.hlBar, .hlPop {
+  position: fixed;
+  z-index: 20;
+  box-sizing: border-box;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.3);
+}
+.hlBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 6px;
+  padding: 6px 8px;
+  background: $ink;
+  color: #fff;
+}
+.hlDot {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  background: var(--hl-dot);
+  cursor: pointer;
+  transition: transform 0.12s;
+  &:hover:not(:disabled) { transform: scale(1.12); }
+  &:disabled { opacity: 0.5; cursor: default; }
+  &[aria-pressed='true'] { box-shadow: 0 0 0 2px $accent; border-color: #fff; }
+}
+.hlBarBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.1);
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+  &:hover:not(:disabled) { background: rgba(255, 255, 255, 0.2); }
+  &:disabled { opacity: 0.5; cursor: default; }
+}
+.hlBarFirst { margin-left: 6px; }
+
+.hlPop {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid $line;
+  color: $ink;
+  overflow-y: auto;
+}
+.hlQuote {
+  margin: 0;
+  max-height: 96px;
+  padding: 2px 0 2px 10px;
+  border-left: 4px solid var(--hl-dot);
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.hlColors { display: flex; gap: 8px; .hlDot { border-color: #fff; box-shadow: 0 0 0 1px $line; } }
+.hlNote {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 64px;
+  padding: 8px 10px;
+  border: 1px solid $line;
+  border-radius: 10px;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+  resize: vertical;
+}
+.hlPopActions { display: flex; justify-content: space-between; gap: 8px; }
+.hlTextBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid $line;
+  border-radius: 9px;
+  background: #fff;
+  color: $ink;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.hlDanger { color: #b42318; }
+.hlPrimary { border-color: $accent; background: $accent; color: #fff; }
+
+@media (max-width: 480px) {
+  .hlBarBtn span { display: none; }
+  .hlBarBtn { width: 34px; padding: 0; justify-content: center; }
+  .hlBarFirst { margin-left: 4px; }
+}
+
+// Panel tabs + the «Выделения» list
+.tabs { display: flex; gap: 4px; padding: 0 12px 6px; border-bottom: 1px solid $line; }
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 9px 9px 0 0;
+  background: transparent;
+  color: $muted;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  &:hover { color: $ink; }
+}
+.tabOn { color: $accent; box-shadow: inset 0 -2px 0 $accent; }
+.tabCount { min-width: 16px; padding: 0 5px; border-radius: 8px; background: #EEEDFE; color: $accent; font-size: 11px; font-weight: 700; line-height: 16px; text-align: center; }
+
+.hlItem { align-items: stretch; }
+.hlStripe { flex: none; width: 4px; margin: 6px 0 6px 4px; border-radius: 2px; background: var(--hl-dot); }
+.hlItemQuote { width: 100%; font-size: 13px; line-height: 1.4; overflow-wrap: anywhere; }
+.hlItemNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  width: 100%;
+  font-size: 12px;
+  line-height: 1.4;
+  color: $muted;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  svg { flex: none; margin-top: 2px; }
+}
+.hlEditRow { flex: 1; display: flex; align-items: flex-start; gap: 4px; min-width: 0; padding: 4px 0 4px 6px; }
+.panelEmpty p { margin: 0 0 8px; }
+
 // ─── Error / closed ───────────────────────────────────────
 .state {
   margin: auto;
@@ -425,4 +634,18 @@ $muted: #868897;
   .btn { background: #1c1d27; border-color: rgba(255, 255, 255, 0.14); color: #ececf4; }
   .btnPrimary { background: #818cf8; border-color: #818cf8; color: #14151c; }
   .iconBtn, .segBtn, .zoomPct, .pageInput, .ribbon, .markBtn, .btn, .itemMain, .labelInput { &:focus-visible { outline-color: #818cf8; } }
+  .tabs { border-color: rgba(255, 255, 255, 0.09); }
+  .tab { color: #9a9cb0; &:hover { color: #ececf4; } }
+  .tabOn { color: #818cf8; box-shadow: inset 0 -2px 0 #818cf8; }
+  .tabCount { background: rgba(129, 140, 248, 0.18); color: #818cf8; }
+  .hlItemNote { color: #9a9cb0; }
+  .hlBar { background: #2a2b38; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6); }
+  .hlPop { background: #1c1d27; border-color: rgba(255, 255, 255, 0.14); color: #ececf4; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6); }
+  .hlNote, .hlTextBtn { background: #14151c; border-color: rgba(255, 255, 255, 0.14); color: #ececf4; }
+  .hlColors .hlDot { border-color: #1c1d27; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2); }
+  .hlDot[aria-pressed='true'] { box-shadow: 0 0 0 2px #818cf8; }
+  .hlDanger { color: #ff8a80; }
+  .hlPrimary { background: #818cf8; border-color: #818cf8; color: #14151c; }
+  .hlFlash span { box-shadow: 0 0 0 2px #818cf8; }
+  .tab, .hlDot, .hlBarBtn, .hlTextBtn, .hlNote, .hlMarker { &:focus-visible { outline-color: #818cf8; } }
 }

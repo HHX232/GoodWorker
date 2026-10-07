@@ -367,6 +367,7 @@ model TutorFile {
   bookmarks      TutorBookmark[]
   bookProgress   TutorBookProgress[]
   bookReads      TutorBookRead[]
+  bookHighlights TutorBookHighlight[]
 
   @@index([teacherId])
   @@index([folderId])
@@ -420,6 +421,24 @@ model TutorBookRead {
   file        TutorFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
 
   @@id([fileId, studentId, page])
+}
+
+// A personal text highlight (+ one comment) inside a book. rects: [{x,y,w,h}] as 0..1 fractions of the page.
+model TutorBookHighlight {
+  id        String    @id @default(uuid())
+  fileId    String
+  ownerId   String
+  ownerRole Role
+  page      Int
+  text      String
+  rects     Json
+  color     String    @default("yellow")
+  note      String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  file      TutorFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@index([fileId, ownerId, page])
 }
 
 model TutorFolderGrant {

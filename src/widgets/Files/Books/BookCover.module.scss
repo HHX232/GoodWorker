@@ -71,12 +71,30 @@
   letter-spacing: 0.04em;
 }
 
+// Page edge. The box is the book's width (like the cover and the shelf); its left sliver is the spine seen edge-on —
+// a thin line in the spine colour that joins the vertical spine to the shelf's left end — and the pages sit to its right.
 .pages {
+  position: relative;
+  width: 96%;
   height: 5.4cqw;
-  margin: 0 3% 0 3.4%;
-  border-radius: 0 0 0.8cqw 0.8cqw;
-  background: repeating-linear-gradient(0deg, rgba(100, 80, 40, 0.2) 0 0.5px, transparent 0.5px 1.15cqw), linear-gradient(#fffdf6, #ebe1cb);
-  box-shadow: inset 0 0.7cqw 0.8cqw -0.3cqw rgba(0, 0, 0, 0.2);
+  margin: 0 auto;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 1.4cqw;
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.3), rgba(255, 255, 255, 0.14)), var(--spine);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0 1cqw 0 1.4cqw;
+    border-radius: 0 0 0.8cqw 0.8cqw;
+    background: repeating-linear-gradient(0deg, rgba(100, 80, 40, 0.2) 0 0.5px, transparent 0.5px 1.15cqw), linear-gradient(#fffdf6, #ebe1cb);
+    box-shadow: inset 0 0.7cqw 0.8cqw -0.3cqw rgba(0, 0, 0, 0.2);
+  }
 }
 
 .base {
@@ -84,7 +102,7 @@
   height: 4.8cqw;
   width: 96%; // exactly the cover's width — the shelf never sticks out past the spine or the right edge
   margin: -0.2cqw auto 0;
-  border-radius: 0.8cqw 0.8cqw 3.4cqw 3.4cqw;
+  border-radius: 0 0.8cqw 3.4cqw 3.4cqw; // square top-left: it meets the spine line in one corner
   background: var(--spine);
   overflow: hidden;
 
