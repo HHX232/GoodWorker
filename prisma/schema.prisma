@@ -1375,12 +1375,19 @@ model LectureNote {
   // Bumped on every docJson save — a save based on an older version gets 409
   // (the owner and people with the edit link may type at the same time).
   docVersion         Int            @default(0)
+  // Auto-notes of a video call (VideoCallRoom.id): the room owner's master plus one copy
+  // per participant. Null = a recorded lecture. No chunks, recordedMs 0 → free.
+  callRoomId         String?
+  // Call notes: seq of the last tick whose new sections were tidied (junk removed).
+  tidiedSeq          Int            @default(-1)
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
   chunks             LectureChunk[]
   photos             LecturePhoto[]
 
+  @@unique([callRoomId, ownerId, ownerRole])
   @@index([ownerId, ownerRole])
+  @@index([callRoomId])
 }
 
 model LectureChunk {

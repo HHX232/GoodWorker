@@ -1,8 +1,5 @@
-import { PutObjectCommand } from '@aws-sdk/client-s3'
-import { randomUUID } from 'crypto'
 import { after, NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/shared/prisma/prisma'
-import { publicUrlForKey, s3, S3_BUCKET } from '@/shared/s3/s3Client'
 import { requireOwnLecture } from '@/shared/lib/lecture/access'
 import { lectureToDocx, photoIdsIn, type DocxPhoto } from '@/shared/lib/lecture/docx'
 import { readObject } from '@/shared/lib/lecture/audio'
@@ -10,10 +7,9 @@ import { saveLectureAudioFile } from '@/shared/lib/lecture/audioFile'
 import type { PMNode } from '@/shared/lib/lecture/markdownToDoc'
 import { parseContext } from '@/shared/lib/lecture/context'
 import { studentSubjectFolder, tutorSubjectFolder } from '@/shared/lib/lecture/subjects'
-import { DriveError, driveErrorResponse, ensureLecturesFolder, isStudentVipActive, putStudentFile, replaceStudentFile } from '@/shared/lib/studentDrive/drive'
+import { DriveError, driveErrorResponse, ensureLecturesFolder, isStudentVipActive } from '@/shared/lib/studentDrive/drive'
 import { hasStorageAccess, vipRequiredResponse } from '@/shared/lib/tutorFiles/access'
-import { extractText } from '@/shared/lib/tutorFiles/extractText'
-import { getTeacherStorageLimits, getUsedBytes } from '@/shared/lib/tutorFiles/storage'
+import { CALL_NOTES_FOLDER, DOCX_MIME, ensureTutorRootFolder, fileName, saveLectureDocx } from '@/shared/lib/lecture/saveToFiles'
 
 export const runtime = 'nodejs'
 export const maxDuration = 300
@@ -22,26 +18,13 @@ interface Params {
   params: Promise<{ id: string }>
 }
 
-const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 const LECTURES_FOLDER = 'Конспекты лекций'
-
-function fileName(title: string, createdAt: Date): string {
-  const base = (title || `Лекция ${createdAt.toISOString().slice(0, 10)}`).replace(/[\\/:*?"<>|]/g, '').trim().slice(0, 120)
-  return `${base || 'Лекция'}.docx`
-}
 
 async function ownerName(ownerId: string, role: 'STUDENT' | 'TEACHER'): Promise<string> {
   const row = role === 'STUDENT'
     ? await prisma.student.findUnique({ where: { id: ownerId }, select: { name: true } })
     : await prisma.teacher.findUnique({ where: { id: ownerId }, select: { name: true } })
   return row?.name ?? 'GoodWorker'
-}
-
-/** Tutor side: the root "Конспекты лекций" folder of their library. */
-async function ensureTutorLecturesFolder(teacherId: string): Promise<string> {
-  const existing = await prisma.tutorFolder.findFirst({ where: { teacherId, parentId: null, name: LECTURES_FOLDER }, select: { id: true } })
-  if (existing) return existing.id
-  return (await prisma.tutorFolder.create({ data: { teacherId, name: LECTURES_FOLDER } })).id
 }
 
 /**
@@ -92,54 +75,27 @@ export async function POST(req: NextRequest, { params }: Params) {
       })
     }
 
-    // Filed by subject: «Конспекты лекций/<Предмет>» (see subjects.ts).
+    // Filed by subject: «Конспекты лекций/<Предмет>» (see subjects.ts). Call notes go to
+    // «Конспекты уроков» and need no VIP — every participant got a copy (quota as usual).
     const subject = parseContext(lecture.context).subject
+    const isCall = !!lecture.callRoomId
+    const rootName = isCall ? CALL_NOTES_FOLDER : LECTURES_FOLDER
 
     if (user.role === 'STUDENT') {
-      if (!user.isAdmin && !(await isStudentVipActive(user.id))) return NextResponse.json({ error: 'VIP_REQUIRED' }, { status: 403 })
-      const existing = lecture.fileId ? await prisma.studentFile.findFirst({ where: { id: lecture.fileId, studentId: user.id } }) : null
-      const root = await ensureLecturesFolder(user.id, LECTURES_FOLDER)
-      const target = await studentSubjectFolder(user.id, root, subject)
-      let file = existing
-        ? await replaceStudentFile(existing, bytes, DOCX_MIME)
-        : await putStudentFile({ studentId: user.id, folderId: target, name, mimeType: DOCX_MIME, bytes, lectureNoteId: id })
-      // Saved before the subject was known → still in the root: move it (and its audio) in.
-      if (existing && file.folderId === root && target !== root) {
-        await prisma.studentFile.updateMany({ where: { studentId: user.id, lectureNoteId: id, folderId: root }, data: { folderId: target } })
-        file = { ...file, folderId: target }
-      }
-      if (!existing) await prisma.lectureNote.update({ where: { id }, data: { fileId: file.id } })
-      const audio = saveAudioAfter(id, { id: user.id, role: 'STUDENT' }, file.folderId, file.name, lecture.keepAudio, req.cookies.get('NEXT_LOCALE')?.value ?? 'ru')
-      return NextResponse.json({ file: { id: file.id, name: file.name, folderId: file.folderId }, where: 'drive', audio })
-    }
+      if (!isCall && !user.isAdmin && !(await isStudentVipActive(user.id))) return NextResponse.json({ error: 'VIP_REQUIRED' }, { status: 403 })
+    } else if (!isCall && !(await hasStorageAccess(user.id))) return vipRequiredResponse()
 
-    // Tutor (or admin): their library, their quota.
-    if (!(await hasStorageAccess(user.id))) return vipRequiredResponse()
-    const existing = lecture.fileId ? await prisma.tutorFile.findFirst({ where: { id: lecture.fileId, teacherId: user.id } }) : null
-    const limits = await getTeacherStorageLimits(user.id)
-    if ((await getUsedBytes(user.id)) - (existing?.sizeBytes ?? 0) + bytes.length > limits.quotaBytes) return NextResponse.json({ error: 'QUOTA_EXCEEDED' }, { status: 413 })
-    const key = `tutor-files/${user.id}/${randomUUID()}.docx`
-    await s3.send(new PutObjectCommand({ Bucket: S3_BUCKET, Key: key, Body: bytes, ContentType: DOCX_MIME, ACL: 'public-read' }))
-    const data = { key, url: publicUrlForKey(key), sizeBytes: bytes.length, mimeType: DOCX_MIME, contentText: null }
-    const root = await ensureTutorLecturesFolder(user.id)
-    const target = await tutorSubjectFolder(user.id, root, subject)
-    let file = existing
-      ? await prisma.tutorFile.update({ where: { id: existing.id }, data })
-      : await prisma.tutorFile.create({
-          data: { ...data, teacherId: user.id, folderId: target, name, uploadedByRole: 'TEACHER', uploadedById: user.id, lectureNoteId: id },
-        })
-    if (existing && file.folderId === root && target !== root) {
-      await prisma.tutorFile.updateMany({ where: { teacherId: user.id, lectureNoteId: id, folderId: root }, data: { folderId: target } })
-      file = { ...file, folderId: target }
+    const root = user.role === 'STUDENT' ? await ensureLecturesFolder(user.id, rootName) : await ensureTutorRootFolder(user.id, rootName)
+    const target = user.role === 'STUDENT' ? await studentSubjectFolder(user.id, root, subject) : await tutorSubjectFolder(user.id, root, subject)
+    const file = await saveLectureDocx({ lecture, ownerId: user.id, role: user.role, folderId: target, bytes, name })
+    // Saved before the subject was known → still in the root: move it (and its audio) in.
+    if (!file.created && file.folderId === root && target !== root) {
+      if (user.role === 'STUDENT') await prisma.studentFile.updateMany({ where: { studentId: user.id, lectureNoteId: id, folderId: root }, data: { folderId: target } })
+      else await prisma.tutorFile.updateMany({ where: { teacherId: user.id, lectureNoteId: id, folderId: root }, data: { folderId: target } })
+      file.folderId = target
     }
-    if (!existing) await prisma.lectureNote.update({ where: { id }, data: { fileId: file.id } })
-    // Search inside files (same as uploads) — after the response.
-    after(async () => {
-      const text = await extractText(bytes, name, DOCX_MIME)
-      await prisma.tutorFile.update({ where: { id: file.id }, data: { contentText: text } }).catch(() => {})
-    })
-    const audio = saveAudioAfter(id, { id: user.id, role: 'TEACHER' }, file.folderId, file.name, lecture.keepAudio, req.cookies.get('NEXT_LOCALE')?.value ?? 'ru')
-    return NextResponse.json({ file: { id: file.id, name: file.name, folderId: file.folderId }, where: 'library', audio })
+    const audio = saveAudioAfter(id, { id: user.id, role: user.role }, file.folderId, file.name, lecture.keepAudio, req.cookies.get('NEXT_LOCALE')?.value ?? 'ru')
+    return NextResponse.json({ file: { id: file.fileId, name: file.name, folderId: file.folderId }, where: user.role === 'STUDENT' ? 'drive' : 'library', audio })
   } catch (e) {
     if (e instanceof DriveError) return driveErrorResponse(e)
     console.error('[POST /api/lecture/[id]/export]', e)
