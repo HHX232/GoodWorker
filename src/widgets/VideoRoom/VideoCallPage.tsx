@@ -18,6 +18,7 @@ import {
 import { CallWhiteboard } from './CallWhiteboard/CallWhiteboard'
 import { QuickTestBuilder } from './QuickTestBuilder/QuickTestBuilder'
 import styles from './VideoCallPage.module.scss'
+import { useCallNotes } from './hooks/useCallNotes'
 import { useTranscription } from './hooks/useTranscription'
 import { useVideoRoom } from './hooks/useVideoRoom'
 import {
@@ -429,15 +430,41 @@ useEffect(() => {
   // ── Leave ──────────────────────────────────────────────────────────────────
   const { callNotes } = transcription
 
+  // Auto-notes: the owner's client ticks every 60 s in the background (no UI).
+  // The snapshot reads the owner's live board through CallWhiteboard's onSceneApi.
+  const boardSceneRef = useRef<(() => { elements: readonly any[]; files: Record<string, any> }) | null>(null)
+  const onBoardSceneApi = useCallback((read: () => { elements: readonly any[]; files: Record<string, any> }) => { boardSceneRef.current = read }, [])
+  const readBoardScene = useCallback(() => boardSceneRef.current?.() ?? null, [])
+  // Board unmounted (owner looks at another tile) → drop the frozen api, snapshot falls back to page state.
+  const boardHostRef = useCallback((el: HTMLDivElement | null) => { if (!el) boardSceneRef.current = null }, [])
+  const callNotesOn = isOwner && room.connected
+  const { flush: flushCallNotes } = useCallNotes({
+    enabled: callNotesOn,
+    roomName,
+    callNotes,
+    board: { active: callTest?.mode === 'whiteboard', elements: whiteboardElements, files: whiteboardFiles, read: readBoardScene },
+  })
+  // Any owner exit: last tick (≤ 5 s), then finish — server answers 202 and works on its own.
+  const finishCallNotes = useCallback(async () => {
+    if (!callNotesOn) return
+    await Promise.race([flushCallNotes(), new Promise(res => setTimeout(res, 5000))])
+    fetch('/api/call/notes/finish', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ roomName }),
+      keepalive: true,
+    }).catch(e => console.warn('[callNotes] finish failed', e))
+  }, [callNotesOn, flushCallNotes, roomName])
+
   const leaveRoom = useCallback(() => {
     // Ask the agent for its accumulated transcript before showing summary
     broadcast({ type: 'transcript_request' })
     if (callNotes.length > 0 || transcription.finalTranscript) {
       setShowSummary(true)
     } else {
-      disconnect().then(() => router.push('/profile'))
+      finishCallNotes().then(() => disconnect()).then(() => router.push('/profile'))
     }
-  }, [callNotes, disconnect, router, broadcast, transcription.finalTranscript])
+  }, [callNotes, disconnect, router, broadcast, transcription.finalTranscript, finishCallNotes])
 
   const confirmLeave = useCallback(async () => {
     setShowSummary(false)
@@ -463,6 +490,7 @@ useEffect(() => {
 
     // Teacher-only: analyze errors before disconnecting
     if (isOwner) {
+      await finishCallNotes()
       setShowAnalyzing(true)
       try {
         const res = await fetch('/api/call/analyze-errors', {
@@ -489,7 +517,7 @@ useEffect(() => {
     router.push('/profile')
   }, [isOwner, disconnect, router, roomName, transcription, room.participants,
       setShowAnalyzing, setAnalyzedErrors, setRemovedErrorIds, setErrorEditMode,
-      setExpandedErrorId, setShowErrorConfirm,endRoom])
+      setExpandedErrorId, setShowErrorConfirm,endRoom, finishCallNotes])
 
   const confirmErrors = useCallback(async () => {
     if (removedErrorIds.size > 0) {
@@ -946,6 +974,7 @@ useEffect(() => {
   const launchWhiteboard = useCallback(() => {
     setCallTest({ testId: null, title: 'Доска', blocks: [], mode: 'whiteboard' })
     setWhiteboardElements(null)
+    setWhiteboardFiles(null)
     broadcast({ type: 'call_whiteboard_start' })
     setShowTestPicker(false)
     setMainSpeaker('__test__')
@@ -998,11 +1027,12 @@ useEffect(() => {
       if (callTest.mode === 'whiteboard') {
         return (
           <div key="__test__" className={`${styles.tile} ${styles.tileLarge} ${styles.testTileLarge}`}>
-            <div className={styles.testTileContent}>
+            <div className={styles.testTileContent} ref={boardHostRef}>
               <CallWhiteboard
                 remoteElements={whiteboardElements}
                 remoteFiles={whiteboardFiles}
                 onBroadcast={broadcastWhiteboard}
+                onSceneApi={onBoardSceneApi}
                 roomName={roomName}
                 isVip={isVip}
                 isAdmin={userRole === 'ADMIN'}
