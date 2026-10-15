@@ -310,4 +310,53 @@ ADMIN→TEACHER: сид-репетитор логинится с ролью `ADM
 <!-- autopilot:start -->
 ## Лендинг файлового хранилища
 Рабочая страница — `/info-storage` (`app/info-storage/`, компоненты `src/widgets/StorageLanding/`, тексты `messages/*.json` → `StorageLanding`): настоящие глобальные Header/Footer сайта, футер подстроен только скоупом на этой странице, тёмная тема — через `html.theme-dark`. Статический прототип — `ForNewDesign/prototypes/storage-a-preview.html`. В SCSS страницы шрифты в `px`, а не `rem`: глобальный reset сайта ставит `html{font-size:15px}`. История — `.autopilot/storage-landing/`.
+
+# GoodWorker — автоконспект видеозвонка (call-auto-notes)
+
+Во время видеозвонка клиент владельца комнаты раз в 60 с шлёт новые реплики расшифровки и плитки доски; сервер дописывает мастер-конспект (`LectureNote` с `callRoomId`), а после звонка называет его, раздаёт копию каждому участнику, кладёт .docx в хранилище каждого и шлёт уведомление. Без UI во время звонка; редактор — обычный `/lecture/[id]`. Контракты и история — `.autopilot/call-auto-notes/interfaces.md`.
+
+- **Поток**: `useCallNotes` (только `isOwner && room.connected` в `VideoCallPage.tsx`) → `POST /api/call/notes` (FormData `roomName`, `seq` — игнорируется, номера секций серверные, `transcript` строки «Имя: текст» ≤12 000 симв., `photo` × 0–6 JPEG `board-N.jpg`) → `callNotesTick()` → речь через лекционные `cleanTranscript` → `structureTranscript` (+`LESSON_NOTE` в контексте) → `appendSection`; доска — `readBoard` (DeepSeek vision, действия `new|continuation|fix|duplicate` по пронумерованным блокам) → `applyBoardItems`; каждые 3 тика (`TIDY_EVERY`) — `tidySections` → `applyTidy` (вычистка бытового мусора только в новых, не правленных руками секциях) → `saveDoc()` с `docVersion`.
+- **Ответы тика**: `{ok:true}` | `{ok:true, board:'failed'}` (текст сохранён, клиент переотправит доску — хэш доски запоминается только после успешного приёма) | `{ok:false, reason:'NO_AI'}` (клиент замолкает до конца звонка) | 400/401/403/404 | 502 (ИИ упал / конфликт сохранения — клиент повторит на следующем тике). Пустой тик (нет строк, доска не менялась) клиент не шлёт.
+- **Финал**: при любом выходе владельца (`leaveRoom`/`confirmLeave`) — `flush()` (≤5 с) → `POST /api/call/notes/finish {roomName}` с `keepalive` → 202, работа в `after()`; страховка — `/api/call/end` вызывает `finishCallNotes` после `closeRoomIfEmpty`, если комната закрылась. `finishCallNotes(roomName)` идемпотентна: работу делает только тот вызов, что перевёл мастер `RECORDING → FINALIZING` (с `docVersion+1` — запоздавший тик проигрывает `saveDoc`), в конце всегда `READY`.
+- **finalize**: последний tidy → `nameNote` (≤80 симв., фолбэк «<Предмет> — дд.мм.гггг») → участники = владелец + `VideoCallParticipant` с `userId` → копия `LectureNote` на каждого (upsert по `callRoomId+ownerId+ownerRole`, `status READY`) → один .docx (`lectureToDocx`) → `pickFolder` (`chooseFolder`, ИИ) + `saveLectureDocx` на каждого параллельно (`Promise.allSettled`) → уведомление `CALL_NOTES_SAVED` `payload {lectureNoteId, folderId, href}`. Пустой мастер удаляется.
+- **Папки**: ученик — любая его папка или новый путь от ИИ; фолбэк `Конспекты уроков/<Предмет>` (`CALL_NOTES_FOLDER`). Репетитор — только внутри корня «Конспекты уроков»; папки с грантом/`restrictedToStudentId` на ученика, которого не было на уроке, исключаются (`badFolderIds`/`sharedElsewhere`); если открыт сам корень — файл не создаётся (`SharedRootError`), уведомление ведёт в редактор `/lecture/<id>`. Так же при `QUOTA_EXCEEDED` и прочих ошибках сохранения.
+- **Участники**: `app/api/livekit/token/route.ts` при выдаче токена upsert-ит `VideoCallParticipant` с `id = "<roomId>::<userId>"`, `userId`, `userRole` (ошибка не блокирует токен). Без этой записи участник копию не получит.
+- **Профиль**: `GET /api/call/my-transcripts` (через `getLectureUser`) — комнаты владельца с расшифровкой ∪ комнаты, где у меня есть call-конспект; поле `noteId`; не-владельцу `transcriptRaw/transcriptJson` обнуляются. `TranscriptsModal` → кнопка «Открыть конспект» (`OpenNoteButton`): `POST /api/lecture/<id>/export {save:true}` (keepalive, ждёт ≤3 с) → `/lecture/<noteId>`.
+- **export**: для конспекта с `callRoomId` VIP не нужен (ни ученику, ни репетитору — квота как обычно), корень — «Конспекты уроков» вместо «Конспекты лекций».
+- **Колокольчик**: `getNotifHref` (`NotificationBell.tsx`) для `CALL_NOTES_SAVED` берёт `payload.href` только как путь сайта (`/…`, не `//…`, без `\`), иначе `/notifications`. Тип добавлен в `DEFAULT_SUBSCRIPTIONS` TEACHER и STUDENT.
+
+## Ключевые файлы
+
+- `src/shared/lib/callNotes/session.ts` — сервер: `ownedRoom(roomName, user)` (комната, если `user` — владелец; ADMIN = TEACHER), `callNotesTick({user, roomName, transcript, photos}) → {ok, reason?: NOT_FOUND|FORBIDDEN|NO_AI, board?: 'failed'}`, `finishCallNotes(roomName)`; внутри `ensureMaster`, `finalize`, `fileCopy`, `pickFolder`, `ensurePath` (в пределах `MAX_FOLDER_DEPTH`).
+- `src/shared/lib/callNotes/docOps.ts` — чистые операции над TipTap JSON (без Prisma): `asDoc`, `flatBlocks → {text, path}[]` (нумерация, которую видит DeepSeek: верхние узлы + дети `aiSection`), `sectionTitles`, `appendSection(doc, blocks, seq, afterSection|null)`, `applyBoardItems(doc, BoardItem[], seq)`, `applyTidy(doc, sinceSeq, {remove, replace})`, `newSectionsBlocks(doc, sinceSeq) → {n, text}[]`, `docTail(doc, chars)`; `BoardItem {action, block, markdown}`. Секции с `attrs.edited` не трогаются (fix пропускается, continuation — новой секцией сразу после).
+- `src/shared/lib/callNotes/ai.ts` — промпты звонка: `readBoard`, `tidySections`, `nameNote`, `chooseFolder`, `LESSON_NOTE`; битый JSON → пустой результат/фолбэк. Переиспользует из `src/shared/lib/lecture/ai.ts` экспортированные `DIALECT`, `CONTEXT_RULE`, `addUsage`, `stripFence`.
+- `src/shared/lib/lecture/saveToFiles.ts` — вынесено из `export`: `saveLectureDocx({lecture, ownerId, role, folderId, bytes, name}) → {fileId, folderId, name, created}` (перезаписывает уже сохранённый файл лекции на месте; бросает `DriveError`), `ensureTutorRootFolder`, `fileName`, `DOCX_MIME`, `CALL_NOTES_FOLDER`. Используют и `app/api/lecture/[id]/export/route.ts`, и финал.
+- API: `app/api/call/notes/route.ts` (`maxDuration 180`), `app/api/call/notes/finish/route.ts` (`maxDuration 300`), `app/api/call/end/route.tsx` (`maxDuration 300`), `app/api/call/my-transcripts/route.ts`, `app/api/livekit/token/route.ts`.
+- Клиент: `src/widgets/VideoRoom/hooks/useCallNotes.ts` — `useCallNotes({enabled, roomName, callNotes, board:{active, elements, files, read?}}) → {flush}`; один запрос за раз; доска читается живой через `CallWhiteboard onSceneApi` (фолбэк — стейт страницы), снимок `snapshotBoard` (`src/widgets/Lecture/board/boardSnapshot.ts`, лениво) режется `tileGrid(w, h, max=2000, maxTiles=6)` + `sourceRects` (`src/widgets/VideoRoom/hooks/tileGrid.ts`). Источник строк — `transcription.callNotes` из `useTranscription`.
+- `src/widgets/Forms/ProfileEditForm/TranscriptsModal.tsx`, `src/widgets/BaseUI/Header/NotificationBell.tsx`, `src/shared/lib/notifications.ts` (`NOTIFICATION_TYPES.CALL_NOTES_SAVED`).
+
+## Схема и миграция
+
+- `LectureNote.callRoomId String?` (= `VideoCallRoom.id`; null — обычная записанная лекция), `tidiedSeq Int @default(-1)` (seq последнего тика, чьи секции прошли tidy); `@@unique([callRoomId, ownerId, ownerRole])` — один конспект на человека на комнату (мастер = владелец комнаты), `@@index([callRoomId])`. Номер следующей секции — `max(processedSeq, tidiedSeq) + 1`.
+- Миграция `prisma/migrations/20261015120000_call_auto_notes/migration.sql`. Локальная БД разошлась с миграциями — применять только `set -a; source .env; set +a && npx prisma db execute --file prisma/migrations/20261015120000_call_auto_notes/migration.sql --schema prisma/schema.prisma` + `npx prisma migrate resolve --applied 20261015120000_call_auto_notes` + `npx prisma generate`; никогда `db push`/`migrate dev`/`migrate reset`. На проде — `npx prisma migrate deploy`.
+
+## Окружение (только имена)
+
+`DEEPSEEK_API_KEY` — без него тик отвечает `NO_AI` (клиент замолкает), финал называет конспект фолбэком и кладёт в папку по умолчанию. `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET` — токен звонка (там же запись участников). `S3_*`, `NEXT_PUBLIC_S3_PUBLIC_URL` — .docx в хранилище.
+
+## Самопроверки
+
+`npx tsx src/shared/lib/callNotes/docOps.selfcheck.ts` → `docOps ok`; `npx tsx src/widgets/VideoRoom/hooks/tileGrid.selfcheck.ts` → `tileGrid ok`. Остальное — `npx tsc --noEmit -p .` и ручной звонок.
+
+## Подводные камни
+
+- **Тариф не списывается**: у call-конспекта нет кусков, `recordedMs = 0` → `lectureCostKopecks` даёт 0; токены DeepSeek копятся в `aiPromptTokens/aiCompletionTokens` мастера (`addUsage`), но Кошелька в сборке нет — ничего не списывается.
+- **Один Node-процесс**: финал ждёт идущий тик (≤60 с) через in-memory `inFlight` Map в `session.ts` (`ponytail:`) — при нескольких инстансах нужен флаг в БД.
+- **Нет ретрая финала** (`ponytail:`): убитый `after()` оставит мастер в `FINALIZING` без копий; упавший `finalize()` всё равно ставит `READY` без копий. Путь апгрейда — свипер/ретрай.
+- **.docx без снимков досок/графиков** (`ponytail:`): блоки `board`/`graph` от ИИ ещё без PNG-снимка, финал передаёт в `lectureToDocx` пустую `Map` фото. Они появятся в файле только после открытия конспекта в редакторе и «Сохранить в файлы» ИЗ редактора — кнопка «Открыть конспект» в профиле делает export до открытия редактора и снимков не добавляет.
+- **at-least-once** (`ponytail:` в `useCallNotes`): после 502/потерянного ответа те же строки уходят снова под новым seq — если сервер их уже сохранил, в конспекте будет дубль. Путь — переиспользовать seq неподтверждённого диапазона и дедуп на сервере.
+- **Большая доска** (`ponytail:` в `useCallNotes`): `snapshotBoard` растрирует всю доску в 2× до нарезки — на огромной доске упирается в потолок canvas (iOS ~16,7 МП), снимок пустой, только `console.warn`. Путь — рендер по плиткам (`exportToCanvas` по границам плитки).
+- **Репетиторская папка**: файл кладётся только внутрь «Конспекты уроков» и никогда — в папку, открытую/закреплённую за учеником, которого не было на уроке; открыт корень → файла нет, только конспект в редакторе. Ученикам, которые были на уроке, доступ к папке не мешает.
+- Владелец определяется по LiveKit-identity (`ownerIdentity === userName` в `VideoCallPage.tsx`), сервер же проверяет `VideoCallRoom.ownerId/ownerRole` против `getLectureUser()` — чужой тик → 403.
+- Тик в уже закрытую комнату (`endedAt`) мастер не создаёт; тик после захвата финала — no-op `{ok:true}`.
 <!-- autopilot:end -->
