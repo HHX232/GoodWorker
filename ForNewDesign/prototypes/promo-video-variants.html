@@ -1,0 +1,830 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Блок промо-видео — варианты</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0e0e12; --red:#ED0606; --red-on-dark:#ff4d4d; --gray:#8c8c98; --text2:#5a5a64;
+  --line:#ececf2; --ghost:#f4f4f7;
+  --display:'Russo One', system-ui, sans-serif;
+  --sans:system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+html.lock{overflow:hidden}
+body{background:#fff;color:var(--ink);font-family:var(--sans);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+.ico{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ico.fill{fill:currentColor;stroke:none}
+.wrap{max-width:1320px;margin:0 auto;padding:0 48px}
+@media (max-width:900px){.wrap{padding:0 20px}}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--red)}
+.t-title{font-family:var(--display);font-weight:400;font-size:22px;line-height:1.15;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pills{display:flex;gap:6px;flex:none}
+.pill{height:38px;padding:0 14px;border:1px solid var(--line);border-radius:12px;background:#fff;font-size:14px;font-weight:500;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;transition:background .2s,border-color .2s,color .2s}
+.pill span{color:var(--gray);font-size:13px;font-variant-numeric:tabular-nums}
+.pill:hover{border-color:var(--ink)}
+.pill[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.pill[aria-pressed="true"] span{color:rgba(255,255,255,.6)}
+.pill.sm{height:30px;padding:0 10px;border-radius:9px;font-size:13px}
+.pill.sm span{font-size:12px}
+
+/* ── Витрина ─────────────────────────────── */
+.top{padding:56px 0 8px}
+.top h1{font-family:var(--display);font-weight:400;font-size:36px;line-height:1.1;margin:12px 0 0}
+.top p{color:var(--text2);font-size:15.5px;line-height:1.7;max-width:660px;margin:14px 0 0}
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.toc a{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;border:1px solid var(--line);border-radius:10px;color:var(--ink);text-decoration:none;font-size:14px;font-weight:500}
+.toc a b{font-family:var(--display);font-weight:400;color:var(--red)}
+.toc a:hover{border-color:var(--ink)}
+@media (max-width:600px){.top h1{font-size:28px}}
+
+.variant{padding-top:48px;padding-bottom:16px;border-top:1px solid var(--line);margin-top:48px;scroll-margin-top:16px}
+.meta{display:grid;grid-template-columns:auto 1fr auto;gap:4px 18px;align-items:baseline;margin-bottom:8px}
+.meta .letter{font-family:var(--display);font-size:44px;line-height:1;color:var(--red);grid-row:span 3}
+.meta h2{margin:0;font-family:var(--display);font-weight:400;font-size:24px}
+.meta .h{font-size:12px;color:var(--gray);white-space:nowrap;font-variant-numeric:tabular-nums}
+.meta .h b{color:var(--ink);font-weight:600}
+.meta p{grid-column:2/4;margin:0;font-size:14px;line-height:1.55;color:var(--text2)}
+.meta p i{font-style:normal;font-weight:600;color:var(--ink)}
+@media (max-width:600px){.meta{grid-template-columns:auto 1fr;align-items:center}.meta .letter{grid-row:auto;font-size:32px}.meta .h,.meta p{grid-column:1/3}}
+
+.ghost{display:flex;flex-direction:column;gap:10px;padding:26px 0}
+.ghost span{display:block;height:10px;border-radius:6px;background:var(--ghost)}
+.ghost .g1{width:90px;height:8px}
+.ghost .g2{width:min(420px,70%);height:22px}
+.ghost .g3{width:min(560px,92%)}
+.ghost .g4{width:min(380px,64%)}
+.ghost small{font-size:11px;color:#c4c4cc;letter-spacing:.08em;text-transform:uppercase}
+
+/* ── A · Кружок ──────────────────────────── */
+.va{display:flex;align-items:center;gap:20px;height:96px;padding:0 20px 0 12px;border:1px solid var(--line);border-radius:22px;background:#fff}
+.va-circle{position:relative;flex:none;width:72px;height:72px;padding:0;border:0;border-radius:50%;background:transparent}
+.va-circle video{position:absolute;inset:5px;width:62px;height:62px;border-radius:50%;object-fit:cover;background:#f1f1f5;display:block}
+.ring-svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
+.ring-svg circle{fill:none}
+.va .ring-svg .t{stroke:var(--line);stroke-width:2.5}
+.va .ring-svg .b{stroke:var(--red);stroke-width:2.5;stroke-linecap:round}
+.va-badge{position:absolute;right:-3px;bottom:-3px;width:28px;height:28px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center;border:3px solid #fff;transition:transform .2s var(--ease)}
+.va-badge .ico{width:11px;height:11px;margin-left:2px}
+.va-circle:hover .va-badge{transform:scale(1.14)}
+.va-text{flex:1;min-width:0}
+.roll{display:inline-block;height:1.15em;overflow:hidden;vertical-align:bottom}
+.roll-in{display:flex;flex-direction:column;transition:transform .45s var(--ease)}
+.roll-in span{height:1.15em;line-height:1.15;color:var(--red)}
+.va[data-v="students"] .roll-in{transform:translateY(-1.15em)}
+.va-role{position:relative;display:flex;flex:none;padding:4px;border-radius:14px;background:#f3f3f6}
+.va-role button{position:relative;z-index:1;display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px 0 10px;border:0;border-radius:10px;background:transparent;font-size:14px;font-weight:600;color:var(--text2);white-space:nowrap;transition:color .25s}
+.va-role button small{font-size:12px;font-weight:500;color:var(--gray);font-variant-numeric:tabular-nums;transition:color .25s}
+.va-role button:hover{color:var(--ink)}
+.va-role button[aria-pressed="true"]{color:#fff}
+.va-role button[aria-pressed="true"] small{color:rgba(255,255,255,.6)}
+.va-thumb{position:absolute;top:4px;bottom:4px;left:0;width:0;border-radius:10px;background:var(--ink);box-shadow:0 4px 12px rgba(14,14,18,.18)}
+.va.ready .va-thumb{transition:transform .4s var(--ease),width .4s var(--ease)}
+.va-thumb::after{content:'';position:absolute;left:12px;right:12px;bottom:-1px;height:2px;border-radius:2px;background:var(--red)}
+@media (max-width:700px){
+  .va{height:auto;flex-wrap:wrap;padding:12px;gap:12px 14px}
+  .va-text{flex:1 1 calc(100% - 100px)}
+  .va .t-title{font-size:18px;white-space:normal}
+  .va-role{width:100%}
+  .va-role button{flex:1;justify-content:center}
+}
+
+/* ── Общий плеер-модалка (A, B) ──────────── */
+.modal{position:fixed;inset:0;z-index:100;display:grid;place-items:center}
+.modal[hidden]{display:none}
+.modal-bg{position:absolute;inset:0;background:rgba(14,14,18,.78);opacity:0;transition:opacity .4s}
+.modal.on .modal-bg{opacity:1}
+.player{position:relative;width:min(640px,80vh,92vw);aspect-ratio:1;border-radius:20px;transform-origin:0 0;transition:transform .5s var(--ease)}
+.player video{width:100%;height:100%;display:block;object-fit:cover;border-radius:inherit;background:#000}
+.m-err{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:24px;color:#fff;font-size:15px;background:rgba(14,14,18,.6) center/cover;border-radius:inherit}
+.m-err[hidden]{display:none}
+.m-close{position:fixed;top:20px;right:20px;width:44px;height:44px;border-radius:50%;border:0;background:#fff;color:var(--ink);display:grid;place-items:center;opacity:0;transition:opacity .3s}
+.modal.on .m-close{opacity:1}
+
+/* ── B · Плёнка ──────────────────────────── */
+.vb{display:grid;grid-template-columns:290px 1fr;gap:24px;align-items:center;height:120px}
+.vb .pills{margin-top:10px}
+.vb-film{position:relative;display:block;width:100%;height:92px;padding:12px 8px;border:0;border-radius:12px;background:var(--ink);cursor:pointer;text-align:left}
+.vb-film::before,.vb-film::after{content:'';position:absolute;left:10px;right:10px;height:5px;border-radius:2px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.5) 0 7px,transparent 7px 15px)}
+.vb-film::before{top:3.5px}
+.vb-film::after{bottom:3.5px}
+.vb-frames{display:flex;gap:3px;height:68px;overflow:hidden;border-radius:3px}
+.vb-frames canvas{display:block;height:100%;flex:1 1 0;min-width:0;object-fit:cover;background:#24242b center/cover no-repeat;border-radius:2px}
+.vb-frames canvas.loading{background-image:linear-gradient(90deg,#24242b 0,#34343d 50%,#24242b 100%);background-size:200% 100%;animation:shim 1.2s linear infinite}
+@keyframes shim{to{background-position:-200% 0}}
+.vb-track{position:absolute;left:8px;right:8px;top:0;bottom:0;pointer-events:none}
+.vb-cur{position:absolute;top:0;bottom:0;left:0;width:2px;margin-left:-1px;background:var(--red);opacity:0;transition:opacity .15s}
+.vb-tip{position:absolute;bottom:calc(100% + 6px);left:1px;transform:translateX(-50%);background:var(--red);color:#fff;font-size:12px;font-weight:600;line-height:1;padding:5px 7px;border-radius:6px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.vb-film.hov .vb-cur{opacity:1}
+.vb-film:hover .vb-frames canvas:not(.loading){filter:brightness(.82)}
+.vb-scale{position:relative;height:14px;margin:6px 8px 0;font-size:11px;color:var(--gray);font-variant-numeric:tabular-nums}
+.vb-scale span{position:absolute;top:0;transform:translateX(-50%)}
+.vb-scale span:first-child{transform:none}
+.vb-scale span:last-child{transform:translateX(-100%)}
+@media (max-width:700px){
+  .vb{grid-template-columns:1fr;height:auto;gap:12px}
+  .vb-side .eyebrow{display:none}
+  .vb .t-title{font-size:18px}
+}
+
+/* ── C · Две двери ───────────────────────── */
+.vc{display:flex;gap:10px;height:140px;transition:height .55s var(--ease)}
+.door{position:relative;flex:1 1 0;min-width:0;border-radius:20px;overflow:hidden;background:var(--door-bg,#fff);color:var(--ink);border:1px solid var(--door-line,var(--line));transition:flex-grow .5s var(--ease),flex-basis .5s var(--ease),box-shadow .3s}
+.door-bg{position:absolute;inset:0 0 0 46%;background:center 35%/cover no-repeat;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 40%);mask-image:linear-gradient(90deg,transparent 0,#000 40%);opacity:var(--bgop,.9);transition:opacity .4s,transform .7s var(--ease)}
+.door-hit{position:absolute;inset:0;z-index:2;width:100%;border:0;padding:0;background:transparent;border-radius:inherit}
+.door-in{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;justify-content:space-between;padding:20px 24px;pointer-events:none}
+.door-in .eyebrow{color:var(--eb,var(--red))}
+.door-row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.door-title{font-family:var(--display);font-size:30px;line-height:1;white-space:nowrap}
+.door-cta{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:12px;background:var(--red);color:#fff;font-size:14px;font-weight:600;white-space:nowrap;opacity:0;transform:translateY(6px);transition:opacity .3s,transform .3s var(--ease)}
+.door-cta .ico{width:12px;height:12px}
+.door-seen{position:absolute;left:0;bottom:0;z-index:1;height:3px;width:0;background:var(--red);transition:width .3s}
+.door-seen-t{font-size:12px;color:var(--gray);font-variant-numeric:tabular-nums}
+@media (hover:hover){
+  .vc:not(.open) .door:hover{flex-grow:1.7}
+  .vc:not(.open) .door:hover{box-shadow:0 14px 34px rgba(14,14,18,.09)}
+  .vc:not(.open) .door:hover .door-bg{opacity:1;transform:scale(1.04)}
+  .vc:not(.open) .door:hover .door-cta{opacity:1;transform:none}
+}
+@media (hover:none){.door-cta{opacity:1;transform:none}}
+.door-stage{position:absolute;inset:0;z-index:3;display:none;justify-content:center;align-items:center}
+.door-stage video{display:block;height:100%;aspect-ratio:1;max-width:100%;object-fit:cover;background:#000}
+.door-collapse{position:absolute;top:14px;right:14px;height:36px;padding:0 12px;border:0;border-radius:10px;background:#fff;box-shadow:0 1px 4px rgba(14,14,18,.16);color:var(--ink);display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600}
+.vc.open .door{flex:0 0 64px}
+.vc.open .door.active{flex:1 1 auto}
+.vc.open .door.active .door-stage{display:flex}
+.vc.open .door.active .door-in,.vc.open .door.active .door-hit{display:none}
+.vc.open .door.active .door-bg{inset:0;-webkit-mask-image:none;mask-image:none;opacity:.35;filter:blur(18px);transform:scale(1.2)}
+.vc.open .door:not(.active) .door-in{writing-mode:vertical-rl;transform:rotate(180deg);padding:18px 0;align-items:center;justify-content:center}
+.vc.open .door:not(.active) .door-row>*:not(.door-title),.vc.open .door:not(.active) .eyebrow{display:none}
+.vc.open .door:not(.active) .door-title{font-size:16px}
+.vc.open .door:not(.active) .door-bg{opacity:.2}
+.vc.open .door:not(.active):hover .door-bg{opacity:.5}
+/* оформления C */
+.vc[data-skin="tint"] .door[data-v="teachers"]{--door-bg:#fff1ef;--door-line:#fde1dc}
+.vc[data-skin="tint"] .door[data-v="students"]{--door-bg:#f2f0ff;--door-line:#e4e0fc;--eb:#5b4fd6}
+.vc[data-skin="tint"] .door-bg{mix-blend-mode:multiply}
+.vc[data-skin="frame"] .door{--door-bg:#f4f4f7;--door-line:transparent}
+.vc[data-skin="frame"] .door-bg{inset:0;-webkit-mask-image:none;mask-image:none;background-position:center 18%}
+.vc[data-skin="frame"] .door[data-v="students"] .door-bg{background-position:center 48%}
+.vc[data-skin="frame"] .door-in .eyebrow,.vc[data-skin="frame"] .door-title,.vc[data-skin="frame"] .door-seen-t{background:rgba(255,255,255,.9);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-radius:10px;box-shadow:0 2px 10px rgba(14,14,18,.08)}
+.vc[data-skin="frame"] .door-in .eyebrow{align-self:flex-start;padding:6px 9px}
+.vc[data-skin="frame"] .door-title{padding:8px 12px}
+.vc[data-skin="frame"] .door-seen-t:not(:empty){padding:4px 8px}
+.skin{grid-column:2/4;display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px;font-size:13px;color:var(--gray)}
+@media (max-width:600px){.skin{grid-column:1/3}}
+@media (max-width:600px){
+  .vc{height:128px}
+  .door-in{padding:14px 14px}
+  .door-in .eyebrow{font-size:10px;letter-spacing:.08em}
+  .door-in .eb-who{display:none}
+  .door-title{font-size:18px}
+  .door-cta{position:absolute;top:10px;right:10px;width:32px;height:32px;padding:0;gap:0;justify-content:center;font-size:0;border-radius:50%}
+  .door-cta .ico{margin-left:2px}
+  .door-seen-t{display:none}
+  .vc.open .door{flex-basis:48px}
+}
+
+/* ── D · Строка + мини-плеер ─────────────── */
+.vd{display:flex;align-items:center;gap:16px;height:64px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:0 2px}
+.eq{display:flex;align-items:flex-end;gap:3px;height:18px;width:23px;flex:none}
+.eq i{width:3px;height:100%;background:var(--ink);border-radius:2px;transform:scaleY(var(--s,.5));transform-origin:bottom;transition:background .2s}
+.eq i:nth-child(1){--s:.35}.eq i:nth-child(2){--s:.75}.eq i:nth-child(3){--s:.5}.eq i:nth-child(4){--s:.9}.eq i:nth-child(5){--s:.45}
+.vd.playing .eq i{background:var(--red);animation:eq .8s ease-in-out infinite alternate}
+.vd.playing .eq i:nth-child(2){animation-delay:-.3s}
+.vd.playing .eq i:nth-child(3){animation-delay:-.55s}
+.vd.playing .eq i:nth-child(4){animation-delay:-.15s}
+.vd.playing .eq i:nth-child(5){animation-delay:-.45s}
+@keyframes eq{from{transform:scaleY(.2)}to{transform:scaleY(1)}}
+.vd-text{flex:1;min-width:0;font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.vd-text b{font-family:var(--display);font-weight:400}
+.vd-text .muted{color:var(--gray);font-weight:400}
+.seg{display:inline-flex;padding:3px;border-radius:11px;background:#f3f3f6;flex:none}
+.seg button{height:30px;padding:0 12px;border:0;border-radius:8px;background:transparent;font-size:13px;font-weight:500;color:var(--text2);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(14,14,18,.12)}
+.round-btn{width:40px;height:40px;border-radius:50%;border:0;background:var(--red);color:#fff;display:grid;place-items:center;flex:none;transition:transform .2s var(--ease)}
+.round-btn:hover{transform:scale(1.08)}
+.round-btn .ico{width:14px;height:14px}
+.round-btn .ico.fill{margin-left:2px}
+@media (max-width:600px){
+  .vd{flex-wrap:wrap;height:auto;padding:10px 2px;gap:10px 12px}
+  .vd-text{flex:1 1 calc(100% - 40px);white-space:normal;font-size:14px}
+  .vd .seg{flex:1}
+  .vd .seg button{flex:1}
+}
+.mini{position:fixed;z-index:90;left:0;top:0;width:240px;aspect-ratio:1;border-radius:18px;overflow:hidden;background:#000;box-shadow:0 18px 50px rgba(14,14,18,.3);touch-action:none;cursor:grab;transform-origin:0 0;transition:left .4s var(--ease),top .4s var(--ease),width .4s var(--ease),transform .5s var(--ease)}
+.mini[hidden]{display:none}
+.mini.drag{transition:none;cursor:grabbing}
+.mini video{width:100%;height:100%;display:block;object-fit:cover;pointer-events:none}
+.mini-bar{position:absolute;left:8px;right:8px;bottom:12px;display:flex;gap:6px;opacity:0;transition:opacity .2s}
+.mini:hover .mini-bar,.mini:focus-within .mini-bar{opacity:1}
+@media (hover:none){.mini-bar{opacity:1}}
+.mini-bar button{width:32px;height:32px;border-radius:50%;border:0;background:rgba(14,14,18,.62);color:#fff;display:grid;place-items:center;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.mini-bar button[hidden]{display:none}
+.mini-bar .ico{width:15px;height:15px}
+.mini-bar .sp{flex:1}
+.mini-prog{position:absolute;left:0;bottom:0;height:3px;width:0;background:var(--red)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12.5-7.5z"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-vol" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></symbol>
+  <symbol id="i-mute" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></symbol>
+  <symbol id="i-expand" viewBox="0 0 24 24"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></symbol>
+  <symbol id="i-pip" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><rect x="12" y="12" width="7" height="5" rx="1"/></symbol>
+  <symbol id="i-teach" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M12 16v4M8 20h8M7 12l3-3 2 2 4-4"/></symbol>
+  <symbol id="i-cap" viewBox="0 0 24 24"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3 2 9 2 12 0v-5M22 9v5"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
+</svg>
+
+<header class="wrap top">
+  <div class="eyebrow">Дизайн-разведка · главная</div>
+  <h1>Блок промо-видео: 4 варианта</h1>
+  <p>Каждый блок низкий — встаёт между крупными секциями главной. Серые полосы вокруг — силуэты соседних секций. В каждом варианте доступны оба ролика: для репетиторов и для учеников.</p>
+  <nav class="toc" aria-label="Варианты">
+    <a href="#a"><b>A</b> Кружок</a>
+    <a href="#b"><b>B</b> Плёнка</a>
+    <a href="#c"><b>C</b> Две двери</a>
+    <a href="#d"><b>D</b> Строка + мини-плеер</a>
+  </nav>
+</header>
+
+<main>
+<!-- ── A ── -->
+<section class="wrap variant" id="a">
+  <div class="meta">
+    <span class="letter">A</span>
+    <h2>Кружок</h2>
+    <span class="h">высота: <b data-h="a">—</b> · бюджет 96px</span>
+    <p><i>Внешне:</i> живой круглый «видео-кружок», как в Telegram, — беззвучное превью с кольцом-прогрессом.</p>
+    <p><i>Функция:</i> выбор роли «Я репетитор / Я ученик» (ездящая плашка, слово в заголовке прокручивается барабаном) сразу открывает квадратный плеер со звуком с нужным роликом; клик по кружку — тоже. Превью в кружке — лёгкое беззвучное 480p.</p>
+  </div>
+  <div class="ghost" aria-hidden="true"><span class="g3"></span><span class="g4"></span></div>
+
+  <div class="va" data-measure="a">
+    <button class="va-circle" type="button" aria-label="Смотреть видео">
+      <video muted loop playsinline preload="metadata"></video>
+      <svg class="ring-svg" viewBox="0 0 72 72" aria-hidden="true"><circle class="t" cx="36" cy="36" r="34.5"/><circle class="b" cx="36" cy="36" r="34.5" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"/></svg>
+      <span class="va-badge"><svg class="ico fill"><use href="#i-play"/></svg></span>
+    </button>
+    <div class="va-text">
+      <div class="eyebrow">Видео о платформе · <span data-dur>0:40</span></div>
+      <div class="t-title">GoodWorker глазами <span class="roll"><span class="roll-in" aria-live="polite"><span>репетитора</span><span>ученика</span></span></span></div>
+    </div>
+    <div class="va-role" role="group" aria-label="Кто вы">
+      <span class="va-thumb" aria-hidden="true"></span>
+      <button type="button" data-v="teachers" aria-pressed="true"><svg class="ico"><use href="#i-teach"/></svg>Я репетитор <small>0:40</small></button>
+      <button type="button" data-v="students" aria-pressed="false"><svg class="ico"><use href="#i-cap"/></svg>Я ученик <small>0:35</small></button>
+    </div>
+  </div>
+
+  <div class="ghost" aria-hidden="true"><small>следующая секция</small><span class="g1"></span><span class="g2"></span></div>
+</section>
+
+<!-- ── B ── -->
+<section class="wrap variant" id="b">
+  <div class="meta">
+    <span class="letter">B</span>
+    <h2>Плёнка</h2>
+    <span class="h">высота: <b data-h="b">—</b> · бюджет 120px</span>
+    <p><i>Внешне:</i> кинолента с перфорацией — кадры нарезаются из самого ролика прямо в браузере, под лентой шкала таймкодов.</p>
+    <p><i>Функция:</i> ведите курсором по ленте — красная линия и таймкод показывают момент; клик открывает плеер ровно с этого места.</p>
+  </div>
+  <div class="ghost" aria-hidden="true"><span class="g3"></span><span class="g4"></span></div>
+
+  <div class="vb" data-measure="b">
+    <div class="vb-side">
+      <div class="eyebrow">Видео о платформе</div>
+      <div class="t-title">Как это выглядит</div>
+      <div class="pills" role="group" aria-label="Выбор ролика">
+        <button class="pill sm" type="button" data-v="teachers" aria-pressed="true">Репетиторам <span>0:40</span></button>
+        <button class="pill sm" type="button" data-v="students" aria-pressed="false">Ученикам <span>0:35</span></button>
+      </div>
+    </div>
+    <div class="vb-main">
+      <button class="vb-film" type="button" aria-label="Открыть видео с выбранного момента">
+        <span class="vb-frames" style="display:flex"></span>
+        <span class="vb-track"><span class="vb-cur"><span class="vb-tip">0:00</span></span></span>
+      </button>
+      <div class="vb-scale" aria-hidden="true"></div>
+    </div>
+  </div>
+
+  <div class="ghost" aria-hidden="true"><small>следующая секция</small><span class="g1"></span><span class="g2"></span></div>
+</section>
+
+<!-- ── C ── -->
+<section class="wrap variant" id="c">
+  <div class="meta">
+    <span class="letter">C</span>
+    <h2>Две двери</h2>
+    <span class="h">высота: <b data-h="c">—</b> · бюджет 140px</span>
+    <p><i>Внешне:</i> две светлые «двери» — «Я репетитор» и «Я ученик»; при наведении дверь распахивается шире и проявляет кадр ролика. Три оформления на выбор — переключатель ниже.</p>
+    <p><i>Функция:</i> видео раскрывается прямо на месте, без модалки; вторая дверь становится вкладкой сбоку. Каждая дверь помнит, где вы остановились, и показывает «просмотрено N%».</p>
+    <div class="skin" role="group" aria-label="Оформление дверей">Оформление:
+      <button class="pill sm" type="button" data-skin="light" aria-pressed="false">Белые</button>
+      <button class="pill sm" type="button" data-skin="tint" aria-pressed="true">Две краски</button>
+      <button class="pill sm" type="button" data-skin="frame" aria-pressed="false">Кадр</button>
+    </div>
+  </div>
+  <div class="ghost" aria-hidden="true"><span class="g3"></span><span class="g4"></span></div>
+
+  <div class="vc" data-measure="c" data-skin="tint">
+    <div class="door" data-v="teachers">
+      <div class="door-bg"></div>
+      <div class="door-in">
+        <div class="eyebrow">Видео<span class="eb-who"> для репетиторов</span> · 0:40</div>
+        <div class="door-row">
+          <div class="door-title">Я репетитор</div>
+          <span class="door-seen-t"></span>
+          <span class="door-cta"><svg class="ico fill"><use href="#i-play"/></svg>Смотреть</span>
+        </div>
+      </div>
+      <button class="door-hit" type="button" aria-label="Смотреть видео для репетиторов, 40 секунд"></button>
+      <div class="door-stage">
+        <video playsinline controls preload="none"></video>
+        <button class="door-collapse" type="button"><svg class="ico"><use href="#i-up"/></svg>Свернуть</button>
+      </div>
+      <div class="door-seen"></div>
+    </div>
+    <div class="door" data-v="students">
+      <div class="door-bg"></div>
+      <div class="door-in">
+        <div class="eyebrow">Видео<span class="eb-who"> для учеников</span> · 0:35</div>
+        <div class="door-row">
+          <div class="door-title">Я ученик</div>
+          <span class="door-seen-t"></span>
+          <span class="door-cta"><svg class="ico fill"><use href="#i-play"/></svg>Смотреть</span>
+        </div>
+      </div>
+      <button class="door-hit" type="button" aria-label="Смотреть видео для учеников, 35 секунд"></button>
+      <div class="door-stage">
+        <video playsinline controls preload="none"></video>
+        <button class="door-collapse" type="button"><svg class="ico"><use href="#i-up"/></svg>Свернуть</button>
+      </div>
+      <div class="door-seen"></div>
+    </div>
+  </div>
+
+  <div class="ghost" aria-hidden="true"><small>следующая секция</small><span class="g1"></span><span class="g2"></span></div>
+</section>
+
+<!-- ── D ── -->
+<section class="wrap variant" id="d">
+  <div class="meta">
+    <span class="letter">D</span>
+    <h2>Строка + мини-плеер</h2>
+    <span class="h">высота: <b data-h="d">—</b> · бюджет 64px</span>
+    <p><i>Внешне:</i> самая тонкая — одна строка между хайрлайнами с «эквалайзером», который оживает, пока играет видео.</p>
+    <p><i>Функция:</i> видео выпрыгивает в мини-плеер в углу экрана и продолжает играть, пока листаете главную; плеер можно перетащить в любой угол, развернуть или вынести в системный Picture-in-Picture.</p>
+  </div>
+  <div class="ghost" aria-hidden="true"><span class="g3"></span><span class="g4"></span></div>
+
+  <div class="vd" data-measure="d">
+    <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+    <span class="vd-text"></span>
+    <span class="seg" role="group" aria-label="Выбор ролика">
+      <button type="button" data-v="teachers" aria-pressed="true">Репетиторам</button>
+      <button type="button" data-v="students" aria-pressed="false">Ученикам</button>
+    </span>
+    <button class="round-btn vd-play" type="button" aria-label="Смотреть видео в мини-плеере"><svg class="ico fill"><use href="#i-play"/></svg></button>
+  </div>
+
+  <div class="ghost" aria-hidden="true"><small>следующая секция</small><span class="g1"></span><span class="g2"></span><span class="g3"></span></div>
+</section>
+<div style="height:40vh"></div>
+</main>
+
+<!-- общий плеер A/B -->
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Видео о GoodWorker" hidden>
+  <div class="modal-bg" data-close></div>
+  <div class="player">
+    <video playsinline controls></video>
+    <div class="m-err" hidden>Видео не загрузилось</div>
+  </div>
+  <button class="m-close" type="button" data-close aria-label="Закрыть видео"><svg class="ico"><use href="#i-x"/></svg></button>
+</div>
+
+<!-- мини-плеер D -->
+<div class="mini" hidden role="region" aria-label="Мини-плеер">
+  <video playsinline></video>
+  <div class="mini-bar">
+    <button type="button" data-act="pp" aria-label="Пауза"><svg class="ico"><use href="#i-pause"/></svg></button>
+    <button type="button" data-act="mute" aria-label="Выключить звук"><svg class="ico"><use href="#i-vol"/></svg></button>
+    <span class="sp"></span>
+    <button type="button" data-act="pip" aria-label="Картинка в картинке" hidden><svg class="ico"><use href="#i-pip"/></svg></button>
+    <button type="button" data-act="expand" aria-label="Развернуть"><svg class="ico"><use href="#i-expand"/></svg></button>
+    <button type="button" data-act="close" aria-label="Закрыть"><svg class="ico"><use href="#i-x"/></svg></button>
+  </div>
+  <div class="mini-prog"></div>
+</div>
+
+<script>
+(function () {
+  'use strict'
+  var DIR = '../../promo-videos/optimized/'
+  var VIDEOS = {
+    teachers: { preview: '../../public/promo/GoodWorker_Teachers_v5_480_preview.mp4', base: DIR + 'GoodWorker_Teachers_v5', poster: DIR + 'GoodWorker_Teachers_v5_1080.jpg', sec: 40, words: '40 секунд', who: 'репетиторов' },
+    students: { preview: '../../public/promo/GoodWorker_Students_480_preview.mp4', base: DIR + 'GoodWorker_Students', poster: DIR + 'GoodWorker_Students_1080.jpg', sec: 35, words: '35 секунд', who: 'учеников' }
+  }
+  var RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  var MOTION_MS = RM ? 0 : 520
+
+  function $(sel, root) { return (root || document).querySelector(sel) }
+  function $$(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)) }
+  function fmt(s) { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') }
+  function clamp(v, a, b) { return Math.min(b, Math.max(a, v)) }
+  function durOf(video, id) { return isFinite(video.duration) && video.duration > 0 ? video.duration : VIDEOS[id].sec }
+
+  function setSrc(video, id) {
+    if (video.dataset.v === id) return false
+    var v = VIDEOS[id]
+    video.dataset.v = id
+    video.poster = v.poster
+    video.innerHTML = '<source src="' + v.base + '_720.webm" type="video/webm"><source src="' + v.base + '_720.mp4" type="video/mp4">'
+    video.load()
+    return true
+  }
+  // Ошибка последнего <source> не всплывает — ловим на захвате и проверяем, что источников не осталось.
+  function onFail(video, fn) {
+    video.addEventListener('error', function () {
+      setTimeout(function () { if (video.networkState === HTMLMediaElement.NETWORK_NO_SOURCE || video.error) fn() }, 0)
+    }, true)
+  }
+  function whenMeta(video, fn) {
+    if (video.readyState >= 1) fn(); else video.addEventListener('loadedmetadata', fn, { once: true })
+  }
+  // FLIP: элемент прилетает из прямоугольника from (reverse — улетает в него)
+  function flip(el, from, reverse) {
+    if (RM || !from) return
+    var to = el.getBoundingClientRect()
+    var tf = 'translate(' + (from.left - to.left) + 'px,' + (from.top - to.top) + 'px) scale(' + (from.width / to.width) + ',' + (from.height / to.height) + ')'
+    if (reverse) { el.style.transform = tf; return }
+    el.style.transition = 'none'
+    el.style.transform = tf
+    void el.offsetWidth
+    el.style.transition = ''
+    el.style.transform = ''
+  }
+  function pickGroup(root, attr, id) {
+    $$('[data-v]', root).forEach(function (b) { b.setAttribute(attr, String(b.dataset.v === id)) })
+  }
+  function onVisible(el, inFn, outFn) {
+    if (!('IntersectionObserver' in window)) { inFn(); return }
+    new IntersectionObserver(function (es) { es.forEach(function (e) { e.isIntersecting ? inFn() : outFn && outFn() }) }, { threshold: 0.2 }).observe(el)
+  }
+
+  /* ── Общий плеер A/B ── */
+  var M = { el: $('#modal') }
+  M.player = $('.player', M.el); M.video = $('video', M.el)
+  M.err = $('.m-err', M.el); M.close = $('.m-close', M.el)
+  onFail(M.video, function () { M.err.hidden = false; M.err.style.backgroundImage = 'url(' + VIDEOS[M.video.dataset.v].poster + ')' })
+  function openModal(o) {
+    M.from = o.from; M.ret = document.activeElement; M.onClose = o.onClose
+    setSrc(M.video, o.id)
+    M.err.hidden = true
+    M.el.hidden = false
+    document.documentElement.classList.add('lock')
+    whenMeta(M.video, function () { M.video.currentTime = o.t || 0 })
+    M.video.play().catch(function () {})
+    flip(M.player, M.from && M.from.getBoundingClientRect())
+    requestAnimationFrame(function () { M.el.classList.add('on') })
+    M.close.focus({ preventScroll: true })
+  }
+  function closeModal() {
+    if (M.el.hidden) return
+    M.video.pause()
+    M.el.classList.remove('on')
+    flip(M.player, M.from && M.from.getBoundingClientRect(), true)
+    setTimeout(function () {
+      M.el.hidden = true
+      M.player.style.transform = ''
+      document.documentElement.classList.remove('lock')
+      if (M.ret) M.ret.focus({ preventScroll: true })
+      if (M.onClose) M.onClose()
+    }, MOTION_MS)
+  }
+  $$('[data-close]', M.el).forEach(function (b) { b.addEventListener('click', closeModal) })
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal() })
+  // фокус не уходит из диалога
+  M.el.addEventListener('keydown', function (e) {
+    if (e.key !== 'Tab') return
+    var f = [M.video, M.close]
+    var first = f[0], last = f[f.length - 1]
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
+  })
+
+  /* ── A · Кружок ── */
+  ;(function () {
+    var root = $('.va'), circle = $('.va-circle', root), prev = $('video', circle)
+    var bar = $('.ring-svg .b', circle), dur = $('[data-dur]', root), thumb = $('.va-thumb', root)
+    var id = null, visible = false
+    function label() { circle.setAttribute('aria-label', 'Смотреть видео для ' + VIDEOS[id].who + ', ' + VIDEOS[id].words) }
+    function play() { if (visible && !RM && M.el.hidden) prev.play().catch(function () {}) }
+    function moveThumb() {
+      var b = $('[aria-pressed="true"]', root)
+      thumb.style.width = b.offsetWidth + 'px'
+      thumb.style.transform = 'translateX(' + b.offsetLeft + 'px)'
+    }
+    function pick(next) {
+      if (next === id) return
+      id = next; root.dataset.v = id
+      pickGroup(root, 'aria-pressed', id)
+      dur.textContent = fmt(VIDEOS[id].sec)
+      label(); moveThumb()
+      // превью — беззвучное 480p, в плеере — 720p
+      prev.poster = VIDEOS[id].poster; prev.src = VIDEOS[id].preview; play()
+    }
+    function watch() {
+      prev.pause()
+      openModal({ id: id, from: circle, onClose: play })
+    }
+    prev.addEventListener('timeupdate', function () {
+      bar.setAttribute('stroke-dashoffset', String(100 - (prev.currentTime / durOf(prev, id)) * 100))
+    })
+    // выбор роли сразу открывает плеер
+    $$('[data-v]', root).forEach(function (b) { b.addEventListener('click', function () { pick(b.dataset.v); watch() }) })
+    circle.addEventListener('click', watch)
+    onVisible(root, function () { visible = true; play() }, function () { visible = false; prev.pause() })
+    window.addEventListener('resize', moveThumb)
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveThumb)
+    pick('teachers')
+    requestAnimationFrame(function () { root.classList.add('ready') })
+  })()
+
+  /* ── B · Плёнка ── */
+  ;(function () {
+    var root = $('.vb'), film = $('.vb-film', root), frames = $('.vb-frames', root)
+    var cur = $('.vb-cur', root), tip = $('.vb-tip', root), scale = $('.vb-scale', root)
+    var probe = document.createElement('video')
+    probe.muted = true; probe.playsInline = true; probe.preload = 'auto'
+    var id = 'teachers', token = 0, n = 0, dur = VIDEOS[id].sec, started = false, frac = 0
+
+    function renderScale() {
+      var marks = film.clientWidth < 480 ? [0, .5, 1] : [0, .25, .5, .75, 1]
+      scale.innerHTML = marks.map(function (m) { return '<span style="left:' + (m * 100) + '%">' + fmt(m * dur) + '</span>' }).join('')
+    }
+    function fallback(my) {
+      if (my !== token) return
+      $$('canvas', frames).forEach(function (c) { c.classList.remove('loading'); c.style.backgroundImage = 'url(' + VIDEOS[id].poster + ')' })
+    }
+    function waitFor(ev, my) {
+      return new Promise(function (res, rej) {
+        var t = setTimeout(function () { rej() }, 8000)
+        probe.addEventListener(ev, function () { clearTimeout(t); res() }, { once: true })
+        probe.addEventListener('error', function () {
+          setTimeout(function () { if (probe.networkState === HTMLMediaElement.NETWORK_NO_SOURCE || probe.error) { clearTimeout(t); rej() } }, 0)
+        }, { once: true, capture: true })
+      })
+    }
+    function build() {
+      var count = Math.max(4, Math.floor(frames.clientWidth / (frames.clientHeight + 3)))
+      if (count === n && frames.children.length) { renderScale(); return }
+      n = count
+      frames.innerHTML = ''
+      for (var i = 0; i < n; i++) {
+        var c = document.createElement('canvas'); c.width = c.height = 144; c.className = 'loading'
+        frames.appendChild(c)
+      }
+      extract()
+    }
+    async function extract() {
+      var my = ++token
+      dur = VIDEOS[id].sec; renderScale()
+      probe.removeAttribute('data-v')
+      var meta = waitFor('loadedmetadata', my)
+      setSrc(probe, id)
+      try { await meta } catch (e) { fallback(my); return }
+      if (my !== token) return
+      dur = durOf(probe, id); renderScale()
+      var cs = $$('canvas', frames)
+      for (var i = 0; i < cs.length; i++) {
+        var seeked = waitFor('seeked', my)
+        probe.currentTime = ((i + .5) / cs.length) * dur
+        try { await seeked } catch (e) { fallback(my); return }
+        if (my !== token) return
+        cs[i].getContext('2d').drawImage(probe, 0, 0, 144, 144)
+        cs[i].classList.remove('loading')
+      }
+    }
+    function pick(next) {
+      id = next; pickGroup(root, 'aria-pressed', id)
+      if (started) { n = 0; build() }
+    }
+    film.addEventListener('pointermove', function (e) {
+      var r = frames.getBoundingClientRect()
+      frac = clamp((e.clientX - r.left) / r.width, 0, 1)
+      cur.style.left = (frac * 100) + '%'
+      tip.textContent = fmt(frac * dur)
+      film.classList.add('hov')
+    })
+    film.addEventListener('pointerleave', function () { film.classList.remove('hov') })
+    film.addEventListener('click', function (e) {
+      if (e.detail === 0) frac = 0 // клавиатура — с начала
+      else {
+        var r = frames.getBoundingClientRect()
+        frac = clamp((e.clientX - r.left) / r.width, 0, 1)
+      }
+      var cs = frames.children
+      var from = cs[Math.min(cs.length - 1, Math.floor(frac * cs.length))] || film
+      openModal({ id: id, t: frac * dur, from: from })
+    })
+    $$('[data-v]', root).forEach(function (b) { b.addEventListener('click', function () { pick(b.dataset.v) }) })
+    onVisible(root, function () { if (!started) { started = true; build() } })
+    var rt
+    window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { if (started) build() }, 200) })
+    renderScale()
+  })()
+
+  /* ── C · Две двери ── */
+  ;(function () {
+    var root = $('.vc'), doors = $$('.door', root)
+    function openH() { return Math.round(Math.min(420, window.innerHeight * .7, root.clientWidth - (window.innerWidth <= 600 ? 48 : 64) - 10)) }
+    doors.forEach(function (door) {
+      var id = door.dataset.v, video = $('video', door), seen = 0
+      $('.door-bg', door).style.backgroundImage = 'url(' + VIDEOS[id].poster + ')'
+      onFail(video, function () { video.removeAttribute('controls') })
+      video.addEventListener('timeupdate', function () {
+        seen = Math.max(seen, video.currentTime / durOf(video, id))
+        var p = Math.round(seen * 100)
+        $('.door-seen', door).style.width = p + '%'
+        $('.door-seen-t', door).textContent = p >= 98 ? 'просмотрено' : 'просмотрено ' + p + '%'
+      })
+      $('.door-hit', door).addEventListener('click', function () { open(door) })
+      $('.door-collapse', door).addEventListener('click', collapse)
+    })
+    function open(door) {
+      doors.forEach(function (d) {
+        var on = d === door
+        d.classList.toggle('active', on)
+        if (!on) $('video', d).pause()
+      })
+      root.classList.add('open')
+      root.style.height = openH() + 'px'
+      var video = $('video', door)
+      setSrc(video, door.dataset.v)
+      video.play().catch(function () {})
+      $('.door-collapse', door).focus({ preventScroll: true })
+    }
+    function collapse() {
+      var active = $('.door.active', root)
+      doors.forEach(function (d) { $('video', d).pause() })
+      root.style.height = ''
+      root.classList.remove('open')
+      doors.forEach(function (d) { d.classList.remove('active') })
+      if (active) $('.door-hit', active).focus({ preventScroll: true })
+    }
+    window.addEventListener('resize', function () { if (root.classList.contains('open')) root.style.height = openH() + 'px' })
+    $$('[data-skin]', $('#c .skin')).forEach(function (b) {
+      b.addEventListener('click', function () {
+        root.dataset.skin = b.dataset.skin
+        $$('[data-skin]', $('#c .skin')).forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)) })
+      })
+    })
+  })()
+
+  /* ── D · Строка + мини-плеер ── */
+  ;(function () {
+    var row = $('.vd'), text = $('.vd-text', row), playBtn = $('.vd-play', row)
+    var mini = $('.mini'), video = $('video', mini), prog = $('.mini-prog', mini)
+    var id = 'teachers', corner = 'br', expanded = false
+    var btn = function (a) { return $('[data-act="' + a + '"]', mini) }
+    function idle() {
+      text.innerHTML = '<b>GoodWorker</b> за ' + VIDEOS[id].words + ' <span class="muted">— видео для ' + VIDEOS[id].who + '</span>'
+    }
+    function status() {
+      text.innerHTML = 'Смотрите в углу экрана <span class="muted">· ' + fmt(video.currentTime) + ' / ' + fmt(durOf(video, id)) + '</span>'
+    }
+    function size() { var s = window.innerWidth < 600; return expanded ? (s ? 260 : 420) : (s ? 160 : 240) }
+    function place() {
+      var s = size(), m = 20, W = document.documentElement.clientWidth, H = window.innerHeight
+      mini.style.width = s + 'px'
+      mini.style.left = (corner[1] === 'r' ? W - s - m : m) + 'px'
+      mini.style.top = (corner[0] === 'b' ? H - s - m : m) + 'px'
+    }
+    function isOpen() { return !mini.hidden }
+    function start() {
+      var changed = setSrc(video, id)
+      if (!isOpen()) {
+        mini.hidden = false
+        mini.classList.add('drag'); place(); void mini.offsetWidth; mini.classList.remove('drag')
+        flip(mini, playBtn.getBoundingClientRect())
+        row.classList.add('open')
+      }
+      if (changed) video.currentTime = 0
+      video.muted = false; syncMute()
+      video.play().catch(function () {})
+      status()
+    }
+    function stop() {
+      video.pause()
+      flip(mini, playBtn.getBoundingClientRect(), true)
+      setTimeout(function () { mini.hidden = true; mini.style.transform = ''; row.classList.remove('open', 'playing'); idle() }, MOTION_MS)
+      playBtn.focus({ preventScroll: true })
+    }
+    function syncMute() {
+      var b = btn('mute')
+      b.setAttribute('aria-label', video.muted ? 'Включить звук' : 'Выключить звук')
+      $('use', b).setAttribute('href', video.muted ? '#i-mute' : '#i-vol')
+    }
+    function syncPP() {
+      var b = btn('pp')
+      b.setAttribute('aria-label', video.paused ? 'Играть' : 'Пауза')
+      var ico = $('svg', b); ico.classList.toggle('fill', video.paused)
+      $('use', b).setAttribute('href', video.paused ? '#i-play' : '#i-pause')
+      row.classList.toggle('playing', !video.paused)
+      playBtn.setAttribute('aria-label', video.paused ? 'Смотреть видео в мини-плеере' : 'Пауза')
+      var pi = $('svg', playBtn); pi.classList.toggle('fill', video.paused)
+      $('use', playBtn).setAttribute('href', video.paused ? '#i-play' : '#i-pause')
+    }
+    video.addEventListener('play', syncPP)
+    video.addEventListener('pause', syncPP)
+    video.addEventListener('timeupdate', function () {
+      prog.style.width = (video.currentTime / durOf(video, id) * 100) + '%'
+      if (isOpen()) status()
+    })
+    onFail(video, function () { if (isOpen()) text.innerHTML = 'Видео не загрузилось' })
+    playBtn.addEventListener('click', function () { isOpen() && !video.paused ? video.pause() : start() })
+    $$('[data-v]', row).forEach(function (b) {
+      b.addEventListener('click', function () {
+        id = b.dataset.v; pickGroup(row, 'aria-pressed', id)
+        if (isOpen()) start(); else idle()
+      })
+    })
+    btn('pp').addEventListener('click', function () { video.paused ? video.play() : video.pause() })
+    btn('mute').addEventListener('click', function () { video.muted = !video.muted; syncMute() })
+    btn('expand').addEventListener('click', function () {
+      expanded = !expanded; place()
+      btn('expand').setAttribute('aria-label', expanded ? 'Уменьшить' : 'Развернуть')
+    })
+    btn('close').addEventListener('click', stop)
+    if (document.pictureInPictureEnabled) {
+      btn('pip').hidden = false
+      btn('pip').addEventListener('click', function () { video.requestPictureInPicture().catch(function () {}) })
+    }
+    // перетаскивание: отпустили — прилипает к ближайшему углу
+    var drag = null
+    mini.addEventListener('pointerdown', function (e) {
+      if (e.target.closest('button')) return
+      var r = mini.getBoundingClientRect()
+      drag = { x: e.clientX, y: e.clientY, l: r.left, t: r.top, moved: false }
+      mini.setPointerCapture(e.pointerId)
+      mini.classList.add('drag')
+    })
+    mini.addEventListener('pointermove', function (e) {
+      if (!drag) return
+      var dx = e.clientX - drag.x, dy = e.clientY - drag.y
+      if (Math.abs(dx) + Math.abs(dy) > 4) drag.moved = true
+      mini.style.left = drag.l + dx + 'px'
+      mini.style.top = drag.t + dy + 'px'
+    })
+    function drop() {
+      if (!drag) return
+      mini.classList.remove('drag')
+      if (drag.moved) {
+        var r = mini.getBoundingClientRect()
+        corner = (r.top + r.height / 2 > window.innerHeight / 2 ? 'b' : 't') + (r.left + r.width / 2 > window.innerWidth / 2 ? 'r' : 'l')
+        place()
+      } else {
+        video.paused ? video.play() : video.pause()
+      }
+      drag = null
+    }
+    mini.addEventListener('pointerup', drop)
+    mini.addEventListener('pointercancel', drop)
+    window.addEventListener('resize', function () { if (isOpen()) place() })
+    idle()
+  })()
+
+  /* ── Живой замер высоты блоков ── */
+  function measure() {
+    $$('[data-measure]').forEach(function (el) {
+      if (el.classList.contains('open')) return
+      $('[data-h="' + el.dataset.measure + '"]').textContent = Math.round(el.getBoundingClientRect().height) + 'px'
+    })
+  }
+  window.addEventListener('resize', measure)
+  window.addEventListener('load', measure)
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure)
+  measure()
+})()
+</script>
+</body>
+</html>

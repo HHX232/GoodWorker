@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react'
 import { useLocale, useTranslations } from 'next-intl'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { slugify } from '@/shared/lib/slugify'
 import { useMediaQuery } from '@/shared/hooks/useMediaQuery'
 import { angleArmsEqual, readThreeDZone, type AngleArm, type SnapRef, type ThreeDZone, type ZoneSelection } from '@/widgets/VideoRoom/CallWhiteboard/shapeGeometry'
@@ -15,8 +15,10 @@ import type { ExcalidrawElement } from '@excalidraw/excalidraw/element/types'
 import type { ExcalidrawImperativeAPI, Zoom } from '@excalidraw/excalidraw/types'
 import s from './LandingPage.module.scss'
 import TypingText from './TypingText'
+import PromoVideo from './PromoVideo'
 import { LecturePromo } from './LecturePromo/LecturePromo'
 import { FilesPromo } from './FilesPromo/FilesPromo'
+import { SECTION_ORDER, type Audience, type SectionId } from './audience'
 
 const KnowledgeGlobe    = dynamic(() => import('./KnowledgeGlobe'),    { ssr: false })
 const ThreeShape        = dynamic(() => import('./ThreeShape'),        { ssr: false })
@@ -145,23 +147,36 @@ const H1_PRESETS: { label: string; main: string; hl: string }[] = [
   { label: 'Вариант пользователя Б',    main: 'Всё для урока —',    hl: 'бесплатно, в одном месте' },
   { label: 'Обе роли явно',             main: 'Давайте знания. Получайте знания.', hl: 'рутину берём на себя' },
 ]
+// варианты для ?isForStudent
+const H1_PRESETS_STUDENT: typeof H1_PRESETS = [
+  { label: 'Сейчас',                 main: 'Получайте знания —',        hl: 'рутину берём на себя' },
+  { label: 'Только знания',          main: 'Получайте только знания —', hl: 'рутина на нас' },
+  { label: 'Короче',                 main: 'Только знания —',           hl: 'рутина на нас' },
+  { label: 'Учёба без отвлечений',   main: 'Вы получаете знания —',     hl: 'мы забираем рутину' },
+  { label: 'Результат',              main: 'Высокие результаты —',      hl: 'без лишней рутины' },
+  { label: 'Цель',                   main: 'Идите к своей цели —',      hl: 'рутину берём на себя' },
+  { label: 'ЦТ, как в ролике',       main: 'Ваша цель — 90+ на ЦТ.',    hl: 'Остальное — на нас' },
+  { label: 'Фокус',                  main: 'Думайте об учёбе —',        hl: 'остальное сделаем мы' },
+]
 
-function HeroH1DevTab({ main, hl, onChange, onReset }: {
+function HeroH1DevTab({ main, hl, presets = H1_PRESETS, onChange, onReset }: {
   main: string; hl: string
+  presets?: typeof H1_PRESETS
   onChange: (main: string, hl: string) => void
   onReset: () => void
 }) {
   const [open, setOpen] = useState(false)
   return (
     <div style={{
-      position: 'fixed', left: 12, bottom: 12, zIndex: 999,
+      // выше значка dev-инструментов Next в том же углу
+      position: 'fixed', left: 12, bottom: 64, zIndex: 999,
       fontFamily: 'ui-monospace, monospace', fontSize: 12,
     }}>
       {open ? (
         <div style={{
           width: 300, background: '#1a1a1f', color: '#e8e8ef', borderRadius: 10,
           border: '1px solid #33333c', boxShadow: '0 12px 32px -8px rgba(0,0,0,0.5)',
-          padding: 12,
+          padding: 12, maxHeight: 'calc(100vh - 80px)', overflowY: 'auto',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
             <span style={{ fontWeight: 700, color: '#ffd23e' }}>DEV · H1 editor</span>
@@ -191,7 +206,7 @@ function HeroH1DevTab({ main, hl, onChange, onReset }: {
           />
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 10 }}>
-            {H1_PRESETS.map(p => (
+            {presets.map(p => (
               <button
                 key={p.label}
                 onClick={() => onChange(p.main, p.hl)}
@@ -223,8 +238,10 @@ function HeroH1DevTab({ main, hl, onChange, onReset }: {
 }
 
 // ─── Hero ───────────────────────────────────────────────────────
-function HeroSection() {
+function HeroSection({ audience }: { audience: Audience | null }) {
   const t = useTranslations('LandingPage')
+  // newUser и «без параметра» — исходные тексты hero_*, teacher/student — hero_teacher_* / hero_student_*
+  const hk = (name: string) => t(`hero_${audience === 'teacher' || audience === 'student' ? `${audience}_` : ''}${name}` as Parameters<typeof t>[0])
   const { data: session } = useSession()
   const user = session?.user as { name?: string; role?: string } | undefined
   const stats = usePublicStats()
@@ -233,16 +250,18 @@ function HeroSection() {
   const isMobile = useMediaQuery('(max-width: 860px)')
 
   const [h1Override, setH1Override] = useState<{ main: string; hl: string } | null>(null)
+  // правка заголовка из dev-панели хранится отдельно для каждой аудитории, иначе перебивает заголовок из квери
+  const devKey = audience ? `${H1_DEV_STORAGE_KEY}:${audience}` : H1_DEV_STORAGE_KEY
   useEffect(() => {
     if (process.env.NODE_ENV !== 'development') return
     try {
-      const saved = localStorage.getItem(H1_DEV_STORAGE_KEY)
-      if (saved) setH1Override(JSON.parse(saved))
+      const saved = localStorage.getItem(devKey)
+      setH1Override(saved ? JSON.parse(saved) : null)
     } catch {}
-  }, [])
+  }, [devKey])
 
-  const h1Main = h1Override?.main ?? t('hero_h1')
-  const h1Hl = h1Override?.hl ?? t('hero_h1_hl')
+  const h1Main = h1Override?.main ?? hk('h1')
+  const h1Hl = h1Override?.hl ?? hk('h1_hl')
 
   return (
     <div className={s.hero}>
@@ -250,13 +269,14 @@ function HeroSection() {
         <HeroH1DevTab
           main={h1Main}
           hl={h1Hl}
+          presets={audience === 'student' ? H1_PRESETS_STUDENT : undefined}
           onChange={(main, hl) => {
             setH1Override({ main, hl })
-            try { localStorage.setItem(H1_DEV_STORAGE_KEY, JSON.stringify({ main, hl })) } catch {}
+            try { localStorage.setItem(devKey, JSON.stringify({ main, hl })) } catch {}
           }}
           onReset={() => {
             setH1Override(null)
-            try { localStorage.removeItem(H1_DEV_STORAGE_KEY) } catch {}
+            try { localStorage.removeItem(devKey) } catch {}
           }}
         />
       )}
@@ -277,17 +297,12 @@ function HeroSection() {
 
         <div className={s.hero_typing}>
           <TypingText
-            phrases={[
-              t('hero_phrase1'),
-              t('hero_phrase2'),
-              t('hero_phrase3'),
-              t('hero_phrase4'),
-            ]}
+            phrases={[hk('phrase1'), hk('phrase2'), hk('phrase3'), hk('phrase4')]}
             accent={RED}
           />
         </div>
 
-        <p className={s.hero_desc}>{t('hero_desc')}</p>
+        <p className={s.hero_desc}>{hk('desc')}</p>
 
         <div className={s.hero_stats}>
           <StatItem n={stats ? fmtStat(stats.calls) : '…'} label={t('stat_calls')} first />
@@ -297,7 +312,32 @@ function HeroSection() {
         </div>
 
         <div className={s.hero_cta}>
-          {user?.role === 'TEACHER' || user?.role === 'ADMIN' ? (
+          {audience === 'teacher' ? (
+            <>
+              <Link href="/teacher-profile" className={s.btn_dark}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                {t('btn_start_lesson')}
+              </Link>
+              <Link href="/calendar" className={s.btn_outline}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
+                </svg>
+                {t('hero_teacher_btn_calendar')}
+              </Link>
+            </>
+          ) : audience === 'student' ? (
+            <>
+              <Link href="/teachers" className={`${s.btn_dark} ${s.btn_dark_bordered}`}>
+                {t('hero_student_btn_teacher')}
+              </Link>
+              <Link href="/workflows-list" className={s.btn_outline}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H12v18H6.5A2.5 2.5 0 0 0 4 22.5z" /><path d="M12 2h5.5A2.5 2.5 0 0 1 20 4.5v16a2.5 2.5 0 0 0-2.5-2.5H12z" />
+                </svg>
+                {t('hero_student_btn_course')}
+              </Link>
+            </>
+          ) : user?.role === 'TEACHER' || user?.role === 'ADMIN' ? (
             <>
               <Link href="/teacher-profile" className={s.btn_dark}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
@@ -305,6 +345,15 @@ function HeroSection() {
               </Link>
               <Link href="/create-road-map" className={s.btn_outline}>
                 {t('btn_create_course')} <span>+</span>
+              </Link>
+            </>
+          ) : !user && audience === 'newUser' ? (
+            <>
+              <Link href="/register" className={`${s.btn_dark} ${s.btn_dark_bordered}`}>
+                {t('btn_register')}
+              </Link>
+              <Link href="/teachers" className={s.btn_outline}>
+                {t('btn_find_teacher')}
               </Link>
             </>
           ) : (
@@ -1759,33 +1808,32 @@ function SubNav() {
 }
 
 // ─── Page ───────────────────────────────────────────────────────
-export default function LandingPage() {
+export default function LandingPage({ audience = null }: { audience?: Audience | null }) {
+  const sections: Record<SectionId, React.ReactNode> = {
+    promo: <PromoVideo defaultRole={audience === 'student' ? 'students' : 'teachers'} />,
+    video: <VideoSection />,
+    calendar: <CalendarSection />,
+    course: <CourseSection />,
+    features: <FeaturesBlock />,
+    teachers: <TeachersBlock />,
+    lecture: <LecturePromo />,
+    files: <FilesPromo />,
+    pdf: <PdfTestPromo />,
+    posts: <PostsSlider />,
+  }
   return (
     <>
     <TeacherAppointmentBar />
     <div className={s.page}>
       <div className={s.container}>
         <SubNav />
-        <HeroSection />
-        <Divider />
-        {/* Order: board → calendar → teachers → lecture notes → files → courses → the rest */}
-        <VideoSection />
-        <Divider />
-        <CalendarSection />
-        <Divider />
-        <TeachersBlock />
-        <Divider />
-        <LecturePromo />
-        <Divider />
-        <FilesPromo />
-        <Divider />
-        <CourseSection />
-        <Divider />
-        <FeaturesBlock />
-        <Divider />
-        <PdfTestPromo />
-        <Divider />
-        <PostsSlider />
+        <HeroSection audience={audience} />
+        {SECTION_ORDER[audience ?? 'newUser'].map(id => (
+          <Fragment key={id}>
+            {id !== 'promo' && <Divider />}
+            {sections[id]}
+          </Fragment>
+        ))}
       </div>
     </div>
     </>
