@@ -495,7 +495,7 @@ useEffect(() => {
   // Set once the owner's exit has started — before that a reload/closed tab must not finalize.
   const ownerLeaving = useRef(false)
   const sendCallNotesFinish = useCallback(() => {
-    if (!callNotesOn || notesFinishSent.current) return
+    if (!isOwner || notesFinishSent.current) return
     notesFinishSent.current = true
     fetch('/api/call/notes/finish', {
       method: 'POST',
@@ -503,10 +503,10 @@ useEffect(() => {
       body: JSON.stringify({ roomName }),
       keepalive: true,
     }).catch(e => console.warn('[callNotes] finish failed', e))
-  }, [callNotesOn, roomName])
+  }, [isOwner, roomName])
   // Tab closed anywhere on the way out (during «Анализирую…», in the errors window) — a beacon instead.
   useEffect(() => {
-    if (!callNotesOn) return
+    if (!isOwner) return
     const onLeave = () => {
       if (!ownerLeaving.current || notesFinishSent.current) return
       notesFinishSent.current = true
@@ -518,7 +518,7 @@ useEffect(() => {
       window.removeEventListener('pagehide', onLeave)
       window.removeEventListener('beforeunload', onLeave)
     }
-  }, [callNotesOn, roomName])
+  }, [isOwner, roomName])
 
   const leaveRoom = useCallback(() => {
     // Ask the agent for its accumulated transcript before showing summary
