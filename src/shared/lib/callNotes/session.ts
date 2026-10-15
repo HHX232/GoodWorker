@@ -1,4 +1,6 @@
-import type { LectureNote, Prisma, VideoCallRoom } from '@prisma/client'
+import type { LectureNote, LectureStatus, Prisma, VideoCallRoom } from '@prisma/client'
+import { createHash } from 'crypto'
+import { after } from 'next/server'
 import { prisma } from '@/shared/prisma/prisma'
 import { hasAIProvider, type VisionImage } from '@/lib/openrouter'
 import { MAX_FOLDER_DEPTH } from '@/shared/lib/tutorFiles/constants'
@@ -14,6 +16,7 @@ import { DriveError, ensureLecturesFolder } from '@/shared/lib/studentDrive/driv
 import { createNotification, NOTIFICATION_TYPES } from '@/shared/lib/notifications'
 import { appendSection, applyBoardItems, applyTidy, asDoc, docTail, flatBlocks, newSectionsBlocks, sectionTitles, type Doc } from './docOps'
 import { chooseFolder, LESSON_NOTE, nameNote, readBoard, tidySections } from './ai'
+import { errorsFor } from './errorsSection'
 
 // Video-call auto-notes. The room owner's client ticks once a minute (new lines +
 // board tiles) into the master notes — a LectureNote with callRoomId, owned by the
@@ -24,6 +27,13 @@ interface Person { id: string; role: 'STUDENT' | 'TEACHER' }
 
 /** Every N ticks the new sections get a junk pass. */
 const TIDY_EVERY = 3
+/** How often the notes are quietly filed into everyone's storage during the call (spec A7). */
+const SAVE_EVERY_MS = 10 * 60_000
+/** Fingerprint of a doc — `savedHash` says whether the notes changed since the last quiet save. */
+const docHash = (doc: Doc) => createHash('sha1').update(JSON.stringify(doc)).digest('hex')
+/** Ten minutes since the last quiet save (or the start) and the notes changed since it. */
+const saveDue = (m: Pick<LectureNote, 'savedAt' | 'savedHash' | 'createdAt'>, doc: Doc) =>
+  Date.now() - (m.savedAt ?? m.createdAt).getTime() >= SAVE_EVERY_MS && docHash(doc) !== m.savedHash
 
 const asRole = (role: string | null): Person['role'] | null => (role === 'STUDENT' ? 'STUDENT' : role === 'TEACHER' || role === 'ADMIN' ? 'TEACHER' : null)
 const roomOwner = (room: VideoCallRoom): Person => ({ id: room.ownerId, role: asRole(room.ownerRole) ?? 'TEACHER' })
@@ -41,6 +51,8 @@ export async function ownedRoom(roomName: string, user: LectureUser): Promise<Vi
 // ponytail: one Node process; with several instances this needs a flag in the DB.
 const inFlight = new Map<string, Promise<unknown>>()
 const TICK_WAIT_MS = 60_000
+// The quiet mid-call save running for a room — the finale waits for it (same process, see above).
+const saving = new Map<string, Promise<void>>()
 
 async function categoryName(categoryId: string | null): Promise<string> {
   if (!categoryId) return ''
@@ -48,9 +60,12 @@ async function categoryName(categoryId: string | null): Promise<string> {
   return (rows.find(r => r.langCode === 'ru') ?? rows[0])?.name ?? ''
 }
 
-/** The lecture context block + "this is a two-sided lesson". */
-const promptOf = (ctx: LectureContext, note: Pick<LectureNote, 'title' | 'language'>) =>
-  [contextPrompt(ctx, note.title, note.language), LESSON_NOTE].filter(Boolean).join('\n')
+/**
+ * The lecture context block + "this is a two-sided lesson". No title: the master's is the
+ * AI's own early name (first quiet save) — fed back it would stick to the final one.
+ */
+const promptOf = (ctx: LectureContext, note: Pick<LectureNote, 'language'>) =>
+  [contextPrompt(ctx, '', note.language), LESSON_NOTE].filter(Boolean).join('\n')
 
 /** Made on the first tick that has something in it — an empty lesson leaves nothing behind. */
 async function ensureMaster(room: VideoCallRoom, owner: Person): Promise<LectureNote> {
@@ -65,7 +80,17 @@ async function ensureMaster(room: VideoCallRoom, owner: Person): Promise<Lecture
   })
 }
 
-export type TickResult = { ok: boolean; reason?: 'NOT_FOUND' | 'FORBIDDEN' | 'NO_AI'; board?: 'failed' }
+export type TickResult = {
+  ok: boolean
+  reason?: 'NOT_FOUND' | 'FORBIDDEN' | 'NO_AI'
+  board?: 'failed'
+  /** When the master exists and this tick saved it: for the owner's status line and the `call_notes_updated` signal. */
+  docVersion?: number
+  sections?: number
+  savedAt?: string | null
+  /** Present (true) only when this tick ran the junk pass over the new sections. */
+  tidied?: true
+}
 
 /**
  * One tick: new transcript lines → a section (lecture pipeline), board tiles → added /
@@ -140,8 +165,74 @@ async function tick(opts: { user: LectureUser; roomName: string; transcript: str
     const now = await prisma.lectureNote.findUnique({ where: { id: lectureId }, select: { status: true } })
     if (now?.status === 'RECORDING') throw new Error('call notes: save conflict while recording')
     console.warn('[callNotes] tick lost to the finale', opts.roomName)
+    return board ? { ok: true, board } : { ok: true }
   }
-  return board ? { ok: true, board } : { ok: true }
+  // Ten minutes since the last quiet save (or the start) and the notes changed since it → file them again, after the response.
+  const due = saveDue(master, doc)
+  if (due) {
+    const save = () => checkpoint(room, lectureId)
+    try { after(save) } catch { void save() }
+  }
+  const info = {
+    docVersion: saved.docVersion,
+    sections: sectionTitles(doc).length,
+    // A save just started → no time yet (the client keeps the last one); the next tick reports it.
+    ...(!due && { savedAt: master.savedAt?.toISOString() ?? null }),
+    ...(tidiedSeq !== master.tidiedSeq && { tidied: true as const }),
+  }
+  return board ? { ok: true, board, ...info } : { ok: true, ...info }
+}
+
+/**
+ * Quiet mid-call save: the same filing as the finale, without the bell. One at a time,
+ * never once the finale took the notes (needs RECORDING; the finale waits for it).
+ * `savedAt` / `savedHash` are stamped only after the filing went through.
+ */
+function checkpoint(room: VideoCallRoom, masterId: string): Promise<void> {
+  const running = saving.get(room.name)
+  if (running) return running
+  const run = (async () => {
+    // Re-checked under the lock: a tick that queued this before the last save stamped has nothing to do.
+    const now = await prisma.lectureNote.findUnique({ where: { id: masterId }, select: { status: true, savedAt: true, savedHash: true, createdAt: true, docJson: true } })
+    if (now?.status !== 'RECORDING' || !saveDue(now, asDoc(now.docJson))) return
+    const filed = await fileNotes(room, masterId, false)
+    if (filed) await prisma.lectureNote.updateMany({ where: { id: masterId, status: 'RECORDING' }, data: { savedAt: new Date(), savedHash: docHash(filed) } })
+  })()
+    .catch(e => console.error('[callNotes] quiet save failed', room.name, e))
+    .finally(() => saving.delete(room.name))
+  saving.set(room.name, run)
+  return run
+}
+
+export interface CallNotesView { id: string | null; doc: Doc | null; docVersion: number; sections: number; title: string; status: LectureStatus | null; savedAt: string | null }
+
+/**
+ * The live notes for the call panel — the owner and the participants the token route
+ * recorded. Once the lesson is filed, a participant gets their own copy (theirs has only
+ * their own mistakes) — `id` is the note shown (master during the call). No notes yet → `id/doc: null`.
+ */
+export async function readCallNotes(roomName: string, user: LectureUser): Promise<CallNotesView | 'NOT_FOUND' | 'FORBIDDEN'> {
+  const room = await prisma.videoCallRoom.findUnique({ where: { name: roomName } })
+  if (!room) return 'NOT_FOUND'
+  const owner = roomOwner(room)
+  const isOwner = owner.id === user.id && owner.role === user.role
+  if (!isOwner) {
+    const rows = await prisma.videoCallParticipant.findMany({ where: { roomId: room.id, userId: user.id }, select: { userRole: true } })
+    if (!rows.some(r => asRole(r.userRole) === user.role)) return 'FORBIDDEN'
+  }
+  const select = { id: true, docJson: true, docVersion: true, title: true, status: true, savedAt: true } as const
+  const master = await prisma.lectureNote.findUnique({ where: masterKey(room, owner), select })
+  const note = master && !isOwner && master.status !== 'RECORDING' ? await prisma.lectureNote.findUnique({ where: masterKey(room, user), select }) : master
+  if (!note) return { id: null, doc: null, docVersion: 0, sections: 0, title: '', status: null, savedAt: null }
+  return {
+    id: note.id,
+    doc: note.docJson ? asDoc(note.docJson) : null,
+    docVersion: note.docVersion,
+    sections: sectionTitles(note.docJson).length,
+    title: note.title,
+    status: note.status,
+    savedAt: master?.savedAt?.toISOString() ?? null,
+  }
 }
 
 /**
@@ -159,10 +250,12 @@ export async function finishCallNotes(roomName: string): Promise<void> {
   // The version bump makes a tick still in flight lose its save (saveDoc baseVersion).
   const { count } = await prisma.lectureNote.updateMany({ where: { id: master.id, status: 'RECORDING' }, data: { status: 'FINALIZING', docVersion: { increment: 1 } } })
   if (!count) return
+  // A quiet save still filing copies finishes first — the finale then replaces those files in place.
+  await saving.get(roomName)
   // ponytail: no retry — an after() killed mid-way leaves the master FINALIZING, a failed
   // finalize() still marks it READY without copies; add a sweeper/retry if that shows up.
   try {
-    await finalize(room, master.id)
+    await fileNotes(room, master.id, true)
   } catch (e) {
     console.error('[callNotes] finale failed', roomName, e)
   } finally {
@@ -170,15 +263,20 @@ export async function finishCallNotes(roomName: string): Promise<void> {
   }
 }
 
-async function finalize(room: VideoCallRoom, masterId: string): Promise<void> {
+/**
+ * Names the notes and files a copy (+ .docx) for everyone on the call. `final` — the
+ * finale: last tidy, the master gets its title, every copy its «Ошибки и поправки», and
+ * the bell rings. Otherwise a quiet mid-call save: the master isn't touched, no bell.
+ */
+async function fileNotes(room: VideoCallRoom, masterId: string, final: boolean): Promise<Doc | null> {
   const master = await prisma.lectureNote.findUniqueOrThrow({ where: { id: masterId } })
   let doc = asDoc(master.docJson)
-  if (!doc.content.length) { await prisma.lectureNote.delete({ where: { id: masterId } }); return }
+  if (!doc.content.length) { if (final) await prisma.lectureNote.delete({ where: { id: masterId } }); return null }
   const context = parseContext(master.context)
   const prompt = promptOf(context, master)
   const ai = hasAIProvider()
 
-  if (ai) {
+  if (final && ai) {
     try {
       doc = applyTidy(doc, master.tidiedSeq, await tidySections({ lectureId: masterId, context: prompt, blocks: newSectionsBlocks(doc, master.tidiedSeq) }))
     } catch (e) {
@@ -188,12 +286,13 @@ async function finalize(room: VideoCallRoom, masterId: string): Promise<void> {
 
   const subject = (await categoryName(room.categoryId)) || context.subject
   const date = room.createdAt.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
-  const title = (ai ? await nameNote({ context: prompt, transcriptHead: flatBlocks(doc).map(b => b.text).join('\n') }) : '') || `${subjectFolderName(subject || context.topic) || 'Урок'} — ${date}`
-  const docJson = doc as unknown as Prisma.InputJsonValue
-  await prisma.lectureNote.update({ where: { id: masterId }, data: { title, docJson, docVersion: { increment: 1 } } })
+  // Named once by the first quiet save (kept on the master), named again by the finale.
+  const kept = final || !master.title ? '' : master.title
+  const title = kept || (ai ? await nameNote({ context: prompt, transcriptHead: flatBlocks(doc).map(b => b.text).join('\n') }) : '') || `${subjectFolderName(subject || context.topic) || 'Урок'} — ${date}`
 
   // Everyone who was on the call: the owner + participants the token route recorded.
   const owner = roomOwner(room)
+  const isOwner = (p: Person) => p.id === owner.id && p.role === owner.role
   const rows = await prisma.videoCallParticipant.findMany({ where: { roomId: room.id, userId: { not: null } }, select: { userId: true, userRole: true } })
   const people = new Map<string, Person>([[`${owner.role}:${owner.id}`, owner]])
   for (const r of rows) {
@@ -204,28 +303,52 @@ async function finalize(room: VideoCallRoom, masterId: string): Promise<void> {
   const teacherName = named.find(p => p.role === 'TEACHER')?.name ?? ''
   const studentName = named.filter(p => p.role === 'STUDENT').map(p => p.name).join(', ')
 
-  // ponytail: board/graph blocks from the AI have no snapshot yet, so this .docx lacks them;
-  // they appear only after the notes are opened in the editor and saved to files FROM THERE (the
-  // profile button runs export before the editor opens, so it adds no snapshots).
-  const bytes = await lectureToDocx(doc as PMNode, title, teacherName || named[0].name, new Map())
+  // The finale's last section: the call's mistakes (after the tutor confirmed them) — a
+  // student their own, the owner / a tutor everyone's by student. None → no section.
+  const errors = final
+    ? (await prisma.studentError.findMany({
+        where: { sourceType: 'video_call', sourceId: room.name },
+        orderBy: { createdAt: 'asc' },
+        select: { studentId: true, description: true, fragment: true, isCorrection: true, student: { select: { name: true } } },
+      })).map(e => ({ ...e, studentName: e.student.name }))
+    : []
+  const seq = Math.max(master.processedSeq, master.tidiedSeq) + 1
+  const docOf = (p: Person): Doc => {
+    const md = errorsFor(errors, p)
+    return md ? appendSection(doc, markdownToBlocks(md), seq, null) : doc
+  }
+  if (final) await prisma.lectureNote.update({ where: { id: masterId }, data: { title, docJson: docOf(owner) as unknown as Prisma.InputJsonValue, docVersion: { increment: 1 } } })
+  // Title only — the doc stays the ticks' (no version bump, no clash with their saves).
+  else if (title !== master.title) await prisma.lectureNote.update({ where: { id: masterId }, data: { title } })
+
   const name = fileName(title, room.createdAt)
   const lesson = { subject, topic: context.topic, teacherName, studentName, studentIds: named.filter(p => p.role === 'STUDENT').map(p => p.id) }
 
   // Everyone at once (folder AI + upload each), so a lesson with several students fits in
   // the route's maxDuration; one person failing doesn't stop the others.
   const results = await Promise.allSettled(named.map(async person => {
-    const note = person.id === owner.id && person.role === owner.role
+    const personDoc = docOf(person)
+    const docJson = personDoc as unknown as Prisma.InputJsonValue
+    // ponytail: each save overwrites the copy — edits a participant makes to it during the
+    // call are lost; keep them (merge / skip `edited` copies) if people start doing that.
+    const note = isOwner(person)
       ? { id: masterId, fileId: master.fileId }
       : await prisma.lectureNote.upsert({
           where: masterKey(room, person),
           create: { ownerId: person.id, ownerRole: person.role, callRoomId: room.id, title, docJson, context: master.context ?? undefined, language: master.language, tidiedSeq: master.tidiedSeq, status: 'READY' },
-          update: {},
+          update: { title, docJson, docVersion: { increment: 1 } },
         })
-    await fileCopy(person, note, bytes, name, title, lesson)
+    // ponytail: board/graph blocks from the AI have no snapshot yet, so this .docx lacks them;
+    // they appear only after the notes are opened in the editor and saved to files FROM THERE (the
+    // profile button runs export before the editor opens, so it adds no snapshots).
+    const bytes = await lectureToDocx(personDoc as PMNode, title, teacherName || named[0].name, new Map())
+    return fileCopy(person, note, bytes, name, title, lesson, final)
   }))
   results.forEach((r, i) => {
     if (r.status === 'rejected') console.error('[callNotes] copy failed', room.name, named[i].role, named[i].id, r.reason)
   })
+  // Null when no copy reached anyone's storage — the quiet save then isn't stamped.
+  return results.some(r => r.status === 'fulfilled' && r.value) ? doc : null
 }
 
 async function personName(p: Person): Promise<string> {
@@ -237,19 +360,36 @@ async function personName(p: Person): Promise<string> {
 
 interface Lesson { subject: string; topic: string; teacherName: string; studentName: string; studentIds: string[] }
 
-/** The .docx into the folder picked for this person, then the bell. Out of space → the bell points at the editor. */
-async function fileCopy(person: Person, note: { id: string; fileId: string | null }, bytes: Buffer, name: string, title: string, lesson: Lesson): Promise<void> {
-  const notify = (ru: [string, string], en: [string, string], folderId: string | null, href: string) =>
-    createNotification({
+/**
+ * The .docx into the folder picked for this person (once — a file already saved is
+ * replaced where it lies), then the bell if `bell`. Out of space → the bell points at the editor.
+ * True when the file reached storage.
+ */
+async function fileCopy(person: Person, note: { id: string; fileId: string | null }, bytes: Buffer, name: string, title: string, lesson: Lesson, bell: boolean): Promise<boolean> {
+  let stored = false
+  const notify = async (ru: [string, string], en: [string, string], folderId: string | null, href: string) => {
+    if (!bell) return
+    await createNotification({
       type: NOTIFICATION_TYPES.CALL_NOTES_SAVED,
       title: ru[0], body: ru[1],
       titleTranslations: { en: en[0] }, bodyTranslations: { en: en[1] },
       payload: { lectureNoteId: note.id, folderId, href },
       ...(person.role === 'STUDENT' ? { studentId: person.id } : { teacherId: person.id }),
     })
+  }
   try {
-    const folderId = await pickFolder(person, lesson)
+    const filed = !note.fileId ? null : person.role === 'STUDENT'
+      ? await prisma.studentFile.findFirst({ where: { id: note.fileId, studentId: person.id }, select: { folderId: true } })
+      : await prisma.tutorFile.findFirst({ where: { id: note.fileId, teacherId: person.id }, select: { folderId: true } })
+    // Filed by an earlier save → saveLectureDocx replaces that file and ignores the folder.
+    const folderId = filed ? (filed.folderId ?? '') : await pickFolder(person, lesson)
     const saved = await saveLectureDocx({ lecture: note, ownerId: person.id, role: person.role, folderId, bytes, name })
+    // Replaced in place keeps the old name — the finale's title renames it.
+    if (!saved.created && saved.name !== name) {
+      const where = { id: saved.fileId }
+      await (person.role === 'STUDENT' ? prisma.studentFile.update({ where, data: { name } }) : prisma.tutorFile.update({ where, data: { name } }))
+    }
+    stored = true
     const path = saved.folderId ? await folderPath(person, saved.folderId) : ''
     const q = saved.folderId ? `folder=${saved.folderId}` : ''
     const href = person.role === 'STUDENT' ? `/files?tab=mine${q ? `&${q}` : ''}` : `/files${q ? `?${q}` : ''}`
@@ -263,6 +403,7 @@ async function fileCopy(person: Person, note: { id: string; fileId: string | nul
       : ['не удалось сохранить в файлы', 'could not save to files']
     await notify(['Конспект урока готов', `«${title}»: ${why[0]} — конспект открыт в редакторе`], ['Lesson notes are ready', `"${title}": ${why[1]} — the notes are in the editor`], null, `/lecture/${note.id}`)
   }
+  return stored
 }
 
 /**

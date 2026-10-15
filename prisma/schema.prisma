@@ -1380,6 +1380,10 @@ model LectureNote {
   callRoomId         String?
   // Call notes: seq of the last tick whose new sections were tidied (junk removed).
   tidiedSeq          Int            @default(-1)
+  // Call notes master: when the copies were last quietly filed during the call (every 10 min).
+  savedAt            DateTime?
+  // Call notes master: sha1 of the doc that quiet save filed — the next one runs only if the notes changed.
+  savedHash          String?
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
   chunks             LectureChunk[]
