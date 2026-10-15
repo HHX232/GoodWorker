@@ -1180,44 +1180,8 @@ $border-dark: rgba(255, 255, 255, 0.07);
 
 // ── Notes panel (live transcript sidebar) ─────────────────────────────────────
 
-.notesPanel {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 40;
-  background: rgba(15, 23, 42, 0.5);
-  animation: captionFadeIn 0.18s ease;
-}
-
-.notesPanelInner {
-  width: 520px;
-  max-width: calc(100% - 32px);
-  max-height: 78%;
-  background: $bg-card;
-  border: 1px solid $border;
-  border-radius: 20px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.25);
-}
-
-.notesPanelHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 18px 20px;
-  border-bottom: 1px solid $border;
-  font-size: 17px;
-  font-weight: 800;
-  color: $text;
-  flex-shrink: 0;
-}
-
 .notesSrWarning {
+  align-self: flex-start;
   font-size: 10px;
   font-weight: 600;
   color: #b45309;
@@ -1226,22 +1190,6 @@ $border-dark: rgba(255, 255, 255, 0.07);
   padding: 2px 7px;
   border-radius: 999px;
   letter-spacing: 0.3px;
-}
-
-.notesPanelClose {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
-  border: none;
-  background: rgba(0, 0, 0, 0.06);
-  color: $text-dim;
-  cursor: pointer;
-  transition: background 0.15s;
-
-  &:hover { background: rgba(0, 0, 0, 0.12); }
 }
 
 .notesList {
@@ -1379,10 +1327,6 @@ $border-dark: rgba(255, 255, 255, 0.07);
 
 // ── Notes dark theme ──────────────────────────────────────────────────────────
 :global(html.theme-dark), :global(html.pomodoro-dark) {
-  .notesPanel { background: rgba(8, 6, 16, 0.6); }
-  .notesPanelInner { background: #16141f; border-color: #2c2942; box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5); }
-  .notesPanelHeader { color: #fff; border-bottom-color: #262338; }
-  .notesPanelClose { background: #221f30; color: #c9c6d8; &:hover { background: #2b2740; } }
   .notesEmpty { color: rgba(255, 255, 255, 0.35); }
   .notesSrWarning, .notesSrError { color: #fbbf24; }
   .noteMsgAuthor { color: #b9a6ff; }

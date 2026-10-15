@@ -2,12 +2,22 @@
 
 import type { ExcalidrawElement } from '@excalidraw/excalidraw/element/types'
 import type { BinaryFiles } from '@excalidraw/excalidraw/types'
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { NoteEntry } from '../types'
 import { sourceRects, tileGrid } from './tileGrid'
 
 const TICK_MS = 60_000
 const MAX_TRANSCRIPT = 12_000
+
+/** What the notes AI is doing — the owner's client knows it and broadcasts it to the room. */
+export interface CallNotesStatus {
+  phase: 'idle' | 'speech' | 'board' | 'ok' | 'error' | 'no_ai'
+  updatedAt?: string // ISO, last successful tick
+  savedAt?: string | null // ISO, last quiet save to the participants' storage
+  sections?: number
+  docVersion?: number
+  tidied?: boolean // the last successful tick also tidied the draft
+}
 
 type Scene = { elements: readonly ExcalidrawElement[]; files: BinaryFiles }
 
@@ -57,9 +67,11 @@ async function boardTiles(scene: Scene): Promise<Blob[]> {
 /**
  * Background auto-notes for the call owner: every 60 s sends the new transcript
  * lines and, if the whiteboard changed, its snapshot tiles to POST /api/call/notes.
- * No UI — failures only console.warn. flush() is the final tick before finish.
+ * Failures only console.warn plus `status` (shown in the call's notes panel, no toasts).
+ * flush() is the final tick before finish.
  */
-export function useCallNotes({ enabled, roomName, callNotes, board }: Options): { flush: () => Promise<void> } {
+export function useCallNotes({ enabled, roomName, callNotes, board }: Options): { flush: () => Promise<void>; status: CallNotesStatus } {
+  const [status, setStatus] = useState<CallNotesStatus>({ phase: 'idle' })
   const latest = useRef({ enabled, callNotes, board })
   useEffect(() => { latest.current = { enabled, callNotes, board } })
 
@@ -101,6 +113,8 @@ export function useCallNotes({ enabled, roomName, callNotes, board }: Options): 
     // ponytail: at-least-once — after a 502/lost response the same lines go again under a new seq;
     // if the server had saved them and only the answer was lost, the notes get a duplicate.
     // Upgrade path: reuse the seq for the unconfirmed range and let the server dedupe by seq.
+    // One request does speech, board and tidy — the client only knows what it sent; tidy shows afterwards (tidied).
+    setStatus(s => ({ ...s, phase: photos.length ? 'board' : 'speech' }))
     seq.current += 1
     const fd = new FormData()
     fd.append('roomName', roomName)
@@ -110,19 +124,31 @@ export function useCallNotes({ enabled, roomName, callNotes, board }: Options): 
 
     try {
       const res = await fetch('/api/call/notes', { method: 'POST', body: fd })
-      const data = await res.json().catch(() => null) as { ok?: boolean; reason?: string; board?: string } | null
+      const data = await res.json().catch(() => null) as
+        { ok?: boolean; reason?: string; board?: string; docVersion?: number; sections?: number; savedAt?: string | null; tidied?: boolean } | null
       if (res.ok && data?.ok) {
+        setStatus(s => ({
+          phase: 'ok',
+          updatedAt: new Date().toISOString(),
+          savedAt: data.savedAt !== undefined ? data.savedAt : s.savedAt,
+          sections: data.sections ?? s.sections,
+          docVersion: data.docVersion ?? s.docVersion,
+          tidied: !!data.tidied,
+        }))
         sentCount.current = end
         // board:'failed' — text saved, board reading failed: keep the hash stale so the board goes again.
         if (photos.length && data.board !== 'failed') sentBoardHash.current = hash
         if (data.board === 'failed') console.warn('[callNotes] board reading failed, retry next tick')
       } else if (data?.reason === 'NO_AI') {
         stopped.current = true
+        setStatus(s => ({ ...s, phase: 'no_ai' }))
       } else {
         console.warn('[callNotes] tick failed', res.status, data)
+        setStatus(s => ({ ...s, phase: 'error' }))
       }
     } catch (e) {
       console.warn('[callNotes] tick failed', e)
+      setStatus(s => ({ ...s, phase: 'error' }))
     }
   }, [roomName])
 
@@ -145,5 +171,5 @@ export function useCallNotes({ enabled, roomName, callNotes, board }: Options): 
     await tick()
   }, [tick])
 
-  return { flush }
+  return { flush, status }
 }

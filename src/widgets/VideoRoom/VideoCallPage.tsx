@@ -17,8 +17,9 @@ import {
 } from './CallTestPanel/CallTestPanel'
 import { CallWhiteboard } from './CallWhiteboard/CallWhiteboard'
 import { QuickTestBuilder } from './QuickTestBuilder/QuickTestBuilder'
+import { CallNotesPanel } from './CallNotesPanel/CallNotesPanel'
 import styles from './VideoCallPage.module.scss'
-import { useCallNotes } from './hooks/useCallNotes'
+import { useCallNotes, type CallNotesStatus } from './hooks/useCallNotes'
 import { useTranscription } from './hooks/useTranscription'
 import { useVideoRoom } from './hooks/useVideoRoom'
 import {
@@ -153,6 +154,18 @@ export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIde
   const [copied, setCopied] = useState(false)
   const [showSummary, setShowSummary] = useState(false)
   const [showNotes, setShowNotes] = useState(false)
+  const notesBtnRef = useRef<HTMLButtonElement>(null)
+  const moreBtnRef = useRef<HTMLButtonElement>(null)
+  // Focus goes back to the visible button the panel came from: «Конспект», or «Ещё» on mobile.
+  const closeNotes = useCallback(() => {
+    setShowNotes(false)
+    const btn = notesBtnRef.current?.getClientRects().length ? notesBtnRef.current : moreBtnRef.current
+    btn?.focus()
+  }, [])
+  // Notes status/doc version as broadcast by the owner (participants only; the owner has its own).
+  const [remoteNotesStatus, setRemoteNotesStatus] = useState<CallNotesStatus | null>(null)
+  const [remoteDocVersion, setRemoteDocVersion] = useState<number | undefined>(undefined)
+  const notesStatusRef = useRef<CallNotesStatus | null>(null)
   const [showMore, setShowMore] = useState(false)
   const [barCollapsed, setBarCollapsed] = useState(false)
   const isMobile = typeof navigator !== 'undefined' && /Android|iP(hone|ad|od)/i.test(navigator.userAgent)
@@ -229,6 +242,8 @@ useEffect(() => {
   useEffect(() => { callTestRef.current = callTest }, [callTest])
   const isOwnerRef = useRef(isOwner)
   useEffect(() => { isOwnerRef.current = isOwner }, [isOwner])
+  const ownerIdentityRef = useRef(ownerIdentity)
+  useEffect(() => { ownerIdentityRef.current = ownerIdentity }, [ownerIdentity])
   // broadcastChunked is declared further below — use a ref so the data-router
   // closure (created before broadcastChunked) always calls the latest version
   const broadcastChunkedRef = useRef<((msg: object) => void) | null>(null)
@@ -326,6 +341,22 @@ useEffect(() => {
             broadcastChunkedRef.current?.({ type: 'call_test_start', testId: t.testId, title: t.title, blocks: t.blocks })
           }
         }
+        return
+      }
+
+      // ── Call notes (the owner's client runs them and tells the room) ───────
+      if (type === 'call_notes_status') {
+        if (isOwnerRef.current || senderIdentity !== ownerIdentityRef.current || !payload.status) return
+        setRemoteNotesStatus(payload.status as CallNotesStatus)
+        if (typeof payload.status.docVersion === 'number') setRemoteDocVersion(payload.status.docVersion)
+        return
+      }
+      if (type === 'call_notes_updated') {
+        if (!isOwnerRef.current && senderIdentity === ownerIdentityRef.current && typeof payload.docVersion === 'number') setRemoteDocVersion(payload.docVersion)
+        return
+      }
+      if (type === 'call_notes_status_request') {
+        if (isOwnerRef.current && notesStatusRef.current) broadcast({ type: 'call_notes_status', status: notesStatusRef.current })
         return
       }
 
@@ -430,7 +461,7 @@ useEffect(() => {
   // ── Leave ──────────────────────────────────────────────────────────────────
   const { callNotes } = transcription
 
-  // Auto-notes: the owner's client ticks every 60 s in the background (no UI).
+  // Auto-notes: the owner's client ticks every 60 s; its status goes to everyone's notes panel.
   // The snapshot reads the owner's live board through CallWhiteboard's onSceneApi.
   const boardSceneRef = useRef<(() => { elements: readonly any[]; files: Record<string, any> }) | null>(null)
   const onBoardSceneApi = useCallback((read: () => { elements: readonly any[]; files: Record<string, any> }) => { boardSceneRef.current = read }, [])
@@ -438,23 +469,56 @@ useEffect(() => {
   // Board unmounted (owner looks at another tile) → drop the frozen api, snapshot falls back to page state.
   const boardHostRef = useCallback((el: HTMLDivElement | null) => { if (!el) boardSceneRef.current = null }, [])
   const callNotesOn = isOwner && room.connected
-  const { flush: flushCallNotes } = useCallNotes({
+  const { flush: flushCallNotes, status: notesStatus } = useCallNotes({
     enabled: callNotesOn,
     roomName,
     callNotes,
     board: { active: callTest?.mode === 'whiteboard', elements: whiteboardElements, files: whiteboardFiles, read: readBoardScene },
   })
-  // Any owner exit: last tick (≤ 5 s), then finish — server answers 202 and works on its own.
-  const finishCallNotes = useCallback(async () => {
-    if (!callNotesOn) return
-    await Promise.race([flushCallNotes(), new Promise(res => setTimeout(res, 5000))])
+  // Owner → room: every status change, and "the doc changed" after each successful tick.
+  useEffect(() => {
+    if (!isOwner) return
+    notesStatusRef.current = notesStatus
+    broadcast({ type: 'call_notes_status', status: notesStatus })
+  }, [isOwner, notesStatus, broadcast])
+  useEffect(() => {
+    if (isOwner && notesStatus.docVersion !== undefined) broadcast({ type: 'call_notes_updated', docVersion: notesStatus.docVersion })
+  }, [isOwner, notesStatus.docVersion, broadcast])
+
+  // Owner exit: last tick (≤ 5 s) first, finish last — after the error review, so the
+  // finale puts the confirmed errors into the notes. finish answers 202 and works on its own.
+  const flushCallNotesSoon = useCallback(async () => {
+    if (callNotesOn) await Promise.race([flushCallNotes(), new Promise(res => setTimeout(res, 5000))])
+  }, [callNotesOn, flushCallNotes])
+  // finish goes exactly once per exit path (double click in confirmErrors, a tab closed mid-way).
+  const notesFinishSent = useRef(false)
+  // Set once the owner's exit has started — before that a reload/closed tab must not finalize.
+  const ownerLeaving = useRef(false)
+  const sendCallNotesFinish = useCallback(() => {
+    if (!callNotesOn || notesFinishSent.current) return
+    notesFinishSent.current = true
     fetch('/api/call/notes/finish', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ roomName }),
       keepalive: true,
     }).catch(e => console.warn('[callNotes] finish failed', e))
-  }, [callNotesOn, flushCallNotes, roomName])
+  }, [callNotesOn, roomName])
+  // Tab closed anywhere on the way out (during «Анализирую…», in the errors window) — a beacon instead.
+  useEffect(() => {
+    if (!callNotesOn) return
+    const onLeave = () => {
+      if (!ownerLeaving.current || notesFinishSent.current) return
+      notesFinishSent.current = true
+      navigator.sendBeacon('/api/call/notes/finish', new Blob([JSON.stringify({ roomName })], { type: 'application/json' }))
+    }
+    window.addEventListener('pagehide', onLeave)
+    window.addEventListener('beforeunload', onLeave)
+    return () => {
+      window.removeEventListener('pagehide', onLeave)
+      window.removeEventListener('beforeunload', onLeave)
+    }
+  }, [callNotesOn, roomName])
 
   const leaveRoom = useCallback(() => {
     // Ask the agent for its accumulated transcript before showing summary
@@ -462,12 +526,15 @@ useEffect(() => {
     if (callNotes.length > 0 || transcription.finalTranscript) {
       setShowSummary(true)
     } else {
-      finishCallNotes().then(() => disconnect()).then(() => router.push('/profile'))
+      ownerLeaving.current = true
+      flushCallNotesSoon().then(sendCallNotesFinish).then(() => disconnect()).then(() => router.push('/profile'))
     }
-  }, [callNotes, disconnect, router, broadcast, transcription.finalTranscript, finishCallNotes])
+  }, [callNotes, disconnect, router, broadcast, transcription.finalTranscript, flushCallNotesSoon, sendCallNotesFinish])
 
   const confirmLeave = useCallback(async () => {
     setShowSummary(false)
+    ownerLeaving.current = true
+    await flushCallNotesSoon()
 
     const transcriptRaw = transcription.finalTranscript
       ?? transcription.callNotes.map(n => `${n.identity}: ${n.text}`).join('\n')
@@ -490,7 +557,6 @@ useEffect(() => {
 
     // Teacher-only: analyze errors before disconnecting
     if (isOwner) {
-      await finishCallNotes()
       setShowAnalyzing(true)
       try {
         const res = await fetch('/api/call/analyze-errors', {
@@ -506,10 +572,11 @@ useEffect(() => {
           setExpandedErrorId(null)
           setShowAnalyzing(false)
           setShowErrorConfirm(true)
-          return
+          return // finish goes after confirmErrors
         }
       } catch {}
       setShowAnalyzing(false)
+      sendCallNotesFinish()
     }
 
     await disconnect()
@@ -517,7 +584,7 @@ useEffect(() => {
     router.push('/profile')
   }, [isOwner, disconnect, router, roomName, transcription, room.participants,
       setShowAnalyzing, setAnalyzedErrors, setRemovedErrorIds, setErrorEditMode,
-      setExpandedErrorId, setShowErrorConfirm,endRoom, finishCallNotes])
+      setExpandedErrorId, setShowErrorConfirm,endRoom, flushCallNotesSoon, sendCallNotesFinish])
 
   const confirmErrors = useCallback(async () => {
     if (removedErrorIds.size > 0) {
@@ -528,10 +595,11 @@ useEffect(() => {
       )
     }
     setShowErrorConfirm(false)
+    sendCallNotesFinish()
     await disconnect()
     endRoom()
     router.push('/profile')
-  }, [removedErrorIds, disconnect, router,endRoom])
+  }, [removedErrorIds, disconnect, router,endRoom, sendCallNotesFinish])
 
   // ── Sync video quality when main speaker or active speakers change ──────────
   useEffect(() => {
@@ -549,8 +617,9 @@ useEffect(() => {
         broadcastChunkedRef.current?.({ type: 'call_test_start', testId: t.testId, title: t.title, blocks: t.blocks })
       }
     } else {
-      // Ask teacher to send current test state
+      // Ask teacher to send current test state and the notes status
       broadcast({ type: 'call_test_request' })
+      broadcast({ type: 'call_notes_status_request' })
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [participantCount])
@@ -772,49 +841,37 @@ useEffect(() => {
     )
   }
 
-  // ── Notes panel ────────────────────────────────────────────────────────────
-  const renderNotesPanel = () => {
+  // ── Notes panel: transcript tab (the panel itself is CallNotesPanel) ──────
+  const renderTranscript = () => {
     const locallyMuted = new Set(room.participants.filter(p => p.localAudioMuted).map(p => p.identity))
     const visibleNotes = callNotes.filter(n => !locallyMuted.has(n.identity))
     return (
-      <div className={styles.notesPanel} onClick={e => { if (e.target === e.currentTarget) setShowNotes(false) }}>
-        <div className={styles.notesPanelInner}>
-          <div className={styles.notesPanelHeader}>
-            <span>Конспект урока</span>
-            {!transcription.browserHasSpeech && callNotes.length === 0 && (
-              <span className={styles.notesSrWarning}>Нужен агент или Chrome</span>
-            )}
-            <button className={styles.notesPanelClose} onClick={() => setShowNotes(false)}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-            </button>
-          </div>
-          <div className={styles.notesList}>
-            {transcription.srError && (
-              <p className={styles.notesSrError}>{transcription.srError}</p>
-            )}
-            {visibleNotes.length === 0 ? (
-              <p className={styles.notesEmpty}>
-                {!transcription.browserHasSpeech
-                  ? 'Браузер не поддерживает Speech Recognition. Используйте Chrome.'
-                  : transcription.srError
-                  ? 'Транскрипция недоступна — текст появится если подключён агент.'
-                  : 'Говорите — текст появится здесь...'}
-              </p>
-            ) : (
-              visibleNotes.map((n, i) => {
-                const mine = n.identity === userName
-                return (
-                  <div key={i} className={`${styles.noteMsg} ${mine ? styles.noteMsgMine : styles.noteMsgOther}`}>
-                    {!mine && <span className={styles.noteMsgAuthor}>{n.identity}</span>}
-                    <span className={styles.noteMsgBubble}>{n.text}</span>
-                  </div>
-                )
-              })
-            )}
-          </div>
-        </div>
+      <div className={styles.notesList}>
+        {!transcription.browserHasSpeech && callNotes.length === 0 && (
+          <span className={styles.notesSrWarning}>Нужен агент или Chrome</span>
+        )}
+        {transcription.srError && (
+          <p className={styles.notesSrError}>{transcription.srError}</p>
+        )}
+        {visibleNotes.length === 0 ? (
+          <p className={styles.notesEmpty}>
+            {!transcription.browserHasSpeech
+              ? 'Браузер не поддерживает Speech Recognition. Используйте Chrome.'
+              : transcription.srError
+              ? 'Транскрипция недоступна — текст появится если подключён агент.'
+              : 'Говорите — текст появится здесь...'}
+          </p>
+        ) : (
+          visibleNotes.map((n, i) => {
+            const mine = n.identity === userName
+            return (
+              <div key={i} className={`${styles.noteMsg} ${mine ? styles.noteMsgMine : styles.noteMsgOther}`}>
+                {!mine && <span className={styles.noteMsgAuthor}>{n.identity}</span>}
+                <span className={styles.noteMsgBubble}>{n.text}</span>
+              </div>
+            )
+          })
+        )}
       </div>
     )
   }
@@ -1250,7 +1307,7 @@ useEffect(() => {
           >
             {screenShareEnabled ? <IconScreenShareOff /> : <IconScreenShare />}
           </button>
-          <button className={styles.cbMore} onClick={() => setShowMore(true)} aria-label="Ещё">
+          <button ref={moreBtnRef} className={styles.cbMore} onClick={() => setShowMore(true)} aria-label="Ещё">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round">
               <circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>
             </svg>
@@ -1269,6 +1326,7 @@ useEffect(() => {
             </button>
           )}
           <button
+            ref={notesBtnRef}
             className={`${styles.cbNotes} ${showNotes ? styles.cbNotesActive : ''}`}
             onClick={() => setShowNotes(n => !n)}
             data-tip={!transcription.browserHasSpeech ? t('notesChrome') : t('notesTooltip')}
@@ -1455,7 +1513,14 @@ useEffect(() => {
           <div className={styles.videoArea}>
             {renderVideo()}
             {renderScreenSharePanel()}
-            {showNotes && renderNotesPanel()}
+            <CallNotesPanel
+              open={showNotes}
+              onClose={closeNotes}
+              roomName={roomName}
+              status={isOwner ? notesStatus : remoteNotesStatus}
+              docVersion={isOwner ? notesStatus.docVersion : remoteDocVersion}
+              transcriptTab={showNotes ? renderTranscript() : null}
+            />
           </div>
           {!barCollapsed && renderControls()}
           <button
