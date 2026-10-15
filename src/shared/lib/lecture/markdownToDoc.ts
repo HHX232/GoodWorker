@@ -26,6 +26,9 @@ export interface PMNode {
   marks?: PMMark[]
 }
 
+/** mathlive has no \fbox (models write it for empty board cells) — shows a red error and breaks .docx; \boxed is the same box. */
+const fixLatex = (s: string) => s.trim().replace(/\\fbox\b/g, '\\boxed')
+
 const lecturedExtensions: MarkedExtension = {
   extensions: [
     {
@@ -34,7 +37,7 @@ const lecturedExtensions: MarkedExtension = {
       start: src => src.match(/^\$\$/m)?.index,
       tokenizer(src) {
         const m = /^\$\$([\s\S]+?)\$\$[ \t]*(?:\n+|$)/.exec(src)
-        if (m) return { type: 'mathBlock', raw: m[0], latex: m[1].trim() }
+        if (m) return { type: 'mathBlock', raw: m[0], latex: fixLatex(m[1]) }
       },
     },
     {
@@ -43,7 +46,7 @@ const lecturedExtensions: MarkedExtension = {
       start: src => src.indexOf('$'),
       tokenizer(src) {
         const m = /^\$(?!\$)((?:\\\$|[^$\n])+?)\$/.exec(src)
-        if (m) return { type: 'mathInline', raw: m[0], latex: m[1].trim() }
+        if (m) return { type: 'mathInline', raw: m[0], latex: fixLatex(m[1]) }
       },
     },
     {
