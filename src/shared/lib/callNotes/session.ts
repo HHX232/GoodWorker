@@ -205,7 +205,8 @@ async function finalize(room: VideoCallRoom, masterId: string): Promise<void> {
   const studentName = named.filter(p => p.role === 'STUDENT').map(p => p.name).join(', ')
 
   // ponytail: board/graph blocks from the AI have no snapshot yet, so this .docx lacks them;
-  // they appear once the notes are opened in the editor and re-saved (the profile button does that).
+  // they appear only after the notes are opened in the editor and saved to files FROM THERE (the
+  // profile button runs export before the editor opens, so it adds no snapshots).
   const bytes = await lectureToDocx(doc as PMNode, title, teacherName || named[0].name, new Map())
   const name = fileName(title, room.createdAt)
   const lesson = { subject, topic: context.topic, teacherName, studentName, studentIds: named.filter(p => p.role === 'STUDENT').map(p => p.id) }
