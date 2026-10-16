@@ -122,7 +122,9 @@ export function buildCoachPrompt(input: CoachInput, facts: CoachFacts): { system
     'Return JSON exactly like {"text": "<your explanation>"}.',
     'Use ONLY the facts given below. Do not calculate or invent any other moves or variations.',
     'Write moves exactly in the SAN given (e.g. Nf3, Qxf7#).',
-    input.context === 'engine-move'
+    input.context === 'opening'
+      ? "This is a book move of the opening's main line. Explain its purpose: which idea or plan it carries. Do not compare it with other moves, do not judge or grade it."
+      : input.context === 'engine-move'
       ? (input.classification === 'best' || input.classification === 'good'
         ? "Explain what the opponent's (engine's) move does: why it is good and what it threatens."
         : "Explain what the opponent's (engine's) move does, why it is weaker than the engine's best move, and how the player can exploit it.")
@@ -132,9 +134,14 @@ export function buildCoachPrompt(input: CoachInput, facts: CoachFacts): { system
   const lines = [
     `Context: ${input.context}. Side that moved: ${sideName}.`,
     `Position before the move (FEN): ${input.fen}`,
-    `Played move: ${facts.playedSan} — classified by the engine as "${input.classification}".`,
-    `Engine's best move: ${facts.bestSan}. Engine main line: ${facts.pvSan.join(' ') || facts.bestSan}.`,
-    `Evaluation before: ${fmtEval(input.evalBeforeCp)}; after the played move: ${fmtEval(input.evalAfterCp)}.`,
+    // Для дебюта — только сам книжный ход: без классификации, хода движка и оценки, чтобы модель не сравнивала.
+    ...(input.context === 'opening'
+      ? [`Book move of the opening main line: ${facts.playedSan}.`]
+      : [
+        `Played move: ${facts.playedSan} — classified by the engine as "${input.classification}".`,
+        `Engine's best move: ${facts.bestSan}. Engine main line: ${facts.pvSan.join(' ') || facts.bestSan}.`,
+        `Evaluation before: ${fmtEval(input.evalBeforeCp)}; after the played move: ${fmtEval(input.evalAfterCp)}.`,
+      ]),
     facts.captured ? `The played move captures a ${PIECE[facts.captured]}.` : 'The played move captures nothing.',
     facts.mate ? 'The played move is checkmate.' : facts.check ? 'The played move gives check.' : '',
     `Material balance (white minus black, pawns): before ${facts.materialBefore}, after ${facts.materialAfter}.`,

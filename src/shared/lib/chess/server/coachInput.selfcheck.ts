@@ -49,6 +49,15 @@ const base = {
   assert.match(system, /weaker/)
 }
 
+// Дебют: книжный ход объясняется по идее, без сравнения с движком и без оценки «ошибка».
+{
+  const r = validateCoachInput({ ...base, fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', playedUci: 'e2e4', bestUci: 'd2d4', pvUci: ['d2d4'], classification: 'inaccuracy', context: 'opening' })
+  assert.ok(r.ok)
+  const { system, user } = buildCoachPrompt(r.input, r.facts)
+  assert.doesNotMatch(system + user, /better|weaker|лучше|inaccuracy|d4/i)
+  assert.match(user, /e4/)
+}
+
 // Отказы: нелегальный ход, мусорный FEN, неизвестный enum, нелегальная линия.
 const START = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 const opening = { ...base, fen: START, playedUci: 'e2e4', bestUci: 'd2d4', pvUci: ['d2d4'] }

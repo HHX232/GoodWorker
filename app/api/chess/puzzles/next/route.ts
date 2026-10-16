@@ -5,7 +5,7 @@ import { getChatSessionUser } from '@/shared/lib/chat/access'
 import { GUEST_PUZZLE_RATING, ratingWindows } from '@/shared/lib/chess/server/puzzleRating'
 import { loadChessProfile } from '@/shared/lib/chess/server/profile'
 
-const TAG_RE = /^[A-Za-z0-9_]{1,80}$/
+const TAG_RE = /^[A-Za-z0-9_-]{1,80}$/
 // В Lichess нет темы «двойной удар» — это вилка + вскрытое нападение (spec «Дополнения после G2»).
 const THEME_ALIASES: Record<string, string[]> = { doubleAttack: ['fork', 'discoveredAttack'] }
 
