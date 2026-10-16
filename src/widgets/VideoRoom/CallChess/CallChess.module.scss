@@ -1,0 +1,231 @@
+// Shared chess board in the call's main slot. Palette follows VideoCallPage.module.scss.
+$surface: #f8fafc;
+$card: #ffffff;
+$line: rgba(15, 23, 42, 0.09);
+$text: #0f172a;
+$dim: #475569;
+$accent: #7c3aed;
+$danger: #b91c1c;
+
+.root {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  background: $surface;
+  color: $text;
+}
+
+.connecting {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: $surface;
+  color: $dim;
+  font-size: 14px;
+}
+
+// The board is as large as the slot allows, always square.
+.boardSlot {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  container-type: size;
+  display: grid;
+  place-items: center;
+}
+.boardFit {
+  width: min(100cqw, 100cqh);
+}
+
+.rail {
+  width: 264px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow-y: auto;
+}
+
+.status {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+.turnDot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: inset 0 0 0 1.5px rgba(15, 23, 42, 0.55);
+  flex-shrink: 0;
+}
+.turnDotBlack {
+  background: #1e1b26;
+  box-shadow: none;
+}
+
+.access {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: $dim;
+}
+.accessLocked {
+  color: $text;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(124, 58, 237, 0.08);
+  svg { color: $accent; flex-shrink: 0; }
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.groupLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: $dim;
+}
+
+.segment {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 3px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.06);
+}
+.segmentBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: $dim;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+  &:hover { color: $text; }
+}
+.segmentOn {
+  background: $card;
+  color: $text;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08), 0 2px 8px -4px rgba(15, 23, 42, 0.2);
+  svg { color: $accent; }
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 10px;
+  border: 1px solid $line;
+  border-radius: 10px;
+  background: $card;
+  color: $text;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  &:hover { border-color: rgba(124, 58, 237, 0.4); }
+}
+
+.fenRow {
+  display: flex;
+  gap: 6px;
+}
+.fenInput {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid $line;
+  border-radius: 10px;
+  background: $card;
+  color: $text;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; // FEN is data
+  font-size: 12px;
+  &::placeholder { color: #94a3b8; }
+  &:focus { outline: none; border-color: $accent; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15); }
+}
+.fenInputBad {
+  border-color: $danger;
+  &:focus { border-color: $danger; box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.15); }
+}
+.fenApply {
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: $accent;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  &:disabled { opacity: 0.45; cursor: default; }
+  &:not(:disabled):hover { background: #6d28d9; }
+}
+.fenError {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: $danger;
+}
+
+.segmentBtn, .action, .fenApply {
+  &:focus-visible { outline: 2px solid $accent; outline-offset: 2px; }
+}
+
+// Narrow slot: board on top, controls below.
+@media (max-width: 760px) {
+  .root {
+    flex-direction: column;
+    gap: 14px;
+    padding: 12px;
+    overflow-y: auto;
+  }
+  .boardSlot {
+    flex: none;
+    container-type: inline-size;
+  }
+  .boardFit { width: min(100%, 62dvh); }
+  .rail { width: 100%; overflow: visible; }
+}
+
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .root, .connecting { background: #16141f; color: rgba(255, 255, 255, 0.92); }
+  .connecting, .access, .groupLabel, .segmentBtn { color: rgba(255, 255, 255, 0.62); }
+  .turnDot { box-shadow: none; }
+  .turnDotBlack { background: #000; box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.5); }
+  .accessLocked { color: rgba(255, 255, 255, 0.92); background: rgba(124, 58, 237, 0.2); svg { color: #b9a6ff; } }
+  .segment { background: rgba(255, 255, 255, 0.07); }
+  .segmentBtn:hover { color: #fff; }
+  .segmentOn { background: rgba(255, 255, 255, 0.14); color: #fff; box-shadow: none; svg { color: #b9a6ff; } }
+  .action, .fenInput { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.92); }
+  .action:hover { border-color: rgba(185, 166, 255, 0.5); }
+  .fenInput::placeholder { color: rgba(255, 255, 255, 0.35); }
+  .fenInputBad { border-color: #f87171; }
+  .fenError { color: #fca5a5; }
+}

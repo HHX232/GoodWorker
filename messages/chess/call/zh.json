@@ -1,1 +1,27 @@
-{}
+{
+  "button": "国际象棋",
+  "title": "国际象棋",
+  "minimize": "最小化",
+  "close": "结束",
+  "minimize_hint": "最小化棋盘",
+  "close_hint": "为所有人关闭棋盘",
+  "connecting": "正在从通话发起人处获取局面…",
+  "turn_w": "白方走棋",
+  "turn_b": "黑方走棋",
+  "check": "将军",
+  "mate_w": "将死。白方获胜",
+  "mate_b": "将死。黑方获胜",
+  "draw": "和棋",
+  "who_moves": "谁可以走棋",
+  "allow_all": "所有人",
+  "allow_owner": "仅我",
+  "flip": "翻转",
+  "flip_hint": "仅在自己的屏幕上翻转棋盘",
+  "reset": "新对局",
+  "fen_label": "从 FEN 设置局面",
+  "fen_placeholder": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "fen_apply": "设置",
+  "fen_invalid": "这不是有效的 FEN。请检查棋子位置、轮到哪方走棋，以及双方各有一个王。",
+  "locked": "只有通话发起人可以走棋",
+  "open_all": "所有人都可以走棋"
+}

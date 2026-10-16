@@ -23,6 +23,13 @@ async function checkAccess(
   return false
 }
 
+// Room subject = category slug (e.g. 'chess' turns on the call's chess board).
+async function subjectSlug(categoryId: string | null): Promise<string | null> {
+  if (!categoryId) return null
+  const cat = await prisma.category.findUnique({ where: { id: categoryId }, select: { slug: true } })
+  return cat?.slug ?? null
+}
+
 // GET /api/call/rooms?name=xxx — check room status by name
 // GET /api/call/rooms?id=xxx  — get room details by id (existing behaviour)
 export async function GET(req: NextRequest) {
@@ -40,7 +47,7 @@ export async function GET(req: NextRequest) {
       if (room.endedAt) return NextResponse.json({ status: 'ended' })
 
       const hasAccess = await checkAccess(room, session)
-      return NextResponse.json({ status: 'active', id: room.id, hasAccess })
+      return NextResponse.json({ status: 'active', id: room.id, hasAccess, subjectSlug: await subjectSlug(room.categoryId) })
     }
 
     const id = searchParams.get('id')
@@ -49,7 +56,7 @@ export async function GET(req: NextRequest) {
     const room = await prisma.videoCallRoom.findUnique({ where: { id } })
     if (!room) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-    return NextResponse.json({ id: room.id, name: room.name, ownerIdentity: room.ownerIdentity, topic: room.topic ?? null })
+    return NextResponse.json({ id: room.id, name: room.name, ownerIdentity: room.ownerIdentity, topic: room.topic ?? null, subjectSlug: await subjectSlug(room.categoryId) })
   } catch (e: any) {
     return NextResponse.json({ error: e.message ?? 'Internal error' }, { status: 500 })
   }

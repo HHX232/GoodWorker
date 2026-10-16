@@ -16,6 +16,10 @@ import {
   serializeAnswer,
 } from './CallTestPanel/CallTestPanel'
 import { CallWhiteboard } from './CallWhiteboard/CallWhiteboard'
+import { CallChess } from './CallChess/CallChess'
+import { acceptChessState, applyChessMove, initialChessState, setChessPosition, type ChessCallState } from './CallChess/chessSync'
+import type { BoardMove } from '@/widgets/Chess/Board'
+import { ChessKnight } from 'lucide-react'
 import { QuickTestBuilder } from './QuickTestBuilder/QuickTestBuilder'
 import styles from './VideoCallPage.module.scss'
 import { useTranscription } from './hooks/useTranscription'
@@ -138,13 +142,16 @@ interface Props {
   ownerIdentity?: string
   localAvatarUrl?: string
   topic?: string
+  /** Room subject (category slug); 'chess' shows the chess board button */
+  subjectSlug?: string | null
   userRole?: string
   isVip?: boolean
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
-export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIdentity, localAvatarUrl, topic, userRole, isVip }: Props) {
+export default function VideoCallPage({ userName, autoJoinRoom, roomId, ownerIdentity, localAvatarUrl, topic, subjectSlug, userRole, isVip }: Props) {
   const t = useTranslations('VideoCall')
+  const tc = useTranslations('chess.call')
   const router = useRouter()
   const [roomName] = useState(autoJoinRoom ?? '')
   const [layout, setLayout] = useState<Layout>('pip')
@@ -176,7 +183,7 @@ useEffect(() => {
   const [expandedErrorId, setExpandedErrorId] = useState<string | null>(null)
 
   // ── Call test / whiteboard state ───────────────────────────────────────────
-  const [callTest, setCallTest] = useState<{ testId: string | null; title: string; blocks: TestBlock[]; mode?: 'test' | 'whiteboard' } | null>(null)
+  const [callTest, setCallTest] = useState<{ testId: string | null; title: string; blocks: TestBlock[]; mode?: 'test' | 'whiteboard' | 'chess' } | null>(null)
   const callTestRef = useRef(callTest)
   const [callTestProgress, setCallTestProgress] = useState<Record<string, StudentProgress>>({})
   const [localTestSubmitted, setLocalTestSubmitted] = useState(false)
@@ -185,6 +192,10 @@ useEffect(() => {
   // Whiteboard: remote elements and image files received via data-channel
   const [whiteboardElements, setWhiteboardElements] = useState<any[] | null>(null)
   const [whiteboardFiles, setWhiteboardFiles] = useState<Record<string, any> | null>(null)
+  // Chess board (mode 'chess'): the owner's state is the source of truth, see CallChess/chessSync.ts
+  const [chessState, setChessState] = useState<ChessCallState | null>(null)
+  const chessStateRef = useRef<ChessCallState | null>(null)
+  useEffect(() => { chessStateRef.current = chessState }, [chessState])
   const [pickerTests, setPickerTests] = useState<{ id: string; title: string; content: { blocks: TestBlock[] } }[]>([])
   const [pickerLoading, setPickerLoading] = useState(false)
 
@@ -228,9 +239,12 @@ useEffect(() => {
   useEffect(() => { callTestRef.current = callTest }, [callTest])
   const isOwnerRef = useRef(isOwner)
   useEffect(() => { isOwnerRef.current = isOwner }, [isOwner])
+  const ownerIdentityRef = useRef(ownerIdentity)
+  useEffect(() => { ownerIdentityRef.current = ownerIdentity }, [ownerIdentity])
   // broadcastChunked is declared further below — use a ref so the data-router
   // closure (created before broadcastChunked) always calls the latest version
   const broadcastChunkedRef = useRef<((msg: object) => void) | null>(null)
+  const commitChessRef = useRef<((next: ChessCallState) => void) | null>(null)
   const whiteboardElementsRef = useRef<any[] | null>(null)
   useEffect(() => { whiteboardElementsRef.current = whiteboardElements }, [whiteboardElements])
   // Tracks previous testIsMain/layout values so we only reload camera on an
@@ -240,6 +254,23 @@ useEffect(() => {
   // Bumped after reloadCamera() settles from a whiteboard/test main-slot transition, forcing
   // useTranscription to build a fresh SpeechRecognition instance (see mediaResetKey doc there).
   const [srResetKey, setSrResetKey] = useState(0)
+
+  // Owner: (re)send whatever occupies the main slot — for late joiners and on request.
+  // call_chess_start carries the full state, so receivers reset and take the position atomically.
+  const announceMainSlot = useCallback(() => {
+    const t = callTestRef.current
+    if (!t) return
+    if (t.mode === 'whiteboard') {
+      broadcast({ type: 'call_whiteboard_start' })
+      if (whiteboardElementsRef.current && whiteboardElementsRef.current.length > 0) {
+        broadcastChunkedRef.current?.({ type: 'call_whiteboard_update', elements: whiteboardElementsRef.current })
+      }
+    } else if (t.mode === 'chess') {
+      if (chessStateRef.current) broadcast({ type: 'call_chess_start', ...chessStateRef.current })
+    } else {
+      broadcastChunkedRef.current?.({ type: 'call_test_start', testId: t.testId, title: t.title, blocks: t.blocks })
+    }
+  }, [broadcast])
 
   const transcription = useTranscription({
     connected: room.connected,
@@ -314,22 +345,42 @@ useEffect(() => {
         // Student is requesting test state — re-broadcast if we're the owner and test is active.
         // Use isOwnerRef (not the closed-over isOwner) — the closure is created once and isOwner
         // can change after ownerIdentity resolves asynchronously.
-        if (isOwnerRef.current && callTestRef.current) {
-          const t = callTestRef.current
-          if (t.mode === 'whiteboard') {
-            broadcast({ type: 'call_whiteboard_start' })
-            if (whiteboardElementsRef.current && whiteboardElementsRef.current.length > 0) {
-              broadcastChunkedRef.current?.({ type: 'call_whiteboard_update', elements: whiteboardElementsRef.current })
-            }
-          } else {
-            broadcastChunkedRef.current?.({ type: 'call_test_start', testId: t.testId, title: t.title, blocks: t.blocks })
-          }
-        }
+        if (isOwnerRef.current) announceMainSlot()
+        return
+      }
+
+      // ── Chess board messages (owner = source of truth) ─────────────────────
+      // Board state comes only from the room owner — anyone else's start/state/stop is ignored.
+      const fromOwner = senderIdentity === ownerIdentityRef.current
+      if (type === 'call_chess_start') {
+        if (isOwnerRef.current || !fromOwner) return
+        setCallTest({ testId: null, title: '', blocks: [], mode: 'chess' })
+        setChessState(acceptChessState(null, payload))
+        return
+      }
+      if (type === 'call_chess_state') {
+        if (isOwnerRef.current || !fromOwner) return
+        setChessState(prev => acceptChessState(prev, payload) ?? prev)
+        return
+      }
+      if (type === 'call_chess_move') {
+        const cur = chessStateRef.current
+        if (!isOwnerRef.current || !cur || callTestRef.current?.mode !== 'chess') return
+        const next = applyChessMove(cur, payload as any, false)
+        if (next) commitChessRef.current?.(next) // refused moves are dropped; the mover's preview expires
+        return
+      }
+      if (type === 'call_chess_stop') {
+        if (!fromOwner) return
+        if (callTestRef.current?.mode === 'chess') setCallTest(null)
+        setChessState(null)
         return
       }
 
       // ── Whiteboard messages ────────────────────────────────────────────────
       if (type === 'call_whiteboard_start') {
+        // Re-announcement for a late joiner: those already on the board keep its elements and images.
+        if (callTestRef.current?.mode === 'whiteboard') return
         setCallTest({ testId: null, title: 'Доска', blocks: [], mode: 'whiteboard' })
         setWhiteboardElements(null)
         setWhiteboardFiles(null)
@@ -515,11 +566,8 @@ useEffect(() => {
   useEffect(() => {
     if (!room.connected || participantCount === 0) return
     if (isOwnerRef.current) {
-      // Re-announce test to newly joined participants
-      if (callTestRef.current) {
-        const t = callTestRef.current
-        broadcastChunkedRef.current?.({ type: 'call_test_start', testId: t.testId, title: t.title, blocks: t.blocks })
-      }
+      // Re-announce test / whiteboard / chess board to newly joined participants
+      announceMainSlot()
     } else {
       // Ask teacher to send current test state
       broadcast({ type: 'call_test_request' })
@@ -720,7 +768,8 @@ useEffect(() => {
     }
     // In split/grid: whiteboard that's been hidden shows as a floating PiP;
     // regular test tiles stay in the grid so progress counters remain visible.
-    const whiteboardPip = !testIsMain && callTest?.mode === 'whiteboard' && (
+    const boardMode = callTest?.mode === 'whiteboard' || callTest?.mode === 'chess'
+    const whiteboardPip = !testIsMain && boardMode && (
       <DraggablePip key="__test__" index={sideParts.length} onClick={restoreTest}>
         {renderTestTile(false)}
       </DraggablePip>
@@ -729,16 +778,16 @@ useEffect(() => {
       <div className={styles.splitArea}>
         {room.participants.map(p => renderTile(p))}
         {showFake && renderTile(fakeParticipant)}
-        {callTest && callTest.mode !== 'whiteboard' && renderTestTile(false)}
+        {callTest && !boardMode && renderTestTile(false)}
         {whiteboardPip}
       </div>
     )
-    const totalCount = room.participants.length + (showFake ? 1 : 0) + (callTest && callTest.mode !== 'whiteboard' ? 1 : 0)
+    const totalCount = room.participants.length + (showFake ? 1 : 0) + (callTest && !boardMode ? 1 : 0)
     return (
       <div className={styles.gridArea} data-count={totalCount}>
         {room.participants.map(p => renderTile(p))}
         {showFake && renderTile(fakeParticipant)}
-        {callTest && callTest.mode !== 'whiteboard' && renderTestTile(false)}
+        {callTest && !boardMode && renderTestTile(false)}
         {whiteboardPip}
       </div>
     )
@@ -957,6 +1006,51 @@ useEffect(() => {
     broadcastChunked({ type: 'call_whiteboard_update', elements, files })
   }, [broadcastChunked])
 
+  // ── Chess board ───────────────────────────────────────────────────────────
+  const commitChess = useCallback((next: ChessCallState) => {
+    chessStateRef.current = next // sync now: two moves can arrive before the next render
+    setChessState(next)
+    broadcast({ type: 'call_chess_state', ...next })
+  }, [broadcast])
+  useEffect(() => { commitChessRef.current = commitChess }, [commitChess])
+
+  const launchChess = useCallback(() => {
+    const next = initialChessState() // receivers reset on call_chess_start, so seq may restart
+    chessStateRef.current = next
+    setChessState(next)
+    setCallTest({ testId: null, title: '', blocks: [], mode: 'chess' })
+    broadcast({ type: 'call_chess_start', ...next })
+    setMainSpeaker('__test__')
+    broadcast({ type: 'speaker', identity: '__test__' })
+  }, [broadcast])
+
+  const stopChess = useCallback(() => {
+    setCallTest(null)
+    broadcast({ type: 'call_chess_stop' })
+    setMainSpeaker(ownerIdentity ?? userName)
+    broadcast({ type: 'speaker', identity: ownerIdentity ?? userName })
+  }, [broadcast, ownerIdentity, userName])
+
+  const moveChess = useCallback((m: BoardMove) => {
+    const cur = chessStateRef.current
+    if (!cur) return
+    if (!isOwner) { broadcast({ type: 'call_chess_move', ...m, seq: cur.seq }); return }
+    const next = applyChessMove(cur, { ...m, seq: cur.seq }, true)
+    if (next) commitChess(next)
+  }, [broadcast, commitChess, isOwner])
+
+  const setChessFen = useCallback((fen: string) => {
+    const cur = chessStateRef.current
+    const next = cur && setChessPosition(cur, fen)
+    if (next) commitChess(next)
+    return !!next
+  }, [commitChess])
+
+  const setChessMoveAllowed = useCallback((moveAllowed: ChessCallState['moveAllowed']) => {
+    const cur = chessStateRef.current
+    if (cur) commitChess({ ...cur, moveAllowed, seq: cur.seq + 1 })
+  }, [commitChess])
+
   // Students minimize the whiteboard locally (don't broadcast speaker change)
   const localHideWhiteboard = useCallback(() => {
     setMainSpeaker(ownerIdentity ?? userName)
@@ -988,6 +1082,7 @@ useEffect(() => {
   // ── Virtual test tile ─────────────────────────────────────────────────────
   const renderTestTile = (large: boolean) => {
     if (!callTest) return null
+    const isBoardMode = callTest.mode === 'whiteboard' || callTest.mode === 'chess'
     const students = room.participants.filter(p => !p.isLocal)
     const isOneOnOne = students.length === 1
     const submitted = Object.values(callTestProgress).filter(p => p.submitted).length
@@ -1006,6 +1101,22 @@ useEffect(() => {
                 roomName={roomName}
                 isVip={isVip}
                 isAdmin={userRole === 'ADMIN'}
+              />
+            </div>
+          </div>
+        )
+      }
+
+      if (callTest.mode === 'chess') {
+        return (
+          <div key="__test__" className={`${styles.tile} ${styles.tileLarge} ${styles.testTileLarge}`}>
+            <div className={styles.testTileContent}>
+              <CallChess
+                state={chessState}
+                isOwner={isOwner}
+                onMove={moveChess}
+                onSetPosition={setChessFen}
+                onSetMoveAllowed={setChessMoveAllowed}
               />
             </div>
           </div>
@@ -1051,7 +1162,7 @@ useEffect(() => {
     }
 
     // Small preview tile
-    const tileIcon = callTest.mode === 'whiteboard' ? '🎨' : '📋'
+    const tileIcon = callTest.mode === 'chess' ? <ChessKnight size={28} aria-hidden /> : callTest.mode === 'whiteboard' ? '🎨' : '📋'
     return (
       <div
         key="__test__"
@@ -1062,8 +1173,8 @@ useEffect(() => {
           <div className={styles.testTileIcon}>{tileIcon}</div>
         </div>
         <div className={styles.testTilePreviewMeta}>
-          <span className={styles.testTilePreviewTitle}>{callTest.title}</span>
-          {isOwner && total > 0 && callTest.mode !== 'whiteboard' && (
+          <span className={styles.testTilePreviewTitle}>{callTest.mode === 'chess' ? tc('title') : callTest.title}</span>
+          {isOwner && total > 0 && !isBoardMode && (
             <span className={styles.testTilePreviewProgress}>{submitted}/{total} сдали</span>
           )}
         </div>
@@ -1171,6 +1282,11 @@ useEffect(() => {
               <button className={styles.cbTool} onClick={launchWhiteboard} data-tip={t('whiteboard')}>
                 <IconPalette /> {t('whiteboard')}
               </button>
+              {subjectSlug === 'chess' && (
+                <button className={styles.cbTool} onClick={launchChess} data-tip={tc('button')}>
+                  <ChessKnight size={16} aria-hidden /> {tc('button')}
+                </button>
+              )}
             </>
           )}
           {callTest && (
@@ -1178,8 +1294,8 @@ useEffect(() => {
               className={`${styles.cbTool} ${mainSpeaker === '__test__' ? styles.cbToolActive : ''}`}
               onClick={() => { setMainSpeaker('__test__'); broadcast({ type: 'speaker', identity: '__test__' }) }}
             >
-              {callTest.mode === 'whiteboard' ? <IconPalette /> : <IconClipboard />}
-              {callTest.title}
+              {callTest.mode === 'chess' ? <ChessKnight size={16} aria-hidden /> : callTest.mode === 'whiteboard' ? <IconPalette /> : <IconClipboard />}
+              {callTest.mode === 'chess' ? tc('title') : callTest.title}
             </button>
           )}
         </div>
@@ -1271,6 +1387,12 @@ useEffect(() => {
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
                   {t('whiteboard')}
                 </button>
+                {subjectSlug === 'chess' && (
+                  <button className={styles.moreItem} onClick={() => { setShowMore(false); launchChess() }}>
+                    <ChessKnight aria-hidden />
+                    {tc('button')}
+                  </button>
+                )}
                 <button className={styles.moreItem} onClick={() => { setShowMore(false); setShowInviteModal(true); setInviteFeedback(null) }}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>
                   {t('invite')}
@@ -1386,30 +1508,30 @@ useEffect(() => {
               <span className={styles.topRoom}>{roomName}</span>
               {topic && <span className={styles.topTopic}>{topic}</span>}
               {room.status && !room.status.startsWith('Ошибка') && <span className={styles.topStatus}>{room.status}</span>}
-              {callTest?.mode === 'whiteboard' && mainSpeaker === '__test__' && (
+              {(callTest?.mode === 'whiteboard' || callTest?.mode === 'chess') && mainSpeaker === '__test__' && (
                 <div className={styles.topWbControls}>
-                  <span className={styles.topWbLabel}>🎨 Доска</span>
+                  <span className={styles.topWbLabel}>{callTest.mode === 'chess' ? tc('title') : '🎨 Доска'}</span>
                   <button
                     className={styles.topWbBtn}
                     onClick={isOwner ? hideTest : localHideWhiteboard}
-                    title="Свернуть доску"
+                    title={callTest.mode === 'chess' ? tc('minimize_hint') : 'Свернуть доску'}
                   >
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="4 14 10 14 10 20" /><polyline points="20 10 14 10 14 4" />
                       <line x1="14" y1="10" x2="21" y2="3" /><line x1="3" y1="21" x2="10" y2="14" />
                     </svg>
-                    Свернуть
+                    {callTest.mode === 'chess' ? tc('minimize') : 'Свернуть'}
                   </button>
                   {isOwner && (
                     <button
                       className={`${styles.topWbBtn} ${styles.topWbStop}`}
-                      onClick={stopTest}
-                      title="Завершить доску"
+                      onClick={callTest.mode === 'chess' ? stopChess : stopTest}
+                      title={callTest.mode === 'chess' ? tc('close_hint') : 'Завершить доску'}
                     >
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                       </svg>
-                      Завершить
+                      {callTest.mode === 'chess' ? tc('close') : 'Завершить'}
                     </button>
                   )}
                 </div>

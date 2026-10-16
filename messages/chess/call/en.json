@@ -1,1 +1,27 @@
-{}
+{
+  "button": "Chess",
+  "title": "Chess",
+  "minimize": "Minimize",
+  "close": "End",
+  "minimize_hint": "Minimize the board",
+  "close_hint": "Close the board for everyone",
+  "connecting": "Getting the position from the call owner…",
+  "turn_w": "White to move",
+  "turn_b": "Black to move",
+  "check": "Check",
+  "mate_w": "Checkmate. White wins",
+  "mate_b": "Checkmate. Black wins",
+  "draw": "Draw",
+  "who_moves": "Who moves",
+  "allow_all": "Everyone",
+  "allow_owner": "Only me",
+  "flip": "Flip",
+  "flip_hint": "Flip the board on your screen only",
+  "reset": "New game",
+  "fen_label": "Position from FEN",
+  "fen_placeholder": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "fen_apply": "Set",
+  "fen_invalid": "This is not a valid FEN. Check the placement, side to move and that each side has one king.",
+  "locked": "Only the call owner can move",
+  "open_all": "Everyone can move"
+}

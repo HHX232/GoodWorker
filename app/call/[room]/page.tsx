@@ -35,6 +35,7 @@ export default async function RoomPage({ params }: Props) {
   let roomName = decodedName
   let ownerIdentity = identity
   let roomTopic: string | undefined
+  let subjectSlug: string | null = null
   let isVip = false
 
   try {
@@ -46,6 +47,9 @@ export default async function RoomPage({ params }: Props) {
       roomName = dbRoom.name
       ownerIdentity = dbRoom.ownerIdentity
       roomTopic = dbRoom.topic ?? undefined
+      if (dbRoom.categoryId) {
+        subjectSlug = (await prisma.category.findUnique({ where: { id: dbRoom.categoryId }, select: { slug: true } }))?.slug ?? null
+      }
 
       // VIP-gated whiteboard features (e.g. AI formula generation) key off the
       // room owner's (teacher's) subscription, not whichever participant is
@@ -81,6 +85,7 @@ export default async function RoomPage({ params }: Props) {
       ownerIdentity={ownerIdentity}
       localAvatarUrl={localAvatarUrl}
       topic={roomTopic}
+      subjectSlug={subjectSlug}
       isVip={isVip}
     />
   )
