@@ -32,6 +32,12 @@ export async function checkRateLimit(key: string, opts: RateLimitOptions): Promi
   return true
 }
 
+/** Только чтение: остался ли лимит по ключу (ничего не списывает). Списание — checkRateLimit. */
+export async function peekRateLimit(key: string, opts: RateLimitOptions): Promise<boolean> {
+  const record = await prisma.rateLimit.findUnique({ where: { key } })
+  return !record || record.resetAt < new Date() || record.count < opts.max
+}
+
 export function getIp(req: NextRequest): string {
   return (
     req.headers.get('x-forwarded-for')?.split(',')[0].trim() ??

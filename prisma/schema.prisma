@@ -1204,3 +1204,36 @@ model SupportRequest {
 
   @@index([authorId])
 }
+
+// ─── Chess ───
+
+model ChessPuzzle {
+  id          String   @id // lichess PuzzleId
+  fen         String
+  moves       String // UCI через пробел; moves[0] — ход соперника
+  rating      Int
+  themes      String[]
+  openingTags String[]
+  popularity  Int
+
+  @@index([rating])
+}
+
+model ChessPuzzleAttempt {
+  id        String   @id @default(cuid())
+  userId    String
+  puzzleId  String
+  solved    Boolean
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([userId, puzzleId])
+}
+
+model ChessProfile {
+  userId       String   @id // Student.id или Teacher.id
+  puzzleRating Int      @default(1200)
+  solved       Int      @default(0)
+  failed       Int      @default(0)
+  updatedAt    DateTime @updatedAt
+}
