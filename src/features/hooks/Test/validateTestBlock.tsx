@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {TestBlock} from '@/entities/store/slices/tasksSlice.slice'
+import {fenError, lineToSan} from '@/shared/lib/chess/puzzle'
 import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
 
 export interface BlockValidationTestBlockError {
@@ -76,6 +77,20 @@ function validateTestBlock(block: TestBlock): string | null {
 
     case TaskBlockType.INFO_AUDIO: {
       if (!p.url) return 'Загрузите аудиофайл'
+      return null
+    }
+
+    case TaskBlockType.CHESS_PUZZLE: {
+      if (!p.fen || fenError(p.fen)) return 'Исправьте позицию (FEN)'
+      if (!p.solution?.length) return 'Запишите решение ходами на доске'
+      if (lineToSan(p.fen, p.solution).length !== p.solution.length) return 'Решение не подходит к позиции — запишите ходы заново'
+      return null
+    }
+
+    case TaskBlockType.CHESS_STUDY: {
+      if (!p.fen || fenError(p.fen)) return 'Исправьте позицию (FEN)'
+      if (!p.moves?.length) return 'Сделайте хотя бы один ход разбора'
+      if (lineToSan(p.fen, p.moves.map((m: any) => m.uci)).length !== p.moves.length) return 'Ходы разбора не подходят к позиции — запишите их заново'
       return null
     }
 

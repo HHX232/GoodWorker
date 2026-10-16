@@ -1,0 +1,476 @@
+// Chess blocks: editor (position setup, move recorder) + student views.
+// Tokens follow the neighbouring block editors (slate scale, white card).
+
+.box {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  background: #ffffff;
+}
+
+.split {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: flex-start;
+
+  > :first-child {
+    flex: 1 1 260px;
+    max-width: 400px;
+  }
+}
+
+.side {
+  flex: 1 1 220px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.board {
+  flex: 1 1 260px;
+  max-width: 400px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+}
+
+.hint,
+.empty {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+.warn {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #9a5b13;
+}
+
+.error {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #c2413f;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mono {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+// ── Controls ──────────────────────────────────────────────
+
+.input {
+  width: 100%;
+  min-width: 0;
+  padding: 9px 12px;
+  font-size: 13px;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  outline: none;
+  color: #1e293b;
+  background: #f8fafc;
+  font-family: inherit;
+  transition: border-color 0.15s, background 0.15s;
+
+  &::placeholder { color: #94a3b8; }
+  &:focus { border-color: #93c5fd; background: #fff; }
+}
+
+.input_error,
+.input_error:focus {
+  border-color: #e24b4a;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #475569;
+  transition: border-color 0.13s, background 0.13s;
+
+  &:hover:not(:disabled) { border-color: #94a3b8; background: #f1f5f9; }
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+  &:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
+}
+
+.segment {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  background: #f1f5f9;
+  border-radius: 8px;
+  width: fit-content;
+}
+
+.segment_btn {
+  padding: 5px 14px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #64748b;
+  transition: background 0.14s, color 0.14s, box-shadow 0.14s;
+
+  &:hover { color: #1e293b; }
+  &:focus-visible { outline: 2px solid #3b82f6; outline-offset: 1px; }
+}
+
+.segment_active {
+  background: #ffffff;
+  color: #1e293b;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+// ── Position setup board ──────────────────────────────────
+
+.setup_board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 12px 32px -18px rgba(20, 16, 10, 0.45);
+  user-select: none;
+}
+
+.setup_sq {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+
+  &:hover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 0 3px rgba(59, 130, 246, 0.55);
+  }
+  &:focus-visible { outline: 3px solid #3b82f6; outline-offset: -3px; z-index: 1; }
+}
+
+.sq_light { background: var(--sq-light); }
+.sq_dark { background: var(--sq-dark); }
+
+.setup_piece {
+  position: absolute;
+  inset: 4%;
+  display: block;
+  cursor: grab;
+
+  svg { width: 100%; height: 100%; display: block; }
+}
+
+.coord {
+  position: absolute;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.coord_rank { top: 3px; left: 3px; }
+.coord_file { right: 3px; bottom: 3px; }
+.sq_light .coord { color: var(--coord-light); }
+.sq_dark .coord { color: var(--coord-dark); }
+
+.palette {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 44px));
+  gap: 4px;
+}
+
+.tool {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1 / 1;
+  padding: 3px;
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
+  cursor: grab;
+  transition: border-color 0.13s, background 0.13s, transform 0.13s;
+
+  svg { width: 100%; height: 100%; display: block; }
+  &:hover { border-color: #94a3b8; }
+  &:focus-visible { outline: 2px solid #3b82f6; outline-offset: 1px; }
+  // white pieces start the second row, black pieces under them
+  &:nth-child(7) { grid-column: 1; }
+}
+
+.tool_erase {
+  grid-column: 7;
+  grid-row: 1 / span 2;
+  aspect-ratio: auto;
+  cursor: pointer;
+
+  svg { width: 18px; height: 18px; }
+}
+
+.tool_active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 1px 6px -2px rgba(37, 99, 235, 0.45);
+}
+
+// ── Recorded lines ────────────────────────────────────────
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 7px;
+  font-size: 13px;
+  color: #1e293b;
+}
+
+.chip_student { background: #eef6ee; box-shadow: inset 0 0 0 1px #c9e2c9; }
+.chip_reply { background: #f1f5f9; box-shadow: inset 0 0 0 1px #e2e8f0; }
+
+.chip_num {
+  font-size: 12px;
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+}
+
+.chip_role {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.comment_list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.comment_row {
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.comment_san {
+  font-size: 13px;
+  color: #1e293b;
+  white-space: nowrap;
+}
+
+// ── Student views ─────────────────────────────────────────
+
+.player {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 440px;
+  outline: none;
+
+  &:focus-visible { box-shadow: 0 0 0 2px #93c5fd; border-radius: 8px; }
+}
+
+.player_board {
+  width: 100%;
+}
+
+.prompt {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #1e293b;
+}
+
+.status_row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+}
+
+.turn_dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1.5px #475569;
+}
+
+.turn_black { background: #1e293b; }
+
+.turn_label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.status {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.status_ok { color: #15803d; font-weight: 600; }
+.status_wrong { color: #c2413f; font-weight: 600; }
+
+.study_nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.icon_btn {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  color: #334155;
+  transition: border-color 0.13s, background 0.13s;
+
+  &:hover:not(:disabled) { border-color: #94a3b8; background: #f1f5f9; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+  &:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
+}
+
+.study_counter {
+  flex: 1;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
+  font-variant-numeric: tabular-nums;
+}
+
+.study_comment {
+  min-height: 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.comment_text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1e293b;
+}
+
+.study_moves {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.study_move {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #334155;
+  transition: background 0.13s;
+
+  &:hover { background: #f1f5f9; }
+  &:focus-visible { outline: 2px solid #3b82f6; outline-offset: 1px; }
+}
+
+.study_move_active,
+.study_move_active:hover {
+  background: #1e293b;
+  color: #ffffff;
+
+  .chip_num { color: #cbd5e1; }
+}
+
+// ─── Dark theme ───────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .box { background: #1e2030; border-color: rgba(255, 255, 255, 0.08); }
+  .label, .hint, .empty, .chip_num, .chip_role, .status { color: rgba(255, 255, 255, 0.55); }
+  .warn { color: #e0a85a; }
+  .error { color: #f08a89; }
+  .input {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+    &::placeholder { color: rgba(255, 255, 255, 0.35); }
+    &:focus { background: rgba(255, 255, 255, 0.07); border-color: #60a5fa; }
+  }
+  .input_error, .input_error:focus { border-color: #e24b4a; }
+  .btn, .tool, .icon_btn {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #cbd5e1;
+  }
+  .btn:hover:not(:disabled), .icon_btn:hover:not(:disabled), .tool:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.25); }
+  .tool_active { border-color: #60a5fa; background: rgba(96, 165, 250, 0.16); }
+  .segment { background: rgba(255, 255, 255, 0.06); }
+  .segment_btn { color: rgba(255, 255, 255, 0.55); &:hover { color: #fff; } }
+  .segment_active { background: rgba(255, 255, 255, 0.12); color: #fff; }
+  .chip, .comment_san, .prompt, .comment_text { color: #e2e8f0; }
+  .chip_student { background: rgba(74, 160, 90, 0.16); box-shadow: inset 0 0 0 1px rgba(74, 160, 90, 0.35); }
+  .chip_reply { background: rgba(255, 255, 255, 0.05); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1); }
+  .turn_label, .study_counter, .study_move { color: #cbd5e1; }
+  .turn_dot { box-shadow: inset 0 0 0 1.5px #cbd5e1; }
+  .turn_black { background: #0f1117; }
+  .status_ok { color: #5fcf85; }
+  .status_wrong { color: #f08a89; }
+  .study_comment { background: rgba(255, 255, 255, 0.04); }
+  .study_move:hover { background: rgba(255, 255, 255, 0.08); }
+  .study_move_active, .study_move_active:hover { background: #e2e8f0; color: #0f1117; .chip_num { color: #475569; } }
+}

@@ -10,6 +10,7 @@ import {RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
 import {useRoadmapAccessContext} from '@/shared/ui/RoadMap/context/RoadmapAccessContext'
 import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
 import {useReactFlow, useStore} from '@xyflow/react'
+import {useTranslations} from 'next-intl'
 import {useCallback, useEffect, useState} from 'react'
 import styles from './ActiveTestParam.module.scss'
 import {BlockEditorSwitch} from './BlockEditorInline/BlockEditorSwitch'
@@ -22,7 +23,9 @@ const AVAILABLE_TYPES: TaskBlockType[] = [
   TaskBlockType.MATCH_PAIRS,
   TaskBlockType.HIGHLIGHT_TEXT,
   TaskBlockType.WORD_SCRAMBLE,
-  TaskBlockType.DIALOGUE
+  TaskBlockType.DIALOGUE,
+  TaskBlockType.CHESS_PUZZLE,
+  TaskBlockType.CHESS_STUDY
 ]
 
 export const TYPE_KEYS: Record<string, string> = {
@@ -33,8 +36,12 @@ export const TYPE_KEYS: Record<string, string> = {
   [TaskBlockType.MATCH_PAIRS]: 'matchPairs',
   [TaskBlockType.HIGHLIGHT_TEXT]: 'highlightText',
   [TaskBlockType.WORD_SCRAMBLE]: 'wordScramble',
-  [TaskBlockType.DIALOGUE]: 'dialogue'
+  [TaskBlockType.DIALOGUE]: 'dialogue',
+  // chess keys live in the chess.course namespace (see typeLabel)
+  [TaskBlockType.CHESS_PUZZLE]: 'blockPuzzle',
+  [TaskBlockType.CHESS_STUDY]: 'blockStudy'
 }
+const CHESS_TYPES = new Set<string>([TaskBlockType.CHESS_PUZZLE, TaskBlockType.CHESS_STUDY])
 
 export default function ActiveTestBlock({
   nodeId,
@@ -48,6 +55,8 @@ export default function ActiveTestBlock({
   const {updateNodeData} = useReactFlow()
   const {loadBlocksForNode, addActiveBlock, removeActiveBlock} = useActions()
   const {roadmapId} = useRoadmapAccessContext()
+  const tChess = useTranslations('chess.course')
+  const typeLabel = (type: string) => (CHESS_TYPES.has(type) ? tChess(TYPE_KEYS[type] as 'blockPuzzle') : t(TYPE_KEYS[type]))
 
   const nodeBlocks = useStore(
     (s) => ((s.nodeLookup.get(nodeId)?.data as RoadNodeData)?.activeTests ?? []) as TestBlock[]
@@ -128,7 +137,7 @@ export default function ActiveTestBlock({
         >
           {AVAILABLE_TYPES.map((type) => (
             <option key={type} value={type}>
-              {t(TYPE_KEYS[type])}
+              {typeLabel(type)}
             </option>
           ))}
         </select>
@@ -180,7 +189,7 @@ export default function ActiveTestBlock({
           {current && (
             <div className={styles.block_wrap}>
               <div className={styles.block_header}>
-                <span className={styles.block_type}> {t(TYPE_KEYS[current.type])}</span>
+                <span className={styles.block_type}> {typeLabel(current.type)}</span>
 
                 <button type='button' className={styles.remove_btn} onClick={() => handleRemove(current.id)}>
                   {t('delete')}

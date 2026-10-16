@@ -12,6 +12,7 @@ import {CSS} from '@dnd-kit/utilities'
 import {useTranslations} from 'next-intl'
 import {useEffect} from 'react'
 import styles from './BlockEditor.module.scss'
+import {ChessPuzzleEditor, ChessStudyEditor} from './ChessEditor/ChessEditor'
 import ChooseOptionEditor from './ChooseOptionEditor/ChooseOptionEditor'
 import {DialogueEditor} from './DialogueEditor/DialogueEditor'
 import {FillTextEditor} from './FillTextEditor/FillTextEditor'
@@ -33,6 +34,7 @@ const DeleteBlockButton = ({label, onDelete}: {label: string; onDelete: () => vo
 
 function BlockEditor({block}: Props) {
   const t = useTranslations('BlockEditor')
+  const tc = useTranslations('chess.course')
   const {removeBlock, updateBlockPayload} = useActions()
   const {ids: invalidBlockIds, clear: clearInvalidBlock, errors} = useInvalidTestBlocks()
   const isInvalid = invalidBlockIds.has(block.id)
@@ -126,6 +128,11 @@ function BlockEditor({block}: Props) {
           onChange={(p) => updateBlockPayload({id: block.id, payload: p})}
         />
       )
+
+    case TaskBlockType.CHESS_PUZZLE:
+      return wrapper(tc('blockPuzzle'), <ChessPuzzleEditor blockId={block.id} payload={block.payload as any} />)
+    case TaskBlockType.CHESS_STUDY:
+      return wrapper(tc('blockStudy'), <ChessStudyEditor blockId={block.id} payload={block.payload as any} />)
 
     default:
       return null

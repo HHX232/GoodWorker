@@ -2,6 +2,7 @@
 
 import { ChessBoard, type BoardMove } from '@/widgets/Chess/Board'
 import { playMoveSound } from '@/shared/lib/chess/sound'
+import { checkSquare } from '@/shared/lib/chess/puzzle'
 import { Chess } from 'chess.js'
 import { ArrowUpDown, Lock, RotateCcw, Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -20,12 +21,6 @@ type Props = {
 }
 
 const pieces = (fen: string) => (fen.split(' ')[0] ?? '').replace(/[^a-z]/gi, '').length
-
-function kingInCheck(chess: Chess): string | null {
-  if (!chess.inCheck()) return null
-  for (const row of chess.board()) for (const p of row) if (p?.type === 'k' && p.color === chess.turn()) return p.square
-  return null
-}
 
 export function CallChess({ state, isOwner, onMove, onSetPosition, onSetMoveAllowed }: Props) {
   const t = useTranslations('chess.call')
@@ -105,7 +100,7 @@ export function CallChess({ state, isOwner, onMove, onSetPosition, onSetMoveAllo
             interactive={canMove}
             onMove={canMove ? handleMove : undefined}
             lastMove={shown?.lastMove ?? state.lastMove}
-            check={kingInCheck(chess)}
+            check={checkSquare(chess.fen())}
           />
         </div>
       </div>

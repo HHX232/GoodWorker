@@ -2,6 +2,7 @@
 import {TestBlock} from '@/entities/store/slices/tasksSlice.slice'
 import {RoadMapBlockType, RoadNodeData} from '@/shared/types/RoadMap/RoadMap.types'
 import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
+import {validateTestBlocks} from '@/features/hooks/Test/validateTestBlock'
 import {Node} from '@xyflow/react'
 
 export interface RoadMapNodeError {
@@ -112,6 +113,9 @@ function validateTestBlock(block: TestBlock): string | null {
       if (p.lines.some((l) => !l.text?.trim())) return 'Заполните все реплики'
       return null
     }
+    case TaskBlockType.CHESS_PUZZLE:
+    case TaskBlockType.CHESS_STUDY:
+      return validateTestBlocks([block])[0]?.message ?? null
     default:
       return null
   }

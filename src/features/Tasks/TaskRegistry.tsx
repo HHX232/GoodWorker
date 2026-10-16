@@ -2,6 +2,8 @@
 
 import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
 import {ReactNode} from 'react'
+import {ChessPuzzleTask} from './TaskObjects/ChessPuzzleTask'
+import {ChessStudyTask} from './TaskObjects/ChessStudyTask'
 import {ChooseOptionTask} from './TaskObjects/ChooseOptionTask'
 import {DialogueTask} from './TaskObjects/DialogueTask'
 import {FillTextTask} from './TaskObjects/FillTextTask'
@@ -41,6 +43,8 @@ const TestUserBlockRegistry: Registry = {
   [TaskBlockType.INFO_AUDIO]: InfoAudioTask,
   [TaskBlockType.HIGHLIGHT_TEXT]: HighlightTextTask,
   [TaskBlockType.WORD_SCRAMBLE]: WordScrambleTask,
-  [TaskBlockType.DIALOGUE]: DialogueTask
+  [TaskBlockType.DIALOGUE]: DialogueTask,
+  [TaskBlockType.CHESS_PUZZLE]: ChessPuzzleTask,
+  [TaskBlockType.CHESS_STUDY]: ChessStudyTask
 }
 export default TestUserBlockRegistry

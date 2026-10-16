@@ -13,6 +13,7 @@ import {
   WordScramblePayload
 } from '@/shared/types/Tasks/TaskPayload.type'
 import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
+import {ChessPuzzleStudent, ChessStudyStudent} from '@/widgets/Tasks/BlockEditor/ChessEditor/ChessStudent'
 import {DialogueStudentView} from '@/widgets/Tasks/BlockEditor/DialogueEditor/DialogueEditor'
 import {FillTextEditor} from '@/widgets/Tasks/BlockEditor/FillTextEditor/FillTextEditor'
 import {HighlightStudentView} from '@/widgets/Tasks/BlockEditor/HighlightTextEditor/HighlightTextEditor'
@@ -89,6 +90,16 @@ export function BlockView({
       return <InfoMediaEditor payload={p} viewOnly />
     case TaskBlockType.INFO_AUDIO:
       return <InfoAudioEditor payload={p} viewOnly />
+    case TaskBlockType.CHESS_PUZZLE:
+      return (
+        <ChessPuzzleStudent
+          payload={p}
+          disabled={isSubmitted}
+          onChange={(value) => cb({type: TaskBlockType.CHESS_PUZZLE, value})}
+        />
+      )
+    case TaskBlockType.CHESS_STUDY:
+      return <ChessStudyStudent payload={p} />
     case TaskBlockType.FILL_TEXT:
       return <FillTextEditor blockId={block.id} onlyPass onChangeAnswer={cb} payload={p} />
     default:
@@ -106,6 +117,7 @@ const ANSWERABLE_TYPES = new Set<TaskBlockType>([
   TaskBlockType.WORD_SCRAMBLE,
   TaskBlockType.DIALOGUE,
   TaskBlockType.FILL_TEXT,
+  TaskBlockType.CHESS_PUZZLE,
 ])
 
 // ── BlockWrapper ──────────────────────────────────────────────────────────────
@@ -123,11 +135,16 @@ const BLOCK_LABEL_KEYS: Partial<Record<TaskBlockType, string>> = {
 
 export function BlockWrapper({block, children, hasError}: {block: TestBlock; children: React.ReactNode; hasError?: boolean}) {
   const t = useTranslations('TestPlayer')
+  const tc = useTranslations('chess.course')
   const labelKey = BLOCK_LABEL_KEYS[block.type as TaskBlockType]
-  if (!labelKey) return <>{children}</>
+  const label =
+    block.type === TaskBlockType.CHESS_PUZZLE ? tc('playerPuzzle')
+    : block.type === TaskBlockType.CHESS_STUDY ? tc('blockStudy')
+    : labelKey ? t(labelKey as Parameters<typeof t>[0]) : null
+  if (!label) return <>{children}</>
   return (
     <div className={`${styles.block_card} ${hasError ? styles.block_card_error : ''}`}>
-      <span className={styles.block_label}>{t(labelKey as Parameters<typeof t>[0])}</span>
+      <span className={styles.block_label}>{label}</span>
       {children}
     </div>
   )

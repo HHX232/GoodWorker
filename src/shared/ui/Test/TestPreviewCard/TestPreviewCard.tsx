@@ -1,13 +1,14 @@
 'use client'
 
 import { CardOwnerMenu } from '@/shared/ui/CardOwnerMenu/CardOwnerMenu'
+import { ChessKnightIcon } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { FC } from 'react'
 import React from 'react'
 import styles from './TestPreviewCard.module.scss'
 
-const INFO_TYPES = new Set(['INFO_TEXT', 'INFO_MEDIA', 'INFO_AUDIO'])
+const INFO_TYPES = new Set(['INFO_TEXT', 'INFO_MEDIA', 'INFO_AUDIO', 'CHESS_STUDY'])
 
 interface Block { type: string }
 interface Category {
@@ -33,6 +34,7 @@ function getCategoryName(cat: Category, locale: string): string {
 }
 
 const TYPE_ICONS: Record<string, React.ReactElement> = {
+  CHESS_PUZZLE: <ChessKnightIcon size={13} strokeWidth={2} />,
   CHOOSE_OPTION: (
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
       <circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/>
@@ -69,6 +71,7 @@ const TYPE_COLORS: Record<string, string> = {
   HIGHLIGHT_TEXT: '#FEF9C3',
   WORD_SCRAMBLE:  '#ECFDF5',
   DIALOGUE:       '#FFF1F2',
+  CHESS_PUZZLE:   '#F5EFE6',
 }
 
 const TYPE_TEXT_COLORS: Record<string, string> = {
@@ -80,12 +83,14 @@ const TYPE_TEXT_COLORS: Record<string, string> = {
   HIGHLIGHT_TEXT: '#CA8A04',
   WORD_SCRAMBLE:  '#059669',
   DIALOGUE:       '#E11D48',
+  CHESS_PUZZLE:   '#7C4A1E',
 }
 
 export const TestPreviewCard: FC<TestPreviewCardProps> = ({
   id, title, aiTopic, content, testCategories = [], teacher, isOwner = false, onDelete,
 }) => {
   const t = useTranslations('testPreview')
+  const tChess = useTranslations('chess.course')
   const tDash = useTranslations('dashboard')
   const locale = typeof window !== 'undefined'
     ? document.documentElement.lang || 'ru'
@@ -151,7 +156,7 @@ export const TestPreviewCard: FC<TestPreviewCardProps> = ({
               }}
             >
               {TYPE_ICONS[type] ?? null}
-              <span>{t(`type_${type}` as Parameters<typeof t>[0])}</span>
+              <span>{type === 'CHESS_PUZZLE' ? tChess('blockPuzzle') : t(`type_${type}` as Parameters<typeof t>[0])}</span>
               {count > 1 && <span className={styles.typeCount}>×{count}</span>}
             </span>
           ))}

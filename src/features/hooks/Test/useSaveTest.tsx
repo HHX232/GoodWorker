@@ -2,6 +2,7 @@ import {useActions} from '@/features/hooks/store/useActions'
 import {useTypedSelector} from '@/features/hooks/store/useTypedSelector'
 import {TestBlock} from '@/entities/store/slices/tasksSlice.slice'
 import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
+import {validateTestBlocks} from './validateTestBlock'
 import instance from '@/shared/api'
 import {useMutation, useQueryClient} from '@tanstack/react-query'
 import {useTranslations} from 'next-intl'
@@ -47,6 +48,12 @@ export function validateBlocks(blocks: TestBlock[]): Map<string, string> {
         if (!p?.lines?.length || p.lines.length < 2) { errors.set(block.id, 'Добавьте минимум 2 реплики'); break }
         const hasEmptyLine = p.lines.some((l: any) => !l?.text?.trim())
         if (hasEmptyLine) errors.set(block.id, 'Заполните все реплики')
+        break
+      }
+      case TaskBlockType.CHESS_PUZZLE:
+      case TaskBlockType.CHESS_STUDY: {
+        const msg = validateTestBlocks([block])[0]?.message
+        if (msg) errors.set(block.id, msg)
         break
       }
     }

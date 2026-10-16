@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { checkSquare } from '@/shared/lib/chess/puzzle'
 import { useTranslations } from 'next-intl'
 import { Chess, validateFen, DEFAULT_POSITION } from 'chess.js'
 import { ArrowLeft, ArrowUpDown, CloudOff, Flag, Lock, MessageCircleQuestion, Plus, RotateCw, Undo2 } from 'lucide-react'
@@ -27,11 +28,6 @@ function soundFor(chess: Chess) {
   if (chess.isGameOver()) return playMoveSound('end')
   if (chess.inCheck()) return playMoveSound('check')
   playMoveSound(last?.captured ? 'capture' : 'move')
-}
-
-function kingSquare(chess: Chess): string | undefined {
-  if (!chess.inCheck()) return undefined
-  for (const row of chess.board()) for (const p of row) if (p?.type === 'k' && p.color === chess.turn()) return p.square
 }
 
 export function ChessPlayPage({ initialFen, initialColor }: { initialFen?: string; initialColor?: string }) {
@@ -305,7 +301,7 @@ export function ChessPlayPage({ initialFen, initialColor }: { initialFen?: strin
               onMove={onMove}
               interactive={ready && !gameOver && !thinking && (!vsAi || chess.turn() === color)}
               lastMove={lastMove}
-              check={kingSquare(chess)}
+              check={checkSquare(chess.fen())}
               arrows={arrows}
               skinId={skin}
             />

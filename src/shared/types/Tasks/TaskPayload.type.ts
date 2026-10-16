@@ -85,3 +85,20 @@ export interface DialoguePayload {
   speakers:    DialogueSpeakers
   lines:       DialogueLine[]
 }
+
+// ── CHESS_PUZZLE / CHESS_STUDY ─────────────────────────────
+export interface ChessPuzzlePayload {
+  fen:      string
+  solution: string[]   // UCI; [0] — ход ученика, дальше чередуются ответ соперника / ход ученика
+  prompt?:  string
+}
+
+export interface ChessStudyMove {
+  uci:      string
+  comment?: string
+}
+
+export interface ChessStudyPayload {
+  fen:   string
+  moves: ChessStudyMove[]
+}

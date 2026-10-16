@@ -10,6 +10,7 @@ import MatchPairsEditor from '@/widgets/Tasks/BlockEditor/MatchPairsEditor/Match
 import {HighlightTextEditor} from '@/widgets/Tasks/BlockEditor/HighlightTextEditor/HighlightTextEditor'
 import {WordScrambleEditor} from '@/widgets/Tasks/BlockEditor/WordScrambleEditor/WordScrambleEditor'
 import {DialogueEditor} from '@/widgets/Tasks/BlockEditor/DialogueEditor/DialogueEditor'
+import {ChessPuzzleEditor, ChessStudyEditor} from '@/widgets/Tasks/BlockEditor/ChessEditor/ChessEditor'
 
 export function BlockEditorSwitch({block}: {block: TestBlock}) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -32,6 +33,10 @@ export function BlockEditorSwitch({block}: {block: TestBlock}) {
       return <WordScrambleEditor blockId={block.id} payload={p} />
     case TaskBlockType.DIALOGUE:
       return <DialogueEditor blockId={block.id} payload={p} />
+    case TaskBlockType.CHESS_PUZZLE:
+      return <ChessPuzzleEditor blockId={block.id} payload={p} />
+    case TaskBlockType.CHESS_STUDY:
+      return <ChessStudyEditor blockId={block.id} payload={p} />
     default:
       return null
   }

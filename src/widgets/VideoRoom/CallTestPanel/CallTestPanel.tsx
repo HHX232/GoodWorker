@@ -41,6 +41,7 @@ const ANSWERABLE = new Set<string>([
   TaskBlockType.SEQUENCE, TaskBlockType.MATCH_PAIRS,
   TaskBlockType.HIGHLIGHT_TEXT, TaskBlockType.WORD_SCRAMBLE,
   TaskBlockType.DIALOGUE, TaskBlockType.FILL_TEXT,
+  TaskBlockType.CHESS_PUZZLE,
 ])
 
 // ── Student view ──────────────────────────────────────────────────────────────

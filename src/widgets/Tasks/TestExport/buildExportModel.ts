@@ -3,6 +3,8 @@ import {seededShuffleStudentView} from '@/features/Roadmap/helpers/seededShuffle
 import {tiptapToPlainText} from '@/shared/lib/tiptapToPlainText'
 import {getShuffledItems} from '@/widgets/Tasks/BlockEditor/WordScrambleEditor/StudentViewWordScramble/StudentViewWordScramble'
 import {
+  ChessPuzzlePayload,
+  ChessStudyPayload,
   ChooseOptionPayload,
   DialoguePayload,
   FillTextPayload,
@@ -15,6 +17,7 @@ import {
   SequencePayload,
   WordScramblePayload
 } from '@/shared/types/Tasks/TaskPayload.type'
+import {lineToSan} from '@/shared/lib/chess/puzzle'
 import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
 
 // А printed test is a blank the student fills in — it must never reveal
@@ -168,6 +171,27 @@ export function buildExportModel(test: {title: string; description: string; bloc
       case TaskBlockType.INFO_AUDIO: {
         const p = payload as InfoAudioPayload
         blocks.push({kind: 'info', type: 'audio', filename: p.filename ?? ''})
+        break
+      }
+      // Chess goes out as text (no board): the blank shows the position, never the solution.
+      case TaskBlockType.CHESS_PUZZLE: {
+        const p = payload as ChessPuzzlePayload
+        const side = p.fen.split(' ')[1] === 'b' ? 'чёрных' : 'белых'
+        const question = [p.prompt?.trim(), `Позиция (FEN): ${p.fen}`, `Ход ${side}.`].filter(Boolean).join('\n')
+        blocks.push({kind: 'question', num: ++num, type: 'free', question, answerPrompt: 'Ваше решение (ходы):'})
+        break
+      }
+      case TaskBlockType.CHESS_STUDY: {
+        const p = payload as ChessStudyPayload
+        const black = p.fen.split(' ')[1] === 'b'
+        const moves = lineToSan(p.fen, p.moves.map((m) => m.uci)).map((san, i) => {
+          const ply = i + (black ? 1 : 0)
+          const n = Math.floor(ply / 2) + 1
+          const num = ply % 2 === 0 ? `${n}. ` : `${n}… `
+          const comment = p.moves[i].comment?.trim()
+          return `${num}${san}${comment ? ` — ${comment}` : ''}`
+        })
+        blocks.push({kind: 'info', type: 'text', text: [`Позиция (FEN): ${p.fen}`, ...moves].join('\n')})
         break
       }
     }

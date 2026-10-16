@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {TestBlock} from '@/entities/store/slices/tasksSlice.slice'
+import {ChessPuzzleAnswer, scorePuzzle} from '@/shared/lib/chess/puzzle'
 import {TaskBlockType} from '@/shared/types/Tasks/TaskType.type'
 
 // ── типы ответов ученика ──────────────────────────────────────────────────────
@@ -13,6 +14,7 @@ export type StudentAnswer =
   | {type: TaskBlockType.HIGHLIGHT_TEXT; value: number[]} // id выделенных токенов
   | {type: TaskBlockType.WORD_SCRAMBLE; value: string[]} // итоговый порядок элементов
   | {type: TaskBlockType.DIALOGUE; value: string[]} // id реплик в порядке ученика
+  | {type: TaskBlockType.CHESS_PUZZLE; value: ChessPuzzleAnswer}
   | {type: 'INFO'} // info-блоки не проверяются
 
 export interface BlockResult {
@@ -58,6 +60,7 @@ export function calculateResult(blocks: TestBlock[], answers: Map<string, Studen
       block.type === TaskBlockType.INFO_TEXT ||
       block.type === TaskBlockType.INFO_MEDIA ||
       block.type === TaskBlockType.INFO_AUDIO ||
+      block.type === TaskBlockType.CHESS_STUDY ||
       !answer ||
       answer.type === 'INFO'
     )
@@ -139,6 +142,12 @@ function scoreBlock(block: TestBlock, answer: StudentAnswer): BlockResult {
       const p = block.payload as {lines: {id: string}[]}
       const isCorrect = p.lines.map((l) => l.id).join() === answer.value.join()
       return {...base, isCorrect, score: isCorrect ? 1 : 0}
+    }
+
+    case TaskBlockType.CHESS_PUZZLE: {
+      if (answer.type !== TaskBlockType.CHESS_PUZZLE) return {...base, isCorrect: false, score: 0}
+      const score = scorePuzzle(answer.value)
+      return {...base, isCorrect: score === 1, score}
     }
 
     case TaskBlockType.FILL_TEXT: {

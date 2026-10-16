@@ -24,6 +24,7 @@ interface Props {
 export function ResultToast({test: _test, result, onRetry, onClose}: Props) {
   const t = useTranslations('TestPlayer')
   const tMap = useTranslations('roadMap')
+  const tChess = useTranslations('chess.course')
 
   const blockLabel = (type: TaskBlockType): string => {
     const map: Partial<Record<TaskBlockType, string>> = {
@@ -35,6 +36,7 @@ export function ResultToast({test: _test, result, onRetry, onClose}: Props) {
       [TaskBlockType.WORD_SCRAMBLE]: tMap('wordScramble'),
       [TaskBlockType.DIALOGUE]: tMap('dialogue'),
       [TaskBlockType.FILL_TEXT]: tMap('fillText'),
+      [TaskBlockType.CHESS_PUZZLE]: tChess('blockPuzzle'),
     }
     return map[type] ?? type
   }

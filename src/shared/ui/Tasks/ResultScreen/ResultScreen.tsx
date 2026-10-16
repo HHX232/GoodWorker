@@ -15,6 +15,7 @@ interface Props {
 export function ResultScreen({test, result}: Props) {
   const t = useTranslations('TestPlayer')
   const tMap = useTranslations('roadMap')
+  const tChess = useTranslations('chess.course')
 
   function grade(percent: number): {label: string; color: string} {
     if (percent >= 90) return {label: t('excellent'), color: '#1D9E75'}
@@ -33,6 +34,7 @@ export function ResultScreen({test, result}: Props) {
       [TaskBlockType.WORD_SCRAMBLE]: tMap('wordScramble'),
       [TaskBlockType.DIALOGUE]: tMap('dialogue'),
       [TaskBlockType.FILL_TEXT]: tMap('fillText'),
+      [TaskBlockType.CHESS_PUZZLE]: tChess('blockPuzzle'),
     }
     return map[type] ?? type
   }

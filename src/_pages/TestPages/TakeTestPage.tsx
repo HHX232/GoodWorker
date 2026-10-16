@@ -27,7 +27,8 @@ const BLOCK_LABELS: Partial<Record<TaskBlockType, string>> = {
   [TaskBlockType.HIGHLIGHT_TEXT]: 'Выделите правильные слова',
   [TaskBlockType.WORD_SCRAMBLE]: 'Составьте слово / предложение',
   [TaskBlockType.DIALOGUE]: 'Расставьте диалог в верном порядке',
-  [TaskBlockType.FILL_TEXT]: 'Заполните пропуски'
+  [TaskBlockType.FILL_TEXT]: 'Заполните пропуски',
+  [TaskBlockType.CHESS_PUZZLE]: 'Решите задачу на доске'
 }
 
 export function BlockWrapper({block, children}: {block: TestBlock; children: React.ReactNode}) {
