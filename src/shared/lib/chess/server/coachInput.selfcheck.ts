@@ -45,8 +45,11 @@ const base = {
   const r = validateCoachInput({ ...base, fen: 'k7/8/8/3r4/8/8/8/4K2Q w - - 0 1', playedUci: 'h1h5', bestUci: 'h1d5', pvUci: ['h1d5'], classification: 'mistake', context: 'engine-move' })
   assert.ok(r.ok)
   const { system, user } = buildCoachPrompt(r.input, r.facts)
-  assert.doesNotMatch(system + user, /strong|силён/i)
-  assert.match(system, /weaker/)
+  assert.doesNotMatch(system + user, /strong\b|силён/i) // «strongest move» — факт, а не похвала ходу соперника
+  assert.match(system, /not the strongest/)
+  assert.doesNotMatch(system + user, /движ|engine/i)
+  assert.match(system, /на «ты»/)
+  assert.match(system, /«ход соперника»/)
 }
 
 // Дебют: книжный ход объясняется по идее, без сравнения с движком и без оценки «ошибка».

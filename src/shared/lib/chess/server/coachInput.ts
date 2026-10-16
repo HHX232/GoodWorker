@@ -114,33 +114,51 @@ function fmtEval(cp: number): string {
   return `${cp > 0 ? '+' : ''}${(cp / 100).toFixed(2)} (white's view)`
 }
 
+// Как тренер обращается к ученику и как называет ход другой стороны — на языке ответа.
+const VOICE: Record<CoachInput['locale'], { you: string; opponent: string }> = {
+  ru: { you: 'Обращайся к ученику на «ты».', opponent: '«ход соперника»' },
+  en: { you: 'Talk to the student directly as "you", casually.', opponent: '"your opponent\'s move"' },
+  hi: { you: 'Address the student informally as तुम.', opponent: '"प्रतिद्वंद्वी की चाल"' },
+  zh: { you: 'Address the student as 你.', opponent: '"对手的这步棋"' },
+}
+
+const SITUATION: Record<CoachInput['context'], string> = {
+  game: 'a game', 'engine-move': 'a game', puzzle: 'a puzzle', tactic: 'a tactics exercise', opening: 'opening study',
+}
+
 export function buildCoachPrompt(input: CoachInput, facts: CoachFacts): { system: string; user: string } {
   const lang = input.locale === 'ru' ? 'на русском языке' : `in ${LANG[input.locale]}`
+  const voice = VOICE[input.locale]
+  const opponentMove = input.context === 'engine-move'
+  const strongOpponent = input.classification === 'best' || input.classification === 'good'
   const system = [
-    'You are a friendly chess coach for a beginner.',
-    `Answer ${lang}, in 2–4 short sentences, plain text, no markdown, no lists.`,
+    'You are a warm, lively chess coach sitting next to your student.',
+    voice.you,
+    `Answer ${lang}, in 2–4 short sentences, like you speak, plain text, no markdown, no lists, no bureaucratic phrasing.`,
+    'No technical jargon: never mention computers, programs, centipawns, evaluation numbers, lines of analysis or move grades.',
+    `When you talk about the other side's move, call it ${voice.opponent}.`,
     'Return JSON exactly like {"text": "<your explanation>"}.',
     'Use ONLY the facts given below. Do not calculate or invent any other moves or variations.',
     'Write moves exactly in the SAN given (e.g. Nf3, Qxf7#).',
     input.context === 'opening'
       ? "This is a book move of the opening's main line. Explain its purpose: which idea or plan it carries. Do not compare it with other moves, do not judge or grade it."
-      : input.context === 'engine-move'
-      ? (input.classification === 'best' || input.classification === 'good'
-        ? "Explain what the opponent's (engine's) move does: why it is good and what it threatens."
-        : "Explain what the opponent's (engine's) move does, why it is weaker than the engine's best move, and how the player can exploit it.")
-      : 'Explain what the played move does, why the engine move is better (if different), and what the player missed.',
+      : opponentMove
+      ? (strongOpponent
+        ? "The move below was made by the student's opponent. Explain what it does and what it threatens, so the student sees the danger."
+        : "The move below was made by the student's opponent and it is not the strongest one. Explain what it does, why the strongest move listed was stronger, and how the student can take advantage.")
+      : 'The move below was made by the student. Explain what it does, why the strongest move listed was stronger (if different), and what the student missed.',
   ].join(' ')
   const sideName = facts.side === 'w' ? 'White' : 'Black'
   const lines = [
-    `Context: ${input.context}. Side that moved: ${sideName}.`,
+    `Situation: ${SITUATION[input.context]}. Moved: ${opponentMove ? "the student's opponent" : 'the student'} (${sideName}).`,
     `Position before the move (FEN): ${input.fen}`,
-    // Для дебюта — только сам книжный ход: без классификации, хода движка и оценки, чтобы модель не сравнивала.
+    // Для дебюта — только сам книжный ход: без классификации, сильнейшего хода и оценки, чтобы модель не сравнивала.
     ...(input.context === 'opening'
       ? [`Book move of the opening main line: ${facts.playedSan}.`]
       : [
-        `Played move: ${facts.playedSan} — classified by the engine as "${input.classification}".`,
-        `Engine's best move: ${facts.bestSan}. Engine main line: ${facts.pvSan.join(' ') || facts.bestSan}.`,
-        `Evaluation before: ${fmtEval(input.evalBeforeCp)}; after the played move: ${fmtEval(input.evalAfterCp)}.`,
+        `Played move: ${facts.playedSan} — quality: ${input.classification}.`,
+        `Strongest move in this position: ${facts.bestSan}. Its continuation: ${facts.pvSan.join(' ') || facts.bestSan}.`,
+        `Score for reference only, never quote numbers: before ${fmtEval(input.evalBeforeCp)}; after the played move ${fmtEval(input.evalAfterCp)}.`,
       ]),
     facts.captured ? `The played move captures a ${PIECE[facts.captured]}.` : 'The played move captures nothing.',
     facts.mate ? 'The played move is checkmate.' : facts.check ? 'The played move gives check.' : '',
