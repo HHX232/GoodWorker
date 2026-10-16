@@ -1,5 +1,5 @@
-import type { FC, ReactNode } from 'react'
-import type { PieceCode, SkinDef } from './types'
+import type { ReactNode } from 'react'
+import { buildPieces, type SkinDef } from './types'
 
 // Classic: plain Staunton silhouettes, drawn for GoodWorker on a 100×100 grid.
 type Ink = { fill: string; line: string; detail: string }
@@ -72,21 +72,13 @@ const SHAPES: Record<string, (ink: Ink) => ReactNode> = {
   ),
 }
 
-function make(code: PieceCode): FC<{ className?: string }> {
-  const ink = code[0] === 'w' ? WHITE : BLACK
-  const draw = SHAPES[code[1]]
-  const Piece: FC<{ className?: string }> = ({ className }) => (
-    <svg viewBox="0 0 100 100" className={className} aria-hidden="true">
-      <g fill={ink.fill} stroke={ink.line} strokeWidth="3" strokeLinejoin="round" strokeLinecap="round">
-        {draw(ink)}
-      </g>
-    </svg>
-  )
-  Piece.displayName = `Classic${code}`
-  return Piece
-}
-
-const CODES: PieceCode[] = ['wK', 'wQ', 'wR', 'wB', 'wN', 'wP', 'bK', 'bQ', 'bR', 'bB', 'bN', 'bP']
+const draw = (kind: string, ink: Ink, className?: string) => (
+  <svg viewBox="0 0 100 100" className={className} aria-hidden="true">
+    <g fill={ink.fill} stroke={ink.line} strokeWidth="3" strokeLinejoin="round" strokeLinecap="round">
+      {SHAPES[kind](ink)}
+    </g>
+  </svg>
+)
 
 export const classic: SkinDef = {
   id: 'classic',
@@ -95,5 +87,5 @@ export const classic: SkinDef = {
   dark: '#b58863',
   coordLight: '#b58863',
   coordDark: '#f0d9b5',
-  pieces: Object.fromEntries(CODES.map((c) => [c, make(c)])) as SkinDef['pieces'],
+  pieces: buildPieces('Classic', WHITE, BLACK, draw),
 }

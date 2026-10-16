@@ -1,12 +1,13 @@
+import { bordo } from './bordo'
 import { classic } from './classic'
+import { night } from './night'
+import { powder } from './powder'
+import { vintage } from './vintage'
 import type { SkinDef, SkinId } from './types'
 
 export type { PieceCode, SkinDef, SkinId } from './types'
 
-// ponytail: vintage/night/bordo/powder reuse classic until task 03 draws them (one file per skin).
-const placeholder = (id: SkinId): SkinDef => ({ ...classic, id, labelKey: `skin_${id}` })
-
-export const SKINS: SkinDef[] = [classic, placeholder('vintage'), placeholder('night'), placeholder('bordo'), placeholder('powder')]
+export const SKINS: SkinDef[] = [classic, vintage, night, bordo, powder]
 
 export const DEFAULT_SKIN: SkinId = 'classic'
 
