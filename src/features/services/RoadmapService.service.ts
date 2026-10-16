@@ -26,6 +26,8 @@ export interface IRoadmapQuery {
   maxPrice?: number
   minRating?: number
   lang?: string
+  /** Category.slug, e.g. 'chess' */
+  category?: string
 }
 
 export interface IRoadmapComment {
@@ -89,6 +91,7 @@ const RoadmapService = {
     if (query.maxPrice !== undefined) params.set('maxPrice', String(query.maxPrice))
     if (query.minRating !== undefined) params.set('minRating', String(query.minRating))
     if (query.lang) params.set('lang', query.lang)
+    if (query.category) params.set('category', query.category)
     const res = await instance.get<IRoadmapsResponse>(`/roadmap?${params.toString()}`)
     return res.data
   },

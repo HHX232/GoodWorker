@@ -1,0 +1,539 @@
+// Play page: the board is the subject, the rail is quiet paper. Tokens match the coach panel.
+
+.page {
+  --ink: #17181c;
+  --ink-soft: #5c5f6a;
+  --surface: #ffffff;
+  --line: #e6e5df;
+  --wash: #f3f2ed;
+  --accent: #17855a;
+  --danger: #b4321f;
+
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 20px 16px 48px;
+  color: var(--ink);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+// ─── Head ────────────────────────────────────────────────────────────────────
+
+.head {
+  margin-bottom: 18px;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-size: 0.875rem;
+  border-radius: 6px;
+
+  &:hover { color: var(--ink); }
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+}
+
+.title {
+  margin: 6px 0 0;
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.125rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.engineDown {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--danger) 9%, var(--surface));
+  color: var(--danger);
+  font-weight: 500;
+
+  svg { flex: none; }
+}
+
+// ─── Layout ──────────────────────────────────────────────────────────────────
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+
+  @media (min-width: 960px) {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 32px;
+  }
+}
+
+.boardCol {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  // board never taller than the viewport on a laptop
+  max-width: min(680px, max(360px, calc(100svh - 360px)));
+  margin: 0 auto;
+
+  @media (max-width: 959px) {
+    max-width: 640px;
+  }
+}
+
+.stage {
+  display: flex;
+  gap: 8px;
+
+  > :last-child {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+// ─── Player strips ───────────────────────────────────────────────────────────
+
+.strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+  color: var(--ink-soft);
+  font-weight: 500;
+  transition: color 0.2s ease-out;
+
+  &[data-active] { color: var(--ink); }
+}
+
+.stripDot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex: none;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.28);
+  background: #f4f1ea;
+
+  &[data-side='b'] { background: #24221f; }
+
+  .strip[data-active] & {
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.28), 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+}
+
+.stripName {
+  font-size: 0.9375rem;
+}
+
+.stripThinking {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+}
+
+.dots {
+  width: 22px;
+  height: 6px;
+  flex: none;
+  background:
+    radial-gradient(circle, currentColor 2.5px, transparent 3px) 0 0 / 8px 6px repeat-x;
+  animation: dots 1.1s ease-in-out infinite;
+}
+
+@keyframes dots {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+
+// ─── End of game ─────────────────────────────────────────────────────────────
+
+.end {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--ink);
+  color: var(--surface);
+  animation: rise 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.endText {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(6px); }
+}
+
+.primary {
+  border: 0;
+  border-radius: 8px;
+  padding: 9px 16px;
+  font: inherit;
+  font-weight: 600;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+
+  &:hover { background: var(--wash); }
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+}
+
+// ─── Controls ────────────────────────────────────────────────────────────────
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+
+  @media (max-width: 480px) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    > * { justify-content: center; }
+  }
+}
+
+.tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease-out, border-color 0.15s ease-out;
+
+  &:hover:not(:disabled) { background: var(--wash); }
+  &:disabled { opacity: 0.45; cursor: default; }
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+}
+
+.toolStrong {
+  margin-left: auto;
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--surface);
+
+  &:hover:not(:disabled) { background: color-mix(in srgb, var(--ink) 86%, var(--surface)); }
+
+  @media (max-width: 480px) { margin-left: 0; }
+}
+
+.credit {
+  margin: 4px 0 0;
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+
+  a {
+    font: inherit;
+    color: inherit;
+    text-underline-offset: 2px;
+    &:hover { color: var(--ink); }
+  }
+}
+
+// ─── Rail ────────────────────────────────────────────────────────────────────
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.labelHint {
+  font-weight: 400;
+  text-align: right;
+}
+
+.seg {
+  display: flex;
+  padding: 3px;
+  gap: 3px;
+  border-radius: 9px;
+  background: var(--wash);
+
+  button {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 34px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--ink-soft);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition: background-color 0.15s ease-out, color 0.15s ease-out;
+
+    &:hover:not(:disabled) { color: var(--ink); }
+    &[aria-pressed='true'] {
+      background: var(--surface);
+      color: var(--ink);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 0 0 1px var(--line);
+    }
+    &:disabled { opacity: 0.45; cursor: default; }
+    &:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  }
+}
+
+.segLevels button {
+  padding: 0;
+  min-width: 0;
+}
+
+.swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #f4f1ea;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+
+  &[data-side='b'] { background: #24221f; }
+}
+
+.muted {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-soft);
+}
+
+// ─── Moves ───────────────────────────────────────────────────────────────────
+
+.moves {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 220px;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 12px;
+  font-variant-numeric: tabular-nums;
+
+  li {
+    display: grid;
+    grid-template-columns: 2.4em 1fr 1fr;
+    align-items: baseline;
+    padding: 2px 0;
+  }
+
+  @media (max-width: 959px) { max-height: none; }
+}
+
+.moveNo {
+  color: var(--ink-soft);
+  font-size: 0.8125rem;
+}
+
+.moveLast {
+  font-weight: 700;
+}
+
+// ─── Engine note (R14) ───────────────────────────────────────────────────────
+
+.noteLine {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 10px;
+  row-gap: 4px;
+}
+
+.noteSan {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.link {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 4px;
+
+  &:hover { text-decoration: underline; text-underline-offset: 3px; }
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+}
+
+.explanation {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--wash);
+}
+
+.notice {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-soft);
+
+  svg { flex: none; }
+}
+
+// ─── Settings ────────────────────────────────────────────────────────────────
+
+.toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+
+  // site CSS sets appearance:none on inputs — draw a switch: track = background, knob = radial gradient
+  input {
+    appearance: none;
+    margin: 1px 0 0;
+    width: 34px;
+    height: 20px;
+    flex: none;
+    border-radius: 999px;
+    background: radial-gradient(circle at 10px 50%, #fff 7px, transparent 7.5px), var(--line);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    transition: background-color 0.15s ease-out;
+
+    &:checked {
+      background: radial-gradient(circle at 24px 50%, #fff 7px, transparent 7.5px), var(--accent);
+    }
+    &:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  }
+
+  small {
+    display: block;
+    color: var(--ink-soft);
+    font-size: 0.8125rem;
+  }
+}
+
+.skins {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 34px;
+    padding: 0 10px 0 6px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--ink-soft);
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+
+    &:hover { color: var(--ink); }
+    &[aria-pressed='true'] {
+      color: var(--ink);
+      border-color: var(--ink);
+    }
+    &:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  }
+}
+
+.skinChip {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .end, .dots { animation: none; }
+}
+
+:global(html.theme-dark),
+:global(html.pomodoro-dark) {
+  .page {
+    --ink: #ecebe6;
+    --ink-soft: #a3a39d;
+    --surface: #1b1c20;
+    --line: #2c2d33;
+    --wash: #24252a;
+    --accent: #4cc58f;
+    --danger: #f08a7a;
+  }
+
+  .stripDot,
+  .swatch {
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3);
+  }
+}

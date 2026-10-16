@@ -35,6 +35,7 @@ export function RoadMapListPage({ initialData, initialQuery }: RoadMapListPagePr
   const pushFilters = useCallback(
     (s: string, r: number | undefined, mnp: string, mxp: string) => {
       const params = new URLSearchParams()
+      if (initialQuery.category) params.set('category', initialQuery.category) // keep the subject filter
       if (s.trim()) params.set('search', s.trim())
       if (r !== undefined) params.set('minRating', String(r))
       if (mnp !== '') params.set('minPrice', mnp)
@@ -44,7 +45,7 @@ export function RoadMapListPage({ initialData, initialQuery }: RoadMapListPagePr
         router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
       })
     },
-    [router, pathname]
+    [router, pathname, initialQuery.category]
   )
 
   const handleSearchChange = (value: string) => {
@@ -102,6 +103,7 @@ export function RoadMapListPage({ initialData, initialQuery }: RoadMapListPagePr
     initialQuery.minRating ?? '',
     initialQuery.minPrice ?? '',
     initialQuery.maxPrice ?? '',
+    initialQuery.category ?? '',
   ].join('|')
 
   const hasMore = initialData.pagination.page < initialData.pagination.totalPages

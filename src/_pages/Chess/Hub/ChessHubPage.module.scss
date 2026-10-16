@@ -1,0 +1,196 @@
+.page {
+  --ink: #17181c;
+  --ink-soft: #5c5f6a;
+  --surface: #ffffff;
+  --line: #e6e5df;
+  --wash: #f3f2ed;
+  --accent: #17855a;
+
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 28px 16px 56px;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(2rem, 1.4rem + 2.4vw, 3.25rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+}
+
+.lead {
+  margin: 12px 0 0;
+  max-width: 56ch;
+  font-size: 1.0625rem;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+
+.grid {
+  margin-top: 32px;
+  display: grid;
+  gap: 20px;
+
+  @media (min-width: 900px) {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    gap: 28px;
+    align-items: stretch;
+  }
+}
+
+// ─── Play: the one big door ──────────────────────────────────────────────────
+
+.play {
+  display: grid;
+  gap: 24px;
+  padding: 20px;
+  border-radius: 16px;
+  background: var(--ink);
+  color: var(--surface);
+  text-decoration: none;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease-out;
+
+  @media (min-width: 560px) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: end;
+    padding: 24px;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 40px -24px rgba(10, 10, 12, 0.6);
+  }
+  &:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+}
+
+.playBoard {
+  pointer-events: none;
+}
+
+.playText {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  h2 {
+    margin: 0;
+    font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+  }
+
+  p {
+    margin: 0;
+    color: color-mix(in srgb, var(--surface) 72%, var(--ink));
+  }
+}
+
+.cta {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+
+  svg { transition: transform 0.2s ease-out; }
+  .play:hover & svg { transform: translateX(3px); }
+}
+
+// ─── The other three ─────────────────────────────────────────────────────────
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 4px;
+  border-bottom: 1px solid var(--line);
+  color: inherit;
+  text-decoration: none;
+  transition: background-color 0.15s ease-out;
+
+  &:hover { background: var(--wash); }
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+  @media (min-width: 900px) { padding: 28px 8px; }
+}
+
+.rowIcon {
+  flex: none;
+  color: var(--accent);
+}
+
+.rowText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  strong {
+    font-size: 1.1875rem;
+    font-weight: 650;
+    letter-spacing: -0.015em;
+  }
+
+  span { color: var(--ink-soft); }
+}
+
+.rowArrow {
+  flex: none;
+  color: var(--ink-soft);
+  transition: transform 0.2s ease-out, color 0.2s ease-out;
+
+  .row:hover & { transform: translateX(3px); color: var(--ink); }
+}
+
+.credit {
+  margin: 32px 0 0;
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+
+  a {
+    font: inherit;
+    color: inherit;
+    text-underline-offset: 2px;
+    &:hover { color: var(--ink); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play, .cta svg, .rowArrow { transition: none; }
+  .play:hover { transform: none; }
+}
+
+:global(html.theme-dark),
+:global(html.pomodoro-dark) {
+  .page {
+    --ink: #ecebe6;
+    --ink-soft: #a3a39d;
+    --surface: #1b1c20;
+    --line: #2c2d33;
+    --wash: #24252a;
+    --accent: #4cc58f;
+  }
+
+  // keep the big door dark in both themes: a lifted surface instead of an inverted slab
+  .play {
+    background: #24252a;
+    color: #ecebe6;
+    box-shadow: inset 0 0 0 1px #33343a;
+
+    .playText p { color: #a3a39d; }
+  }
+}

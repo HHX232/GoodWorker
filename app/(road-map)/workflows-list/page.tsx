@@ -28,6 +28,7 @@ export default async function WorkflowsListPage({ searchParams }: WorkflowsListR
     maxPrice: typeof params.maxPrice === 'string' ? Number(params.maxPrice) : undefined,
     minRating: typeof params.minRating === 'string' ? Number(params.minRating) : undefined,
     teacherId: typeof params.teacherId === 'string' ? params.teacherId : undefined,
+    category: typeof params.category === 'string' ? params.category : undefined,
     lang: locale,
   }
 

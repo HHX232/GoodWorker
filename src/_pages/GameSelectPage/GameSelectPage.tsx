@@ -10,7 +10,7 @@ export function GameSelectPage() {
 
   const GAMES = [
     {
-      href: "/game/chess",
+      href: "/chess",
       title: t("chess_title"),
       description: t("chess_desc"),
       icon: <Crown size={32} strokeWidth={1.5} />,

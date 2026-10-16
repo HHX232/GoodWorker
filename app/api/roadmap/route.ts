@@ -105,6 +105,7 @@ export async function GET(req: NextRequest) {
     const limit     = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') ?? '20')))
     const teacherId = searchParams.get('teacherId') ?? undefined
     const search    = searchParams.get('search') ?? undefined
+    const category  = searchParams.get('category') ?? undefined // Category.slug, e.g. 'chess'
     const minPriceRaw = searchParams.get('minPrice')
     const maxPriceRaw = searchParams.get('maxPrice')
     const minPrice  = minPriceRaw !== null && !isNaN(Number(minPriceRaw)) ? Number(minPriceRaw) : undefined
@@ -134,6 +135,7 @@ export async function GET(req: NextRequest) {
     const baseWhere = {
       ...(teacherId && { teacherId }),
       ...(search && { title: { contains: search, mode: 'insensitive' as const } }),
+      ...(category && { roadmapCategories: { some: { category: { slug: category } } } }),
       ...(priceFilter && { price: priceFilter }),
       ...(ratingIds !== undefined && { id: { in: ratingIds } }),
     }
