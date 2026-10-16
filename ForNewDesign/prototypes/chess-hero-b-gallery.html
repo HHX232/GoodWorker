@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoodWorker · Шахматы — Hero B «Галерея скинов»</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   ШАХМАТЫ — Hero B, «Галерея скинов».
+   Мир: тёплая слоновая кость и бордо, позитив/негатив.
+   Авторский моушен — диптих: фигура-персонаж светлая на тёмном
+   и тёмная на светлом; смена скина перекрашивает всю сцену и
+   меняет героя (конь в короне, королева-профиль, король с бородой…).
+   ============================================================ */
+:root{
+  color-scheme:light;
+  --bg:#f5efe4;
+  --ink:#2a0d10;
+  --ink-2:#5e4446;
+  --ink-3:#7d6668;
+  --line:#e2d6c4;
+  --brand:#6b1a1a;
+  --brand-2:#561313;
+  --serif:'Playfair Display',Georgia,'Times New Roman',serif;
+  --sans:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --gut:clamp(16px,5vw,80px);
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+/* палитры скинов (spec R04) */
+.stage[data-skin="bordo"]  {--a:#6b1a1a;--b:#f3e6cc;--pa:#f3e6cc;--pb:#6b1a1a;--acc:#f3e6cc;--l:#f3e6cc;--d:#6b1a1a;--sw:#f3e6cc;--sws:#6b1a1a;--sb:#4a0f10;--sbs:#f3e6cc}
+.stage[data-skin="powder"]  {--a:#5a1420;--b:#d9c7c9;--pa:#d9c7c9;--pb:#5a1420;--acc:#d9c7c9;--l:#d9c7c9;--d:#5a1420;--sw:#f2e7e8;--sws:#5a1420;--sb:#3d0c15;--sbs:#d9c7c9}
+.stage[data-skin="vintage"]{--a:#2a2826;--b:#e8dcc4;--pa:#e8dcc4;--pb:#2a2826;--acc:#c8643c;--l:#3a3632;--d:#2a2826;--sw:#e8dcc4;--sb:#b89a6a;--sbs:#b89a6a}
+.stage[data-skin="night"]  {--a:#141a2b;--b:#e8a48e;--pa:#e8a48e;--pb:#141a2b;--acc:#e8a48e;--l:#1b2236;--d:#141a2b;--sw:#e8a48e;--sb:#0b0f1c;--sbs:#c27c68}
+.stage[data-skin="classic"]{--a:#b58863;--b:#f0d9b5;--pa:#fbf6ec;--pb:#2b2118;--acc:#fbf6ec;--l:#f0d9b5;--d:#b58863;--sw:#fbf6ec;--sb:#2b2118;--sbs:#2b2118}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{overflow-x:hidden}
+body{background:var(--bg);color:var(--ink);font:400 1rem/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--brand);outline-offset:3px;border-radius:4px}
+
+nav[data-chess-switcher]{position:fixed;top:14px;right:14px;z-index:50;display:flex;gap:2px;padding:3px;border-radius:999px;background:rgba(245,239,228,.9);border:1px solid var(--line);backdrop-filter:blur(8px)}
+nav[data-chess-switcher] a{display:grid;place-items:center;min-width:32px;height:28px;padding:0 10px;border-radius:999px;font:700 .75rem/1 var(--sans);color:var(--ink-3);text-decoration:none;transition:background .2s,color .2s}
+nav[data-chess-switcher] a:hover{color:var(--ink)}
+nav[data-chess-switcher] a[aria-current="page"]{background:var(--brand);color:#f5efe4}
+
+.top{display:flex;align-items:center;gap:10px;padding:18px var(--gut);font:700 .9rem/1 var(--sans)}
+.top svg{width:22px;height:22px;fill:var(--brand)}
+.top span{color:var(--ink-3);font-weight:500}
+
+/* ---------- hero ---------- */
+.hero{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(32px,5vw,88px);align-items:center;max-width:1440px;margin:0 auto;padding:clamp(20px,4vw,48px) var(--gut) clamp(56px,8vw,112px)}
+h1{font:500 clamp(2.4rem,4.8vw,4.6rem)/1.02 var(--serif);letter-spacing:-.025em;text-wrap:balance}
+.sub{margin-top:24px;max-width:31rem;font-size:clamp(1.02rem,1.3vw,1.15rem);color:var(--ink-2);text-wrap:pretty}
+.ctas{display:flex;flex-wrap:wrap;gap:12px;margin-top:36px}
+.btn{display:inline-flex;align-items:center;height:52px;padding:0 26px;border-radius:999px;font:700 1rem/1 var(--sans);text-decoration:none;transition:background .2s,border-color .2s,transform .2s var(--ease)}
+.btn-p{background:var(--brand);color:#f8f1e6}
+.btn-p:hover{background:var(--brand-2);transform:translateY(-1px)}
+.btn-s{border:1px solid #cdbba3;color:var(--ink)}
+.btn-s:hover{border-color:var(--brand)}
+
+/* диптих */
+.stage{display:grid;gap:18px}
+.diptych{display:grid;grid-template-columns:1fr 1fr;border-radius:20px;overflow:hidden;box-shadow:0 40px 80px -40px rgba(60,10,12,.45);aspect-ratio:1.18}
+.panel{position:relative;display:grid;place-items:center;overflow:hidden;transition:background-color .7s var(--ease)}
+.panel.pos{background:var(--a);color:var(--pa);--cut:var(--a)}
+.panel.neg{background:var(--b);color:var(--pb);--cut:var(--b)}
+.panel::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .7s;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.stage[data-skin="vintage"] .panel::after{opacity:.28}
+.hero-pc{position:absolute;inset:8% 12% 6%;display:grid;place-items:center}
+.hero-pc svg{position:absolute;height:100%;width:auto;max-width:100%;fill:currentColor;transition:fill .7s var(--ease),opacity .55s var(--ease),transform .9s var(--ease),filter .55s;opacity:0;transform:translateY(5%) scale(.96);filter:blur(6px)}
+.hero-pc svg.on{opacity:1;transform:none;filter:none}
+.panel .cap{position:absolute;left:18px;bottom:14px;font:600 .78rem/1 var(--sans);letter-spacing:.02em;opacity:.75;transition:color .7s}
+.panel.pos .cap{color:var(--pa)}.panel.neg .cap{color:var(--pb)}
+
+.picker{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:9px;height:40px;padding:0 14px 0 8px;border-radius:999px;border:1px solid var(--line);background:transparent;font:600 .9rem/1 var(--sans);color:var(--ink-2);cursor:pointer;transition:border-color .2s,color .2s,background .2s}
+.chip:hover{color:var(--ink);border-color:#cdbba3}
+.chip[aria-checked="true"]{border-color:var(--ink);color:var(--ink);background:#fbf7f0}
+.sw{width:24px;height:24px;border-radius:50%;background:linear-gradient(90deg,var(--x) 50%,var(--y) 50%);box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+
+.set{display:grid;grid-template-columns:repeat(6,1fr);border-radius:12px;overflow:hidden;width:100%}
+.set div{aspect-ratio:1;background:var(--d);transition:background-color .7s var(--ease)}
+.set div:nth-child(odd){background:var(--l)}
+.set div:nth-child(n+7):nth-child(even){background:var(--l)}
+.set div:nth-child(n+7):nth-child(odd){background:var(--d)}
+.set svg{width:100%;height:100%;display:block;transition:fill .7s,stroke .7s}
+.set .w{fill:var(--sw);stroke:var(--sws,none);stroke-width:2.6;stroke-linejoin:round;--cut:var(--sws,var(--d))}
+.set .b{fill:var(--sb);stroke:var(--sbs);stroke-width:2.6;stroke-linejoin:round;--cut:var(--sbs)}
+.under{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,360px);gap:16px 28px;align-items:center}
+.skin-name{font:italic 500 1.35rem/1.2 var(--serif)}
+.skin-name small{display:block;margin-top:4px;font:500 .85rem/1.4 var(--sans);color:var(--ink-3)}
+
+/* ---------- возможности ---------- */
+.feats{max-width:1440px;margin:0 auto;padding:clamp(56px,8vw,112px) var(--gut)}
+.feats h2{font:500 clamp(1.8rem,3.4vw,3rem)/1.08 var(--serif);letter-spacing:-.02em;max-width:18ch}
+.feats ul{list-style:none;margin-top:clamp(32px,5vw,64px);display:grid;grid-template-columns:1fr 1fr;column-gap:clamp(32px,6vw,96px)}
+.feats li{display:grid;grid-template-columns:56px 1fr;gap:20px;padding:32px 0;border-top:1px solid var(--line)}
+.feats svg{width:56px;height:56px;fill:var(--brand);--cut:var(--bg)}
+.feats h3{font:500 clamp(1.3rem,2vw,1.7rem)/1.2 var(--serif);letter-spacing:-.01em}
+.feats p{margin-top:8px;color:var(--ink-2);max-width:40ch}
+
+@media (max-width:980px){
+  .hero{grid-template-columns:1fr}
+  .feats ul{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  .top{padding-right:150px}
+  .under{grid-template-columns:1fr}
+  .diptych{aspect-ratio:.95;border-radius:16px}
+  .feats li{grid-template-columns:44px 1fr;gap:16px}
+  .feats svg{width:44px;height:44px}
+}
+@media (prefers-reduced-motion:reduce){
+  .panel,.hero-pc svg,.set div,.set svg,.btn{transition:none}
+  .hero-pc svg{transform:none;filter:none}
+}
+</style>
+</head>
+<body>
+
+<nav data-chess-switcher aria-label="Варианты Hero">
+  <a data-hero="a" href="chess-hero-a-live.html">A</a>
+  <a data-hero="b" href="chess-hero-b-gallery.html">B</a>
+  <a data-hero="c" href="chess-hero-c-explain.html">C</a>
+</nav>
+
+<!-- фигуры: собственный рисунок. Малый набор — 100×100, персонажи — 200×300; вырезы красятся --cut -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="base"><rect x="22" y="86" width="56" height="7" rx="2"/><path d="M30 83 L70 83 L65 76 L35 76Z"/></g>
+  </defs>
+  <symbol id="p-k" viewBox="0 0 100 100"><use href="#base"/><path d="M37 76 C40 64 42 56 43 50 L57 50 C58 56 60 64 63 76Z"/><rect x="34" y="45" width="32" height="6" rx="2"/><path d="M33 45 C28 34 36 26 50 28 C64 26 72 34 67 45Z"/><rect x="47" y="8" width="6" height="20" rx="1"/><rect x="41" y="13" width="18" height="6" rx="1"/></symbol>
+  <symbol id="p-q" viewBox="0 0 100 100"><use href="#base"/><path d="M37 76 C40 64 42 56 43 50 L57 50 C58 56 60 64 63 76Z"/><rect x="34" y="45" width="32" height="6" rx="2"/><path d="M32 45 L26 21 L39 32 L44 15 L50 30 L56 15 L61 32 L74 21 L68 45Z"/><circle cx="26" cy="18" r="4"/><circle cx="44" cy="12" r="4"/><circle cx="56" cy="12" r="4"/><circle cx="74" cy="18" r="4"/></symbol>
+  <symbol id="p-r" viewBox="0 0 100 100"><use href="#base"/><path d="M36 76 L39 42 L61 42 L64 76Z"/><rect x="32" y="37" width="36" height="6" rx="1"/><path d="M32 37 L32 18 L40 18 L40 25 L46 25 L46 18 L54 18 L54 25 L60 25 L60 18 L68 18 L68 37Z"/></symbol>
+  <symbol id="p-b" viewBox="0 0 100 100"><use href="#base"/><path d="M38 76 C40 66 42 60 44 54 L56 54 C58 60 60 66 62 76Z"/><rect x="35" y="49" width="30" height="6" rx="2"/><path d="M50 16 C38 26 35 37 40 49 L60 49 C65 37 62 26 50 16Z"/><circle cx="50" cy="12" r="4.5"/><path d="M56 26 L47 37" style="fill:none;stroke:var(--cut);stroke-width:3;stroke-linecap:round"/></symbol>
+  <symbol id="p-n" viewBox="0 0 100 100"><use href="#base"/><path d="M36 76 L66 76 C67 62 66 48 63 38 C60 26 53 18 44 17 L41 10 L37 19 C30 23 24 31 20 41 C18 46 21 50 26 49 C30 48 33 45 37 45 C41 46 41 52 37 58 C33 64 33 70 36 76Z"/><circle cx="40" cy="29" r="2.6" style="fill:var(--cut);stroke:none"/><path d="M57 30 C61 42 62 56 61 70" style="fill:none;stroke:var(--cut);stroke-width:2.6;stroke-linecap:round"/></symbol>
+  <symbol id="p-p" viewBox="0 0 100 100"><use href="#base"/><path d="M39 76 C41 64 43 58 44 54 L56 54 C57 58 59 64 61 76Z"/><rect x="36" y="49" width="28" height="6" rx="2"/><circle cx="50" cy="37" r="13"/></symbol>
+
+  <!-- конь в короне (Бордо) -->
+  <symbol id="c-knight" viewBox="0 0 200 300">
+    <rect x="40" y="264" width="120" height="12" rx="2"/>
+    <path d="M52 259 C56 247 66 241 78 239 L122 239 C134 241 144 247 148 259Z"/>
+    <rect x="64" y="226" width="72" height="9" rx="3"/>
+    <path d="M70 224 C60 196 58 152 70 126 C78 108 92 96 106 92 L114 84 L118 96 C134 104 146 118 152 136 L160 154 C162 162 156 168 148 166 L132 162 C124 160 118 162 116 168 C112 180 120 198 132 214 L136 224 Z"/>
+    <g transform="rotate(-16 106 76)"><rect x="80" y="72" width="52" height="10" rx="2"/><path d="M80 72 L77 44 L93 58 L106 36 L119 58 L135 44 L132 72Z"/><circle cx="77" cy="40" r="5"/><circle cx="106" cy="31" r="5.5"/><circle cx="135" cy="40" r="5"/></g>
+    <path d="M80 214 C70 182 70 150 82 126" style="fill:none;stroke:var(--cut);stroke-width:3.5;stroke-linecap:round"/>
+    <path d="M88 220 C80 190 80 160 90 138" style="fill:none;stroke:var(--cut);stroke-width:2.5;stroke-linecap:round"/>
+    <path d="M118 112 C123 108 129 109 132 114" style="fill:none;stroke:var(--cut);stroke-width:3;stroke-linecap:round"/>
+    <path d="M144 150 L152 152" style="fill:none;stroke:var(--cut);stroke-width:3;stroke-linecap:round"/>
+    <path d="M70 230 L130 230" style="fill:none;stroke:var(--cut);stroke-width:2"/>
+  </symbol>
+
+  <!-- королева-профиль (Пудра) -->
+  <symbol id="c-queen" viewBox="0 0 200 300">
+    <rect x="36" y="264" width="128" height="12" rx="2"/>
+    <path d="M50 259 C58 245 76 238 90 236 L110 236 C124 238 142 245 150 259Z"/>
+    <rect x="70" y="223" width="60" height="9" rx="3"/>
+    <rect x="77" y="212" width="46" height="7" rx="3"/>
+    <path d="M86 212 C89 192 91 178 89 164 L117 164 C115 178 117 194 120 212Z"/>
+    <circle cx="70" cy="130" r="17"/>
+    <path d="M82 164 C70 152 66 132 72 114 C78 98 94 90 110 92 C122 94 130 102 132 114 L139 126 L134 129 L136 136 L132 139 L134 146 C130 153 124 153 120 153 L118 164 Z"/>
+    <rect x="84" y="80" width="50" height="9" rx="2"/>
+    <path d="M84 80 L80 54 L96 67 L109 44 L122 67 L138 54 L134 80Z"/>
+    <circle cx="80" cy="50" r="4.5"/><circle cx="109" cy="39" r="5"/><circle cx="138" cy="50" r="4.5"/>
+    <path d="M109 66 L113 73 L109 80 L105 73Z" style="fill:var(--cut);stroke:none"/>
+    <path d="M92 100 C104 112 106 134 94 156" style="fill:none;stroke:var(--cut);stroke-width:3;stroke-linecap:round"/>
+    <path d="M120 116 C123 114 127 114 129 116" style="fill:none;stroke:var(--cut);stroke-width:2.5;stroke-linecap:round"/>
+  </symbol>
+
+  <!-- король с бородой (Винтаж); борода — акцентом -->
+  <symbol id="c-king" viewBox="0 0 200 300">
+    <rect x="40" y="264" width="120" height="12" rx="2"/>
+    <path d="M52 259 L58 245 L142 245 L148 259Z"/>
+    <rect x="62" y="232" width="76" height="9" rx="2"/>
+    <path d="M70 230 L75 122 L125 122 L125 132 L133 143 L126 147 L127 154 L130 230Z"/>
+    <rect x="66" y="110" width="68" height="11" rx="2"/>
+    <path d="M74 110 C74 86 87 72 100 72 C113 72 126 86 126 110Z"/>
+    <path d="M78 76 L74 50 L88 62 L100 42 L112 62 L126 50 L122 76Z"/>
+    <circle cx="100" cy="36" r="5"/>
+    <path d="M86 84 L86 108 M100 78 L100 108 M114 84 L114 108" style="fill:none;stroke:var(--cut);stroke-width:2.5"/>
+    <path d="M127 152 C138 170 136 198 122 214 C112 202 106 184 108 162 C114 158 121 155 127 152Z" style="fill:var(--acc);stroke:none;transition:fill .7s"/>
+    <path d="M76 122 C64 142 62 176 72 204 L80 204 L81 122Z" style="fill:var(--acc);stroke:none;transition:fill .7s"/>
+    <path d="M108 137 C111 140 116 140 119 137" style="fill:none;stroke:var(--cut);stroke-width:2.5;stroke-linecap:round"/>
+    <path d="M88 168 L88 222 M97 182 L97 222" style="fill:none;stroke:var(--cut);stroke-width:2"/>
+  </symbol>
+
+  <!-- крупные «стаунтоны» для Ночи и Классики -->
+  <symbol id="c-k" viewBox="0 0 200 300"><use href="#p-k" x="-20" y="36" width="240" height="240"/></symbol>
+  <symbol id="c-q" viewBox="0 0 200 300"><use href="#p-q" x="-20" y="36" width="240" height="240"/></symbol>
+</svg>
+
+<header class="top"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#p-n"/></svg>GoodWorker <span>Шахматы</span></header>
+
+<main>
+<section class="hero">
+  <div class="copy">
+    <h1 data-copy="h1">Шахматы, которые объясняют каждый ход</h1>
+    <p class="sub" data-copy="sub">Играйте с движком, решайте задачи и разбирайте ошибки вместе с ИИ-тренером — он говорит человеческим языком, а не цифрами оценки.</p>
+    <div class="ctas">
+      <a class="btn btn-p" href="#" data-copy="cta1">Играть с тренером</a>
+      <a class="btn btn-s" href="#" data-copy="cta2">Решать задачи</a>
+    </div>
+  </div>
+
+  <div class="stage" id="stage" data-skin="bordo">
+    <div class="diptych" aria-hidden="true">
+      <div class="panel pos"><div class="hero-pc"></div><span class="cap">Белые</span></div>
+      <div class="panel neg"><div class="hero-pc"></div><span class="cap">Чёрные</span></div>
+    </div>
+    <div class="under">
+      <p class="skin-name" id="skinName" aria-live="polite"></p>
+      <div class="set" id="set" aria-hidden="true"></div>
+    </div>
+    <div class="picker" role="radiogroup" aria-label="Скин фигур и доски" id="picker"></div>
+  </div>
+</section>
+
+<section class="feats">
+  <h2 data-copy="feats-h">Всё, чтобы играть сильнее</h2>
+  <ul>
+    <li><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#p-r"/></svg><div><h3 data-copy="f1">Движок 8 уровней</h3><p data-copy="f1d">От первых партий до турнирной подготовки — соперник подстраивается под ваш уровень.</p></div></li>
+    <li><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#p-q"/></svg><div><h3 data-copy="f2">ИИ-тренер объясняет ходы</h3><p data-copy="f2d">Каждый ход получает оценку и понятное объяснение: что упущено и почему другой ход сильнее.</p></div></li>
+    <li><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#p-n"/></svg><div><h3 data-copy="f3">50&nbsp;000 задач</h3><p data-copy="f3d">Тактика по темам и рейтингу — новые позиции каждый день, ровно под вашу силу.</p></div></li>
+    <li><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#p-k"/></svg><div><h3 data-copy="f4">Доска в видеозвонке с репетитором</h3><p data-copy="f4d">Разбирайте партию на уроке вместе: одна доска, ходы и стрелки видят оба.</p></div></li>
+  </ul>
+</section>
+</main>
+
+<script>
+(function(){
+  var file = location.pathname.split('/').pop();
+  var links = document.querySelectorAll('nav[data-chess-switcher] a');
+  for (var i = 0; i < links.length; i++) {
+    if (links[i].getAttribute('href') === file) links[i].setAttribute('aria-current', 'page');
+  }
+})();
+</script>
+
+<script>
+(function(){
+  var SKINS = [
+    {id:'bordo',   name:'Бордо',    note:'Кремовые и бордовые фигуры, конь в короне', hero:'c-knight', x:'#6b1a1a', y:'#f3e6cc'},
+    {id:'powder',   name:'Пудра',    note:'Пыльная роза и вишня, королева в профиль',  hero:'c-queen',  x:'#5a1420', y:'#d9c7c9'},
+    {id:'vintage', name:'Винтаж',   note:'Графит, крем и рыжий, зернистая печать',    hero:'c-king',   x:'#2a2826', y:'#e8dcc4'},
+    {id:'night',   name:'Ночь',     note:'Глубокий синий и плоский лосось',           hero:'c-k',      x:'#141a2b', y:'#e8a48e'},
+    {id:'classic', name:'Классика', note:'Привычная доска и стаунтоновский силуэт',    hero:'c-q',      x:'#b58863', y:'#f0d9b5'}
+  ];
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var stage = document.getElementById('stage'), picker = document.getElementById('picker');
+  var nameEl = document.getElementById('skinName'), set = document.getElementById('set');
+  var panels = stage.querySelectorAll('.hero-pc'), cur = 0, auto = null;
+
+  // по экземпляру каждого героя в обеих панелях
+  panels.forEach(function(p){
+    p.innerHTML = SKINS.map(function(s){ return '<svg viewBox="0 0 200 300" data-h="' + s.id + '"><use href="#' + s.hero + '"/></svg>'; }).join('');
+  });
+  // малый набор 2×6
+  set.innerHTML = 'kqrbnp'.split('').map(function(c){ return '<div><svg viewBox="0 0 100 100" class="b"><use href="#p-' + c + '"/></svg></div>'; }).join('') +
+                  'kqrbnp'.split('').map(function(c){ return '<div><svg viewBox="0 0 100 100" class="w"><use href="#p-' + c + '"/></svg></div>'; }).join('');
+  picker.innerHTML = SKINS.map(function(s, i){
+    return '<button type="button" class="chip" role="radio" aria-checked="false" tabindex="-1" data-i="' + i + '"><span class="sw" style="--x:' + s.x + ';--y:' + s.y + '"></span>' + s.name + '</button>';
+  }).join('');
+  var chips = picker.querySelectorAll('.chip');
+
+  function show(i, focus){
+    cur = (i + SKINS.length) % SKINS.length;
+    var s = SKINS[cur];
+    stage.setAttribute('data-skin', s.id);
+    stage.querySelectorAll('.hero-pc svg').forEach(function(el){ el.classList.toggle('on', el.dataset.h === s.id); });
+    chips.forEach(function(c, j){ c.setAttribute('aria-checked', j === cur); c.tabIndex = j === cur ? 0 : -1; });
+    if (focus) chips[cur].focus();
+    nameEl.innerHTML = s.name + '<small>' + s.note + '</small>';
+  }
+  function stopAuto(){ clearInterval(auto); auto = null; }
+  picker.addEventListener('click', function(e){
+    var b = e.target.closest('.chip'); if (!b) return;
+    stopAuto(); show(+b.dataset.i);
+  });
+  picker.addEventListener('keydown', function(e){
+    var d = {ArrowRight:1, ArrowDown:1, ArrowLeft:-1, ArrowUp:-1}[e.key];
+    if (!d) return; e.preventDefault(); stopAuto(); show(cur + d, true);
+  });
+  show(0);
+  // автопоказ галереи, пока пользователь сам не выбрал скин; без движения — не листаем
+  if (!reduce) auto = setInterval(function(){ if (!document.hidden) show(cur + 1); }, 4200);
+})();
+</script>
+</body>
+</html>

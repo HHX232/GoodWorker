@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoodWorker · Шахматы — Hero A «Партия идёт»</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600&family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   ШАХМАТЫ — Hero A, «Партия идёт».
+   Мир «Ночь»: глубокий синий, плоские лососевые фигуры.
+   Авторский моушен — живая доска: заранее записанная партия
+   (Морфи, «Оперная», 1858) играет сама, тренер комментирует ключевые ходы.
+   ============================================================ */
+:root{
+  color-scheme:dark;
+  --bg:#0f1424;
+  --bg-2:#141a2b;
+  --sq-l:#1b2236;
+  --sq-d:#141a2b;
+  --ink:#f2e6df;
+  --ink-2:#b9b3c4;
+  --ink-3:#8d8aa0;
+  --line:#262e47;
+  --salmon:#e8a48e;
+  --salmon-2:#c27c68;
+  --piece-b:#0b0f1c;
+  --hl:rgba(232,164,142,.16);
+  --chk:rgba(255,107,107,.32);
+  --c-best:#a6d67e;
+  --c-good:#c9ccd6;
+  --c-inaccuracy:#e8c46a;
+  --c-mistake:#f0965a;
+  --c-blunder:#ff6f6f;
+  --display:'Unbounded','Arial Black',system-ui,sans-serif;
+  --text:'Onest',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --gut:clamp(16px,5vw,80px);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{overflow-x:hidden}
+body{background:var(--bg);color:var(--ink);font:400 1rem/1.6 var(--text);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--salmon);outline-offset:3px;border-radius:4px}
+
+/* ---------- свитчер (контракт) ---------- */
+nav[data-chess-switcher]{position:fixed;top:14px;right:14px;z-index:50;display:flex;gap:2px;padding:3px;border-radius:999px;background:rgba(20,26,43,.86);border:1px solid var(--line);backdrop-filter:blur(8px)}
+nav[data-chess-switcher] a{display:grid;place-items:center;min-width:32px;height:28px;padding:0 10px;border-radius:999px;font:600 .75rem/1 var(--text);color:var(--ink-2);text-decoration:none;transition:background .2s,color .2s}
+nav[data-chess-switcher] a:hover{color:var(--ink)}
+nav[data-chess-switcher] a[aria-current="page"]{background:var(--salmon);color:var(--piece-b)}
+
+/* ---------- шапка ---------- */
+.top{display:flex;align-items:center;gap:10px;padding:18px var(--gut);font:600 .9rem/1 var(--text);letter-spacing:.01em}
+.top svg{width:22px;height:22px;fill:var(--salmon)}
+.top span{color:var(--ink-3);font-weight:500}
+
+/* ---------- hero ---------- */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:clamp(32px,5vw,80px);align-items:center;padding:clamp(24px,5vw,64px) var(--gut) clamp(56px,8vw,112px);max-width:1440px;margin:0 auto}
+.copy{max-width:34rem}
+h1{font:600 clamp(2.25rem,4.6vw,4.25rem)/1.02 var(--display);letter-spacing:-.035em;text-wrap:balance}
+.sub{margin-top:24px;font-size:clamp(1.02rem,1.3vw,1.15rem);color:var(--ink-2);max-width:32rem;text-wrap:pretty}
+.ctas{display:flex;flex-wrap:wrap;gap:12px;margin-top:36px}
+.btn{display:inline-flex;align-items:center;gap:10px;height:52px;padding:0 24px;border-radius:999px;font:600 1rem/1 var(--text);text-decoration:none;transition:transform .2s cubic-bezier(.2,.8,.2,1),background .2s,border-color .2s}
+.btn svg{width:18px;height:18px}
+.btn-p{background:var(--salmon);color:var(--piece-b)}
+.btn-p:hover{background:#f0b7a4;transform:translateY(-1px)}
+.btn-s{border:1px solid var(--line);color:var(--ink)}
+.btn-s:hover{border-color:var(--salmon-2)}
+
+/* стол: доска + тренер */
+.table{display:grid;gap:14px;width:100%;max-width:600px;justify-self:end}
+.board-wrap{position:relative;border-radius:14px;overflow:hidden;box-shadow:0 30px 60px -20px rgba(0,0,0,.6),0 0 0 1px var(--line)}
+.board{position:relative;aspect-ratio:1;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr)}
+.sq{position:relative;background:var(--sq-d)}
+.sq.l{background:var(--sq-l)}
+.sq.hl::after,.sq.chk::after{content:"";position:absolute;inset:0;background:var(--hl)}
+.sq.chk::after{background:radial-gradient(circle,var(--chk) 0%,transparent 72%)}
+.sq .cf,.sq .cr{position:absolute;font:500 .62rem/1 var(--text);color:var(--ink-3);opacity:.7}
+.sq .cf{right:4px;bottom:3px}.sq .cr{left:4px;top:4px}
+.pieces{position:absolute;inset:0;pointer-events:none}
+.pc{position:absolute;left:0;top:0;width:12.5%;height:12.5%;transition:transform .2s cubic-bezier(.2,.8,.2,1),opacity .2s}
+.pc svg{width:100%;height:100%;display:block}
+.pc.w{fill:var(--salmon);stroke:none;--cut:var(--sq-d)}
+.pc.b{fill:var(--piece-b);stroke:var(--salmon-2);stroke-width:2.6;stroke-linejoin:round;--cut:var(--salmon-2)}
+.pc.gone{opacity:0}
+
+.coach{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start;padding:16px 18px;border-radius:14px;background:var(--bg-2);border:1px solid var(--line);min-height:112px}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--sq-l);display:grid;place-items:center}
+.avatar svg{width:28px;height:28px;fill:var(--salmon);--cut:var(--sq-l)}
+.c-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font:600 .82rem/1.2 var(--text);color:var(--ink-2)}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 7px;border-radius:999px;font:600 .72rem/1.2 var(--text);color:var(--k,var(--ink-2));background:color-mix(in srgb,var(--k,var(--ink-3)) 14%,transparent)}
+.badge::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.c-text{margin-top:6px;font-size:.98rem;line-height:1.5;color:var(--ink);min-height:3em}
+.c-text .caret{display:inline-block;width:2px;height:1em;margin-left:2px;vertical-align:-2px;background:var(--salmon);animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.pp{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--ink-2);display:grid;place-items:center;cursor:pointer}
+.pp:hover{color:var(--ink);border-color:var(--salmon-2)}
+.pp svg{width:14px;height:14px;fill:currentColor}
+
+.moves{display:flex;gap:4px 12px;flex-wrap:wrap;font:500 .8rem/1.6 var(--text);color:var(--ink-3);min-height:1.6em;max-height:4.8em;overflow:hidden}
+.moves b{font-weight:500;color:var(--ink-3);opacity:.6;margin-right:2px}
+.moves i{font-style:normal;color:var(--ink-2)}
+.moves i[data-k]{color:var(--k)}
+.moves i.now{color:var(--ink);text-decoration:underline;text-decoration-color:var(--salmon);text-underline-offset:3px}
+
+/* ---------- возможности ---------- */
+.feats{max-width:1440px;margin:0 auto;padding:clamp(56px,8vw,112px) var(--gut);border-top:1px solid var(--line)}
+.feats h2{font:600 clamp(1.6rem,3vw,2.5rem)/1.1 var(--display);letter-spacing:-.03em;max-width:20ch}
+.feats ul{list-style:none;margin-top:clamp(32px,5vw,56px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--line)}
+.feats li{padding:28px 24px 8px 0}
+.feats li+li{padding-left:24px;border-left:1px solid var(--line)}
+.feats svg{width:30px;height:30px;stroke:var(--salmon);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.feats h3{margin-top:20px;font:600 1.1rem/1.25 var(--text);letter-spacing:-.005em}
+.feats p{margin-top:10px;color:var(--ink-2);font-size:.95rem;max-width:30ch}
+
+@media (max-width:980px){
+  .hero{grid-template-columns:1fr}
+  .table{justify-self:stretch;max-width:600px}
+  .feats ul{grid-template-columns:1fr 1fr}
+  .feats li:nth-child(3){padding-left:0;border-left:0}
+  .feats li:nth-child(n+3){border-top:1px solid var(--line)}
+}
+@media (max-width:560px){
+  .feats ul{grid-template-columns:1fr}
+  .feats li,.feats li+li{padding-left:0;border-left:0}
+  .feats li+li{border-top:1px solid var(--line)}
+  .coach{grid-template-columns:auto 1fr;padding:14px}
+  .pp{grid-column:2;justify-self:end;grid-row:1}
+  .c-body{grid-column:1/-1}
+  .top{padding-right:150px}
+}
+@media (prefers-reduced-motion:reduce){
+  .pc,.btn{transition:none}
+  .c-text .caret{animation:none}
+}
+</style>
+</head>
+<body>
+
+<nav data-chess-switcher aria-label="Варианты Hero">
+  <a data-hero="a" href="chess-hero-a-live.html">A</a>
+  <a data-hero="b" href="chess-hero-b-gallery.html">B</a>
+  <a data-hero="c" href="chess-hero-c-explain.html">C</a>
+</nav>
+
+<!-- фигуры: собственный рисунок, viewBox 100×100; детали-вырезы красятся --cut -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="base"><rect x="22" y="86" width="56" height="7" rx="2"/><path d="M30 83 L70 83 L65 76 L35 76Z"/></g>
+  </defs>
+  <symbol id="p-k" viewBox="0 0 100 100"><use href="#base"/><path d="M37 76 C40 64 42 56 43 50 L57 50 C58 56 60 64 63 76Z"/><rect x="34" y="45" width="32" height="6" rx="2"/><path d="M33 45 C28 34 36 26 50 28 C64 26 72 34 67 45Z"/><rect x="47" y="8" width="6" height="20" rx="1"/><rect x="41" y="13" width="18" height="6" rx="1"/></symbol>
+  <symbol id="p-q" viewBox="0 0 100 100"><use href="#base"/><path d="M37 76 C40 64 42 56 43 50 L57 50 C58 56 60 64 63 76Z"/><rect x="34" y="45" width="32" height="6" rx="2"/><path d="M32 45 L26 21 L39 32 L44 15 L50 30 L56 15 L61 32 L74 21 L68 45Z"/><circle cx="26" cy="18" r="4"/><circle cx="44" cy="12" r="4"/><circle cx="56" cy="12" r="4"/><circle cx="74" cy="18" r="4"/></symbol>
+  <symbol id="p-r" viewBox="0 0 100 100"><use href="#base"/><path d="M36 76 L39 42 L61 42 L64 76Z"/><rect x="32" y="37" width="36" height="6" rx="1"/><path d="M32 37 L32 18 L40 18 L40 25 L46 25 L46 18 L54 18 L54 25 L60 25 L60 18 L68 18 L68 37Z"/></symbol>
+  <symbol id="p-b" viewBox="0 0 100 100"><use href="#base"/><path d="M38 76 C40 66 42 60 44 54 L56 54 C58 60 60 66 62 76Z"/><rect x="35" y="49" width="30" height="6" rx="2"/><path d="M50 16 C38 26 35 37 40 49 L60 49 C65 37 62 26 50 16Z"/><circle cx="50" cy="12" r="4.5"/><path d="M56 26 L47 37" style="fill:none;stroke:var(--cut);stroke-width:3;stroke-linecap:round"/></symbol>
+  <symbol id="p-n" viewBox="0 0 100 100"><use href="#base"/><path d="M36 76 L66 76 C67 62 66 48 63 38 C60 26 53 18 44 17 L41 10 L37 19 C30 23 24 31 20 41 C18 46 21 50 26 49 C30 48 33 45 37 45 C41 46 41 52 37 58 C33 64 33 70 36 76Z"/><circle cx="40" cy="29" r="2.6" style="fill:var(--cut);stroke:none"/><path d="M57 30 C61 42 62 56 61 70" style="fill:none;stroke:var(--cut);stroke-width:2.6;stroke-linecap:round"/></symbol>
+  <symbol id="p-p" viewBox="0 0 100 100"><use href="#base"/><path d="M39 76 C41 64 43 58 44 54 L56 54 C57 58 59 64 61 76Z"/><rect x="36" y="49" width="28" height="6" rx="2"/><circle cx="50" cy="37" r="13"/></symbol>
+</svg>
+
+<header class="top"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#p-n"/></svg>GoodWorker <span>Шахматы</span></header>
+
+<main>
+<section class="hero">
+  <div class="copy">
+    <h1 data-copy="h1">Шахматы, которые объясняют каждый ход</h1>
+    <p class="sub" data-copy="sub">Играйте с движком, решайте задачи и разбирайте ошибки вместе с ИИ-тренером — он говорит человеческим языком, а не цифрами оценки.</p>
+    <div class="ctas">
+      <a class="btn btn-p" href="#" data-copy="cta1">Играть с тренером</a>
+      <a class="btn btn-s" href="#" data-copy="cta2">Решать задачи</a>
+    </div>
+  </div>
+
+  <div class="table" aria-label="Демонстрационная партия: Морфи — герцог Брауншвейгский и граф Изуар, Париж, 1858">
+    <div class="board-wrap"><div class="board" id="board"></div><div class="pieces" id="pieces"></div></div>
+    <div class="coach" aria-live="polite">
+      <div class="avatar"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#p-n"/></svg></div>
+      <div class="c-body">
+        <div class="c-head"><span>Тренер</span><span class="badge" id="badge" hidden></span><span id="cmove"></span></div>
+        <p class="c-text" id="ctext">Смотрим «Оперную партию» Морфи. Я буду говорить, где ход сильный, а где — ошибка.</p>
+      </div>
+      <button class="pp" id="pp" type="button" aria-label="Пауза"><svg viewBox="0 0 16 16" id="ppi"><rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/></svg></button>
+    </div>
+    <div class="moves" id="moves" aria-hidden="true"></div>
+  </div>
+</section>
+
+<section class="feats">
+  <h2 data-copy="feats-h">Всё, чтобы играть сильнее</h2>
+  <ul>
+    <li><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 26h24M8 26V20M13 26V16M18 26V12M23 26V7"/></svg><h3 data-copy="f1">Движок 8 уровней</h3><p data-copy="f1d">От первых партий до турнирной подготовки — соперник подстраивается под ваш уровень.</p></li>
+    <li><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 7h22v14H14l-6 5v-5H5z"/><path d="M10 12h12M10 16h8"/></svg><h3 data-copy="f2">ИИ-тренер объясняет ходы</h3><p data-copy="f2d">Каждый ход получает оценку и понятное объяснение: что упущено и почему другой ход сильнее.</p></li>
+    <li><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="5" width="22" height="22" rx="2"/><path d="M5 16h22M16 5v22"/><path d="M9 9l3 3M20 20l3 3"/></svg><h3 data-copy="f3">50&nbsp;000 задач</h3><p data-copy="f3d">Тактика по темам и рейтингу — новые позиции каждый день, ровно под вашу силу.</p></li>
+    <li><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="8" width="18" height="16" rx="2"/><path d="M21 14l8-4v12l-8-4"/><path d="M9 13h6v6H9z"/></svg><h3 data-copy="f4">Доска в видеозвонке с репетитором</h3><p data-copy="f4d">Разбирайте партию на уроке вместе: одна доска, ходы и стрелки видят оба.</p></li>
+  </ul>
+</section>
+</main>
+
+<script>
+(function(){
+  var file = location.pathname.split('/').pop();
+  var links = document.querySelectorAll('nav[data-chess-switcher] a');
+  for (var i = 0; i < links.length; i++) {
+    if (links[i].getAttribute('href') === file) links[i].setAttribute('aria-current', 'page');
+  }
+})();
+</script>
+
+<script>
+(function(){
+  var FILES = 'abcdefgh';
+  var START = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR';
+  // [ход, запись, класс?, реплика?, доп. ход ладьи при рокировке?]
+  var K = {best:['Лучший','--c-best'], good:['Хороший','--c-good'], inaccuracy:['Неточность','--c-inaccuracy'], mistake:['Ошибка','--c-mistake'], blunder:['Зевок','--c-blunder']};
+  var GAME = [
+    ['e2e4','e4','best','Центр и простор сразу для слона и ферзя. Хорошее начало.'],
+    ['e7e5','e5'],['g1f3','Кf3'],['d7d6','d6'],['d2d4','d4'],
+    ['c8g4','Сg4','inaccuracy','Связка выглядит активно, но слон скоро уйдёт за коня — и белые выиграют время на развитие.'],
+    ['d4e5','dxe5'],['g4f3','Сxf3'],['d1f3','Фxf3'],['d6e5','dxe5'],['f1c4','Сc4'],
+    ['g8f6','Кf6','mistake','Конь перекрывает ферзя, а пункт f7 остаётся слабым. Следите за слоном на c4.'],
+    ['f3b3','Фb3','best','Двойной удар: ферзь бьёт по f7 и b7 одновременно. Чёрным придётся что-то отдать.'],
+    ['d8e7','Фe7'],['b1c3','Кc3'],['c7c6','c6'],['c1g5','Сg5'],
+    ['b7b5','b5','blunder','Пешка открывает линии к королю, который так и не рокировал. Сейчас белые этим воспользуются.'],
+    ['c3b5','Кxb5','best','Жертва коня ради атаки: король чёрных застрял в центре, и линии к нему открываются.'],
+    ['c6b5','cxb5'],['c4b5','Сxb5+'],['b8d7','Кbd7'],
+    ['e1c1','0-0-0',null,null,'a1d1'],['a8d8','Лd8'],
+    ['d1d7','Лxd7','best','Ладья отдаётся за коня, чтобы вскрыть вертикаль d. Вторая ладья уже на подходе.'],
+    ['d8d7','Лxd7'],['h1d1','Лd1'],['e7e6','Фe6'],['b5d7','Сxd7+'],['f6d7','Кxd7'],
+    ['b3b8','Фb8+','best','Ферзь отдаётся, чтобы отвлечь коня с d7. Видите мат в один ход?'],
+    ['d7b8','Кxb8'],
+    ['d1d8','Лd8#','best','Мат. Два слабых хода в дебюте — и партия закончилась на 17-м ходу.']
+  ];
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var boardEl = document.getElementById('board'), piecesEl = document.getElementById('pieces');
+  var ctext = document.getElementById('ctext'), badge = document.getElementById('badge'), cmove = document.getElementById('cmove');
+  var movesEl = document.getElementById('moves'), pp = document.getElementById('pp'), ppi = document.getElementById('ppi');
+  var sqs = {}, pos = {}, ply = 0, timer = null, typer = null, playing = !reduce;
+
+  for (var r = 7; r >= 0; r--) for (var f = 0; f < 8; f++) {
+    var d = document.createElement('div'), name = FILES[f] + (r + 1);
+    d.className = 'sq' + ((f + r) % 2 ? ' l' : '');
+    if (r === 0) d.innerHTML += '<span class="cf">' + FILES[f] + '</span>';
+    if (f === 0) d.innerHTML += '<span class="cr">' + (r + 1) + '</span>';
+    sqs[name] = d; boardEl.appendChild(d);
+  }
+  function place(el, s){ el.style.transform = 'translate(' + FILES.indexOf(s[0]) * 100 + '%,' + (8 - +s[1]) * 100 + '%)'; }
+  function makePiece(ch, s){
+    var w = ch === ch.toUpperCase(), el = document.createElement('div');
+    el.className = 'pc ' + (w ? 'w' : 'b'); el.dataset.p = ch;
+    el.innerHTML = '<svg viewBox="0 0 100 100"><use href="#p-' + ch.toLowerCase() + '"/></svg>';
+    place(el, s); piecesEl.appendChild(el); return el;
+  }
+  function setFEN(fen){
+    piecesEl.innerHTML = ''; pos = {};
+    fen.split('/').forEach(function(row, i){
+      var f = 0;
+      for (var j = 0; j < row.length; j++) {
+        var ch = row[j];
+        if (/\d/.test(ch)) f += +ch; else { var s = FILES[f] + (8 - i); pos[s] = makePiece(ch, s); f++; }
+      }
+    });
+  }
+  function clearMarks(){ for (var s in sqs) sqs[s].classList.remove('hl', 'chk'); }
+  function move(uci){
+    var a = uci.slice(0, 2), b = uci.slice(2, 4), el = pos[a], cap = pos[b];
+    if (cap) { cap.classList.add('gone'); setTimeout(function(){ cap.remove(); }, 220); }
+    delete pos[a]; pos[b] = el; place(el, b);
+  }
+  function type(text){
+    clearInterval(typer);
+    if (reduce) { ctext.textContent = text; return; }
+    var i = 0; ctext.innerHTML = '<span class="caret"></span>';
+    typer = setInterval(function(){
+      i += 2; ctext.innerHTML = text.slice(0, i) + (i < text.length ? '<span class="caret"></span>' : '');
+      if (i >= text.length) clearInterval(typer);
+    }, 24);
+  }
+  function renderMoves(upto){
+    var html = '';
+    for (var i = 0; i <= upto; i++) {
+      var m = GAME[i], k = m[2] ? K[m[2]] : null;
+      if (i % 2 === 0) html += '<span><b>' + (i / 2 + 1) + '.</b>';
+      html += ' <i' + (k ? ' data-k style="--k:var(' + k[1] + ')"' : '') + (i === upto ? ' class="now"' : '') + '>' + m[1] + '</i>';
+      if (i % 2 === 1 || i === upto) html += '</span>';
+    }
+    movesEl.innerHTML = html;
+    movesEl.scrollTop = movesEl.scrollHeight;
+    var spans = movesEl.children; // показываем хвост: прячем старые ходы, если не влезают
+    for (var j = 0; j < spans.length; j++) spans[j].style.display = '';
+    for (var q = 0; movesEl.scrollHeight > movesEl.clientHeight + 2 && q < spans.length - 1; q++) spans[q].style.display = 'none';
+  }
+  function comment(m){
+    var k = K[m[2]];
+    badge.hidden = false; badge.textContent = k[0]; badge.style.setProperty('--k', 'var(' + k[1] + ')');
+    var n = Math.floor(GAME.indexOf(m) / 2) + 1;
+    cmove.textContent = n + (GAME.indexOf(m) % 2 ? '…' : '.') + ' ' + m[1];
+    type(m[3]);
+  }
+  function step(){
+    if (ply >= GAME.length) { reset(); schedule(900); return; }
+    var m = GAME[ply];
+    clearMarks();
+    move(m[0]); if (m[4]) move(m[4]);
+    sqs[m[0].slice(0, 2)].classList.add('hl'); sqs[m[0].slice(2, 4)].classList.add('hl');
+    if (/[+#]/.test(m[1])) {
+      var kch = ply % 2 ? 'K' : 'k';
+      for (var s in pos) if (pos[s].dataset.p === kch) sqs[s].classList.add('chk');
+    }
+    renderMoves(ply);
+    if (m[3]) comment(m);
+    ply++;
+    schedule(m[3] ? 4200 : 1300);
+  }
+  function reset(){
+    clearMarks(); setFEN(START); ply = 0; movesEl.innerHTML = ''; badge.hidden = true; cmove.textContent = '';
+    type('Смотрим «Оперную партию» Морфи. Я буду говорить, где ход сильный, а где — ошибка.');
+  }
+  function schedule(ms){ clearTimeout(timer); if (playing) timer = setTimeout(step, ms); }
+  function setPlaying(v){
+    playing = v;
+    pp.setAttribute('aria-label', v ? 'Пауза' : 'Продолжить');
+    ppi.innerHTML = v ? '<rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/>' : '<path d="M4 2.5v11l9-5.5z"/>';
+    if (v) schedule(300); else clearTimeout(timer);
+  }
+  pp.addEventListener('click', function(){ setPlaying(!playing); });
+  document.addEventListener('visibilitychange', function(){ if (document.hidden) clearTimeout(timer); else schedule(600); });
+
+  setFEN(START);
+  if (reduce) {
+    // без движения: сразу ключевая позиция (после 16.Фb8+) и её разбор, партия — по кнопке
+    for (ply = 0; ply <= 30; ply++) { move(GAME[ply][0]); if (GAME[ply][4]) move(GAME[ply][4]); }
+    sqs.b3.classList.add('hl'); sqs.b8.classList.add('hl'); sqs.e8.classList.add('chk');
+    renderMoves(30); comment(GAME[30]); setPlaying(false);
+  } else schedule(1600);
+})();
+</script>
+</body>
+</html>
