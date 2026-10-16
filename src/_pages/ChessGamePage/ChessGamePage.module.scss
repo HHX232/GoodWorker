@@ -610,3 +610,37 @@
     transform: scale(1.05);
   }
 }
+
+// ─── New board stage (task 01 swap) ──────────────────────────────────────────
+
+.boardStage {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 600px;
+
+  > :last-child {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.engineDown {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fff4e5;
+  color: #6b4a12;
+  font-size: 0.875rem;
+}
+
+.credit {
+  margin: 4px 0 0;
+  font-size: 0.75rem;
+  color: #8a8d99;
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+  }
+}

@@ -2,8 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Chess, Color, PieceSymbol, Square } from "chess.js";
-import { HexColorPicker } from "react-colorful";
+import { Chess, Color, PieceSymbol } from "chess.js";
 import styles from "./ChessGamePage.module.scss";
 import { Button } from "@/shared/ui/base/Buttons/Button/Button";
 import {
@@ -12,11 +11,9 @@ import {
   FlipVertical2,
   Brain,
   Users,
-  ChevronLeft,
-  ChevronRight,
   Flag,
-  Palette,
-  X,
+  Volume2,
+  VolumeX,
   ChessKing,
   ChessQueen,
   ChessRook,
@@ -24,304 +21,205 @@ import {
   ChessKnight,
   ChessPawn,
 } from "lucide-react";
+import { ChessBoard, type BoardMove } from "@/widgets/Chess/Board";
+import { CoachPanel, EvalBar, useMoveCoach, type MoveReview } from "@/widgets/Chess/Coach";
+import { getEngine, ENGINE_LEVELS } from "@/shared/lib/chess/engine";
+import { playMoveSound, useSoundEnabled } from "@/shared/lib/chess/sound";
 
-// ─── Piece Icons ───────────────────────────────────────────────────────────────
+// ponytail: minimal swap onto the new board/engine/coach; task 04 rebuilds this page as /chess/play.
 
 const PIECE_ICON: Record<string, React.ElementType> = {
-  k: ChessKing,
-  q: ChessQueen,
-  r: ChessRook,
-  b: ChessBishop,
-  n: ChessKnight,
-  p: ChessPawn,
+  k: ChessKing, q: ChessQueen, r: ChessRook, b: ChessBishop, n: ChessKnight, p: ChessPawn,
 };
-
-const PIECE_SVG: Record<string, (color: "w" | "b") => React.ReactNode> = {
-  k: (c) => { const Icon = PIECE_ICON.k; return <Icon className={`${styles.pieceSvg} ${c === "w" ? styles.pieceWhite : styles.pieceBlack}`} />; },
-  q: (c) => { const Icon = PIECE_ICON.q; return <Icon className={`${styles.pieceSvg} ${c === "w" ? styles.pieceWhite : styles.pieceBlack}`} />; },
-  r: (c) => { const Icon = PIECE_ICON.r; return <Icon className={`${styles.pieceSvg} ${c === "w" ? styles.pieceWhite : styles.pieceBlack}`} />; },
-  b: (c) => { const Icon = PIECE_ICON.b; return <Icon className={`${styles.pieceSvg} ${c === "w" ? styles.pieceWhite : styles.pieceBlack}`} />; },
-  n: (c) => { const Icon = PIECE_ICON.n; return <Icon className={`${styles.pieceSvg} ${c === "w" ? styles.pieceWhite : styles.pieceBlack}`} />; },
-  p: (c) => { const Icon = PIECE_ICON.p; return <Icon className={`${styles.pieceSvg} ${c === "w" ? styles.pieceWhite : styles.pieceBlack}`} />; },
+const capturedIcon = (p: PieceSymbol, c: "w" | "b") => {
+  const Icon = PIECE_ICON[p];
+  return <Icon className={`${styles.pieceSvg} ${c === "w" ? styles.pieceWhite : styles.pieceBlack}`} />;
 };
-
-// ─── Minimax AI ────────────────────────────────────────────────────────────────
-
-const PIECE_VALUES: Record<PieceSymbol, number> = {
-  p: 100, n: 320, b: 330, r: 500, q: 900, k: 20000,
-};
-
-const PST: Record<PieceSymbol, number[][]> = {
-  p: [[0,0,0,0,0,0,0,0],[50,50,50,50,50,50,50,50],[10,10,20,30,30,20,10,10],[5,5,10,25,25,10,5,5],[0,0,0,20,20,0,0,0],[5,-5,-10,0,0,-10,-5,5],[5,10,10,-20,-20,10,10,5],[0,0,0,0,0,0,0,0]],
-  n: [[-50,-40,-30,-30,-30,-30,-40,-50],[-40,-20,0,0,0,0,-20,-40],[-30,0,10,15,15,10,0,-30],[-30,5,15,20,20,15,5,-30],[-30,0,15,20,20,15,0,-30],[-30,5,10,15,15,10,5,-30],[-40,-20,0,5,5,0,-20,-40],[-50,-40,-30,-30,-30,-30,-40,-50]],
-  b: [[-20,-10,-10,-10,-10,-10,-10,-20],[-10,0,0,0,0,0,0,-10],[-10,0,5,10,10,5,0,-10],[-10,5,5,10,10,5,5,-10],[-10,0,10,10,10,10,0,-10],[-10,10,10,10,10,10,10,-10],[-10,5,0,0,0,0,5,-10],[-20,-10,-10,-10,-10,-10,-10,-20]],
-  r: [[0,0,0,0,0,0,0,0],[5,10,10,10,10,10,10,5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[0,0,0,5,5,0,0,0]],
-  q: [[-20,-10,-10,-5,-5,-10,-10,-20],[-10,0,0,0,0,0,0,-10],[-10,0,5,5,5,5,0,-10],[-5,0,5,5,5,5,0,-5],[0,0,5,5,5,5,0,-5],[-10,5,5,5,5,5,0,-10],[-10,0,5,0,0,0,0,-10],[-20,-10,-10,-5,-5,-10,-10,-20]],
-  k: [[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],[-20,-30,-30,-40,-40,-30,-30,-20],[-10,-20,-20,-20,-20,-20,-20,-10],[20,20,0,0,0,0,20,20],[20,30,10,0,0,10,30,20]],
-};
-
-function evaluateBoard(chess: Chess): number {
-  let score = 0;
-  const board = chess.board();
-  for (let r = 0; r < 8; r++) {
-    for (let f = 0; f < 8; f++) {
-      const piece = board[r][f];
-      if (!piece) continue;
-      const val = PIECE_VALUES[piece.type];
-      const row = piece.color === "w" ? 7 - r : r;
-      score += piece.color === "w" ? val + PST[piece.type][row][f] : -(val + PST[piece.type][row][f]);
-    }
-  }
-  return score;
-}
-
-function minimax(chess: Chess, depth: number, alpha: number, beta: number, maximizing: boolean): number {
-  if (depth === 0 || chess.isGameOver()) return evaluateBoard(chess);
-  const moves = chess.moves();
-  if (maximizing) {
-    let best = -Infinity;
-    for (const move of moves) {
-      chess.move(move); best = Math.max(best, minimax(chess, depth - 1, alpha, beta, false)); chess.undo();
-      alpha = Math.max(alpha, best); if (beta <= alpha) break;
-    }
-    return best;
-  } else {
-    let best = Infinity;
-    for (const move of moves) {
-      chess.move(move); best = Math.min(best, minimax(chess, depth - 1, alpha, beta, true)); chess.undo();
-      beta = Math.min(beta, best); if (beta <= alpha) break;
-    }
-    return best;
-  }
-}
-
-function getBestMove(chess: Chess, depth: number): string | null {
-  const moves = chess.moves();
-  if (!moves.length) return null;
-  let best: string | null = null, bestVal = Infinity;
-  for (const move of moves) {
-    chess.move(move);
-    const val = minimax(chess, depth - 1, -Infinity, Infinity, true);
-    chess.undo();
-    if (val < bestVal) { bestVal = val; best = move; }
-  }
-  return best;
-}
-
-// ─── Board themes ────────────────────────────────────────────────────────────
-
-const BOARD_THEMES_DATA = [
-  { key: "theme_classic" as const, light: "#f0d9b5", dark: "#b58863" },
-  { key: "theme_blue"    as const, light: "#dee3e6", dark: "#8ca2ad" },
-  { key: "theme_green"   as const, light: "#ffffdd", dark: "#86a666" },
-  { key: "theme_purple"  as const, light: "#f1e9f5", dark: "#9b72cf" },
-  { key: "theme_grey"    as const, light: "#e8e8e8", dark: "#888888" },
-];
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 type GameMode = "vs-ai" | "vs-player";
-type AiDifficulty = "easy" | "medium" | "hard";
-type PickerTarget = "light" | "dark" | null;
 
-const DIFFICULTY_DEPTH: Record<AiDifficulty, number> = { easy: 1, medium: 2, hard: 3 };
+function soundFor(chess: Chess) {
+  const last = chess.history({ verbose: true }).at(-1);
+  if (chess.isGameOver()) return playMoveSound("end");
+  if (chess.inCheck()) return playMoveSound("check");
+  playMoveSound(last?.captured ? "capture" : "move");
+}
+
+function kingSquare(chess: Chess): string | null {
+  if (!chess.inCheck()) return null;
+  for (const row of chess.board()) for (const p of row) if (p?.type === "k" && p.color === chess.turn()) return p.square;
+  return null;
+}
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function ChessGamePage() {
   const t = useTranslations("Chess");
+  const tc = useTranslations("chess.core");
   const [chess] = useState(() => new Chess());
-  const [, forceRender] = useState(0);
-  const [selected, setSelected] = useState<Square | null>(null);
-  const [validMoves, setValidMoves] = useState<Square[]>([]);
-  const [lastMove, setLastMove] = useState<{ from: Square; to: Square } | null>(null);
+  const [fen, setFen] = useState(chess.fen());
+  const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null);
   const [gameMode, setGameMode] = useState<GameMode>("vs-ai");
-  const [difficulty, setDifficulty] = useState<AiDifficulty>("medium");
+  const [level, setLevel] = useState(3);
   const [playerColor, setPlayerColor] = useState<Color>("w");
-  const [status, setStatus] = useState<string>("");
-  const [history, setHistory] = useState<string[]>([]);
-  const [gameOver, setGameOver] = useState(false);
-  const [capturedW, setCapturedW] = useState<PieceSymbol[]>([]);
-  const [capturedB, setCapturedB] = useState<PieceSymbol[]>([]);
-  const [isThinking, setIsThinking] = useState(false);
   const [flipped, setFlipped] = useState(false);
-  const [promotionPending, setPromotionPending] = useState<{ from: Square; to: Square } | null>(null);
-  const [lightColor, setLightColor] = useState(BOARD_THEMES_DATA[0].light);
-  const [darkColor, setDarkColor] = useState(BOARD_THEMES_DATA[0].dark);
-  const [pickerTarget, setPickerTarget] = useState<PickerTarget>(null);
-  const aiTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pickerRef = useRef<HTMLDivElement>(null);
+  const [resigned, setResigned] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
+  const [engineDown, setEngineDown] = useState(false);
+  const [review, setReview] = useState<MoveReview | null>(null);
+  const [reviewing, setReviewing] = useState(false);
+  const [noAnalysis, setNoAnalysis] = useState(false);
+  const [soundOn, setSoundOn] = useSoundEnabled();
+  const coach = useMoveCoach();
+  const gen = useRef(0); // bumps on new game / undo so stale engine answers are dropped
+  const askedFen = useRef<string | null>(null); // position the engine is already thinking about
 
-  useEffect(() => {
-    if (!pickerTarget) return;
-    const handleClick = (e: MouseEvent) => {
-      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
-        setPickerTarget(null);
-      }
-    };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [pickerTarget]);
-
-  const syncState = useCallback(() => {
-    forceRender(n => n + 1);
-    const h = chess.history();
-    setHistory(h);
-    const caps = { w: [] as PieceSymbol[], b: [] as PieceSymbol[] };
-    chess.history({ verbose: true }).forEach((m) => {
-      if (m.captured) caps[m.color === "w" ? "w" : "b"].push(m.captured);
-    });
-    setCapturedW(caps.w);
-    setCapturedB(caps.b);
-    if (chess.isCheckmate()) setStatus("__checkmate__" + (chess.turn() === "w" ? "black" : "white"));
-    else if (chess.isDraw()) setStatus("__draw__");
-    else if (chess.isStalemate()) setStatus("__stalemate__");
-    else if (chess.isCheck()) setStatus("__check__");
-    else setStatus("");
-    setGameOver(chess.isGameOver());
+  const sync = useCallback(() => {
+    setFen(chess.fen());
+    const last = chess.history({ verbose: true }).at(-1);
+    setLastMove(last ? { from: last.from, to: last.to } : null);
   }, [chess]);
 
-  const triggerAi = useCallback(() => {
-    if (gameMode !== "vs-ai" || chess.turn() === playerColor || chess.isGameOver()) return;
+  const vsAi = gameMode === "vs-ai" && !engineDown;
+
+  const engineMove = useCallback(async () => {
+    if (!vsAi || chess.turn() === playerColor || chess.isGameOver()) return;
+    const my = gen.current;
+    const asked = chess.fen();
+    if (askedFen.current === asked) return;
+    askedFen.current = asked;
     setIsThinking(true);
-    aiTimer.current = setTimeout(() => {
-      const move = getBestMove(chess, DIFFICULTY_DEPTH[difficulty]);
-      if (move) {
-        chess.move(move);
-        const hist = chess.history({ verbose: true });
-        const last = hist[hist.length - 1];
-        if (last) setLastMove({ from: last.from as Square, to: last.to as Square });
-        syncState();
+    try {
+      const uci = await getEngine().bestMove(asked, level);
+      if (my !== gen.current || chess.fen() !== asked) return;
+      chess.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] });
+      sync();
+      soundFor(chess);
+    } catch (e) {
+      if ((e as Error).message === "ENGINE_UNAVAILABLE") {
+        setEngineDown(true);
+        setGameMode("vs-player");
       }
-      setIsThinking(false);
-    }, 300);
-  }, [chess, difficulty, gameMode, playerColor, syncState]);
-
-  useEffect(() => () => { if (aiTimer.current) clearTimeout(aiTimer.current); }, []);
-
-  const handleSquareClick = (sq: Square) => {
-    if (gameOver || isThinking) return;
-    if (gameMode === "vs-ai" && chess.turn() !== playerColor) return;
-
-    if (selected) {
-      if (validMoves.includes(sq)) {
-        const from = selected;
-        const piece = chess.get(from);
-        const isPawnPromo = piece?.type === "p" &&
-          ((piece.color === "w" && sq[1] === "8") || (piece.color === "b" && sq[1] === "1"));
-        if (isPawnPromo) {
-          setPromotionPending({ from, to: sq });
-          setSelected(null); setValidMoves([]);
-          return;
-        }
-        if (chess.move({ from, to: sq })) {
-          setLastMove({ from, to: sq });
-          setSelected(null); setValidMoves([]);
-          syncState();
-          setTimeout(triggerAi, 50);
-        }
-        return;
-      }
-      const piece = chess.get(sq);
-      if (piece && piece.color === chess.turn()) {
-        setSelected(sq);
-        setValidMoves(chess.moves({ square: sq, verbose: true }).map((m) => m.to as Square));
-        return;
-      }
-      setSelected(null); setValidMoves([]);
-      return;
+    } finally {
+      if (askedFen.current === asked) askedFen.current = null;
+      if (my === gen.current) setIsThinking(false);
     }
-    const piece = chess.get(sq);
-    if (piece && piece.color === chess.turn()) {
-      setSelected(sq);
-      setValidMoves(chess.moves({ square: sq, verbose: true }).map((m) => m.to as Square));
+  }, [chess, level, playerColor, sync, vsAi]);
+
+  useEffect(() => {
+    void engineMove();
+  }, [fen, engineMove]);
+
+  const onMove = (m: BoardMove): boolean => {
+    if (resigned || isThinking || (vsAi && chess.turn() !== playerColor)) return false;
+    const before = chess.fen();
+    try {
+      chess.move(m);
+    } catch {
+      return false;
     }
+    sync();
+    soundFor(chess);
+    // engine reply is queued first, the coach's review after it — the reply never waits for analysis
+    void engineMove();
+    if (vsAi) {
+      const my = gen.current;
+      setReview(null);
+      setNoAnalysis(false);
+      setReviewing(true);
+      coach
+        .review(before, m.from + m.to + (m.promotion ?? ""), "game")
+        .then((r) => my === gen.current && setReview(r))
+        .catch((e: Error) => {
+          if (my !== gen.current || e.message === "ENGINE_CANCELLED") return;
+          setReview(null);
+          setNoAnalysis(true);
+        })
+        .finally(() => my === gen.current && setReviewing(false));
+    }
+    return true;
   };
 
-  const handlePromotion = (piece: PieceSymbol) => {
-    if (!promotionPending) return;
-    if (chess.move({ from: promotionPending.from, to: promotionPending.to, promotion: piece })) {
-      setLastMove({ from: promotionPending.from, to: promotionPending.to });
-      syncState();
-      setTimeout(triggerAi, 50);
-    }
-    setPromotionPending(null);
+  const reset = () => {
+    gen.current++;
+    askedFen.current = null;
+    getEngine().cancelAll();
+    setIsThinking(false);
+    setReviewing(false);
+    setReview(null);
+    setNoAnalysis(false);
+    setResigned(false);
   };
 
   const handleNewGame = () => {
+    reset();
     chess.reset();
-    setSelected(null); setValidMoves([]); setLastMove(null);
-    setGameOver(false); setStatus(""); setIsThinking(false);
-    setPromotionPending(null); setCapturedW([]); setCapturedB([]);
-    setHistory([]); forceRender(n => n + 1);
-    if (gameMode === "vs-ai" && playerColor === "b") setTimeout(triggerAi, 300);
+    sync();
   };
 
   const handleUndo = () => {
+    reset();
     chess.undo();
-    if (gameMode === "vs-ai") chess.undo();
-    setSelected(null); setValidMoves([]); setLastMove(null);
-    syncState();
+    if (vsAi && chess.turn() !== playerColor) chess.undo();
+    sync();
   };
 
-  const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
-  const ranks = [8, 7, 6, 5, 4, 3, 2, 1];
-  const displayRanks = flipped ? [...ranks].reverse() : ranks;
-  const displayFiles = flipped ? [...files].reverse() : files;
+  const history = chess.history();
+  const caps = { w: [] as PieceSymbol[], b: [] as PieceSymbol[] };
+  chess.history({ verbose: true }).forEach((m) => m.captured && caps[m.color].push(m.captured));
+  const gameOver = resigned || chess.isGameOver();
 
-  let kingInCheckSq: Square | null = null;
-  if (chess.isCheck()) {
-    outer: for (let r = 0; r < 8; r++) {
-      for (let f = 0; f < 8; f++) {
-        const p = chess.board()[r][f];
-        if (p?.type === "k" && p.color === chess.turn()) {
-          kingInCheckSq = (files[f] + ranks[r]) as Square;
-          break outer;
-        }
-      }
-    }
-  }
-
-  const resolvedStatus = status === "__draw__" ? t("draw")
-    : status === "__stalemate__" ? t("stalemate")
-    : status === "__check__" ? t("check")
-    : status.startsWith("__checkmate__") ? t("checkmate_win", { color: status.endsWith("black") ? t("black_color") : t("white_color") })
-    : status;
-  const statusText = isThinking ? t("ai_thinking") : resolvedStatus;
-  const statusClass = gameOver
-    ? styles.statusGameOver
+  const statusText = resigned
+    ? t("resigned")
+    : chess.isCheckmate()
+    ? t("checkmate_win", { color: chess.turn() === "w" ? t("black_color") : t("white_color") })
+    : chess.isStalemate()
+    ? t("stalemate")
+    : chess.isDraw()
+    ? t("draw")
     : isThinking
-    ? styles.statusThinking
-    : styles.statusCheck;
+    ? t("ai_thinking")
+    : chess.inCheck()
+    ? t("check")
+    : "";
+  const statusClass = gameOver ? styles.statusGameOver : isThinking ? styles.statusThinking : styles.statusCheck;
+  const orientation: "w" | "b" = (vsAi ? playerColor === "b" : false) !== flipped ? "b" : "w";
+  const bestArrow =
+    review && review.classification !== "best" && review.bestUci
+      ? [{ from: review.bestUci.slice(0, 2), to: review.bestUci.slice(2, 4) }]
+      : [];
 
   return (
     <div className={styles.page}>
       <div className={styles.container}>
-        {/* Header */}
         <div className={styles.header}>
-          <h1 className={styles.title}>♟ {t("title")}</h1>
+          <h1 className={styles.title}>{t("title")}</h1>
           <div className={styles.modeButtons}>
-            <Button variant={gameMode === "vs-ai" ? "default" : "outline"} size="sm" onClick={() => setGameMode("vs-ai")}>
+            <Button variant={gameMode === "vs-ai" ? "default" : "outline"} size="sm" disabled={engineDown} onClick={() => setGameMode("vs-ai")}>
               <Brain size={14} /> {t("vs_ai")}
             </Button>
             <Button variant={gameMode === "vs-player" ? "default" : "outline"} size="sm" onClick={() => setGameMode("vs-player")}>
               <Users size={14} /> {t("vs_player")}
             </Button>
+            <Button variant="outline" size="sm" aria-pressed={soundOn} onClick={() => setSoundOn(!soundOn)} aria-label={tc(soundOn ? "sound_on" : "sound_off")}>
+              {soundOn ? <Volume2 size={14} /> : <VolumeX size={14} />}
+            </Button>
           </div>
         </div>
 
+        {engineDown && <p className={styles.engineDown}>{tc("engine_unavailable")}</p>}
+
         <div className={styles.layout}>
-          {/* Left panel */}
           <div className={styles.sidePanel}>
-            {gameMode === "vs-ai" && (
+            {vsAi && (
               <div className={styles.card}>
                 <div className={styles.cardTitle}>{t("ai_settings")}</div>
                 <div className={styles.settingRow}>
                   <span>{t("difficulty")}</span>
                   <div className={styles.segmented}>
-                    {(["easy", "medium", "hard"] as AiDifficulty[]).map((d) => (
-                      <button key={d} className={`${styles.segBtn} ${difficulty === d ? styles.segBtnActive : ""}`} onClick={() => setDifficulty(d)}>
-                        {t(d as "easy" | "medium" | "hard")}
+                    {ENGINE_LEVELS.map((l) => (
+                      <button key={l.level} className={`${styles.segBtn} ${level === l.level ? styles.segBtnActive : ""}`} onClick={() => setLevel(l.level)}>
+                        {l.level}
                       </button>
                     ))}
                   </div>
@@ -336,62 +234,20 @@ export function ChessGamePage() {
               </div>
             )}
 
-            {/* Board color picker */}
-            <div className={styles.card}>
-              <div className={styles.cardTitle}><Palette size={12} style={{ display: "inline", marginRight: 4 }} />{t("board_color")}</div>
-              <div className={styles.themeRow}>
-                {BOARD_THEMES_DATA.map((th) => (
-                  <button
-                    key={th.key}
-                    className={styles.themeBtn}
-                    title={t(th.key)}
-                    onClick={() => { setLightColor(th.light); setDarkColor(th.dark); setPickerTarget(null); }}
-                  >
-                    <span style={{ background: th.light }} className={styles.themeSwatch} />
-                    <span style={{ background: th.dark }} className={styles.themeSwatch} />
-                  </button>
-                ))}
-              </div>
-              <div className={styles.colorSwatchRow}>
-                <div className={styles.swatchGroup}>
-                  <span className={styles.swatchLabel}>{t("light_squares")}</span>
-                  <button
-                    className={`${styles.swatch} ${pickerTarget === "light" ? styles.swatchActive : ""}`}
-                    style={{ background: lightColor }}
-                    onClick={() => setPickerTarget(pickerTarget === "light" ? null : "light")}
-                  />
-                </div>
-                <div className={styles.swatchGroup}>
-                  <span className={styles.swatchLabel}>{t("dark_squares")}</span>
-                  <button
-                    className={`${styles.swatch} ${pickerTarget === "dark" ? styles.swatchActive : ""}`}
-                    style={{ background: darkColor }}
-                    onClick={() => setPickerTarget(pickerTarget === "dark" ? null : "dark")}
-                  />
-                </div>
-              </div>
-              {pickerTarget && (
-                <div ref={pickerRef} className={styles.pickerWrap}>
-                  <HexColorPicker
-                    color={pickerTarget === "light" ? lightColor : darkColor}
-                    onChange={pickerTarget === "light" ? setLightColor : setDarkColor}
-                  />
-                </div>
-              )}
-            </div>
+            {vsAi && <CoachPanel review={review} noAnalysis={noAnalysis} explain={coach.explain} analysing={reviewing} />}
 
             <div className={styles.card}>
               <div className={styles.cardTitle}>{t("captured")}</div>
               <div className={styles.capturedRow}>
                 <span className={styles.capturedLabel}>{t("white_took")}</span>
                 <div className={styles.capturedPieces}>
-                  {capturedW.map((p, i) => <span key={i} className={styles.capturedPiece}>{PIECE_SVG[p]("b")}</span>)}
+                  {caps.w.map((p, i) => <span key={i} className={styles.capturedPiece}>{capturedIcon(p, "b")}</span>)}
                 </div>
               </div>
               <div className={styles.capturedRow}>
                 <span className={styles.capturedLabel}>{t("black_took")}</span>
                 <div className={styles.capturedPieces}>
-                  {capturedB.map((p, i) => <span key={i} className={styles.capturedPiece}>{PIECE_SVG[p]("w")}</span>)}
+                  {caps.b.map((p, i) => <span key={i} className={styles.capturedPiece}>{capturedIcon(p, "w")}</span>)}
                 </div>
               </div>
             </div>
@@ -413,16 +269,10 @@ export function ChessGamePage() {
                   ))
                 )}
               </div>
-              <div className={styles.historyNav}>
-                <button className={styles.navBtn}><ChevronLeft size={14} /></button>
-                <button className={styles.navBtn}><ChevronRight size={14} /></button>
-              </div>
             </div>
           </div>
 
-          {/* Board area */}
           <div className={styles.boardArea}>
-            {/* Status bar — always rendered to prevent layout shift */}
             <div
               className={`${styles.statusBar} ${statusText ? statusClass : ""}`}
               style={{ visibility: statusText ? "visible" : "hidden" }}
@@ -430,98 +280,43 @@ export function ChessGamePage() {
               {statusText || "placeholder"}
             </div>
 
-            {/* Turn indicator */}
-            <div className={styles.turnIndicator} style={{ visibility: gameOver ? "hidden" : "visible" }}>
-              <div className={`${styles.turnDot} ${chess.turn() === "w" ? styles.turnDotWhite : styles.turnDotBlack}`} />
-              <span>{chess.turn() === "w" ? t("white_turn") : t("black_turn")}</span>
+            <div className={styles.boardStage}>
+              {vsAi && <EvalBar cp={review?.evalAfterCp ?? 0} orientation={orientation} />}
+              <ChessBoard
+                fen={fen}
+                orientation={orientation}
+                onMove={onMove}
+                interactive={!gameOver}
+                lastMove={lastMove}
+                check={kingSquare(chess)}
+                arrows={bestArrow}
+              />
             </div>
 
-            <div className={styles.boardWrapper}>
-              <div className={styles.fileLabels}>
-                {displayFiles.map((f) => <span key={f}>{f}</span>)}
-              </div>
-              <div className={styles.boardRow}>
-                <div className={styles.rankLabels}>
-                  {displayRanks.map((r) => <span key={r}>{r}</span>)}
-                </div>
-
-                <div
-                  className={styles.board}
-                  style={{ "--sq-light": lightColor, "--sq-dark": darkColor } as React.CSSProperties}
-                >
-                  {displayRanks.map((rank, ri) =>
-                    displayFiles.map((file, fi) => {
-                      const sq = (file + rank) as Square;
-                      const piece = chess.get(sq);
-                      const isLight = (ri + fi) % 2 !== 0;
-                      return (
-                        <div
-                          key={sq}
-                          className={[
-                            styles.square,
-                            isLight ? styles.squareLight : styles.squareDark,
-                            selected === sq ? styles.squareSelected : "",
-                            (lastMove?.from === sq || lastMove?.to === sq) ? styles.squareLastMove : "",
-                            kingInCheckSq === sq ? styles.squareCheck : "",
-                          ].filter(Boolean).join(" ")}
-                          onClick={() => handleSquareClick(sq)}
-                        >
-                          {validMoves.includes(sq) && (
-                            <div className={`${styles.validDot} ${piece ? styles.validCapture : ""}`} />
-                          )}
-                          {piece && <div className={styles.piece}>{PIECE_SVG[piece.type](piece.color)}</div>}
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-
-                <div className={styles.rankLabels}>
-                  {displayRanks.map((r) => <span key={r}>{r}</span>)}
-                </div>
-              </div>
-              <div className={styles.fileLabels}>
-                {displayFiles.map((f) => <span key={f}>{f}</span>)}
-              </div>
-            </div>
-
-            {/* Controls */}
             <div className={styles.controls}>
               <Button variant="default" size="sm" onClick={handleNewGame}>
                 <RefreshCw size={14} /> {t("new_game")}
               </Button>
-              <Button variant="outline" size="sm" onClick={handleUndo} disabled={chess.history().length < 1 || gameOver}>
+              <Button variant="outline" size="sm" onClick={handleUndo} disabled={history.length < 1}>
                 <RotateCcw size={14} /> {t("undo")}
               </Button>
               <Button variant="outline" size="sm" onClick={() => setFlipped((f) => !f)}>
                 <FlipVertical2 size={14} /> {t("flip")}
               </Button>
-              {gameMode === "vs-ai" && !gameOver && (
-                <Button variant="destructive" size="sm" onClick={() => { setGameOver(true); setStatus(t("resigned")); }}>
+              {vsAi && !gameOver && (
+                <Button variant="destructive" size="sm" onClick={() => setResigned(true)}>
                   <Flag size={14} /> {t("resign")}
                 </Button>
               )}
             </div>
+
+            <p className={styles.credit}>
+              {tc("engine_credit")} ·{" "}
+              <a href="https://github.com/nmrugg/stockfish.js" target="_blank" rel="noopener noreferrer">{tc("engine_source")}</a>
+            </p>
           </div>
         </div>
       </div>
-
-      {/* Promotion modal */}
-      {promotionPending && (
-        <div className={styles.overlay}>
-          <div className={styles.promoModal}>
-            <button className={styles.promoClose} onClick={() => setPromotionPending(null)}><X size={16} /></button>
-            <div className={styles.promoTitle}>{t("promotion")}</div>
-            <div className={styles.promoOptions}>
-              {(["q", "r", "b", "n"] as PieceSymbol[]).map((p) => (
-                <button key={p} className={styles.promoBtn} onClick={() => handlePromotion(p)}>
-                  {PIECE_SVG[p](chess.turn())}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -1,0 +1,251 @@
+.board {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--frame), 0 12px 32px -18px rgba(20, 16, 10, 0.45);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  container-type: inline-size;
+}
+
+.interactive {
+  touch-action: none;
+}
+
+.grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+}
+
+.square {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  font: inherit;
+  cursor: default;
+  outline: none;
+
+  &:focus-visible::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 0 3px #1f2a44, inset 0 0 0 5px rgba(255, 255, 255, 0.9);
+    z-index: 3;
+  }
+}
+
+.interactive .square {
+  cursor: pointer;
+}
+
+.light {
+  background: var(--sq-light);
+  --coord: var(--coord-light);
+}
+
+.dark {
+  background: var(--sq-dark);
+  --coord: var(--coord-dark);
+}
+
+.lastMove,
+.fill,
+.selected,
+.check {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.lastMove {
+  background: rgba(205, 210, 60, 0.42);
+}
+
+.selected {
+  background: rgba(20, 110, 70, 0.4);
+}
+
+.check {
+  background: radial-gradient(circle, rgba(232, 40, 30, 0.95) 0%, rgba(232, 40, 30, 0.55) 35%, rgba(232, 40, 30, 0) 72%);
+}
+
+.moveHint {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 30%;
+  height: 30%;
+  border-radius: 50%;
+  background: rgba(20, 30, 20, 0.22);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.captureHint {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.1cqi rgba(20, 30, 20, 0.24);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.coord {
+  position: absolute;
+  font-size: clamp(8px, 1.6cqi, 12px);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--coord);
+  pointer-events: none;
+}
+
+.rank {
+  top: 4%;
+  left: 5%;
+}
+
+.file {
+  bottom: 4%;
+  right: 6%;
+}
+
+.pieces {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.piece {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 12.5%;
+  height: 12.5%;
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+  z-index: 1;
+}
+
+.dragging {
+  transition: none;
+  z-index: 5;
+  cursor: grabbing;
+
+  .pieceSvg {
+    transform: scale(1.12);
+    filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0.28));
+  }
+}
+
+.pieceSvg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transition: transform 120ms ease-out;
+}
+
+.arrows {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.promoLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+}
+
+.promoBackdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  background: rgba(14, 12, 10, 0.42);
+  cursor: default;
+}
+
+.promoColumn {
+  position: absolute;
+  width: 12.5%;
+  display: flex;
+  background: #fbf8f1;
+  border-radius: 6px;
+  box-shadow: 0 10px 28px -8px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  animation: promoIn 160ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.promoPiece {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  border: 0;
+  padding: 4%;
+  background: transparent;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    background: rgba(20, 110, 70, 0.18);
+    outline: none;
+  }
+}
+
+.promoCancel {
+  height: 28px;
+  border: 0;
+  background: rgba(0, 0, 0, 0.06);
+  color: #3a332b;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    background: rgba(0, 0, 0, 0.12);
+    outline: none;
+  }
+}
+
+@keyframes promoIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .piece,
+  .pieceSvg,
+  .promoColumn {
+    transition: none;
+    animation: none;
+  }
+}
+
+:global(html.theme-dark),
+:global(html.pomodoro-dark) {
+  .board {
+    box-shadow: 0 0 0 1px var(--frame), 0 14px 36px -18px rgba(0, 0, 0, 0.8);
+  }
+
+  .promoColumn {
+    background: #24211d;
+  }
+
+  .promoCancel {
+    color: #e8e0d2;
+    background: rgba(255, 255, 255, 0.06);
+  }
+}
