@@ -1,6 +1,6 @@
 // npx tsx src/shared/lib/chess/server/coachInput.selfcheck.ts → "coachInput ok"
 import assert from 'node:assert/strict'
-import { validateCoachInput } from './coachInput'
+import { buildCoachPrompt, validateCoachInput } from './coachInput'
 
 // Детский мат: 1.e4 e5 2.Bc4 Nc6 3.Qh5 Nf6?? — белые ставят мат Qxf7#.
 const SCHOLAR = 'r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4'
@@ -38,6 +38,15 @@ const base = {
   assert.ok(r.ok)
   assert.equal(r.facts.playedSan, 'Rd1')
   assert.deepEqual(r.facts.attackedAfter, [{ square: 'd1', piece: 'r', defended: true }])
+}
+
+// Ход движка-соперника с ошибкой: промпт не должен просить объяснить, чем ход «силён».
+{
+  const r = validateCoachInput({ ...base, fen: 'k7/8/8/3r4/8/8/8/4K2Q w - - 0 1', playedUci: 'h1h5', bestUci: 'h1d5', pvUci: ['h1d5'], classification: 'mistake', context: 'engine-move' })
+  assert.ok(r.ok)
+  const { system, user } = buildCoachPrompt(r.input, r.facts)
+  assert.doesNotMatch(system + user, /strong|силён/i)
+  assert.match(system, /weaker/)
 }
 
 // Отказы: нелегальный ход, мусорный FEN, неизвестный enum, нелегальная линия.

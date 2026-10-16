@@ -123,7 +123,9 @@ export function buildCoachPrompt(input: CoachInput, facts: CoachFacts): { system
     'Use ONLY the facts given below. Do not calculate or invent any other moves or variations.',
     'Write moves exactly in the SAN given (e.g. Nf3, Qxf7#).',
     input.context === 'engine-move'
-      ? "Explain what the opponent's (engine's) move does and why it is strong or what it threatens."
+      ? (input.classification === 'best' || input.classification === 'good'
+        ? "Explain what the opponent's (engine's) move does: why it is good and what it threatens."
+        : "Explain what the opponent's (engine's) move does, why it is weaker than the engine's best move, and how the player can exploit it.")
       : 'Explain what the played move does, why the engine move is better (if different), and what the player missed.',
   ].join(' ')
   const sideName = facts.side === 'w' ? 'White' : 'Black'
