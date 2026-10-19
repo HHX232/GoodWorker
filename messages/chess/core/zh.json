@@ -21,6 +21,7 @@
   "skin_night": "夜色",
   "skin_bordo": "波尔多",
   "skin_powder": "粉雾",
+  "skin_wireframe": "网格",
   "sound_on": "声音已开启",
   "sound_off": "声音已关闭",
   "eval_label": "局面评估：{value}",

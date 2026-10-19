@@ -97,16 +97,17 @@ const SHAPES: Record<string, Draw> = {
   ),
 }
 
-// grain id per ink: identical patterns may repeat across pieces, the first one wins
-const draw = (kind: string, ink: Ink, side: 'w' | 'b') => (
+// grain pattern: one per rendered piece (uid), outside the halo clone — no repeated ids on the page
+const grain = (ink: Ink, uid: string) => (
+  <pattern id={`${uid}-grain`} width="7" height="7" patternUnits="userSpaceOnUse">
+    <circle cx="1.5" cy="2" r="0.7" fill={ink.line} opacity="0.35" />
+    <circle cx="5" cy="5.5" r="0.5" fill={ink.cap} opacity="0.4" />
+  </pattern>
+)
+
+const draw = (kind: string, ink: Ink, _side: 'w' | 'b', uid: string) => (
   <g stroke={ink.line} strokeWidth="2.6" strokeLinejoin="round" strokeLinecap="round">
-    <defs>
-      <pattern id={`gw-vintage-grain-${side}`} width="7" height="7" patternUnits="userSpaceOnUse">
-        <circle cx="1.5" cy="2" r="0.7" fill={ink.line} opacity="0.35" />
-        <circle cx="5" cy="5.5" r="0.5" fill={ink.cap} opacity="0.4" />
-      </pattern>
-    </defs>
-    {SHAPES[kind](ink, `url(#gw-vintage-grain-${side})`)}
+    {SHAPES[kind](ink, `url(#${uid}-grain)`)}
   </g>
 )
 
@@ -118,5 +119,5 @@ export const vintage: SkinDef = {
   coordLight: '#8a7f70',
   coordDark: '#8a7f70',
   frame: '#1f1d1b',
-  pieces: buildPieces('Vintage', WHITE, BLACK, draw),
+  pieces: buildPieces('Vintage', WHITE, BLACK, draw, grain),
 }
