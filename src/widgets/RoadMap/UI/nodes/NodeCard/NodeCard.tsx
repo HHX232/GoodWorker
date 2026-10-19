@@ -31,7 +31,7 @@ function getAncestorIds(
       if (edge.target === current && !visited.has(edge.source)) {
         visited.add(edge.source)
         const nodeData = nodeLookup.get(edge.source)?.data as RoadNodeData | undefined
-        if (nodeData?.type && !NON_COMPLETABLE.has(nodeData.type)) {
+        if (nodeData?.type && !NON_COMPLETABLE.has(nodeData.type) && nodeData.chess?.mode !== 'puzzle') {
           result.push(edge.source)
         }
         queue.push(edge.source)
@@ -68,7 +68,11 @@ export default function NodeCard({nodeId, children, isSelected, useMini = false}
     (s) => ((s.nodeLookup.get(nodeId)?.data as RoadNodeData)?.isPaywallHidden ?? false) as boolean
   )
   const isCompleted = isView && completedNodeIds.has(nodeId)
-  const isCompletable = canComplete && !NON_COMPLETABLE.has(nodeType as RoadMapBlockType)
+  // a chess puzzle is passed by solving it (ChessBlock), not by double-click
+  const isChessPuzzle = useStore(
+    (s) => (s.nodeLookup.get(nodeId)?.data as RoadNodeData)?.chess?.mode === 'puzzle'
+  )
+  const isCompletable = canComplete && !NON_COMPLETABLE.has(nodeType as RoadMapBlockType) && !isChessPuzzle
 
   useEffect(() => {
     const el = ref.current

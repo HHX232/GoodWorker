@@ -1,4 +1,4 @@
-import { useId, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { buildPieces, type SkinDef } from './types'
 
 // Vintage: chess characters. Every piece is a figure with a sleeping profile, rust hair
@@ -97,24 +97,18 @@ const SHAPES: Record<string, Draw> = {
   ),
 }
 
-function VintageSvg({ kind, ink, className }: { kind: string; ink: Ink; className?: string }) {
-  const id = `vg${useId().replace(/[^a-zA-Z0-9]/g, '')}`
-  return (
-    <svg viewBox="0 0 100 100" className={className} aria-hidden="true">
-      <defs>
-        <pattern id={id} width="7" height="7" patternUnits="userSpaceOnUse">
-          <circle cx="1.5" cy="2" r="0.7" fill={ink.line} opacity="0.35" />
-          <circle cx="5" cy="5.5" r="0.5" fill={ink.cap} opacity="0.4" />
-        </pattern>
-      </defs>
-      <g stroke={ink.line} strokeWidth="2.6" strokeLinejoin="round" strokeLinecap="round">
-        {SHAPES[kind](ink, `url(#${id})`)}
-      </g>
-    </svg>
-  )
-}
-
-const draw = (kind: string, ink: Ink, className?: string) => <VintageSvg kind={kind} ink={ink} className={className} />
+// grain id per ink: identical patterns may repeat across pieces, the first one wins
+const draw = (kind: string, ink: Ink, side: 'w' | 'b') => (
+  <g stroke={ink.line} strokeWidth="2.6" strokeLinejoin="round" strokeLinecap="round">
+    <defs>
+      <pattern id={`gw-vintage-grain-${side}`} width="7" height="7" patternUnits="userSpaceOnUse">
+        <circle cx="1.5" cy="2" r="0.7" fill={ink.line} opacity="0.35" />
+        <circle cx="5" cy="5.5" r="0.5" fill={ink.cap} opacity="0.4" />
+      </pattern>
+    </defs>
+    {SHAPES[kind](ink, `url(#gw-vintage-grain-${side})`)}
+  </g>
+)
 
 export const vintage: SkinDef = {
   id: 'vintage',

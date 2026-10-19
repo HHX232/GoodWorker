@@ -2,7 +2,7 @@
 import {checkSquare, fenError, normalizeFen, playUci, START_FEN} from '@/shared/lib/chess/puzzle'
 import {useActions} from '@/features/hooks/store/useActions'
 import {ChessPuzzlePayload, ChessStudyPayload} from '@/shared/types/Tasks/TaskPayload.type'
-import {ChessBoard, getSkin, useChessSkin, type BoardMove, type PieceCode} from '@/widgets/Chess/Board'
+import {ChessBoard, getSkin, useBoardTheme, usePieceSet, type BoardMove, type PieceCode} from '@/widgets/Chess/Board'
 import {Eraser, Trash2, Undo2} from 'lucide-react'
 import {useTranslations} from 'next-intl'
 import {useMemo, useState, type CSSProperties, type DragEvent} from 'react'
@@ -55,8 +55,10 @@ const turnOf = (fen: string): 'w' | 'b' => (fen.split(' ')[1] === 'b' ? 'b' : 'w
 function PositionSetup({fen, onChange, warn}: {fen: string; onChange: (fen: string) => void; warn: boolean}) {
   const t = useTranslations('chess.course')
   const tc = useTranslations('chess.core')
-  const [skinId] = useChessSkin()
-  const skin = getSkin(skinId)
+  const [boardId] = useBoardTheme()
+  const [piecesId] = usePieceSet()
+  const board = getSkin(boardId)
+  const pieces = getSkin(piecesId).pieces
   const [tool, setTool] = useState<PieceCode | 'erase'>('wP')
   const [draft, setDraft] = useState(fen)
   const [seenFen, setSeenFen] = useState(fen)
@@ -99,7 +101,7 @@ function PositionSetup({fen, onChange, warn}: {fen: string; onChange: (fen: stri
     for (let col = 0; col < 8; col++) {
       const sq = FILES[col] + (8 - row)
       const p = placement[sq]
-      const Piece = p ? skin.pieces[p] : null
+      const Piece = p ? pieces[p] : null
       squares.push(
         <button
           key={sq}
@@ -129,7 +131,7 @@ function PositionSetup({fen, onChange, warn}: {fen: string; onChange: (fen: stri
     <div className={styles.split}>
       <div
         className={styles.setup_board}
-        style={{'--sq-light': skin.light, '--sq-dark': skin.dark, '--coord-light': skin.coordLight, '--coord-dark': skin.coordDark} as CSSProperties}
+        style={{'--sq-light': board.light, '--sq-dark': board.dark, '--coord-light': board.coordLight, '--coord-dark': board.coordDark} as CSSProperties}
       >
         {squares}
       </div>
@@ -139,7 +141,7 @@ function PositionSetup({fen, onChange, warn}: {fen: string; onChange: (fen: stri
           <span className={styles.label}>{t('palette')}</span>
           <div className={styles.palette} role='radiogroup' aria-label={t('palette')}>
             {PALETTE.map((code) => {
-              const Piece = skin.pieces[code]
+              const Piece = pieces[code]
               return (
                 <button
                   key={code}
@@ -307,10 +309,12 @@ function Tabs<T extends string>({value, onChange, items}: {value: T; onChange: (
 
 // ── CHESS_PUZZLE editor ───────────────────────────────────────────────────────
 
-export function ChessPuzzleEditor({blockId, payload}: {blockId: string; payload: ChessPuzzlePayload}) {
+/** `onChange` replaces the test-store write (road-map node keeps the payload in its own data). */
+export function ChessPuzzleEditor({blockId, payload, onChange}: {blockId: string; payload: ChessPuzzlePayload; onChange?: (p: ChessPuzzlePayload) => void}) {
   const t = useTranslations('chess.course')
   const {updateBlockPayload} = useActions()
-  const update = (patch: Partial<ChessPuzzlePayload>) => updateBlockPayload({id: blockId, payload: {...payload, ...patch}})
+  const update = (patch: Partial<ChessPuzzlePayload>) =>
+    onChange ? onChange({...payload, ...patch}) : updateBlockPayload({id: blockId, payload: {...payload, ...patch}})
   const [tab, setTab] = useState<'position' | 'moves'>(payload.solution.length ? 'moves' : 'position')
   const line = useLine(payload.fen, payload.solution)
   const turn = turnOf(payload.fen)
@@ -351,10 +355,12 @@ export function ChessPuzzleEditor({blockId, payload}: {blockId: string; payload:
 
 // ── CHESS_STUDY editor ────────────────────────────────────────────────────────
 
-export function ChessStudyEditor({blockId, payload}: {blockId: string; payload: ChessStudyPayload}) {
+/** `onChange` replaces the test-store write (road-map node keeps the payload in its own data). */
+export function ChessStudyEditor({blockId, payload, onChange}: {blockId: string; payload: ChessStudyPayload; onChange?: (p: ChessStudyPayload) => void}) {
   const t = useTranslations('chess.course')
   const {updateBlockPayload} = useActions()
-  const update = (patch: Partial<ChessStudyPayload>) => updateBlockPayload({id: blockId, payload: {...payload, ...patch}})
+  const update = (patch: Partial<ChessStudyPayload>) =>
+    onChange ? onChange({...payload, ...patch}) : updateBlockPayload({id: blockId, payload: {...payload, ...patch}})
   const [tab, setTab] = useState<'position' | 'moves'>(payload.moves.length ? 'moves' : 'position')
   const ucis = useMemo(() => payload.moves.map((m) => m.uci), [payload.moves])
   const line = useLine(payload.fen, ucis)

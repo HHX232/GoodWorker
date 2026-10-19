@@ -9,6 +9,7 @@ import { RoadMediaTask } from './tasks/RoadMediaTask'
 import { RoadPostLinkTask } from './tasks/RoadPostLinkTask'
 import { RoadPostsLinkTask } from './tasks/RoadPostsLinkTask'
 import { ActiveCommentTask } from './tasks/ActiveCommentTask'
+import { RoadChessTask } from './tasks/RoadChessTask'
 
 type Registry = {
   [K in RoadMapBlockType]: RoadMapTask & {type: K}
@@ -25,7 +26,11 @@ const RoadMapBlockRegistry: Registry = {
   [RoadMapBlockType.DOWNLOAD_FILE_LINK]: RoadFileTask,
   [RoadMapBlockType.ACTIVE_TEST]: RoadActiveTestTask,
   [RoadMapBlockType.ACTIVE_COMMENT]: ActiveCommentTask,
+  [RoadMapBlockType.CHESS]: RoadChessTask,
 
 }
+
+/** Root-level i18n key of a task label: bare keys are in `roadMap`, dotted ones are already full. */
+export const roadMapLabel = (label: string) => (label.includes('.') ? label : `roadMap.${label}`)
 
 export default RoadMapBlockRegistry

@@ -42,5 +42,9 @@
   "studyMoveOf": "चाल {n} / {total}",
   "toStart": "शुरुआत पर",
   "prev": "पिछली चाल",
-  "next": "अगली चाल"
+  "next": "अगली चाल",
+  "nodeLabel": "शतरंज",
+  "nodeMode": "नोड मोड",
+  "nodeModePuzzle": "पहेली",
+  "nodeModeStudy": "विश्लेषण"
 }

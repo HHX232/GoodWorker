@@ -7,9 +7,10 @@ import { checkSquare } from '@/shared/lib/chess/puzzle'
 import { useTranslations } from 'next-intl'
 import { Chess, validateFen, DEFAULT_POSITION } from 'chess.js'
 import { ArrowLeft, ArrowUpDown, CloudOff, Flag, Lock, MessageCircleQuestion, Plus, RotateCw, Undo2 } from 'lucide-react'
-import { ChessBoard, SKINS, useChessSkin, type BoardMove } from '@/widgets/Chess/Board'
-import { CoachPanel, EvalBar, useMoveCoach, type ExplainResult, type MoveReview } from '@/widgets/Chess/Coach'
-import { getEngine, ENGINE_LEVELS } from '@/shared/lib/chess/engine'
+import { ChessBoard, SkinPicker, type BoardMove } from '@/widgets/Chess/Board'
+import { CoachPanel, CoachSays, EvalBar, REVIEW_ANALYSIS, useMoveCoach, type ExplainResult, type MoveReview } from '@/widgets/Chess/Coach'
+import { hintArrows, type HintArrow } from '@/shared/lib/chess/hintArrows'
+import { getEngine, ENGINE_LEVELS, type EngineLine } from '@/shared/lib/chess/engine'
 import { playMoveSound, useSoundEnabled } from '@/shared/lib/chess/sound'
 import { readPref, useLocalPref } from '@/shared/lib/chess/localPref'
 import { endReason, engineMoveFacts, type MoveFact } from './gameFacts'
@@ -54,7 +55,8 @@ export function ChessPlayPage({ initialFen, initialColor }: { initialFen?: strin
   const [badFen, setBadFen] = useState(false)
   const [round, setRound] = useState(0) // re-asks the engine after a reset even when fen did not change
   const [soundOn, setSoundOn] = useSoundEnabled()
-  const [skin, setSkin] = useChessSkin()
+  const [hintPref, setHintPref] = useLocalPref('gw-chess-hints', '1')
+  const [hint, setHint] = useState<{ fen: string; lines: EngineLine[]; arrows: HintArrow[] } | null>(null)
   const [evalPref, setEvalPref] = useLocalPref('gw-chess-evalbar', '1')
   const [autoPref, setAutoPref] = useLocalPref('gw-chess-autoexplain', '0') // off by default: every auto call spends the limit
   const coach = useMoveCoach()
@@ -169,7 +171,7 @@ export function ChessPlayPage({ initialFen, initialColor }: { initialFen?: strin
     setNoAnalysis(false)
     setReviewing(true)
     coach
-      .review(before, m.from + m.to + (m.promotion ?? ''), 'game')
+      .review(before, m.from + m.to + (m.promotion ?? ''), 'game', hint?.fen === before ? hint.lines : undefined)
       .then((r) => {
         if (my !== gen.current) return
         setReview(r)
@@ -226,12 +228,21 @@ export function ChessPlayPage({ initialFen, initialColor }: { initialFen?: strin
     setMode(m)
   }
 
+  // ─── G01/G03: best moves of the position the player is to move in ────────────
+  // Queued after the reply and the review; the next player move's cancelAll() drops it, so it never delays the engine.
+  const hintOn = vsAi && hintPref === '1' && ready && !gameOver && !thinking && chess.turn() === color
+  useEffect(() => {
+    if (!hintOn) return
+    const my = gen.current
+    getEngine()
+      .analyse(fen, REVIEW_ANALYSIS) // same search as the review's: the player's move reuses these lines
+      .then((lines) => my === gen.current && chess.fen() === fen && setHint({ fen, lines, arrows: hintArrows(lines) }))
+      .catch((e: Error) => e.message === 'ENGINE_UNAVAILABLE' && setEngineDown(true)) // cancelled / bad FEN: no arrows
+  }, [hintOn, fen, chess])
+
   // ─── view ─────────────────────────────────────────────────────────────────────
   const orientation: Side = (vsAi ? color === 'b' : false) !== flipped ? 'b' : 'w'
-  const arrows =
-    review && review.classification !== 'best' && review.bestUci
-      ? [{ from: review.bestUci.slice(0, 2), to: review.bestUci.slice(2, 4) }]
-      : []
+  const arrows = hintOn && hint?.fen === fen ? hint.arrows : []
 
   const history = chess.history()
   const startTurn = start.split(' ')[1] === 'b' ? 1 : 0
@@ -269,32 +280,37 @@ export function ChessPlayPage({ initialFen, initialColor }: { initialFen?: strin
   return (
     <div className={styles.page}>
       <header className={styles.head}>
-        <Link href="/chess" className={styles.back}>
-          <ArrowLeft size={16} strokeWidth={2} aria-hidden="true" />
-          {t('hub_title')}
+        <Link href="/chess" className={styles.back} aria-label={t('hub_title')}>
+          <ArrowLeft size={18} strokeWidth={2} aria-hidden="true" />
         </Link>
         <h1 className={styles.title}>{t('play_title')}</h1>
       </header>
 
-      {badFen && (
-        <p className={styles.engineDown} role="alert">
-          <CloudOff size={16} strokeWidth={2} aria-hidden="true" />
-          {t('bad_fen')}
-        </p>
-      )}
-
-      {engineDown && (
-        <p className={styles.engineDown} role="alert">
-          <CloudOff size={16} strokeWidth={2} aria-hidden="true" />
-          {tc('engine_unavailable')}
-        </p>
-      )}
-
+      {/* G05: coach | board | controls on desktop, the board centred; nothing above or beside the board changes its size */}
       <div className={styles.layout}>
+        <aside className={styles.coachCol} aria-label={tc('coach_title')}>
+          {/* newest line first in the DOM: the column is reversed so its scroll stays on the latest words */}
+          {vsAi && note && (
+            <EngineNoteCard key={note.fenBefore + note.uci} note={note} review={coach.review} explain={coach.explain} />
+          )}
+
+          {vsAi ? (
+            <CoachPanel
+              review={review}
+              noAnalysis={noAnalysis}
+              analysing={reviewing}
+              explain={coach.explain}
+              autoExplain={autoPref === '1'}
+            />
+          ) : (
+            <CoachSays>{t('coach_duo')}</CoachSays>
+          )}
+        </aside>
+
         <section className={styles.boardCol} aria-label={tc('board_label')}>
           {strip(orientation === 'w' ? 'b' : 'w')}
           <div className={styles.stage}>
-            {vsAi && evalPref === '1' && evalCp !== null && <EvalBar cp={evalCp} orientation={orientation} />}
+            {vsAi && evalPref === '1' && evalCp !== null && <EvalBar cp={evalCp} orientation={orientation} className={styles.evalBar} />}
             <ChessBoard
               fen={fen}
               orientation={orientation}
@@ -303,10 +319,25 @@ export function ChessPlayPage({ initialFen, initialColor }: { initialFen?: strin
               lastMove={lastMove}
               check={checkSquare(chess.fen())}
               arrows={arrows}
-              skinId={skin}
             />
           </div>
           {strip(orientation)}
+        </section>
+
+        <div className={styles.controlsArea}>
+          {badFen && (
+            <p className={styles.engineDown} role="alert">
+              <CloudOff size={16} strokeWidth={2} aria-hidden="true" />
+              {t('bad_fen')}
+            </p>
+          )}
+
+          {engineDown && (
+            <p className={styles.engineDown} role="alert">
+              <CloudOff size={16} strokeWidth={2} aria-hidden="true" />
+              {tc('engine_unavailable')}
+            </p>
+          )}
 
           {gameOver && (
             <div className={styles.end} role="status">
@@ -337,14 +368,7 @@ export function ChessPlayPage({ initialFen, initialColor }: { initialFen?: strin
               {t('new_game')}
             </button>
           </div>
-
-          <p className={styles.credit}>
-            {tc('engine_credit')} ·{' '}
-            <a href="https://github.com/nmrugg/stockfish.js" target="_blank" rel="noopener noreferrer">
-              {tc('engine_source')}
-            </a>
-          </p>
-        </section>
+        </div>
 
         <aside className={styles.rail}>
           <div className={styles.card}>
@@ -394,19 +418,6 @@ export function ChessPlayPage({ initialFen, initialColor }: { initialFen?: strin
             )}
           </div>
 
-          {vsAi && (
-            <CoachPanel
-              review={review}
-              noAnalysis={noAnalysis}
-              analysing={reviewing}
-              explain={coach.explain}
-              autoExplain={autoPref === '1'}
-            />
-          )}
-
-          {vsAi && note && (
-            <EngineNoteCard key={note.fenBefore + note.uci} note={note} review={coach.review} explain={coach.explain} />
-          )}
 
           <div className={styles.card}>
             <h2 className={styles.cardTitle}>{t('moves')}</h2>
@@ -431,6 +442,15 @@ export function ChessPlayPage({ initialFen, initialColor }: { initialFen?: strin
               <input type="checkbox" checked={soundOn} onChange={(e) => setSoundOn(e.target.checked)} />
               <span>{t('opt_sound')}</span>
             </label>
+            {vsAi && (
+              <label className={styles.toggle}>
+                <input type="checkbox" checked={hintPref === '1'} onChange={(e) => setHintPref(e.target.checked ? '1' : '0')} />
+                <span>
+                  {t('opt_hints')}
+                  <small>{t('opt_hints_hint')}</small>
+                </span>
+              </label>
+            )}
             <label className={styles.toggle}>
               <input type="checkbox" checked={evalPref === '1'} onChange={(e) => setEvalPref(e.target.checked ? '1' : '0')} />
               <span>{t('opt_evalbar')}</span>
@@ -442,18 +462,15 @@ export function ChessPlayPage({ initialFen, initialColor }: { initialFen?: strin
                 <small>{t('opt_auto_hint')}</small>
               </span>
             </label>
-            <div className={styles.field}>
-              <span className={styles.label} id="skin-label">{t('skin')}</span>
-              <div className={styles.skins} role="group" aria-labelledby="skin-label">
-                {SKINS.map((s) => (
-                  <button key={s.id} type="button" aria-pressed={skin === s.id} onClick={() => setSkin(s.id)}>
-                    <span className={styles.skinChip} style={{ background: `linear-gradient(135deg, ${s.light} 50%, ${s.dark} 50%)` }} aria-hidden="true" />
-                    {tc(s.labelKey)}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <SkinPicker />
           </div>
+
+          <p className={styles.credit}>
+            {tc('engine_credit')} ·{' '}
+            <a href="https://github.com/nmrugg/stockfish.js" target="_blank" rel="noopener noreferrer">
+              {tc('engine_source')}
+            </a>
+          </p>
         </aside>
       </div>
     </div>
@@ -509,48 +526,52 @@ function EngineNoteCard({ note, review, explain }: { note: EngineNote; review: C
   }
 
   return (
-    <section className={styles.card} aria-live="polite">
-      <h2 className={styles.cardTitle}>{t('engine_move_title')}</h2>
-      <p className={styles.noteLine}>
-        <span className={styles.noteSan}>{note.san}</span>
-        {note.facts.slice(0, 2).map(factText).join(', ')}
-      </p>
-      {analysing && (
-        <p className={styles.muted} role="status">
-          <span className={styles.dots} aria-hidden="true" />
-          {tc('coach_analysing')}
-        </p>
-      )}
-      {noAnalysis && <p className={styles.muted}>{tc('coach_no_analysis')}</p>}
-      {!result && !loading && !analysing && !noAnalysis && (
-        <button type="button" className={styles.link} onClick={ask}>
-          <MessageCircleQuestion size={15} strokeWidth={2} aria-hidden="true" />
-          {t('engine_more')}
-        </button>
-      )}
-      {loading && (
-        <p className={styles.muted} role="status">
-          <span className={styles.dots} aria-hidden="true" />
-          {tc('coach_explaining')}
-        </p>
-      )}
-      {result?.ok && <p className={styles.explanation}>{result.text}</p>}
-      {result && !result.ok && (
-        <p className={styles.notice}>
-          {result.reason === 'LIMIT' ? <Lock size={15} strokeWidth={2} aria-hidden="true" /> : <CloudOff size={15} strokeWidth={2} aria-hidden="true" />}
-          <span>
-            {result.reason === 'LIMIT'
-              ? `${tc('coach_limit')} ${tc(result.tier === 'guest' ? 'coach_limit_guest' : 'coach_limit_user')}`
-              : tc(result.reason === 'BAD_INPUT' ? 'coach_bad_input' : 'coach_unavailable')}
-          </span>
-          {result.reason === 'UNAVAILABLE' && (
+    <section aria-live="polite" aria-label={t('engine_move_title')}>
+      <CoachSays mood={analysing || loading ? 'thinking' : noAnalysis || (result && !result.ok) ? 'concerned' : 'idle'}>
+        <div className={styles.noteBody}>
+          <p className={styles.noteLine}>
+            {note.facts.length
+              ? t('opp_moved_why', { san: note.san, what: note.facts.slice(0, 2).map(factText).join(t('and')) })
+              : t('opp_moved', { san: note.san })}
+          </p>
+          {analysing && (
+            <p className={styles.muted} role="status">
+              <span className={styles.dots} aria-hidden="true" />
+              {tc('coach_analysing')}
+            </p>
+          )}
+          {noAnalysis && <p className={styles.muted}>{tc('coach_no_analysis')}</p>}
+          {!result && !loading && !analysing && !noAnalysis && (
             <button type="button" className={styles.link} onClick={ask}>
-              <RotateCw size={13} strokeWidth={2.25} aria-hidden="true" />
-              {tc('coach_retry')}
+              <MessageCircleQuestion size={15} strokeWidth={2} aria-hidden="true" />
+              {t('engine_more')}
             </button>
           )}
-        </p>
-      )}
+          {loading && (
+            <p className={styles.muted} role="status">
+              <span className={styles.dots} aria-hidden="true" />
+              {tc('coach_explaining')}
+            </p>
+          )}
+          {result?.ok && <p className={styles.explanation}>{result.text}</p>}
+          {result && !result.ok && (
+            <p className={styles.notice}>
+              {result.reason === 'LIMIT' ? <Lock size={15} strokeWidth={2} aria-hidden="true" /> : <CloudOff size={15} strokeWidth={2} aria-hidden="true" />}
+              <span>
+                {result.reason === 'LIMIT'
+                  ? `${tc('coach_limit')} ${tc(result.tier === 'guest' ? 'coach_limit_guest' : 'coach_limit_user')}`
+                  : tc(result.reason === 'BAD_INPUT' ? 'coach_bad_input' : 'coach_unavailable')}
+              </span>
+              {result.reason === 'UNAVAILABLE' && (
+                <button type="button" className={styles.link} onClick={ask}>
+                  <RotateCw size={13} strokeWidth={2.25} aria-hidden="true" />
+                  {tc('coach_retry')}
+                </button>
+              )}
+            </p>
+          )}
+        </div>
+      </CoachSays>
     </section>
   )
 }

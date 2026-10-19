@@ -191,7 +191,20 @@ function FakeDividerBlock() {
     </div>
   )
 }
+function FakeChessBlock() {
+  return (
+    <div className={styles.fakeBox}>
+      <div style={{display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', aspectRatio: '1', borderRadius: 6, overflow: 'hidden'}}>
+        {Array.from({length: 64}).map((_, i) => (
+          <div key={i} className={styles.fakeLine} style={{height: 'auto', borderRadius: 0, opacity: (i + (i >> 3)) % 2 ? 0.9 : 0.35}} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 const FAKE_MAP: Partial<Record<RoadMapBlockType, React.FC>> = {
+  [RoadMapBlockType.CHESS]: FakeChessBlock,
   [RoadMapBlockType.ENTRY_POINT]: FakeEntryPointBlock,
   [RoadMapBlockType.DIVIDER]: FakeDividerBlock,
   [RoadMapBlockType.INFO_MEDIA]: FakeMediaBlock,

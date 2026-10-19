@@ -55,8 +55,8 @@
   "opt_auto": "自动讲解失误",
   "opt_auto_hint": "教练会自动讲解每个失误或漏着，会消耗每日讲解次数。",
   "skin": "棋子与棋盘",
-  "engine_move_title": "引擎的着法",
-  "engine_more": "详细讲解",
+  "engine_move_title": "对手的着法",
+  "engine_more": "他想干什么？",
   "fact_mate": "将杀",
   "fact_check": "将军",
   "fact_capture": "吃掉{piece}",
@@ -70,5 +70,11 @@
   "pc_acc_b": "象",
   "pc_acc_r": "车",
   "pc_acc_q": "后",
-  "pc_acc_k": "王"
+  "pc_acc_k": "王",
+  "opt_hints": "显示最佳着法",
+  "opt_hints_hint": "棋盘上的箭头：颜色越实，着法越好。",
+  "opp_moved": "对手走了 {san}。",
+  "opp_moved_why": "对手走了 {san}——{what}。",
+  "and": "，并",
+  "coach_duo": "你们两人对弈——我只在旁边看。选择“引擎”，我会陪你分析每一步。"
 }

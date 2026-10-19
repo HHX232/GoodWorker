@@ -9,10 +9,10 @@ export interface OutlineStep {
 }
 
 const TYPE_LABELS: Record<string, Record<string, string>> = {
-  ru: { text: 'Текст', media: 'Медиа', audio: 'Аудио', files: 'Файлы', posts: 'Посты', test: 'Тест', feedback: 'Обратная связь' },
-  en: { text: 'Text',  media: 'Media', audio: 'Audio', files: 'Files', posts: 'Posts', test: 'Test', feedback: 'Feedback' },
-  hi: { text: 'टेक्स्ट', media: 'मीडिया', audio: 'ऑडियो', files: 'फ़ाइलें', posts: 'पोस्ट', test: 'परीक्षण', feedback: 'प्रतिक्रिया' },
-  zh: { text: '文本', media: '媒体', audio: '音频', files: '文件', posts: '帖子', test: '测验', feedback: '反馈' },
+  ru: { text: 'Текст', media: 'Медиа', audio: 'Аудио', files: 'Файлы', posts: 'Посты', test: 'Тест', feedback: 'Обратная связь', chess: 'Шахматы' },
+  en: { text: 'Text',  media: 'Media', audio: 'Audio', files: 'Files', posts: 'Posts', test: 'Test', feedback: 'Feedback', chess: 'Chess' },
+  hi: { text: 'टेक्स्ट', media: 'मीडिया', audio: 'ऑडियो', files: 'फ़ाइलें', posts: 'पोस्ट', test: 'परीक्षण', feedback: 'प्रतिक्रिया', chess: 'शतरंज' },
+  zh: { text: '文本', media: '媒体', audio: '音频', files: '文件', posts: '帖子', test: '测验', feedback: '反馈', chess: '国际象棋' },
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -43,6 +43,8 @@ function getNodeTitle(node: any, lang = 'ru'): string {
       return L.test
     case RoadMapBlockType.ACTIVE_COMMENT:
       return L.feedback
+    case RoadMapBlockType.CHESS:
+      return node.data?.chess?.prompt?.trim().slice(0, 80) || L.chess
     case RoadMapBlockType.DIVIDER: {
       const outputs: { name?: string }[] = node.data?.outputs ?? []
       const outputName = outputs[0]?.name?.trim() ?? ''

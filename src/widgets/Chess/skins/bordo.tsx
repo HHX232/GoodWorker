@@ -94,21 +94,19 @@ const SHAPES: Record<string, (ink: Ink) => ReactNode> = {
   ),
 }
 
-const draw = (kind: string, ink: Ink, className?: string) => (
-  <svg viewBox="0 0 100 100" className={className} aria-hidden="true">
-    <g fill={ink.fill} stroke={ink.line} strokeWidth="2.6" strokeLinejoin="round" strokeLinecap="round">
-      {SHAPES[kind](ink)}
-    </g>
-  </svg>
+const draw = (kind: string, ink: Ink) => (
+  <g fill={ink.fill} stroke={ink.line} strokeWidth="2.6" strokeLinejoin="round" strokeLinecap="round">
+    {SHAPES[kind](ink)}
+  </g>
 )
 
 export const bordo: SkinDef = {
   id: 'bordo',
   labelKey: 'skin_bordo',
-  light: '#e6d2ac',
+  light: '#d6bb8a',
   dark: '#7d2421',
   coordLight: '#7d2421',
-  coordDark: '#e6d2ac',
+  coordDark: '#d6bb8a',
   frame: '#4a0f14',
   pieces: buildPieces('Bordo', WHITE, BLACK, draw),
 }

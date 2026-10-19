@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
-import { ArrowRight, Check, Lightbulb, LogIn, RotateCcw, SearchX, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Lightbulb, LogIn, RotateCcw, SearchX, X } from 'lucide-react'
 import { ChessBoard, type BoardMove } from '@/widgets/Chess/Board'
-import { CoachPanel, useMoveCoach, type MoveReview } from '@/widgets/Chess/Coach'
+import { CoachPanel, CoachSays, useMoveCoach, type MoveReview } from '@/widgets/Chess/Coach'
 import { getEngine } from '@/shared/lib/chess/engine'
 import { playMoveSound } from '@/shared/lib/chess/sound'
 import { OPENINGS, TACTICS } from '@/shared/lib/chess/data'
@@ -28,6 +28,8 @@ export type PuzzlesPageProps = { mode?: PuzzleMode; theme?: string; opening?: st
 
 export function PuzzlesPage(props: PuzzlesPageProps) {
   const t = useTranslations('chess.learn')
+  const tp = useTranslations('chess.play')
+  const tc = useTranslations('chess.core')
   const coach = useMoveCoach()
 
   const [mode, setMode] = useState<PuzzleMode>(props.mode ?? (props.theme ? 'theme' : props.opening ? 'opening' : 'rated'))
@@ -231,10 +233,10 @@ export function PuzzlesPage(props: PuzzlesPageProps) {
     <div className={styles.page}>
       <div className={styles.container}>
         <header className={styles.header}>
-          <div>
-            <h1 className={styles.title}>{t('pz_title')}</h1>
-            <p className={styles.lede}>{t('pz_lede')}</p>
-          </div>
+          <Link href="/chess" className={styles.back} aria-label={tp('hub_title')}>
+            <ArrowLeft size={18} strokeWidth={2} aria-hidden="true" />
+          </Link>
+          <h1 className={styles.title}>{t('pz_title')}</h1>
           {profile ? (
             <div className={styles.rating} aria-live="polite">
               <span className={styles.ratingLabel}>{t('pz_rating')}</span>
@@ -256,69 +258,16 @@ export function PuzzlesPage(props: PuzzlesPageProps) {
           ) : null}
         </header>
 
-        <nav className={styles.modes} aria-label={t('pz_modes')}>
-          {MODES.map((m) => (
-            <button key={m} type="button" className={styles.mode} aria-pressed={mode === m} onClick={() => pickMode(m)}>
-              <span className={styles.modeName}>{t(`pz_mode_${m}`)}</span>
-              <span className={styles.modeDesc}>{t(`pz_mode_${m}_desc`)}</span>
-            </button>
-          ))}
-        </nav>
-
-        {mode === 'theme' && (
-          <div className={styles.chips} role="group" aria-label={t('pz_pick_theme')}>
-            {TACTICS.map((x) => (
-              <button
-                key={x.id}
-                type="button"
-                className={styles.chip}
-                aria-pressed={theme === x.id}
-                onClick={() => {
-                  setTheme(x.id)
-                  next('theme', x.id)
-                }}
-              >
-                {t(x.nameKey)}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {mode === 'opening' && (
-          <label className={styles.selectRow}>
-            <span>{t('pz_pick_opening')}</span>
-            <select
-              className={styles.select}
-              value={opening}
-              onChange={(e) => {
-                setOpening(e.target.value)
-                next('opening', theme, e.target.value)
-              }}
-            >
-              {OPENINGS.map((o) => (
-                <option key={o.id} value={o.lichessTag}>
-                  {o.eco} · {t(o.nameKey)}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-
-        {mode === 'series' && (
-          <ol className={styles.series} aria-label={t('pz_series_progress', { n: series.results.length, total: SERIES_LEN })}>
-            {Array.from({ length: SERIES_LEN }, (_, i) => {
-              const r = series.results[i]
-              const current = i === series.results.length && !seriesDone
-              return (
-                <li key={i} className={styles.seriesStep} data-state={r === true ? 'win' : r === false ? 'loss' : current ? 'now' : 'todo'}>
-                  {r === true ? <Check size={14} aria-hidden="true" /> : r === false ? <X size={14} aria-hidden="true" /> : i + 1}
-                </li>
-              )
-            })}
-          </ol>
-        )}
-
+        {/* same frame as /chess/play: coach | board | controls, the board centred and fully on screen */}
         <div className={styles.layout}>
+          <aside className={styles.coachCol} aria-label={tc('coach_title')}>
+            {wrong || review || analysing || noAnalysis ? (
+              <CoachPanel review={review} noAnalysis={noAnalysis} analysing={analysing} explain={coach.explain} />
+            ) : (
+              <CoachSays>{t(status === 'done' ? 'pz_coach_hint' : 'pz_lede')}</CoachSays>
+            )}
+          </aside>
+
           <div className={styles.boardCol}>
             {status === 'empty' || status === 'error' ? (
               <div className={styles.emptyBox}>
@@ -339,7 +288,7 @@ export function PuzzlesPage(props: PuzzlesPageProps) {
               <>
                 <p className={styles.status} data-tone={status === 'done' ? (usedHelp ? 'warn' : 'ok') : wrong ? 'bad' : 'idle'} aria-live="polite">
                   <span className={styles.turnDot} data-color={me} aria-hidden="true" />
-                  {statusLine}
+                  <span className={styles.statusText}>{statusLine}</span>
                 </p>
                 <div className={styles.boardWrap} data-loading={status === 'loading' || undefined}>
                   {fen ? (
@@ -357,32 +306,35 @@ export function PuzzlesPage(props: PuzzlesPageProps) {
                     <div className={styles.boardGhost} />
                   )}
                 </div>
-                <div className={styles.controls}>
-                  {status !== 'done' ? (
-                    <>
-                      <button type="button" className={styles.secondary} disabled={status !== 'play' || hint >= 2} onClick={() => {
-                          setHint((h) => h + 1)
-                          setRun((r) => r && takeHint(r))
-                        }}>
-                        <Lightbulb size={16} aria-hidden="true" />
-                        {t(hint === 0 ? 'pz_hint' : 'pz_hint_more')}
-                      </button>
-                      <button type="button" className={styles.ghost} disabled={status === 'loading'} onClick={() => next()}>
-                        {t('pz_skip')}
-                      </button>
-                    </>
-                  ) : seriesDone ? null : (
-                    <button type="button" className={styles.primary} onClick={() => next()}>
-                      {t(mode === 'series' ? 'pz_next_series' : 'pz_next', { n: series.results.length + 1, total: SERIES_LEN })}
-                      <ArrowRight size={16} aria-hidden="true" />
-                    </button>
-                  )}
-                </div>
               </>
             )}
           </div>
 
-          <aside className={styles.side}>
+          <div className={styles.controlsArea}>
+            {status !== 'empty' && status !== 'error' && (
+              <div className={styles.controls}>
+                {status !== 'done' ? (
+                  <>
+                    <button type="button" className={styles.secondary} disabled={status !== 'play' || hint >= 2} onClick={() => {
+                        setHint((h) => h + 1)
+                        setRun((r) => r && takeHint(r))
+                      }}>
+                      <Lightbulb size={16} aria-hidden="true" />
+                      {t(hint === 0 ? 'pz_hint' : 'pz_hint_more')}
+                    </button>
+                    <button type="button" className={styles.ghost} disabled={status === 'loading'} onClick={() => next()}>
+                      {t('pz_skip')}
+                    </button>
+                  </>
+                ) : seriesDone ? null : (
+                  <button type="button" className={styles.primary} onClick={() => next()}>
+                    {t(mode === 'series' ? 'pz_next_series' : 'pz_next', { n: series.results.length + 1, total: SERIES_LEN })}
+                    <ArrowRight size={16} aria-hidden="true" />
+                  </button>
+                )}
+              </div>
+            )}
+
             {seriesDone && (
               <section className={styles.card} aria-live="polite">
                 <h2 className={styles.cardTitle}>{t('pz_series_done')}</h2>
@@ -418,22 +370,78 @@ export function PuzzlesPage(props: PuzzlesPageProps) {
                 {!profile && guest && status === 'done' && <p className={styles.note}>{t('pz_guest_note')}</p>}
               </section>
             )}
+          </div>
 
-            {(wrong || review || analysing || noAnalysis) && (
-              <CoachPanel review={review} noAnalysis={noAnalysis} analysing={analysing} explain={coach.explain} />
+          <aside className={styles.side}>
+            <nav className={styles.modes} aria-label={t('pz_modes')}>
+              {MODES.map((m) => (
+                <button key={m} type="button" className={styles.mode} aria-pressed={mode === m} onClick={() => pickMode(m)}>
+                  <span className={styles.modeName}>{t(`pz_mode_${m}`)}</span>
+                  <span className={styles.modeDesc}>{t(`pz_mode_${m}_desc`)}</span>
+                </button>
+              ))}
+            </nav>
+            {mode === 'theme' && (
+              <div className={styles.chips} role="group" aria-label={t('pz_pick_theme')}>
+                {TACTICS.map((x) => (
+                  <button
+                    key={x.id}
+                    type="button"
+                    className={styles.chip}
+                    aria-pressed={theme === x.id}
+                    onClick={() => {
+                      setTheme(x.id)
+                      next('theme', x.id)
+                    }}
+                  >
+                    {t(x.nameKey)}
+                  </button>
+                ))}
+              </div>
             )}
-            {!wrong && !review && !analysing && !noAnalysis && (status === 'play' || status === 'intro' || status === 'loading') && (
-              <p className={styles.coachHint}>{t('pz_coach_hint')}</p>
+    
+            {mode === 'opening' && (
+              <label className={styles.selectRow}>
+                <span>{t('pz_pick_opening')}</span>
+                <select
+                  className={styles.select}
+                  value={opening}
+                  onChange={(e) => {
+                    setOpening(e.target.value)
+                    next('opening', theme, e.target.value)
+                  }}
+                >
+                  {OPENINGS.map((o) => (
+                    <option key={o.id} value={o.lichessTag}>
+                      {o.eco} · {t(o.nameKey)}
+                    </option>
+                  ))}
+                </select>
+              </label>
             )}
+    
+            {mode === 'series' && (
+              <ol className={styles.series} aria-label={t('pz_series_progress', { n: series.results.length, total: SERIES_LEN })}>
+                {Array.from({ length: SERIES_LEN }, (_, i) => {
+                  const r = series.results[i]
+                  const current = i === series.results.length && !seriesDone
+                  return (
+                    <li key={i} className={styles.seriesStep} data-state={r === true ? 'win' : r === false ? 'loss' : current ? 'now' : 'todo'}>
+                      {r === true ? <Check size={14} aria-hidden="true" /> : r === false ? <X size={14} aria-hidden="true" /> : i + 1}
+                    </li>
+                  )
+                })}
+              </ol>
+            )}
+
+            <footer className={styles.footer}>
+              {t('pz_credit')} ·{' '}
+              <a href="https://database.lichess.org/#puzzles" target="_blank" rel="noopener noreferrer">
+                database.lichess.org
+              </a>
+            </footer>
           </aside>
         </div>
-
-        <footer className={styles.footer}>
-          {t('pz_credit')} ·{' '}
-          <a href="https://database.lichess.org/#puzzles" target="_blank" rel="noopener noreferrer">
-            database.lichess.org
-          </a>
-        </footer>
       </div>
     </div>
   )

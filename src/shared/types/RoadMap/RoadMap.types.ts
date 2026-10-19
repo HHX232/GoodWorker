@@ -18,7 +18,8 @@ export enum RoadMapBlockType {
   DOWNLOAD_FILE_LINK = 'DOWNLOAD_FILE_LINK',
 
   INFO_MEDIA = 'INFO_MEDIA',
-  INFO_AUDIO = 'INFO_AUDIO'
+  INFO_AUDIO = 'INFO_AUDIO',
+  CHESS = 'CHESS'
 }
 export enum RoadMapParamType {
   STRING = 'STRING',
@@ -52,6 +53,15 @@ export type RoadMapTask = {
   headerColor?: string
 }
 
+/** CHESS node: puzzle = student plays `solution`; study = student pages through `moves`. Both lines are kept so switching mode loses nothing. */
+export interface ChessNodeData {
+  mode: 'puzzle' | 'study'
+  fen: string
+  solution?: string[] // UCI, [0] — student's move
+  moves?: {uci: string; comment?: string}[]
+  prompt?: string
+}
+
 // NODE
 export interface RoadNodeData extends Record<string, unknown> {
   type: RoadMapBlockType
@@ -65,6 +75,7 @@ export interface RoadNodeData extends Record<string, unknown> {
   uploadedFiles?: {name: string; size: number; mimeType: string; url: string}[]
 
   activeTests?: TestBlock[]
+  chess?: ChessNodeData
   // Для начального блока
   roadTitle?: string
   roadDescription?: string

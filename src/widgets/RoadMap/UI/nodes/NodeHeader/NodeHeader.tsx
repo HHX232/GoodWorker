@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
-import RoadMapBlockRegistry from '@/features/Roadmap/registry'
+import RoadMapBlockRegistry, {roadMapLabel} from '@/features/Roadmap/registry'
 import {PRESET_COLORS} from '@/shared/constants/roadMap/roadMap.const'
 import {createRoadNode} from '@/shared/helpers/Node/CreateFlowNode'
 import {RoadMapBlockType, RoadNode} from '@/shared/types/RoadMap/RoadMap.types'
@@ -34,6 +34,7 @@ export default function NodeHeader({
 }) {
   const task = RoadMapBlockRegistry[taskType]
   const t = useTranslations('roadMap')
+  const tAll = useTranslations()
   const {deleteElements, getNode, addNodes, updateNodeData, setEdges} = useReactFlow()
 
   const node = getNode(nodeId) as RoadNode | undefined
@@ -91,7 +92,7 @@ export default function NodeHeader({
       <div className={styles.content}>
         {!hideTitle && (
           <p className={styles.label} style={{color: iconColor}}>
-            {t(task?.label)}
+            {task && tAll(roadMapLabel(task.label))}
           </p>
         )}
 

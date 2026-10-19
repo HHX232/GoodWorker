@@ -15,6 +15,7 @@ import FileBlock from '../OtherBlocks/FileRow/FileRow'
 import MediaBlock from '../OtherBlocks/MediaBlock/MediaBlock'
 import PostsBlock from '../OtherBlocks/PostsBlockData/PostsBlockData'
 import ActiveCommentBlock from '../../Params/ActiveCommentBlock/ActiveCommentBlock'
+import ChessBlock from '../OtherBlocks/ChessBlock/ChessBlock'
 
 function ViewTestLinkBlock({testId}: {testId: string}) {
   const {data: test, isLoading} = useQuery({
@@ -62,6 +63,8 @@ const BLOCK_RENDERERS: Partial<Record<RoadMapBlockType, BlockRenderer>> = {
   [RoadMapBlockType.INFO_MEDIA]: ({nodeId}) => <MediaBlock nodeId={nodeId} />,
 
   [RoadMapBlockType.DOWNLOAD_FILE_LINK]: ({nodeId}) => <FileBlock nodeId={nodeId} />,
+
+  [RoadMapBlockType.CHESS]: ({nodeId, isView}) => <ChessBlock nodeId={nodeId} isView={isView} />,
 [RoadMapBlockType.ACTIVE_COMMENT]: ({nodeId, nodeData, isView, t}) => (
     <ActiveCommentBlock
       t={t}

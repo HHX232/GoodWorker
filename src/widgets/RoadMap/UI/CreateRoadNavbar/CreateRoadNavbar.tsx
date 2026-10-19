@@ -1,5 +1,5 @@
 'use client'
-import RoadMapBlockRegistry from '@/features/Roadmap/registry'
+import RoadMapBlockRegistry, {roadMapLabel} from '@/features/Roadmap/registry'
 import {RoadMapBlockType} from '@/shared/types/RoadMap/RoadMap.types'
 import {useTranslations} from 'next-intl'
 import {useState} from 'react'
@@ -14,7 +14,8 @@ const allItems = [
   RoadMapBlockType.POST_LINK,
   RoadMapBlockType.DOWNLOAD_FILE_LINK,
   RoadMapBlockType.ACTIVE_TEST,
-  RoadMapBlockType.ACTIVE_COMMENT
+  RoadMapBlockType.ACTIVE_COMMENT,
+  RoadMapBlockType.CHESS
 ]
 
 const BLOCK_BTN_IDS: Partial<Record<RoadMapBlockType, string>> = {
@@ -27,6 +28,7 @@ const BLOCK_BTN_IDS: Partial<Record<RoadMapBlockType, string>> = {
   [RoadMapBlockType.DOWNLOAD_FILE_LINK]:  'roadmap-btn-files',
   [RoadMapBlockType.ACTIVE_COMMENT]:      'roadmap-btn-comment',
   [RoadMapBlockType.DIVIDER]:             'roadmap-btn-divider',
+  [RoadMapBlockType.CHESS]:               'roadmap-btn-chess',
 }
 
 const TOP_COUNT = 4
@@ -95,7 +97,7 @@ function CreateRoadNavbar() {
 export default CreateRoadNavbar
 
 function TaskMenuBtn({taskType, id}: {taskType: RoadMapBlockType; id?: string}) {
-  const t = useTranslations('roadMap')
+  const t = useTranslations()
   const task = RoadMapBlockRegistry[taskType]
   const [isDragging, setIsDragging] = useState(false)
 
@@ -118,7 +120,7 @@ function TaskMenuBtn({taskType, id}: {taskType: RoadMapBlockType; id?: string}) 
       className={`${styles.task_btn} ${isDragging ? styles.dragging : ''}`}
     >
       <task.icon style={{minHeight: '16px', minWidth: '16px'}} width={16} height={16} />
-      <span className={styles.task_label}>{t(task.label)}</span>
+      <span className={styles.task_label}>{t(roadMapLabel(task.label))}</span>
     </button>
   )
 }

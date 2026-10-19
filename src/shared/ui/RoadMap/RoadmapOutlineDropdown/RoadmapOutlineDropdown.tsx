@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { OutlineStep } from '@/shared/lib/roadmapOutline'
 import { useLocale, useTranslations } from 'next-intl'
+import { ChessKnight } from 'lucide-react'
 import styles from './RoadmapOutlineDropdown.module.scss'
 
 interface Props {
@@ -54,6 +55,8 @@ const NodeTypeIcon = ({ type }: { type: string }) => {
           <polyline points="9 11 12 14 22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
         </svg>
       )
+    case 'CHESS':
+      return <ChessKnight size={12} strokeWidth={2} />
     case 'DIVIDER':
       return (
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">

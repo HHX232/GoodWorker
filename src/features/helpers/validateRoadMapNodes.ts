@@ -60,6 +60,14 @@ const validators: Partial<Record<RoadMapBlockType, Validator>> = {
     return null
   },
 
+  [RoadMapBlockType.CHESS]: ({chess: c}) => {
+    if (!c) return 'Расставьте позицию'
+    const block = c.mode === 'study'
+      ? {id: '', type: TaskBlockType.CHESS_STUDY, payload: {fen: c.fen, moves: c.moves ?? []}}
+      : {id: '', type: TaskBlockType.CHESS_PUZZLE, payload: {fen: c.fen, solution: c.solution ?? []}}
+    return validateTestBlocks([block as TestBlock])[0]?.message ?? null
+  },
+
   [RoadMapBlockType.DIVIDER]: () => null
 }
 

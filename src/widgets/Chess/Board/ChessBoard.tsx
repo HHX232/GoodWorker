@@ -5,11 +5,12 @@ import { Chess, type Square } from 'chess.js'
 import { useTranslations } from 'next-intl'
 import { X } from 'lucide-react'
 import { getSkin, type PieceCode, type SkinId } from '../skins'
-import { useChessSkin } from '../skins/useChessSkin'
+import { useBoardTheme, usePieceSet } from '../skins/useSkinPrefs'
 import styles from './ChessBoard.module.scss'
 
 export type BoardMove = { from: string; to: string; promotion?: 'q' | 'r' | 'b' | 'n' }
-export type BoardArrow = { from: string; to: string; color?: string }
+/** `opacity` 0..1 (default 0.82): denser = better; fainter arrows are drawn underneath. */
+export type BoardArrow = { from: string; to: string; color?: string; opacity?: number }
 
 export type ChessBoardProps = {
   fen: string
@@ -25,7 +26,10 @@ export type ChessBoardProps = {
   highlights?: Record<string, string>
   /** square of the king in check */
   check?: string | null
-  skinId?: SkinId
+  /** board colours; default — the visitor's choice (`useBoardTheme`) */
+  boardId?: SkinId
+  /** piece set; default — the visitor's choice (`usePieceSet`) */
+  piecesId?: SkinId
   className?: string
 }
 
@@ -50,6 +54,9 @@ function parsePlacement(fen: string): Array<{ code: PieceCode; sq: string }> {
   })
   return out
 }
+
+// fainter arrows first so the densest one ends on top (sort is stable: equal ones keep their order)
+const sortArrow = (a: BoardArrow, i: number) => ({ ...a, i, op: a.opacity ?? 0.82 })
 
 const dist = (a: string, b: string) =>
   Math.max(Math.abs(a.charCodeAt(0) - b.charCodeAt(0)), Math.abs(Number(a[1]) - Number(b[1])))
@@ -84,12 +91,15 @@ export function ChessBoard({
   arrows,
   highlights,
   check,
-  skinId,
+  boardId,
+  piecesId,
   className,
 }: ChessBoardProps) {
   const t = useTranslations('chess.core')
-  const [storedSkin] = useChessSkin()
-  const skin = getSkin(skinId ?? storedSkin)
+  const [storedBoard] = useBoardTheme()
+  const [storedPieces] = usePieceSet()
+  const board = getSkin(boardId ?? storedBoard)
+  const pieces = getSkin(piecesId ?? storedPieces).pieces
   const boardRef = useRef<HTMLDivElement>(null)
   const squareRefs = useRef<Record<string, HTMLButtonElement | null>>({})
 
@@ -291,11 +301,11 @@ export function ChessBoard({
       className={`${styles.board} ${canMove ? styles.interactive : ''} ${className ?? ''}`}
       style={
         {
-          '--sq-light': skin.light,
-          '--sq-dark': skin.dark,
-          '--coord-light': skin.coordLight,
-          '--coord-dark': skin.coordDark,
-          '--frame': skin.frame ?? 'transparent',
+          '--sq-light': board.light,
+          '--sq-dark': board.dark,
+          '--coord-light': board.coordLight,
+          '--coord-dark': board.coordDark,
+          '--frame': board.frame ?? 'transparent',
         } as CSSProperties
       }
       role="group"
@@ -309,7 +319,7 @@ export function ChessBoard({
 
       <div className={styles.pieces} aria-hidden="true">
         {placed.items.map((p) => {
-          const Piece = skin.pieces[p.code]
+          const Piece = pieces[p.code]
           const { col, row } = pos(p.sq)
           const dragging = !!drag?.moved && drag.key === p.key
           const style: CSSProperties = dragging
@@ -326,7 +336,7 @@ export function ChessBoard({
 
       {!!arrows?.length && (
         <svg className={styles.arrows} viewBox="0 0 800 800" aria-hidden="true">
-          {arrows.map((a, i) => {
+          {arrows.map(sortArrow).sort((a, b) => a.op - b.op).map((a) => {
             const s = pos(a.from)
             const d = pos(a.to)
             const x1 = s.col * 100 + 50
@@ -344,7 +354,7 @@ export function ChessBoard({
               `${ex + Math.cos(ang + (sgn * Math.PI) / 2) * 22},${ey + Math.sin(ang + (sgn * Math.PI) / 2) * 22}`
             const color = a.color ?? '#2f8f5b'
             return (
-              <g key={i} style={{ fill: color, stroke: color }} opacity={0.82}>
+              <g key={a.i} style={{ fill: color, stroke: color }} opacity={a.op}>
                 <line x1={x1 + Math.cos(ang) * 18} y1={y1 + Math.sin(ang) * 18} x2={ex} y2={ey} strokeWidth={15} strokeLinecap="round" />
                 <polygon points={`${tip.x},${tip.y} ${wing(1)} ${wing(-1)}`} stroke="none" />
               </g>
@@ -369,7 +379,7 @@ export function ChessBoard({
           >
             {PROMO.map((k, i) => {
               const code = `${promoColor}${k.toUpperCase()}` as PieceCode
-              const Piece = skin.pieces[code]
+              const Piece = pieces[code]
               return (
                 <button
                   key={k}

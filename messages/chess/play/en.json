@@ -55,8 +55,8 @@
   "opt_auto": "Explain mistakes right away",
   "opt_auto_hint": "The coach explains every mistake or blunder on its own. Uses your daily explanation limit.",
   "skin": "Pieces and board",
-  "engine_move_title": "Engine's move",
-  "engine_more": "Tell me more",
+  "engine_move_title": "Opponent's move",
+  "engine_more": "What's the idea?",
   "fact_mate": "delivers checkmate",
   "fact_check": "gives check",
   "fact_capture": "takes the {piece}",
@@ -70,5 +70,11 @@
   "pc_acc_b": "bishop",
   "pc_acc_r": "rook",
   "pc_acc_q": "queen",
-  "pc_acc_k": "king"
+  "pc_acc_k": "king",
+  "opt_hints": "Show best moves",
+  "opt_hints_hint": "Arrows on the board: the bolder, the better the move.",
+  "opp_moved": "Your opponent played {san}.",
+  "opp_moved_why": "Your opponent played {san} — {what}.",
+  "and": " and ",
+  "coach_duo": "Two players at one board — I'm just watching. Pick “Engine” and I'll go through every move with you."
 }

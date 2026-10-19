@@ -38,3 +38,11 @@ export function useLocalPref(key: string, fallback: string): [string, (v: string
   )
   return [value, set]
 }
+
+/** One-time split of the old single skin key: board and pieces both take its value (new keys win). */
+export function migrateSkinPref(s: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>) {
+  const old = s.getItem('gw-chess-skin')
+  if (old == null) return
+  for (const k of ['gw-chess-board', 'gw-chess-pieces']) if (s.getItem(k) == null) s.setItem(k, old)
+  s.removeItem('gw-chess-skin')
+}

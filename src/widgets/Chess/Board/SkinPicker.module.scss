@@ -1,0 +1,102 @@
+// Inherits the page tokens (--ink, --ink-soft, --line, --accent) with quiet fallbacks.
+
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink-soft, #5c5f6a);
+
+  &:not(:first-child) {
+    margin-top: 6px;
+  }
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  padding: 4px 2px 5px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--ink-soft, #5c5f6a);
+  font: inherit;
+  cursor: pointer;
+  transition: color 0.15s ease-out;
+
+  &:hover {
+    color: var(--ink, #17181c);
+
+    .tile { transform: translateY(-1px); }
+  }
+
+  &[aria-pressed='true'] {
+    color: var(--ink, #17181c);
+
+    .tile {
+      box-shadow: 0 0 0 1px var(--f), 0 0 0 2px var(--surface, #fff), 0 0 0 4px var(--ink, #17181c);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent, #17855a);
+    outline-offset: 1px;
+  }
+}
+
+.tile {
+  position: relative;
+  width: 100%;
+  max-width: 56px;
+  aspect-ratio: 1 / 1;
+  border-radius: 7px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--f);
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+
+  // 4×4 squares, light in the top-left corner
+  &[data-kind='board'] {
+    background: repeating-conic-gradient(var(--d) 0 25%, var(--l) 0 50%) 0 0 / 50% 50%;
+  }
+
+  // one light and one dark square: white knight on light, black queen on dark — the hardest contrasts
+  &[data-kind='pieces'] {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    background: linear-gradient(90deg, var(--l) 50%, var(--d) 50%);
+  }
+}
+
+.piece {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile { transition: none; }
+}

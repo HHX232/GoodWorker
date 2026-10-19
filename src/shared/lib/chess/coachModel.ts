@@ -4,8 +4,8 @@ export type MoveClass = 'best' | 'good' | 'inaccuracy' | 'mistake' | 'blunder'
 
 const MATE = 100000
 
-/** Line value for the side to move; mate in n → ±(100000 − plies to mate). */
-function value(line: EngineLine): number {
+/** Line value for the side to move (engine lines are scored that way); mate in n → ±(100000 − plies to mate). */
+export function sideToMoveCp(line: EngineLine): number {
   if (line.mate != null) {
     const ply = Math.max(0, Math.abs(line.mate) * 2 - 1)
     return line.mate > 0 ? MATE - ply : -MATE + ply
@@ -14,7 +14,7 @@ function value(line: EngineLine): number {
 }
 
 export function toWhiteCp(line: EngineLine, turn: 'w' | 'b'): number {
-  const v = value(line)
+  const v = sideToMoveCp(line)
   return turn === 'w' ? v : -v
 }
 
@@ -32,7 +32,7 @@ function assertAnalysed(before: EngineLine[], after: EngineLine | null | undefin
 export function cpLoss(before: EngineLine[], after: EngineLine | null | undefined, playedUci: string): number {
   assertAnalysed(before, after)
   if (before[0].uci === playedUci) return 0
-  return Math.max(0, value(before[0]) + value(after))
+  return Math.max(0, sideToMoveCp(before[0]) + sideToMoveCp(after))
 }
 
 export function classifyMove(before: EngineLine[], afterBestForOpponent: EngineLine | null | undefined, playedUci: string): MoveClass {

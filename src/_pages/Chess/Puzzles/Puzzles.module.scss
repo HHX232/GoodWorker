@@ -15,42 +15,50 @@
   min-height: 100vh;
   background: var(--bg);
   color: var(--ink);
-  padding: 32px 16px 48px;
+  padding: 0 16px 40px;
 }
 
 .container {
-  max-width: 1080px;
+  max-width: 1480px;
   margin: 0 auto;
 }
 
+// ─── Head: one compact line, rating on the right ─────────────────────────────
+
 .header {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px 32px;
-  flex-wrap: wrap;
-  margin-bottom: 24px;
+  align-items: center;
+  gap: 6px;
+  height: 44px;
+}
+
+.back {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin-left: -6px;
+  border-radius: 8px;
+  color: var(--ink-soft);
+
+  &:hover { color: var(--ink); background: var(--wash); }
+  &:focus-visible { outline: 2px solid var(--ok); outline-offset: 1px; }
 }
 
 .title {
   margin: 0;
-  font-size: clamp(1.75rem, 1.4rem + 1.4vw, 2.5rem);
-  font-weight: 750;
-  letter-spacing: -0.025em;
-  line-height: 1.1;
-}
-
-.lede {
-  margin: 8px 0 0;
-  color: var(--ink-soft);
-  max-width: 52ch;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
 }
 
 .rating {
-  display: grid;
-  justify-items: end;
-  gap: 2px;
-  text-align: right;
+  margin-left: auto;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  white-space: nowrap;
 }
 
 .ratingLabel,
@@ -63,9 +71,9 @@
   display: inline-flex;
   align-items: baseline;
   gap: 8px;
-  font-size: 2rem;
+  font-size: 1.125rem;
   font-weight: 750;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
   line-height: 1.1;
 }
@@ -83,15 +91,16 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 14px;
-  border-radius: 10px;
+  margin-left: auto;
+  padding: 6px 12px;
+  border-radius: 9px;
   border: 1px solid var(--line);
   background: var(--surface);
   color: var(--ink);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   text-decoration: none;
-  max-width: 320px;
+  max-width: 420px;
   transition: border-color 120ms ease-out;
 
   &:hover { border-color: var(--ink); }
@@ -102,14 +111,9 @@
 
 .modes {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
-  margin-bottom: 16px;
-
-  @media (max-width: 720px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 .mode {
@@ -165,7 +169,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 20px;
 }
 
 .chip {
@@ -199,7 +202,6 @@
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-  margin-bottom: 20px;
   font-size: 0.875rem;
   color: var(--ink-soft);
 }
@@ -222,7 +224,7 @@
   gap: 8px;
   list-style: none;
   padding: 0;
-  margin: 0 0 20px;
+  margin: 0;
 }
 
 .seriesStep {
@@ -244,36 +246,92 @@
   &[data-state='loss'] { background: var(--wash); color: var(--bad); }
 }
 
-// ─── Board + side ────────────────────────────────────────────────────────────
+// ─── Frame (same as /chess/play) ─────────────────────────────────────────────
+// Board = window height minus what is stacked with it (site header 82, head 44, status line, gaps),
+// capped by the width between the side columns. Coach / controls never feed back into it.
 
 .layout {
+  --side: 300px;
+  --gap: 24px;
+  --chrome: 196px;
+  --board: min(calc(100svh - var(--chrome)), calc(100vw - 2 * var(--side) - 2 * var(--gap) - 64px));
+
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 32px;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: 'board' 'controls' 'coach' 'side';
+  gap: 16px;
   align-items: start;
 
-  @media (max-width: 880px) {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 20px;
+  @media (min-width: 1100px) {
+    grid-template-columns: var(--side) auto var(--side);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'coach board controls'
+      'coach board side';
+    justify-content: center;
+    column-gap: var(--gap);
+    row-gap: 12px;
   }
 }
 
 .boardCol {
-  max-width: 600px;
+  grid-area: board;
   width: 100%;
+  max-width: min(640px, calc(100svh - 200px));
+  min-width: 0;
+  margin: 0 auto;
+
+  @media (min-width: 1100px) {
+    width: var(--board);
+    max-width: none;
+    min-width: 420px;
+  }
+}
+
+.coachCol {
+  grid-area: coach;
+  height: 236px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 2px 2px 8px;
+  scrollbar-width: thin;
+
+  @media (min-width: 1100px) {
+    height: auto;
+    max-height: calc(var(--board) + 40px);
+    padding-top: 40px;
+  }
+}
+
+.controlsArea {
+  grid-area: controls;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+
+  @media (min-width: 1100px) {
+    padding-top: 40px;
+  }
 }
 
 .status {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: 28px;
+  height: 28px; // one line, always: a longer status never pushes the board down
   margin: 0 0 12px;
   font-weight: 650;
 
   &[data-tone='ok'] { color: var(--ok); }
   &[data-tone='bad'] { color: var(--bad); }
   &[data-tone='warn'] { color: var(--warn); }
+}
+
+.statusText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .turnDot {
@@ -303,7 +361,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 16px;
 }
 
 %btn {
@@ -353,8 +410,10 @@
 }
 
 .side {
+  grid-area: side;
   display: grid;
-  gap: 12px;
+  gap: 14px;
+  min-width: 0;
 }
 
 .card {
@@ -424,17 +483,12 @@
   color: var(--ink-soft);
 }
 
-.note,
-.coachHint {
+.note {
   margin: 0;
   font-size: 0.875rem;
   color: var(--ink-soft);
 }
 
-.coachHint {
-  padding: 0 2px;
-  max-width: 40ch;
-}
 
 .emptyBox {
   display: grid;
@@ -459,9 +513,7 @@
 }
 
 .footer {
-  margin-top: 40px;
-  padding-top: 16px;
-  border-top: 1px solid var(--line);
+  padding-top: 4px;
   font-size: 0.8125rem;
   color: var(--ink-soft);
 

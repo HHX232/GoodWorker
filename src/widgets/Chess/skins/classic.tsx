@@ -72,12 +72,10 @@ const SHAPES: Record<string, (ink: Ink) => ReactNode> = {
   ),
 }
 
-const draw = (kind: string, ink: Ink, className?: string) => (
-  <svg viewBox="0 0 100 100" className={className} aria-hidden="true">
-    <g fill={ink.fill} stroke={ink.line} strokeWidth="3" strokeLinejoin="round" strokeLinecap="round">
-      {SHAPES[kind](ink)}
-    </g>
-  </svg>
+const draw = (kind: string, ink: Ink) => (
+  <g fill={ink.fill} stroke={ink.line} strokeWidth="3" strokeLinejoin="round" strokeLinecap="round">
+    {SHAPES[kind](ink)}
+  </g>
 )
 
 export const classic: SkinDef = {

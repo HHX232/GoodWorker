@@ -9,47 +9,49 @@
   --accent: #17855a;
   --danger: #b4321f;
 
-  max-width: 1180px;
+  max-width: 1480px;
   margin: 0 auto;
-  padding: 20px 16px 48px;
+  padding: 0 16px 40px;
   color: var(--ink);
   font-size: 0.9375rem;
   line-height: 1.5;
 }
 
-// ─── Head ────────────────────────────────────────────────────────────────────
+// ─── Head: one compact line ─────────────────────────────────────────────────
 
 .head {
-  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 44px;
 }
 
 .back {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin-left: -6px;
+  border-radius: 8px;
   color: var(--ink-soft);
-  text-decoration: none;
-  font-size: 0.875rem;
-  border-radius: 6px;
 
-  &:hover { color: var(--ink); }
-  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  &:hover { color: var(--ink); background: var(--wash); }
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 }
 
 .title {
-  margin: 6px 0 0;
-  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.125rem);
+  margin: 0;
+  font-size: 1.125rem;
   font-weight: 700;
-  letter-spacing: -0.025em;
-  line-height: 1.15;
-  text-wrap: balance;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
 }
 
 .engineDown {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 0 0 16px;
+  margin: 0;
   padding: 12px 14px;
   border-radius: 10px;
   background: color-mix(in srgb, var(--danger) 9%, var(--surface));
@@ -60,40 +62,103 @@
 }
 
 // ─── Layout ──────────────────────────────────────────────────────────────────
+// Board size: the window height minus everything stacked above/below it (site header 82, page head 44,
+// two player strips, gaps), capped by the width left between the side columns. Nothing in any other
+// column feeds back into it, so coach lines and alerts never move the board.
 
 .layout {
+  --side: 300px;
+  --gap: 24px;
+  --chrome: 236px;
+  --board: min(calc(100svh - var(--chrome)), calc(100vw - 2 * var(--side) - 2 * var(--gap) - 64px));
+
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 24px;
+  grid-template-areas: 'board' 'controls' 'coach' 'rail';
+  gap: 16px;
   align-items: start;
 
-  @media (min-width: 960px) {
-    grid-template-columns: minmax(0, 1fr) 340px;
-    gap: 32px;
+  @media (min-width: 1100px) {
+    grid-template-columns: var(--side) auto var(--side);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'coach board controls'
+      'coach board rail';
+    justify-content: center;
+    column-gap: var(--gap);
+    row-gap: 12px;
   }
 }
 
 .boardCol {
+  grid-area: board;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  max-width: min(640px, calc(100svh - 200px));
+  min-width: 0;
+  margin: 0 auto;
+
+  @media (min-width: 1100px) {
+    width: var(--board);
+    max-width: none;
+    min-width: 420px;
+  }
+}
+
+// Coach: fixed box, its own scroll. Desktop — a column as tall as the board, pinned to the top.
+.coachCol {
+  grid-area: coach;
+  display: flex;
+  flex-direction: column-reverse; // anchored to the latest line; DOM order is newest first
+  > * { flex: none; }
+  // short content sits at the top; overflow grows upward and stays scrollable (auto margin collapses to 0)
+  > :first-child { margin-bottom: auto; }
+  gap: 14px;
+  height: 236px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 2px 2px 8px;
+  scrollbar-width: thin;
+
+  @media (min-width: 1100px) {
+    height: auto;
+    max-height: calc(var(--board) + 76px);
+    padding-top: 38px; // level with the board's top edge (under the opponent strip)
+  }
+}
+
+.controlsArea {
+  grid-area: controls;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  width: 100%;
-  // board never taller than the viewport on a laptop
-  max-width: min(680px, max(360px, calc(100svh - 360px)));
-  margin: 0 auto;
+  min-width: 0;
 
-  @media (max-width: 959px) {
-    max-width: 640px;
+  @media (min-width: 1100px) {
+    padding-top: 38px;
   }
 }
 
 .stage {
+  position: relative;
   display: flex;
   gap: 8px;
 
   > :last-child {
     flex: 1;
     min-width: 0;
+  }
+}
+
+// desktop: the eval bar hangs in the column gap so the board itself sits on the page's centre line
+.stage > .evalBar {
+  @media (min-width: 1100px) {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: calc(100% + 6px);
   }
 }
 
@@ -196,16 +261,14 @@
 // ─── Controls ────────────────────────────────────────────────────────────────
 
 .controls {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
-  margin-top: 4px;
 
-  @media (max-width: 480px) {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+  > * { justify-content: center; }
 
-    > * { justify-content: center; }
+  @media (min-width: 600px) and (max-width: 1099px) {
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 
@@ -232,14 +295,11 @@
 }
 
 .toolStrong {
-  margin-left: auto;
   background: var(--ink);
   border-color: var(--ink);
   color: var(--surface);
 
   &:hover:not(:disabled) { background: color-mix(in srgb, var(--ink) 86%, var(--surface)); }
-
-  @media (max-width: 480px) { margin-left: 0; }
 }
 
 .credit {
@@ -258,6 +318,7 @@
 // ─── Rail ────────────────────────────────────────────────────────────────────
 
 .rail {
+  grid-area: rail;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -394,6 +455,12 @@
 }
 
 // ─── Engine note (R14) ───────────────────────────────────────────────────────
+
+.noteBody {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
 .noteLine {
   margin: 0;

@@ -42,5 +42,9 @@
   "studyMoveOf": "Ход {n} из {total}",
   "toStart": "В начало",
   "prev": "Предыдущий ход",
-  "next": "Следующий ход"
+  "next": "Следующий ход",
+  "nodeLabel": "Шахматы",
+  "nodeMode": "Режим узла",
+  "nodeModePuzzle": "Задача",
+  "nodeModeStudy": "Разбор"
 }

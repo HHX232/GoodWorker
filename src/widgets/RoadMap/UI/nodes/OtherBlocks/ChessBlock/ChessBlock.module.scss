@@ -1,0 +1,42 @@
+.box {
+   display: flex;
+   flex-direction: column;
+   gap: 10px;
+   padding: 12px;
+   width: 360px;
+   max-width: 100%;
+}
+
+.segment {
+   display: grid;
+   grid-template-columns: 1fr 1fr;
+   gap: 4px;
+   padding: 3px;
+   background: #f1f5f9;
+   border-radius: 9px;
+}
+
+.segment_btn {
+   padding: 6px 12px;
+   border-radius: 7px;
+   font-size: 13px;
+   font-weight: 600;
+   color: #64748b;
+   transition: background 0.14s, color 0.14s, box-shadow 0.14s;
+
+   &:hover { color: #1e293b; }
+   &:focus-visible { outline: 2px solid #3b82f6; outline-offset: 1px; }
+}
+
+.segment_active {
+   background: #ffffff;
+   color: #1e293b;
+   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+:global(html.theme-dark),
+:global(html.pomodoro-dark) {
+   .segment { background: rgba(255, 255, 255, 0.06); }
+   .segment_btn { color: rgba(255, 255, 255, 0.55); &:hover { color: #fff; } }
+   .segment_active { background: rgba(255, 255, 255, 0.12); color: #fff; }
+}

@@ -42,5 +42,9 @@
   "studyMoveOf": "Move {n} of {total}",
   "toStart": "To start",
   "prev": "Previous move",
-  "next": "Next move"
+  "next": "Next move",
+  "nodeLabel": "Chess",
+  "nodeMode": "Node mode",
+  "nodeModePuzzle": "Puzzle",
+  "nodeModeStudy": "Study"
 }

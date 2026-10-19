@@ -29,7 +29,8 @@ export type ExplainResult =
   | { ok: false; reason: 'UNAVAILABLE' | 'BAD_INPUT' }
 
 // Spec: MultiPV 3, depth ≥ 14 or ~1 s, before and after the move.
-const BEFORE = { multiPV: 3, depth: 14, movetimeMs: 1000 }
+/** The pre-move analysis `review` runs; a caller that already ran exactly this on `fenBefore` passes its lines in. */
+export const REVIEW_ANALYSIS = { multiPV: 3, depth: 14, movetimeMs: 1000 }
 const AFTER = { multiPV: 1, depth: 14, movetimeMs: 1000 }
 
 const uciToMove = (uci: string) => ({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] })
@@ -59,34 +60,38 @@ function sanOf(fen: string, uci: string): string {
 export function useMoveCoach() {
   const locale = useLocale()
 
-  const review = useCallback(async (fenBefore: string, playedUci: string, context: CoachContext = 'game'): Promise<MoveReview> => {
-    const engine = getEngine()
-    const game = new Chess(fenBefore)
-    const turnBefore = game.turn()
-    const played = game.move(uciToMove(playedUci)) // throws on an illegal move
-    const fenAfter = game.fen()
+  const review = useCallback(
+    async (fenBefore: string, playedUci: string, context: CoachContext = 'game', linesBefore?: EngineLine[]): Promise<MoveReview> => {
+      const engine = getEngine()
+      const game = new Chess(fenBefore)
+      const turnBefore = game.turn()
+      const played = game.move(uciToMove(playedUci)) // throws on an illegal move
+      const fenAfter = game.fen()
 
-    const before = await engine.analyse(fenBefore, BEFORE)
-    let after: EngineLine | undefined
-    if (game.isCheckmate()) after = { uci: '', pv: [], scoreCp: null, mate: 0 }
-    else if (game.isGameOver()) after = { uci: '', pv: [], scoreCp: 0, mate: null }
-    else after = (await engine.analyse(fenAfter, AFTER))[0]
+      // reuse lines of the same position (e.g. the best-move hint) instead of a second identical search
+      const before = linesBefore?.length ? linesBefore : await engine.analyse(fenBefore, REVIEW_ANALYSIS)
+      let after: EngineLine | undefined
+      if (game.isCheckmate()) after = { uci: '', pv: [], scoreCp: null, mate: 0 }
+      else if (game.isGameOver()) after = { uci: '', pv: [], scoreCp: 0, mate: null }
+      else after = (await engine.analyse(fenAfter, AFTER))[0]
 
-    const classification = classifyMove(before, after, playedUci) // throws NO_ANALYSIS
-    const top = before[0]
-    return {
-      classification,
-      bestUci: top.uci,
-      bestSan: sanOf(fenBefore, top.uci),
-      playedSan: played.san,
-      pvUci: top.pv,
-      evalBeforeCp: toWhiteCp(top, turnBefore),
-      evalAfterCp: toWhiteCp(after!, game.turn()),
-      fenBefore,
-      playedUci,
-      context,
-    }
-  }, [])
+      const classification = classifyMove(before, after, playedUci) // throws NO_ANALYSIS
+      const top = before[0]
+      return {
+        classification,
+        bestUci: top.uci,
+        bestSan: sanOf(fenBefore, top.uci),
+        playedSan: played.san,
+        pvUci: top.pv,
+        evalBeforeCp: toWhiteCp(top, turnBefore),
+        evalAfterCp: toWhiteCp(after!, game.turn()),
+        fenBefore,
+        playedUci,
+        context,
+      }
+    },
+    []
+  )
 
   const explain = useCallback(
     async (r: MoveReview): Promise<ExplainResult> => {

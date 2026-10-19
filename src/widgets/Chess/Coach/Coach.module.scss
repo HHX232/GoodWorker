@@ -12,20 +12,9 @@
   --c-mistake: #d0601b;
   --c-blunder: #c42c2c;
 
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 16px 18px 18px;
   color: var(--ink);
   font-size: 0.9375rem;
   line-height: 1.5;
-}
-
-.panelTitle {
-  margin: 0 0 10px;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--ink-soft);
 }
 
 .muted {
@@ -44,16 +33,15 @@
   animation: pulse 1s ease-in-out infinite alternate;
 }
 
-.verdict {
+.say {
   --c: var(--c-good);
   margin: 0 0 12px;
   display: flex;
-  align-items: center;
-  gap: 9px;
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--c);
+  align-items: baseline;
+  gap: 10px;
+  font-size: 1rem;
+  line-height: 1.45;
+  color: var(--ink);
 
   &[data-class='best'] { --c: var(--c-best); }
   &[data-class='inaccuracy'] { --c: var(--c-inaccuracy); }
@@ -62,47 +50,13 @@
 }
 
 .verdictDot {
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   background: var(--c);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 18%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 18%, transparent);
   flex: none;
-}
-
-.moves {
-  display: flex;
-  gap: 28px;
-  margin: 0 0 6px;
-
-  div {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-  }
-
-  dt {
-    font-size: 0.75rem;
-    color: var(--ink-soft);
-  }
-
-  dd {
-    margin: 0;
-    font-size: 1.0625rem;
-    font-weight: 650;
-    font-variant-numeric: tabular-nums;
-  }
-}
-
-.bestMove {
-  color: var(--c-best);
-}
-
-.evalLine {
-  margin: 0 0 14px;
-  font-size: 0.8125rem;
-  color: var(--ink-soft);
-  font-variant-numeric: tabular-nums;
+  transform: translateY(-1px);
 }
 
 .whyButton {

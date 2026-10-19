@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { CloudOff, Lock, MessageCircleQuestion, RotateCw } from 'lucide-react'
 import type { ExplainResult, MoveReview } from './useMoveCoach'
-import { formatEval } from './evalFormat'
+import { CoachSays, type CoachMood } from './CoachAvatar'
 import styles from './Coach.module.scss'
 
 export type CoachPanelProps = {
@@ -49,84 +49,69 @@ export function CoachPanel({ review, explain, onExplain, autoExplain, analysing,
   const cls = review?.classification
   const result = state.result
 
+  const mood: CoachMood = analysing || state.loading ? 'thinking' : noAnalysis || (result && !result.ok) ? 'concerned' : 'idle'
+
   return (
-    <section className={`${styles.panel} ${className ?? ''}`} aria-live="polite">
-      <h3 className={styles.panelTitle}>{t('coach_title')}</h3>
+    <section className={`${styles.panel} ${className ?? ''}`} aria-live="polite" aria-label={t('coach_title')}>
+      <CoachSays mood={mood}>
 
-      {analysing ? (
-        <p className={styles.muted}>
-          <span className={styles.pulse} aria-hidden="true" />
-          {t('coach_analysing')}
-        </p>
-      ) : noAnalysis ? (
-        <p className={styles.muted}>{t('coach_no_analysis')}</p>
-      ) : !review ? (
-        <p className={styles.muted}>{t('coach_idle')}</p>
-      ) : (
-        <>
-          <p className={styles.verdict} data-class={cls}>
-            <span className={styles.verdictDot} aria-hidden="true" />
-            {t(`class_${cls}`)}
+        {analysing ? (
+          <p className={styles.muted}>
+            <span className={styles.pulse} aria-hidden="true" />
+            {t('coach_analysing')}
           </p>
+        ) : noAnalysis ? (
+          <p className={styles.muted}>{t('coach_no_analysis')}</p>
+        ) : !review ? (
+          <p className={styles.muted}>{t('coach_idle')}</p>
+        ) : (
+          <>
+            <p className={styles.say} data-class={cls}>
+              <span className={styles.verdictDot} aria-hidden="true" />
+              <span>{t(`say_${cls}`, { played: review.playedSan, best: review.bestSan })}</span>
+            </p>
 
-          <dl className={styles.moves}>
-            <div>
-              <dt>{t('coach_your_move')}</dt>
-              <dd>{review.playedSan}</dd>
-            </div>
-            {cls !== 'best' && (
-              <div>
-                <dt>{t('coach_best_move')}</dt>
-                <dd className={styles.bestMove}>{review.bestSan}</dd>
+            {explain && !result && !state.loading && (
+              <button type="button" className={styles.whyButton} onClick={ask}>
+                <MessageCircleQuestion size={16} strokeWidth={2} aria-hidden="true" />
+                {t('coach_why')}
+              </button>
+            )}
+
+            {state.loading && (
+              <div className={styles.thinking} role="status">
+                <span className={styles.skeleton} />
+                <span className={styles.skeleton} />
+                <span className={styles.srOnly}>{t('coach_explaining')}</span>
               </div>
             )}
-          </dl>
 
-          <p className={styles.evalLine}>
-            {cls === 'best' ? `${t('coach_engine_agrees')} ` : ''}
-            {t('coach_eval_change', { before: formatEval(review.evalBeforeCp), after: formatEval(review.evalAfterCp) })}
-          </p>
+            {result?.ok && <p className={styles.explanation}>{result.text}</p>}
 
-          {explain && !result && !state.loading && (
-            <button type="button" className={styles.whyButton} onClick={ask}>
-              <MessageCircleQuestion size={16} strokeWidth={2} aria-hidden="true" />
-              {t('coach_why')}
-            </button>
-          )}
+            {result && !result.ok && result.reason === 'LIMIT' && (
+              <p className={styles.notice}>
+                <Lock size={15} strokeWidth={2} aria-hidden="true" />
+                <span>
+                  {t('coach_limit')} {t(result.tier === 'guest' ? 'coach_limit_guest' : 'coach_limit_user')}
+                </span>
+              </p>
+            )}
 
-          {state.loading && (
-            <div className={styles.thinking} role="status">
-              <span className={styles.skeleton} />
-              <span className={styles.skeleton} />
-              <span className={styles.srOnly}>{t('coach_explaining')}</span>
-            </div>
-          )}
-
-          {result?.ok && <p className={styles.explanation}>{result.text}</p>}
-
-          {result && !result.ok && result.reason === 'LIMIT' && (
-            <p className={styles.notice}>
-              <Lock size={15} strokeWidth={2} aria-hidden="true" />
-              <span>
-                {t('coach_limit')} {t(result.tier === 'guest' ? 'coach_limit_guest' : 'coach_limit_user')}
-              </span>
-            </p>
-          )}
-
-          {result && !result.ok && result.reason !== 'LIMIT' && (
-            <p className={styles.notice}>
-              <CloudOff size={15} strokeWidth={2} aria-hidden="true" />
-              <span>{t(result.reason === 'BAD_INPUT' ? 'coach_bad_input' : 'coach_unavailable')}</span>
-              {result.reason === 'UNAVAILABLE' && (
-                <button type="button" className={styles.retry} onClick={ask}>
-                  <RotateCw size={13} strokeWidth={2.25} aria-hidden="true" />
-                  {t('coach_retry')}
-                </button>
-              )}
-            </p>
-          )}
-        </>
-      )}
+            {result && !result.ok && result.reason !== 'LIMIT' && (
+              <p className={styles.notice}>
+                <CloudOff size={15} strokeWidth={2} aria-hidden="true" />
+                <span>{t(result.reason === 'BAD_INPUT' ? 'coach_bad_input' : 'coach_unavailable')}</span>
+                {result.reason === 'UNAVAILABLE' && (
+                  <button type="button" className={styles.retry} onClick={ask}>
+                    <RotateCw size={13} strokeWidth={2.25} aria-hidden="true" />
+                    {t('coach_retry')}
+                  </button>
+                )}
+              </p>
+            )}
+          </>
+        )}
+      </CoachSays>
     </section>
   )
 }

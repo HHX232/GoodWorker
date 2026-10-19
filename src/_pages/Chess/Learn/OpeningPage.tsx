@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl'
 import { Chess } from 'chess.js'
 import { ArrowLeft, ChevronFirst, ChevronLast, ChevronLeft, ChevronRight, CloudOff, Lock, MessageCircleQuestion, Puzzle, RotateCw, Swords } from 'lucide-react'
 import { ChessBoard } from '@/widgets/Chess/Board'
-import { useMoveCoach, type ExplainResult } from '@/widgets/Chess/Coach'
+import { CoachSays, useMoveCoach, type ExplainResult } from '@/widgets/Chess/Coach'
 import { checkSquare } from '@/shared/lib/chess/puzzle'
 import { playMoveSound } from '@/shared/lib/chess/sound'
 import type { Opening } from '@/shared/lib/chess/data'
@@ -81,6 +81,7 @@ export function OpeningPage({ opening }: { opening: Opening }) {
 
   const fen = positions[step]
   const last = step > 0 ? plies[step - 1] : null
+  const next = plies[step] // the book move to play from here (G03: the hint shows the next move)
   const moverWhite = step % 2 === 1 // move `step` (1-based) was White's when odd
 
   return (
@@ -105,6 +106,7 @@ export function OpeningPage({ opening }: { opening: Opening }) {
               interactive={false}
               lastMove={last ? { from: last.uci.slice(0, 2), to: last.uci.slice(2, 4) } : null}
               check={checkSquare(fen)}
+              arrows={next ? [{ from: next.uci.slice(0, 2), to: next.uci.slice(2, 4) }] : []}
             />
             <div className={styles.stepper} role="group" aria-label={t('op_steps')}>
               <button type="button" className={styles.iconBtn} onClick={() => go(0)} disabled={step === 0} aria-label={t('op_first')}>
@@ -173,40 +175,41 @@ function IdeaPanel({ result, onAsk }: { result?: ExplainResult | 'loading'; onAs
   const t = useTranslations('chess.learn')
   const tc = useTranslations('chess.core')
   return (
-    <section className={styles.idea} aria-live="polite">
-      <h3 className={styles.ideaTitle}>{tc('coach_title')}</h3>
-      {!result ? (
-        <button type="button" className={styles.ideaAsk} onClick={onAsk}>
-          <MessageCircleQuestion size={16} aria-hidden="true" />
-          {t('op_explain_idea')}
-        </button>
-      ) : result === 'loading' ? (
-        <div className={styles.ideaLoading} role="status">
-          <span />
-          <span />
-          <span className={styles.srOnly}>{tc('coach_explaining')}</span>
-        </div>
-      ) : result.ok ? (
-        <p className={styles.ideaText}>{result.text}</p>
-      ) : result.reason === 'LIMIT' ? (
-        <p className={styles.ideaNotice}>
-          <Lock size={15} aria-hidden="true" />
-          <span>
-            {tc('coach_limit')} {tc(result.tier === 'guest' ? 'coach_limit_guest' : 'coach_limit_user')}
-          </span>
-        </p>
-      ) : (
-        <p className={styles.ideaNotice}>
-          <CloudOff size={15} aria-hidden="true" />
-          <span>{result.reason === 'BAD_INPUT' ? tc('coach_bad_input') : t('op_idea_unavailable')}</span>
-          {result.reason === 'UNAVAILABLE' && (
-            <button type="button" className={styles.ideaRetry} onClick={onAsk}>
-              <RotateCw size={13} aria-hidden="true" />
-              {tc('coach_retry')}
-            </button>
-          )}
-        </p>
-      )}
+    <section className={styles.idea} aria-live="polite" aria-label={tc('coach_title')}>
+      <CoachSays mood={result === 'loading' ? 'thinking' : result && !result.ok ? 'concerned' : 'idle'}>
+        {!result ? (
+          <button type="button" className={styles.ideaAsk} onClick={onAsk}>
+            <MessageCircleQuestion size={16} aria-hidden="true" />
+            {t('op_explain_idea')}
+          </button>
+        ) : result === 'loading' ? (
+          <div className={styles.ideaLoading} role="status">
+            <span />
+            <span />
+            <span className={styles.srOnly}>{tc('coach_explaining')}</span>
+          </div>
+        ) : result.ok ? (
+          <p className={styles.ideaText}>{result.text}</p>
+        ) : result.reason === 'LIMIT' ? (
+          <p className={styles.ideaNotice}>
+            <Lock size={15} aria-hidden="true" />
+            <span>
+              {tc('coach_limit')} {tc(result.tier === 'guest' ? 'coach_limit_guest' : 'coach_limit_user')}
+            </span>
+          </p>
+        ) : (
+          <p className={styles.ideaNotice}>
+            <CloudOff size={15} aria-hidden="true" />
+            <span>{result.reason === 'BAD_INPUT' ? tc('coach_bad_input') : t('op_idea_unavailable')}</span>
+            {result.reason === 'UNAVAILABLE' && (
+              <button type="button" className={styles.ideaRetry} onClick={onAsk}>
+                <RotateCw size={13} aria-hidden="true" />
+                {tc('coach_retry')}
+              </button>
+            )}
+          </p>
+        )}
+      </CoachSays>
     </section>
   )
 }

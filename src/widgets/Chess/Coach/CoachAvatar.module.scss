@@ -1,0 +1,122 @@
+// Coach character + speech bubble. Colours via CSS (not SVG attributes) so the dark theme can swap them.
+
+.avatar {
+  --badge: #e9e2d2;
+  --hide: #fbf8f1;
+  --ink: #1d1b18;
+  --scarf: #17855a;
+  --scarf-end: #10693f;
+  --lens: rgba(255, 255, 255, 0.55);
+
+  display: block;
+  flex: none;
+  overflow: visible;
+}
+
+.badge { fill: var(--badge); }
+.mane { fill: var(--ink); }
+.head { fill: var(--hide); stroke: var(--ink); stroke-width: 2.2; stroke-linejoin: round; }
+.inner { fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linecap: round; }
+.nostril { fill: var(--ink); }
+.line { fill: none; stroke: var(--ink); stroke-width: 1.8; stroke-linecap: round; }
+.lens { fill: var(--lens); stroke: var(--ink); stroke-width: 1.8; }
+.wire { fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linecap: round; }
+.pupil { fill: var(--ink); transition: cx 0.25s ease-out, cy 0.25s ease-out; }
+.brow { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linecap: round; transition: d 0.25s ease-out; }
+.scarf { fill: var(--scarf); stroke: var(--ink); stroke-width: 1.6; stroke-linejoin: round; }
+.scarfEnd { fill: var(--scarf-end); stroke: var(--ink); stroke-width: 1.6; stroke-linejoin: round; }
+
+// thinking: the coach looks up and nods slowly while the engine counts
+.avatar[data-mood='thinking'] > g {
+  transform-origin: 30px 60px;
+  animation: ponder 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes ponder {
+  from { transform: rotate(-2.5deg); }
+  to { transform: rotate(2deg); }
+}
+
+// ─── Speech line ─────────────────────────────────────────────────────────────
+
+.says {
+  --b-surface: var(--surface, #ffffff);
+  --b-line: var(--line, #e6e5df);
+
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+}
+
+.saysAvatar {
+  margin-top: 2px;
+}
+
+.bubble {
+  position: relative;
+  min-width: 0;
+  padding: 12px 16px 14px;
+  border: 1px solid var(--b-line);
+  border-radius: 4px 14px 14px 14px;
+  background: var(--b-surface);
+  box-shadow: 0 6px 18px -14px rgba(20, 16, 10, 0.5);
+  animation: say 220ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  // tail toward the avatar's mouth
+  &::before {
+    content: '';
+    position: absolute;
+    top: 14px;
+    left: -6px;
+    width: 10px;
+    height: 10px;
+    background: var(--b-surface);
+    border-left: 1px solid var(--b-line);
+    border-bottom: 1px solid var(--b-line);
+    transform: rotate(45deg);
+  }
+}
+
+.who {
+  margin: 0 0 6px;
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  color: var(--ink-soft, #5c5f6a);
+}
+
+@keyframes say {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .avatar[data-mood='thinking'] > g,
+  .bubble {
+    animation: none;
+  }
+
+  .pupil,
+  .brow {
+    transition: none;
+  }
+}
+
+:global(html.theme-dark),
+:global(html.pomodoro-dark) {
+  .avatar {
+    --badge: #34322d;
+    --hide: #ece5d6;
+    --ink: #121110;
+    --scarf: #2f9e6c;
+    --scarf-end: #1f7a50;
+    --lens: rgba(255, 255, 255, 0.4);
+  }
+
+  .bubble {
+    box-shadow: 0 8px 22px -14px rgba(0, 0, 0, 0.9);
+  }
+}
