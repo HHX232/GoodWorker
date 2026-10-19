@@ -1002,6 +1002,7 @@ enum TransactionType {
   VIP_PROMO
   DEPOSIT
   REFERRAL
+  CHESS_BADGE
 }
 
 enum PostVisibility {
@@ -1235,5 +1236,29 @@ model ChessProfile {
   puzzleRating Int      @default(1200)
   solved       Int      @default(0)
   failed       Int      @default(0)
+  // прогресс (T11)
+  botPoints     Int     @default(0)
+  streakCurrent Int     @default(0)
+  streakBest    Int     @default(0)
+  lastActiveDay String? // YYYY-MM-DD в часовом поясе пользователя
+  rating        Int     @default(1200) // онлайн-Эло
+  ratingGames   Int     @default(0)
+  stormBest3    Int     @default(0)
+  stormBest5    Int     @default(0)
+  tzOffsetMin   Int? // пояс (getTimezoneOffset), фиксируется на сутки
+  tzSetAt       DateTime?
+  pointsDay     String? // день дневного потолка очков
+  pointsToday   Int     @default(0)
   updatedAt    DateTime @updatedAt
+}
+
+// ─── Chess progress ───
+
+model ChessBadge {
+  id       String   @id @default(cuid())
+  userId   String // Student.id или Teacher.id
+  code     String
+  earnedAt DateTime @default(now())
+
+  @@unique([userId, code])
 }

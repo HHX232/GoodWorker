@@ -11,6 +11,7 @@ import { playMoveSound } from '@/shared/lib/chess/sound'
 import { OPENINGS, TACTICS } from '@/shared/lib/chess/data'
 import { checkSquare } from '@/shared/lib/chess/puzzle'
 import { hintMove, isCleanSolve, playerColor, replyMove, soundKind, startRun, takeHint, tryMove, type PuzzleRun, type Sq } from './puzzleRun'
+import { useChessActivity } from '@/widgets/Chess/Progress'
 import styles from './Puzzles.module.scss'
 
 export type PuzzleMode = 'rated' | 'theme' | 'series' | 'opening'
@@ -31,6 +32,7 @@ export function PuzzlesPage(props: PuzzlesPageProps) {
   const tp = useTranslations('chess.play')
   const tc = useTranslations('chess.core')
   const coach = useMoveCoach()
+  const reportActivity = useChessActivity()
 
   const [mode, setMode] = useState<PuzzleMode>(props.mode ?? (props.theme ? 'theme' : props.opening ? 'opening' : 'rated'))
   const [theme, setTheme] = useState(props.theme && TACTIC_IDS.has(props.theme) ? props.theme : TACTICS[0].id)
@@ -69,6 +71,7 @@ export function PuzzlesPage(props: PuzzlesPageProps) {
   const sendAttempt = (p: Puzzle, solved: boolean) => {
     if (sent.current || guest) return
     sent.current = true
+    if (solved) reportActivity({ kind: 'puzzle' })
     const before = profile?.puzzleRating
     fetch(`/api/chess/puzzles/${encodeURIComponent(p.id)}/attempt`, {
       method: 'POST',

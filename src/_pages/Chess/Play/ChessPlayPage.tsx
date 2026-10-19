@@ -14,6 +14,7 @@ import { getEngine, ENGINE_LEVELS, type EngineLine } from '@/shared/lib/chess/en
 import { playMoveSound, useSoundEnabled } from '@/shared/lib/chess/sound'
 import { readPref, useLocalPref } from '@/shared/lib/chess/localPref'
 import { endReason, engineMoveFacts, type MoveFact } from './gameFacts'
+import { useBotGameActivity } from '@/widgets/Chess/Progress'
 import styles from './ChessPlayPage.module.scss'
 
 type Side = 'w' | 'b'
@@ -73,6 +74,7 @@ export function ChessPlayPage({ initialFen, initialColor }: { initialFen?: strin
   const vsAi = mode === 'ai' && !engineDown
   const reason = endReason(chess, resigned)
   const gameOver = reason !== null
+  useBotGameActivity({ active: ready && vsAi, over: gameOver, level, plies: chess.history().length, result: reason === 'resign' || (reason === 'checkmate' && chess.turn() === color) ? 'loss' : reason === 'checkmate' ? 'win' : 'draw' })
 
   // ─── restore: ?fen= (from "play on from here") wins over the saved game ──────
   useEffect(() => {

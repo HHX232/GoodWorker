@@ -1,0 +1,354 @@
+// Progress widgets: streak flame, rating chip, badge medals, "new badge" toast.
+// Tokens follow the chess hub (warm paper + ink + green accent); fire is the only hot colour.
+
+.flamePill,
+.chip,
+.badges,
+.toast {
+  --ink: #17181c;
+  --ink-soft: #5c5f6a;
+  --surface: #ffffff;
+  --line: #e6e5df;
+  --wash: #f3f2ed;
+  --accent: #17855a;
+  --fire: #e2561b;
+}
+
+// ─── flame ──────────────────────────────────────────────────────────────────
+
+.flame {
+  --flame-base: #e2561b;
+  --flame-tip: #f6a623;
+  --flame-core: #ffe7a3;
+
+  flex: none;
+  overflow: visible;
+  transform-origin: 50% 90%;
+
+  [data-part='core'] { fill: var(--flame-core); }
+
+  &[data-state='threat'] {
+    --flame-base: #c9a48f;
+    --flame-tip: #e3cdb6;
+    --flame-core: #f6eee4;
+  }
+  &[data-state='broken'] {
+    --flame-base: #b9b8b1;
+    --flame-tip: #d6d5cf;
+    --flame-core: #efeee9;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    &[data-state='today'] { animation: flicker 2.8s ease-in-out infinite; }
+  }
+}
+
+@keyframes flicker {
+  0%, 100% { transform: scale(1, 1) rotate(0deg); }
+  30% { transform: scale(0.97, 1.04) rotate(-1.5deg); }
+  60% { transform: scale(1.02, 0.98) rotate(1deg); }
+}
+
+.flamePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  min-width: 56px;
+  padding: 0 12px 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.9375rem;
+  text-decoration: none;
+  transition: border-color 0.2s ease-out, background-color 0.2s ease-out;
+
+  &:hover { border-color: var(--ink-soft); }
+  &:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  &[data-state='today'] { border-color: color-mix(in srgb, var(--fire) 35%, var(--line)); }
+  &[data-state='threat'] { border-style: dashed; color: var(--ink-soft); }
+  &[data-state='loading'] { background: var(--wash); }
+}
+
+.flameNum {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.flameGuest {
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+}
+
+// ─── rating chip ────────────────────────────────────────────────────────────
+
+.chip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  color: var(--ink);
+}
+
+.chipLabel {
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+}
+
+.chipValue {
+  font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.chipSub {
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+}
+
+// ─── medals ─────────────────────────────────────────────────────────────────
+
+.medal {
+  --medal: 56px;
+  --medal-bg: var(--wash);
+  --medal-fg: #8d8c86;
+  --medal-ring: var(--line);
+
+  position: relative;
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: var(--medal);
+  height: var(--medal);
+  border-radius: 50%;
+  background: var(--medal-bg);
+  color: var(--medal-fg);
+  box-shadow: inset 0 0 0 1.5px var(--medal-ring);
+
+  &:not([data-earned]) { box-shadow: none; outline: 1.5px dashed var(--line); outline-offset: -1.5px; }
+
+  &[data-earned] {
+    --medal-bg: var(--ink);
+    --medal-fg: #f3f2ed;
+    --medal-ring: color-mix(in srgb, var(--medal-tone) 70%, transparent);
+    box-shadow: inset 0 0 0 2px var(--medal-ring), 0 6px 14px -8px rgba(10, 10, 12, 0.55);
+    svg:not(.flame) { color: var(--medal-tone); }
+  }
+
+  &[data-group='bot'] { --medal-tone: #e9c46a; }
+  &[data-group='points'] { --medal-tone: #7cc4ff; }
+  &[data-group='streak'] { --medal-tone: #f6a623; }
+  &[data-group='storm'] { --medal-tone: #c9a7ff; }
+  &[data-group='online'] { --medal-tone: #4cc58f; }
+}
+
+.medalNum {
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 22px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.45;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.medalLock {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink-soft);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+// ─── badge grid ─────────────────────────────────────────────────────────────
+
+.badges {
+  color: var(--ink);
+}
+
+.badgesHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+
+  h2 {
+    margin: 0;
+    font-size: 1.375rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+}
+
+.badgesCount {
+  font-size: 0.9375rem;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.group {
+  padding: 20px 0 4px;
+  border-top: 1px solid var(--line);
+
+  & + & { margin-top: 12px; }
+}
+
+.groupTitle {
+  margin: 0 0 16px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.medals {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  gap: 20px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @media (max-width: 420px) { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 8px; }
+}
+
+.badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  min-width: 0;
+
+  .medal { margin-bottom: 8px; }
+}
+
+.badgeName {
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.badgeMeta {
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--ink-soft);
+  text-wrap: balance;
+}
+
+.badge:not([data-earned]) .badgeName { color: var(--ink-soft); }
+
+// ─── toast ──────────────────────────────────────────────────────────────────
+
+.toast {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  width: min(360px, calc(100vw - 32px));
+  padding: 16px 40px 16px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 14px 34px -16px rgba(10, 10, 12, 0.45);
+  font-family: inherit;
+}
+
+.toastMedal {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: medalIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@keyframes medalIn {
+  from { transform: scale(0.4) rotate(-25deg); opacity: 0; filter: blur(4px); }
+  to { transform: none; opacity: 1; filter: none; }
+}
+
+.toastText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+
+  strong { font-size: 0.9375rem; }
+}
+
+.toastName { font-weight: 600; }
+.toastMore { font-weight: 400; color: var(--ink-soft); }
+.toastHint { color: var(--ink-soft); }
+
+.toastLink {
+  align-self: flex-start;
+  margin-top: 6px;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}
+
+.toastClose {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+
+  &:hover { background: var(--wash); color: var(--ink); }
+  &:focus-visible { outline: 2px solid var(--accent); }
+}
+
+// ─── dark ───────────────────────────────────────────────────────────────────
+
+:global(html.theme-dark),
+:global(html.pomodoro-dark) {
+  .flamePill,
+  .chip,
+  .badges,
+  .toast {
+    --ink: #ecebe6;
+    --ink-soft: #a3a39d;
+    --surface: #1b1c20;
+    --line: #34353c;
+    --wash: #24252a;
+    --accent: #4cc58f;
+    --fire: #f07a3a;
+  }
+
+  .flame {
+    &[data-state='threat'] { --flame-base: #7a6556; --flame-tip: #9c8572; --flame-core: #c9b9a8; }
+    &[data-state='broken'] { --flame-base: #4a4b50; --flame-tip: #5e5f65; --flame-core: #85868c; }
+  }
+
+  .medal {
+    --medal-fg: #74757b;
+    &[data-earned] { --medal-bg: #2b2c33; }
+  }
+}
