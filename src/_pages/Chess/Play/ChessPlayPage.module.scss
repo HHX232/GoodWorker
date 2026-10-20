@@ -288,6 +288,12 @@
   letter-spacing: -0.01em;
 }
 
+.endActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 @keyframes rise {
   from { opacity: 0; transform: translateY(6px); }
 }

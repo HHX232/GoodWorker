@@ -55,5 +55,7 @@
   "class_inaccuracy": "अशुद्धि",
   "class_mistake": "गलती",
   "class_miss": "चूक",
-  "class_blunder": "भारी भूल"
+  "class_blunder": "भारी भूल",
+  "review_game": "खेल की समीक्षा करें",
+  "review_short": "समीक्षा"
 }

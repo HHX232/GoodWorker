@@ -55,5 +55,7 @@
   "class_inaccuracy": "Неточность",
   "class_mistake": "Ошибка",
   "class_miss": "Упущение",
-  "class_blunder": "Зевок"
+  "class_blunder": "Зевок",
+  "review_game": "Оценить партию",
+  "review_short": "Разбор"
 }

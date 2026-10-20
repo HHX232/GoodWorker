@@ -55,5 +55,7 @@
   "class_inaccuracy": "Inaccuracy",
   "class_mistake": "Mistake",
   "class_miss": "Miss",
-  "class_blunder": "Blunder"
+  "class_blunder": "Blunder",
+  "review_game": "Review the game",
+  "review_short": "Review"
 }

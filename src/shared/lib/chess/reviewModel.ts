@@ -15,6 +15,19 @@ export function accuracy(avgLoss: number): number {
   return Math.min(100, Math.max(0, 103.1668 * Math.exp(-0.04354 * avgLoss) - 3.1669))
 }
 
+/** sessionStorage[ANALYSIS_KEY]: a finished game handed to /chess/analysis by the game pages. */
+export const ANALYSIS_KEY = 'gw-chess-analysis'
+export type AnalysisHandoff = {
+  pgn?: string
+  /** SAN or UCI, from `initialFen` */
+  moves?: string[]
+  initialFen?: string
+  white?: string
+  black?: string
+  result?: string
+  source?: 'bot' | 'online' | 'duo' | 'pgn'
+}
+
 export type ReviewClass =
   | 'brilliant' | 'great' | 'best' | 'excellent' | 'good' | 'book' | 'inaccuracy' | 'mistake' | 'miss' | 'blunder'
 

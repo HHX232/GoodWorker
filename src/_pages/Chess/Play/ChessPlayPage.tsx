@@ -2,10 +2,12 @@
 
 import { useRef, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { ArrowLeft, ArrowUpDown, Check, CloudOff, Flag, Lock, MessageCircleQuestion, Plus, RotateCw, Settings2, Undo2, X } from 'lucide-react'
+import { ArrowLeft, ArrowUpDown, ChartLine, Check, CloudOff, Flag, Lock, MessageCircleQuestion, Plus, RotateCw, Settings2, Undo2, X } from 'lucide-react'
 import { checkSquare } from '@/shared/lib/chess/puzzle'
 import { useLocalPref } from '@/shared/lib/chess/localPref'
+import { ANALYSIS_KEY, type AnalysisHandoff } from '@/shared/lib/chess/reviewModel'
 import type { Bot } from '@/shared/lib/chess/data'
 import { ChessBoard } from '@/widgets/Chess/Board'
 import { CoachPanel, CoachSays, EvalBar, useMoveCoach, type ExplainResult, type MoveReview } from '@/widgets/Chess/Coach'
@@ -21,6 +23,8 @@ export type { StartRequest }
 export function ChessPlayPage(props: { initialFen?: string; initialColor?: string; startNew?: StartRequest }) {
   const t = useTranslations('chess.play')
   const tc = useTranslations('chess.core')
+  const ta = useTranslations('chess.analysis')
+  const router = useRouter()
   const g = useBotGame(props)
   const { history, turn, start, fen, lastMove, bot, color, orientation, setFlipped, thinking, engineDown, review, reviewing, noAnalysis } = g
   const { evalCp, note, ready, badFen, pending, setPending, vsAi, coachOn, coachPick, reason, gameOver, arrows, coach, lockedBot } = g
@@ -62,6 +66,23 @@ export function ChessPlayPage(props: { initialFen?: string; initialColor?: strin
         )}
       </div>
     )
+  }
+
+  // G19: the finished game goes to /chess/analysis through sessionStorage
+  const openReview = () => {
+    const winner = reason === 'checkmate' ? (turn === 'w' ? 'b' : 'w') : reason === 'resign' ? (color === 'w' ? 'b' : 'w') : null
+    const handoff: AnalysisHandoff = {
+      moves: history,
+      initialFen: start,
+      white: sideLabel('w'),
+      black: sideLabel('b'),
+      result: winner ? (winner === 'w' ? '1-0' : '0-1') : '1/2-1/2',
+      source: vsAi ? 'bot' : 'duo',
+    }
+    try {
+      sessionStorage.setItem(ANALYSIS_KEY, JSON.stringify(handoff))
+    } catch {}
+    router.push('/chess/analysis')
   }
 
   const endText = () => {
@@ -184,9 +205,17 @@ export function ChessPlayPage(props: { initialFen?: string; initialColor?: strin
               {vsAi && bot.unlock && reason !== null && ['checkmate', 'resign'].includes(reason) && (
                 <BotLine bot={bot} text={t(reason === 'checkmate' && turn !== color ? bot.loseKey : bot.winKey)} dark />
               )}
-              <button type="button" className={styles.primary} onClick={() => newGame()}>
-                {t('again')}
-              </button>
+              <div className={styles.endActions}>
+                {history.length > 0 && (
+                  <button type="button" className={styles.ghostDark} onClick={openReview}>
+                    <ChartLine size={16} strokeWidth={2} aria-hidden="true" />
+                    {ta('review_game')}
+                  </button>
+                )}
+                <button type="button" className={styles.primary} onClick={() => newGame()}>
+                  {t('again')}
+                </button>
+              </div>
             </div>
           )}
 

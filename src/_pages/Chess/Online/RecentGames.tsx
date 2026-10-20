@@ -9,6 +9,7 @@ import styles from './Online.module.scss'
 /** «Последние партии» для /chess/profile и /chess/u/[id]: 10 законченных онлайн-партий игрока. */
 export function RecentGames({ userId }: { userId: string }) {
   const t = useTranslations('chess.online')
+  const ta = useTranslations('chess.analysis')
   const [games, setGames] = useState<GameListItem[] | null>(null)
   useEffect(() => {
     let live = true
@@ -55,6 +56,9 @@ export function RecentGames({ userId }: { userId: string }) {
                     {g.delta > 0 ? `+${g.delta}` : g.delta}
                   </span>
                 )}
+                <Link href={`/chess/analysis?game=${encodeURIComponent(g.id)}`} className={styles.textLink}>
+                  {ta('review_short')}
+                </Link>
               </li>
             )
           })}

@@ -55,5 +55,7 @@
   "class_inaccuracy": "不精确",
   "class_mistake": "错误",
   "class_miss": "错失",
-  "class_blunder": "漏着"
+  "class_blunder": "漏着",
+  "review_game": "复盘这盘棋",
+  "review_short": "复盘"
 }

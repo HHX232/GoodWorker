@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Chess } from 'chess.js'
-import { ArrowLeft, ArrowUpDown, Check, CloudOff, Copy, Flag, Handshake, LogIn, RotateCcw, X } from 'lucide-react'
+import { ArrowLeft, ArrowUpDown, ChartLine, Check, CloudOff, Copy, Flag, Handshake, LogIn, RotateCcw, X } from 'lucide-react'
 import { ChessBoard, type BoardMove } from '@/widgets/Chess/Board'
 import { checkSquare } from '@/shared/lib/chess/puzzle'
 import { playMoveSound } from '@/shared/lib/chess/sound'
@@ -31,6 +31,7 @@ export function formatClock(ms: number) {
 
 export function OnlineGamePage({ id }: { id: string }) {
   const t = useTranslations('chess.online')
+  const ta = useTranslations('chess.analysis')
   const router = useRouter()
   const [st, setSt] = useState<OnlineGameState | null>(null)
   const [load, setLoad] = useState<Load>('loading')
@@ -311,6 +312,12 @@ export function OnlineGamePage({ id }: { id: string }) {
                     <RotateCcw size={16} strokeWidth={2} aria-hidden="true" />
                     {st.rematchId ? t('accept') : t('rematch')}
                   </button>
+                )}
+                {st.ply > 0 && (
+                  <Link href={`/chess/analysis?game=${encodeURIComponent(st.id)}`} className={styles.ghostDark}>
+                    <ChartLine size={16} strokeWidth={2} aria-hidden="true" />
+                    {ta('review_game')}
+                  </Link>
                 )}
                 <Link href="/chess/online" className={styles.ghostDark}>{t('to_lobby')}</Link>
               </div>

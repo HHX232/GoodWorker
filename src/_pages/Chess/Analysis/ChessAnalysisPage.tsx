@@ -23,21 +23,9 @@ import { CoachSays, EvalBar, useMoveCoach, type ExplainResult, type MoveReview }
 import { AccuracyCard, ClassIcon, CLASS_COLOR, EvalGraph, ReviewMoves } from '@/widgets/Chess/Review'
 import { getEngine, type EngineLine } from '@/shared/lib/chess/engine'
 import { checkSquare } from '@/shared/lib/chess/puzzle'
-import { coachClass, loadGame, reviewGame, type GameReview, type LoadedGame, type ReviewedMove } from '@/shared/lib/chess/reviewModel'
+import { ANALYSIS_KEY, coachClass, loadGame, reviewGame, type AnalysisHandoff, type GameReview, type LoadedGame, type ReviewedMove } from '@/shared/lib/chess/reviewModel'
 import styles from './ChessAnalysisPage.module.scss'
 
-/** sessionStorage['gw-chess-analysis'], written by the game pages before opening /chess/analysis. */
-export type AnalysisHandoff = {
-  pgn?: string
-  /** SAN or UCI, from `initialFen` */
-  moves?: string[]
-  initialFen?: string
-  white?: string
-  black?: string
-  result?: string
-  source?: 'bot' | 'online' | 'duo' | 'pgn'
-}
-export const ANALYSIS_KEY = 'gw-chess-analysis'
 
 // spec: MultiPV 2, ~0.6 s per position
 const ANALYSIS = { multiPV: 2, movetimeMs: 600 }
