@@ -60,6 +60,8 @@ interface Props {
   serviceLabels?: string[]
   experiences?: { id: string; title: string; organization: string | null; yearFrom: number; yearTo: number | null; description: string | null; verifiedAt: string | null; documentUrls: string[] }[]
   identityConfirmed?: boolean
+  /** Блоки предметов под шапкой (например «Шахматный репетитор»). */
+  children?: React.ReactNode
 }
 
 export function PublicTeacherPanel({
@@ -68,6 +70,7 @@ export function PublicTeacherPanel({
   serviceLabels = [],
   experiences,
   identityConfirmed,
+  children,
 }: Props) {
   const t = useTranslations('dashboard')
   const [sliderImages, setSliderImages] = useState<string[]>([])
@@ -167,6 +170,8 @@ export function PublicTeacherPanel({
         </div>
 
         <div className={styles.divider} />
+
+        {children}
 
         {/* Services */}
         {serviceLabels.length > 0 && (

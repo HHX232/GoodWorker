@@ -54,7 +54,7 @@ interface ServiceItem {
   isGroup: boolean
   price: number
   currency?: string
-  category?: { translations: { langCode: string; name: string }[] } | null
+  category?: { slug?: string; translations: { langCode: string; name: string }[] } | null
   originalLangCode?: string
   isTranslated?: boolean
   isPersonal?: boolean
@@ -73,6 +73,8 @@ interface Props {
   todayLessons?: number
   isOwner?: boolean
   ownerName?: string
+  /** Публичный профиль: «записаться на шахматную услугу» (null — записаться нельзя) для блока «Шахматный репетитор». */
+  onChessBooking?: (book: (() => void) | null) => void
 }
 
 function IconInbox() {
@@ -115,11 +117,11 @@ function mapPost(p: PostItem) {
   }
 }
 
-export function DashboardCenter({ statsId, studentCount, callCount, totalHours = 0, todayLessons = 0, isOwner = false, ownerName = '' }: Props) {
+export function DashboardCenter({ statsId, studentCount, callCount, totalHours = 0, todayLessons = 0, isOwner = false, ownerName = '', onChessBooking }: Props) {
   const t = useTranslations('dashboard')
   const tChat = useTranslations('chat')
   const locale = useLocale()
-  const { data: session } = useSession()
+  const { data: session, status: sessionStatus } = useSession()
   const [tab, setTab] = useState<Tab>('all')
   const [roadmaps, setRoadmaps] = useState<RoadmapItem[]>([])
   const [posts, setPosts] = useState<PostItem[]>([])
@@ -244,6 +246,18 @@ export function DashboardCenter({ statsId, studentCount, callCount, totalHours =
       setBookingService(match)
     }
   }, [services, canBook])
+
+  // Шахматная услуга — то же правило записи, что у карточек; гость — на логин с возвратом сюда
+  const chessService = services.find(s => s.category?.slug === 'chess')
+  const guest = sessionStatus === 'unauthenticated'
+  useEffect(() => {
+    if (!onChessBooking) return
+    onChessBooking(chessService && (canBook || guest)
+      ? () => canBook
+        ? setBookingService(chessService)
+        : window.location.assign(`/login?callbackUrl=${encodeURIComponent(location.pathname + location.search)}`)
+      : null)
+  }, [onChessBooking, chessService, canBook, guest])
 
   const TABS: { key: Tab; label: string }[] = [
     { key: 'all',      label: t('tabAll') },

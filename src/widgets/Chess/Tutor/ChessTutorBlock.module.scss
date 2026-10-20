@@ -1,0 +1,177 @@
+.block {
+  --ink: #17181c;
+  --ink-soft: #5c5f6a;
+  --line: #e6e5df;
+  --wash: #f6f5f1;
+  // BadgeMedal читает эти токены из окружения (как в .badges модуля Progress)
+  --surface: #ffffff;
+  --accent: #17855a;
+  --fire: #e2561b;
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--wash);
+  color: var(--ink);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: var(--wash);
+}
+
+.title {
+  flex: 1;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.more {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  color: var(--ink-soft);
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover { background: var(--line); color: var(--ink); }
+  &:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+}
+
+.ratings {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.streak {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+// Публичный DTO не знает, играл ли репетитор сегодня: пламя горит (серия жива), но без «сегодняшнего» мерцания
+.still { animation: none !important; }
+
+.medals {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 6px;
+  margin: 0;
+  padding: 0 0 4px;
+  list-style: none;
+}
+
+.moreMedals {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px dashed var(--line);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  text-decoration: none;
+
+  &:hover { color: var(--ink); border-color: var(--ink-soft); }
+}
+
+.muted {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+.skeleton {
+  height: 92px;
+  border-radius: 10px;
+  background: var(--line);
+  opacity: 0.6;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.play,
+.book {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+
+  &:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+}
+
+.play {
+  border: none;
+  background: var(--ink);
+  color: var(--wash);
+
+  &:hover:not(:disabled) { opacity: 0.88; }
+  &:disabled { opacity: 0.55; cursor: progress; }
+}
+
+.book {
+  border: 1px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+
+  &:hover { background: var(--line); }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .block {
+    --ink: #ecebe6;
+    --ink-soft: #a3a39d;
+    --line: rgba(255, 255, 255, 0.1);
+    --wash: #20222b;
+    --surface: #1b1c20;
+    --accent: #4cc58f;
+    --fire: #f07a3a;
+  }
+}

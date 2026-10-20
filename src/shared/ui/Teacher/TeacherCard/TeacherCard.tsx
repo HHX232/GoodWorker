@@ -9,6 +9,7 @@ import {getDisplayName} from '@/shared/utils/transliterate'
 import {formatPrice} from '@/shared/utils/currencyConverter'
 import {useLocale, useTranslations} from 'next-intl'
 import {useSession} from 'next-auth/react'
+import {ChessKnight} from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
@@ -106,12 +107,15 @@ const TeacherCard: FC<Props> = ({teacher}) => {
   const {bg, text} = getAvatarColor(teacher.name)
   const displayName = getDisplayName(teacher.name, locale, teacher.nameTransliterated)
 
-  const categories = teacher.categories.slice(0, 3).map(({category}) => {
-    const translation = category.translations.find((tr) => tr.langCode === locale)
-      ?? category.translations.find((tr) => tr.langCode === 'ru')
-      ?? category.translations[0]
-    return translation?.name ?? category.slug
-  })
+  // «Шахматы» — всегда первым чипом, чтобы не срезался лимитом в 3 предмета
+  const categories = [...teacher.categories]
+    .sort((a, b) => Number(b.category.slug === 'chess') - Number(a.category.slug === 'chess'))
+    .slice(0, 3).map(({category}) => {
+      const translation = category.translations.find((tr) => tr.langCode === locale)
+        ?? category.translations.find((tr) => tr.langCode === 'ru')
+        ?? category.translations[0]
+      return {slug: category.slug, name: translation?.name ?? category.slug}
+    })
 
   const langs = (teacher.languages ?? []).map((code) => {
     const def = TEACHER_LANGUAGES.find((l) => l.code === code)
@@ -195,8 +199,9 @@ const TeacherCard: FC<Props> = ({teacher}) => {
         {categories.length > 0 && (
           <div className={styles.categories}>
             {categories.map((cat) => (
-              <span key={cat} className={styles.category_chip}>
-                {cat}
+              <span key={cat.slug} className={styles.category_chip} data-chess={cat.slug === 'chess' || undefined}>
+                {cat.slug === 'chess' && <ChessKnight size={12} strokeWidth={2} aria-hidden='true' />}
+                {cat.name}
               </span>
             ))}
           </div>

@@ -304,6 +304,15 @@
   letter-spacing: 0.03em;
   color: #000;
   white-space: nowrap;
+
+  &[data-chess] {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #000;
+    border-color: #000;
+    color: #fff;
+  }
 }
 
 .rating {
@@ -490,6 +499,7 @@
     background: transparent;
     border-color: rgba(255,255,255,0.35);
     color: #e8eaf0;
+    &[data-chess] { background: #e8eaf0; border-color: #e8eaf0; color: #111318; }
   }
   .star_filled { fill: #e8eaf0; stroke: #e8eaf0; }
   .star_empty { stroke: rgba(255,255,255,0.18); }

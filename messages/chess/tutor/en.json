@@ -1,1 +1,14 @@
-{}
+{
+  "title": "Chess tutor",
+  "profile_link": "Chess profile",
+  "streak": "{n, plural, =0 {No streak yet} one {# day in a row} other {# days in a row}}",
+  "no_badges": "No badges yet",
+  "more_badges": "+{n}",
+  "play": "Play with me",
+  "play_creating": "Creating game…",
+  "book": "Book a lesson",
+  "login_to_play": "Log in to play",
+  "play_unavailable": "Online games aren't available yet. Try again later.",
+  "play_error": "Couldn't create the game. Please try again.",
+  "load_error": "Chess stats failed to load"
+}

@@ -1,1 +1,14 @@
-{}
+{
+  "title": "国际象棋导师",
+  "profile_link": "国际象棋资料",
+  "streak": "{n, plural, =0 {暂无连续记录} other {连续 # 天}}",
+  "no_badges": "暂无徽章",
+  "more_badges": "+{n}",
+  "play": "和我下一局",
+  "play_creating": "正在创建对局…",
+  "book": "预约课程",
+  "login_to_play": "登录后即可对弈",
+  "play_unavailable": "在线对局暂不可用，请稍后再试。",
+  "play_error": "无法创建对局，请重试。",
+  "load_error": "国际象棋数据加载失败"
+}

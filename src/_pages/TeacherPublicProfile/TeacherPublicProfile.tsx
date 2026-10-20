@@ -3,8 +3,9 @@
 import { DashboardCenter } from '@/widgets/Dashboard/DashboardCenter/DashboardCenter'
 import { PublicReviewsSidebar } from '@/widgets/Dashboard/PublicReviewsSidebar/PublicReviewsSidebar'
 import { PublicTeacherPanel } from '@/widgets/Dashboard/PublicTeacherPanel/PublicTeacherPanel'
+import { ChessTutorBlock } from '@/widgets/Chess/Tutor/ChessTutorBlock'
 import { ProfileSubNav } from '@/shared/ui/ProfileSubNav/ProfileSubNav'
-import { useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import styles from './TeacherPublicProfile.module.scss'
 
 interface CategoryTranslation {
@@ -49,13 +50,15 @@ export function TeacherPublicProfile({
     header.style.marginBottom = '0'
     return () => { header.style.marginBottom = '' }
   }, [])
+  const [chessBook, setChessBook] = useState<(() => void) | null>(null)
+  const onChessBooking = useCallback((book: (() => void) | null) => setChessBook(() => book), [])
 
   return (
     <div className={styles.wrapper}>
       <ProfileSubNav />
       <div className={styles.dashboard}>
         <PublicReviewsSidebar teacherId={teacherId} />
-        <DashboardCenter statsId={teacherId} studentCount={studentCount} callCount={callCount} totalHours={totalHours} />
+        <DashboardCenter statsId={teacherId} studentCount={studentCount} callCount={callCount} totalHours={totalHours} onChessBooking={onChessBooking} />
         <PublicTeacherPanel
           name={name}
           avatarUrl={avatarUrl}
@@ -73,7 +76,9 @@ export function TeacherPublicProfile({
           experiences={experiences}
           serviceLabels={serviceLabels}
           identityConfirmed={identityConfirmed}
-        />
+        >
+          {categories.some(c => c.slug === 'chess') && <ChessTutorBlock teacherId={teacherId} onBook={chessBook} />}
+        </PublicTeacherPanel>
       </div>
     </div>
   )
