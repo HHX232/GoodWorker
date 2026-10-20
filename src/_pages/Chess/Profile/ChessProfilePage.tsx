@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, LogIn } from 'lucide-react'
 import type { ChessPlayerDto, ChessProgressDto } from '@/shared/lib/chess/server/progress'
 import { POINT_STEPS, streakState } from '@/shared/lib/chess/server/progressModel'
 import { BadgeGrid, Flame, RatingChip, badgeText, nextPointStep, todayLocal, useMyChessProgress, type FlameState } from '@/widgets/Chess/Progress'
+import { RecentGames } from '../Online/RecentGames'
 import styles from './ChessProfilePage.module.scss'
 
 type Loaded = { status: 'loading' } | { status: 'missing' } | { status: 'error' } | { status: 'ready'; player: ChessPlayerDto | null; profile: ChessProgressDto }
@@ -130,6 +131,7 @@ function Profile({ player, profile, own }: { player: ChessPlayerDto | null; prof
       </div>
 
       <BadgeGrid earned={profile.badges} />
+      {player && <RecentGames userId={player.id} />}
     </>
   )
 }

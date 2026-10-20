@@ -1262,3 +1262,43 @@ model ChessBadge {
 
   @@unique([userId, code])
 }
+
+// ─── Chess online ───
+
+model ChessGame {
+  id            String    @id @default(cuid())
+  whiteId       String? // Student.id или Teacher.id; null — место ещё свободно (ссылка «играть с другом»)
+  blackId       String?
+  invitedId     String? // вызов/реванш: свободное место может занять только он
+  initialFen    String
+  moves         String    @default("") // UCI через пробел
+  timeControl   String // 'M+I', напр. '3+2'
+  whiteMs       Int
+  blackMs       Int
+  turnStartedAt DateTime?
+  status        String    @default("waiting") // waiting | active | finished | aborted
+  result        String? // '1-0' | '0-1' | '1/2-1/2'
+  termination   String?
+  rated         Boolean   @default(true)
+  drawOfferBy   String? // 'w' | 'b'
+  rematchOf     String?   @unique // один реванш на партию: двойной клик обоих не создаёт две
+  whiteRating   Int? // Эло на старте партии
+  blackRating   Int?
+  whiteDelta    Int? // изменение Эло после партии
+  blackDelta    Int?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([whiteId, updatedAt])
+  @@index([blackId, updatedAt])
+  @@index([invitedId, status])
+}
+
+model ChessSeek {
+  userId      String   @id
+  timeControl String
+  rating      Int
+  gameId      String? // подобранная партия: забирает следующий опрос ждущего
+  createdAt   DateTime @default(now())
+  seenAt      DateTime @default(now()) // последний опрос: брошенные seek в подбор не попадают
+}

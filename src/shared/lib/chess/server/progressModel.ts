@@ -110,6 +110,8 @@ export function applyActivity(state: ProgressState, owned: readonly string[], in
  * `storm_*` (только когда шторм считается на сервере, T13). Значки из клиентских данных (`first_win_*`, `points_*`, `streak_*` —
  * партия с ботом и решебник идут в браузере) подделываются запросом; им — только небольшие числа и только пока действует
  * DAILY_BOT_POINTS_CAP, иначе VIP фармится скриптом.
+ * `online_first_win` тоже набивается вторым аккаунтом (сдача соперника на 3-м полуходе): прежде чем давать ему VIP, добавить
+ * антифарм-условие при выдаче — минимум ходов в партии и соперник с установившимся рейтингом (ratingGames ≥ N).
  */
 export const VIP_REWARDS: Record<string, number | null> = Object.fromEntries(BADGE_CODES.map((c) => [c, null]))
 
