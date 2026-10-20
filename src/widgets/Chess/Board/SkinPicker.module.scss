@@ -18,7 +18,7 @@
 
 .row {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr)); // 6 sets as 3×2: every name reads in full, even in a narrow column
   gap: 6px;
 }
 
@@ -89,9 +89,8 @@
 
 .name {
   max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  text-align: center;
+  overflow-wrap: anywhere; // a long translation wraps instead of being cut
   font-size: 0.75rem;
   font-weight: 500;
   line-height: 1.2;

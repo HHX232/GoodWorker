@@ -1,0 +1,20 @@
+// Same line as CoachAvatar: colours via CSS so the dark theme can swap the ink.
+
+.avatar {
+  --hide: #fbf8f1;
+  --ink: #1d1b18;
+
+  display: block;
+  flex: none;
+}
+
+.badge { fill: var(--badge); }
+.body { fill: var(--accent); stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; }
+.collar { fill: var(--hide); stroke: var(--ink); stroke-width: 1.6; stroke-linejoin: round; }
+.head { fill: var(--hide); stroke: var(--ink); stroke-width: 2.2; stroke-linejoin: round; }
+.crown { fill: #e8b54a; stroke: var(--ink); stroke-width: 1.8; stroke-linejoin: round; }
+.eye { fill: var(--ink); }
+.line { fill: none; stroke: var(--ink); stroke-width: 1.8; stroke-linecap: round; }
+.wire { fill: rgba(255, 255, 255, 0.5); stroke: var(--ink); stroke-width: 1.6; stroke-linecap: round; }
+.beard { fill: color-mix(in srgb, var(--accent) 55%, var(--ink)); stroke: var(--ink); stroke-width: 1.6; stroke-linejoin: round; }
+.band { fill: var(--accent); stroke: var(--ink); stroke-width: 1.6; stroke-linejoin: round; }

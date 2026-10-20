@@ -1,0 +1,659 @@
+// Chess dialogs: the same quiet paper as the play page; own tokens because a dialog opens on any chess page.
+
+.dialog {
+  --ink: #17181c;
+  --ink-soft: #5c5f6a;
+  --surface: #ffffff;
+  --line: #e6e5df;
+  --wash: #f3f2ed;
+  --accent: #17855a;
+  --danger: #b4321f;
+
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(760px, calc(100dvh - 48px));
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  box-shadow: 0 30px 70px -30px rgba(10, 10, 14, 0.55), 0 0 0 1px rgba(10, 10, 14, 0.06);
+  overflow: hidden auto;
+  overscroll-behavior: contain;
+
+  &::backdrop {
+    background: rgba(14, 14, 18, 0.48);
+  }
+
+  &[open] {
+    animation: dialogIn 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  &[open]::backdrop {
+    animation: fade 0.2s ease-out;
+  }
+
+  // phones: a bottom sheet
+  @media (max-width: 599px) {
+    width: 100vw;
+    max-width: 100vw;
+    max-height: 90dvh;
+    margin: auto 0 0;
+    border-radius: 18px 18px 0 0;
+
+    &[open] { animation-name: sheetIn; }
+  }
+}
+
+.wide {
+  @media (min-width: 600px) { width: min(900px, calc(100vw - 48px)); }
+}
+
+// the page under an open dialog does not scroll
+:global(html:has(dialog[open])) {
+  overflow: hidden;
+}
+
+@keyframes dialogIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.985); }
+}
+@keyframes sheetIn {
+  from { transform: translateY(100%); }
+}
+@keyframes fade {
+  from { opacity: 0; }
+}
+
+.sheet {
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px 22px;
+
+  @media (max-width: 599px) {
+    padding: 0 16px calc(18px + env(safe-area-inset-bottom));
+  }
+}
+
+.sheetHead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 -20px;
+  padding: 16px 14px 12px 20px;
+  background: var(--surface);
+
+  @media (max-width: 599px) {
+    margin: 0 -16px;
+    padding: 18px 10px 10px 16px;
+
+    // grab handle
+    &::before {
+      content: '';
+      position: absolute;
+      top: 7px;
+      left: 50%;
+      width: 36px;
+      height: 4px;
+      margin-left: -18px;
+      border-radius: 2px;
+      background: var(--line);
+    }
+  }
+}
+
+.sheetTitle {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--ink-soft);
+  cursor: pointer;
+
+  &:hover { background: var(--wash); color: var(--ink); }
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+}
+
+// ─── New game: tabs ──────────────────────────────────────────────────────────
+
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 12px 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease-out, color 0.15s ease-out, background-color 0.15s ease-out;
+
+  span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &:hover:not(:disabled) { color: var(--ink); border-color: color-mix(in srgb, var(--ink) 30%, var(--line)); }
+  &[aria-selected='true'] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--surface);
+  }
+  &:disabled { opacity: 0.4; cursor: default; }
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: fade 0.18s ease-out;
+}
+
+.lead {
+  margin: 0;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.labelHint {
+  font-weight: 400;
+  text-align: right;
+}
+
+.seg {
+  display: flex;
+  padding: 3px;
+  gap: 3px;
+  border-radius: 10px;
+  background: var(--wash);
+
+  button {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    column-gap: 7px;
+    min-height: 40px;
+    min-width: 0;
+    padding: 4px 8px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ink-soft);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition: background-color 0.15s ease-out, color 0.15s ease-out;
+
+    &:hover { color: var(--ink); }
+    &[aria-pressed='true'] {
+      background: var(--surface);
+      color: var(--ink);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 0 0 1px var(--line);
+    }
+    &:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  }
+}
+
+.segLevels button { padding: 0; }
+
+.segValue { font-weight: 700; }
+.segSub { font-size: 0.75rem; }
+
+.swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #f4f1ea;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+
+  &[data-side='b'] { background: #24221f; }
+}
+
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 20px;
+  border: 1px solid var(--ink);
+  border-radius: 10px;
+  background: var(--ink);
+  color: var(--surface);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background-color 0.15s ease-out, transform 0.15s ease-out;
+
+  &:hover:not(:disabled) { background: color-mix(in srgb, var(--ink) 86%, var(--surface)); }
+  &:active:not(:disabled) { transform: translateY(1px); }
+  &:disabled { opacity: 0.5; cursor: default; }
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+}
+
+.secondary {
+  flex: none;
+  min-height: 42px;
+  padding: 0 14px;
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.875rem;
+  font-weight: 600;
+
+  &:hover:not(:disabled) { background: var(--wash); }
+}
+
+.textLink {
+  align-self: flex-start;
+  color: var(--accent);
+  font-weight: 600;
+  text-underline-offset: 3px;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+}
+
+.notice {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--wash);
+  color: var(--ink);
+
+  svg { flex: none; color: var(--ink-soft); }
+}
+
+// online: three time controls as big doors
+.tcGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.tcCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 18px 16px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease-out, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease-out;
+
+  &:hover {
+    border-color: var(--ink);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px -18px rgba(10, 10, 14, 0.5);
+  }
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+}
+
+.tcValue {
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.tcKind {
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+}
+
+// friend: the ready link
+.linkBox {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: fade 0.2s ease-out;
+}
+
+.linkTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 650;
+  color: var(--accent);
+}
+
+.linkRow {
+  display: flex;
+  gap: 8px;
+}
+
+.linkInput {
+  flex: 1;
+  min-width: 0;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--wash);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+}
+
+// ─── Bot picker: faces on the left, the chosen bot large on the right ────────
+
+.botPick {
+  display: grid;
+  gap: 20px;
+
+  @media (min-width: 760px) {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: 28px;
+    align-items: start;
+  }
+}
+
+.botLists {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.botGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.botGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+
+  &[data-cols='5'] { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  @media (min-width: 400px) and (max-width: 759px) { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
+
+.botCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 8px 4px 7px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 0.15s ease-out, border-color 0.15s ease-out;
+
+  &:hover { background: var(--wash); }
+  &[aria-checked='true'] {
+    border-color: var(--ink);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  }
+  &[data-locked] .botFace svg { filter: grayscale(1); opacity: 0.55; }
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+}
+
+.botFace { position: relative; }
+
+.botLock {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--surface);
+  box-shadow: 0 0 0 2px var(--surface);
+}
+
+.botName {
+  max-width: 100%;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.botRating {
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.botDetail {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  @media (min-width: 760px) {
+    position: sticky;
+    top: 64px;
+    padding: 18px;
+    border-radius: 14px;
+    background: var(--wash);
+  }
+}
+
+.botHero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.botHeroName {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.botHeroMeta {
+  margin: 2px 0 0;
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+// the bot's own words: a speech bubble pointing up at its face
+.botQuote {
+  position: relative;
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-weight: 500;
+  text-wrap: pretty;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 34px;
+    width: 10px;
+    height: 10px;
+    background: inherit;
+    border-left: 1px solid var(--line);
+    border-top: 1px solid var(--line);
+    transform: rotate(45deg);
+  }
+}
+
+.botMeta {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+}
+
+// ─── Settings ────────────────────────────────────────────────────────────────
+
+.settings {
+  display: grid;
+  gap: 22px;
+
+  @media (min-width: 600px) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 28px;
+  }
+}
+
+.previewCol {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.preview {
+  width: 100%;
+  max-width: 260px;
+  align-self: center;
+  border-radius: 6px;
+}
+
+.toggles {
+  display: flex;
+  flex-direction: column;
+}
+
+.group {
+  margin: 0 0 4px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+
+  &:not(:first-child) { margin-top: 18px; }
+}
+
+.toggle {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+
+  small {
+    display: block;
+    margin-top: 1px;
+    color: var(--ink-soft);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
+
+  // site CSS sets appearance:none on inputs — draw a switch: track = background, knob = radial gradient
+  input {
+    appearance: none;
+    margin: 2px 0 0;
+    width: 38px;
+    height: 22px;
+    flex: none;
+    border-radius: 999px;
+    background: radial-gradient(circle at 11px 50%, #fff 8px, transparent 8.5px), var(--line);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    transition: background-color 0.15s ease-out;
+
+    &:checked {
+      background: radial-gradient(circle at 27px 50%, #fff 8px, transparent 8.5px), var(--accent);
+    }
+    &:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog[open],
+  .dialog[open]::backdrop,
+  .panel,
+  .linkBox { animation: none; }
+  .tcCard:hover { transform: none; }
+}
+
+:global(html.theme-dark),
+:global(html.pomodoro-dark) {
+  .dialog {
+    --ink: #ecebe6;
+    --ink-soft: #a3a39d;
+    --surface: #1b1c20;
+    --line: #2c2d33;
+    --wash: #24252a;
+    --accent: #4cc58f;
+    --danger: #f08a7a;
+
+    box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.8), 0 0 0 1px #33343a;
+  }
+
+  .swatch { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3); }
+}

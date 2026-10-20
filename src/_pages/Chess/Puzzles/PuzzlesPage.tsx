@@ -11,7 +11,8 @@ import { playMoveSound } from '@/shared/lib/chess/sound'
 import { OPENINGS, TACTICS } from '@/shared/lib/chess/data'
 import { checkSquare } from '@/shared/lib/chess/puzzle'
 import { hintMove, isCleanSolve, playerColor, replyMove, soundKind, startRun, takeHint, tryMove, type PuzzleRun, type Sq } from './puzzleRun'
-import { useChessActivity } from '@/widgets/Chess/Progress'
+import { StreakFlame, useChessActivity } from '@/widgets/Chess/Progress'
+import { useStickToEnd } from '../Play/useStickToEnd'
 import styles from './Puzzles.module.scss'
 
 export type PuzzleMode = 'rated' | 'theme' | 'series' | 'opening'
@@ -58,6 +59,7 @@ export function PuzzlesPage(props: PuzzlesPageProps) {
   const seen = useRef<string[]>([])
   const sent = useRef(false) // an attempt for the current puzzle is already posted
   const engineUsed = useRef(false)
+  const coachColRef = useStickToEnd<HTMLElement>()
 
   const context = mode === 'theme' ? 'tactic' : 'puzzle'
 
@@ -259,11 +261,12 @@ export function PuzzlesPage(props: PuzzlesPageProps) {
               <span>{t('pz_guest')}</span>
             </Link>
           ) : null}
+          {!guest && <StreakFlame className={styles.flame} />}
         </header>
 
         {/* same frame as /chess/play: coach | board | controls, the board centred and fully on screen */}
         <div className={styles.layout}>
-          <aside className={styles.coachCol} aria-label={tc('coach_title')}>
+          <aside ref={coachColRef} className={styles.coachCol} aria-label={tc('coach_title')}>
             {wrong || review || analysing || noAnalysis ? (
               <CoachPanel review={review} noAnalysis={noAnalysis} analysing={analysing} explain={coach.explain} />
             ) : (

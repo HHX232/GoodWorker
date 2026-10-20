@@ -13,6 +13,35 @@
   line-height: 1.5;
 }
 
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px 32px;
+}
+
+// the visitor's own numbers: streak flame, then ratings separated by hairlines
+.me {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 24px;
+}
+
+.chips {
+  display: flex;
+  gap: 20px;
+
+  > * + * {
+    padding-left: 20px;
+    border-left: 1px solid var(--line);
+  }
+
+  // smaller numbers than on the profile: here they are a status line, not the subject
+  span:nth-child(2) { font-size: 1.5rem; }
+}
+
 .title {
   margin: 0;
   font-size: clamp(2rem, 1.4rem + 2.4vw, 3.25rem);
@@ -51,19 +80,13 @@
   background: var(--ink);
   color: var(--surface);
   text-decoration: none;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease-out;
 
   @media (min-width: 560px) {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    align-items: end;
-    padding: 24px;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    align-items: center; // the door is as tall as the list of modes: the board sits in its middle
+    padding: 28px;
   }
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 18px 40px -24px rgba(10, 10, 12, 0.6);
-  }
-  &:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 }
 
 .playBoard {
@@ -89,15 +112,45 @@
   }
 }
 
-.cta {
+.playActions {
   margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 18px;
+}
+
+.cta {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-weight: 600;
+  min-height: 48px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease-out;
 
   svg { transition: transform 0.2s ease-out; }
-  .play:hover & svg { transform: translateX(3px); }
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 26px -14px rgba(0, 0, 0, 0.55);
+    svg { transform: translateX(3px); }
+  }
+  &:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+}
+
+.resume {
+  color: inherit;
+  font-weight: 500;
+  opacity: 0.8;
+  text-underline-offset: 3px;
+  &:hover { opacity: 1; }
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
 }
 
 // ─── The other three ─────────────────────────────────────────────────────────
@@ -115,8 +168,14 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 22px 4px;
+  width: 100%;
+  padding: 18px 4px;
+  border: 0;
   border-bottom: 1px solid var(--line);
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
   color: inherit;
   text-decoration: none;
   transition: background-color 0.15s ease-out;
@@ -124,7 +183,7 @@
   &:hover { background: var(--wash); }
   &:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 
-  @media (min-width: 900px) { padding: 28px 8px; }
+  @media (min-width: 900px) { padding: 20px 8px; }
 }
 
 .rowIcon {
@@ -170,8 +229,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .play, .cta svg, .rowArrow { transition: none; }
-  .play:hover { transform: none; }
+  .cta, .cta svg, .rowArrow { transition: none; }
+  .cta:hover { transform: none; }
 }
 
 :global(html.theme-dark),
@@ -192,5 +251,6 @@
     box-shadow: inset 0 0 0 1px #33343a;
 
     .playText p { color: #a3a39d; }
+    .cta { background: #ecebe6; color: #17181c; }
   }
 }

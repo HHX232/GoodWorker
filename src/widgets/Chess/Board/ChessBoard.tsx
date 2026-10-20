@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react'
 import { Chess, type Square } from 'chess.js'
 import { useTranslations } from 'next-intl'
 import { X } from 'lucide-react'
 import { getSkin, type PieceCode, type SkinId } from '../skins'
 import { useBoardTheme, usePieceSet } from '../skins/useSkinPrefs'
+import { useLocalPref } from '@/shared/lib/chess/localPref'
 import styles from './ChessBoard.module.scss'
 
 export type BoardMove = { from: string; to: string; promotion?: 'q' | 'r' | 'b' | 'n' }
@@ -30,6 +31,12 @@ export type ChessBoardProps = {
   boardId?: SkinId
   /** piece set; default — the visitor's choice (`usePieceSet`) */
   piecesId?: SkinId
+  /** file/rank labels; default — the visitor's choice (`localStorage['gw-chess-coords']`) */
+  coords?: boolean
+  /** pieces slide between squares; default — the visitor's choice (`localStorage['gw-chess-anim']`) */
+  animate?: boolean
+  /** small marks in a square's top-right corner, above the pieces (e.g. the review's move class) */
+  squareBadges?: Record<string, ReactNode>
   className?: string
 }
 
@@ -93,6 +100,9 @@ export function ChessBoard({
   check,
   boardId,
   piecesId,
+  coords,
+  animate,
+  squareBadges,
   className,
 }: ChessBoardProps) {
   const t = useTranslations('chess.core')
@@ -100,6 +110,10 @@ export function ChessBoard({
   const [storedPieces] = usePieceSet()
   const board = getSkin(boardId ?? storedBoard)
   const pieces = getSkin(piecesId ?? storedPieces).pieces
+  const [coordsPref] = useLocalPref('gw-chess-coords', '1')
+  const [animPref] = useLocalPref('gw-chess-anim', '1')
+  const showCoords = coords ?? coordsPref === '1'
+  const slide = animate ?? animPref === '1'
   const boardRef = useRef<HTMLDivElement>(null)
   const squareRefs = useRef<Record<string, HTMLButtonElement | null>>({})
 
@@ -286,8 +300,8 @@ export function ChessBoard({
           {selected === sq && <span className={styles.selected} />}
           {check === sq && <span className={styles.check} />}
           {target && <span className={target.capture ? styles.captureHint : styles.moveHint} />}
-          {col === 0 && <span className={`${styles.coord} ${styles.rank}`}>{sq[1]}</span>}
-          {row === 7 && <span className={`${styles.coord} ${styles.file}`}>{sq[0]}</span>}
+          {showCoords && col === 0 && <span className={`${styles.coord} ${styles.rank}`}>{sq[1]}</span>}
+          {showCoords && row === 7 && <span className={`${styles.coord} ${styles.file}`}>{sq[0]}</span>}
         </button>
       )
     }
@@ -298,7 +312,7 @@ export function ChessBoard({
   return (
     <div
       ref={boardRef}
-      className={`${styles.board} ${canMove ? styles.interactive : ''} ${className ?? ''}`}
+      className={`${styles.board} ${canMove ? styles.interactive : ''} ${slide ? '' : styles.still} ${className ?? ''}`}
       style={
         {
           '--sq-light': board.light,
@@ -362,6 +376,16 @@ export function ChessBoard({
           })}
         </svg>
       )}
+
+      {squareBadges &&
+        Object.entries(squareBadges).map(([sq, badge]) => {
+          const { col, row } = pos(sq)
+          return (
+            <div key={sq} className={styles.badge} style={{ left: `${(col + 1) * 12.5}%`, top: `${row * 12.5}%` }}>
+              {badge}
+            </div>
+          )
+        })}
 
       {promo && promoPos && (
         <div className={styles.promoLayer} onPointerDown={(e) => e.stopPropagation()}>

@@ -40,6 +40,11 @@ function load() {
   return inflight
 }
 
+/** Свежий прогресс с сервера (ответ шторма и т.п.): огонёк и профиль обновляются без перезагрузки. */
+export function setMyChessProgress(profile: ChessProgressDto) {
+  set({ status: 'ready', player: state.status === 'ready' ? state.player : null, profile })
+}
+
 /** Прогресс вошедшего (серия, рейтинги, очки, значки); гостю — `{status:'guest'}`. */
 export function useMyChessProgress(): MyProgress {
   const s = useSyncExternalStore(subscribe, () => state, () => LOADING)
@@ -54,7 +59,7 @@ export function todayLocal(now = new Date()): string {
   return new Date(now.getTime() - now.getTimezoneOffset() * 60_000).toISOString().slice(0, 10)
 }
 
-type ReportInput = Omit<ActivityInput, 'tzOffsetMin' | 'kind'> & { kind: 'bot' | 'puzzle' | 'storm' }
+type ReportInput = Omit<ActivityInput, 'tzOffsetMin' | 'kind'> & { kind: 'bot' | 'puzzle' } // storm — только POST /api/chess/storm
 
 /** Отправить активность (гостю — ничего), обновить общий прогресс и показать тост «Новый значок!». */
 export function useChessActivity() {
@@ -71,7 +76,7 @@ export function useChessActivity() {
         .then((r) => (r.ok ? r.json() : null))
         .then((b: { profile: ChessProgressDto; newBadges: string[] } | null) => {
           if (!b) return
-          set({ status: 'ready', player: state.status === 'ready' ? state.player : null, profile: b.profile })
+          setMyChessProgress(b.profile)
           if (!b.newBadges.length) return
           const first = badgeText(b.newBadges[0])
           toast.custom(

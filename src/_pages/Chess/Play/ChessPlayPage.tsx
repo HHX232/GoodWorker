@@ -1,266 +1,59 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { checkSquare } from '@/shared/lib/chess/puzzle'
 import { useTranslations } from 'next-intl'
-import { Chess, validateFen, DEFAULT_POSITION } from 'chess.js'
-import { ArrowLeft, ArrowUpDown, CloudOff, Flag, Lock, MessageCircleQuestion, Plus, RotateCw, Undo2 } from 'lucide-react'
-import { ChessBoard, SkinPicker, type BoardMove } from '@/widgets/Chess/Board'
-import { CoachPanel, CoachSays, EvalBar, REVIEW_ANALYSIS, useMoveCoach, type ExplainResult, type MoveReview } from '@/widgets/Chess/Coach'
-import { hintArrows, type HintArrow } from '@/shared/lib/chess/hintArrows'
-import { getEngine, ENGINE_LEVELS, type EngineLine } from '@/shared/lib/chess/engine'
-import { playMoveSound, useSoundEnabled } from '@/shared/lib/chess/sound'
-import { readPref, useLocalPref } from '@/shared/lib/chess/localPref'
-import { endReason, engineMoveFacts, type MoveFact } from './gameFacts'
-import { useBotGameActivity } from '@/widgets/Chess/Progress'
+import { ArrowLeft, ArrowUpDown, Check, CloudOff, Flag, Lock, MessageCircleQuestion, Plus, RotateCw, Settings2, Undo2, X } from 'lucide-react'
+import { checkSquare } from '@/shared/lib/chess/puzzle'
+import { useLocalPref } from '@/shared/lib/chess/localPref'
+import type { Bot } from '@/shared/lib/chess/data'
+import { ChessBoard } from '@/widgets/Chess/Board'
+import { CoachPanel, CoachSays, EvalBar, useMoveCoach, type ExplainResult, type MoveReview } from '@/widgets/Chess/Coach'
+import { StreakFlame } from '@/widgets/Chess/Progress'
+import { BotAvatar, NewGameModal, SettingsModal, type NewGameTab } from '@/widgets/Chess/Settings'
+import type { MoveFact } from './gameFacts'
+import { useBotGame, type EngineNote, type Side, type StartRequest } from './useBotGame'
+import { useStickToEnd } from './useStickToEnd'
 import styles from './ChessPlayPage.module.scss'
 
-type Side = 'w' | 'b'
-type Mode = 'ai' | 'duo'
-type Saved = { start: string; moves: string[]; level: number; color: Side; mode: Mode; resigned: boolean; evalCp: number | null }
-type EngineNote = { fenBefore: string; uci: string; san: string; facts: MoveFact[] }
+export type { StartRequest }
 
-const STORE = 'gw-chess-game'
-const isLevel = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= 8
-
-function soundFor(chess: Chess) {
-  const last = chess.history({ verbose: true }).at(-1)
-  if (chess.isGameOver()) return playMoveSound('end')
-  if (chess.inCheck()) return playMoveSound('check')
-  playMoveSound(last?.captured ? 'capture' : 'move')
-}
-
-export function ChessPlayPage({ initialFen, initialColor }: { initialFen?: string; initialColor?: string }) {
+export function ChessPlayPage(props: { initialFen?: string; initialColor?: string; startNew?: StartRequest }) {
   const t = useTranslations('chess.play')
   const tc = useTranslations('chess.core')
-  const router = useRouter()
-  const [chess] = useState(() => new Chess())
-  const [start, setStart] = useState(DEFAULT_POSITION)
-  const [fen, setFen] = useState(DEFAULT_POSITION)
-  const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null)
-  const [mode, setMode] = useState<Mode>('ai')
-  const [level, setLevel] = useState(3)
-  const [color, setColor] = useState<Side>('w')
-  const [flipped, setFlipped] = useState(false)
-  const [resigned, setResigned] = useState(false)
-  const [thinking, setThinking] = useState(false)
-  const [engineDown, setEngineDown] = useState(false)
-  const [review, setReview] = useState<MoveReview | null>(null)
-  const [reviewing, setReviewing] = useState(false)
-  const [noAnalysis, setNoAnalysis] = useState(false)
-  const [evalCp, setEvalCp] = useState<number | null>(0) // null = unknown for this position: the bar is hidden
-  const [note, setNote] = useState<EngineNote | null>(null)
-  const [ready, setReady] = useState(false)
-  const [badFen, setBadFen] = useState(false)
-  const [round, setRound] = useState(0) // re-asks the engine after a reset even when fen did not change
-  const [soundOn, setSoundOn] = useSoundEnabled()
-  const [hintPref, setHintPref] = useLocalPref('gw-chess-hints', '1')
-  const [hint, setHint] = useState<{ fen: string; lines: EngineLine[]; arrows: HintArrow[] } | null>(null)
-  const [evalPref, setEvalPref] = useLocalPref('gw-chess-evalbar', '1')
-  const [autoPref, setAutoPref] = useLocalPref('gw-chess-autoexplain', '0') // off by default: every auto call spends the limit
-  const coach = useMoveCoach()
-  const gen = useRef(0) // bumps on every player move / new game / undo: stale engine answers are dropped
-  const askedFen = useRef<string | null>(null)
-  const booted = useRef(false)
-
-  const sync = useCallback(() => {
-    setFen(chess.fen())
-    const last = chess.history({ verbose: true }).at(-1)
-    setLastMove(last ? { from: last.from, to: last.to } : null)
-  }, [chess])
-
-  const vsAi = mode === 'ai' && !engineDown
-  const reason = endReason(chess, resigned)
-  const gameOver = reason !== null
-  useBotGameActivity({ active: ready && vsAi, over: gameOver, level, plies: chess.history().length, result: reason === 'resign' || (reason === 'checkmate' && chess.turn() === color) ? 'loss' : reason === 'checkmate' ? 'win' : 'draw' })
-
-  // ─── restore: ?fen= (from "play on from here") wins over the saved game ──────
-  useEffect(() => {
-    if (booted.current) return
-    booted.current = true
-    let fromUrl = false
-    if (initialFen) {
-      if (validateFen(initialFen).ok) {
-        chess.load(initialFen)
-        setStart(initialFen)
-        setColor(initialColor === 'w' || initialColor === 'b' ? initialColor : chess.turn())
-        fromUrl = true
-        setEvalCp(null)
-        try {
-          const lv = (JSON.parse(readPref(STORE) ?? 'null') as Saved | null)?.level // keep the player's level
-          if (isLevel(lv)) setLevel(lv)
-        } catch {}
-      } else setBadFen(true) // inline, not a toast: the site Toaster mounts lazily and misses toasts fired on load
-      router.replace('/chess/play')
-    }
-    if (!fromUrl) {
-      try {
-        const s = JSON.parse(readPref(STORE) ?? 'null') as Saved | null
-        if (s && typeof s.start === 'string' && Array.isArray(s.moves)) {
-          chess.load(s.start)
-          for (const san of s.moves) chess.move(san)
-          setStart(s.start)
-          if (isLevel(s.level)) setLevel(s.level)
-          if (s.color === 'w' || s.color === 'b') setColor(s.color)
-          if (s.mode === 'ai' || s.mode === 'duo') setMode(s.mode)
-          if (typeof s.resigned === 'boolean') setResigned(s.resigned)
-          setEvalCp(typeof s.evalCp === 'number' && Number.isFinite(s.evalCp) ? s.evalCp : null)
-        }
-      } catch {
-        chess.reset() // corrupted save: plain new game
-      }
-    }
-    sync()
-    setReady(true)
-  }, [chess, initialColor, initialFen, router, sync])
-
-  useEffect(() => {
-    if (!ready) return
-    const saved: Saved = { start, moves: chess.history(), level, color, mode, resigned, evalCp }
-    try {
-      localStorage.setItem(STORE, JSON.stringify(saved))
-    } catch {}
-  }, [ready, chess, fen, start, level, color, mode, resigned, evalCp])
-
-  // ─── engine reply ─────────────────────────────────────────────────────────────
-  const engineMove = useCallback(async () => {
-    if (!ready || !vsAi || resigned || chess.turn() === color || chess.isGameOver()) return
-    const my = gen.current
-    const asked = chess.fen()
-    if (askedFen.current === asked) return
-    askedFen.current = asked
-    setThinking(true)
-    try {
-      const uci = await getEngine().bestMove(asked, level)
-      if (my !== gen.current || chess.fen() !== asked) return
-      chess.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] })
-      sync()
-      soundFor(chess)
-      setNote({ fenBefore: asked, uci, ...engineMoveFacts(asked, uci) })
-    } catch (e) {
-      if ((e as Error).message === 'ENGINE_UNAVAILABLE') setEngineDown(true)
-    } finally {
-      if (askedFen.current === asked) askedFen.current = null
-      if (my === gen.current) setThinking(false)
-    }
-  }, [chess, color, level, ready, resigned, sync, vsAi])
-
-  useEffect(() => {
-    void engineMove()
-  }, [fen, engineMove, round])
-
-  const onMove = (m: BoardMove) => {
-    if (gameOver || thinking || (vsAi && chess.turn() !== color)) return
-    const before = chess.fen()
-    try {
-      chess.move(m)
-    } catch {
-      return
-    }
-    gen.current++
-    // the previous move's review is obsolete — drop it so the reply is not queued behind it (level 8 ≤ 3 s)
-    if (vsAi) getEngine().cancelAll()
-    askedFen.current = null
-    setNote(null)
-    sync()
-    soundFor(chess)
-    void engineMove() // queued first; the review goes after it
-    if (!vsAi) return
-    const my = gen.current
-    setReview(null)
-    setNoAnalysis(false)
-    setReviewing(true)
-    coach
-      .review(before, m.from + m.to + (m.promotion ?? ''), 'game', hint?.fen === before ? hint.lines : undefined)
-      .then((r) => {
-        if (my !== gen.current) return
-        setReview(r)
-        setEvalCp(r.evalAfterCp)
-      })
-      .catch((e: Error) => {
-        if (my !== gen.current || e.message === 'ENGINE_CANCELLED') return
-        setReview(null)
-        setNoAnalysis(true)
-      })
-      .finally(() => my === gen.current && setReviewing(false))
-  }
-
-  const reset = () => {
-    gen.current++
-    askedFen.current = null
-    getEngine().cancelAll()
-    setThinking(false)
-    setReviewing(false)
-    setReview(null)
-    setNoAnalysis(false)
-    setResigned(false)
-    setNote(null)
-    setRound((r) => r + 1)
-    setBadFen(false)
-  }
-
-  const newGame = (side: Side = color) => {
-    reset()
-    chess.load(DEFAULT_POSITION)
-    setStart(DEFAULT_POSITION)
-    setColor(side)
-    setEvalCp(0)
-    sync()
-  }
-
-  const undo = () => {
-    reset()
-    chess.undo()
-    if (vsAi && chess.turn() !== color) chess.undo()
-    setEvalCp(null) // the shown eval belonged to the undone position
-    sync()
-  }
-
-  const resign = () => {
-    reset()
-    setResigned(true)
-    playMoveSound('end')
-  }
-
-  const switchMode = (m: Mode) => {
-    if (m === mode) return
-    reset()
-    setMode(m)
-  }
-
-  // ─── G01/G03: best moves of the position the player is to move in ────────────
-  // Queued after the reply and the review; the next player move's cancelAll() drops it, so it never delays the engine.
-  const hintOn = vsAi && hintPref === '1' && ready && !gameOver && !thinking && chess.turn() === color
-  useEffect(() => {
-    if (!hintOn) return
-    const my = gen.current
-    getEngine()
-      .analyse(fen, REVIEW_ANALYSIS) // same search as the review's: the player's move reuses these lines
-      .then((lines) => my === gen.current && chess.fen() === fen && setHint({ fen, lines, arrows: hintArrows(lines) }))
-      .catch((e: Error) => e.message === 'ENGINE_UNAVAILABLE' && setEngineDown(true)) // cancelled / bad FEN: no arrows
-  }, [hintOn, fen, chess])
+  const g = useBotGame(props)
+  const { history, turn, start, fen, lastMove, bot, color, orientation, setFlipped, thinking, engineDown, review, reviewing, noAnalysis } = g
+  const { evalCp, note, ready, badFen, pending, setPending, vsAi, coachOn, coachPick, reason, gameOver, arrows, coach, lockedBot } = g
+  const { onMove, play, newGame, undo, resign, startBot, startDuo } = g
+  const [modal, setModal] = useState<{ kind: 'new'; tab: NewGameTab } | { kind: 'settings' } | null>(null)
+  const [evalPref] = useLocalPref('gw-chess-evalbar', '1')
+  const [autoPref] = useLocalPref('gw-chess-autoexplain', '0') // off by default: every auto call spends the limit
+  const coachColRef = useStickToEnd<HTMLElement>()
 
   // ─── view ─────────────────────────────────────────────────────────────────────
-  const orientation: Side = (vsAi ? color === 'b' : false) !== flipped ? 'b' : 'w'
-  const arrows = hintOn && hint?.fen === fen ? hint.arrows : []
 
-  const history = chess.history()
   const startTurn = start.split(' ')[1] === 'b' ? 1 : 0
   const startNo = Number(start.split(' ')[5]) || 1
   const plies: (string | null)[] = [...Array(startTurn).fill(null), ...history]
   const rows = Array.from({ length: Math.ceil(plies.length / 2) }, (_, i) => [plies[i * 2], plies[i * 2 + 1]] as const)
 
   const sideLabel = (side: Side) =>
-    vsAi ? (side === color ? t('you') : t('engine_level', { n: level })) : t(side === 'w' ? 'white' : 'black')
+    vsAi ? (side === color ? t('you') : `${t(bot.nameKey)} · ${bot.rating}`) : t(side === 'w' ? 'white' : 'black')
   const strip = (side: Side) => {
-    const toMove = !gameOver && chess.turn() === side
+    const toMove = !gameOver && turn === side
     const isEngine = vsAi && side !== color
     return (
       <div className={styles.strip} data-active={toMove || undefined}>
         <span className={styles.stripDot} data-side={side} aria-hidden="true" />
-        <span className={styles.stripName}>{sideLabel(side)}</span>
+        {isEngine ? (
+          <button type="button" className={styles.stripLevel} onClick={() => setModal({ kind: 'new', tab: 'bot' })} title={t('change_level')}>
+            <BotAvatar look={bot.look} size={28} className={styles.stripAvatar} />
+            {sideLabel(side)}
+            <span className={styles.stripChange}>{t('change_level')}</span>
+          </button>
+        ) : (
+          <span className={styles.stripName}>{sideLabel(side)}</span>
+        )}
         {isEngine && thinking && (
           <span className={styles.stripThinking} role="status">
             <span className={styles.dots} aria-hidden="true" />
@@ -273,7 +66,7 @@ export function ChessPlayPage({ initialFen, initialColor }: { initialFen?: strin
 
   const endText = () => {
     if (reason === 'checkmate') {
-      const winner: Side = chess.turn() === 'w' ? 'b' : 'w'
+      const winner: Side = turn === 'w' ? 'b' : 'w'
       return vsAi ? t(winner === color ? 'end_mate_you' : 'end_mate_engine') : t(winner === 'w' ? 'end_mate_white' : 'end_mate_black')
     }
     return t(`end_${reason}`)
@@ -286,17 +79,36 @@ export function ChessPlayPage({ initialFen, initialColor }: { initialFen?: strin
           <ArrowLeft size={18} strokeWidth={2} aria-hidden="true" />
         </Link>
         <h1 className={styles.title}>{t('play_title')}</h1>
+        <div className={styles.headTools}>
+          <StreakFlame />
+          <button type="button" className={`${styles.tool} ${styles.toolStrong}`} onClick={() => setModal({ kind: 'new', tab: vsAi ? 'bot' : 'duo' })}>
+            <Plus size={16} strokeWidth={2} aria-hidden="true" />
+            {t('new_game')}
+          </button>
+          <button type="button" className={styles.tool} onClick={() => setModal({ kind: 'settings' })} aria-label={t('settings')}>
+            <Settings2 size={16} strokeWidth={2} aria-hidden="true" />
+            <span className={styles.toolText}>{t('settings')}</span>
+          </button>
+        </div>
       </header>
+
+      <NewGameModal
+        open={modal?.kind === 'new'}
+        tab={modal?.kind === 'new' ? modal.tab : undefined}
+        onClose={() => setModal(null)}
+        onBot={startBot}
+        onDuo={startDuo}
+        bot={{ botId: bot.id, level: bot.level, color, coach: coachPick }}
+        botDisabled={engineDown}
+      />
+      <SettingsModal open={modal?.kind === 'settings'} onClose={() => setModal(null)} />
 
       {/* G05: coach | board | controls on desktop, the board centred; nothing above or beside the board changes its size */}
       <div className={styles.layout}>
-        <aside className={styles.coachCol} aria-label={tc('coach_title')}>
-          {/* newest line first in the DOM: the column is reversed so its scroll stays on the latest words */}
-          {vsAi && note && (
-            <EngineNoteCard key={note.fenBefore + note.uci} note={note} review={coach.review} explain={coach.explain} />
-          )}
-
-          {vsAi ? (
+        <aside ref={coachColRef} className={styles.coachCol} aria-label={tc('coach_title')}>
+          {/* chronological: a special bot's greeting, the player's move review, then the engine's reply; the box scrolls to the newest */}
+          {vsAi && bot.unlock && <BotLine bot={bot} text={t(bot.hiKey)} />}
+          {coachOn ? (
             <CoachPanel
               review={review}
               noAnalysis={noAnalysis}
@@ -305,21 +117,25 @@ export function ChessPlayPage({ initialFen, initialColor }: { initialFen?: strin
               autoExplain={autoPref === '1'}
             />
           ) : (
-            <CoachSays>{t('coach_duo')}</CoachSays>
+            <CoachSays>{t(vsAi ? 'coach_off' : 'coach_duo')}</CoachSays>
+          )}
+
+          {coachOn && note && (
+            <EngineNoteCard key={note.fenBefore + note.uci} note={note} review={coach.review} explain={coach.explain} />
           )}
         </aside>
 
         <section className={styles.boardCol} aria-label={tc('board_label')}>
           {strip(orientation === 'w' ? 'b' : 'w')}
           <div className={styles.stage}>
-            {vsAi && evalPref === '1' && evalCp !== null && <EvalBar cp={evalCp} orientation={orientation} className={styles.evalBar} />}
+            {coachOn && evalPref === '1' && evalCp !== null && <EvalBar cp={evalCp} orientation={orientation} className={styles.evalBar} />}
             <ChessBoard
-              fen={fen}
+              fen={pending?.fen ?? fen}
               orientation={orientation}
               onMove={onMove}
-              interactive={ready && !gameOver && !thinking && (!vsAi || chess.turn() === color)}
-              lastMove={lastMove}
-              check={checkSquare(chess.fen())}
+              interactive={ready && !pending && !gameOver && !thinking && (!vsAi || turn === color)}
+              lastMove={pending?.move ?? lastMove}
+              check={checkSquare(pending?.fen ?? fen)}
               arrows={arrows}
             />
           </div>
@@ -334,6 +150,13 @@ export function ChessPlayPage({ initialFen, initialColor }: { initialFen?: strin
             </p>
           )}
 
+          {lockedBot && (
+            <p className={styles.notice} role="status">
+              <Lock size={16} strokeWidth={2} aria-hidden="true" />
+              {t('bot_locked_fallback', { bot: t(lockedBot.nameKey), fallback: t(bot.nameKey) })}
+            </p>
+          )}
+
           {engineDown && (
             <p className={styles.engineDown} role="alert">
               <CloudOff size={16} strokeWidth={2} aria-hidden="true" />
@@ -341,9 +164,26 @@ export function ChessPlayPage({ initialFen, initialColor }: { initialFen?: strin
             </p>
           )}
 
+          {pending && (
+            <div className={styles.confirm} role="group" aria-label={t('confirm_prompt', { san: pending.san })}>
+              <p className={styles.confirmText}>{t('confirm_prompt', { san: pending.san })}</p>
+              <button type="button" className={styles.primary} onClick={() => play(pending.move)} autoFocus>
+                <Check size={16} strokeWidth={2.25} aria-hidden="true" />
+                {t('confirm_move')}
+              </button>
+              <button type="button" className={styles.ghostDark} onClick={() => setPending(null)}>
+                <X size={16} strokeWidth={2.25} aria-hidden="true" />
+                {t('confirm_cancel')}
+              </button>
+            </div>
+          )}
+
           {gameOver && (
             <div className={styles.end} role="status">
               <p className={styles.endText}>{endText()}</p>
+              {vsAi && bot.unlock && reason !== null && ['checkmate', 'resign'].includes(reason) && (
+                <BotLine bot={bot} text={t(reason === 'checkmate' && turn !== color ? bot.loseKey : bot.winKey)} dark />
+              )}
               <button type="button" className={styles.primary} onClick={() => newGame()}>
                 {t('again')}
               </button>
@@ -365,62 +205,10 @@ export function ChessPlayPage({ initialFen, initialColor }: { initialFen?: strin
                 {t('resign')}
               </button>
             )}
-            <button type="button" className={`${styles.tool} ${styles.toolStrong}`} onClick={() => newGame()}>
-              <Plus size={16} strokeWidth={2} aria-hidden="true" />
-              {t('new_game')}
-            </button>
           </div>
         </div>
 
         <aside className={styles.rail}>
-          <div className={styles.card}>
-            <div className={styles.field}>
-              <span className={styles.label} id="mode-label">{t('opponent')}</span>
-              <div className={styles.seg} role="group" aria-labelledby="mode-label">
-                <button type="button" aria-pressed={vsAi} disabled={engineDown} onClick={() => switchMode('ai')}>
-                  {t('mode_ai')}
-                </button>
-                <button type="button" aria-pressed={!vsAi} onClick={() => switchMode('duo')}>
-                  {t('mode_duo')}
-                </button>
-              </div>
-            </div>
-            {vsAi && (
-              <>
-                <div className={styles.field}>
-                  <span className={styles.label} id="level-label">
-                    {t('level')}
-                    <span className={styles.labelHint}>{t(`level_hint_${level}`)}</span>
-                  </span>
-                  <div className={`${styles.seg} ${styles.segLevels}`} role="group" aria-labelledby="level-label">
-                    {ENGINE_LEVELS.map((l) => (
-                      <button key={l.level} type="button" aria-pressed={level === l.level} onClick={() => setLevel(l.level)}>
-                        {l.level}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className={styles.field}>
-                  <span className={styles.label} id="color-label">
-                    {t('color')}
-                    <span className={styles.labelHint}>{t('color_hint')}</span>
-                  </span>
-                  <div className={styles.seg} role="group" aria-labelledby="color-label">
-                    <button type="button" aria-pressed={color === 'w'} onClick={() => newGame('w')}>
-                      <span className={styles.swatch} data-side="w" aria-hidden="true" />
-                      {t('white')}
-                    </button>
-                    <button type="button" aria-pressed={color === 'b'} onClick={() => newGame('b')}>
-                      <span className={styles.swatch} data-side="b" aria-hidden="true" />
-                      {t('black')}
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-
-
           <div className={styles.card}>
             <h2 className={styles.cardTitle}>{t('moves')}</h2>
             {rows.length === 0 ? (
@@ -436,35 +224,6 @@ export function ChessPlayPage({ initialFen, initialColor }: { initialFen?: strin
                 ))}
               </ol>
             )}
-          </div>
-
-          <div className={styles.card}>
-            <h2 className={styles.cardTitle}>{t('settings')}</h2>
-            <label className={styles.toggle}>
-              <input type="checkbox" checked={soundOn} onChange={(e) => setSoundOn(e.target.checked)} />
-              <span>{t('opt_sound')}</span>
-            </label>
-            {vsAi && (
-              <label className={styles.toggle}>
-                <input type="checkbox" checked={hintPref === '1'} onChange={(e) => setHintPref(e.target.checked ? '1' : '0')} />
-                <span>
-                  {t('opt_hints')}
-                  <small>{t('opt_hints_hint')}</small>
-                </span>
-              </label>
-            )}
-            <label className={styles.toggle}>
-              <input type="checkbox" checked={evalPref === '1'} onChange={(e) => setEvalPref(e.target.checked ? '1' : '0')} />
-              <span>{t('opt_evalbar')}</span>
-            </label>
-            <label className={styles.toggle}>
-              <input type="checkbox" checked={autoPref === '1'} onChange={(e) => setAutoPref(e.target.checked ? '1' : '0')} />
-              <span>
-                {t('opt_auto')}
-                <small>{t('opt_auto_hint')}</small>
-              </span>
-            </label>
-            <SkinPicker />
           </div>
 
           <p className={styles.credit}>
@@ -575,5 +334,20 @@ function EngineNoteCard({ note, review, explain }: { note: EngineNote; review: C
         </div>
       </CoachSays>
     </section>
+  )
+}
+
+// ─── G22: a special bot speaks at the start and after the result ─────────────
+
+function BotLine({ bot, text, dark }: { bot: Bot; text: string; dark?: boolean }) {
+  const t = useTranslations('chess.play')
+  return (
+    <div className={styles.botLine} data-dark={dark || undefined}>
+      <BotAvatar look={bot.look} size={40} />
+      <p>
+        <strong>{t(bot.nameKey)}</strong>
+        {text}
+      </p>
+    </div>
   )
 }
