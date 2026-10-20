@@ -1,0 +1,422 @@
+// Game review: same frame as /chess/play — coach | board | rail, the board centred under the head.
+
+.page {
+  --ink: #17181c;
+  --ink-soft: #5c5f6a;
+  --surface: #ffffff;
+  --line: #e6e5df;
+  --wash: #f3f2ed;
+  --accent: #17855a;
+  --danger: #b4321f;
+
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 0 16px 40px;
+  color: var(--ink);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+// ─── Head ────────────────────────────────────────────────────────────────────
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 52px;
+  padding: 6px 0;
+}
+
+.back {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin-left: -6px;
+  border-radius: 8px;
+  color: var(--ink-soft);
+
+  &:hover { color: var(--ink); background: var(--wash); }
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+}
+
+.title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+
+.headTools {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+
+  .tool { min-height: 36px; }
+}
+
+// ─── Layout (board size: window height minus the chrome, capped by the width between the side columns) ──
+
+.layout {
+  --side: 320px;
+  --gap: 24px;
+  --chrome: 290px;
+  --board: min(calc(100svh - var(--chrome)), calc(100vw - 2 * var(--side) - 2 * var(--gap) - 64px));
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: 'board' 'coach' 'rail';
+  gap: 16px;
+  align-items: start;
+
+  @media (min-width: 1100px) {
+    grid-template-columns: var(--side) auto var(--side);
+    grid-template-areas: 'coach board rail';
+    justify-content: center;
+    column-gap: var(--gap);
+  }
+}
+
+.boardCol {
+  grid-area: board;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  max-width: min(640px, calc(100svh - 200px));
+  min-width: 0;
+  margin: 0 auto;
+
+  @media (min-width: 1100px) {
+    width: var(--board);
+    max-width: none;
+    min-width: 420px;
+  }
+}
+
+.coachCol,
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+
+  @media (min-width: 1100px) { padding-top: 38px; } // level with the board's top edge
+}
+
+.coachCol { grid-area: coach; }
+.rail { grid-area: rail; }
+
+.stage {
+  position: relative;
+  display: flex;
+  gap: 8px;
+
+  > :last-child {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.stage > .evalBar {
+  @media (min-width: 1100px) {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: calc(100% + 6px);
+  }
+}
+
+// ─── Player strips ───────────────────────────────────────────────────────────
+
+.strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+  font-weight: 500;
+}
+
+.stripDot {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border-radius: 50%;
+  background: #f4f1ea;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.28);
+
+  &[data-side='b'] { background: #24221f; }
+}
+
+.stripName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stripAcc {
+  margin-left: auto;
+  padding: 1px 8px;
+  border-radius: 6px;
+  background: var(--wash);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+// ─── Step controls under the board ──────────────────────────────────────────
+
+.nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.6fr 1fr auto;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.navBtn {
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background-color 0.15s ease-out;
+
+  &:hover:not(:disabled) { background: var(--wash); }
+  &:disabled { opacity: 0.4; cursor: default; }
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+}
+
+.navMain {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--surface);
+
+  &:hover:not(:disabled) { background: color-mix(in srgb, var(--ink) 86%, var(--surface)); }
+}
+
+// ─── Cards ───────────────────────────────────────────────────────────────────
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+  cursor: pointer;
+
+  input {
+    appearance: none;
+    margin: 0;
+    width: 30px;
+    height: 18px;
+    flex: none;
+    border-radius: 999px;
+    background: radial-gradient(circle at 9px 50%, #fff 6px, transparent 6.5px), var(--line);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    transition: background-color 0.15s ease-out;
+
+    &:checked { background: radial-gradient(circle at 21px 50%, #fff 6px, transparent 6.5px), var(--accent); }
+    &:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  }
+}
+
+.pgn {
+  width: 100%;
+  min-height: 132px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--wash);
+  color: var(--ink);
+  font: 0.8125rem/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  resize: vertical;
+
+  &:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  &[aria-invalid='true'] { border-color: var(--danger); }
+}
+
+.tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease-out;
+
+  &:hover:not(:disabled) { background: var(--wash); }
+  &:disabled { opacity: 0.45; cursor: default; }
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+}
+
+.toolStrong {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--surface);
+
+  &:hover:not(:disabled) { background: color-mix(in srgb, var(--ink) 86%, var(--surface)); }
+}
+
+.progressText {
+  margin: 0;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--wash);
+  overflow: hidden;
+
+  span {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+.alert {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--danger) 9%, var(--surface));
+  color: var(--danger);
+  font-weight: 500;
+
+  svg { flex: none; }
+  span { flex: 1; min-width: 12em; }
+}
+
+.muted {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+}
+
+.error {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--danger);
+}
+
+.credit {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+}
+
+// ─── Coach line ──────────────────────────────────────────────────────────────
+
+.coachBody {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.coachCls {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-weight: 700;
+}
+
+.coachText {
+  margin: 0;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover { text-decoration: underline; text-underline-offset: 3px; }
+  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+}
+
+.explanation {
+  margin: 2px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--wash);
+}
+
+.notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.875rem;
+
+  svg { flex: none; }
+}
+
+:global(html.theme-dark),
+:global(html.pomodoro-dark) {
+  .page {
+    --ink: #ecebe6;
+    --ink-soft: #a3a39d;
+    --surface: #1b1c20;
+    --line: #2c2d33;
+    --wash: #24252a;
+    --accent: #4cc58f;
+    --danger: #f08a7a;
+  }
+
+  .stripDot { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3); }
+}

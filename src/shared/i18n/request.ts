@@ -3,7 +3,7 @@ import { getRequestConfig } from 'next-intl/server'
 import { cookies, headers } from 'next/headers'
 
 // Chess strings live in messages/chess/<area>/<locale>.json and are mounted as `chess.<area>`.
-const CHESS_AREAS = ['core', 'play', 'learn', 'call', 'course', 'progress', 'online', 'storm', 'tutor'] as const
+const CHESS_AREAS = ['core', 'play', 'learn', 'call', 'course', 'progress', 'online', 'storm', 'tutor', 'analysis'] as const
 
 async function chessMessages(locale: string) {
   const entries = await Promise.all(

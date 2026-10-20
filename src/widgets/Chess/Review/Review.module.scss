@@ -1,0 +1,215 @@
+// Review parts. Colours come from the page tokens (--ink, --ink-soft, --surface, --line, --wash, --accent)
+// with light fallbacks; the dark theme is the page's job.
+
+.muted {
+  margin: 0;
+  color: var(--ink-soft, #5c5f6a);
+  font-size: 0.875rem;
+}
+
+// ─── Accuracy card ───────────────────────────────────────────────────────────
+
+.accuracy {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.accHead {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+  gap: 8px;
+}
+
+.accSide {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 7px;
+  min-width: 0;
+}
+
+.accRight {
+  justify-items: end;
+  grid-template-columns: 1fr auto;
+
+  .accDot { grid-column: 2; grid-row: 1; }
+  .accName { grid-column: 1; grid-row: 1; text-align: right; }
+  .accValue { grid-column: 1 / -1; }
+}
+
+.accDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #f4f1ea;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+
+  &[data-side='b'] { background: #24221f; }
+}
+
+.accName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  color: var(--ink-soft, #5c5f6a);
+}
+
+.accValue {
+  grid-column: 1 / -1;
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.accLabel {
+  padding-bottom: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ink-soft, #5c5f6a);
+}
+
+.counts {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+
+  th {
+    padding: 3px 0;
+    text-align: left;
+    font-weight: 500;
+  }
+
+  td {
+    width: 2.2em;
+    padding: 3px 0;
+    text-align: center;
+    font-weight: 700;
+    color: var(--ink-soft, #5c5f6a);
+  }
+
+  .countIcon {
+    width: 28px;
+
+    svg { display: block; margin: 0 auto; }
+  }
+
+  tr[data-zero] {
+    th, td { opacity: 0.45; }
+  }
+}
+
+// ─── Eval graph ──────────────────────────────────────────────────────────────
+
+.graph {
+  position: relative;
+  height: 96px;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  touch-action: manipulation;
+
+  svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.graphBlack { fill: #3b3a37; }
+.graphWhite { fill: #f2f0ea; }
+.graphMid { stroke: rgba(128, 128, 128, 0.55); stroke-width: 1; }
+.graphCursor { stroke: var(--accent, #17855a); stroke-width: 2; }
+
+.graphDot {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.5px #fff;
+  pointer-events: none;
+
+  &[data-current] {
+    width: 13px;
+    height: 13px;
+    margin: -6.5px 0 0 -6.5px;
+  }
+}
+
+// ─── Move list ───────────────────────────────────────────────────────────────
+
+.list,
+.keyList {
+  max-height: 300px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  font-variant-numeric: tabular-nums;
+
+  @media (max-width: 1099px) { max-height: 260px; }
+}
+
+.row,
+.keyRow {
+  display: grid;
+  grid-template-columns: 2.6em 1fr 1fr;
+  align-items: center;
+}
+
+.keyRow {
+  grid-template-columns: 3em 1fr;
+}
+
+.no {
+  color: var(--ink-soft, #5c5f6a);
+  font-size: 0.8125rem;
+}
+
+.move {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  min-height: 30px;
+  margin: 1px 0;
+  padding: 0 8px 0 6px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover { background: var(--wash, #f3f2ed); }
+  &:focus-visible { outline: 2px solid var(--accent, #17855a); outline-offset: -2px; }
+
+  &[aria-current='true'] {
+    background: color-mix(in srgb, var(--accent, #17855a) 16%, transparent);
+    font-weight: 700;
+  }
+}
+
+.san {
+  white-space: nowrap;
+}
+
+.moveCls {
+  margin-left: auto;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+:global(html.theme-dark),
+:global(html.pomodoro-dark) {
+  .accDot { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3); }
+  .graphBlack { fill: #111214; }
+  .graphWhite { fill: #d9d7d0; }
+  .graphDot { box-shadow: 0 0 0 1.5px #1b1c20; }
+}
