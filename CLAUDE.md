@@ -151,6 +151,53 @@ Autopilot ведёт этот раздел между маркерами `autopi
 Единый источник правды исполнителей — `.autopilot/pdf-test-landing/interfaces.md` (контракты + копирайт-дек), читается ДО кода.
 Верификация каждого тикета — смоук выше; юнит-тестов нет, прототип статичный.
 
+# GoodWorker — шахматы (/chess)
+
+Шахматный раздел: игра с ботами (Stockfish в браузере) и ИИ-тренером, задачи Lichess, шторм, онлайн с Эло, профиль/серия/значки, разбор партии, доска в звонке, шахматные блоки тестов и узел road-map.
+
+## Маршруты
+`/chess` хаб · `/chess/play[?fen=&color=w|b | ?new=bot&bot=<id>&color=&coach=0|1 | ?new=duo]` (невалидный FEN → начало + уведомление; `/game/chess` → 307 сюда) · `/chess/puzzles` · `/chess/learn`, `/chess/learn/opening/[id]` · `/chess/storm` · `/chess/online` (лобби) · `/chess/game/[id]` (онлайн-партия) · `/chess/profile`, `/chess/u/[id]` · `/chess/analysis[?game=<id>]`. Страницы — `app/chess/**/page.tsx`, реализация — `src/_pages/Chess/{Hub,Play,Puzzles,Learn,Storm,Online,Game,Profile,Analysis}/`.
+
+## Команды
+Импорт задач (идемпотентен, ~50 тыс.): `set -a; source .env; set +a && npx tsx prisma/importLichessPuzzles.ts`.
+Самопроверки (`npx tsx <файл>`, каждая печатает `… ok`): `src/shared/lib/chess/{coachModel,puzzle,hintArrows,reviewModel}.selfcheck.ts`, `src/shared/lib/chess/server/{puzzleRating,coachInput,progress,online}.selfcheck.ts`, `src/shared/lib/chess/data/data.selfcheck.ts`, `src/_pages/Chess/Play/gameFacts.selfcheck.ts`, `src/_pages/Chess/Puzzles/puzzleRun.selfcheck.ts`, `src/_pages/Chess/Storm/stormModel.selfcheck.ts`, `src/widgets/Chess/Coach/evalFormat.selfcheck.ts`, `src/widgets/VideoRoom/CallChess/chessSync.selfcheck.ts`, `src/features/helpers/validateRoadMapNodes.selfcheck.ts`. Раннера нет; плюс `npx tsc --noEmit -p .`.
+
+## Ключевые файлы
+`src/shared/lib/chess/engine.ts` — `getEngine()` синглтон-воркер `{bestMove(fen, level 1..8), analyse(fen,{multiPV,depth?,movetimeMs?}) → EngineLine[], stop(), cancelAll()}`, очередь FIFO; ошибки `ENGINE_UNAVAILABLE` (навсегда) / `ENGINE_CANCELLED` / `BAD_FEN` / `NO_MOVE`. `EngineLine.scoreCp/mate` — со стороны хода.
+`coachModel.ts` (`classifyMove`/`cpLoss`/`toWhiteCp`, пороги 50/100/300, бросает `NO_ANALYSIS`), `reviewModel.ts` (`reviewGame`, `accuracy`, `winPct`, `loadGame`, `REVIEW_CLASSES`), `puzzle.ts` (`checkPuzzleMove`, `scorePuzzle`, `START_FEN`…), `hintArrows.ts`, `sound.ts`, `localPref.ts` — всё в `src/shared/lib/chess/`; данные `data/{openings,tactics,bots}.ts` (`OPENINGS`, `TACTICS`, `BOTS`, `getBot`, `levelBot`, `bookMove`, `botUnlocked`).
+Сервер `src/shared/lib/chess/server/`: `coachInput.ts` (валидация+промпт), `puzzleRating.ts`, `profile.ts`, `progressModel.ts` (чистое ядро) + `progress.ts` (`recordChessActivity` — единая точка прогресса), `online.ts` (чистые правила, `eloDeltas`, `seekWindow`) + `onlineStore.ts` (`commit`).
+API `app/api/chess/`: `coach`, `puzzles/next`, `puzzles/[id]/attempt`, `progress`, `activity`, `storm`, `profile/{me,[userId]}`, `seek`, `games` (+ `[id]/{move,join,resign,draw,abort,rematch}`), `players`.
+Виджеты `src/widgets/Chess/`: `Board` (`ChessBoard` — контролируемая: принять ход = отдать новый `fen`; `SkinPicker`, `useBoardTheme`/`usePieceSet`), `skins/` (по файлу на скин, регистрация `skins/index.ts`), `Coach` (`useMoveCoach`, `CoachPanel`, `EvalBar`, `CoachAvatar`), `Progress`, `Settings` (`NewGameModal`, `SettingsModal`, `ChessDialog`, `BotAvatar`, `TIME_CONTROLS`), `Review`, `Tutor/ChessTutorBlock`. Игра с ботом — `src/_pages/Chess/Play/useBotGame.ts`; эталон паттерна ревью хода — `ChessPlayPage.tsx`.
+
+## Архитектура
+Движок и тренер: Stockfish 19 lite (WASM, `public/stockfish/stockfish-19-lite-single.{js,wasm}`) крутится Web Worker'ом в браузере; `useMoveCoach().review` = анализ до/после → `classifyMove` → `MoveReview` (оценки с точки зрения белых); «Почему?» → `POST /api/chess/coach` → DeepSeek (`callAI` из `src/lib/openrouter.ts`, JSON) → `{text}`; лимиты `checkRateLimit`: гость 5/24ч по IP, user 100/24ч, VIP без лимита → `429 {error:'LIMIT', tier}`, нет ключа → 503. `context:'opening'` — сервер объясняет идею книжного хода, классы/оценки игнорирует. На ходе игрока / новой партии / смене задачи — `getEngine().cancelAll()`; устаревшие ревью отсекать счётчиком поколения.
+Задачи: `ChessPuzzle`/`ChessPuzzleAttempt`, `moves[0]` — ход соперника; `next` подбирает в окне ±150 от рейтинга (гость — 1200, решённые исключает клиент через `exclude`); рейтинг Elo K=32 меняет только первая попытка. `theme=doubleAttack` = fork ИЛИ discoveredAttack.
+Прогресс (`ChessProfile` + `ChessBadge`): `recordChessActivity(userId,{kind:'bot'|'online'|'puzzle'|'storm', tzOffsetMin,…})` — серия по местным дням, очки за ботов (потолок `DAILY_BOT_POINTS_CAP=300`/сутки), значки `BADGE_CODES`, дни VIP за значок по `VIP_REWARDS` (сейчас все `null`; выдача как промокод, тип транзакции `CHESS_BADGE`, значок один раз — `@@unique([userId, code])`). `online` пишет только сервер; рекорды шторма — `POST /api/chess/storm`.
+Онлайн: `ChessGame` (ходы UCI через пробел, часы `whiteMs/blackMs`+`turnStartedAt`, `status waiting|active|finished|aborted`, `rematchOf @unique`) и `ChessSeek`; реалтайма нет — опрос `GET /api/chess/games/[id]?since=ply` 1с (active) / 1,5с (waiting) / 3с, только при видимой вкладке (`useVisiblePoll`). Гонки — `onlineStore.commit`: `updateMany` по снимку `updatedAt+moves+status`, проигравший получает 409 `{error,state}`; Эло обоих (K=32) — в той же транзакции. Все партии рейтинговые; первые 2 полухода без часов, без первого хода — отмена через 60с; матчинг seek — окно 200 + 100 за каждые 10с ожидания.
+Боты: 13 (`BOTS`) — 8 по уровням движка + 5 спец-ботов, открываемых значками (`botUnlocked`); строки `chess.play.bot_<id>*`.
+Разбор: `reviewGame` → классы ходов как у chess.com, точность, график оценки, ключевые моменты; партия передаётся через `sessionStorage['gw-chess-analysis']` (`AnalysisHandoff`) или `?game=<id>`.
+Звонок: `src/widgets/VideoRoom/CallChess/` (режим `chess` главного слота, `chessSync.ts`); data channel `call_chess_start|state|move|stop` с `seq`, состояние шлёт только владелец; `GET /api/call/rooms` отдаёт `subjectSlug`.
+Тесты/курсы: `TaskBlockType.CHESS_PUZZLE {fen, solution UCI}` (балл только при `done && mistakes===0`) и `CHESS_STUDY` (инфо); узел `RoadMapBlockType.CHESS` (`RoadNodeData.chess`), редакторы/плееры — `src/widgets/Tasks/BlockEditor/ChessEditor/`; узел road-map засчитывается решением даже с ошибками, только сам узел.
+Скины: доска и фигуры выбираются отдельно (`localStorage` `gw-chess-board`, `gw-chess-pieces`; старый `gw-chess-skin` мигрирует один раз). Прочие ключи `gw-chess-*` (`game`, `sound`, `hints`, `coords`, `anim`, `confirm`, `evalbar`, `autoexplain`).
+i18n: строки НЕ в `messages/*.json`, а в `messages/chess/<area>/<locale>.json` (area — `CHESS_AREAS` в `src/shared/i18n/request.ts`: core, play, learn, call, course, progress, online, storm, tutor, analysis) → `useTranslations('chess.<area>')`; новая area — добавить в `CHESS_AREAS` + 4 локали.
+
+## Соглашения
+Предмет — `Category.slug = 'chess'` (искать по slug, не по id); каталог/road-map фильтруются `?category=chess`, репетиторы — `GET /api/teachers?categoryId=`. Сессия — через `getChatSessionUser()`. Иконки UI — lucide-react, фигуры скинов — свои SVG. Новые модели — своим блоком в самый конец `prisma/schema.prisma` + отдельная миграция `prisma/migrations/<ts>_chess_<имя>/`.
+
+## Окружение (только имена)
+`DEEPSEEK_API_KEY` (объяснения тренера; без него — 503, остальное работает), `DATABASE_URL`, `NEXTAUTH_SECRET`/`NEXTAUTH_URL`.
+
+## Подводные камни
+Локальная БД разошлась с миграциями: миграции чеса (`20261016120000_chess`, `20261019120000_chess_progress`, `20261019130000_chess_progress_guards`, `20261019140000_chess_online`) применялись только `npx prisma db execute --file <sql> --schema prisma/schema.prisma` + `npx prisma migrate resolve --applied <name>` + `npx prisma generate` (после `source .env`); никогда `migrate dev`/`db push`/`reset`.
+`prisma/schema.prisma` и `messages/*.json` содержат чужие незакоммиченные правки — только дописывать свой блок, не форматировать.
+`stockfish` закреплён `19.0.1`; файлы движка копирует `postinstall` (`scripts/copy-stockfish.mjs`, без пакета молча выходит — файлы в `public/stockfish/` закоммичены). Смена версии = правка `WORKER_URL` в `engine.ts` и списка файлов в скрипте.
+ADMIN = TEACHER: сид-репетитор входит ролью `ADMIN` — роль брать из `getChatSessionUser()`, не сравнивать `session.user.role` напрямую.
+После `prisma generate` запущенный `npm run dev` держит старый Prisma-клиент — новые поля/модели падают, пока не перезапустить dev-сервер.
+Серия считается в поясе клиента (`tzOffsetMin` = `Date#getTimezoneOffset()`), пояс фиксируется на сутки (`tzSetAt`) — смена пояса не даёт лишний день.
+Очки за ботов и счёт шторма считает браузер, сервер верит на слово (только rate-limit и дневной потолок). Правило: VIP в `VIP_REWARDS` назначать только значкам, которые проверяет сервер (`online_first_win`), иначе VIP фармится скриптом.
+`useBotGame` начинается с `'use no memo'` — партия живёт в одном мутируемом объекте chess.js, React Compiler не должен мемоизировать производные; не убирать.
+`20261019130000_chess_progress_guards` делает `ALTER TYPE "TransactionType" ADD VALUE IF NOT EXISTS` — нужен Postgres ≥ 12 (раньше `ADD VALUE` нельзя внутри транзакции, а `db execute`/`migrate deploy` оборачивают в неё).
+
 <!-- autopilot:end -->
 
 <!-- autopilot:chat-system:start -->
