@@ -1,4 +1,4 @@
-// ─── Chess · learn (tactics, openings, opening study) ────────────────────────
+// ─── Chess · learn: opening study page (the card list lives in LearnPage.module.scss) ──────
 
 .page {
   --bg: transparent;
@@ -20,10 +20,6 @@
   margin: 0 auto;
 }
 
-.header {
-  margin-bottom: 24px;
-}
-
 .title {
   margin: 0;
   font-size: clamp(1.75rem, 1.4rem + 1.4vw, 2.5rem);
@@ -38,131 +34,6 @@
   color: var(--ink-soft);
   max-width: 62ch;
   line-height: 1.55;
-}
-
-// ─── Tabs ────────────────────────────────────────────────────────────────────
-
-.tabs {
-  display: flex;
-  gap: 28px;
-  border-bottom: 1px solid var(--line);
-  margin-bottom: 8px;
-}
-
-.tab {
-  position: relative;
-  display: inline-flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 12px 0 14px;
-  border: 0;
-  background: none;
-  color: var(--ink-soft);
-  font: inherit;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-
-  &::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -1px;
-    height: 2px;
-    background: var(--ink);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  &:hover { color: var(--ink); }
-
-  &[aria-selected='true'] {
-    color: var(--ink);
-    &::after { transform: scaleX(1); }
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--ok);
-    outline-offset: 2px;
-  }
-}
-
-.tabCount {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--ink-soft);
-  font-variant-numeric: tabular-nums;
-}
-
-.guest {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin: 16px 0 4px;
-  color: var(--ink);
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-// ─── Tactics: a ruled index, not a card grid ────────────────────────────────
-
-.tactics {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  counter-reset: none;
-}
-
-.tactic {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px 32px;
-  align-items: center;
-  padding: 20px 0;
-  border-bottom: 1px solid var(--line);
-
-  @media (max-width: 640px) {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-.tacticName {
-  margin: 0;
-  font-size: 1.125rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-
-.tacticDesc {
-  margin: 4px 0 0;
-  color: var(--ink-soft);
-  max-width: 66ch;
-  line-height: 1.55;
-}
-
-.tacticAside {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  justify-content: flex-end;
-
-  @media (max-width: 640px) {
-    justify-content: space-between;
-  }
-}
-
-.solved {
-  font-size: 0.875rem;
-  font-weight: 650;
-  color: var(--ok);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-
-  &[data-zero] { color: var(--ink-soft); font-weight: 500; }
 }
 
 %btn {
@@ -180,20 +51,6 @@
   transition: background 120ms ease-out, border-color 120ms ease-out;
 
   &:focus-visible { outline: 2px solid var(--ok); outline-offset: 2px; }
-}
-
-.train {
-  @extend %btn;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  color: var(--ink);
-
-  svg { transition: transform 160ms ease-out; }
-
-  &:hover {
-    border-color: var(--ink);
-    svg { transform: translateX(3px); }
-  }
 }
 
 .primary {
@@ -214,80 +71,11 @@
   &:hover { border-color: var(--ink-soft); }
 }
 
-// ─── Openings list ───────────────────────────────────────────────────────────
-
-.openingGroups {
-  display: grid;
-  gap: 32px;
-  padding-top: 24px;
-}
-
-.groupTitle {
-  margin: 0 0 4px;
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: var(--ink-soft);
-}
-
-.openings {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: 32px;
-
-  @media (max-width: 720px) {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-.opening {
-  display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) auto;
-  grid-template-areas: 'eco name mark' 'eco line line';
-  gap: 2px 12px;
-  align-items: baseline;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--line);
-  color: var(--ink);
-  text-decoration: none;
-
-  &:hover .openingName { text-decoration: underline; text-underline-offset: 3px; }
-  &:focus-visible { outline: 2px solid var(--ok); outline-offset: 2px; border-radius: 4px; }
-}
-
 .eco {
-  grid-area: eco;
   font-size: 0.8125rem;
   font-weight: 700;
   color: var(--ink-soft);
   font-variant-numeric: tabular-nums;
-}
-
-.openingName {
-  grid-area: name;
-  font-weight: 700;
-}
-
-.openingLine {
-  grid-area: line;
-  font-size: 0.8125rem;
-  color: var(--ink-soft);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.mark {
-  grid-area: mark;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.75rem;
-  color: var(--ink-soft);
-
-  &[data-mark='done'] { color: var(--ok); font-weight: 650; }
 }
 
 // ─── Opening study ───────────────────────────────────────────────────────────
@@ -429,13 +217,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tab::after,
-  .train svg {
-    transition: none;
-  }
 }
 
 :global(html.theme-dark),

@@ -3,21 +3,43 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
-import { ArrowRight, Check, Eye, LogIn } from 'lucide-react'
-import { OPENINGS, TACTICS, tacticSolved, type Opening } from '@/shared/lib/chess/data'
-import { useOpeningProgress } from './openingProgress'
-import styles from './Learn.module.scss'
+import { Chess } from 'chess.js'
+import { ArrowRight, Check, ChessKing, Eye, LogIn, Sparkles } from 'lucide-react'
+import { ChessBoard, type BoardArrow } from '@/widgets/Chess/Board'
+import { OPENINGS, TACTICS, recommendTactics, tacticSolved, type Opening, type Tactic } from '@/shared/lib/chess/data'
+import { useOpeningProgress, type OpeningMark } from './openingProgress'
+import styles from './LearnPage.module.scss'
 
 export type LearnTab = 'tactics' | 'openings'
-type Progress = { byTheme: Record<string, { solved: number }> } | 'guest' | null
+type ByTheme = Record<string, { solved: number }>
+type Progress = { byTheme: ByTheme } | 'guest' | null
+
+/** a theme counts as mastered after this many clean solves — the card's bar fills up to it */
+const GOAL = 10
 
 /** "1. e4 e5 2. Nf3 Nc6 …" — first `plies` half-moves. */
 export function lineText(moves: string[], plies = moves.length) {
   return moves
     .slice(0, plies)
-    .map((san, i) => (i % 2 === 0 ? `${i / 2 + 1}. ${san}` : san))
+    .map((san, i) => (i % 2 === 0 ? `${i / 2 + 1}. ${san}` : san))
     .join(' ')
 }
+
+const sq = (uci: string) => ({ from: uci.slice(0, 2), to: uci.slice(2, 4) })
+
+// the idea move is the bright arrow; what it threatens is drawn fainter, in amber
+const tacticArrows = (t: Tactic): BoardArrow[] =>
+  t.example.arrows.map((a, i) => (i === 0 ? sq(a) : { ...sq(a), color: '#e8892f', opacity: 0.5 }))
+
+// position after each opening's main line (static data — computed once)
+const OPENING_END: Record<string, { fen: string; last: { from: string; to: string } }> = Object.fromEntries(
+  OPENINGS.map((o) => {
+    const g = new Chess()
+    for (const san of o.moves) g.move(san)
+    const last = g.history({ verbose: true }).at(-1)!
+    return [o.id, { fen: g.fen(), last: { from: last.from, to: last.to } }]
+  })
+)
 
 export function LearnPage({ tab: initialTab = 'tactics' }: { tab?: LearnTab }) {
   const t = useTranslations('chess.learn')
@@ -41,85 +63,178 @@ export function LearnPage({ tab: initialTab = 'tactics' }: { tab?: LearnTab }) {
     window.history.replaceState(null, '', next === 'tactics' ? '/chess/learn' : '/chess/learn?tab=openings')
   }
 
-  const group = (side: 'w' | 'b') => OPENINGS.filter((o) => o.side === side)
+  const byTheme = progress && progress !== 'guest' ? (progress.byTheme ?? {}) : null
+  const solvedOf = (id: string) => (byTheme ? tacticSolved(id, byTheme) : null)
+  const recommended = byTheme ? recommendTactics(byTheme) : []
+  const marked = Object.values(marks)
 
   return (
     <div className={styles.page}>
-      <div className={styles.container}>
-        <header className={styles.header}>
-          <h1 className={styles.title}>{t('ln_title')}</h1>
-          <p className={styles.lede}>{t('ln_lede')}</p>
-        </header>
+      <header className={styles.head}>
+        <h1 className={styles.title}>{t('ln_title')}</h1>
 
-        <div className={styles.tabs} role="tablist" aria-label={t('ln_title')}>
+        <div className={styles.seg} role="tablist" aria-label={t('ln_title')}>
           {(['tactics', 'openings'] as const).map((x) => (
-            <button key={x} type="button" role="tab" id={`tab-${x}`} aria-selected={tab === x} aria-controls={`panel-${x}`} className={styles.tab} onClick={() => pick(x)}>
+            <button key={x} type="button" role="tab" id={`tab-${x}`} aria-selected={tab === x} aria-controls={`panel-${x}`} onClick={() => pick(x)}>
               {t(`ln_tab_${x}`)}
-              <span className={styles.tabCount}>{x === 'tactics' ? TACTICS.length : OPENINGS.length}</span>
+              <span>{x === 'tactics' ? TACTICS.length : OPENINGS.length}</span>
             </button>
           ))}
         </div>
 
         {tab === 'tactics' ? (
+          progress === 'guest' ? (
+            <Link href="/login" className={styles.guest}>
+              <LogIn size={15} aria-hidden="true" />
+              {t('ln_guest')}
+            </Link>
+          ) : (
+            <dl className={styles.stats} aria-busy={!byTheme}>
+              <Stat label={t('ln_stat_started')} value={byTheme ? TACTICS.filter((x) => solvedOf(x.id)! > 0).length : '–'} of={TACTICS.length} />
+              {/* doubleAttack is a sum of two other themes — counting it would count those puzzles twice */}
+              <Stat label={t('ln_stat_solved')} value={byTheme ? TACTICS.filter((x) => x.id !== 'doubleAttack').reduce((n, x) => n + solvedOf(x.id)!, 0) : '–'} />
+            </dl>
+          )
+        ) : (
+          <dl className={styles.stats}>
+            <Stat label={t('ln_stat_viewed')} value={marked.length} />
+            <Stat label={t('ln_stat_done')} value={marked.filter((m) => m === 'done').length} of={OPENINGS.length} />
+          </dl>
+        )}
+      </header>
+
+      <div className={styles.room}>
+        {tab === 'tactics' ? (
           <section role="tabpanel" id="panel-tactics" aria-labelledby="tab-tactics">
-            {progress === 'guest' && (
-              <Link href="/login" className={styles.guest}>
-                <LogIn size={16} aria-hidden="true" />
-                {t('ln_guest')}
-              </Link>
-            )}
-            <ol className={styles.tactics}>
-              {TACTICS.map((x) => {
-                const solved = progress && progress !== 'guest' ? tacticSolved(x.id, progress.byTheme ?? {}) : null
-                return (
-                  <li key={x.id} className={styles.tactic}>
-                    <div className={styles.tacticText}>
-                      <h2 className={styles.tacticName}>{t(x.nameKey)}</h2>
-                      <p className={styles.tacticDesc}>{t(x.descKey)}</p>
-                    </div>
-                    <div className={styles.tacticAside}>
-                      {solved != null && (
-                        <span className={styles.solved} data-zero={solved === 0 || undefined}>
-                          {t('ln_solved', { n: solved })}
-                        </span>
-                      )}
-                      <Link href={`/chess/puzzles?mode=theme&theme=${x.id}`} className={styles.train}>
-                        {t('ln_train')}
-                        <ArrowRight size={16} aria-hidden="true" />
-                      </Link>
-                    </div>
-                  </li>
-                )
-              })}
-            </ol>
+            <ul className={styles.grid}>
+              {TACTICS.map((x) => (
+                <li key={x.id}>
+                  <TacticCard tactic={x} solved={solvedOf(x.id)} guest={progress === 'guest'} recommended={recommended.includes(x.id)} />
+                </li>
+              ))}
+            </ul>
           </section>
         ) : (
-          <section role="tabpanel" id="panel-openings" aria-labelledby="tab-openings" className={styles.openingGroups}>
-            {(['w', 'b'] as const).map((side) => (
-              <div key={side}>
-                <h2 className={styles.groupTitle}>{t(side === 'w' ? 'ln_for_white' : 'ln_for_black')}</h2>
-                <ul className={styles.openings}>
-                  {group(side).map((o: Opening) => (
-                    <li key={o.id}>
-                      <Link href={`/chess/learn/opening/${o.id}`} className={styles.opening}>
-                        <span className={styles.eco}>{o.eco}</span>
-                        <span className={styles.openingName}>{t(o.nameKey)}</span>
-                        <span className={styles.openingLine}>{lineText(o.moves, 6)}</span>
-                        {marks[o.id] && (
-                          <span className={styles.mark} data-mark={marks[o.id]}>
-                            {marks[o.id] === 'done' ? <Check size={13} aria-hidden="true" /> : <Eye size={13} aria-hidden="true" />}
-                            {t(marks[o.id] === 'done' ? 'ln_mark_done' : 'ln_mark_viewed')}
-                          </span>
-                        )}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+          <section role="tabpanel" id="panel-openings" aria-labelledby="tab-openings" className={styles.groups}>
+            {(['w', 'b'] as const).map((side) => {
+              const list = OPENINGS.filter((o) => o.side === side)
+              return (
+                <div key={side}>
+                  <h2 className={styles.groupTitle}>
+                    <SideMark side={side} />
+                    {t(side === 'w' ? 'ln_for_white' : 'ln_for_black')}
+                    <span>{list.length}</span>
+                  </h2>
+                  <ul className={styles.grid}>
+                    {list.map((o) => (
+                      <li key={o.id}>
+                        <OpeningCard opening={o} mark={marks[o.id]} />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )
+            })}
           </section>
         )}
       </div>
     </div>
+  )
+}
+
+function Stat({ label, value, of }: { label: string; value: number | string; of?: number }) {
+  return (
+    <div className={styles.stat}>
+      <dt>{label}</dt>
+      <dd>
+        {value}
+        {of != null && <span>/{of}</span>}
+      </dd>
+    </div>
+  )
+}
+
+function SideMark({ side }: { side: 'w' | 'b' }) {
+  return (
+    <span className={styles.side} data-side={side} aria-hidden="true">
+      <ChessKing size={14} strokeWidth={2.2} />
+    </span>
+  )
+}
+
+function TacticCard({ tactic, solved, guest, recommended }: { tactic: Tactic; solved: number | null; guest: boolean; recommended: boolean }) {
+  const t = useTranslations('chess.learn')
+  return (
+    <Link href={`/chess/puzzles?mode=theme&theme=${tactic.id}`} className={styles.card} data-recommended={recommended || undefined}>
+      <div className={styles.board}>
+        <ChessBoard fen={tactic.example.fen} orientation="w" interactive={false} coords={false} effects={false} animate={false} arrows={tacticArrows(tactic)} />
+      </div>
+      <div className={styles.info}>
+        <div className={styles.nameRow}>
+          <h3 className={styles.name}>{t(tactic.nameKey)}</h3>
+          {recommended && (
+            <span className={styles.badge}>
+              <Sparkles size={12} aria-hidden="true" />
+              {t('ln_recommended')}
+            </span>
+          )}
+        </div>
+        <p className={styles.gist}>{t(tactic.gistKey)}</p>
+        <div className={styles.foot}>
+          {guest ? (
+            <span className={styles.footText}>{t('ln_train')}</span>
+          ) : solved == null ? (
+            <span className={styles.footText} />
+          ) : solved === 0 ? (
+            <span className={styles.pill}>{t('ln_new')}</span>
+          ) : (
+            <span className={styles.meter} data-full={solved >= GOAL || undefined}>
+              <span className={styles.bar} aria-hidden="true">
+                <span style={{ width: `${Math.min(100, (solved / GOAL) * 100)}%` }} />
+              </span>
+              <span className={styles.footText}>{solved >= GOAL ? t('ln_mastered', { n: solved }) : t('ln_progress', { n: solved, goal: GOAL })}</span>
+            </span>
+          )}
+          <ArrowRight className={styles.go} size={16} aria-hidden="true" />
+        </div>
+      </div>
+    </Link>
+  )
+}
+
+function OpeningCard({ opening, mark }: { opening: Opening; mark?: OpeningMark }) {
+  const t = useTranslations('chess.learn')
+  const end = OPENING_END[opening.id]
+  return (
+    <Link href={`/chess/learn/opening/${opening.id}`} className={styles.card}>
+      <div className={styles.board}>
+        <ChessBoard fen={end.fen} orientation={opening.side} interactive={false} coords={false} effects={false} animate={false} lastMove={end.last} />
+      </div>
+      <div className={styles.info}>
+        <div className={styles.nameRow}>
+          <h3 className={styles.name}>{t(opening.nameKey)}</h3>
+          <span className={styles.eco}>{opening.eco}</span>
+        </div>
+        <p className={styles.gist} title={lineText(opening.moves)}>
+          {lineText(opening.moves, 6)}
+        </p>
+        <div className={styles.foot}>
+          <span className={styles.sideText} title={t(opening.side === 'w' ? 'ln_side_w' : 'ln_side_b')}>
+            <SideMark side={opening.side} />
+            <span className={styles.srOnly}>{t(opening.side === 'w' ? 'ln_side_w' : 'ln_side_b')}</span>
+            {t('ln_moves', { n: Math.ceil(opening.moves.length / 2) })}
+          </span>
+          {mark ? (
+            <span className={styles.pill} data-mark={mark}>
+              {mark === 'done' ? <Check size={12} aria-hidden="true" /> : <Eye size={12} aria-hidden="true" />}
+              {t(mark === 'done' ? 'ln_mark_done' : 'ln_mark_viewed')}
+            </span>
+          ) : (
+            <span className={styles.pill}>{t('ln_new_opening')}</span>
+          )}
+          <ArrowRight className={styles.go} size={16} aria-hidden="true" />
+        </div>
+      </div>
+    </Link>
   )
 }

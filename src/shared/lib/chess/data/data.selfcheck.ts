@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { Chess } from 'chess.js'
-import { OPENINGS, TACTICS, BOTS, bookMove, getBot } from '.'
+import { OPENINGS, TACTICS, BOTS, bookMove, getBot, recommendTactics } from '.'
 import { BADGE_CODES } from '../server/progressModel'
 import { SKINS, skinOpen } from '../../../../widgets/Chess/skins'
 
@@ -13,6 +13,28 @@ assert.deepEqual(
   ['attraction', 'backRankMate', 'deflection', 'discoveredAttack', 'doubleAttack', 'fork', 'hangingPiece', 'intermezzo',
     'mateIn1', 'mateIn2', 'mateIn3', 'pin', 'promotion', 'sacrifice', 'skewer'].sort()
 )
+// G40: every tactic card shows a position of its theme; the first arrow is the idea move and it is legal there
+for (const t of TACTICS) {
+  const g = new Chess(t.example.fen) // throws on a bad FEN
+  const [idea, ...rest] = t.example.arrows
+  assert.doesNotThrow(() => g.move({ from: idea.slice(0, 2), to: idea.slice(2, 4), promotion: idea[4] }), `${t.id}: illegal idea ${idea}`)
+  for (const a of rest) assert.match(a, /^[a-h][1-8][a-h][1-8]$/, `${t.id}: arrow ${a}`)
+}
+// the mate examples really are mates: one move for mateIn1 / backRankMate
+for (const id of ['mateIn1', 'backRankMate']) {
+  const t = TACTICS.find((x) => x.id === id)!
+  const g = new Chess(t.example.fen)
+  g.move({ from: t.example.arrows[0].slice(0, 2), to: t.example.arrows[0].slice(2, 4) })
+  assert.ok(g.isCheckmate(), `${id}: idea move mates`)
+}
+// «рекомендуем»: the two themes with the fewest solved; ties keep the list order (basics first)
+assert.deepEqual(recommendTactics({}), ['fork', 'pin'])
+const five = Object.fromEntries(['fork', 'pin', 'skewer', 'discoveredAttack', 'deflection', 'attraction', 'intermezzo', 'sacrifice',
+  'hangingPiece', 'backRankMate', 'mateIn1', 'mateIn2', 'mateIn3'].map((k) => [k, { solved: 5 }]))
+assert.deepEqual(recommendTactics({ ...five, deflection: { solved: 1 } }), ['promotion', 'deflection'])
+// doubleAttack counts fork + discoveredAttack: 0 + 0 here, so it ties at zero and comes before discoveredAttack
+assert.deepEqual(recommendTactics({ ...five, fork: { solved: 0 }, discoveredAttack: { solved: 0 }, promotion: { solved: 3 } }), ['fork', 'doubleAttack'])
+
 assert.equal(OPENINGS.length, 20)
 assert.equal(new Set(OPENINGS.map((o) => o.id)).size, 20, 'opening ids unique')
 
@@ -27,7 +49,7 @@ for (const o of OPENINGS) {
 // Every key the data points to exists in all 4 locale files of the learn area.
 for (const locale of ['ru', 'en', 'hi', 'zh']) {
   const msgs = JSON.parse(readFileSync(join(__dirname, '../../../../../messages/chess/learn', `${locale}.json`), 'utf8'))
-  for (const k of [...OPENINGS.flatMap((o) => [o.nameKey, o.ideaKey]), ...TACTICS.flatMap((t) => [t.nameKey, t.descKey])]) {
+  for (const k of [...OPENINGS.flatMap((o) => [o.nameKey, o.ideaKey]), ...TACTICS.flatMap((t) => [t.nameKey, t.descKey, t.gistKey])]) {
     assert.equal(typeof msgs[k], 'string', `${locale}: missing ${k}`)
   }
 }
