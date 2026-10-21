@@ -3,6 +3,7 @@ import { cloneElement, useId, type FC, type ReactElement, type ReactNode, type S
 export type SkinId =
   | 'classic' | 'vintage' | 'night' | 'bordo' | 'powder' | 'wireframe'
   | 'gold' | 'marble' | 'neon' | 'nightgrid' | 'ice' | 'emerald' | 'sunset' | 'graphite'
+  | 'monsters' | 'vikings' | 'candy' | 'lair' | 'fjord' | 'sweets'
 
 export type PieceCode =
   | 'wK' | 'wQ' | 'wR' | 'wB' | 'wN' | 'wP'
@@ -21,6 +22,8 @@ export type SkinDef = {
   unlock?: string
   /** a reward that is only a board colouring or only a piece set; the 6 base skins are both */
   only?: 'board' | 'pieces'
+  /** a themed piece set names the board colouring it was drawn for — its picker preview stands on that board */
+  pair?: SkinId
   pieces: Record<PieceCode, FC<{ className?: string }>>
 }
 

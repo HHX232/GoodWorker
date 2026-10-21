@@ -1,5 +1,8 @@
 import { bordo } from './bordo'
-import { emerald, graphite, ice, sunset } from './boards'
+import { emerald, fjord, graphite, ice, lair, sunset, sweets } from './boards'
+import { candy } from './candy'
+import { monsters } from './monsters'
+import { vikings } from './vikings'
 import { gold } from './gold'
 import { marble } from './marble'
 import { neon } from './neon'
@@ -13,7 +16,9 @@ import type { SkinDef, SkinId } from './types'
 
 export type { PieceCode, SkinDef, SkinId } from './types'
 
-export const SKINS: SkinDef[] = [classic, vintage, night, bordo, powder, wireframe, gold, marble, neon, nightgrid, ice, emerald, sunset, graphite]
+export const SKINS: SkinDef[] = [classic, vintage, night, bordo, powder, wireframe,
+  monsters, vikings, candy, lair, fjord, sweets,
+  gold, marble, neon, nightgrid, ice, emerald, sunset, graphite]
 export const BOARD_SKINS = SKINS.filter((s) => s.only !== 'pieces')
 export const PIECE_SKINS = SKINS.filter((s) => s.only !== 'board')
 

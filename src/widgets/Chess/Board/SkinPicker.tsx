@@ -74,10 +74,11 @@ export function SkinPicker({ className }: { className?: string }) {
         {PIECE_SKINS.map((s) => {
           const N = s.pieces.wN
           const Q = s.pieces.bQ
+          const tb = s.pair ? getSkin(s.pair) : board // a themed set previews on the board it was drawn for
           return option(s, piecesId === s.id, () => setPieces(s.id), (
             <span
               className={styles.tile}
-              style={{ '--l': board.light, '--d': board.dark, '--f': board.frame ?? 'rgba(0,0,0,0.12)' } as CSSProperties}
+              style={{ '--l': tb.light, '--d': tb.dark, '--f': tb.frame ?? 'rgba(0,0,0,0.12)' } as CSSProperties}
               data-kind="pieces"
               aria-hidden="true"
             >

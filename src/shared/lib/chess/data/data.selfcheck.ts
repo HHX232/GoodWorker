@@ -61,7 +61,15 @@ const rewards = SKINS.filter((s) => s.unlock)
 assert.ok(rewards.filter((s) => s.only !== 'board').length >= 4, 'reward piece sets')
 assert.ok(rewards.filter((s) => s.only !== 'pieces').length >= 4, 'reward boards')
 for (const s of rewards) assert.ok(BADGE_CODES.includes(s.unlock!), `${s.id}: unknown badge ${s.unlock}`)
-assert.deepEqual(SKINS.filter((s) => !s.unlock).map((s) => s.id), ['classic', 'vintage', 'night', 'bordo', 'powder', 'wireframe'])
+assert.deepEqual(SKINS.filter((s) => !s.unlock).map((s) => s.id), ['classic', 'vintage', 'night', 'bordo', 'powder', 'wireframe',
+  'monsters', 'vikings', 'candy', 'lair', 'fjord', 'sweets'])
+// G37: each themed set names the board it was drawn for — a board colouring, open to all
+for (const [set, board] of [['monsters', 'lair'], ['vikings', 'fjord'], ['candy', 'sweets']] as const) {
+  const s = SKINS.find((x) => x.id === set)!
+  assert.equal(s.only, 'pieces', `${set}: a piece set`)
+  assert.equal(s.pair, board, `${set}: paired with ${board}`)
+  assert.equal(SKINS.find((x) => x.id === board)?.only, 'board', `${board}: a board colouring`)
+}
 for (const locale of ['ru', 'en', 'hi', 'zh']) {
   const msgs = JSON.parse(readFileSync(join(__dirname, '../../../../../messages/chess/core', `${locale}.json`), 'utf8'))
   for (const s of SKINS) assert.equal(typeof msgs[s.labelKey], 'string', `${locale}: missing ${s.labelKey}`)
