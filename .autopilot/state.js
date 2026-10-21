@@ -8,7 +8,7 @@ window.STATE =
   "memoryFile": "CLAUDE.md",
   "startedAt": "2026-10-15T23:45:00+03:00",
   "updatedAt": "2026-10-21T03:30:00+03:00",
-  "finishedAt": "2026-10-21T12:40:00+03:00",
+  "finishedAt": "2026-10-21T14:30:00+03:00",
   "stages": [
     {
       "id": "preflight",
@@ -567,6 +567,41 @@ window.STATE =
       "startedAt": "2026-10-21T12:12:00+03:00",
       "commit": "83056a2",
       "finishedAt": "2026-10-21T12:40:00+03:00"
+    },
+    {
+      "id": "23",
+      "title": "Боевой лендинг /info-chess (Hero A, кинематографично)",
+      "requirements": [
+        "R11",
+        "G39"
+      ],
+      "blockedBy": [],
+      "wave": 11,
+      "zone": [
+        "app/info-chess/",
+        "src/_pages/Chess/Landing/"
+      ],
+      "status": "done",
+      "retries": 0,
+      "startedAt": "2026-10-21T13:00:00+03:00",
+      "commit": "2216925",
+      "finishedAt": "2026-10-21T13:40:00+03:00"
+    },
+    {
+      "id": "24",
+      "title": "«Изучать» карточками",
+      "requirements": [
+        "G40"
+      ],
+      "blockedBy": [],
+      "wave": 12,
+      "zone": [
+        "src/_pages/Chess/Learn/"
+      ],
+      "status": "done",
+      "retries": 0,
+      "startedAt": "2026-10-21T13:50:00+03:00",
+      "finishedAt": "2026-10-21T14:30:00+03:00"
     }
   ],
   "coverage": {
