@@ -1,6 +1,7 @@
 import { prisma } from '@/shared/prisma/prisma'
 import { GUEST_PUZZLE_RATING } from './puzzleRating'
-import { applyActivity, localDay, streakState, vipDaysFor, vipExpiryAfterReward, type ActivityInput } from './progressModel'
+import { Prisma } from '@prisma/client'
+import { applyActivity, localDay, streakState, vipDaysFor, vipExpiryAfterReward, vipRewardsFrom, type ActivityInput } from './progressModel'
 
 export * from './progressModel'
 
@@ -60,11 +61,31 @@ export async function findChessPlayer(id: string): Promise<ChessPlayerDto | null
   return s ? { ...s, isTeacher: false } : null
 }
 
+// G25: таблица дней VIP из админки; кэш на процесс ≤ 60 с. Сохранение в админке сбрасывает кэш только своего процесса:
+// при нескольких инстансах изменение вступает в силу в течение 60 с, не мгновенно.
+const VIP_CACHE_MS = 60_000
+let vipCache: { at: number; table: Record<string, number> } | null = null
+
+export async function getVipRewards(): Promise<Record<string, number>> {
+  if (vipCache && Date.now() - vipCache.at < VIP_CACHE_MS) return vipCache.table
+  const row = await prisma.chessSettings.findUnique({ where: { id: 'global' }, select: { vipRewards: true } })
+  vipCache = { at: Date.now(), table: vipRewardsFrom(row?.vipRewards ?? null) }
+  return vipCache.table
+}
+
+/** Таблица уже проверена parseVipRewards (0 = выкл. — хранится, чтобы не подмешались значения по умолчанию). */
+export async function saveVipRewards(table: Record<string, number>) {
+  const vipRewards = table as Prisma.InputJsonObject
+  await prisma.chessSettings.upsert({ where: { id: 'global' }, update: { vipRewards }, create: { id: 'global', vipRewards } })
+  vipCache = null
+}
+
 /**
  * Единая точка прогресса: серия, очки за ботов, значки, дни VIP за значки (G12–G13.1).
  * Онлайн (T12) и шторм (T13) зовут её на сервере; бот и решебник — через POST /api/chess/activity.
  */
 export async function recordChessActivity(userId: string, input: ActivityInput, now = new Date()) {
+  const vipRewards = await getVipRewards()
   const result = await prisma.$transaction(async (tx) => {
     // ON CONFLICT вместо upsert: первая активность нового пользователя в двух вкладках сразу не падает P2002
     await tx.$executeRaw`INSERT INTO "ChessProfile" ("userId", "updatedAt") VALUES (${userId}, NOW()) ON CONFLICT ("userId") DO NOTHING`
@@ -82,18 +103,23 @@ export async function recordChessActivity(userId: string, input: ActivityInput, 
       pointsToday: cur.pointsToday,
     }
     const r = applyActivity(state, owned, input, now)
-    if (!r.counted) return { newBadges: [] as string[], streakChanged: false }
+    if (!r.counted) return { newBadges: [] as string[], streakChanged: false, vipDays: 0 }
 
     await tx.chessProfile.update({ where: { userId }, data: { ...r.next, tzSetAt: r.next.tzSetAt ? new Date(r.next.tzSetAt) : null } })
     // уникальность (userId, code) — значок и его VIP выдаются один раз даже при гонке
     const created = r.newBadges.length
       ? (await tx.chessBadge.createManyAndReturn({ data: r.newBadges.map((code) => ({ userId, code })), skipDuplicates: true, select: { code: true } })).map((b) => b.code)
       : []
-    const days = vipDaysFor(created)
+    const days = vipDaysFor(created, vipRewards)
     if (days > 0) await grantVipDays(tx, userId, days, created, now)
-    return { newBadges: created, streakChanged: r.streakChanged }
+    return { newBadges: created, streakChanged: r.streakChanged, vipDays: days }
   })
   return { profile: await loadChessProgress(userId), ...result }
+}
+
+const badgeLabelRu = (code: string) => {
+  const n = code.match(/\d+$/)?.[0]
+  return code.startsWith('points_') ? `${n} очков` : code.startsWith('streak_') ? `серия ${n} дн.` : code
 }
 
 type Tx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0]
@@ -101,7 +127,8 @@ type Tx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0]
 // Путь applyPromoCode (isVip + vipExpiresAt + VipTransaction), но свой тип CHESS_BADGE — запись отличима от промокода.
 // Бессрочный VIP срок не получает (vipExpiryAfterReward → null): пишем только транзакцию.
 async function grantVipDays(tx: Tx, userId: string, days: number, codes: string[], now: Date) {
-  const description = `chess-badge:${codes.join(',')} +${days} дн. VIP`
+  // показывается админке как есть (статистика → «VIP-транзакции»): человеческим текстом, без кодов значков
+  const description = `Награда за шахматный значок (${codes.map(badgeLabelRu).join(', ')}): +${days} дн. VIP`
   const select = { isVip: true, vipExpiresAt: true } as const
   const teacher = await tx.teacher.findUnique({ where: { id: userId }, select })
   const student = teacher ? null : await tx.student.findUnique({ where: { id: userId }, select })

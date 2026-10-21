@@ -4,8 +4,8 @@
   --ink: #17181c;
   --ink-soft: #5c5f6a;
   --surface: #ffffff;
-  --line: #e6e5df;
-  --wash: #f3f2ed;
+  --line: #e4e4e8;
+  --wash: #f2f2f4;
   --accent: #17855a;
   --danger: #b4321f;
   --up: #17855a;
@@ -13,7 +13,7 @@
 
   max-width: 1480px;
   margin: 0 auto;
-  padding: 0 16px 40px;
+  padding: 0 16px 16px;
   color: var(--ink);
   font-size: 0.9375rem;
   line-height: 1.5;
@@ -25,19 +25,6 @@
   gap: 6px;
   min-height: 52px;
   padding: 6px 0;
-}
-
-.back {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  margin-left: -6px;
-  border-radius: 8px;
-  color: var(--ink-soft);
-
-  &:hover { color: var(--ink); background: var(--wash); }
-  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 }
 
 .title {
@@ -440,7 +427,7 @@
   display: grid;
   gap: 16px;
   max-width: 1080px;
-  margin: 8px auto 0;
+  margin: 0 auto;
 
   @media (min-width: 960px) {
     grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
@@ -485,7 +472,7 @@
 
 .tcGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
 
   button {
@@ -564,7 +551,7 @@
   --left: 280px;
   --right: 300px;
   --gap: 24px;
-  --board: min(calc(100svh - 176px), calc(100vw - var(--left) - var(--right) - 2 * var(--gap) - 64px));
+  --board: min(calc(var(--chess-vh, 100svh) - 176px), calc(var(--chess-vw, 100vw) - var(--left) - var(--right) - 2 * var(--gap) - 64px));
 
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -592,7 +579,7 @@
 .boardArea {
   grid-area: board;
   width: 100%;
-  max-width: min(640px, calc(100svh - 260px));
+  max-width: min(640px, calc(var(--chess-vh, 100svh) - 260px));
   min-width: 0;
   margin: 0 auto;
 
@@ -606,7 +593,7 @@
 .oppArea,
 .meArea {
   width: 100%;
-  max-width: min(640px, calc(100svh - 260px));
+  max-width: min(640px, calc(var(--chess-vh, 100svh) - 260px));
   margin: 0 auto;
 
   @media (min-width: 1100px) { max-width: none; }

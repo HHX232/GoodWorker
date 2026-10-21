@@ -2,14 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { useTranslations } from 'next-intl'
-import { ArrowLeft, Check, LogIn, RotateCcw, SearchX, Trophy, X, Zap } from 'lucide-react'
+import { Check, LogIn, RotateCcw, SearchX, Trophy, X, Zap } from 'lucide-react'
 import { ChessBoard, type BoardMove } from '@/widgets/Chess/Board'
 import { playMoveSound } from '@/shared/lib/chess/sound'
 import { checkSquare } from '@/shared/lib/chess/puzzle'
 import type { ChessProgressDto } from '@/shared/lib/chess/server/progress'
-import { BadgeMedal, StreakFlame, badgeText, setMyChessProgress, useMyChessProgress } from '@/widgets/Chess/Progress'
+import { BadgeMedal, badgeText, setMyChessProgress, useMyChessProgress } from '@/widgets/Chess/Progress'
 import { playerColor, replyMove, soundKind, startRun, tryMove, type PuzzleRun, type Sq } from '../Puzzles/puzzleRun'
 import { STORM_MAX_ERRORS, miss, solve, startStorm, stormMinRating, tick, timeLeftMs, type StormMode, type StormState } from './stormModel'
 import styles from './Storm.module.scss'
@@ -28,11 +29,12 @@ const clock = (ms: number) => {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 }
 
-export function StormPage() {
+/** `start` (from `?mode=3|5`, the shell's modes modal) begins that run at once. */
+export function StormPage({ start }: { start?: StormMode }) {
   const t = useTranslations('chess.storm')
   const tp = useTranslations('chess.progress')
-  const th = useTranslations('chess.play')
   const { status: auth } = useSession()
+  const router = useRouter()
   const me = useMyChessProgress()
 
   const [mode, setMode] = useState<StormMode>(3)
@@ -111,6 +113,14 @@ export function StormPage() {
     setSaved(null)
     show(0)
   }
+
+  // a run picked in the modes modal starts on arrival; the URL drops ?mode so a reload shows the start screen
+  useEffect(() => {
+    if (!start) return
+    begin(start)
+    router.replace('/chess/storm')
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per arrival with ?mode
+  }, [start])
 
   // ─── clock ──────────────────────────────────────────────────────────────────
   const running = !!storm && !storm.over
@@ -197,11 +207,7 @@ export function StormPage() {
 
   const head = (
     <header className={styles.head}>
-      <Link href="/chess" className={styles.back} aria-label={th('hub_title')}>
-        <ArrowLeft size={18} strokeWidth={2} aria-hidden="true" />
-      </Link>
       <h1 className={styles.title}>{t('title')}</h1>
-      <StreakFlame className={styles.flame} />
     </header>
   )
 

@@ -2,8 +2,8 @@
   --ink: #17181c;
   --ink-soft: #5c5f6a;
   --surface: #ffffff;
-  --line: #e6e5df;
-  --wash: #f3f2ed;
+  --line: #e4e4e8;
+  --wash: #f2f2f4;
   --accent: #17855a;
   --fire: #e2561b;
 
@@ -14,17 +14,15 @@
   line-height: 1.5;
 }
 
-.back {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 36px;
-  color: var(--ink-soft);
-  font-size: 0.9375rem;
-  text-decoration: none;
+// the shell's profile drawer: one column, the drawer gives the padding
+.compact {
+  padding: 0;
 
-  &:hover { color: var(--ink); }
-  &:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+  .head { margin-top: 4px; }
+  .who h1 { font-size: 1.5rem; }
+  .top { grid-template-columns: minmax(0, 1fr); margin: 20px 0 28px; }
+  .skeleton { margin-top: 8px; }
+  .empty { margin-top: 8px; }
 }
 
 .skeleton {

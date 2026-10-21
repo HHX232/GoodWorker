@@ -37,6 +37,21 @@ function tone(ac: AudioContext, at: number, freq: number, gain: number, dur: num
   o.stop(at + dur + 0.02)
 }
 
+// short rising blip — the "pop" of a captured piece on the board (the visual pop lasts ~260 ms)
+function pop(ac: AudioContext, at: number) {
+  const o = ac.createOscillator()
+  const g = ac.createGain()
+  o.type = 'triangle'
+  o.frequency.setValueAtTime(420, at)
+  o.frequency.exponentialRampToValueAtTime(1250, at + 0.07)
+  g.gain.setValueAtTime(0.0001, at)
+  g.gain.exponentialRampToValueAtTime(0.16, at + 0.008)
+  g.gain.exponentialRampToValueAtTime(0.0001, at + 0.11)
+  o.connect(g).connect(ac.destination)
+  o.start(at)
+  o.stop(at + 0.13)
+}
+
 export function playMoveSound(kind: MoveSoundKind) {
   if (typeof window === 'undefined' || readPref(KEY) === 'off') return
   try {
@@ -47,6 +62,7 @@ export function playMoveSound(kind: MoveSoundKind) {
     if (kind === 'capture') {
       tock(ctx, t, 900, 2.2, 0.09)
       tock(ctx, t + 0.045, 1700, 1.4, 0.06)
+      pop(ctx, t + 0.03)
     }
     if (kind === 'check') {
       tock(ctx, t, 1400, 1.4, 0.07)

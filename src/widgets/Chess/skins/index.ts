@@ -1,4 +1,9 @@
 import { bordo } from './bordo'
+import { emerald, graphite, ice, sunset } from './boards'
+import { gold } from './gold'
+import { marble } from './marble'
+import { neon } from './neon'
+import { nightgrid } from './nightgrid'
 import { classic } from './classic'
 import { night } from './night'
 import { powder } from './powder'
@@ -8,8 +13,13 @@ import type { SkinDef, SkinId } from './types'
 
 export type { PieceCode, SkinDef, SkinId } from './types'
 
-export const SKINS: SkinDef[] = [classic, vintage, night, bordo, powder, wireframe]
+export const SKINS: SkinDef[] = [classic, vintage, night, bordo, powder, wireframe, gold, marble, neon, nightgrid, ice, emerald, sunset, graphite]
+export const BOARD_SKINS = SKINS.filter((s) => s.only !== 'pieces')
+export const PIECE_SKINS = SKINS.filter((s) => s.only !== 'board')
 
 export const DEFAULT_SKIN: SkinId = 'classic'
 
 export const getSkin = (id: SkinId | undefined): SkinDef => SKINS.find((s) => s.id === id) ?? classic
+
+/** A reward opens with its badge (codes from GET /api/chess/profile/me); `badges` null = guest — every reward closed. */
+export const skinOpen = (s: SkinDef, badges: readonly string[] | null) => !s.unlock || !!badges?.includes(s.unlock)

@@ -55,6 +55,53 @@
     outline: 2px solid var(--accent, #17855a);
     outline-offset: 1px;
   }
+
+  // a reward not earned yet: seen, not picked
+  &[aria-disabled='true'] {
+    cursor: not-allowed;
+
+    &:hover .tile { transform: none; }
+    .tile { opacity: 0.5; }
+  }
+}
+
+.tileWrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+// the tile sits centred at ≤56px: the lock pins to its corner, not the column's
+.lock {
+  position: absolute;
+  top: -4px;
+  left: calc(50% + min(50%, 28px) - 14px);
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--ink, #17181c);
+  color: var(--surface, #fff);
+  box-shadow: 0 0 0 2px var(--surface, #fff);
+}
+
+.unlock {
+  max-width: 100%;
+  margin-top: -2px;
+  text-align: center;
+  overflow-wrap: anywhere;
+  font-size: 0.6875rem;
+  line-height: 1.25;
+  color: var(--ink-soft, #5c5f6a);
+}
+
+.guest {
+  margin: 4px 0 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--ink-soft, #5c5f6a);
 }
 
 .tile {

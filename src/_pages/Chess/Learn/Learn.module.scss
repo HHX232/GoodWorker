@@ -1,15 +1,15 @@
 // ─── Chess · learn (tactics, openings, opening study) ────────────────────────
 
 .page {
-  --bg: #f4f2ec;
+  --bg: transparent;
   --surface: #ffffff;
   --ink: #17181c;
   --ink-soft: #5c5f6a;
-  --line: #e4e1d8;
-  --wash: #efece4;
+  --line: #e4e4e8;
+  --wash: #f2f2f4;
   --ok: #17855a;
 
-  min-height: 100vh;
+
   background: var(--bg);
   color: var(--ink);
   padding: 32px 16px 56px;
@@ -441,7 +441,7 @@
 :global(html.theme-dark),
 :global(html.pomodoro-dark) {
   .page {
-    --bg: #131417;
+    --bg: transparent;
     --surface: #1b1c20;
     --ink: #ecebe6;
     --ink-soft: #a3a39d;

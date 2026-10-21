@@ -238,11 +238,44 @@
   }
 }
 
+// piece entrances (effects): new game cascade by rows, promotion flash, piece returned by undo
+.spawn .pieceSvg {
+  animation: spawn 210ms cubic-bezier(0.16, 1, 0.3, 1) var(--d, 0ms) backwards;
+}
+
+.promoted .pieceSvg {
+  animation: promoted 420ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+.restored .pieceSvg {
+  animation: restored 280ms ease-out 140ms backwards;
+}
+
+@keyframes spawn {
+  from { transform: scale(0.2); opacity: 0; }
+}
+
+@keyframes promoted {
+  0% { transform: scale(0.3); opacity: 0; }
+  55% { transform: scale(1.14); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+@keyframes restored {
+  from { transform: scale(0.82); opacity: 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .piece,
   .pieceSvg,
   .promoColumn {
     transition: none;
+    animation: none;
+  }
+
+  .spawn .pieceSvg,
+  .promoted .pieceSvg,
+  .restored .pieceSvg {
     animation: none;
   }
 }

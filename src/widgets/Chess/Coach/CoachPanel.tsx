@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { CloudOff, Lock, MessageCircleQuestion, RotateCw } from 'lucide-react'
+import { engineMoveFacts, type MoveFact } from '@/shared/lib/chess/gameFacts'
 import type { ExplainResult, MoveReview } from './useMoveCoach'
 import { CoachSays, type CoachMood } from './CoachAvatar'
 import styles from './Coach.module.scss'
@@ -22,18 +23,21 @@ export type CoachPanelProps = {
   className?: string
 }
 
-type State = { review: MoveReview | null | undefined; result: ExplainResult | null; loading: boolean }
+/** `turn` растёт с каждым новым ходом — по нему чередуются шаблоны строки, чтобы фраза не повторялась подряд. */
+type State = { review: MoveReview | null | undefined; result: ExplainResult | null; loading: boolean; turn: number }
+const FACT_VARIANTS = 3
 
 export function CoachPanel({ review, explain, onExplain, autoExplain, analysing, noAnalysis, className }: CoachPanelProps) {
   const t = useTranslations('chess.core')
-  const [state, setState] = useState<State>({ review, result: null, loading: false })
-  if (state.review !== review) setState({ review, result: null, loading: false })
+  const tp = useTranslations('chess.play')
+  const [state, setState] = useState<State>({ review, result: null, loading: false, turn: 0 })
+  if (state.review !== review) setState({ review, result: null, loading: false, turn: state.turn + 1 })
 
   const ask = async () => {
     if (!review || !explain) return
-    setState({ review, result: null, loading: true })
+    setState((s) => ({ ...s, review, result: null, loading: true }))
     const result = await explain(review)
-    setState((s) => (s.review === review ? { review, result, loading: false } : s))
+    setState((s) => (s.review === review ? { ...s, review, result, loading: false } : s))
     onExplain?.(result)
   }
 
@@ -48,6 +52,32 @@ export function CoachPanel({ review, explain, onExplain, autoExplain, analysing,
 
   const cls = review?.classification
   const result = state.result
+
+  const factText = (f: MoveFact) =>
+    f.k === 'capture' || f.k === 'promote' || f.k === 'develop'
+      ? tp(`fact_${f.k}`, { piece: tp(`pc_acc_${f.piece}`) })
+      : f.k === 'threat'
+        ? tp('fact_threat', { piece: tp(`pc_acc_${f.piece}`), square: f.square })
+        : tp(`fact_${f.k}`)
+  // Для best/good — не похвала-шаблон, а что ход конкретно сделал (взятие/шах/угроза/развитие); тихий ход — без строки.
+  const factLine = (r: MoveReview): string | null => {
+    let facts: MoveFact[]
+    try {
+      facts = engineMoveFacts(r.fenBefore, r.playedUci).facts.filter((f) => f.k !== 'quiet')
+    } catch {
+      return null // ход не разобрался — строки просто нет, вердикт и «Почему?» остаются
+    }
+    if (!facts.length) return null
+    const fact = facts.slice(0, 2).map(factText).join(t('say_and'))
+    return t(`say_fact_${(state.turn % FACT_VARIANTS) + 1}`, { played: r.playedSan, fact })
+  }
+  const sayText = !review
+    ? ''
+    : cls === 'best'
+      ? factLine(review) ?? ''
+      : cls === 'good'
+        ? [factLine(review), t('say_good', { best: review.bestSan })].filter(Boolean).join(' ')
+        : t(`say_${cls}`, { played: review.playedSan, best: review.bestSan })
 
   const mood: CoachMood = analysing || state.loading ? 'thinking' : noAnalysis || (result && !result.ok) ? 'concerned' : 'idle'
 
@@ -66,10 +96,12 @@ export function CoachPanel({ review, explain, onExplain, autoExplain, analysing,
           <p className={styles.muted}>{t('coach_idle')}</p>
         ) : (
           <>
-            <p className={styles.say} data-class={cls}>
-              <span className={styles.verdictDot} aria-hidden="true" />
-              <span>{t(`say_${cls}`, { played: review.playedSan, best: review.bestSan })}</span>
-            </p>
+            {sayText && (
+              <p className={styles.say} data-class={cls}>
+                <span className={styles.verdictDot} aria-hidden="true" />
+                <span>{sayText}</span>
+              </p>
+            )}
 
             {explain && !result && !state.loading && (
               <button type="button" className={styles.whyButton} onClick={ask}>

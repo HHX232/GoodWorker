@@ -3,7 +3,7 @@ import { buildPieces, type SkinDef } from './types'
 
 // Night: flat monochrome silhouettes on a deep navy board. White = solid salmon,
 // black = hollow dark-salmon contour. One plinth, one cut-line weight for the whole set.
-type Ink = { fill: string; line: string; lineWidth: number; cut: string }
+export type Ink = { fill: string; line: string; lineWidth: number; cut: string }
 const WHITE: Ink = { fill: '#e8a48e', line: 'none', lineWidth: 0, cut: '#141a2b' }
 const BLACK: Ink = { fill: '#2a1a22', line: '#d27f69', lineWidth: 4.5, cut: '#d27f69' }
 
@@ -14,7 +14,7 @@ const cut = (ink: Ink, d: string) => (
   <path d={d} fill="none" stroke={ink.cut} strokeWidth="3.2" strokeLinecap="round" />
 )
 
-const SHAPES: Record<string, (ink: Ink) => ReactNode> = {
+export const SHAPES: Record<string, (ink: Ink) => ReactNode> = {
   P: () => (
     <>
       <circle cx="50" cy="41" r="12.5" />

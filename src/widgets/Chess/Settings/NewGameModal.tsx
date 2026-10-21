@@ -4,9 +4,8 @@ import { useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { Bot as BotIcon, Check, Copy, Globe, Link2, Lock, LogIn, Shuffle, Users } from 'lucide-react'
-import { BOTS, OPENINGS, botUnlocked, getBot, type Bot } from '@/shared/lib/chess/data'
-import { badgeText, useMyChessProgress } from '@/widgets/Chess/Progress'
+import { Bot as BotIcon, Check, Copy, Globe, Link2, LogIn, Shuffle, Users } from 'lucide-react'
+import { BOTS, OPENINGS, getBot, type Bot } from '@/shared/lib/chess/data'
 import { ChessDialog } from './ChessDialog'
 import { BotAvatar } from './BotAvatar'
 import styles from './Settings.module.scss'
@@ -63,7 +62,7 @@ function NewGameBody({ onClose, tab: initialTab = 'bot', onBot, onDuo, bot, botD
   const tc = useTranslations('chess.core')
   const router = useRouter()
   const [tab, setTab] = useState<NewGameTab>(botDisabled && initialTab === 'bot' ? 'online' : initialTab)
-  const [botId, setBotId] = useState(getBot(bot?.botId)?.id ?? BOTS.find((b) => !b.unlock && b.level === (bot?.level ?? 3))!.id)
+  const [botId, setBotId] = useState(getBot(bot?.botId)?.id ?? BOTS.find((b) => !b.opening && b.level === (bot?.level ?? 3))!.id)
   const [color, setColor] = useState<ColorPick>(bot?.color ?? 'w')
   const [coach, setCoach] = useState(bot?.coach ?? true)
   const [friendTc, setFriendTc] = useState<string>('10+0')
@@ -140,7 +139,7 @@ function NewGameBody({ onClose, tab: initialTab = 'bot', onBot, onDuo, bot, botD
           <BotPicker
             botId={botId}
             onPick={setBotId}
-            footer={(picked, open) => (
+            footer={(picked) => (
               <>
                 {colorSeg(color, setColor, t('ng_color'))}
                 <Field label={tc('coach_title')} hint={t(coach ? 'ng_coach_on_hint' : 'ng_coach_off_hint')}>
@@ -152,7 +151,6 @@ function NewGameBody({ onClose, tab: initialTab = 'bot', onBot, onDuo, bot, botD
                 <button
                   type="button"
                   className={styles.primary}
-                  disabled={!open}
                   onClick={() => {
                     onBot({ botId: picked.id, level: picked.level, color: pickColor(color), coach })
                     onClose()
@@ -265,50 +263,32 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 
 // ─── G21/G22: bots as on chess.com — a grid of faces, the chosen one large ───
 
-function BotPicker({ botId, onPick, footer }: { botId: string; onPick: (id: string) => void; footer: (b: Bot, open: boolean) => ReactNode }) {
+function BotPicker({ botId, onPick, footer }: { botId: string; onPick: (id: string) => void; footer: (b: Bot) => ReactNode }) {
   const t = useTranslations('chess.play')
-  const tp = useTranslations('chess.progress')
   const tl = useTranslations('chess.learn')
-  const me = useMyChessProgress()
-  const badges = me.status === 'ready' ? me.profile.badges.map((b) => b.code) : null
   const picked = getBot(botId) ?? BOTS[0]
-  const open = botUnlocked(picked, badges)
   const opening = picked.opening ? OPENINGS.find((o) => o.id === picked.opening) : undefined
-  const unlockName = (b: Bot) => {
-    const x = badgeText(b.unlock!)
-    return tp(x.nameKey, x.values)
-  }
 
   const grid = (list: Bot[], label: string, cols: number) => (
     <div className={styles.botGroup}>
       <span className={styles.label}>{label}</span>
       <div className={styles.botGrid} data-cols={cols} role="radiogroup" aria-label={label}>
-        {list.map((b) => {
-          const locked = !botUnlocked(b, badges)
-          return (
-            <button
-              key={b.id}
-              type="button"
-              role="radio"
-              aria-checked={b.id === picked.id}
-              className={styles.botCard}
-              data-locked={locked || undefined}
-              onClick={() => onPick(b.id)}
-              title={locked ? t('ng_unlock', { badge: unlockName(b) }) : undefined}
-            >
-              <span className={styles.botFace}>
-                <BotAvatar look={b.look} size={48} />
-                {locked && (
-                  <span className={styles.botLock}>
-                    <Lock size={11} strokeWidth={2.5} aria-hidden="true" />
-                  </span>
-                )}
-              </span>
-              <span className={styles.botName}>{t(b.nameKey)}</span>
-              <span className={styles.botRating}>{b.rating}</span>
-            </button>
-          )
-        })}
+        {list.map((b) => (
+          <button
+            key={b.id}
+            type="button"
+            role="radio"
+            aria-checked={b.id === picked.id}
+            className={styles.botCard}
+            onClick={() => onPick(b.id)}
+          >
+            <span className={styles.botFace}>
+              <BotAvatar look={b.look} size={48} />
+            </span>
+            <span className={styles.botName}>{t(b.nameKey)}</span>
+            <span className={styles.botRating}>{b.rating}</span>
+          </button>
+        ))}
       </div>
     </div>
   )
@@ -316,15 +296,8 @@ function BotPicker({ botId, onPick, footer }: { botId: string; onPick: (id: stri
   return (
     <div className={styles.botPick}>
       <div className={styles.botLists}>
-        {grid(BOTS.filter((b) => !b.unlock), t('ng_levels'), 4)}
-        {grid(BOTS.filter((b) => b.unlock), t('ng_specials'), 5)}
-        {me.status === 'guest' && (
-          <p className={styles.notice}>
-            <LogIn size={16} strokeWidth={2} aria-hidden="true" />
-            <span>{t('ng_specials_guest')}</span>
-            <Link href="/login" className={styles.textLink}>{t('ng_login_cta')}</Link>
-          </p>
-        )}
+        {grid(BOTS.filter((b) => !b.opening), t('ng_levels'), 4)}
+        {grid(BOTS.filter((b) => b.opening), t('ng_specials'), 5)}
       </div>
 
       <div className={styles.botDetail} aria-live="polite">
@@ -339,13 +312,7 @@ function BotPicker({ botId, onPick, footer }: { botId: string; onPick: (id: stri
         </div>
         <p className={styles.botQuote}>{t(picked.sayKey)}</p>
         {opening && <p className={styles.botMeta}>{t('ng_opening', { name: `${opening.eco} · ${tl(opening.nameKey)}` })}</p>}
-        {!open && (
-          <p className={styles.notice}>
-            <Lock size={16} strokeWidth={2} aria-hidden="true" />
-            <span>{t('ng_unlock', { badge: unlockName(picked) })}</span>
-          </p>
-        )}
-        {footer(picked, open)}
+        {footer(picked)}
       </div>
     </div>
   )

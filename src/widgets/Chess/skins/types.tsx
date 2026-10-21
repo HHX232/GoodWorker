@@ -1,6 +1,8 @@
 import { cloneElement, useId, type FC, type ReactElement, type ReactNode, type SVGProps } from 'react'
 
-export type SkinId = 'classic' | 'vintage' | 'night' | 'bordo' | 'powder' | 'wireframe'
+export type SkinId =
+  | 'classic' | 'vintage' | 'night' | 'bordo' | 'powder' | 'wireframe'
+  | 'gold' | 'marble' | 'neon' | 'nightgrid' | 'ice' | 'emerald' | 'sunset' | 'graphite'
 
 export type PieceCode =
   | 'wK' | 'wQ' | 'wR' | 'wB' | 'wN' | 'wP'
@@ -15,6 +17,10 @@ export type SkinDef = {
   coordLight: string
   coordDark: string
   frame?: string
+  /** a reward: opens with this badge code (BADGE_CODES); without it — open to everyone */
+  unlock?: string
+  /** a reward that is only a board colouring or only a piece set; the 6 base skins are both */
+  only?: 'board' | 'pieces'
   pieces: Record<PieceCode, FC<{ className?: string }>>
 }
 

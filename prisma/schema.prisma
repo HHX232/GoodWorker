@@ -1302,3 +1302,11 @@ model ChessSeek {
   createdAt   DateTime @default(now())
   seenAt      DateTime @default(now()) // последний опрос: брошенные seek в подбор не попадают
 }
+
+// ─── Chess settings (T17) ───
+// Одна строка 'global': дни VIP за значки шахмат {badgeCode: days}; нет строки — значения по умолчанию из progressModel.
+model ChessSettings {
+  id         String   @id @default("global")
+  vipRewards Json
+  updatedAt  DateTime @updatedAt
+}

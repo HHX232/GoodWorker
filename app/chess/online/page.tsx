@@ -7,6 +7,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('title') }
 }
 
-export default function Page() {
-  return <OnlineLobbyPage />
+// ?tc=1+0|3+2|10+0 preselects the time control (the New game modal's online tab links here)
+export default async function Page({ searchParams }: { searchParams: Promise<{ tc?: string | string[] }> }) {
+  const { tc } = await searchParams
+  return <OnlineLobbyPage tc={typeof tc === 'string' ? tc : undefined} />
 }

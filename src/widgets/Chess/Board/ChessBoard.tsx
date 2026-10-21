@@ -7,6 +7,8 @@ import { X } from 'lucide-react'
 import { getSkin, type PieceCode, type SkinId } from '../skins'
 import { useBoardTheme, usePieceSet } from '../skins/useSkinPrefs'
 import { useLocalPref } from '@/shared/lib/chess/localPref'
+import { BoardFx } from './effects/BoardFx'
+import { diffEvents, type FxEvent } from './effects/diffEvents'
 import styles from './ChessBoard.module.scss'
 
 export type BoardMove = { from: string; to: string; promotion?: 'q' | 'r' | 'b' | 'n' }
@@ -37,6 +39,11 @@ export type ChessBoardProps = {
   animate?: boolean
   /** small marks in a square's top-right corner, above the pieces (e.g. the review's move class) */
   squareBadges?: Record<string, ReactNode>
+  /**
+   * capture pop, piece spawn/promotion/undo, check pulse, mate wave — derived from fen changes;
+   * default on, also off when `animate` is off or the visitor prefers reduced motion
+   */
+  effects?: boolean
   className?: string
 }
 
@@ -103,6 +110,7 @@ export function ChessBoard({
   coords,
   animate,
   squareBadges,
+  effects = true,
   className,
 }: ChessBoardProps) {
   const t = useTranslations('chess.core')
@@ -114,6 +122,7 @@ export function ChessBoard({
   const [animPref] = useLocalPref('gw-chess-anim', '1')
   const showCoords = coords ?? coordsPref === '1'
   const slide = animate ?? animPref === '1'
+  const fxOn = effects && slide
   const boardRef = useRef<HTMLDivElement>(null)
   const squareRefs = useRef<Record<string, HTMLButtonElement | null>>({})
 
@@ -127,10 +136,28 @@ export function ChessBoard({
   const canMove = interactive && !!onMove && !!game
 
   // Piece identity across positions (render-time state update, React's "previous props" pattern).
-  const [placed, setPlaced] = useState(() => ({ fen, gen: 0, items: assignKeys([], parsePlacement(fen), 0) }))
+  // `fx`: effect events of the last fen change (capture, promotion, new game, undo, check, mate).
+  const [placed, setPlaced] = useState(() => ({
+    fen,
+    gen: 0,
+    items: assignKeys([], parsePlacement(fen), 0),
+    fx: [] as FxEvent[],
+  }))
   if (placed.fen !== fen) {
     const gen = placed.gen + 1
-    setPlaced({ fen, gen, items: assignKeys(placed.items, parsePlacement(fen), gen) })
+    const fx = diffEvents(placed.fen, fen, lastMove)
+    // a new game re-mounts every piece so the set grows in place instead of sliding home
+    const prev = fx.some((e) => e.kind === 'newGame') ? [] : placed.items
+    setPlaced({ fen, gen, fx, items: assignKeys(prev, parsePlacement(fen), gen) })
+  }
+  const fx = fxOn ? placed.fx : []
+  const spawnAll = fx.some((e) => e.kind === 'newGame')
+  const fxClass = (sq: string) => {
+    for (const e of fx) {
+      if (e.kind === 'promotion' && e.square === sq) return styles.promoted
+      if (e.kind === 'undo' && e.squares.includes(sq)) return styles.restored
+    }
+    return spawnAll ? styles.spawn : ''
   }
   const pieceAt = useMemo(() => new Map(placed.items.map((p) => [p.sq, p])), [placed.items])
 
@@ -331,6 +358,8 @@ export function ChessBoard({
     >
       <div className={styles.grid}>{squares}</div>
 
+      {fxOn && <BoardFx events={fx} gen={placed.gen} layer="under" pos={pos} pieces={pieces} />}
+
       <div className={styles.pieces} aria-hidden="true">
         {placed.items.map((p) => {
           const Piece = pieces[p.code]
@@ -339,7 +368,8 @@ export function ChessBoard({
           const style: CSSProperties = dragging
             ? { transform: `translate(${drag.rx}px, ${drag.ry}px)` }
             : { transform: `translate(${col * 100}%, ${row * 100}%)` }
-          const cls = [styles.piece, dragging ? styles.dragging : '']
+          if (spawnAll) (style as Record<string, string>)['--d'] = `${row * 20}ms`
+          const cls = [styles.piece, dragging ? styles.dragging : '', fxClass(p.sq)]
           return (
             <div key={p.key} className={cls.join(' ')} style={style}>
               <Piece className={styles.pieceSvg} />
@@ -347,6 +377,8 @@ export function ChessBoard({
           )
         })}
       </div>
+
+      {fxOn && <BoardFx events={fx} gen={placed.gen} layer="over" pos={pos} pieces={pieces} />}
 
       {!!arrows?.length && (
         <svg className={styles.arrows} viewBox="0 0 800 800" aria-hidden="true">

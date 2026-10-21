@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
-import { ArrowLeft, ArrowRight, LogIn } from 'lucide-react'
+import { ArrowRight, LogIn } from 'lucide-react'
 import type { ChessPlayerDto, ChessProgressDto } from '@/shared/lib/chess/server/progress'
 import { POINT_STEPS, streakState } from '@/shared/lib/chess/server/progressModel'
 import { BadgeGrid, Flame, RatingChip, badgeText, nextPointStep, todayLocal, useMyChessProgress, type FlameState } from '@/widgets/Chess/Progress'
@@ -33,19 +33,15 @@ function usePublicProgress(userId: string | undefined): Loaded {
   return s
 }
 
-/** /chess/profile (свой, с «сегодня уже играл?») и /chess/u/[id] (публичный). */
-export function ChessProfilePage({ userId }: { userId?: string }) {
+/** /chess/profile (свой, с «сегодня уже играл?») и /chess/u/[id] (публичный); `compact` — в выдвижной панели оболочки. */
+export function ChessProfilePage({ userId, compact }: { userId?: string; compact?: boolean }) {
   const t = useTranslations('chess.progress')
   const mine = useMyChessProgress()
   const other = usePublicProgress(userId)
   const s = userId ? other : mine
 
   return (
-    <div className={styles.page}>
-      <Link href="/chess" className={styles.back}>
-        <ArrowLeft size={16} strokeWidth={2} aria-hidden="true" />
-        {t('back')}
-      </Link>
+    <div className={`${styles.page} ${compact ? styles.compact : ''}`}>
 
       {s.status === 'loading' && <div className={styles.skeleton} aria-busy="true" />}
       {s.status === 'guest' && (

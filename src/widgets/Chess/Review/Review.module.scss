@@ -187,7 +187,7 @@
   text-align: left;
   cursor: pointer;
 
-  &:hover { background: var(--wash, #f3f2ed); }
+  &:hover { background: var(--wash, #f2f2f4); }
   &:focus-visible { outline: 2px solid var(--accent, #17855a); outline-offset: -2px; }
 
   &[aria-current='true'] {

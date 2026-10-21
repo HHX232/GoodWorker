@@ -8,7 +8,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 // ?game=<id> — an online game (GET /api/chess/games/[id]); otherwise sessionStorage['gw-chess-analysis'] or a pasted PGN.
+// ?k=<nonce> — the shell's «Paste PGN» modal: a new key remounts the page so it re-reads the handoff.
 export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const { game } = await searchParams
-  return <ChessAnalysisPage gameId={typeof game === 'string' && game ? game : undefined} />
+  const { game, k } = await searchParams
+  return <ChessAnalysisPage key={typeof k === 'string' ? k : ''} gameId={typeof game === 'string' && game ? game : undefined} />
 }

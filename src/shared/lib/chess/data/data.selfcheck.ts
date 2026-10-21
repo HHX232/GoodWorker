@@ -3,8 +3,9 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { Chess } from 'chess.js'
-import { OPENINGS, TACTICS, BOTS, bookMove, botUnlocked, getBot } from '.'
+import { OPENINGS, TACTICS, BOTS, bookMove, getBot } from '.'
 import { BADGE_CODES } from '../server/progressModel'
+import { SKINS, skinOpen } from '../../../../widgets/Chess/skins'
 
 // Spec «Дополнения после G2»: 15 tactics (Lichess theme ids), 20 openings.
 assert.deepEqual(
@@ -31,19 +32,18 @@ for (const locale of ['ru', 'en', 'hi', 'zh']) {
   }
 }
 
-// G21/G22 bots: 8 level bots (one per engine level) + 5 special ones, each unlocked by an existing badge
+// G23: 8 level bots (one per engine level) + 5 special characters with a favourite opening — all open to everyone
 assert.equal(new Set(BOTS.map((b) => b.id)).size, BOTS.length, 'bot ids unique')
-assert.deepEqual(BOTS.filter((b) => !b.unlock).map((b) => b.level), [1, 2, 3, 4, 5, 6, 7, 8])
-const special = BOTS.filter((b) => b.unlock)
+assert.equal(BOTS.length, 13)
+for (const b of BOTS) assert.ok(!('unlock' in b), `${b.id}: bots are not locked any more`)
+assert.deepEqual(BOTS.filter((b) => !b.opening).map((b) => b.level), [1, 2, 3, 4, 5, 6, 7, 8])
+const special = BOTS.filter((b) => b.opening)
 assert.equal(special.length, 5)
-for (const b of special) {
-  assert.ok((BADGE_CODES as readonly string[]).includes(b.unlock!), `${b.id}: unknown badge ${b.unlock}`)
-  assert.ok(b.opening && OPENINGS.some((o) => o.id === b.opening), `${b.id}: unknown opening ${b.opening}`)
-}
+for (const b of special) assert.ok(OPENINGS.some((o) => o.id === b.opening), `${b.id}: unknown opening ${b.opening}`)
 for (const locale of ['ru', 'en', 'hi', 'zh']) {
   const msgs = JSON.parse(readFileSync(join(__dirname, '../../../../../messages/chess/play', `${locale}.json`), 'utf8'))
   for (const b of BOTS)
-    for (const k of [b.nameKey, b.sayKey, ...(b.unlock ? [b.hiKey, b.winKey, b.loseKey] : [])])
+    for (const k of [b.nameKey, b.sayKey, ...(b.opening ? [b.hiKey, b.winKey, b.loseKey] : [])])
       assert.equal(typeof msgs[k], 'string', `${locale}: missing ${k}`)
 }
 
@@ -55,10 +55,22 @@ assert.equal(bookMove(gambit, true, ['e4', 'c5']), null, 'opponent left the book
 assert.equal(bookMove(gambit, false, []), null, 'custom start position: no book')
 assert.equal(bookMove(getBot('pip')!, true, []), null, 'level bots have no book')
 
-// unlocking: by the badge code from GET /api/chess/profile/me; guests (null) have none
-assert.equal(botUnlocked(getBot('pip')!, null), true)
-assert.equal(botUnlocked(gambit, null), false)
-assert.equal(botUnlocked(gambit, []), false)
-assert.equal(botUnlocked(gambit, [gambit.unlock!]), true)
+// G24: reward cosmetics — ≥4 piece sets and ≥4 board colourings, each opened by an existing badge; the 6 old skins open to all
+assert.equal(new Set(SKINS.map((s) => s.id)).size, SKINS.length, 'skin ids unique')
+const rewards = SKINS.filter((s) => s.unlock)
+assert.ok(rewards.filter((s) => s.only !== 'board').length >= 4, 'reward piece sets')
+assert.ok(rewards.filter((s) => s.only !== 'pieces').length >= 4, 'reward boards')
+for (const s of rewards) assert.ok(BADGE_CODES.includes(s.unlock!), `${s.id}: unknown badge ${s.unlock}`)
+assert.deepEqual(SKINS.filter((s) => !s.unlock).map((s) => s.id), ['classic', 'vintage', 'night', 'bordo', 'powder', 'wireframe'])
+for (const locale of ['ru', 'en', 'hi', 'zh']) {
+  const msgs = JSON.parse(readFileSync(join(__dirname, '../../../../../messages/chess/core', `${locale}.json`), 'utf8'))
+  for (const s of SKINS) assert.equal(typeof msgs[s.labelKey], 'string', `${locale}: missing ${s.labelKey}`)
+}
+// opened by the badge codes from GET /api/chess/profile/me; a guest (null) has none
+const gold = rewards[0]
+assert.equal(skinOpen(SKINS[0], null), true)
+assert.equal(skinOpen(gold, null), false)
+assert.equal(skinOpen(gold, ['first_win_l1']), false)
+assert.equal(skinOpen(gold, [gold.unlock!]), true)
 
 console.log('data ok')

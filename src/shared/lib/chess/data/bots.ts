@@ -1,4 +1,4 @@
-// Bots to play (G21/G22): 8 level bots, one per engine level, and 5 special characters unlocked by T11 badges.
+// Bots to play (G21/G23): 8 level bots, one per engine level, and 5 special characters with a favourite opening — all open to everyone.
 // Strength is always the engine level: points and badges count by `level`, as for a plain level game.
 import { OPENINGS } from './openings'
 
@@ -19,13 +19,11 @@ export type Bot = {
   hiKey: string
   winKey: string
   loseKey: string
-  /** OPENINGS id the bot plays from the start while the game follows it */
+  /** OPENINGS id the bot plays from the start while the game follows it; set = a special character */
   opening?: string
-  /** badge code (BADGE_CODES) that unlocks a special bot; level bots are open to everyone */
-  unlock?: string
 }
 
-const bot = (id: string, level: number, rating: number, look: BotLook, extra: Partial<Pick<Bot, 'opening' | 'unlock'>> = {}): Bot => ({
+const bot = (id: string, level: number, rating: number, look: BotLook, extra: Partial<Pick<Bot, 'opening'>> = {}): Bot => ({
   id,
   level,
   rating,
@@ -49,16 +47,16 @@ export const BOTS: Bot[] = [
   bot('magister', 7, 2500, { piece: 'k', badge: '#d9e6e1', accent: '#17855a', extra: 'glasses' }),
   bot('maximus', 8, 2800, { piece: 'k', badge: '#2a2b31', accent: '#b4321f', extra: 'monocle' }),
 
-  bot('gosha', 3, 1700, { piece: 'p', badge: '#f7d9b8', accent: '#d9531e', extra: 'headband' }, { opening: 'kings-gambit', unlock: 'first_win_l3' }),
-  bot('professor', 5, 2100, { piece: 'b', badge: '#e3e7ef', accent: '#2f4b7c', extra: 'glasses' }, { opening: 'ruy-lopez', unlock: 'points_500' }),
-  bot('dina', 6, 2300, { piece: 'q', badge: '#f3d6cf', accent: '#a8322a', extra: 'bow' }, { opening: 'dragon', unlock: 'streak_7' }),
-  bot('krepost', 6, 2300, { piece: 'r', badge: '#e4e1d9', accent: '#5c5f6a', extra: 'beard' }, { opening: 'caro-kann', unlock: 'points_2500' }),
-  bot('noch', 8, 2800, { piece: 'k', badge: '#1d1e24', accent: '#8b42f4', extra: 'monocle' }, { opening: 'najdorf', unlock: 'first_win_l8' }),
+  bot('gosha', 3, 1700, { piece: 'p', badge: '#f7d9b8', accent: '#d9531e', extra: 'headband' }, { opening: 'kings-gambit' }),
+  bot('professor', 5, 2100, { piece: 'b', badge: '#e3e7ef', accent: '#2f4b7c', extra: 'glasses' }, { opening: 'ruy-lopez' }),
+  bot('dina', 6, 2300, { piece: 'q', badge: '#f3d6cf', accent: '#a8322a', extra: 'bow' }, { opening: 'dragon' }),
+  bot('krepost', 6, 2300, { piece: 'r', badge: '#e4e1d9', accent: '#5c5f6a', extra: 'beard' }, { opening: 'caro-kann' }),
+  bot('noch', 8, 2800, { piece: 'k', badge: '#1d1e24', accent: '#8b42f4', extra: 'monocle' }, { opening: 'najdorf' }),
 ]
 
 export const getBot = (id: string | null | undefined) => BOTS.find((b) => b.id === id)
 /** the plain bot of an engine level (old saves only know the level) */
-export const levelBot = (level: number) => BOTS.find((b) => !b.unlock && b.level === level) ?? BOTS[0]
+export const levelBot = (level: number) => BOTS.find((b) => !b.opening && b.level === level) ?? BOTS[0]
 
 /**
  * The bot's book move or null (engine plays). Matched by position, not by colour: from the standard start,
@@ -73,5 +71,3 @@ export function bookMove(b: Bot, fromStart: boolean, historySan: readonly string
   return historySan.every((san, i) => san === line[i]) ? line[historySan.length] : null
 }
 
-/** Special bots open with their badge; `badges` null = guest (all special bots closed). */
-export const botUnlocked = (b: Bot, badges: readonly string[] | null) => !b.unlock || !!badges?.includes(b.unlock)

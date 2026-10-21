@@ -14,5 +14,6 @@ const one = (v: string | string[] | undefined) => (typeof v === 'string' ? v : u
 export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const q = await searchParams
   const mode = one(q.mode)
-  return <PuzzlesPage mode={MODES.includes(mode as PuzzleMode) ? (mode as PuzzleMode) : undefined} theme={one(q.theme)} opening={one(q.opening)} />
+  // keyed: picking a mode in the shell's modal while already here starts that mode afresh
+  return <PuzzlesPage key={`${mode}|${one(q.theme)}|${one(q.opening)}`} mode={MODES.includes(mode as PuzzleMode) ? (mode as PuzzleMode) : undefined} theme={one(q.theme)} opening={one(q.opening)} />
 }

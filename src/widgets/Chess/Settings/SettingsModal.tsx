@@ -27,6 +27,7 @@ export function SettingsModal({ open, onClose }: { open: boolean; onClose: () =>
           <Toggle k="gw-chess-coords" fallback="1" label={t('opt_coords')} />
           <Toggle k="gw-chess-anim" fallback="1" label={t('opt_anim')} />
           <SoundToggle label={t('opt_sound')} />
+          <Toggle k="gw-chess-hotkeys" fallback="1" label={t('opt_hotkeys')} hint={t('opt_hotkeys_hint')} />
           <h3 className={styles.group}>{tc('coach_title')}</h3>
           <Toggle k="gw-chess-hints" fallback="1" label={t('opt_hints')} hint={t('opt_hints_hint')} />
           <Toggle k="gw-chess-evalbar" fallback="1" label={t('opt_evalbar')} />

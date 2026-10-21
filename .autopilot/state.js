@@ -7,8 +7,8 @@ window.STATE =
   "briefFile": "2026-10-15-brief.md",
   "memoryFile": "CLAUDE.md",
   "startedAt": "2026-10-15T23:45:00+03:00",
-  "updatedAt": "2026-10-20T18:30:00+03:00",
-  "finishedAt": "2026-10-20T18:30:00+03:00",
+  "updatedAt": "2026-10-21T03:30:00+03:00",
+  "finishedAt": "2026-10-21T03:30:00+03:00",
   "stages": [
     {
       "id": "preflight",
@@ -63,13 +63,13 @@ window.STATE =
       "id": "final",
       "status": "done",
       "startedAt": "2026-10-20T17:46:00+03:00",
-      "note": "слепая приёмка: всё реализовано; частично — VIP-дни (плейсхолдер), живой звонок не запускался",
+      "note": "волны 7–8 закоммичены; слепая приёмка по последним дополнениям не перезапускалась",
       "finishedAt": "2026-10-20T18:30:00+03:00"
     }
   ],
   "requirements": {
-    "total": 49,
-    "done": 47,
+    "total": 57,
+    "done": 66,
     "inTicket": 0,
     "inSpec": 0,
     "placeholder": 1,
@@ -449,6 +449,89 @@ window.STATE =
       "commit": "889490b, 664700d",
       "tests": "review ok; Оперная партия",
       "finishedAt": "2026-10-20T17:45:00+03:00"
+    },
+    {
+      "id": "17",
+      "title": "Все боты сразу, награды-скины и раскраски, VIP из админки",
+      "requirements": [
+        "G23",
+        "G24",
+        "G25",
+        "G31"
+      ],
+      "blockedBy": [],
+      "wave": 7,
+      "zone": [
+        "prisma/",
+        "src/widgets/Chess/skins/",
+        "admin"
+      ],
+      "status": "done",
+      "retries": 0,
+      "startedAt": "2026-10-20T19:00:00+03:00",
+      "note": "ревью чистое; коммит вместе с T18 (общие файлы)",
+      "finishedAt": "2026-10-21T03:30:00+03:00",
+      "commit": "см. общий коммит волн 7–8"
+    },
+    {
+      "id": "18",
+      "title": "Быстрый доступ: оболочка, модалки, панели + polish",
+      "requirements": [
+        "G26",
+        "G27",
+        "G28",
+        "G29"
+      ],
+      "blockedBy": [],
+      "wave": 7,
+      "zone": [
+        "src/_pages/Chess/",
+        "src/widgets/Chess/Shell/"
+      ],
+      "status": "done",
+      "retries": 0,
+      "startedAt": "2026-10-20T19:00:00+03:00",
+      "repairs": 1,
+      "finishedAt": "2026-10-21T03:30:00+03:00",
+      "commit": "см. общий коммит волн 7–8"
+    },
+    {
+      "id": "19",
+      "title": "Путь задач по ступеням",
+      "requirements": [
+        "G30"
+      ],
+      "blockedBy": [
+        "18"
+      ],
+      "wave": 8,
+      "zone": [
+        "src/_pages/Chess/Puzzles/",
+        "src/widgets/Chess/Path/"
+      ],
+      "status": "done",
+      "retries": 0,
+      "startedAt": "2026-10-20T22:20:00+03:00",
+      "finishedAt": "2026-10-21T03:30:00+03:00",
+      "commit": "см. общий коммит волн 7–8"
+    },
+    {
+      "id": "20",
+      "title": "Эффекты взятия и появления фигур",
+      "requirements": [
+        "G34"
+      ],
+      "blockedBy": [],
+      "wave": 8,
+      "zone": [
+        "src/widgets/Chess/Board/"
+      ],
+      "status": "done",
+      "retries": 0,
+      "startedAt": "2026-10-20T21:50:00+03:00",
+      "repairs": 1,
+      "finishedAt": "2026-10-21T03:30:00+03:00",
+      "commit": "см. общий коммит волн 7–8"
     }
   ],
   "coverage": {

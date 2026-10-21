@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Chess } from 'chess.js'
-import { ArrowLeft, ArrowUpDown, ChartLine, Check, CloudOff, Copy, Flag, Handshake, LogIn, RotateCcw, X } from 'lucide-react'
+import { ArrowUpDown, ChartLine, Check, CloudOff, Copy, Flag, Handshake, LogIn, RotateCcw, X } from 'lucide-react'
 import { ChessBoard, type BoardMove } from '@/widgets/Chess/Board'
 import { checkSquare } from '@/shared/lib/chess/puzzle'
 import { playMoveSound } from '@/shared/lib/chess/sound'
@@ -396,13 +396,9 @@ export function OnlineGamePage({ id }: { id: string }) {
 }
 
 function Shell({ title, children }: { title: string; children: React.ReactNode }) {
-  const t = useTranslations('chess.online')
   return (
     <div className={styles.page}>
       <header className={styles.head}>
-        <Link href="/chess/online" className={styles.back} aria-label={t('to_lobby')}>
-          <ArrowLeft size={18} strokeWidth={2} aria-hidden="true" />
-        </Link>
         <h1 className={styles.title}>{title}</h1>
       </header>
       {children}

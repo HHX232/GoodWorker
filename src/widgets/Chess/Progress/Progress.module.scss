@@ -8,8 +8,8 @@
   --ink: #17181c;
   --ink-soft: #5c5f6a;
   --surface: #ffffff;
-  --line: #e6e5df;
-  --wash: #f3f2ed;
+  --line: #e4e4e8;
+  --wash: #f2f2f4;
   --accent: #17855a;
   --fire: #e2561b;
 }
@@ -133,7 +133,7 @@
 
   &[data-earned] {
     --medal-bg: var(--ink);
-    --medal-fg: #f3f2ed;
+    --medal-fg: #f2f2f4;
     --medal-ring: color-mix(in srgb, var(--medal-tone) 70%, transparent);
     box-shadow: inset 0 0 0 2px var(--medal-ring), 0 6px 14px -8px rgba(10, 10, 12, 0.55);
     svg:not(.flame) { color: var(--medal-tone); }
@@ -296,6 +296,14 @@
 .toastName { font-weight: 600; }
 .toastMore { font-weight: 400; color: var(--ink-soft); }
 .toastHint { color: var(--ink-soft); }
+.toastReward {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+
+  svg { flex: none; }
+}
 
 .toastLink {
   align-self: flex-start;

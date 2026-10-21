@@ -9,10 +9,10 @@ import { hintArrows, type HintArrow } from '@/shared/lib/chess/hintArrows'
 import { getEngine, type EngineLine } from '@/shared/lib/chess/engine'
 import { playMoveSound } from '@/shared/lib/chess/sound'
 import { readPref, useLocalPref } from '@/shared/lib/chess/localPref'
-import { bookMove, botUnlocked, getBot, levelBot, type Bot } from '@/shared/lib/chess/data'
-import { useBotGameActivity, useMyChessProgress } from '@/widgets/Chess/Progress'
+import { bookMove, getBot, levelBot } from '@/shared/lib/chess/data'
+import { useBotGameActivity } from '@/widgets/Chess/Progress'
 import type { BotChoice } from '@/widgets/Chess/Settings'
-import { endReason, engineMoveFacts, type MoveFact } from './gameFacts'
+import { endReason, engineMoveFacts, type MoveFact } from '@/shared/lib/chess/gameFacts'
 
 export type Side = 'w' | 'b'
 type Mode = 'ai' | 'duo'
@@ -47,7 +47,6 @@ export function useBotGame({ initialFen, initialColor, startNew }: { initialFen?
   const [botId, setBotId] = useState(() => levelBot(3).id)
   const bot = getBot(botId) ?? levelBot(3)
   const level = bot.level
-  const [lockedBot, setLockedBot] = useState<Bot | null>(null) // a closed special bot replaced on load (G22)
   const [color, setColor] = useState<Side>('w')
   const [flipped, setFlipped] = useState(false)
   const [resigned, setResigned] = useState(false)
@@ -234,7 +233,6 @@ export function useBotGame({ initialFen, initialColor, startNew }: { initialFen?
     setRound((r) => r + 1)
     setBadFen(false)
     setPending(null)
-    setLockedBot(null)
   }
 
   const newGame = (side: Side = color) => {
@@ -285,21 +283,12 @@ export function useBotGame({ initialFen, initialColor, startNew }: { initialFen?
   }, [hintOn, fen, chess])
 
 
-  // G22: a special bot opens with its badge — a link or an old save cannot bring a closed one; its level's bot plays instead
-  const me = useMyChessProgress()
-  const known = me.status === 'ready' || me.status === 'guest'
-  const badges = me.status === 'ready' ? me.profile.badges.map((b) => b.code) : null
-  if (known && !botUnlocked(bot, badges)) {
-    setLockedBot(bot) // render-time adjustment: no flash of the closed bot's face
-    setBotId(levelBot(bot.level).id)
-  }
-
   const orientation: Side = (vsAi ? color === 'b' : false) !== flipped ? 'b' : 'w'
   const arrows = hintOn && !pending && hint?.fen === fen ? hint.arrows : []
 
   return {
     history: chess.history(), turn: chess.turn(), start, fen, lastMove, mode, bot, color, orientation, setFlipped, thinking, engineDown, review, reviewing, noAnalysis,
-    evalCp, note, ready, badFen, pending, setPending, vsAi, coachOn, coachPick, reason, gameOver, arrows, coach, lockedBot,
+    evalCp, note, ready, badFen, pending, setPending, vsAi, coachOn, coachPick, reason, gameOver, arrows, coach,
     onMove, play, newGame, undo, resign, startBot, startDuo,
   }
 }

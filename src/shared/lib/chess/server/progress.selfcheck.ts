@@ -1,6 +1,6 @@
 // npx tsx src/shared/lib/chess/server/progress.selfcheck.ts → "progress ok"
 import assert from 'node:assert/strict'
-import { applyActivity, BADGE_CODES, EMPTY_PROGRESS, DAILY_BOT_POINTS_CAP, extendVipExpiry, parseActivity, vipExpiryAfterReward, streakState, vipDaysFor, VIP_REWARDS } from './progressModel'
+import { applyActivity, BADGE_CODES, EMPTY_PROGRESS, DAILY_BOT_POINTS_CAP, extendVipExpiry, parseActivity, vipExpiryAfterReward, streakState, vipDaysFor, vipRewardsFrom, parseVipRewards } from './progressModel'
 
 const MSK = -180 // getTimezoneOffset() для Москвы (UTC+3)
 const at = (iso: string) => new Date(iso)
@@ -70,15 +70,30 @@ assert.deepEqual(applyActivity(EMPTY_PROGRESS, [], { kind: 'online', tzOffsetMin
 assert.deepEqual(applyActivity(EMPTY_PROGRESS, [], { kind: 'online', tzOffsetMin: 0, result: 'draw' }, noon).newBadges, [])
 assert.equal(applyActivity(EMPTY_PROGRESS, [], { kind: 'online', tzOffsetMin: 0, result: 'win' }, noon).next.botPoints, 0) // онлайн очков бота не даёт
 
-// VIP: плейсхолдер — все null, начисления нет
+// VIP (G25): по умолчанию 5 дней за points_1000, points_5000, streak_30 — пока в БД нет строки настроек
 assert.equal(BADGE_CODES.length, 20)
-for (const c of BADGE_CODES) assert.equal(VIP_REWARDS[c], null)
-assert.equal(vipDaysFor(['first_win_l1', 'points_100']), 0)
+assert.deepEqual(vipRewardsFrom(null), { points_1000: 5, points_5000: 5, streak_30: 5 })
+assert.equal(vipDaysFor(['points_1000', 'streak_30', 'first_win_l1'], vipRewardsFrom(null)), 10)
 // на фейковой таблице: дни складываются только по значкам с числом
-const fake = { first_win_l1: 3, points_100: null, streak_7: 7 }
+const fake = { first_win_l1: 3, points_100: 0, streak_7: 7 }
 assert.equal(vipDaysFor(['first_win_l1', 'points_100'], fake), 3)
 assert.equal(vipDaysFor(['first_win_l1', 'streak_7'], fake), 10)
 assert.equal(vipDaysFor([], fake), 0)
+// админка: VIP только points_*/streak_* (ограничены дневным потолком); онлайн, шторм и первая победа — запрещены
+for (const code of ['online_first_win', 'storm_10', 'storm_20', 'first_win_l8', 'nope_1'])
+  assert.equal(parseVipRewards({ [code]: 5 }), null, `${code} must be rejected`)
+for (const days of [-1, 366, 2.5, '5', null]) assert.equal(parseVipRewards({ points_100: days }), null, `days ${days}`)
+assert.equal(parseVipRewards([]), null)
+const saved = parseVipRewards({ points_100: 3, streak_100: 365, points_1000: 0 })!
+assert.equal(saved.points_100, 3)
+assert.equal(saved.streak_100, 365)
+assert.equal(saved.points_5000, 0, 'not sent = off')
+// 0 = выкл.: сохранённая таблица из БД — источник правды, значения по умолчанию не подмешиваются
+const fromDb = vipRewardsFrom(saved)
+assert.equal(vipDaysFor(['points_1000', 'points_5000', 'streak_30'], fromDb), 0)
+assert.equal(vipDaysFor(['points_100', 'streak_100'], fromDb), 368)
+// запрещённый значок, попавший в БД руками, не начисляется
+assert.equal(vipDaysFor(['online_first_win', 'storm_20'], vipRewardsFrom({ online_first_win: 30, storm_20: 30 })), 0)
 // продление как у промокодов/рефералов: от текущего срока, если он в будущем, иначе от «сейчас»
 assert.equal(extendVipExpiry(null, 3, noon).toISOString(), '2026-10-22T12:00:00.000Z')
 assert.equal(extendVipExpiry(at('2026-11-01T00:00:00Z'), 3, noon).toISOString(), '2026-11-04T00:00:00.000Z')

@@ -4,15 +4,15 @@
   --ink: #17181c;
   --ink-soft: #5c5f6a;
   --surface: #ffffff;
-  --line: #e6e5df;
-  --wash: #f3f2ed;
+  --line: #e4e4e8;
+  --wash: #f2f2f4;
   --accent: #17855a;
   --danger: #b4321f;
   --bolt: #e2861b;
 
   max-width: 1480px;
   margin: 0 auto;
-  padding: 0 16px 40px;
+  padding: 0 16px 16px;
   color: var(--ink);
   font-size: 0.9375rem;
   line-height: 1.5;
@@ -28,19 +28,6 @@
   padding: 6px 0;
 }
 
-.back {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  margin-left: -6px;
-  border-radius: 8px;
-  color: var(--ink-soft);
-
-  &:hover { color: var(--ink); background: var(--wash); }
-  &:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-}
-
 .title {
   margin: 0;
   font-size: 1.125rem;
@@ -48,8 +35,6 @@
   letter-spacing: -0.015em;
   line-height: 1.2;
 }
-
-.flame { margin-left: auto; }
 
 // ─── Start screen ────────────────────────────────────────────────────────────
 
@@ -220,7 +205,7 @@
 .layout {
   --side: 240px;
   --gap: 28px;
-  --board: min(calc(100svh - 190px), calc(100vw - 2 * var(--side) - 2 * var(--gap) - 64px));
+  --board: min(calc(var(--chess-vh, 100svh) - 190px), calc(var(--chess-vw, 100vw) - 2 * var(--side) - 2 * var(--gap) - 64px));
 
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -242,7 +227,7 @@
   flex-direction: column;
   gap: 8px;
   width: 100%;
-  max-width: min(640px, calc(100svh - 220px));
+  max-width: min(640px, calc(var(--chess-vh, 100svh) - 220px));
   min-width: 0;
   margin: 0 auto;
 

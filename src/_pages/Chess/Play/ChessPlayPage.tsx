@@ -1,19 +1,18 @@
 'use client'
 
-import { useRef, useState } from 'react'
-import Link from 'next/link'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { ArrowLeft, ArrowUpDown, ChartLine, Check, CloudOff, Flag, Lock, MessageCircleQuestion, Plus, RotateCw, Settings2, Undo2, X } from 'lucide-react'
+import { ArrowUpDown, ChartLine, Check, CloudOff, Flag, Lock, MessageCircleQuestion, Plus, RotateCw, Undo2, X } from 'lucide-react'
 import { checkSquare } from '@/shared/lib/chess/puzzle'
 import { useLocalPref } from '@/shared/lib/chess/localPref'
 import { ANALYSIS_KEY, type AnalysisHandoff } from '@/shared/lib/chess/reviewModel'
 import type { Bot } from '@/shared/lib/chess/data'
 import { ChessBoard } from '@/widgets/Chess/Board'
 import { CoachPanel, CoachSays, EvalBar, useMoveCoach, type ExplainResult, type MoveReview } from '@/widgets/Chess/Coach'
-import { StreakFlame } from '@/widgets/Chess/Progress'
-import { BotAvatar, NewGameModal, SettingsModal, type NewGameTab } from '@/widgets/Chess/Settings'
-import type { MoveFact } from './gameFacts'
+import { BotAvatar, NewGameModal, type NewGameTab } from '@/widgets/Chess/Settings'
+import { useChessShell } from '@/widgets/Chess/Shell'
+import type { MoveFact } from '@/shared/lib/chess/gameFacts'
 import { useBotGame, type EngineNote, type Side, type StartRequest } from './useBotGame'
 import { useStickToEnd } from './useStickToEnd'
 import styles from './ChessPlayPage.module.scss'
@@ -27,9 +26,15 @@ export function ChessPlayPage(props: { initialFen?: string; initialColor?: strin
   const router = useRouter()
   const g = useBotGame(props)
   const { history, turn, start, fen, lastMove, bot, color, orientation, setFlipped, thinking, engineDown, review, reviewing, noAnalysis } = g
-  const { evalCp, note, ready, badFen, pending, setPending, vsAi, coachOn, coachPick, reason, gameOver, arrows, coach, lockedBot } = g
+  const { evalCp, note, ready, badFen, pending, setPending, vsAi, coachOn, coachPick, reason, gameOver, arrows, coach } = g
   const { onMove, play, newGame, undo, resign, startBot, startDuo } = g
-  const [modal, setModal] = useState<{ kind: 'new'; tab: NewGameTab } | { kind: 'settings' } | null>(null)
+  const [modal, setModal] = useState<{ kind: 'new'; tab: NewGameTab } | null>(null)
+  // the shell's Play / N open this page's own modal: a new game here starts in place, without navigation
+  const shell = useChessShell()
+  useEffect(() => {
+    shell?.setNewGameHandler((tab) => setModal({ kind: 'new', tab: tab ?? (vsAi ? 'bot' : 'duo') }))
+    return () => shell?.setNewGameHandler(null)
+  }, [shell, vsAi])
   const [evalPref] = useLocalPref('gw-chess-evalbar', '1')
   const [autoPref] = useLocalPref('gw-chess-autoexplain', '0') // off by default: every auto call spends the limit
   const coachColRef = useStickToEnd<HTMLElement>()
@@ -96,19 +101,11 @@ export function ChessPlayPage(props: { initialFen?: string; initialColor?: strin
   return (
     <div className={styles.page}>
       <header className={styles.head}>
-        <Link href="/chess" className={styles.back} aria-label={t('hub_title')}>
-          <ArrowLeft size={18} strokeWidth={2} aria-hidden="true" />
-        </Link>
         <h1 className={styles.title}>{t('play_title')}</h1>
         <div className={styles.headTools}>
-          <StreakFlame />
           <button type="button" className={`${styles.tool} ${styles.toolStrong}`} onClick={() => setModal({ kind: 'new', tab: vsAi ? 'bot' : 'duo' })}>
             <Plus size={16} strokeWidth={2} aria-hidden="true" />
             {t('new_game')}
-          </button>
-          <button type="button" className={styles.tool} onClick={() => setModal({ kind: 'settings' })} aria-label={t('settings')}>
-            <Settings2 size={16} strokeWidth={2} aria-hidden="true" />
-            <span className={styles.toolText}>{t('settings')}</span>
           </button>
         </div>
       </header>
@@ -122,13 +119,12 @@ export function ChessPlayPage(props: { initialFen?: string; initialColor?: strin
         bot={{ botId: bot.id, level: bot.level, color, coach: coachPick }}
         botDisabled={engineDown}
       />
-      <SettingsModal open={modal?.kind === 'settings'} onClose={() => setModal(null)} />
 
       {/* G05: coach | board | controls on desktop, the board centred; nothing above or beside the board changes its size */}
       <div className={styles.layout}>
         <aside ref={coachColRef} className={styles.coachCol} aria-label={tc('coach_title')}>
           {/* chronological: a special bot's greeting, the player's move review, then the engine's reply; the box scrolls to the newest */}
-          {vsAi && bot.unlock && <BotLine bot={bot} text={t(bot.hiKey)} />}
+          {vsAi && bot.opening && <BotLine bot={bot} text={t(bot.hiKey)} />}
           {coachOn ? (
             <CoachPanel
               review={review}
@@ -171,13 +167,6 @@ export function ChessPlayPage(props: { initialFen?: string; initialColor?: strin
             </p>
           )}
 
-          {lockedBot && (
-            <p className={styles.notice} role="status">
-              <Lock size={16} strokeWidth={2} aria-hidden="true" />
-              {t('bot_locked_fallback', { bot: t(lockedBot.nameKey), fallback: t(bot.nameKey) })}
-            </p>
-          )}
-
           {engineDown && (
             <p className={styles.engineDown} role="alert">
               <CloudOff size={16} strokeWidth={2} aria-hidden="true" />
@@ -202,7 +191,7 @@ export function ChessPlayPage(props: { initialFen?: string; initialColor?: strin
           {gameOver && (
             <div className={styles.end} role="status">
               <p className={styles.endText}>{endText()}</p>
-              {vsAi && bot.unlock && reason !== null && ['checkmate', 'resign'].includes(reason) && (
+              {vsAi && bot.opening && reason !== null && ['checkmate', 'resign'].includes(reason) && (
                 <BotLine bot={bot} text={t(reason === 'checkmate' && turn !== color ? bot.loseKey : bot.winKey)} dark />
               )}
               <div className={styles.endActions}>

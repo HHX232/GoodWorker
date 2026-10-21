@@ -3,6 +3,7 @@
 import { NavBar } from '@/widgets/BaseUI'
 import { AdminSidebar, type AdminTab } from './AdminSidebar/AdminSidebar'
 import { StorageAdminTab } from './StorageAdminTab/StorageAdminTab'
+import { ChessAdminTab } from './ChessAdminTab/ChessAdminTab'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
@@ -11,7 +12,7 @@ import { toast } from 'sonner'
 import styles from './AdminPage.module.scss'
 
 
-const TAB_TITLE_KEYS: Record<AdminTab, string> = {
+const TAB_TITLE_KEYS: Record<Exclude<AdminTab, 'chess'>, string> = {
   stats: 'tabStats',
   users: 'tabUsers',
   content: 'tabContent',
@@ -2290,6 +2291,7 @@ function AdminEmailsTab() {
 
 export function AdminPage() {
   const t = useTranslations('admin')
+  const tc = useTranslations('chess.progress')
   const { data: session, status } = useSession()
   const [activeTab, setActiveTab] = useState<AdminTab>('stats')
 
@@ -2323,7 +2325,7 @@ export function AdminPage() {
       <AdminSidebar active={activeTab} onSelect={setActiveTab} />
       <div className={styles.content}>
         <div className={styles.page_header}>
-          <h1 className={styles.page_title}>{t(TAB_TITLE_KEYS[activeTab])}</h1>
+          <h1 className={styles.page_title}>{activeTab === 'chess' ? tc('admin_title') : t(TAB_TITLE_KEYS[activeTab])}</h1>
         </div>
 
         {activeTab === 'stats' && <StatsTab />}
@@ -2335,6 +2337,7 @@ export function AdminPage() {
         {activeTab === 'verifications' && <VerificationsTab />}
         {activeTab === 'admin-emails' && <AdminEmailsTab />}
         {activeTab === 'storage' && <StorageAdminTab />}
+        {activeTab === 'chess' && <ChessAdminTab />}
       </div>
     </div>
   )

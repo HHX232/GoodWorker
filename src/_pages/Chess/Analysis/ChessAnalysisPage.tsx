@@ -1,11 +1,9 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
-import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { Chess } from 'chess.js'
 import {
-  ArrowLeft,
   ArrowUpDown,
   ChevronFirst,
   ChevronLast,
@@ -205,9 +203,6 @@ export function ChessAnalysisPage({ gameId }: { gameId?: string }) {
   return (
     <div className={styles.page}>
       <header className={styles.head}>
-        <Link href="/chess" className={styles.back} aria-label={t('back')}>
-          <ArrowLeft size={18} strokeWidth={2} aria-hidden="true" />
-        </Link>
         <h1 className={styles.title}>{t('title')}</h1>
         <div className={styles.headTools}>
           {!pasting && (

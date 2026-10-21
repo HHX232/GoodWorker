@@ -1,0 +1,156 @@
+// Board effects. Only transform/opacity animate; every node ends invisible (fill: forwards)
+// and is replaced on the next fen, so no timers are needed.
+
+$out: cubic-bezier(0.16, 1, 0.3, 1);
+
+.fx {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.cell {
+  position: absolute;
+  width: 12.5%;
+  height: 12.5%;
+}
+
+// ── capture ──────────────────────────────────────────────────────────────
+.hatch {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(-45deg, var(--hatch) 0 0.42cqi, transparent 0.42cqi 1.15cqi);
+  opacity: 0;
+  animation: hatch 450ms ease-out forwards;
+}
+
+.onLight { --hatch: color-mix(in srgb, var(--sq-dark) 80%, #000); }
+.onDark { --hatch: color-mix(in srgb, var(--sq-light) 85%, #fff); }
+
+.ghost {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  animation: ghostPop 260ms $out forwards;
+}
+
+.fromWhite { --fx-piece: #fffdf7; }
+.fromBlack { --fx-piece: #1c1915; }
+
+.burst {
+  position: absolute;
+  inset: -20%;
+  width: 140%;
+  height: 140%;
+  fill: none;
+  stroke: var(--fx-burst, color-mix(in srgb, var(--sq-dark) 55%, #000));
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  opacity: 0;
+  animation: burst 320ms $out forwards;
+}
+
+.shard {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 2.9cqi;
+  height: 2.9cqi;
+  margin: -1.45cqi 0 0 -1.45cqi;
+  opacity: 0;
+  animation: shard 450ms $out forwards;
+
+  svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke: var(--tone);
+    stroke-width: 3.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    overflow: visible;
+  }
+}
+
+.tone0 { --tone: color-mix(in srgb, var(--sq-dark) 70%, #000); }
+.tone1 { --tone: var(--fx-piece); }
+.tone2 { --tone: color-mix(in srgb, var(--sq-light) 55%, #fff); }
+
+// ── promotion ────────────────────────────────────────────────────────────
+.promo { --fx-burst: #fff7d6; }
+
+.ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 244, 200, 0.95) 0%, rgba(255, 220, 120, 0.55) 40%, rgba(255, 220, 120, 0) 70%);
+  opacity: 0;
+  animation: ring 520ms $out forwards;
+}
+
+// ── check / mate ─────────────────────────────────────────────────────────
+.pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0.5cqi rgba(232, 40, 30, 0.85), inset 0 0 1.4cqi rgba(232, 40, 30, 0.7);
+  opacity: 0;
+  animation: pulse 520ms $out forwards;
+}
+
+.pulseMate {
+  animation: pulse 560ms $out 2 forwards;
+}
+
+.wave {
+  position: absolute;
+  width: 12.5%;
+  height: 12.5%;
+  background: rgba(232, 40, 30, 0.5);
+  opacity: 0;
+  animation: wave 420ms ease-out forwards;
+}
+
+@keyframes hatch {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes ghostPop {
+  from { transform: scale(1); opacity: 1; }
+  to { transform: scale(1.38); opacity: 0; }
+}
+
+@keyframes burst {
+  0% { transform: scale(0.35); opacity: 1; }
+  100% { transform: scale(1.1); opacity: 0; }
+}
+
+@keyframes shard {
+  0% { transform: translate(0, 0) rotate(0) scale(0.4); opacity: 1; }
+  70% { opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(1); opacity: 0; }
+}
+
+@keyframes ring {
+  0% { transform: scale(0.3); opacity: 1; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.7); opacity: 1; }
+  100% { transform: scale(1.45); opacity: 0; }
+}
+
+@keyframes wave {
+  0% { opacity: 0; }
+  35% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx { display: none; }
+}

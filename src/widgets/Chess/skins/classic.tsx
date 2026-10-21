@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { buildPieces, type SkinDef } from './types'
 
 // Classic: plain Staunton silhouettes, drawn for GoodWorker on a 100×100 grid.
-type Ink = { fill: string; line: string; detail: string }
+export type Ink = { fill: string; line: string; detail: string }
 const WHITE: Ink = { fill: '#fbf8f1', line: '#1c1915', detail: '#1c1915' }
 const BLACK: Ink = { fill: '#2a2521', line: '#120f0d', detail: '#efe6d6' }
 
@@ -13,7 +13,7 @@ const base = (
   </>
 )
 
-const SHAPES: Record<string, (ink: Ink) => ReactNode> = {
+export const SHAPES: Record<string, (ink: Ink) => ReactNode> = {
   P: () => (
     <>
       <path d="M41 46c0 12-7 20-11 30h40c-4-10-11-18-11-30z" />

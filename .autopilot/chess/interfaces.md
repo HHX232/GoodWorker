@@ -154,3 +154,20 @@
 - `reviewModel.ts`: `winPct`, `accuracy`, `reviewGame({initialFen, moves: UCI[], analyses: EngineLine[][]}) → GameReview {moves, accuracy{w,b}, counts{w,b}, keyMoments}` (бросает NO_ANALYSIS/BAD_MOVE), `loadGame({pgn}|{moves, initialFen?})`, `coachClass(cls)`, `REVIEW_CLASSES`, `KEY_CLASSES`, `ReviewClass`; самопроверка `review ok`.
 - Передача партии: `sessionStorage[ANALYSIS_KEY='gw-chess-analysis']` = `AnalysisHandoff {pgn?, moves?, initialFen?, white?, black?, result?, source?: 'bot'|'online'|'duo'|'pgn'}`; маршрут `/chess/analysis[?game=<id>]`.
 - `ChessBoard` + `squareBadges?: Record<square, ReactNode>`. Компоненты `@/widgets/Chess/Review`: `ClassIcon`, `CLASS_COLOR`, `AccuracyCard`, `EvalGraph`, `ReviewMoves`.
+
+## Из таска 17 — награды-косметика, VIP из админки
+
+- Все боты открыты; спец-бот = `!!bot.opening` (`unlock`/`botUnlocked` удалены).
+- `SkinDef` + `unlock?`, `only?: 'board'|'pieces'`; `BOARD_SKINS`, `PIECE_SKINS`, `skinOpen`, `useMyBadges`. Наборы-награды: gold=points_1000, marble=streak_30, neon=storm_20, nightgrid=first_win_l8; доски-награды: ice=streak_7, emerald=points_500, sunset=first_win_l3, graphite=storm_10. Условия открытия — человеческой фразой (строки `h_*`).
+- `ChessSettings {id 'global', vipRewards Json}` (миграция `20261020120000_chess_settings`); `getVipRewards()` (кэш 60 с), `saveVipRewards`, `VIP_ALLOWED_CODES` (points_*, streak_*), по умолчанию 5 дней за points_1000/points_5000/streak_30. `GET/PATCH /api/admin/chess/settings` (админ). Админка: /admin → «Платформа → Шахматы» (`ChessAdminTab`). `recordChessActivity` возвращает и `vipDays`; `BadgeToast rewards`.
+
+## Из таска 18 — оболочка
+
+- `app/chess/layout.tsx` → `ChessLayout` → `ChessShell` (`src/widgets/Chess/Shell/`) на всех /chess/*: ≥1180px — боковая панель 84px с иконками и подписями, уже — нижняя панель из 7 пунктов; верхняя полоса: поиск, огонёк, Эло (открывает профиль), клавиши, настройки.
+- `useChessShell()?.open({k:'new'|'online'|'modes'|'pgn'|'profile'|'settings'|'keys', …})` (`online`: `tc`, `seek`, `search`; `new`: `tab`, `bot`); `setNewGameHandler` — у /chess/play своя модалка «Новая партия». Доска страниц размеряется от `--chess-vh` / `--chess-vw`.
+- Горячие клавиши: N, P, /, ?, Esc (`shellKeys.ts`, самопроверка `shellKeys ok`). Хаб: тёмный блок «Играть» (Начать партию / Играть онлайн / бот / тренер / друг), карточки, ежедневная задача (`DailyPuzzle.tsx`). Единый нейтральный фон раздела.
+- «Уровень» задач на хабе пока = рейтинг / 200 — заменит путь задач (таск 19).
+
+## Из таска 20 — эффекты доски
+
+- `ChessBoard` + проп `effects?: boolean` (по умолчанию вкл.; выкл. при `gw-chess-anim`=0 или reduced-motion). `effects/diffEvents.ts`: `diffEvents(before, after, lastMove?) → FxEvent[]` (capture/promotion/newGame/undo/check/mate), самопроверка `effects ok`. Звук взятия — «поп» в такт эффекту.

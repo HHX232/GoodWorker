@@ -105,18 +105,40 @@ export function applyActivity(state: ProgressState, owned: readonly string[], in
 }
 
 /**
- * G13.1 — дни VIP за значок. ПЛЕЙСХОЛДЕР: числа впишет пользователь; `null` — VIP не начисляется.
- * ПРАВИЛО: VIP назначать только значкам, условие которых сервер проверяет сам — `online_first_win` (партия на сервере, T12),
- * `storm_*` (только когда шторм считается на сервере, T13). Значки из клиентских данных (`first_win_*`, `points_*`, `streak_*` —
- * партия с ботом и решебник идут в браузере) подделываются запросом; им — только небольшие числа и только пока действует
- * DAILY_BOT_POINTS_CAP, иначе VIP фармится скриптом.
- * `online_first_win` тоже набивается вторым аккаунтом (сдача соперника на 3-м полуходе): прежде чем давать ему VIP, добавить
- * антифарм-условие при выдаче — минимум ходов в партии и соперник с установившимся рейтингом (ratingGames ≥ N).
+ * G13.1/G25 — дни VIP за значок. Таблица живёт в БД (`ChessSettings.vipRewards`, админка → Шахматы), это — значения по умолчанию.
+ * ПРАВИЛО: VIP — только значкам, условие которых сервер проверяет или ограничивает сам. `points_*`/`streak_*` — очки за ботов
+ * идут из браузера, но их держит DAILY_BOT_POINTS_CAP, серия — одна в сутки: подделка не быстрее честной игры.
+ * `first_win_*` (один запрос), `storm_*` (счёт шторма — из браузера) и `online_first_win` (набивается вторым аккаунтом)
+ * запрещены, пока у них нет антифарма (мин. ходов, соперник с ratingGames ≥ N, шторм на сервере).
  */
-export const VIP_REWARDS: Record<string, number | null> = Object.fromEntries(BADGE_CODES.map((c) => [c, null]))
+export const DEFAULT_VIP_REWARDS: Readonly<Record<string, number>> = { points_1000: 5, points_5000: 5, streak_30: 5 }
+export const VIP_DAYS_MAX = 365
+/** Значки, которым админка может дать VIP. */
+export const VIP_ALLOWED_CODES = BADGE_CODES.filter((c) => /^(points|streak)_\d+$/.test(c))
+
+/**
+ * Тело PATCH админки `{code: days}` → таблица или null (400): только разрешённые значки, целые 0..365; 0 = выключено.
+ * Значки, которых нет в теле, — 0.
+ */
+export function parseVipRewards(body: unknown): Record<string, number> | null {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return null
+  const out: Record<string, number> = Object.fromEntries(VIP_ALLOWED_CODES.map((c) => [c, 0]))
+  for (const [code, days] of Object.entries(body)) {
+    if (!VIP_ALLOWED_CODES.includes(code) || !isInt(days, 0, VIP_DAYS_MAX)) return null
+    out[code] = days
+  }
+  return out
+}
+
+/** Значение из БД → таблица: нет строки — по умолчанию; кривые записи и запрещённые значки отбрасываются (не начисляются). */
+export function vipRewardsFrom(raw: unknown): Record<string, number> {
+  if (raw === null || raw === undefined) return { ...DEFAULT_VIP_REWARDS }
+  if (typeof raw !== 'object' || Array.isArray(raw)) return {}
+  return Object.fromEntries(Object.entries(raw).filter(([c, d]) => VIP_ALLOWED_CODES.includes(c) && isInt(d, 1, VIP_DAYS_MAX)))
+}
 
 /** Сумма дней VIP за только что полученные значки. */
-export function vipDaysFor(newBadges: readonly string[], rewards: Record<string, number | null> = VIP_REWARDS): number {
+export function vipDaysFor(newBadges: readonly string[], rewards: Readonly<Record<string, number>>): number {
   return newBadges.reduce((sum, c) => sum + (rewards[c] ?? 0), 0)
 }
 

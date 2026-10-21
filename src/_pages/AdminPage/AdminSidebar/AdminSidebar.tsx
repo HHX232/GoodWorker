@@ -1,14 +1,14 @@
 'use client'
 
 import {
-  ArrowLeft, BadgeCheck, BarChart3, Bell, FileText, HardDrive, MessageSquareWarning, ShieldCheck, Users, Wallet,
+  ArrowLeft, BadgeCheck, BarChart3, Bell, Crown, FileText, HardDrive, MessageSquareWarning, ShieldCheck, Users, Wallet,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import type { ComponentType } from 'react'
 import styles from './AdminSidebar.module.scss'
 
-export type AdminTab = 'stats' | 'users' | 'content' | 'complaints' | 'promo' | 'storage' | 'notifications' | 'verifications' | 'admin-emails'
+export type AdminTab = 'stats' | 'users' | 'content' | 'complaints' | 'promo' | 'storage' | 'notifications' | 'verifications' | 'admin-emails' | 'chess'
 
 type Item = { key: AdminTab; label: string; icon: ComponentType<{ size?: number; strokeWidth?: number }> }
 
@@ -24,6 +24,7 @@ export function AdminSidebar({ active, onSelect, badges = {} }: {
   badges?: Partial<Record<AdminTab, number>>
 }) {
   const t = useTranslations('admin')
+  const tc = useTranslations('chess.progress')
   const groups: { label: string; items: Item[] }[] = [
     { label: t('groupOverview'), items: [{ key: 'stats', label: t('tabStats'), icon: BarChart3 }] },
     {
@@ -47,6 +48,7 @@ export function AdminSidebar({ active, onSelect, badges = {} }: {
       items: [
         { key: 'promo', label: t('tabPromo'), icon: Wallet },
         { key: 'storage', label: t('tabStorage'), icon: HardDrive },
+        { key: 'chess', label: tc('admin_tab'), icon: Crown },
       ],
     },
   ]

@@ -61,6 +61,20 @@ const base = {
   assert.match(user, /e4/)
 }
 
+// Коротко и по делу: 1–2 предложения, похвалы-вступления запрещены; лучший ход — одно предложение об идее.
+{
+  const played = validateCoachInput({ ...base, fen: 'k7/8/8/3r4/8/8/8/4K2Q w - - 0 1', playedUci: 'h1h5', bestUci: 'h1d5', pvUci: ['h1d5'], classification: 'mistake' })
+  assert.ok(played.ok)
+  const { system } = buildCoachPrompt(played.input, played.facts)
+  assert.match(system, /1–2 short sentences/)
+  assert.doesNotMatch(system, /2–4/)
+  assert.match(system, /No praise/)
+  assert.match(system, /Молодец/) // перечислена в запрете
+  const best = validateCoachInput(base) // Qxf7# — сыгран лучший ход
+  assert.ok(best.ok)
+  assert.match(buildCoachPrompt(best.input, best.facts).system, /ONE sentence/)
+}
+
 // Отказы: нелегальный ход, мусорный FEN, неизвестный enum, нелегальная линия.
 const START = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 const opening = { ...base, fen: START, playedUci: 'e2e4', bestUci: 'd2d4', pvUci: ['d2d4'] }

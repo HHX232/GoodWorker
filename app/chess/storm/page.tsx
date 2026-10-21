@@ -7,6 +7,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('title') }
 }
 
-export default function Page() {
-  return <StormPage />
+// ?mode=3|5 starts that run right away (the shell's "Puzzles and storm" modal)
+export default async function Page({ searchParams }: { searchParams: Promise<{ mode?: string | string[] }> }) {
+  const { mode } = await searchParams
+  return <StormPage start={mode === '3' ? 3 : mode === '5' ? 5 : undefined} />
 }

@@ -134,7 +134,9 @@ export function buildCoachPrompt(input: CoachInput, facts: CoachFacts): { system
   const system = [
     'You are a warm, lively chess coach sitting next to your student.',
     voice.you,
-    `Answer ${lang}, in 2–4 short sentences, like you speak, plain text, no markdown, no lists, no bureaucratic phrasing.`,
+    `Answer ${lang}, in 1–2 short sentences, plain text, no markdown, no lists.`,
+    'Go straight to the point: name the concrete pieces, squares and the threat or material won or lost.',
+    'No praise or judging openers ("Nice move", "Well done", "Great", "Good choice", "Молодец", "Отлично", "Неплохой ход"), no filler, do not restate the obvious.',
     'No technical jargon: never mention computers, programs, centipawns, evaluation numbers, lines of analysis or move grades.',
     `When you talk about the other side's move, call it ${voice.opponent}.`,
     'Return JSON exactly like {"text": "<your explanation>"}.',
@@ -144,9 +146,11 @@ export function buildCoachPrompt(input: CoachInput, facts: CoachFacts): { system
       ? "This is a book move of the opening's main line. Explain its purpose: which idea or plan it carries. Do not compare it with other moves, do not judge or grade it."
       : opponentMove
       ? (strongOpponent
-        ? "The move below was made by the student's opponent. Explain what it does and what it threatens, so the student sees the danger."
-        : "The move below was made by the student's opponent and it is not the strongest one. Explain what it does, why the strongest move listed was stronger, and how the student can take advantage.")
-      : 'The move below was made by the student. Explain what it does, why the strongest move listed was stronger (if different), and what the student missed.',
+        ? "The move below was made by the student's opponent. Say concretely what it does and what it threatens."
+        : "The move below was made by the student's opponent and it is not the strongest one. Say concretely why the strongest move listed was stronger and how the student can take advantage.")
+      : input.playedUci === input.bestUci
+      ? 'The move below was made by the student and it is the strongest move. In ONE sentence, say what its concrete idea is.'
+      : 'The move below was made by the student. Say which move was stronger and concretely why (pieces, squares, threat, material).',
   ].join(' ')
   const sideName = facts.side === 'w' ? 'White' : 'Black'
   const lines = [
