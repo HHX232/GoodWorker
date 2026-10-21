@@ -4,6 +4,7 @@ export type SkinId =
   | 'classic' | 'vintage' | 'night' | 'bordo' | 'powder' | 'wireframe'
   | 'gold' | 'marble' | 'neon' | 'nightgrid' | 'ice' | 'emerald' | 'sunset' | 'graphite'
   | 'monsters' | 'vikings' | 'candy' | 'lair' | 'fjord' | 'sweets'
+  | 'grim' | 'crypt'
 
 export type PieceCode =
   | 'wK' | 'wQ' | 'wR' | 'wB' | 'wN' | 'wP'

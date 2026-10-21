@@ -36,6 +36,8 @@
   "skin_lair": "Логово",
   "skin_fjord": "Фьорд",
   "skin_sweets": "Сладости",
+  "skin_grim": "Кошмары",
+  "skin_crypt": "Склеп",
   "sound_on": "Звук включён",
   "sound_off": "Звук выключен",
   "eval_label": "Оценка позиции: {value}",

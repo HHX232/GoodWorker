@@ -36,6 +36,8 @@
   "skin_lair": "巢穴",
   "skin_fjord": "峡湾",
   "skin_sweets": "甜点",
+  "skin_grim": "梦魇",
+  "skin_crypt": "墓穴",
   "sound_on": "声音已开启",
   "sound_off": "声音已关闭",
   "eval_label": "局面评估：{value}",

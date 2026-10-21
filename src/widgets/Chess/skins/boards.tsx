@@ -24,3 +24,4 @@ export const graphite = board('graphite', 'storm_10', '#c4c6cb', '#565b65', '#2e
 export const lair = board('lair', undefined, '#cdc8b6', '#5e5072', '#342b40')
 export const fjord = board('fjord', undefined, '#e6d3ab', '#45604f', '#2b3b31')
 export const sweets = board('sweets', undefined, '#f9dbe0', '#86cdb9', '#d98a9c')
+export const crypt = board('crypt', undefined, '#e6e9d2', '#6f8c55', '#2c3627')

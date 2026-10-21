@@ -36,6 +36,8 @@
   "skin_lair": "Lair",
   "skin_fjord": "Fjord",
   "skin_sweets": "Sweets",
+  "skin_grim": "Nightmares",
+  "skin_crypt": "Crypt",
   "sound_on": "Sound on",
   "sound_off": "Sound off",
   "eval_label": "Evaluation: {value}",
