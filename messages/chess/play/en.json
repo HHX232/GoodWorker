@@ -186,7 +186,7 @@
   "sh_search": "Find a player",
   "sh_keys": "Keyboard shortcuts",
   "sh_key_new": "New game",
-  "sh_key_puzzles": "Puzzles and storm",
+  "sh_key_puzzles": "Puzzle path",
   "sh_key_search": "Player search",
   "sh_key_keys": "This help",
   "sh_key_esc": "Close a window or panel",
@@ -228,5 +228,8 @@
   "opt_hotkeys": "Keyboard shortcuts",
   "opt_hotkeys_hint": "N, P, / and ? across the chess section. Turn off if they get in the way of typing.",
   "sh_keys_where": "Single-key shortcuts can be turned off in",
-  "sh_keys_off": "Shortcuts are off now. Turn them on in"
+  "sh_keys_off": "Shortcuts are off now. Turn them on in",
+  "sh_path": "Puzzle path",
+  "sh_path_level": "Level {n} · {done} of {total} steps",
+  "sh_modes_free": "Free practice"
 }

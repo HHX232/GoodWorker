@@ -4,10 +4,11 @@ import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } fr
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { ArrowRight, X, Zap } from 'lucide-react'
+import { ArrowRight, Route, X, Zap } from 'lucide-react'
 import { ANALYSIS_KEY, loadGame, type AnalysisHandoff } from '@/shared/lib/chess/reviewModel'
 import { useLocalPref } from '@/shared/lib/chess/localPref'
 import { useMyChessProgress } from '@/widgets/Chess/Progress'
+import { LEVEL_SIZE, pathAt, usePathProgress } from '@/widgets/Chess/Path'
 import { HOTKEYS } from './shellKeys'
 import { ChessDialog } from '@/widgets/Chess/Settings'
 import styles from './Shell.module.scss'
@@ -32,15 +33,27 @@ export function LobbyModal({ open, onClose, children }: LayerProps & { children:
 }
 
 /** Puzzle modes and storm runs: one click from anywhere straight into the chosen mode. */
-export function ModesModal({ open, onClose }: LayerProps) {
+export function ModesModal({ open, onClose, onPath }: LayerProps & { onPath: (e: { preventDefault: () => void }) => void }) {
   const t = useTranslations('chess.play')
   const tl = useTranslations('chess.learn')
   const ts = useTranslations('chess.storm')
   const me = useMyChessProgress()
+  const { solved } = usePathProgress()
+  const pos = pathAt(solved ?? 0)
   const best = (m: 3 | 5) => (me.status === 'ready' ? (m === 3 ? me.profile.stormBest3 : me.profile.stormBest5) : 0)
   return (
     <ChessDialog open={open} onClose={onClose} title={t('sh_modes_title')}>
-      <h3 className={styles.group}>{t('sh_modes_puzzles')}</h3>
+      <Link href="/chess/puzzles" className={styles.pathCard} onClick={onPath}>
+        <Route size={22} strokeWidth={2} aria-hidden="true" />
+        <span className={styles.pathText}>
+          <strong>{t('sh_path')}</strong>
+          <span>{t('sh_path_level', { n: pos.current.level, done: pos.done, total: LEVEL_SIZE })}</span>
+        </span>
+        <span className={styles.pathBar} aria-hidden="true">
+          <span style={{ width: `${pos.pct}%` }} />
+        </span>
+      </Link>
+      <h3 className={styles.group}>{t('sh_modes_free')}</h3>
       <ul className={styles.modes}>
         {PUZZLE_MODES.map((m) => (
           <li key={m}>

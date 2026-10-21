@@ -186,7 +186,7 @@
   "sh_search": "查找棋手",
   "sh_keys": "快捷键",
   "sh_key_new": "新对局",
-  "sh_key_puzzles": "谜题与风暴",
+  "sh_key_puzzles": "谜题之路",
   "sh_key_search": "查找棋手",
   "sh_key_keys": "本帮助",
   "sh_key_esc": "关闭窗口或面板",
@@ -228,5 +228,8 @@
   "opt_hotkeys": "快捷键",
   "opt_hotkeys_hint": "国际象棋栏目中的 N、P、/ 和 ?。如妨碍输入可关闭。",
   "sh_keys_where": "单键快捷键可在此关闭：",
-  "sh_keys_off": "快捷键当前已关闭。开启："
+  "sh_keys_off": "快捷键当前已关闭。开启：",
+  "sh_path": "谜题之路",
+  "sh_path_level": "等级 {n} · {done}/{total} 级",
+  "sh_modes_free": "自由练习"
 }

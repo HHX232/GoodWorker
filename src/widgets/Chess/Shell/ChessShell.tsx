@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { Fragment, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
@@ -33,7 +33,7 @@ const ShellCtx = createContext<ShellApi | null>(null)
 /** Null outside the chess section (e.g. a chess widget on a tutor profile). */
 export const useChessShell = () => useContext(ShellCtx)
 
-type NavItem = { id: string; icon: LucideIcon; label: string; layer?: ShellLayer; href?: string; match: (p: string) => boolean }
+type NavItem = { id: string; icon: LucideIcon; label: string; layer?: ShellLayer; href?: string; onClick?: (e: MouseEvent) => void; match: (p: string) => boolean }
 
 export type ChessShellProps = {
   children: ReactNode
@@ -70,6 +70,20 @@ export function ChessShell({ children, lobby, profile }: ChessShellProps) {
   const api = useMemo<ShellApi>(() => ({ open, setNewGameHandler: (fn) => void (newGameHandler.current = fn) }), [open])
   const close = () => setLayer(null)
 
+  // «Задачи» / P: the puzzle path map. Already on the bare /chess/puzzles (maybe solving a step) — remount the page,
+  // which opens on the map; from ?mode=… or another page — plain navigation (the page is keyed by its query).
+  const [pageKey, setPageKey] = useState(0)
+  const goPath = useCallback(
+    (e?: { preventDefault: () => void }) => {
+      setLayer(null)
+      if (location.pathname === '/chess/puzzles' && !location.search) {
+        e?.preventDefault()
+        setPageKey((k) => k + 1)
+      } else if (!e) router.push('/chess/puzzles')
+    },
+    [router]
+  )
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.defaultPrevented || e.repeat || document.querySelector('dialog[open]')) return
@@ -77,16 +91,17 @@ export function ChessShell({ children, lobby, profile }: ChessShellProps) {
       const action = shellKey(e)
       if (!action) return
       e.preventDefault() // "/" would start Firefox quick find
-      open(action === 'new' ? { k: 'new' } : action === 'puzzles' ? { k: 'modes' } : action === 'search' ? { k: 'online', search: true } : { k: 'keys' })
+      if (action === 'puzzles') return goPath()
+      open(action === 'new' ? { k: 'new' } : action === 'search' ? { k: 'online', search: true } : { k: 'keys' })
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [open])
+  }, [open, goPath])
 
   const nav: NavItem[] = [
     { id: 'play', icon: ChessPawn, label: t('sh_play'), layer: { k: 'new' }, match: (p) => p.startsWith('/chess/play') },
     { id: 'online', icon: Globe, label: t('sh_online'), layer: { k: 'online' }, match: (p) => p.startsWith('/chess/online') || p.startsWith('/chess/game') },
-    { id: 'puzzles', icon: Puzzle, label: t('sh_puzzles'), layer: { k: 'modes' }, match: (p) => p.startsWith('/chess/puzzles') },
+    { id: 'puzzles', icon: Puzzle, label: t('sh_puzzles'), href: '/chess/puzzles', onClick: goPath, match: (p) => p.startsWith('/chess/puzzles') },
     { id: 'storm', icon: Zap, label: t('sh_storm'), layer: { k: 'modes' }, match: (p) => p.startsWith('/chess/storm') },
     { id: 'learn', icon: BookOpen, label: t('sh_learn'), href: '/chess/learn', match: (p) => p.startsWith('/chess/learn') },
     { id: 'review', icon: ChartLine, label: t('sh_review'), layer: { k: 'pgn' }, match: (p) => p.startsWith('/chess/analysis') },
@@ -114,7 +129,7 @@ export function ChessShell({ children, lobby, profile }: ChessShellProps) {
               return (
                 <li key={n.id}>
                   {n.href ? (
-                    <Link href={n.href} className={styles.item} aria-current={current ? 'page' : undefined}>{body}</Link>
+                    <Link href={n.href} className={styles.item} aria-current={current ? 'page' : undefined} onClick={n.onClick}>{body}</Link>
                   ) : (
                     <button type="button" className={styles.item} data-current={current || undefined} onClick={() => open(n.layer!)} aria-haspopup="dialog">
                       {body}
@@ -151,7 +166,7 @@ export function ChessShell({ children, lobby, profile }: ChessShellProps) {
               </button>
             </div>
           </div>
-          {children}
+          <Fragment key={pageKey}>{children}</Fragment>
         </div>
       </div>
 
@@ -167,7 +182,7 @@ export function ChessShell({ children, lobby, profile }: ChessShellProps) {
       <LobbyModal open={layer?.k === 'online'} onClose={close}>
         {layer?.k === 'online' && lobby({ search: !!layer.search, tc: layer.tc, seek: !!layer.seek })}
       </LobbyModal>
-      <ModesModal open={layer?.k === 'modes'} onClose={close} />
+      <ModesModal open={layer?.k === 'modes'} onClose={close} onPath={goPath} />
       <PgnModal open={layer?.k === 'pgn'} onClose={close} />
       <KeysModal open={layer?.k === 'keys'} onClose={close} onSettings={() => setLayer({ k: 'settings' })} />
       <ProfileDrawer open={layer?.k === 'profile'} onClose={close}>
