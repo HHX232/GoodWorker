@@ -56,6 +56,7 @@ export function ChessHubPage() {
   const tl = useTranslations('chess.learn')
   const tp = useTranslations('chess.progress')
   const to = useTranslations('chess.online')
+  const tland = useTranslations('chess.landing')
   const shell = useChessShell()
   const me = useMyChessProgress()
   const { status } = useSession()
@@ -239,7 +240,8 @@ export function ChessHubPage() {
         {t('credit_lichess')} ·{' '}
         <a href="https://github.com/nmrugg/stockfish.js" target="_blank" rel="noopener noreferrer">
           {t('credit_stockfish')}
-        </a>
+        </a>{' '}
+        · <Link href="/info-chess">{tland('hub_link')}</Link>
       </p>
     </div>
   )
