@@ -8,7 +8,7 @@ window.STATE =
   "memoryFile": "CLAUDE.md",
   "startedAt": "2026-10-15T23:45:00+03:00",
   "updatedAt": "2026-10-21T03:30:00+03:00",
-  "finishedAt": "2026-10-21T03:30:00+03:00",
+  "finishedAt": "2026-10-21T12:40:00+03:00",
   "stages": [
     {
       "id": "preflight",
@@ -68,7 +68,7 @@ window.STATE =
     }
   ],
   "requirements": {
-    "total": 57,
+    "total": 59,
     "done": 66,
     "inTicket": 0,
     "inSpec": 0,
@@ -532,6 +532,41 @@ window.STATE =
       "repairs": 1,
       "finishedAt": "2026-10-21T03:30:00+03:00",
       "commit": "см. общий коммит волн 7–8"
+    },
+    {
+      "id": "21",
+      "title": "Скины: монстры, викинги, конфеты + доски",
+      "requirements": [
+        "G37"
+      ],
+      "blockedBy": [],
+      "wave": 9,
+      "zone": [
+        "src/widgets/Chess/skins/"
+      ],
+      "status": "done",
+      "retries": 0,
+      "startedAt": "2026-10-21T10:00:00+03:00",
+      "commit": "98ee98f",
+      "finishedAt": "2026-10-21T12:10:00+03:00",
+      "note": "ревью craft сорвалось по лимиту — проверено по скриншотам"
+    },
+    {
+      "id": "22",
+      "title": "Суровые монстры (Ктулху, вампир) + доска «Склеп»",
+      "requirements": [
+        "G38"
+      ],
+      "blockedBy": [],
+      "wave": 10,
+      "zone": [
+        "src/widgets/Chess/skins/"
+      ],
+      "status": "done",
+      "retries": 0,
+      "startedAt": "2026-10-21T12:12:00+03:00",
+      "commit": "83056a2",
+      "finishedAt": "2026-10-21T12:40:00+03:00"
     }
   ],
   "coverage": {
