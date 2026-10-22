@@ -226,6 +226,30 @@
 .sqMove { fill: rgba(255, 150, 80, 0.38); }
 .sqCheck { fill: rgba(255, 70, 60, 0.5); }
 
+.arrowSvg {
+  position: absolute;
+  inset: 0;
+  z-index: 200;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.arrow {
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+  stroke-linejoin: round;
+
+  &[data-kind='best'] { fill: #7fd35c; }
+  &[data-kind='alt'] { fill: #7fd35c; }
+  &[data-kind='idea'] { fill: #f5c544; }
+
+  &[data-on][data-kind='best'] { opacity: 0.78; }
+  &[data-on][data-kind='alt'] { opacity: 0.3; }
+  &[data-on][data-kind='idea'] { opacity: 0.7; }
+}
+
 .pieces {
   position: absolute;
   inset: 0;
@@ -936,6 +960,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .piece,
+  .arrow,
   .clockBar i,
   .btnMain,
   .btnGhost,

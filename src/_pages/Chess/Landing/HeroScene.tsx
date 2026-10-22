@@ -52,6 +52,29 @@ const FRONT = (() => {
   return `${ax},${y} ${bx},${y} ${bx},${y + d} ${ax},${y + d}`
 })()
 
+// Recommendation arrows lie on the board plane: the arrow is shaped in board units, then every vertex goes
+// through the same projection as the squares — so it foreshortens with the board.
+const sqUV = (sq: string) => [(FILES.indexOf(sq[0]) + 0.5) / 8, (8 - Number(sq[1]) + 0.5) / 8]
+function arrowPoints(from: string, to: string) {
+  const [u0, v0] = sqUV(from)
+  const [u1, v1] = sqUV(to)
+  const len = Math.hypot(u1 - u0, v1 - v0)
+  const [du, dv] = [(u1 - u0) / len, (v1 - v0) / len]
+  const [nu, nv] = [-dv, du]
+  const W2 = 0.016 // half shaft
+  const H2 = 0.042 // half head
+  const HEAD = 0.06
+  const a = 0.022 // start a little off the centre
+  const b = len - 0.012 // tip just short of the target centre
+  const at = (t: number, w: number) => pt(u0 + du * t + nu * w, v0 + dv * t + nv * w)
+  return [at(a, W2), at(b - HEAD, W2), at(b - HEAD, H2), at(b, 0), at(b - HEAD, -H2), at(b - HEAD, -W2), at(a, -W2)].join(' ')
+}
+const ARROW_KEYS = (() => {
+  const seen = new Map<string, { from: string; to: string; kind: string }>()
+  for (const f of OPERA.frames) for (const a of f.arrows) seen.set(`${a.from}${a.to}${a.kind}`, a)
+  return [...seen.entries()].map(([key, a]) => ({ key, ...a, points: arrowPoints(a.from, a.to) }))
+})()
+
 const PIECES = getSkin('marble').pieces
 const PIECE = 1.22 // piece box, in squares
 
@@ -120,7 +143,7 @@ export function HeroScene() {
     if (!running) return
     const f = OPERA.frames[ply]
     const last = ply === OPERA.frames.length - 1
-    const ms = ply === 0 ? 2600 : last ? 6500 : f.note ? 4600 : 1350
+    const ms = ply === 0 ? 2600 : last ? 6500 : f.note ? 4600 : f.arrows.length ? 2600 : 1350
     const id = setTimeout(() => setPly(last ? 0 : ply + 1), ms)
     return () => clearTimeout(id)
   }, [running, ply])
@@ -208,6 +231,18 @@ export function HeroScene() {
               )
             })}
           </div>
+          {/* arrows float above the standing pieces (as on any board UI), still in the board's perspective */}
+          <svg className={s.arrowSvg} viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
+              {ARROW_KEYS.map((a) => (
+                <polygon
+                  key={a.key}
+                  points={a.points}
+                  className={s.arrow}
+                  data-kind={a.kind}
+                  data-on={frame.arrows.some((x) => `${x.from}${x.to}${x.kind}` === a.key) ? '' : undefined}
+                />
+              ))}
+          </svg>
         </div>
       </div>
 
