@@ -1,4 +1,4 @@
-export { useMoveCoach, REVIEW_ANALYSIS, type MoveReview, type ExplainResult, type CoachContext } from './useMoveCoach'
+export { useMoveCoach, REVIEW_ANALYSIS, DEEP_ANALYSIS, DEEP_DEPTH, type MoveReview, type ExplainResult, type CoachContext } from './useMoveCoach'
 export { CoachPanel, type CoachPanelProps } from './CoachPanel'
 export { EvalBar, type EvalBarProps } from './EvalBar'
 export { formatEval } from './evalFormat'

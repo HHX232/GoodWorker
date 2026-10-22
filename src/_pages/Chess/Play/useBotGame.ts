@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Chess, validateFen, DEFAULT_POSITION } from 'chess.js'
 import type { BoardArrow, BoardMove } from '@/widgets/Chess/Board'
-import { REVIEW_ANALYSIS, useMoveCoach, type MoveReview } from '@/widgets/Chess/Coach'
+import { DEEP_ANALYSIS, REVIEW_ANALYSIS, useMoveCoach, type MoveReview } from '@/widgets/Chess/Coach'
 import { hintArrows, type HintArrow } from '@/shared/lib/chess/hintArrows'
 import { coachMarks } from '@/shared/lib/chess/motifs'
 import { getEngine, type EngineLine } from '@/shared/lib/chess/engine'
@@ -207,7 +207,12 @@ export function useBotGame({ initialFen, initialColor, startNew }: { initialFen?
     setNoAnalysis(false)
     setReviewing(true)
     coach
-      .review(before, m.from + m.to + (m.promotion ?? ''), 'game', hint?.fen === before ? hint.lines : undefined)
+      .review(before, m.from + m.to + (m.promotion ?? ''), 'game', hint?.fen === before ? hint.lines : undefined, (deep, changed) => {
+        // the deep pass: a sharper eval always; a new verdict, best move or refutation replaces the line and the arrows
+        if (my !== gen.current) return
+        setEvalCp(deep.evalAfterCp)
+        if (changed) setReview(deep)
+      })
       .then((r) => {
         if (my !== gen.current) return
         setReview(r)
@@ -273,13 +278,20 @@ export function useBotGame({ initialFen, initialColor, startNew }: { initialFen?
 
   // ─── G01/G03: best moves of the position the player is to move in ────────────
   // Queued after the reply and the review; the next player move's cancelAll() drops it, so it never delays the engine.
+  // Quick arrows first, then the deep search redraws them; the player's move reuses whichever lines are newest.
   const hintOn = coachOn && hintPref === '1' && ready && !gameOver && !thinking && chess.turn() === color
   useEffect(() => {
     if (!hintOn) return
     const my = gen.current
-    getEngine()
-      .analyse(fen, REVIEW_ANALYSIS) // same search as the review's: the player's move reuses these lines
-      .then((lines) => my === gen.current && chess.fen() === fen && setHint({ fen, lines, arrows: hintArrows(lines) }))
+    const live = () => my === gen.current && chess.fen() === fen
+    const show = (lines: EngineLine[]) => live() && setHint({ fen, lines, arrows: hintArrows(lines) })
+    const engine = getEngine()
+    engine
+      .analyse(fen, REVIEW_ANALYSIS) // same search as the review's quick pass
+      .then((lines) => {
+        show(lines)
+        return live() ? engine.analyse(fen, DEEP_ANALYSIS).then(show) : undefined
+      })
       .catch((e: Error) => e.message === 'ENGINE_UNAVAILABLE' && setEngineDown(true)) // cancelled / bad FEN: no arrows
   }, [hintOn, fen, chess])
 

@@ -26,7 +26,7 @@ import styles from './ChessAnalysisPage.module.scss'
 
 
 // spec: MultiPV 2, ~0.6 s per position
-const ANALYSIS = { multiPV: 2, movetimeMs: 600 }
+const ANALYSIS = { multiPV: 2, depth: 18, movetimeMs: 1200 } // depth 18 or 1.2 s per position, whichever first
 
 type Phase =
   | { k: 'idle'; note?: 'cancelled' | 'bad_pgn' }

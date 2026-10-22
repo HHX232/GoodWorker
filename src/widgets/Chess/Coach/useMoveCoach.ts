@@ -34,10 +34,16 @@ export type ExplainResult =
   | { ok: false; reason: 'LIMIT'; tier: 'guest' | 'user' }
   | { ok: false; reason: 'UNAVAILABLE' | 'BAD_INPUT' }
 
-// Spec: MultiPV 3, depth ≥ 14 or ~1 s, before and after the move.
-/** The pre-move analysis `review` runs; a caller that already ran exactly this on `fenBefore` passes its lines in. */
-export const REVIEW_ANALYSIS = { multiPV: 3, depth: 14, movetimeMs: 1000 }
-const AFTER = { multiPV: 1, depth: 14, movetimeMs: 1000 }
+// Iterative deepening: a quick look first (~0.5 s, the coach answers at once), then a deep one in the background
+// (depth 20 or ~3 s, whichever comes first) that replaces it when the verdict changes. MultiPV 3 before the move.
+/** The quick pre-move analysis; a caller that already ran it (or DEEP_ANALYSIS) on `fenBefore` passes its lines in. */
+export const REVIEW_ANALYSIS = { multiPV: 3, movetimeMs: 500 }
+/** The background refinement of the same position. */
+export const DEEP_ANALYSIS = { multiPV: 3, depth: 20, movetimeMs: 3000 }
+/** Lines at least this deep count as already refined — the deep pass does not search them again. */
+export const DEEP_DEPTH = 18
+// a caller without `onRefine` (puzzles, the call board) gets one medium search, as before
+const SINGLE = { multiPV: 3, depth: 14, movetimeMs: 1000 }
 
 const uciToMove = (uci: string) => ({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] })
 
@@ -67,45 +73,39 @@ export function useMoveCoach() {
   const locale = useLocale()
 
   const review = useCallback(
-    async (fenBefore: string, playedUci: string, context: CoachContext = 'game', linesBefore?: EngineLine[]): Promise<MoveReview> => {
+    /**
+     * Resolves with the quick review. With `onRefine` it then searches deeper in the background (queued after the
+     * quick jobs, dropped by cancelAll like any job) and calls `onRefine` with the deeper review; `changed` — the class,
+     * the best move or the refutation differ from the quick one. The caller drops a stale refinement by its generation counter.
+     */
+    async (
+      fenBefore: string, playedUci: string, context: CoachContext = 'game', linesBefore?: EngineLine[],
+      onRefine?: (deep: MoveReview, changed: boolean) => void,
+    ): Promise<MoveReview> => {
       const engine = getEngine()
       const game = new Chess(fenBefore)
-      const turnBefore = game.turn()
       const played = game.move(uciToMove(playedUci)) // throws on an illegal move
       const fenAfter = game.fen()
+      const over: EngineLine | null = game.isCheckmate()
+        ? { uci: '', pv: [], scoreCp: null, mate: 0 }
+        : game.isGameOver() ? { uci: '', pv: [], scoreCp: 0, mate: null } : null
+      const build = (before: EngineLine[], after: EngineLine | undefined) =>
+        buildReview(fenBefore, played.san, playedUci, context, before, after)
 
+      const opts = onRefine ? REVIEW_ANALYSIS : SINGLE
       // reuse lines of the same position (e.g. the best-move hint) instead of a second identical search
-      const before = linesBefore?.length ? linesBefore : await engine.analyse(fenBefore, REVIEW_ANALYSIS)
-      let after: EngineLine | undefined
-      if (game.isCheckmate()) after = { uci: '', pv: [], scoreCp: null, mate: 0 }
-      else if (game.isGameOver()) after = { uci: '', pv: [], scoreCp: 0, mate: null }
-      else after = (await engine.analyse(fenAfter, AFTER))[0]
-
-      const classification = classifyMove(before, after, playedUci) // throws NO_ANALYSIS
-      const top = before[0]
-      const refutationUci = after.pv ?? []
-      const refutationMate = after.mate ?? null
-      let why: MoveWhy | null = null
-      try {
-        why = whyMove({ fen: fenBefore, played: playedUci, reply: refutationUci, replyMate: refutationMate, best: top.pv?.length ? top.pv : [top.uci], bestMate: top.mate })
-      } catch {
-        why = null // an odd engine line: the coach falls back to the plain sentence
+      const before = linesBefore?.length ? linesBefore : await engine.analyse(fenBefore, opts)
+      const quick = build(before, over ?? (await engine.analyse(fenAfter, { ...opts, multiPV: 1 }))[0])
+      if (onRefine && !over) {
+        void (async () => {
+          const deepBefore = (before[0]?.depth ?? 0) >= DEEP_DEPTH ? before : await engine.analyse(fenBefore, DEEP_ANALYSIS)
+          const deep = build(deepBefore, (await engine.analyse(fenAfter, { ...DEEP_ANALYSIS, multiPV: 1 }))[0])
+          const changed = deep.classification !== quick.classification || deep.bestUci !== quick.bestUci ||
+            deep.refutationUci?.[0] !== quick.refutationUci?.[0]
+          onRefine(deep, changed)
+        })().catch(() => {}) // cancelled / engine down / no analysis: the quick review stands
       }
-      return {
-        classification,
-        bestUci: top.uci,
-        bestSan: sanOf(fenBefore, top.uci),
-        playedSan: played.san,
-        pvUci: top.pv,
-        evalBeforeCp: toWhiteCp(top, turnBefore),
-        evalAfterCp: toWhiteCp(after!, game.turn()),
-        fenBefore,
-        playedUci,
-        context,
-        refutationUci,
-        refutationMate,
-        why,
-      }
+      return quick
     },
     []
   )
@@ -143,4 +143,36 @@ export function useMoveCoach() {
   )
 
   return useMemo(() => ({ review, explain }), [review, explain])
+}
+
+/** Classification + motifs of one move from the lines before it and the opponent's best line after it. Throws NO_ANALYSIS. */
+function buildReview(
+  fenBefore: string, playedSan: string, playedUci: string, context: CoachContext, before: EngineLine[], after: EngineLine | undefined,
+): MoveReview {
+  const classification = classifyMove(before, after, playedUci) // throws NO_ANALYSIS
+  const turnBefore = fenBefore.split(' ')[1] === 'b' ? 'b' : 'w'
+  const top = before[0]
+  const refutationUci = after!.pv ?? []
+  const refutationMate = after!.mate ?? null
+  let why: MoveWhy | null = null
+  try {
+    why = whyMove({ fen: fenBefore, played: playedUci, reply: refutationUci, replyMate: refutationMate, best: top.pv?.length ? top.pv : [top.uci], bestMate: top.mate })
+  } catch {
+    why = null // an odd engine line: the coach falls back to the plain sentence
+  }
+  return {
+    classification,
+    bestUci: top.uci,
+    bestSan: sanOf(fenBefore, top.uci),
+    playedSan,
+    pvUci: top.pv,
+    evalBeforeCp: toWhiteCp(top, turnBefore),
+    evalAfterCp: toWhiteCp(after!, turnBefore === 'w' ? 'b' : 'w'),
+    fenBefore,
+    playedUci,
+    context,
+    refutationUci,
+    refutationMate,
+    why,
+  }
 }

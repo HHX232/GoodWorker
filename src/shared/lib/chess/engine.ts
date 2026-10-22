@@ -2,7 +2,8 @@
 // One worker per tab; every call is queued so UCI commands never interleave.
 import { validateFen } from 'chess.js'
 
-export type EngineLine = { uci: string; pv: string[]; scoreCp: number | null; mate: number | null }
+/** `depth` — the search depth the line comes from (absent on hand-built lines). */
+export type EngineLine = { uci: string; pv: string[]; scoreCp: number | null; mate: number | null; depth?: number }
 
 export type EngineLevel = { level: number; elo?: number; skill?: number; movetimeMs: number }
 
@@ -205,9 +206,10 @@ function parseInfo(l: string): { k: number; line: EngineLine } | null {
   const val = Number(t[s + 2])
   const pv = t.slice(at('pv') + 1)
   const mpv = at('multipv')
+  const d = at('depth')
   return {
     k: mpv >= 0 ? Number(t[mpv + 1]) : 1,
-    line: { uci: pv[0], pv, scoreCp: kind === 'cp' ? val : null, mate: kind === 'mate' ? val : null },
+    line: { uci: pv[0], pv, scoreCp: kind === 'cp' ? val : null, mate: kind === 'mate' ? val : null, depth: d >= 0 ? Number(t[d + 1]) : undefined },
   }
 }
 
