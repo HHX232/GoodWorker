@@ -2,6 +2,7 @@ FROM node:22-alpine AS deps
 RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 COPY package*.json ./
+COPY scripts ./scripts
 RUN npm install --prefer-offline
 
 FROM node:22-alpine AS builder

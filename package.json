@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "postinstall": "node scripts/copy-stockfish.mjs",
+    "postinstall": "node -e \"require('fs').existsSync('scripts/copy-stockfish.mjs')&&import('./scripts/copy-stockfish.mjs')\"",
     "build": "prisma generate && next build",
     "start": "tsx prisma/seed-if-empty.ts && tsx prisma/migrateRussianCourseWave1.ts && next start",
     "lint": "eslint",
