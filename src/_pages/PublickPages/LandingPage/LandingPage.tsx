@@ -1809,7 +1809,7 @@ function SubNavMore() {
       </summary>
       <div id='subnav-more-list' className={s.subnav_menu} onClick={close}>
         <Link href='/info-storage' className={s.subnav_menu_link}>{t('sub_more_storage')}</Link>
-        <Link href='/#lecture-promo-title' className={s.subnav_menu_link}>{t('sub_more_lecture')}</Link>
+        <Link href='/lecture' className={s.subnav_menu_link}>{t('sub_more_lecture')}</Link>
         <Link href='/info-chess' className={s.subnav_menu_link}>{t('sub_more_chess')}</Link>
       </div>
     </details>
