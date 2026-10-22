@@ -13,6 +13,25 @@ export interface FilesPerson {
   availableUntil?: string | null
 }
 
+/**
+ * Teacher view, homework folders only: how far the submissions are. On a
+ * submissions folder (`unit: 'students'`) the units are the students holding
+ * access; on a student's personal subfolder (`unit: 'files'`) they are that
+ * student's uploads. `total` = done + waiting + working + notStarted.
+ */
+export interface SubmissionProgress {
+  unit: 'students' | 'files'
+  /** Submitted and accepted. */
+  done: number
+  /** Submitted, not reviewed yet. */
+  waiting: number
+  /** Sent back for revision — the student is working on it. */
+  working: number
+  /** Nothing submitted (students only). */
+  notStarted: number
+  total: number
+}
+
 export interface LibraryFolder {
   id: string
   name: string
@@ -28,6 +47,10 @@ export interface LibraryFolder {
   itemCount: number
   /** Teacher view only: students holding a direct grant. */
   sharedWith: FilesPerson[]
+  /** Teacher view: students with access to something inside this folder but no direct grant on it. */
+  nestedWith?: FilesPerson[]
+  /** Teacher view, homework folders only. */
+  progress?: SubmissionProgress | null
   updatedAt: string
 }
 
@@ -49,6 +72,8 @@ export interface LibraryFile {
   review: FileReview | null
   /** Set on a file the in-browser docx editor saved "as new" — the id it was derived from. Editing this file again overwrites it in place instead of spawning another copy. */
   derivedFromId: string | null
+  /** Set on a tutor's saved /lecture notes — opening goes back to /lecture/<id>. */
+  lectureNoteId?: string | null
 }
 
 export interface FileReview {
@@ -77,6 +102,70 @@ export interface TreeNode {
   cover: string | null
 }
 
+/** A book (TutorFile with `isBook`) as the viewer sees it. */
+export interface LibraryBook {
+  /** = TutorFile.id */
+  id: string
+  title: string
+  teacherId: string
+  teacherName: string
+  pageCount: number | null
+  sizeBytes: number
+  /** ISO. */
+  addedAt: string
+  /** `kind: null` / `url: null` = typographic cover drawn from `spineColor` + the title. `spineColor` is always `#RRGGBB`. */
+  cover: { kind: 'found' | 'page1' | 'photo' | null; url: string | null; spineColor: string }
+  /** "Мои книги" bookmark of the viewer. */
+  saved: boolean
+  /** The viewer's own reading progress (`pct` 0..100). */
+  progress: { lastPage: number; pct: number; updatedAt: string } | null
+  /** Teacher view only: students holding a direct grant. */
+  sharedWith: FilesPerson[]
+}
+
+/** One page bookmark of the viewer inside a book. */
+export interface BookBookmark {
+  id: string
+  page: number
+  label: string | null
+  /** ISO. */
+  createdAt: string
+}
+
+export const HIGHLIGHT_COLORS = ['yellow', 'green', 'pink', 'blue'] as const
+export type HighlightColor = (typeof HIGHLIGHT_COLORS)[number]
+
+/** One rectangle of a highlight, as fractions (0..1) of the page's width/height. */
+export interface HighlightRect {
+  x: number
+  y: number
+  w: number
+  h: number
+}
+
+/** A personal text highlight (with an optional single comment) in a book. */
+export interface BookHighlight {
+  id: string
+  page: number
+  text: string
+  rects: HighlightRect[]
+  color: HighlightColor
+  note: string | null
+  /** ISO. */
+  createdAt: string
+}
+
+/** GET /api/tutor-files/books/[id]/presence (owner only). Keys of `pages` are page numbers; pages nobody touched are absent. */
+export interface BookPresencePage {
+  /** Students whose last page is this one; `stoppedAt` = when (ISO). */
+  stoppedHere: (FilesPerson & { stoppedAt: string })[]
+  /** Students who read this page earlier (not those in `stoppedHere`), newest first. */
+  readBy: { person: FilesPerson; lastReadAt: string }[]
+}
+export interface BookPresence {
+  pages: Record<number, BookPresencePage>
+}
+
 export interface LibraryResponse {
   role: 'TEACHER' | 'STUDENT'
   /** The open folder, `null` at the root. */
@@ -95,6 +184,8 @@ export interface LibraryResponse {
   tree: TreeNode[]
   /** Student only: every tutor who shares something with the viewer (labels the sidebar tree). */
   teachers: FilesPerson[]
+  /** Books the viewer sees: all of the tutor's (teacher) / those with an active grant (student) at the root; `[]` inside a folder. Books are NOT repeated in `groups[].files`. */
+  books: LibraryBook[]
   /** Viewer may upload into the open folder (teacher: always; student: only their own subfolder). */
   canUpload: boolean
   /** Teacher only: VIP active — write actions allowed (G01). */

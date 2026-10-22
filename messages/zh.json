@@ -53,6 +53,7 @@
     "roadmaps": "课程",
     "games": "游戏",
     "pomodoro": "番茄钟",
+    "lecture": "课堂笔记",
     "videoCall": "视频通话",
     "posts": "帖子",
     "vip": "VIP"
@@ -1890,7 +1891,9 @@
     "storageReindexRunning": "正在索引… 剩余 {n}",
     "storageReindexDone": "索引完成",
     "storageAdminBadge": "管理员",
-    "storageAdminQuotaHint": "管理员无需 VIP，配额 {gb} GB。"
+    "storageAdminQuotaHint": "管理员无需 VIP，配额 {gb} GB。",
+    "storageStudentQuota": "学生配额（我的文件）",
+    "storageStudentQuotaHint": "VIP 学生的个人存储：课堂笔记和自己上传的文件。提交到导师文件夹的作业计入导师配额。"
   },
   "tutorial": {
     "prev": "上一步",
@@ -2044,6 +2047,34 @@
     "hero_today": "今天有 3 节课和 18:00 的通话。",
     "hero_h1": "传授知识，获取知识。",
     "hero_h1_hl": "琐事交给我们",
+    "hero_teacher_btn_calendar": "日历",
+    "hero_student_btn_teacher": "找老师",
+    "hero_student_btn_course": "找课程",
+    "hero_teacher_h1": "上课所需的一切——",
+    "hero_teacher_h1_hl": "免费，集中一处",
+    "hero_teacher_phrase1": "视频通话——课后笔记立即生成。",
+    "hero_teacher_phrase2": "一个文件——60 秒生成测验。",
+    "hero_teacher_phrase3": "学生的错题——按主题归入档案。",
+    "hero_teacher_phrase4": "课表与提醒——通过 Telegram 发送。",
+    "hero_teacher_desc": "每次通话后自动生成笔记，任意 PDF 一键生成测验，带提醒的日历，以及每位学生的错题档案——一站式搞定，免费开始。",
+    "hero_student_h1": "专心获取知识——",
+    "hero_student_h1_hl": "繁琐交给我们",
+    "hero_student_phrase1": "导师与课程——一站搞定。",
+    "hero_student_phrase2": "免费课程——立即开始。",
+    "hero_student_phrase3": "你的错题会被保存并按主题整理。",
+    "hero_student_phrase4": "上课安排与提醒——通过 Telegram 发送。",
+    "hero_student_desc": "找导师，在线学习课程并参加测验。带自动笔记的视频课、带提醒的课表，以及按主题整理的错题分析——免费开始。",
+    "promo_eyebrow": "平台视频",
+    "promo_title": "以<word></word>的视角看 GoodWorker",
+    "promo_word_teacher": "老师",
+    "promo_word_student": "学生",
+    "promo_btn_teacher": "我是老师",
+    "promo_btn_student": "我是学生",
+    "promo_roles_aria": "您的身份",
+    "promo_watch_aria": "观看{who}视频，{time}",
+    "promo_dialog_aria": "GoodWorker 视频",
+    "promo_close": "关闭视频",
+    "promo_error": "视频加载失败",
     "hero_phrase1": "视频通话，自动生成课堂纪要。",
     "hero_phrase2": "课程与测试——几分钟搞定。",
     "hero_phrase3": "上传文件，60 秒生成测试。",
@@ -2064,6 +2095,7 @@
     "sub_more_storage": "关于文件存储",
     "sub_more_lecture": "关于讲座",
     "sub_more_chess": "关于国际象棋",
+    "sub_lecture": "课堂笔记",
     "sub_pdf_from": "文件",
     "sub_pdf_to": "测试",
     "btn_create": "创建课程",
@@ -2591,7 +2623,8 @@
     "n_file_title": "Hooks速查表",
     "n_post_title": "React Flow实践",
     "n_audio_title": "代码讲解",
-    "n_test_title": "测试：React基础"
+    "n_test_title": "测试：React基础",
+    "center_btn": "居中显示"
   },
   "PdfInfoPage": {
     "qtype_single": "单选题",
@@ -3626,6 +3659,8 @@
     "errMaxDepth": "无法继续嵌套：最多 {max} 层",
     "errTooLarge": "“{name}”超过 50 MB",
     "errUpload": "无法上传“{name}”。请检查网络后重试",
+    "pageCropped": "{count, plural, other {已按纸张边缘裁剪页面照片}}",
+    "pageCropUndo": "保留原图",
     "errVip": "此操作仅限 VIP",
     "errGeneric": "出了点问题，请重试",
     "errLoad": "无法打开文件库",
@@ -3656,10 +3691,137 @@
     "overageWallet": "打开钱包",
     "overageOk": "知道了",
     "pageTitle": "文件",
+    "booksPageTitle": "全部书籍",
+    "booksPageCrumbsAria": "路径",
+    "booksPageCrumb": "书籍",
+    "booksPageSearch": "按书名查找",
+    "booksPageSearchClear": "清除搜索",
+    "booksPageUpload": "上传书籍",
+    "booksPageViewsAria": "分区",
+    "booksPageViewShelf": "展示架",
+    "booksPageViewMine": "我的书籍",
+    "booksPageShelvesAria": "书架",
+    "booksPageTabAll": "全部",
+    "booksPageTabSaved": "已收藏",
+    "booksPageTabNew": "最新",
+    "booksPageCarAria": "精选",
+    "booksPageCarRecent": "最近打开",
+    "booksPageShowAll": "查看全部",
+    "booksPageScrollPrev": "上一页",
+    "booksPageScrollNext": "下一页",
+    "booksPageCarEmpty": "暂无内容：打开任意一本书，它就会出现在这里。",
+    "booksPageHeroTitle": "继续阅读",
+    "booksPageHeroPage": "第 {page} 页，共 {pages} 页",
+    "booksPageHeroPageOnly": "第 {page} 页",
+    "booksPageHeroDetails": "详情",
+    "booksPageMiniAria": "精选集",
+    "booksPageMiniNew": "最新",
+    "booksPageMiniWithCover": "有封面",
+    "booksPageMiniNeedCover": "需要封面",
+    "booksPageMiniDone": "已读完",
+    "booksPageCount": "{count, plural, other {# 本书}}",
+    "booksPageLibrary": "完整书库",
+    "booksPageResults": "找到",
+    "booksPageReset": "重置",
+    "booksPageResetAll": "重置搜索和筛选",
+    "booksPageSortAria": "排序",
+    "booksPageSortRecent": "最近",
+    "booksPageSortTitle": "按书名",
+    "booksPageSortProgress": "按进度",
+    "booksPageEmptyLibTitleT": "上传第一份 PDF",
+    "booksPageEmptyLibTextT": "它会在这里变成一本书：带封面、书脊和给学生用的丝带书签。",
+    "booksPageEmptyLibTitleS": "老师还没有上传任何内容",
+    "booksPageEmptyLibTextS": "有 PDF 后，它们会以书的样子排在这里。",
+    "booksPageEmptyMineTitle": "这里还是空的",
+    "booksPageEmptyMineText": "用丝带书签收藏书籍，它们就会出现在这里。",
+    "booksPageEmptyMineGo": "前往展示架",
+    "booksPageEmptyNoneTitle": "没有找到",
+    "booksPageEmptyNoneQuery": "没有与“{query}”匹配的书。请检查书名或重置筛选。",
+    "booksPageEmptyNoneFilter": "该精选中暂时没有书。",
+    "booksPageLoadError": "无法加载书籍",
+    "booksPageLoading": "正在加载书籍…",
+    "booksPageToastSaved": "已加入“我的书籍”",
+    "booksPageToastUnsaved": "已从“我的书籍”移除",
+    "booksPageUndo": "撤销",
+    "booksPageUploaded": "“{title}”已上传",
+    "booksPageRefreshFailed": "无法刷新书籍列表，显示的是上次加载的数据。",
+    "booksReaderPageTitle": "阅读书籍",
+    "booksReaderBack": "返回资料库",
+    "booksReaderLoading": "正在打开书籍…",
+    "booksReaderModeLabel": "查看模式",
+    "booksReaderModeSingle": "单页",
+    "booksReaderModeDouble": "双页",
+    "booksReaderPrev": "上一页",
+    "booksReaderNext": "下一页",
+    "booksReaderPageLabel": "页码",
+    "booksReaderOfTotal": "/ {total}",
+    "booksReaderZoomIn": "放大",
+    "booksReaderZoomOut": "缩小",
+    "booksReaderZoomReset": "重置缩放",
+    "booksReaderFullscreen": "全屏",
+    "booksReaderFullscreenExit": "退出全屏",
+    "booksReaderBookmarks": "书签",
+    "booksReaderBookmarkAdd": "添加书签",
+    "booksReaderBookmarkRemove": "移除书签",
+    "booksReaderBookmarksEmpty": "还没有书签。点击页面角落的丝带即可添加第一个。",
+    "booksReaderBookmarkPage": "第 {page} 页",
+    "booksReaderBookmarkLabel": "书签备注",
+    "booksReaderBookmarkRename": "重命名",
+    "booksReaderBookmarkDelete": "删除书签",
+    "booksReaderBookmarkSave": "保存",
+    "booksReaderClose": "关闭",
+    "booksReaderResumed": "从第 {page} 页继续",
+    "booksReaderFromStart": "从头开始",
+    "booksReaderPageAria": "第 {page} 页",
+    "booksReaderMarkAria": "第 {page} 页：读者（{names}）",
+    "booksReaderStoppedHere": "停在这里",
+    "booksReaderReadAt": "{date} 读过",
+    "booksReaderErrorTitle": "无法打开书籍",
+    "booksReaderErrorText": "文件已损坏或无法访问，请尝试下载。",
+    "booksReaderOpenFailed": "书籍加载失败，请刷新页面重试。",
+    "booksReaderPageError": "无法显示第 {page} 页。请尝试翻页或重新加载。",
+    "booksReaderDownload": "下载",
+    "booksReaderClosedTitle": "访问已关闭",
+    "booksReaderClosedText": "你已无权访问这本书。请让老师重新开放。",
+    "booksReaderToLibrary": "前往我的文件",
+    "booksHlColorYellow": "黄色",
+    "booksHlColorGreen": "绿色",
+    "booksHlColorPink": "粉色",
+    "booksHlColorBlue": "蓝色",
+    "booksHlColors": "高亮颜色",
+    "booksHlMarkerAria": "批注：{note}",
+    "booksHlBarAria": "所选文字的操作",
+    "booksHlComment": "批注",
+    "booksHlCopy": "复制",
+    "booksHlCopied": "已复制",
+    "booksHlCopyFailed": "复制失败",
+    "booksHlPopupAria": "高亮",
+    "booksHlNoteLabel": "高亮的批注",
+    "booksHlNotePlaceholder": "添加批注…",
+    "booksHlNoteSave": "保存",
+    "booksHlEditNote": "修改批注",
+    "booksHlDelete": "删除",
+    "booksHlEmpty": "还没有高亮。在页面上选中文字并选择颜色，它会保存在这里。",
+    "booksHlNoTextLayer": "此页没有文字层（像是扫描件），无法选择文字。",
+    "booksHlNoText": "没有文字层，无法选择文字",
+    "booksHlGoto": "跳到第 {page} 页",
+    "booksHlTabPages": "页面",
+    "booksHlTabHighlights": "高亮",
+    "booksHlSaveFailed": "无法保存高亮，请重试。",
+    "booksHlLimit": "这本书的高亮数量已达上限（500）。请删除不需要的。",
+    "booksHlTooBig": "选中的内容太多，请选择较短的片段。",
+    "booksHlUpdateFailed": "无法更新高亮。",
+    "booksHlDeleteFailed": "无法删除高亮。",
+    "booksHlLoadFailed": "无法加载你的高亮。",
     "myFiles": "我的文件",
     "sharedWithMe": "与我共享",
     "foldersSection": "文件夹",
     "filesSection": "文件",
+    "booksShellUpload": "上传书籍",
+    "booksShellEmptyHint": "上传第一份 PDF，它会出现在“书籍”中。",
+    "booksShellSection": "书籍",
+    "booksShellAll": "全部书籍",
+    "booksShellShareTitle": "书籍“{name}”的访问权限",
     "actions": "操作",
     "cover": "封面",
     "coverTitle": "文件夹封面",
@@ -3680,6 +3842,14 @@
     "openedAt": "{date} 已打开",
     "notOpened": "尚未打开",
     "openedSummary": "{total} 人中 {opened} 人已打开",
+    "progressDone": "已完成",
+    "progressWaiting": "等待批准",
+    "progressWorking": "进行中",
+    "progressNotStarted": "未开始",
+    "progressNothing": "尚未提交任何内容",
+    "progressByStudents": "按学生统计提交",
+    "progressByFiles": "按文件统计提交",
+    "progressTotalItems": "项目总数：{count}",
     "previewLoading": "正在打开文件…",
     "previewTruncated": "仅显示开头部分 — 完整内容请下载",
     "previewFailed": "无法在此显示该文件 — 请下载",
@@ -3741,6 +3911,1184 @@
     "editDocx": "编辑",
     "editSaved": "已保存",
     "saveButton": "保存",
-    "reviewedAt": "批改于 {date}"
+    "reviewedAt": "批改于 {date}",
+    "booksKitRibbonAria": "收藏书籍“{title}”",
+    "booksKitSave": "收藏书籍",
+    "booksKitUnsave": "从“我的书籍”中移除",
+    "booksKitOpenAria": "打开“{title}”",
+    "booksKitMeta": "{teacher} · {pages} 页",
+    "booksKitPagesShort": "{pages} 页",
+    "booksKitProgressAria": "阅读进度",
+    "booksKitProgressDone": "已读完",
+    "booksKitNotOpened": "尚未打开",
+    "booksKitQuickTitle": "快速预览",
+    "booksKitRead": "阅读",
+    "booksKitChangeCover": "更换封面",
+    "booksKitShare": "分享",
+    "booksKitDeleteConfirm": "删除“{title}”？已获得访问权限的学生也将看不到这本书。",
+    "booksKitFormat": "格式",
+    "booksKitSize": "大小",
+    "booksKitPagesLabel": "页数",
+    "booksKitAdded": "添加于",
+    "booksKitCoverLabel": "封面",
+    "booksKitCoverFound": "PDF 封面",
+    "booksKitCoverPage1": "PDF 第 1 页",
+    "booksKitCoverPhoto": "自选图片",
+    "booksKitCoverGenerated": "文字封面",
+    "booksKitProgressLabel": "阅读进度",
+    "booksKitProgressDoneLabel": "已读完这本书",
+    "booksKitProgressPage": "第 {page} / {pages} 页",
+    "booksKitNeverOpened": "你还没有打开过这本书",
+    "booksKitCoverModalTitle": "封面 · {title}",
+    "booksKitApply": "应用",
+    "booksKitSaving": "正在保存…",
+    "booksKitUploadTitle": "上传书籍",
+    "booksKitDropTitle": "将 PDF 拖到这里",
+    "booksKitDropText": "上传前我们会检查第一页，并告诉你它是否适合作封面。",
+    "booksKitPickPdf": "选择 PDF",
+    "booksKitNotPdf": "需要 PDF 文件。“{name}”不符合要求。",
+    "booksKitCheckTitle": "检查第一页",
+    "booksKitChecking": "正在检查第一页…",
+    "booksKitCheckingText": "我们会查看是否有标题和设计，以便将其用作封面。通常只需几秒钟。",
+    "booksKitCancelUpload": "取消上传",
+    "booksKitFoundTitle": "找到了封面",
+    "booksKitFoundText": "第一页有标题和设计，将作为这本书的封面。",
+    "booksKitPlainTitle": "这看起来是一张普通页面",
+    "booksKitPlainText": "第一页没有标题或设计。目前这本书使用彩色封面——你可以上传自己的图片、选择颜色，或仍然使用这一页。",
+    "booksKitUnavailTitle": "无法检查",
+    "booksKitUnavailText": "检查第一页时没有得到结果。下面是预览——请自行选择封面。",
+    "booksKitUse": "使用",
+    "booksKitUseOther": "选择其他",
+    "booksKitUsePage": "使用这一页",
+    "booksKitPhoto": "上传封面",
+    "booksKitPhotoReplace": "更换图片",
+    "booksKitPhotoRemove": "移除图片",
+    "booksKitPickColor": "选择颜色",
+    "booksKitRetry": "重新检查",
+    "booksKitPageAlt": "PDF 第一页",
+    "booksKitEditTitle": "书籍封面",
+    "booksKitConfirmTitle": "上传到“书籍”",
+    "booksKitNameLabel": "书名",
+    "booksKitSubmit": "上传到“书籍”",
+    "booksKitUploading": "正在上传…",
+    "booksKitBack": "返回",
+    "booksKitDone": "完成",
+    "booksKitCoverRejected": "封面未被接受，请选择其他图片。",
+    "booksKitCoverRenderFailed": "无法生成封面，请选择其他图片或颜色。",
+    "booksKitPreviewCaption": "书籍在书架和列表中的样子",
+    "booksKitColorTitle": "书籍颜色",
+    "booksKitColorHint": "书脊、标题条和文字的颜色。没有图片时，它就是封面本身。",
+    "booksKitColorCustom": "自定义颜色",
+    "booksKitColor0": "蓝色",
+    "booksKitColor1": "红色",
+    "booksKitColor2": "石墨色",
+    "booksKitColor3": "绿色",
+    "booksKitColor4": "紫色",
+    "booksKitColor5": "赭色",
+    "booksKitColor6": "青绿色",
+    "booksKitColor7": "陶土色",
+    "booksKitColor8": "粉色",
+    "booksKitColor9": "深蓝色",
+    "booksKitPhotoTitle": "封面图片",
+    "booksKitPhotoHint": "图片会裁剪为 2:3 画框，书籍颜色保留在书脊和标题条上。",
+    "booksKitPhotoNotImage": "需要图片：JPG、PNG 或 WebP。“{name}”不符合要求。",
+    "booksKitPhotoTooBig": "图片超过 10 MB，请选择更小的文件。",
+    "booksKitPhotoOpenFailed": "无法打开该图片，请选择其他文件。",
+    "booksKitZoom": "缩放",
+    "booksKitShiftX": "水平位移",
+    "booksKitShiftY": "垂直位移",
+    "booksKitResetPage1": "重置为第 1 页",
+    "booksKitPage1Failed": "无法获取 PDF 的第一页，请重试。",
+    "booksKitLoading": "正在准备页面…",
+    "driveTitle": "我的文件",
+    "driveNavLabel": "存储分区",
+    "driveNewLecture": "课堂笔记",
+    "driveVipBanner": "个人存储属于 VIP 功能。没有 VIP 时可以查看、下载和删除文件，但不能添加。",
+    "driveErrVip": "需要 VIP 才能向个人存储添加文件",
+    "driveEmptyTitle": "这里还没有内容",
+    "driveEmptyText": "在这里保存课堂笔记和自己的文件——它们计入你的配额，而不是导师的。",
+    "driveLectureHint": "课堂笔记——在笔记编辑器中打开",
+    "lectureFlag": "课堂笔记",
+    "lectureContinue": "继续编辑",
+    "subjectFilter": "科目",
+    "subjectAll": "全部科目",
+    "subjectEmpty": "“{subject}”暂无内容",
+    "driveSearchPlaceholder": "搜索我的文件"
+  },
+  "lecture": {
+    "pageTitle": "课堂笔记",
+    "homeTitle": "课堂笔记",
+    "homeSubtitle": "点击后把手机放在桌上。AI 会听老师讲课、过滤旁人说话，并自动整理出带公式的笔记。",
+    "titlePlaceholder": "标题（例如“数学分析——导数”）",
+    "defaultTitle": "讲座 {date}",
+    "keepAudio": "保存音频",
+    "keepAudioHint": "可回放和下载；会占用你的存储空间",
+    "start": "开始录音",
+    "starting": "正在打开麦克风…",
+    "resume": "继续录音",
+    "stop": "停止",
+    "vipRequired": "需要 VIP",
+    "vipRequiredLong": "课堂笔记为 VIP 功能",
+    "vipOnly": "这是 VIP 功能",
+    "sttNotConfigured": "语音识别服务未配置",
+    "tip1": "最好让手机靠近老师，麦克风朝向老师",
+    "tip2": "不要锁屏——iPhone 在后台会停止录音",
+    "tip3": "没有网络？不会丢失——稍后会自动上传",
+    "myLectures": "我的讲座",
+    "noLectures": "还没有讲座",
+    "untitled": "未命名",
+    "statusReady": "已完成",
+    "statusFinalizing": "精修中",
+    "statusDraft": "草稿",
+    "inFiles": "已存入文件",
+    "delete": "删除",
+    "deleteConfirm": "删除该讲座？已存入文件的 .docx 会保留。",
+    "deleteFailed": "删除失败",
+    "createFailed": "无法开始讲座",
+    "micDenied": "无法访问麦克风——请在浏览器设置中允许",
+    "micUnsupported": "此浏览器无法录音",
+    "micFailed": "无法打开麦克风",
+    "allLectures": "全部讲座",
+    "backToList": "返回讲座列表",
+    "loadFailed": "无法打开讲座",
+    "stateIdle": "准备就绪",
+    "stateListening": "正在聆听",
+    "stateStructuring": "AI 正在整理笔记…",
+    "stateStopping": "正在结束录音…",
+    "stateFinalizing": "正在用精确模型精修…",
+    "stateRefining": "正在根据最终转写更新笔记…",
+    "stateOffline": "离线——队列中 {n} 段",
+    "stateSttBusy": "识别服务繁忙，正在重试…",
+    "stateReady": "已完成",
+    "stateError": "麦克风已断开",
+    "aiControls": "AI 控制",
+    "autoStructure": "自动整理",
+    "structureNow": "立即整理",
+    "finalizeNow": "用精确模型精修",
+    "liveTranscript": "实时转写",
+    "feedWaiting": "约 20 秒后出现第一段文字",
+    "feedEmpty": "暂无转写",
+    "fullTranscript": "完整转写",
+    "transcriptHint": "按片段显示的原始转写。灰色为识别不确定的部分。",
+    "replay": "回放",
+    "doubtful": "识别不确定",
+    "hiddenWarning": "标签页曾进入后台——手机上录音可能已中断。",
+    "ok": "知道了",
+    "queued": "等待上传：{n}",
+    "stillQueued": "部分录音尚未上传——请等待网络",
+    "dailyLimit": "已达到每日录音上限（{min} 分钟）",
+    "audioQuotaHit": "存储已满——不再保存音频（笔记继续）",
+    "structureFailed": "AI 未能处理录音——点击“立即整理”重试",
+    "structureEmpty": "AI 在录音中没有找到讲课内容——只有噪音",
+    "refined": "已精修段落：{n}",
+    "crumb": "笔记",
+    "titleLabel": "讲座标题",
+    "saving": "正在保存…",
+    "saved": "已保存",
+    "unsaved": "编辑中…",
+    "saveError": "未保存——将重试",
+    "recording": "录音",
+    "statDuration": "时长",
+    "statChunks": "片段",
+    "statFinal": "精修 {n}",
+    "statAudio": "音频",
+    "statAudioKept": "已保存",
+    "statAudioTemp": "精修前保留",
+    "statWords": "字数",
+    "statFormulas": "公式",
+    "statCost": "费用",
+    "costAdmin": "不限",
+    "costNotCharged": "暂不扣费",
+    "export": "导出",
+    "saveToFiles": "存入文件",
+    "updateInFiles": "更新文件",
+    "savedToFiles": "已存入文件",
+    "savedToFilesAudio": "已保存到文件。音频（.m4a）将在一分钟内出现在旁边",
+    "openFiles": "打开",
+    "exportFailed": "导出失败",
+    "quotaExceeded": "存储已满",
+    "audio": "音频",
+    "noAudio": "未保存音频",
+    "textTools": "文本",
+    "notes": "批注",
+    "notesEmpty": "选中文字 →“批注”即可添加旁注",
+    "editorPlaceholder": "讲课时笔记会出现在这里。你也可以自己写。",
+    "toolbar": "格式",
+    "bold": "加粗",
+    "italic": "斜体",
+    "underline": "下划线",
+    "strike": "删除线",
+    "heading2": "标题",
+    "heading3": "小标题",
+    "bulletList": "列表",
+    "orderedList": "编号",
+    "quote": "引用",
+    "formulaInline": "公式",
+    "formulaBlock": "公式块",
+    "undo": "撤销",
+    "redo": "重做",
+    "menuActions": "操作",
+    "menuRewrite": "改写",
+    "menuStyle": "样式",
+    "askTitle": "问 AI",
+    "askPlaceholder": "要怎么处理这段文字？",
+    "askRun": "提问",
+    "askChipFix": "修正识别错误",
+    "askChipShorter": "精简",
+    "askChipSimpler": "解释得更简单",
+    "askChipFormulas": "整理公式",
+    "askChipList": "改成列表",
+    "askBefore": "原文",
+    "askAfter": "AI 建议",
+    "askEmpty": "输入要求或选择上方选项",
+    "askAgain": "换一个",
+    "askApply": "应用",
+    "aiFailed": "AI 未响应——请重试",
+    "aiThinking": "思考中…",
+    "photoFix": "按板书照片修正",
+    "photoWorking": "AI 正在对照照片…",
+    "photoDone": "已按照片修正",
+    "photoNothing": "照片中没有与该片段相关的内容",
+    "photoFailed": "无法处理照片",
+    "photoTargetGone": "处理期间该片段已被删除",
+    "noteAdd": "批注",
+    "noteEdit": "编辑批注",
+    "noteTitle": "旁注",
+    "notePlaceholder": "对这段的批注…",
+    "noteDelete": "删除",
+    "toFormula": "转为公式",
+    "copy": "复制",
+    "copied": "已复制",
+    "textColor": "文字颜色",
+    "highlight": "高亮",
+    "clearStyle": "清除颜色和高亮",
+    "formulaTitle": "公式",
+    "formulaAi": "AI",
+    "formulaEdit": "编辑公式",
+    "copyLatex": "复制 LaTeX",
+    "latexCopied": "已复制 LaTeX",
+    "formulaModeDescribe": "文字描述",
+    "formulaModeEdit": "修改",
+    "formulaModePhoto": "拍照识别",
+    "formulaModeExplain": "解释",
+    "formulaDescribePh": "例如：从 0 到 π 的 sin x 积分",
+    "formulaEditPh": "例如：加上 n → ∞ 的极限",
+    "formulaPhotoPh": "提示（可选）：取哪一个公式",
+    "formulaRun": "生成",
+    "formulaTakePhoto": "拍照",
+    "formulaTake": "采用",
+    "formulaAiNeedText": "请描述需求",
+    "formulaAiNeedFormula": "请先输入公式",
+    "reject": "不要",
+    "apply": "完成",
+    "cancel": "取消",
+    "save": "保存",
+    "close": "关闭",
+    "insertFromPhoto": "从照片插入",
+    "cropSheet": "裁剪到纸张",
+    "cropNotFound": "未找到纸张——保持原样",
+    "cropDone": "已裁剪到纸张",
+    "cropApplied": "已裁剪",
+    "cropping": "正在查找并矫正纸张…",
+    "preparing": "正在准备照片…",
+    "reading": "正在识别…",
+    "photoToText": "转为文字",
+    "photoFull": "全宽",
+    "photoHalf": "半宽",
+    "optInsertImage": "插入照片本身",
+    "optRecognise": "识别并插入文字和公式",
+    "insert": "插入",
+    "processPhoto": "处理板书照片",
+    "mergeThinking": "AI 正在将照片与笔记比对…",
+    "mergeHint": "已有的公式不会重复；后续内容会插入到对应位置。",
+    "mergeKind_duplicate": "已存在",
+    "mergeKind_continuation": "接续",
+    "mergeKind_new": "新内容",
+    "mergeFound": "照片内容：",
+    "fragment_text": "文字",
+    "fragment_formula": "公式",
+    "fragment_figure": "图形",
+    "fragment_graph": "图表",
+    "processPhotoSub": "文字、公式、图形和图表——与笔记核对并补全",
+    "askInsert": "插入",
+    "askInsertAfter": "将结果插入所选文字之后",
+    "compression": "笔记压缩",
+    "compression_none": "不压缩",
+    "compression_medium": "中等",
+    "compression_strong": "强",
+    "compressionHint_none": "详细：每个观点、解释和例子",
+    "compressionHint_medium": "像优秀学生的笔记",
+    "compressionHint_strong": "只保留要点：定义、公式、结论",
+    "photosTooMany": "每次最多 {n} 张照片——已取前 {n} 张",
+    "panels": "面板",
+    "tabAi": "AI",
+    "tabTools": "工具",
+    "panelsShow": "显示面板",
+    "panelsHide": "隐藏面板",
+    "mergeDuplicate": "在“{text}”中",
+    "mergeContinuation": "在“{text}”之后",
+    "mergeNew": "笔记末尾",
+    "mergeApply": "加入笔记",
+    "mergeApplied": "已添加片段：{n}",
+    "ctxEmpty": "AI 会在讲课过程中识别学科和主题",
+    "ctxSet": "设置",
+    "ctxEdit": "编辑学科和主题",
+    "ctxPinned": "已由你固定——AI 不会修改",
+    "ctxSubject": "学科",
+    "ctxTopic": "讲座主题",
+    "ctxSubtopics": "子主题（用“;”分隔）",
+    "ctxSubjectPh": "数学分析",
+    "ctxTopicPh": "复合函数求导",
+    "ctxSubtopicsPh": "链式法则；例题",
+    "ctxEditHint": "AI 会在所有建议和语音识别中参考这些信息；你修改的内容不会再被 AI 更改。",
+    "board": "画板",
+    "boardOpen": "打开画板",
+    "boardEditTitle": "画板",
+    "boardEditHint": "与通话相同的画板：3D 图形、作图、角、公式",
+    "boardDone": "保存到笔记",
+    "boardClose": "关闭",
+    "boardBuilding": "AI 正在绘制画板…",
+    "boardEmpty": "空画板——打开以绘制",
+    "boardSaveFailed": "无法保存画板",
+    "boardSize": "白板大小",
+    "boardSize_s": "小——半宽",
+    "boardSize_m": "中——四分之三",
+    "boardSize_l": "大——全宽",
+    "boardLive": "在此旋转",
+    "boardFullscreen": "全屏",
+    "boardLiveHint": "直接在笔记中移动和旋转图形",
+    "boardDoneShort": "完成",
+    "graph": "图表",
+    "graphEdit": "编辑",
+    "graphEditTitle": "图表",
+    "graphTypePlot": "函数",
+    "graphTypeBar": "柱状图",
+    "graphAiPh": "描述图表：“抛物线 y = x² − 4 和直线 y = 2x”…",
+    "graphAiRun": "生成",
+    "graphAiPhoto": "从照片",
+    "graphAiNeedText": "请描述需要的图表",
+    "graphAiNothing": "AI 没有找到可绘制的内容",
+    "graphName": "标题",
+    "graphNamePh": "可选",
+    "graphFrom": "从",
+    "graphTo": "到",
+    "graphYAuto": "y — 自动",
+    "graphXLabel": "x 轴标签",
+    "graphYLabel": "y 轴标签",
+    "graphSeries": "图中内容",
+    "graphKind": "类型",
+    "graphKind_fn": "函数",
+    "graphKind_area": "面积",
+    "graphKind_points": "点",
+    "graphKind_line": "数据折线",
+    "graphKind_vline": "x = a",
+    "graphKind_hline": "y = b",
+    "graphBadExpr": "无法识别表达式——例如 2x^2 - 3、sin(x)、sqrt(x)",
+    "graphPieceFrom": "分段：x 从",
+    "graphAreaFrom": "着色 从",
+    "graphPoints": "点：x; y; 标签——每行一个",
+    "graphLabel": "标签",
+    "graphDashed": "虚线",
+    "graphCategories": "类别（逗号分隔）",
+    "graphValues": "数值（用 ; 分隔）",
+    "graphBarKind_bar": "柱",
+    "graphBarKind_line": "折线",
+    "graphEmpty": "暂无可绘制内容——请添加函数或数据",
+    "matrix": "矩阵",
+    "matrixTitle": "矩阵",
+    "matrixName": "名称",
+    "matrixRows": "行",
+    "matrixCols": "列",
+    "matrixBrackets": "括号",
+    "matrixOps": "计算",
+    "matrixOpT": "转置",
+    "matrixOpDet": "行列式",
+    "matrixOpInv": "逆矩阵",
+    "matrixOpRank": "秩",
+    "matrixOpGauss": "高斯消元",
+    "matrixOpRref": "高斯–若尔当",
+    "matrixSingular": "矩阵奇异——不存在逆矩阵",
+    "matrixGaussNote": "行阶梯形",
+    "matrixRrefNote": "简化行阶梯形",
+    "matrixSymbolic": "矩阵中含有字母——仅数字和分数可计算",
+    "matrixInsertResult": "插入笔记",
+    "matrixInsert": "插入矩阵",
+    "matrixAsFormula": "作为公式编辑",
+    "sizeDown": "缩小",
+    "sizeUp": "放大",
+    "alignLeft": "左对齐",
+    "alignCenter": "居中",
+    "alignRight": "右对齐",
+    "alignJustify": "两端对齐",
+    "sizeAndAlign": "大小和对齐",
+    "formulaSize": "公式大小",
+    "fontSize": "字号",
+    "fontSizeNormal": "默认",
+    "share": "分享",
+    "shareView": "仅查看",
+    "shareEdit": "查看和编辑",
+    "shareViewHint": "任何拥有链接的人都能看到笔记，实时更新",
+    "shareEditHint": "可编辑文字、公式、图表和白板（不含 AI）",
+    "shareLink": "链接",
+    "shareCopy": "复制链接",
+    "shareCopyPrompt": "请复制链接",
+    "shareFailed": "无法更改链接",
+    "shareConflict": "笔记刚刚通过链接被修改——已显示最新版本",
+    "shareGoneTitle": "此链接已失效",
+    "shareGoneText": "作者已关闭该链接或删除了讲座。",
+    "photoN": "照片 {n}",
+    "photoReady": "就绪",
+    "photoRetry": "重试",
+    "photosSomeFailed": "{total} 张照片中已打开 {ok} 张。重试损坏的照片，或不含它们继续。",
+    "photosAllFailed": "没有照片能打开——请重试或选择其他照片。",
+    "photosContinueWithout": "不含它们继续",
+    "photosUploadFailed": "部分照片未上传——请重试或取消勾选“插入照片”。",
+    "photoErr_UNREADABLE": "无法打开：格式不受支持（如 HEIC）或文件已损坏",
+    "photoErr_PHOTO_TOO_LARGE": "太大——压缩后仍超过 15 MB",
+    "photoErr_UNSUPPORTED_PHOTO": "格式不受支持——请使用 JPG、PNG 或 WebP",
+    "photoErr_UPLOAD_FAILED": "照片上传失败",
+    "photoErr_AI_FAILED": "AI 无法读取照片——请重试",
+    "photoErr_TOO_MANY_PHOTOS": "一次照片太多——最多 6 张",
+    "structureAddedTo": "这是对“{title}”的补充——已插入其后",
+    "language": "讲座语言",
+    "language_ru": "Русский",
+    "language_en": "English",
+    "language_auto": "混合",
+    "languageHint_ru": "讲座使用俄语",
+    "languageHint_en": "讲座使用英语——笔记也用英语",
+    "languageHint_auto": "两种语言，例如英语课：每段录音的语言自动识别，例句和词汇保留英语"
+  },
+  "lecturePromo": {
+    "eyebrow": "新工具 · VIP",
+    "h2": "自己",
+    "h2_hl": "写好的笔记",
+    "lead": "按一下按钮，专心听讲。即使在嘈杂的教室，AI 也能听清讲课，整理出整洁的笔记——学科需要的一切都在其中。",
+    "tool_formulas": "公式",
+    "tool_graphs": "图表",
+    "tool_matrices": "矩阵",
+    "tool_board3d": "3D 白板",
+    "tool_photo": "白板照片",
+    "tool_export": "Word 和 PDF",
+    "cta_start": "开始录音",
+    "vip_note": "VIP 可用",
+    "rec": "正在录音",
+    "raw": "<x>那边安静</x> 函数 y 等于 x 平方减四 <x>你昨天</x> 还有直线 y 等于二 x <x>呃</x> 求它们之间的面积 <x>未完待续</x>",
+    "arrow": "AI 清理并整理笔记",
+    "note_title": "曲线间的面积",
+    "note_text": "已知 <d>y = x² − 4</d> 与 <d>y = 2x</d>。积分限是 <h>x² − 2x − 4 = 0</h> 的根。"
+  },
+  "lectureLanding": {
+    "metaTitle": "讲座笔记 — AI 替你写笔记 | GoodWorker",
+    "metaDescription": "把手机放在桌上：AI 听老师讲课，过滤噪音，整理出带公式、图表、矩阵和黑板的笔记。笔记自动按科目归档。",
+    "eyebrow": "讲座笔记",
+    "h1": "把手机放在桌上。",
+    "h1Hl": "笔记自己写出来。",
+    "lead": "AI 听老师讲课，过滤掉噪音和后座的闲聊，在课上就整理出笔记——带公式、图表、矩阵和黑板。",
+    "cta": "开始录音",
+    "ctaNote": "包含在 VIP 中 · 在手机浏览器中运行",
+    "ctaFiles": "我的笔记",
+    "files": {
+      "eyebrow": "笔记 + 文件",
+      "h2": "每节课自动归位",
+      "h2Hl": "到对应科目的架子上",
+      "lead": "点击「保存到文件」——笔记已经在「讲座笔记 / 线性代数」文件夹里：Word 文档和带章节的课程录音。无需任何整理。",
+      "points": [
+        {
+          "t": "按科目分文件夹",
+          "d": "AI 自己判断科目。已有「物理」文件夹——笔记就会放进那里。"
+        },
+        {
+          "t": "「科目」筛选",
+          "d": "一键即可查看该科目的全部讲座、照片和文件。"
+        },
+        {
+          "t": "Word + 带章节的音频",
+          "d": ".docx 旁边是课程录音，按主题、公式和黑板标注好。"
+        },
+        {
+          "t": "给小组的链接",
+          "d": "仅查看或共同编辑——同学能实时看到笔记。"
+        }
+      ],
+      "tree": "讲座笔记",
+      "all": "全部科目",
+      "subjects": [
+        "线性代数",
+        "数学分析",
+        "物理"
+      ],
+      "items": [
+        {
+          "s": 0,
+          "name": "线性方程组与克拉默法则.docx",
+          "kind": "doc",
+          "meta": "12 页 · 28 个公式"
+        },
+        {
+          "s": 0,
+          "name": "线性方程组与克拉默法则.m4a",
+          "kind": "audio",
+          "meta": "1:24:10 · 9 章"
+        },
+        {
+          "s": 0,
+          "name": "逆矩阵.docx",
+          "kind": "doc",
+          "meta": "8 页 · 3 个矩阵"
+        },
+        {
+          "s": 1,
+          "name": "曲线间的面积.docx",
+          "kind": "doc",
+          "meta": "9 页 · 2 个图表"
+        },
+        {
+          "s": 1,
+          "name": "曲线间的面积.m4a",
+          "kind": "audio",
+          "meta": "1:18:42 · 7 章"
+        },
+        {
+          "s": 2,
+          "name": "点的运动学.docx",
+          "kind": "doc",
+          "meta": "6 页 · 1 个黑板"
+        }
+      ],
+      "chapters": "录音章节",
+      "chapterList": [
+        "04:12 · 线性方程组：矩阵形式",
+        "23:40 · 克拉默公式",
+        "51:05 · 2×2 示例",
+        "78:30 · 黑板"
+      ],
+      "share": "分享",
+      "shareView": "仅查看",
+      "shareEdit": "查看和编辑",
+      "tutor": "给家教：把科目文件夹开放给学生——他们会在「可访问」中看到你的笔记。",
+      "noteTag": "笔记"
+    },
+    "examples": {
+      "eyebrow": "示例",
+      "h2": "现成笔记长这样",
+      "lead": "不是逐字转写，而是笔记：标题、定义、公式、图表和图形——就像班里最好的学生写的那样。",
+      "tabs": [
+        "数学分析",
+        "线性代数",
+        "物理",
+        "历史"
+      ],
+      "docs": [
+        [
+          {
+            "t": "h",
+            "v": "复合函数的导数"
+          },
+          {
+            "t": "def",
+            "v": "如果 $y = f(g(x))$，则导数等于导数之积："
+          },
+          {
+            "t": "math",
+            "v": "\\bigl(f(g(x))\\bigr)' = f'(g(x))\\cdot g'(x)"
+          },
+          {
+            "t": "p",
+            "v": "例子：$\\bigl(\\sin x^2\\bigr)' = \\cos x^2 \\cdot 2x$。"
+          },
+          {
+            "t": "graph"
+          }
+        ],
+        [
+          {
+            "t": "h",
+            "v": "逆矩阵"
+          },
+          {
+            "t": "def",
+            "v": "$A^{-1}$ 存在，仅当 ==$\\det A \\neq 0$==。"
+          },
+          {
+            "t": "math",
+            "v": "A = \\begin{pmatrix} 2 & 1 \\\\ 5 & 3 \\end{pmatrix},\\quad A^{-1} = \\begin{pmatrix} 3 & -1 \\\\ -5 & 2 \\end{pmatrix}"
+          },
+          {
+            "t": "table",
+            "v": [
+              [
+                "运算",
+                "结果"
+              ],
+              [
+                "$\\det A$",
+                "$1$"
+              ],
+              [
+                "$\\operatorname{rank} A$",
+                "$2$"
+              ],
+              [
+                "$A\\cdot A^{-1}$",
+                "$E$"
+              ]
+            ]
+          }
+        ],
+        [
+          {
+            "t": "h",
+            "v": "棱锥的体积与质心"
+          },
+          {
+            "t": "board"
+          },
+          {
+            "t": "math",
+            "v": "V = \\dfrac{1}{3}\\,S\\,h = \\dfrac{1}{3}\\cdot 36 \\cdot 8 = 96\\ \\text{см}^3"
+          },
+          {
+            "t": "warn",
+            "v": "质心在高上，距底面 $\\tfrac{1}{4}h$——不要与内切球心混淆。"
+          }
+        ],
+        [
+          {
+            "t": "h",
+            "v": "彼得一世的改革"
+          },
+          {
+            "t": "li",
+            "v": [
+              "1699 — 城市改革，市政厅",
+              "1711 — 设立参政院",
+              "1718–1721 — 以委员会取代衙门"
+            ]
+          },
+          {
+            "t": "table",
+            "v": [
+              [
+                "领域",
+                "变化"
+              ],
+              [
+                "军队",
+                "征兵制，正规军"
+              ],
+              [
+                "管理",
+                "参政院、委员会、省"
+              ],
+              [
+                "教会",
+                "以宗教会议取代牧首制"
+              ]
+            ]
+          },
+          {
+            "t": "p",
+            "v": "讲师的核心观点：==改革源于军事需要==，而非现成计划。"
+          }
+        ]
+      ],
+      "exports": "导出：带真实公式的 Word · PDF · 带章节的音频"
+    },
+    "how": {
+      "eyebrow": "如何运作",
+      "h2": "四个步骤，其中一步是你的",
+      "steps": [
+        {
+          "t": "录制",
+          "d": "点击「开始录音」，把手机放在课桌上。录音分段进行，即使断网也不会丢失。"
+        },
+        {
+          "t": "AI 清理",
+          "d": "修正识别错误，剔除闲聊、「开一下窗户」和麦克风的幻觉。"
+        },
+        {
+          "t": "笔记生成",
+          "d": "标题、定义、公式、图表——随课程进行。新主题加到末尾，回到旧主题则归入对应章节。"
+        },
+        {
+          "t": "按黑板补充",
+          "d": "拍下黑板——AI 自己判断哪些已有、哪些要补、补到哪里。"
+        }
+      ]
+    },
+    "features": {
+      "eyebrow": "功能",
+      "h2": "手写常记的一切——以及来不及记的",
+      "items": [
+        {
+          "i": "sigma",
+          "t": "公式",
+          "d": "真正的公式，在 Word 中可编辑，而不是图片。"
+        },
+        {
+          "i": "chart",
+          "t": "图表",
+          "d": "函数、面积、点和数据——来自老师的话或黑板。"
+        },
+        {
+          "i": "grid",
+          "t": "矩阵",
+          "d": "行列式、逆矩阵、秩、高斯——精确到分数。"
+        },
+        {
+          "i": "box",
+          "t": "3D 黑板",
+          "d": "棱锥和棱柱，可以直接在文中旋转。"
+        },
+        {
+          "i": "camera",
+          "t": "黑板照片",
+          "d": "一次最多六张照片——AI 只补充没有的内容。"
+        },
+        {
+          "i": "sparkles",
+          "t": "问 AI",
+          "d": "讲得简单点、精简、做成表格——针对所选文本。"
+        },
+        {
+          "i": "layers",
+          "t": "压缩",
+          "d": "像好笔记一样详细，或只保留公式和结论。"
+        },
+        {
+          "i": "audio",
+          "t": "带章节的音频",
+          "d": "课程录音带主题、公式和黑板标记——轻松找到需要的位置。"
+        },
+        {
+          "i": "link",
+          "t": "链接",
+          "d": "分享笔记供查看或共同编辑。"
+        }
+      ]
+    },
+    "who": {
+      "student": {
+        "t": "给学生",
+        "d": "专心听课，而不是速记。笔记、公式和课程录音——按科目集中在一处。"
+      },
+      "tutor": {
+        "t": "给家教",
+        "d": "录下课程和讲解——笔记自动归入文件夹并开放给学生。"
+      }
+    },
+    "final": {
+      "h2": "下一节课——已经有笔记",
+      "lead": "上课前在手机上打开 GoodWorker，按一个按钮。",
+      "cta": "开始录音"
+    },
+    "hero": {
+      "hint": "点击录音，或给黑板拍张照",
+      "recording": "正在录音",
+      "paused": "已暂停",
+      "pause": "暂停录音",
+      "resume": "继续录音",
+      "snap": "拍摄黑板",
+      "scanning": "正在识别黑板…",
+      "added": "已加入笔记",
+      "notesTitle": "数学分析 · 曲线间的面积",
+      "writing": "AI 正在记录",
+      "ready": "完成",
+      "empty": "老师一开口，笔记就会出现…",
+      "replay": "重新开始",
+      "chalk": [
+        "y = x² − 4,  y = 2x",
+        "x² − 2x − 4 = 0",
+        "S = ∫ (2x − x² + 4) dx"
+      ],
+      "notes": [
+        {
+          "t": "h",
+          "v": "曲线间的面积"
+        },
+        {
+          "t": "def",
+          "v": "函数 $f$ 与 $g$ 的图像在区间 $[a;\\,b]$ 上围成的面积等于==它们差的积分==，其中 $f$ 位于 $g$ 上方："
+        },
+        {
+          "t": "math",
+          "v": "S = \\int_a^b \\bigl(f(x) - g(x)\\bigr)\\,dx"
+        },
+        {
+          "t": "p",
+          "v": "例：$f(x) = 2x$，$g(x) = x^2 - 4$。积分上下限是两图像的交点。"
+        }
+      ],
+      "fromBoard": [
+        {
+          "t": "p",
+          "v": "交点：$x^2 - 2x - 4 = 0$，得 $x = 1 \\pm \\sqrt{5}$。"
+        },
+        {
+          "t": "graph"
+        },
+        {
+          "t": "math",
+          "v": "S = \\int_{1-\\sqrt{5}}^{1+\\sqrt{5}} \\bigl(2x - x^2 + 4\\bigr)\\,dx = \\dfrac{20\\sqrt{5}}{3}"
+        }
+      ],
+      "heardTitle": "正在听到",
+      "heard": [
+        {
+          "v": "好，我们继续——曲线之间的面积"
+        },
+        {
+          "v": "后排的同学安静一点",
+          "noise": true
+        },
+        {
+          "v": "如果在 a 到 b 上 f 在 g 的上方"
+        },
+        {
+          "v": "那么面积就是 f 减 g 的积分"
+        },
+        {
+          "v": "字幕由社区提供",
+          "noise": true
+        },
+        {
+          "v": "例子：f 等于 2x，g 是 x 平方减 4"
+        },
+        {
+          "v": "积分上下限就是交点，看黑板"
+        }
+      ]
+    },
+    "seo": {
+      "keywords": [
+        "课堂笔记",
+        "自动课堂笔记",
+        "AI 记笔记",
+        "讲座转文字",
+        "手机录制讲座",
+        "黑板照片公式识别",
+        "笔记导出 Word",
+        "学生 AI 笔记"
+      ],
+      "h": "用 AI 自动生成课堂笔记",
+      "intro": [
+        "GoodWorker 把讲座录音变成完整的笔记。把手机放在桌上，点击“开始录音”——AI 会聆听老师讲课，把语音转成文字，并在课堂上实时整理出带标题、定义、公式和图像的结构化笔记。",
+        "这不只是转写：口误、教室噪音和后排的闲聊都会被去掉，内容按章节整理——就像坐在第一排认真听课的同学记下的那样。"
+      ],
+      "blocks": [
+        {
+          "h": "公式、图像和矩阵——真实可编辑，而不是图片",
+          "p": [
+            "AI 用公式记录数学内容：积分、分数、极限和矩阵都可以编辑、放大或对齐。函数图像根据方程绘制，曲线下的面积会被着色；矩阵一键求行列式、逆矩阵和秩——结果为精确分数。",
+            "如果老师在黑板上书写，拍张照即可：AI 会读取公式和图形，与笔记比对，只补充新的内容——续写部分放在对应章节之后，重复内容会被舍弃。"
+          ]
+        },
+        {
+          "h": "便于复习的笔记",
+          "p": [
+            "一个开关即可把笔记压缩到要点；对没看懂的段落可以询问 AI，插入解释或表格，在页边留下自己的批注。一切都像普通文档一样可编辑。"
+          ]
+        },
+        {
+          "h": "导出为 Word、PDF 和带章节的音频",
+          "p": [
+            "笔记可下载为带原生 Word 公式的 .docx 或 PDF，也可以保存到“我的文件”——自动创建的科目文件夹中。讲座音频保存为 .m4a，并按笔记章节分段，几秒钟就能找到想重听的部分。"
+          ]
+        },
+        {
+          "h": "适合学生和家教老师",
+          "p": [
+            "学生：每节课都有笔记，无需手抄，也不会漏记。家教老师：把课程录音变成整洁的学习材料，并通过链接分享——仅查看或共同编辑。"
+          ]
+        }
+      ],
+      "faqTitle": "常见问题",
+      "faq": [
+        {
+          "q": "如何自动生成课堂笔记？",
+          "a": "打开“课堂笔记”，点击“开始录音”，把手机放在桌上。AI 会转写老师的讲课内容并在课堂上实时生成笔记；停止录音后，文字会由更精确的语音识别模型再校对一遍。"
+        },
+        {
+          "q": "AI 能识别公式和图像吗？",
+          "a": "能。公式以数学标记记录并可编辑，图像根据方程绘制。黑板上的公式和图形可以通过照片添加。"
+        },
+        {
+          "q": "笔记能下载为 Word 吗？",
+          "a": "可以，笔记可下载为带 Word 公式的 .docx，也可下载为 PDF。还可以保存到“我的文件”——会自动放入对应科目的文件夹。"
+        },
+        {
+          "q": "教室很吵怎么办？",
+          "a": "旁人的谈话、噪音和识别错误都会被过滤：AI 先还原老师所说的内容，再撰写笔记。"
+        },
+        {
+          "q": "谁可以使用？",
+          "a": "课堂笔记功能面向 GoodWorker 的 VIP 学生和 VIP 家教老师。"
+        }
+      ]
+    }
+  },
+  "filesPromo": {
+    "eyebrow": "文件存储",
+    "h2": "所有资料——",
+    "h2_hl": "都在一个文件夹里",
+    "lead": "任何文件——PDF、Word、演示文稿、照片、视频、音频和课堂笔记——按需开放给指定的学生、指定的期限。每位学生都有自己的作业提交文件夹：截止日期、用笔批改，还能看到谁已经打开了资料。",
+    "points": [
+      "按学生、按期限开放",
+      "个人作业提交：截止日期与批改",
+      "在文件正文中搜索"
+    ],
+    "cta": "打开文件",
+    "vip": "VIP 包含 · 每位老师 15 GB",
+    "library": "资料库",
+    "quota": "3.2 / 15 GB",
+    "filesIn": "文件",
+    "share": "文件夹访问权限",
+    "until": "至 5 月 31 日",
+    "done": "完成",
+    "opened": "{name} 已查看",
+    "students": [
+      "安娜 K.",
+      "季马 S.",
+      "米沙 L.",
+      "卡佳 R."
+    ],
+    "folders": [
+      {
+        "name": "代数 · 九年级 A 班",
+        "cover": "preset:aurora",
+        "files": [
+          {
+            "name": "教材 第 4 章.pdf",
+            "kind": "pdf",
+            "size": 39845888
+          },
+          {
+            "name": "一元二次方程.docx",
+            "kind": "docx",
+            "size": 1258291
+          },
+          {
+            "name": "错题讲解.m4a",
+            "kind": "audio",
+            "size": 11534336
+          }
+        ]
+      },
+      {
+        "name": "作业 7 · 导数",
+        "cover": "preset:sunset",
+        "deadline": true,
+        "files": [
+          {
+            "name": "作业题.pdf",
+            "kind": "pdf",
+            "size": 317440
+          },
+          {
+            "name": "安娜 K.——解答.pdf",
+            "kind": "pdf",
+            "size": 2202009,
+            "student": true,
+            "review": "ACCEPTED",
+            "grade": "5"
+          },
+          {
+            "name": "米沙 L.——解答.pdf",
+            "kind": "pdf",
+            "size": 1782579,
+            "student": true,
+            "late": true,
+            "review": "REVISION"
+          }
+        ]
+      },
+      {
+        "name": "物理 · 高考备考",
+        "cover": "preset:peach",
+        "files": [
+          {
+            "name": "运动学速查.pdf",
+            "kind": "pdf",
+            "size": 2202009
+          },
+          {
+            "name": "模拟卷 12（含解答）.pdf",
+            "kind": "pdf",
+            "size": 5662310
+          },
+          {
+            "name": "运动学——演示文稿.pptx",
+            "kind": "pptx",
+            "size": 8912896
+          }
+        ]
+      },
+      {
+        "name": "课堂笔记",
+        "cover": "preset:meadow",
+        "files": [
+          {
+            "name": "曲线间的面积.docx",
+            "kind": "lecture",
+            "size": 845824
+          },
+          {
+            "name": "曲线间的面积.m4a",
+            "kind": "audio",
+            "size": 34603008
+          },
+          {
+            "name": "函数的极限.docx",
+            "kind": "lecture",
+            "size": 612352
+          }
+        ]
+      }
+    ]
+  },
+  "StorageLanding": {
+    "meta_title": "文件存储 — 为导师和学生整理学习资料",
+    "meta_description": "把所有学习资料放在一处：按学生建文件夹、限时访问、提交与批改作业、文件内容搜索。",
+    "badge": "文件存储",
+    "hero_title": "所有学习资料 — <hl>集中在一处</hl>",
+    "hero_lead": "GoodWorker 存储帮助你按科目、学生和课程方便地整理文件、笔记和资料。",
+    "hero_cta1": "免费试用",
+    "hero_cta2": "它如何运作",
+    "hero_sig": "简单有条理",
+    "win_aria": "存储界面预览",
+    "win_title": "我的文件",
+    "folders_aria": "文件夹",
+    "search_label": "搜索文件",
+    "quota": "15 GB 中已用 2.4 GB",
+    "folder_1": "课堂笔记",
+    "folder_2": "家庭作业",
+    "folder_3": "资料",
+    "folder_4": "课程",
+    "file_1": "线性代数 — 笔记.pdf",
+    "file_2": "第 3 讲 — 录音.mp3",
+    "file_3": "家庭作业.docx",
+    "file_4": "公式表.xlsx",
+    "size_1": "1.2 MB",
+    "size_2": "18 MB",
+    "size_3": "84 KB",
+    "size_4": "46 KB",
+    "type_pdf": "PDF 文档",
+    "type_mp3": "MP3 音频",
+    "type_docx": "Word 文档",
+    "type_xlsx": "Excel 表格",
+    "student_anna": "安娜",
+    "student_ilya": "伊利亚",
+    "student_maria": "玛丽亚",
+    "student_kirill": "基里尔",
+    "gen_anna": "安娜",
+    "gen_ilya": "伊利亚",
+    "gen_maria": "玛丽亚",
+    "gen_kirill": "基里尔",
+    "crumb_root": "我的文件",
+    "crumbs_aria": "路径",
+    "folders_heading": "文件夹",
+    "folders_count": "{count, plural, other {# 个文件夹}}",
+    "files_count": "{count, plural, other {# 个文件}}",
+    "personal_sub": "个人子文件夹",
+    "personal_sub_files": "个人子文件夹 · {files}",
+    "open_sub_aria": "打开子文件夹：{name}",
+    "open_folder_aria": "打开文件夹 {name}",
+    "open_file_aria": "打开文件 {name}",
+    "back_aria": "返回文件夹“{name}”",
+    "access": "访问权限",
+    "give_access": "授予访问",
+    "whom_open": "向谁开放",
+    "students_aria": "学生",
+    "badge_open": "已开放",
+    "badge_closed": "已关闭",
+    "close_panel_aria": "关闭面板",
+    "close": "关闭",
+    "panel_folder": "文件夹",
+    "panel_status": "状态",
+    "note_sub": "该文件对学生可见 — {name}。",
+    "note_open": "有该文件夹访问权限的学生可以看到此文件。",
+    "note_hidden": "文件已隐藏：即使学生有文件夹的访问权限，也看不到它。",
+    "close_access": "关闭访问",
+    "open_access": "开放访问",
+    "toast_granted_f": "{name} 获得了访问权限",
+    "toast_granted_m": "{name} 获得了访问权限",
+    "toast_revoked": "已关闭 {name} 的访问权限",
+    "toast_file_open": "文件已对学生开放",
+    "toast_file_closed": "已关闭对文件的访问",
+    "toast_file_sub_f": "{name} 获得了该文件的访问权限",
+    "toast_file_sub_m": "{name} 获得了该文件的访问权限",
+    "how_title": "学习所需，一应俱全",
+    "th1_t": "按学生建文件夹",
+    "th1_d": "每人一个个人子文件夹：资料只对你开放的人可见。",
+    "th2_t": "限时访问",
+    "th2_d": "按需要的期限开放文件夹 — 一键即可关闭。",
+    "th3_t": "提交作业",
+    "th3_d": "学生把作业上传到带截止日期的文件夹，你批改后退回。",
+    "th4_t": "文件内容搜索",
+    "th4_d": "用文档里的一个词就能找到笔记，而不只是靠文件名。",
+    "locked": "已关闭",
+    "pill_open": "已开放",
+    "pill_closed": "已关闭",
+    "wd1": "周一",
+    "wd2": "周二",
+    "wd3": "周三",
+    "wd4": "周四",
+    "wd5": "周五",
+    "wd6": "周六",
+    "wd7": "周日",
+    "deadline": "截止 · 周五",
+    "upload_work": "上传作业",
+    "st_wait": "待提交",
+    "st_sent": "已提交",
+    "st_checked": "已批改",
+    "search_query": "行列式",
+    "res1": "…如果矩阵的<m>行列式</m>等于零，方程组要么无解，要么有无穷多个解…",
+    "res2": "…二阶<m>行列式</m>：ad − bc…",
+    "steps_title": "它如何运作",
+    "steps_lead": "从空空的存储到已提交、已批改的作业，只需三步。",
+    "step1_t": "创建文件夹",
+    "step1_d": "按科目和课程整理资料。每个学生都有自己的个人子文件夹。",
+    "step2_t": "开放访问",
+    "step2_d": "选择向谁开放、开放多久。一键即可关闭访问。",
+    "step3_t": "接收作业",
+    "step3_d": "学生把作业上传到带截止日期的文件夹，你批改后退回。",
+    "aud_title": "导师井然有序，学生一目了然",
+    "aud_t_title": "面向导师",
+    "aud_t_sub": "资料井然有序，谁能看到什么由你掌控。",
+    "aud_t1_b": "按科目和学生建文件夹",
+    "aud_t1_d": "每人一个个人子文件夹：资料只对你开放的人可见。",
+    "aud_t2_b": "限时访问",
+    "aud_t2_d": "按需要的期限开放文件夹，一键即可关闭。",
+    "aud_t3_b": "批改作业",
+    "aud_t3_d": "学生把作业提交到带截止日期的文件夹，你批改后退回。.docx 文件可以直接在存储中编辑。",
+    "aud_t4_b": "空间统计",
+    "aud_t4_d": "清楚看到已用多少空间、还剩多少。",
+    "aud_s_title": "面向学生",
+    "aud_s_sub": "上课所需的一切触手可及，无需来回转发文件。",
+    "aud_s1_b": "导师的资料集中一处",
+    "aud_s1_d": "笔记、作业和录音按科目放在文件夹里，不会淹没在聊天记录中。",
+    "aud_s2_b": "交什么、何时交，一清二楚",
+    "aud_s2_d": "截止日期在文件夹和日历中都能看到，还有作业状态 — 已提交还是已批改。",
+    "aud_s3_b": "文件内容搜索",
+    "aud_s3_d": "用文档里的一个词就能找到需要的笔记，而不只是靠文件名。",
+    "mf_aria": "理念",
+    "mf_a": "资料应当放在人们期待的地方 — 并且只对",
+    "mf_b": "你开放的人可见。",
+    "faq_title": "常见问题",
+    "faq_lead": "简要说明存储是如何运作的。",
+    "faq1_q": "谁能看到个人子文件夹里的文件？",
+    "faq1_a": "只有它所属的学生和你。其他学生看不到这个子文件夹。",
+    "faq2_q": "可以限时开放文件夹吗？",
+    "faq2_a": "可以。按需要的期限开放文件夹，并可随时一键关闭访问。",
+    "faq3_q": "学生如何提交作业？",
+    "faq3_a": "把文件上传到带截止日期的文件夹。你能看到谁已经提交，批改作业后退回给学生。",
+    "faq4_q": "能按文件内部的文字找到文件吗？",
+    "faq4_a": "可以。搜索覆盖文档的内容，而不只是文件名。",
+    "faq5_q": "可以直接在存储中修改文档吗？",
+    "faq5_a": ".docx 文件可以直接在存储中编辑。修改后的版本会保存在原文件旁边。",
+    "faq6_q": "如何知道还剩多少空间？",
+    "faq6_a": "已用和可用空间显示在存储的顶部栏中 — 你随时能看到还剩多少。",
+    "cta_title": "把学习资料集中到一处",
+    "cta_text": "按学生建文件夹、限时访问、提交作业 — 都在同一个 GoodWorker 存储里。"
   }
 }

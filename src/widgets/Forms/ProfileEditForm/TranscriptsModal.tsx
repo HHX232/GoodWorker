@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { NotebookPen } from 'lucide-react'
 import styles from './TranscriptsModal.module.scss'
 
 interface NoteEntry {
@@ -14,8 +16,10 @@ interface TranscriptRoom {
   topic?: string | null
   createdAt: string
   endedAt: string | null
-  transcriptRaw: string
+  transcriptRaw: string | null
   transcriptJson?: NoteEntry[] | null
+  /** My call notes (LectureNote) for this room, if any. */
+  noteId?: string | null
 }
 
 interface Props {
@@ -114,7 +118,9 @@ function ChatView({ room }: { room: TranscriptRoom }) {
 
   if (entries.length === 0) {
     return (
-      <div className={styles.chatEmpty}>Текст конспекта недоступен</div>
+      <div className={styles.chatEmpty}>
+        {room.noteId ? 'Расшифровка доступна только организатору звонка. Ваш конспект урока — по кнопке «Открыть конспект».' : 'Текст конспекта недоступен'}
+      </div>
     )
   }
 
@@ -139,6 +145,34 @@ function ChatView({ room }: { room: TranscriptRoom }) {
         </button>
       </div>
     </div>
+  )
+}
+
+/** Files the latest version into storage (export save), then opens the same editor as from /files. */
+function OpenNoteButton({ noteId }: { noteId: string }) {
+  const router = useRouter()
+  const [opening, setOpening] = useState(false)
+
+  const open = async () => {
+    if (opening) return
+    setOpening(true)
+    // A failed or slow save (quota etc.) must not block opening the notes — the editor still has them.
+    // keepalive lets the save finish after navigation; we wait at most ~3 s.
+    const save = fetch(`/api/lecture/${noteId}/export`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ save: true }),
+      keepalive: true,
+    }).catch(() => null)
+    await Promise.race([save, new Promise(r => setTimeout(r, 3000))])
+    router.push(`/lecture/${noteId}`)
+  }
+
+  return (
+    <button className={`${styles.exportBtn} ${styles.openNoteBtn}`} onClick={open} disabled={opening}>
+      <NotebookPen size={14} />
+      {opening ? 'Открываем...' : 'Открыть конспект'}
+    </button>
   )
 }
 
@@ -188,6 +222,7 @@ useEffect(() => {
                 </svg>
                 Назад
               </button>
+              {selected.noteId && <OpenNoteButton noteId={selected.noteId} />}
             </div>
             <div className={styles.detailMeta}>
               <span className={styles.detailName}>{selected.name}</span>

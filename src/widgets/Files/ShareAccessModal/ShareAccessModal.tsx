@@ -18,6 +18,8 @@ export interface ShareTarget {
   name: string
   allowStudentUpload?: boolean
   submissionDeadline?: string | null
+  /** The file is a book (`itemType: 'file'`): the dialog is titled for a book. */
+  isBook?: boolean
 }
 
 interface LinkedStudent {
@@ -157,7 +159,7 @@ export function ShareAccessModal({ target, onClose, onChanged }: ShareAccessModa
   return (
     <FilesModal
       size="wide"
-      title={t('shareTitle', { name: target.name })}
+      title={target.isBook ? t('booksShellShareTitle', { name: target.name }) : t('shareTitle', { name: target.name })}
       closeLabel={t('close')}
       onClose={onClose}
       footer={

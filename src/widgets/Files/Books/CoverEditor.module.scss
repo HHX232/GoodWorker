@@ -1,0 +1,130 @@
+.ce {
+  display: grid;
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+  gap: clamp(20px, 4vw, 44px);
+  align-items: start;
+}
+
+.prev {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: clamp(20px, 3vw, 32px);
+  border-radius: 18px;
+  background: #f5f5f7;
+  border: 1px solid #DADCEB;
+}
+
+.cap {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  font-size: 12.5px;
+  color: #6b6e80;
+}
+
+.ctls {
+  min-width: 0;
+
+  section + section { margin-top: 24px; padding-top: 20px; border-top: 1px solid #eeeef4; }
+  h3 { margin: 0; font-size: 15px; font-weight: 700; color: #141416; }
+}
+
+.hint { margin: 3px 0 12px; max-width: 52ch; font-size: 13px; color: #6b6e80; }
+
+.sw { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+
+.swb {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  box-shadow: inset 0 0 0 3px #fff;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &:hover { transform: scale(1.08); }
+  &[aria-pressed='true'] { border-color: #141416; }
+  &:focus-visible { outline: 2px solid #534AB7; outline-offset: 2px; }
+}
+
+.swc {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px 0 4px;
+  border: 1px dashed #DADCEB;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #141416;
+  cursor: pointer;
+
+  &:hover { border-color: #534AB7; }
+  input { width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; }
+}
+
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+.sliders { margin-top: 12px; }
+.ctl {
+  display: grid;
+  grid-template-columns: 96px 1fr 44px;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  font-size: 13px;
+  color: #4b5563;
+
+  input[type='range'] {
+    width: 100%;
+    height: 20px;
+    margin: 0;
+    background: transparent;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+
+    &::-webkit-slider-runnable-track { height: 4px; border-radius: 4px; background: #DADCEB; }
+    &::-moz-range-track { height: 4px; border-radius: 4px; background: #DADCEB; }
+    &::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; margin-top: -6px; border: 2px solid #fff; border-radius: 50%; background: #534AB7; box-shadow: 0 1px 3px rgba(20, 20, 40, 0.35); }
+    &::-moz-range-thumb { width: 12px; height: 12px; border: 2px solid #fff; border-radius: 50%; background: #534AB7; box-shadow: 0 1px 3px rgba(20, 20, 40, 0.35); }
+    &:focus-visible { outline: 2px solid #534AB7; outline-offset: 3px; border-radius: 4px; }
+  }
+  output { text-align: right; font-variant-numeric: tabular-nums; color: #141416; }
+}
+
+@media (max-width: 620px) {
+  .ce { grid-template-columns: 1fr; }
+  .prev { position: static; }
+  .ctl { grid-template-columns: 76px 1fr 40px; }
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .prev { background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.12); }
+  .cap, .hint { color: #9aa0b4; }
+  .ctls { section + section { border-color: rgba(255, 255, 255, 0.12); } h3 { color: #e8eaf0; } }
+  .swb { box-shadow: inset 0 0 0 3px #1b1a22; &[aria-pressed='true'] { border-color: #e8eaf0; } &:focus-visible { outline-color: #a5adff; } }
+  .swc { border-color: rgba(255, 255, 255, 0.2); color: #e8eaf0; &:hover { border-color: #818cf8; } }
+  .ctl {
+    color: #b1b6c8;
+    input[type='range'] {
+      &::-webkit-slider-runnable-track { background: rgba(255, 255, 255, 0.16); }
+      &::-moz-range-track { background: rgba(255, 255, 255, 0.16); }
+      &::-webkit-slider-thumb { background: #818cf8; border-color: #1b1a22; }
+      &::-moz-range-thumb { background: #818cf8; border-color: #1b1a22; }
+      &:focus-visible { outline-color: #a5adff; }
+    }
+    output { color: #e8eaf0; }
+  }
+}

@@ -23,6 +23,11 @@ function getNotifHref(type: string, payload?: Record<string, unknown>): string {
   if (type === 'ROADMAP_PURCHASE') return payload?.roadmapId ? `/road-map/${payload.roadmapId}` : '/notifications'
   if (type === 'NEW_COMMENT_ON_POST' || type === 'NEW_POST') return payload?.postId ? `/post/${payload.postId}` : '/notifications'
   if (type === 'HOMEWORK_ASSIGNED') return payload?.assignmentId ? `/homework/${payload.assignmentId}` : '/notifications'
+  // Same-origin path only ('//host' and '/\host' would leave the site).
+  if (type === 'CALL_NOTES_SAVED') {
+    const href = payload?.href
+    return typeof href === 'string' && href.startsWith('/') && !href.startsWith('//') && !href.includes('\\') ? href : '/notifications'
+  }
   return '/notifications'
 }
 

@@ -284,7 +284,7 @@ export async function POST(req: NextRequest) {
 
     const pdfServiceUrl = process.env.PDF_SERVICE_URL
     if (!pdfServiceUrl) return NextResponse.json({ error: 'PDF service not configured' }, { status: 503 })
-    if (!process.env.OPENROUTER_API_KEY && !process.env.DEEPSEEK_API_KEY)
+    if (!process.env.DEEPSEEK_API_KEY)
       return NextResponse.json({ error: 'AI service not configured' }, { status: 503 })
 
     console.log(`[import-pdf] Processing ${pdfFiles.length} pdf, ${docFiles.length} doc, ${imageFiles.length} image file(s)`)

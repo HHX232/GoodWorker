@@ -138,9 +138,24 @@ interface Props {
   roomName?: string
   isVip?: boolean
   isAdmin?: boolean
+  /**
+   * A scene to start from (a lecture's board block). Goes straight into
+   * Excalidraw's initialData — applying it later through remoteElements
+   * races with Excalidraw's own initial load, which wipes it. Calls don't
+   * pass this: their scene arrives over the network after mount.
+   */
+  initialScene?: { elements: readonly ExcalidrawElement[]; files: BinaryFiles }
+  /**
+   * Read the live scene on demand (a lecture board's "save"). Zone edits
+   * (rotate, recolor…) go through mutateElement and don't always reach
+   * onBroadcast by themselves, so a saver needs the real current state.
+   */
+  onSceneApi?: (read: () => { elements: readonly ExcalidrawElement[]; files: BinaryFiles }) => void
+  /** A lecture's in-text board: no templates tab (no room for it, and it would replace the figure). */
+  hideTemplates?: boolean
 }
 
-export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomName, isVip, isAdmin }: Props) {
+export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomName, isVip, isAdmin, initialScene, onSceneApi, hideTemplates }: Props) {
   const apiRef = useRef<ExcalidrawImperativeAPI | null>(null)
   const formulaWrapRef = useRef<HTMLDivElement>(null)
   const broadcastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -231,13 +246,19 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
     return null
   }, [sceneElements, selectedElementIds, t])
 
+  // Read once: Excalidraw only looks at initialData on mount anyway.
+  const [initialData] = useState(() => (initialScene
+    ? { ...EXCALIDRAW_INITIAL_DATA, elements: initialScene.elements, files: initialScene.files, scrollToContent: true }
+    : EXCALIDRAW_INITIAL_DATA))
+
   const handleExcalidrawApi = useCallback((api: ExcalidrawImperativeAPI) => {
     apiRef.current = api
+    onSceneApi?.(() => ({ elements: api.getSceneElements(), files: api.getFiles() }))
     setReady(true)
     const appState = api.getAppState()
     setViewTransform({ scrollX: appState.scrollX, scrollY: appState.scrollY, zoom: appState.zoom, offsetLeft: appState.offsetLeft, offsetTop: appState.offsetTop })
     setActiveToolType(appState.activeTool.type)
-  }, [])
+  }, [onSceneApi])
 
   const handleScrollChange = useCallback((scrollX: number, scrollY: number, zoom: Zoom) => {
     const appState = apiRef.current?.getAppState()
@@ -793,7 +814,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
           excalidrawAPI={handleExcalidrawApi}
           onChange={handleChange}
           onScrollChange={handleScrollChange}
-          initialData={EXCALIDRAW_INITIAL_DATA}
+          initialData={initialData}
           theme={isDark ? 'dark' : 'light'}
           viewModeEnabled={false}
           isCollaborating={false}
@@ -963,7 +984,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
         {/* Right-side counterpart to .formulaWrap — same "float over the
             canvas, below Excalidraw's own toolbar" reasoning, mirrored to
             the right edge since the left side is already crowded. */}
-        <div className={styles.templatesWrap}>
+        {!hideTemplates && <div className={styles.templatesWrap}>
           <button
             type="button"
             className={styles.templatesButton}
@@ -983,7 +1004,7 @@ export function CallWhiteboard({ remoteElements, remoteFiles, onBroadcast, roomN
               {savingTemplate ? '…' : `💾 ${t('toolbar.saveTemplate')}`}
             </button>
           )}
-        </div>
+        </div>}
         {templatesModalOpen && (
           <TemplatesModal
             hasContent={sceneElements.some(el => !el.isDeleted)}

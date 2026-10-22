@@ -2,7 +2,7 @@ import type { TutorFile, TutorFileReview, TutorFolder } from '@prisma/client'
 
 /** A TutorFile as queries return it: the big `contentText` is omitted by default (shared/prisma/prisma.ts). */
 export type TutorFileRow = Omit<TutorFile, 'contentText'>
-import type { FilesPerson, LibraryFile, LibraryFolder, TreeNode } from '@/shared/types/TutorFiles/tutorFiles.types'
+import type { FilesPerson, LibraryFile, LibraryFolder, SubmissionProgress, TreeNode } from '@/shared/types/TutorFiles/tutorFiles.types'
 
 // Row → client-shape mappers shared by GET /library and GET /search, so a
 // search hit renders with the same card data (counts, grant avatars) as the
@@ -28,7 +28,7 @@ export async function loadOpens(folderIds: string[], fileIds: string[]): Promise
   return (itemId, studentId) => map.get(`${itemId}:${studentId}`)
 }
 
-function people(itemId: string, grants: GrantRow[], opened: OpenLookup): FilesPerson[] {
+export function people(itemId: string, grants: GrantRow[], opened: OpenLookup): FilesPerson[] {
   return grants.map(g => ({
     ...g.student,
     firstOpenedAt: opened(itemId, g.student.id)?.toISOString() ?? null,
@@ -38,7 +38,7 @@ function people(itemId: string, grants: GrantRow[], opened: OpenLookup): FilesPe
 }
 export const grantStudentSelect = { student: { select: { id: true, name: true, avatarUrl: true } } }
 
-export function toFolder(f: TutorFolder, itemCount: number, grants: GrantRow[] = [], opened: OpenLookup = noOpens): LibraryFolder {
+export function toFolder(f: TutorFolder, itemCount: number, grants: GrantRow[] = [], opened: OpenLookup = noOpens, progress: SubmissionProgress | null = null): LibraryFolder {
   return {
     id: f.id,
     name: f.name,
@@ -49,6 +49,7 @@ export function toFolder(f: TutorFolder, itemCount: number, grants: GrantRow[] =
     submissionDeadline: f.submissionDeadline?.toISOString() ?? null,
     itemCount,
     sharedWith: people(f.id, grants, opened),
+    progress,
     updatedAt: f.updatedAt.toISOString(),
   }
 }
@@ -68,6 +69,7 @@ export function toFile(f: TutorFileRow & { review?: TutorFileReview | null }, gr
     // Idea 2: a student's submission that came in after the folder's deadline.
     late: f.uploadedByRole === 'STUDENT' && !!deadline && f.createdAt > deadline,
     derivedFromId: f.derivedFromId,
+    lectureNoteId: f.lectureNoteId,
     review: f.review
       ? {
           status: f.review.status as 'ACCEPTED' | 'REVISION',

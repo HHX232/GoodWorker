@@ -1,0 +1,95 @@
+// Pure CSS: the core scales with --orb-level (mic input), three staggered
+// rings ripple outwards; each mode only swaps colour and tempo.
+
+.orb {
+  --orb-color: 124, 116, 230;
+  --orb-speed: 3.2s;
+  position: relative;
+  width: var(--orb-size);
+  height: var(--orb-size);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.core {
+  position: relative;
+  width: 22%;
+  height: 22%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff 0%, rgba(var(--orb-color), 1) 45%, rgba(var(--orb-color), 0.85) 100%);
+  box-shadow: 0 0 calc(var(--orb-size) * 0.12) rgba(var(--orb-color), 0.55);
+  transform: scale(calc(1 + var(--orb-level) * 0.55));
+  transition: transform 90ms linear, background 400ms ease;
+}
+
+.halo {
+  position: absolute;
+  width: 46%;
+  height: 46%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(var(--orb-color), 0.22) 0%, rgba(var(--orb-color), 0) 70%);
+  transform: scale(calc(1 + var(--orb-level) * 0.9));
+  transition: transform 120ms linear;
+}
+
+.ring {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 24%;
+  height: 24%;
+  border-radius: 50%;
+  border: 1.5px solid rgba(var(--orb-color), 0.55);
+  opacity: 0;
+  animation: ripple var(--orb-speed) cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+
+  &:nth-child(2) { animation-delay: calc(var(--orb-speed) / -3); }
+  &:nth-child(3) { animation-delay: calc(var(--orb-speed) / -1.5); }
+}
+
+@keyframes ripple {
+  0% { transform: scale(1); opacity: 0.75; }
+  100% { transform: scale(4.1); opacity: 0; }
+}
+
+.idle {
+  --orb-color: 150, 152, 168;
+  --orb-speed: 5s;
+  .ring { border-color: rgba(var(--orb-color), 0.3); }
+}
+
+.listening { --orb-color: 124, 116, 230; --orb-speed: 2.6s; }
+
+.thinking {
+  --orb-color: 147, 51, 234;
+  --orb-speed: 1.5s;
+  .core { animation: breathe 1.1s ease-in-out infinite; }
+}
+
+.finalizing {
+  --orb-color: 83, 74, 183;
+  --orb-speed: 4.5s;
+  .ring { border-width: 2.5px; }
+}
+
+.offline { --orb-color: 217, 119, 6; --orb-speed: 3.8s; }
+.error { --orb-color: 220, 38, 38; --orb-speed: 6s; }
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.22); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ring { animation: none; opacity: 0.25; }
+  .ring:nth-child(2) { transform: scale(2); }
+  .ring:nth-child(3) { transform: scale(3); }
+  .thinking .core { animation: none; }
+}
+
+// ─── Dark theme ───────────────────────────────────────────────────────────────
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .core { background: radial-gradient(circle at 35% 30%, #e9e7ff 0%, rgba(var(--orb-color), 1) 45%, rgba(var(--orb-color), 0.85) 100%); }
+  .idle { --orb-color: 110, 114, 132; }
+}

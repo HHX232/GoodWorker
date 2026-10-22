@@ -2,8 +2,10 @@
 
 import { DEFAULT_MAX_FILE_MB, MAX_FOLDER_DEPTH, MB } from '@/shared/lib/tutorFiles/constants'
 import { kindOf as importKindOf } from '@/shared/constants/pdfImport'
-import type { LibraryFile, LibraryFolder, LibraryResponse, SearchFile, TreeNode, UsageResponse } from '@/shared/types/TutorFiles/tutorFiles.types'
+import { autoCropPagePhoto } from '@/shared/lib/pageAutoCrop'
+import type { LibraryBook, LibraryFile, LibraryFolder, LibraryResponse, SearchFile, TreeNode, UsageResponse } from '@/shared/types/TutorFiles/tutorFiles.types'
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query'
+import { BookOpenIcon } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
@@ -11,6 +13,10 @@ import { useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useMemo, useRef, useState, type DragEvent, type FormEvent, type ReactNode } from 'react'
 import { toast } from 'sonner'
+import { BookCard } from '../Books/BookCard'
+import { setBookSaved } from '../Books/bookFetch'
+import { BookQuickView } from '../Books/BookQuickView'
+import { BookUploadModal } from '../Books/BookUploadModal'
 import { FileCard } from '../Cards/FileCard'
 import { FolderCard, NewFolderCard } from '../Cards/FolderCard'
 import { CoverPickerModal, CoverPresetGrid } from '../CoverPickerModal/CoverPickerModal'
@@ -24,11 +30,13 @@ import { FilesModal } from '../FilesModal/FilesModal'
 import { FolderTree } from '../FolderTree/FolderTree'
 import {
   FilesChevronDownIcon, FilesChevronIcon, FilesCoverIcon, FilesDeadlineIcon, FilesDropboxIcon, FilesFolderPlusIcon, FilesSearchIcon, FilesShareIcon,
-  FilesStorageIcon, FilesUploadIcon, FilesVipIcon,
+  FilesLectureIcon, FilesSharedIcon, FilesStorageIcon, FilesUploadIcon, FilesVipIcon,
 } from '../icons'
 import { filesFetch, FilesApiError, formatBytes, formatDeadline, initials, jsonInit, triggerDownload, viewerFor } from '../lib'
 import { ShareAccessModal, type ShareTarget } from '../ShareAccessModal/ShareAccessModal'
+import { SubjectFilter } from '../SubjectFilter/SubjectFilter'
 import { StorageMeter } from '../StorageMeter/StorageMeter'
+import { StudentDrive } from '../StudentDrive/StudentDrive'
 import { StorageOverageWarningModal } from '../StorageOverageWarningModal/StorageOverageWarningModal'
 import ui from '../ui.module.scss'
 import styles from './FilesShell.module.scss'
@@ -44,6 +52,12 @@ export interface FilesShellProps {
    * rows), no management or upload, no search/usage.
    */
   admin?: { teacherId: string; teacherName: string }
+  /**
+   * Student only: the sidebar switch between what tutors shared and the
+   * student's own drive ("Мои файлы"). While `active`, the main area is the
+   * drive and `folderId` above is null (drive folders live in `drive.folderId`).
+   */
+  drive?: { active: boolean; folderId: string | null; onToggle: (active: boolean) => void; onNavigate: (folderId: string | null) => void }
 }
 
 type NameDialog = { mode: 'create' } | { mode: 'rename'; folder: LibraryFolder }
@@ -72,7 +86,7 @@ function pathOf(parentId: string | null, byId: Map<string, TreeNode>): string {
  * only inside their own "учебная" subfolder. Everything comes from
  * GET /api/tutor-files/library, which already applies the visibility rule.
  */
-export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProps) {
+export function FilesShell({ role, folderId, onNavigate, admin, drive }: FilesShellProps) {
   const t = useTranslations('files')
   const locale = useLocale()
   const queryClient = useQueryClient()
@@ -89,6 +103,8 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
   const [previewFile, setPreviewFile] = useState<LibraryFile | null>(null)
   const [reviewFile, setReviewFile] = useState<LibraryFile | null>(null)
   const [editFile, setEditFile] = useState<LibraryFile | null>(null)
+  const [quickBookId, setQuickBookId] = useState<string | null>(null)
+  const [bookUploadOpen, setBookUploadOpen] = useState(false)
   const router = useRouter()
   const [overage, setOverage] = useState<UsageResponse | null>(null)
   const [uploading, setUploading] = useState<{ done: number; total: number } | null>(null)
@@ -96,6 +112,8 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
   const [shortcut, setShortcut] = useState('Ctrl F')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
+  // Teacher: the subject of their lecture notes («Конспекты лекций/<Предмет>»).
+  const [subject, setSubject] = useState('')
 
   useEffect(() => {
     const id = setTimeout(() => setDebouncedQuery(query.trim()), 250)
@@ -128,9 +146,9 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
   const isVip = !!data?.isVip
 
   const search = useQuery({
-    queryKey: ['tutor-files', 'search', debouncedQuery],
-    queryFn: () => filesFetch<{ folders: LibraryFolder[]; files: SearchFile[] }>(`/api/tutor-files/search?q=${encodeURIComponent(debouncedQuery)}`),
-    enabled: debouncedQuery.length > 0 && !admin,
+    queryKey: ['tutor-files', 'search', debouncedQuery, subject],
+    queryFn: () => filesFetch<{ folders: LibraryFolder[]; files: SearchFile[] }>(`/api/tutor-files/search?q=${encodeURIComponent(debouncedQuery)}${subject ? `&subject=${encodeURIComponent(subject)}` : ''}`),
+    enabled: (debouncedQuery.length > 0 || !!subject) && !admin,
   })
 
   const usage = useQuery({
@@ -151,10 +169,33 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
     queryClient.invalidateQueries({ queryKey: ['tutor-files'] })
   }
 
+  // Books live in the root library response only; patch every cached copy so a
+  // save / cover edit / delete shows instantly, then refetch to settle.
+  const patchBooks = async (fn: (books: LibraryBook[]) => LibraryBook[]) => {
+    await queryClient.cancelQueries({ queryKey: LIBRARY_KEY }) // an in-flight refetch must not overwrite the patch
+    queryClient.setQueriesData<LibraryResponse>({ queryKey: LIBRARY_KEY }, old => (old ? { ...old, books: fn(old.books ?? []) } : old))
+  }
+  const toggleBookSave = async (b: LibraryBook) => {
+    const set = (saved: boolean) => patchBooks(bs => bs.map(x => (x.id === b.id ? { ...x, saved } : x)))
+    await set(!b.saved)
+    try {
+      await setBookSaved(b.id, !b.saved)
+    } catch {
+      await set(b.saved)
+      toast.error(t('errGeneric'))
+    }
+    refresh()
+  }
+  const onBookChanged = (book: LibraryBook | null) => {
+    if (book) void patchBooks(bs => bs.map(x => (x.id === book.id ? book : x))).then(refresh)
+    else { void patchBooks(bs => bs.filter(x => x.id !== quickBookId)).then(refresh); setQuickBookId(null) }
+  }
+
   const navigate = (id: string | null) => {
     onNavigate(id)
     setQuery('')
     setDebouncedQuery('')
+    setSubject('')
     setTreeOpen(false)
   }
 
@@ -175,14 +216,28 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
   // Returns the created rows, or null if any file failed — callers that need
   // to know (the reupload button in ReviewModal, the docx editor's "save as
   // new") get a real signal instead of guessing from the toast that already ran.
-  const uploadFiles = async (list: File[], opts?: { derivedFromId?: string }): Promise<LibraryFile[] | null> => {
+  //
+  // Photos of a notebook/paper page are auto-cropped to the sheet and
+  // straightened before upload (pageAutoCrop.ts); the toast then offers to
+  // swap the result back for the untouched original. `keepOriginal` is that
+  // swap-back path; derived files (docx editor, review re-upload) never crop.
+  const uploadFiles = async (list: File[], opts?: { derivedFromId?: string; keepOriginal?: boolean }): Promise<LibraryFile[] | null> => {
     if (list.length === 0 || uploading) return null
     let crossedQuota = false
     let allOk = true
     const created: LibraryFile[] = []
+    const cropped: { created: LibraryFile; original: File }[] = []
     setUploading({ done: 0, total: list.length })
     for (let i = 0; i < list.length; i++) {
-      const file = list[i]
+      const original = list[i]
+      let file = original
+      if (!opts?.derivedFromId && !opts?.keepOriginal && original.type.startsWith('image/')) {
+        try {
+          file = (await autoCropPagePhoto(original)) ?? original
+        } catch (e) {
+          console.error('[FilesShell] page auto-crop failed, uploading original', e)
+        }
+      }
       // Students don't get /usage; the server re-checks anyway.
       if (file.size > (usage.data?.maxFileBytes ?? DEFAULT_MAX_FILE_MB * MB)) {
         toast.error(t('errTooLarge', { name: file.name }))
@@ -195,6 +250,7 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
         try {
           const res = await filesFetch<{ file: LibraryFile; usedBytes?: number; quotaBytes?: number }>('/api/tutor-files/files', { method: 'POST', body: form })
           created.push(res.file)
+          if (file !== original) cropped.push({ created: res.file, original })
           // G02 (Wallet build): warn only on the upload that *first* crosses
           // the quota — "was the library already over before this file?"
           // comes straight from the post-write usedBytes minus this file's size.
@@ -209,6 +265,12 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
     }
     setUploading(null)
     refresh()
+    if (cropped.length > 0) {
+      toast.success(t('pageCropped', { count: cropped.length }), {
+        duration: 10000,
+        action: { label: t('pageCropUndo'), onClick: () => { void restoreOriginals(cropped) } },
+      })
+    }
     if (crossedQuota) {
       try {
         setOverage(await queryClient.fetchQuery({ queryKey: ['tutor-files', 'usage'], queryFn: () => filesFetch<UsageResponse>('/api/tutor-files/usage'), staleTime: 0 }))
@@ -217,6 +279,22 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
       }
     }
     return allOk ? created : null
+  }
+
+  // "Keep the original" from the auto-crop toast: drop the cropped copies,
+  // upload the untouched photos in their place.
+  const restoreOriginals = async (pairs: { created: LibraryFile; original: File }[]) => {
+    const originals: File[] = []
+    for (const { created, original } of pairs) {
+      try {
+        await filesFetch(`/api/tutor-files/files/${created.id}`, { method: 'DELETE' })
+        originals.push(original)
+      } catch (e) {
+        console.error('[FilesShell] delete of cropped copy failed', e)
+        toast.error(t('errGeneric'))
+      }
+    }
+    if (originals.length > 0) await uploadFiles(originals, { keepOriginal: true })
   }
 
   // The docx editor's overwrite path (target already has `derivedFromId` set).
@@ -252,6 +330,8 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
   const openPreview = (f: LibraryFile) => {
     markOpened(f)
     const kind = viewerFor(f.mimeType, f.name)
+    // Saved lecture notes reopen in the lecture editor (formulas, notes, AI sections intact).
+    if (canManage && f.lectureNoteId && !f.mimeType.startsWith('audio/')) { router.push(`/lecture/${f.lectureNoteId}`); return }
     if (canManage && kind === 'docx') { setEditFile(f); return }
     if (canManage && kind === 'pdf') { setReviewFile(f); return }
     setPreviewFile(f)
@@ -290,7 +370,7 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
   // ── Render ────────────────────────────────────────────────
   const canUpload = !!data?.canUpload
   const myId = session?.user?.id
-  const searching = debouncedQuery.length > 0
+  const searching = debouncedQuery.length > 0 || !!subject
 
   const folderActions = (f: LibraryFolder) => canManage
     ? {
@@ -318,7 +398,7 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
     return {}
   }
 
-  const sections = (folders: LibraryFolder[], files: (LibraryFile & { contentMatch?: string | null })[], opts: { hints?: boolean; newFolder?: boolean } = {}) => (
+  const sections = (folders: LibraryFolder[], files: (LibraryFile & { contentMatch?: string | null })[], opts: { hints?: boolean; newFolder?: boolean; books?: LibraryBook[] } = {}) => (
     <>
       {(folders.length > 0 || opts.newFolder) && (
         <section className={styles.section}>
@@ -331,12 +411,23 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
           </div>
         </section>
       )}
+      {!!opts.books?.length && (
+        <section className={styles.section}>
+          <div className={styles.sectionHead}>
+            <h2 className={styles.sectionTitle}>{t('booksShellSection')} <span className={styles.count}>{opts.books.length}</span></h2>
+            <Link href="/files/books" className={styles.allLink}>{t('booksShellAll')} <span aria-hidden="true">→</span></Link>
+          </div>
+          <div className={styles.bookGrid}>
+            {opts.books.map(b => <BookCard key={b.id} book={b} size="md" onOpen={() => setQuickBookId(b.id)} onToggleSave={toggleBookSave} />)}
+          </div>
+        </section>
+      )}
       {files.length > 0 && (
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>{t('filesSection')} <span className={styles.count}>{files.length}</span></h2>
           <div className={styles.fileGrid}>
             {files.map(f => (
-              <FileCard key={f.id} file={f} onPreview={() => openPreview(f)} onDownload={() => downloadFile(f)} hint={opts.hints ? pathOf(f.folderId, treeById) || t('rootCrumb') : undefined} contentMatch={f.contentMatch} query={debouncedQuery} {...fileActions(f)} />
+              <FileCard key={f.id} file={f} lecture={isTeacher && !admin && f.lectureNoteId && !f.mimeType.startsWith('audio/') ? { onOpen: () => router.push(`/lecture/${f.lectureNoteId}`) } : undefined} onPreview={() => openPreview(f)} onDownload={() => downloadFile(f)} hint={opts.hints ? pathOf(f.folderId, treeById) || t('rootCrumb') : undefined} contentMatch={f.contentMatch} query={debouncedQuery} {...fileActions(f)} />
             ))}
           </div>
         </section>
@@ -366,11 +457,20 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
     )
   } else if (searching) {
     body = search.data && search.data.folders.length + search.data.files.length === 0
-      ? <p className={styles.muted}>{t('searchEmpty', { q: debouncedQuery })}</p>
+      ? <p className={styles.muted}>{debouncedQuery ? t('searchEmpty', { q: debouncedQuery }) : t('subjectEmpty', { subject })}</p>
       : search.data && sections(search.data.folders, search.data.files, { hints: true })
   } else {
-    const totalItems = data.groups.reduce((n, g) => n + g.folders.length + g.files.length, 0)
-    const showGroupHeaders = !isTeacher && data.folder === null && data.groups.length > 1
+    // Books come beside the groups (root only). A student sees each tutor's books
+    // under that tutor's group; a tutor with books but nothing else shared still gets a group.
+    const books = admin ? [] : data.books ?? [] // admin's silent view: books aren't actionable there
+    const groups = [...data.groups]
+    if (!isTeacher) {
+      for (const b of books) {
+        if (!groups.some(g => g.teacher?.id === b.teacherId)) groups.push({ teacher: { id: b.teacherId, name: b.teacherName, avatarUrl: null }, folders: [], files: [] })
+      }
+    }
+    const totalItems = books.length + data.groups.reduce((n, g) => n + g.folders.length + g.files.length, 0)
+    const showGroupHeaders = !isTeacher && data.folder === null && groups.length > 1
     const inPersonal = !!data.folder?.restrictedToStudentId
     if (totalItems === 0) {
       body = (
@@ -380,6 +480,7 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
               <span className={styles.emptyIcon}><FilesFolderPlusIcon size={26} strokeWidth={1.6} /></span>
               <div className={styles.emptyTitle}>{t('emptyTitle')}</div>
               <p className={styles.emptyText}>{t('emptyText')}</p>
+              {canManage && <p className={styles.emptyText}>{t('booksShellEmptyHint')}</p>}
             </>
           ) : !isTeacher && data.folder === null ? (
             <>
@@ -393,6 +494,7 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
           {(canManage || canUpload) && (
             <div className={styles.emptyActions}>
               {canManage && !inPersonal && <button type="button" className={ui.btn} onClick={openCreate}><FilesFolderPlusIcon size={15} /> {t('newFolder')}</button>}
+              {canManage && !data.folder && <button type="button" className={ui.btn} onClick={() => setBookUploadOpen(true)}><BookOpenIcon size={15} /> {t('booksShellUpload')}</button>}
               {canUpload && <button type="button" className={`${ui.btn} ${ui.primary}`} onClick={() => fileInputRef.current?.click()}><FilesUploadIcon size={15} /> {t('upload')}</button>}
             </div>
           )}
@@ -401,7 +503,7 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
     } else {
       // A student's personal subfolder is a leaf (no subfolders allowed), so no "new folder" slot there.
       const newFolderSlot = canManage && !inPersonal && (data.folder?.depth ?? 0) < MAX_FOLDER_DEPTH
-      body = data.groups.map(group => (
+      body = groups.map(group => (
         <div key={group.teacher?.id ?? 'own'} className={styles.group}>
           {showGroupHeaders && group.teacher && (
             <div className={styles.groupHeader}>
@@ -412,18 +514,19 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
               {t('fromTeacher', { name: group.teacher.name })}
             </div>
           )}
-          {sections(group.folders, group.files, { newFolder: newFolderSlot })}
+          {sections(group.folders, group.files, { newFolder: newFolderSlot, books: isTeacher ? books : books.filter(b => b.teacherId === group.teacher?.id) })}
         </div>
       ))
     }
   }
 
   const rootLabel = admin ? admin.teacherName : isTeacher ? t('myFiles') : t('sharedWithMe')
-  const title = searching ? t('searchResults') : data?.folder?.name ?? rootLabel
+  const title = searching ? (debouncedQuery ? t('searchResults') : subject) : data?.folder?.name ?? rootLabel
   const current = data?.folder
   const tree = data && (
     <FolderTree nodes={data.tree} teachers={data.teachers} currentId={folderId} openPath={openPath} rootLabel={rootLabel} onSelect={navigate} />
   )
+  const quickBook = data?.books?.find(b => b.id === quickBookId) ?? null
   const showLibraryChrome = !!data && (!!admin || !(isTeacher && !isVip))
 
   return (
@@ -435,13 +538,32 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
             {t('pageTitle')}
             {admin && <span className={styles.readOnly}>{t('adminReadOnly')}</span>}
           </div>
-          {showLibraryChrome && (
+          {drive && !isTeacher && (
+            <nav className={styles.driveNav} aria-label={t('driveNavLabel')}>
+              <button type="button" className={`${styles.driveNavItem} ${!drive.active ? styles.driveNavActive : ''}`} aria-current={!drive.active ? 'page' : undefined} onClick={() => drive.onToggle(false)}>
+                <FilesSharedIcon size={15} /> {t('sharedWithMe')}
+              </button>
+              <button type="button" className={`${styles.driveNavItem} ${drive.active ? styles.driveNavActive : ''}`} aria-current={drive.active ? 'page' : undefined} onClick={() => drive.onToggle(true)}>
+                <FilesStorageIcon size={15} /> {t('driveTitle')}
+              </button>
+              <Link href="/lecture" className={styles.driveNavItem}>
+                <FilesLectureIcon size={15} /> {t('driveNewLecture')}
+              </Link>
+            </nav>
+          )}
+          {showLibraryChrome && !drive?.active && (
             <>
               <div className={styles.sidebarLabel}>{t('treeTitle')}</div>
               {tree}
             </>
           )}
         </aside>
+
+        {drive?.active ? (
+          <main className={styles.main}>
+            <StudentDrive folderId={drive.folderId} onNavigate={drive.onNavigate} />
+          </main>
+        ) : (
 
         <main
           className={`${styles.main} ${dragOver ? styles.dragOver : ''}`}
@@ -465,6 +587,7 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
                 <kbd className={styles.kbd}>{shortcut}</kbd>
               </label>
             )}
+            {showLibraryChrome && !admin && isTeacher && <SubjectFilter value={subject} onChange={setSubject} />}
             {usage.data && <div className={styles.meterSlot}><StorageMeter usage={usage.data} /></div>}
           </div>
 
@@ -500,6 +623,11 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
                       <FilesFolderPlusIcon size={14} /> <span className={styles.pillLabel}>{t('newFolder')}</span>
                     </button>
                   )}
+                  {canManage && !current && (
+                    <button type="button" className={styles.pill} onClick={() => setBookUploadOpen(true)} aria-label={t('booksShellUpload')} title={t('booksShellUpload')}>
+                      <BookOpenIcon size={14} /> <span className={styles.pillLabel}>{t('booksShellUpload')}</span>
+                    </button>
+                  )}
                   {canUpload && (
                     <button type="button" className={`${styles.pill} ${styles.pillPrimary}`} onClick={() => fileInputRef.current?.click()} disabled={!!uploading}>
                       <FilesUploadIcon size={14} />
@@ -530,6 +658,7 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
             {body}
           </div>
         </main>
+        )}
       </div>
 
       {nameDialog && (
@@ -561,6 +690,16 @@ export function FilesShell({ role, folderId, onNavigate, admin }: FilesShellProp
       )}
 
       {shareTarget && <ShareAccessModal target={shareTarget} onClose={() => setShareTarget(null)} onChanged={refresh} />}
+      {bookUploadOpen && <BookUploadModal open onClose={() => setBookUploadOpen(false)} onUploaded={() => refresh()} />}
+      {quickBook && (
+        <BookQuickView
+          book={quickBook}
+          canManage={canManage}
+          onClose={() => setQuickBookId(null)}
+          onChanged={onBookChanged}
+          onShare={b => { setQuickBookId(null); setShareTarget({ itemType: 'file', id: b.id, name: b.title, isBook: true }) }}
+        />
+      )}
       {coverTarget && <CoverPickerModal folder={coverTarget} onClose={() => setCoverTarget(null)} onSaved={() => { setCoverTarget(null); refresh() }} />}
       {previewFile && <FilePreviewModal file={previewFile} contentUrl={admin ? `/api/admin/tutor-files/files/${previewFile.id}/content` : undefined} onClose={() => setPreviewFile(null)} onDownload={() => downloadFile(previewFile)} />}
       {reviewFile && <ReviewModal file={reviewFile} onClose={() => setReviewFile(null)} onSaved={() => { setReviewFile(null); refresh() }} onReupload={async f => (await uploadFiles([f])) !== null} />}

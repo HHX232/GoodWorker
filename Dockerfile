@@ -13,6 +13,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 ENV NEXT_PUBLIC_APP_URL=https://goodworker.up.railway.app
 ENV NEXT_PUBLIC_API_URL_SECOND=https://goodworker.up.railway.app
+# inlined into the client bundle at build (folder cover photos, covers.ts)
+ENV NEXT_PUBLIC_S3_PUBLIC_URL=https://ec2d0826-ed65-4e17-9296-2eb821c2e6bb.srvstatic.kz
 ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
 RUN npx prisma generate
 RUN npm run build

@@ -58,9 +58,6 @@ export async function analyzeTranscriptErrors(
   participants: Participant[],
   categories: CategoryRef[]
 ): Promise<DetectedError[]> {
-  const apiKey = process.env.OPENROUTER_API_KEY
-  if (!apiKey) throw new Error('OPENROUTER_API_KEY is not set')
-
   const categoriesBlock = categories.map(c => `  - id="${c.id}" name="${c.name}"`).join('\n')
   const participantsBlock = participants
     .map(p => `  - ${p.role === 'TEACHER' ? '[Учитель]' : '[Ученик]'} ${p.name}`)

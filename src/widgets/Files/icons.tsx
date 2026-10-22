@@ -27,6 +27,8 @@ export {
   Check as FilesCheckIcon,
   Crown as FilesVipIcon,
   HardDrive as FilesStorageIcon,
+  NotebookPen as FilesLectureIcon,
+  Share2 as FilesSharedIcon,
   Eye as FilesPreviewIcon,
   ExternalLink as FilesExternalIcon,
   MoreVertical as FilesMoreIcon,

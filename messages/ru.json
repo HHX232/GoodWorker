@@ -53,6 +53,7 @@
     "roadmaps": "Курсы",
     "games": "Игры",
     "pomodoro": "Помодоро",
+    "lecture": "Конспект лекции",
     "videoCall": "Видеозвонок",
     "posts": "Посты",
     "vip": "VIP"
@@ -2153,7 +2154,9 @@
     "storageReindexRunning": "Индексируем… осталось {n}",
     "storageReindexDone": "Индексация завершена",
     "storageAdminBadge": "Админ",
-    "storageAdminQuotaHint": "Администраторам — {gb} ГБ без VIP."
+    "storageAdminQuotaHint": "Администраторам — {gb} ГБ без VIP.",
+    "storageStudentQuota": "Квота ученика (Мои файлы)",
+    "storageStudentQuotaHint": "Личное хранилище VIP-ученика: конспекты лекций и свои загрузки. Домашка в папках репетитора считается в квоту репетитора."
   },
   "tutorial": {
     "prev": "Назад",
@@ -2307,6 +2310,34 @@
     "hero_today": "Сегодня 3 занятия и звонок в 18:00.",
     "hero_h1": "Давайте знания. Получайте знания.",
     "hero_h1_hl": "Рутину берём на себя",
+    "hero_teacher_btn_calendar": "Календарь",
+    "hero_student_btn_teacher": "Найти учителя",
+    "hero_student_btn_course": "Найти курс",
+    "hero_teacher_h1": "Всё для урока —",
+    "hero_teacher_h1_hl": "бесплатно, в одном месте",
+    "hero_teacher_phrase1": "Видеозвонок — конспект готов сразу после.",
+    "hero_teacher_phrase2": "Файл — готовый тест за 60 секунд.",
+    "hero_teacher_phrase3": "Ошибки ученика — в профиле, по темам.",
+    "hero_teacher_phrase4": "Расписание и напоминания — в Telegram.",
+    "hero_teacher_desc": "Авто-конспект после каждого звонка, тест из любого PDF, календарь с напоминаниями и профиль ошибок каждого ученика — всё в одном месте, бесплатно для старта.",
+    "hero_student_h1": "Получайте знания —",
+    "hero_student_h1_hl": "рутину берём на себя",
+    "hero_student_phrase1": "Репетитор и курсы — в одном месте.",
+    "hero_student_phrase2": "Бесплатные курсы — начните прямо сейчас.",
+    "hero_student_phrase3": "Ваши ошибки сохраняются и разбираются по темам.",
+    "hero_student_phrase4": "Расписание занятий и напоминания — в Telegram.",
+    "hero_student_desc": "Найдите репетитора, проходите курсы и тесты онлайн. Видеоуроки с авто-конспектом, расписание с напоминаниями и разбор ваших ошибок по темам — бесплатно для старта.",
+    "promo_eyebrow": "Видео о платформе",
+    "promo_title": "GoodWorker глазами <word></word>",
+    "promo_word_teacher": "репетитора",
+    "promo_word_student": "ученика",
+    "promo_btn_teacher": "Я репетитор",
+    "promo_btn_student": "Я ученик",
+    "promo_roles_aria": "Кто вы",
+    "promo_watch_aria": "Смотреть видео глазами {who}, {time}",
+    "promo_dialog_aria": "Видео о GoodWorker",
+    "promo_close": "Закрыть видео",
+    "promo_error": "Видео не загрузилось",
     "hero_phrase1": "Видеозвонки с авто-конспектом урока.",
     "hero_phrase2": "Курсы и тесты — собери за минуты.",
     "hero_phrase3": "Файл — готовый тест за 60 секунд.",
@@ -2327,6 +2358,7 @@
     "sub_more_storage": "О хранилище",
     "sub_more_lecture": "О лекциях",
     "sub_more_chess": "О шахматах",
+    "sub_lecture": "Конспект лекции",
     "sub_pdf_from": "Файл",
     "sub_pdf_to": "Тест",
     "btn_create": "Создать курс",
@@ -2854,7 +2886,8 @@
     "n_file_title": "Шпаргалка по хукам",
     "n_post_title": "React Flow на практике",
     "n_audio_title": "Разбор кода урока",
-    "n_test_title": "Тест: Основы React"
+    "n_test_title": "Тест: Основы React",
+    "center_btn": "Выровнять по центру"
   },
   "PdfInfoPage": {
     "qtype_single": "ВЫБОР ОДНОГО",
@@ -3653,6 +3686,8 @@
     "errMaxDepth": "Глубже нельзя: не больше {max} уровней вложенности",
     "errTooLarge": "«{name}» больше 50 МБ",
     "errUpload": "Не удалось загрузить «{name}». Проверьте соединение и попробуйте ещё раз",
+    "pageCropped": "{count, plural, one {Фото страницы обрезано по краям листа} other {Фото страниц обрезаны по краям листа}}",
+    "pageCropUndo": "Оставить оригинал",
     "errVip": "Это действие доступно только с VIP",
     "errGeneric": "Что-то пошло не так. Попробуйте ещё раз",
     "errLoad": "Не удалось открыть библиотеку",
@@ -3683,10 +3718,137 @@
     "overageWallet": "Открыть Кошелёк",
     "overageOk": "Понятно",
     "pageTitle": "Файлы",
+    "booksPageTitle": "Все книги",
+    "booksPageCrumbsAria": "Путь",
+    "booksPageCrumb": "Книги",
+    "booksPageSearch": "Найти книгу по названию",
+    "booksPageSearchClear": "Очистить поиск",
+    "booksPageUpload": "Загрузить книгу",
+    "booksPageViewsAria": "Раздел",
+    "booksPageViewShelf": "Витрина",
+    "booksPageViewMine": "Мои книги",
+    "booksPageShelvesAria": "Полки",
+    "booksPageTabAll": "Все",
+    "booksPageTabSaved": "Сохранённые",
+    "booksPageTabNew": "Новые",
+    "booksPageCarAria": "Подборка",
+    "booksPageCarRecent": "Недавно открывали",
+    "booksPageShowAll": "Показать все",
+    "booksPageScrollPrev": "Назад",
+    "booksPageScrollNext": "Вперёд",
+    "booksPageCarEmpty": "Пока нечего показать: откройте любую книгу, и она появится здесь.",
+    "booksPageHeroTitle": "Продолжить чтение",
+    "booksPageHeroPage": "стр. {page} из {pages}",
+    "booksPageHeroPageOnly": "стр. {page}",
+    "booksPageHeroDetails": "Подробнее",
+    "booksPageMiniAria": "Подборки",
+    "booksPageMiniNew": "Новые",
+    "booksPageMiniWithCover": "С обложкой",
+    "booksPageMiniNeedCover": "Требуют обложки",
+    "booksPageMiniDone": "Дочитанные",
+    "booksPageCount": "{count, plural, one {# книга} few {# книги} many {# книг} other {# книги}}",
+    "booksPageLibrary": "Вся библиотека",
+    "booksPageResults": "Найдено",
+    "booksPageReset": "Сбросить",
+    "booksPageResetAll": "Сбросить поиск и фильтр",
+    "booksPageSortAria": "Сортировка",
+    "booksPageSortRecent": "Недавние",
+    "booksPageSortTitle": "По названию",
+    "booksPageSortProgress": "По прогрессу",
+    "booksPageEmptyLibTitleT": "Загрузите первый PDF",
+    "booksPageEmptyLibTextT": "Он появится здесь как книга: с обложкой, корешком и лентой-закладкой для учеников.",
+    "booksPageEmptyLibTitleS": "Репетитор ещё ничего не загрузил",
+    "booksPageEmptyLibTextS": "Когда появятся PDF, они расставятся здесь книгами.",
+    "booksPageEmptyMineTitle": "Здесь пока пусто",
+    "booksPageEmptyMineText": "Сохраняйте книги лентой-закладкой — они появятся здесь.",
+    "booksPageEmptyMineGo": "Перейти в витрину",
+    "booksPageEmptyNoneTitle": "Ничего не найдено",
+    "booksPageEmptyNoneQuery": "По запросу «{query}» книг нет. Проверьте название или сбросьте фильтр.",
+    "booksPageEmptyNoneFilter": "В этой подборке пока нет книг.",
+    "booksPageLoadError": "Не удалось загрузить книги",
+    "booksPageLoading": "Загружаем книги…",
+    "booksPageToastSaved": "Добавлено в «Мои книги»",
+    "booksPageToastUnsaved": "Убрано из «Мои книги»",
+    "booksPageUndo": "Отменить",
+    "booksPageUploaded": "Книга «{title}» загружена",
+    "booksPageRefreshFailed": "Не удалось обновить список книг — показаны сохранённые данные.",
+    "booksReaderPageTitle": "Чтение книги",
+    "booksReaderBack": "К библиотеке",
+    "booksReaderLoading": "Открываем книгу…",
+    "booksReaderModeLabel": "Режим просмотра",
+    "booksReaderModeSingle": "Одна страница",
+    "booksReaderModeDouble": "Две страницы",
+    "booksReaderPrev": "Предыдущая страница",
+    "booksReaderNext": "Следующая страница",
+    "booksReaderPageLabel": "Номер страницы",
+    "booksReaderOfTotal": "из {total}",
+    "booksReaderZoomIn": "Увеличить",
+    "booksReaderZoomOut": "Уменьшить",
+    "booksReaderZoomReset": "Сбросить масштаб",
+    "booksReaderFullscreen": "На весь экран",
+    "booksReaderFullscreenExit": "Выйти из полноэкранного режима",
+    "booksReaderBookmarks": "Закладки",
+    "booksReaderBookmarkAdd": "Поставить закладку",
+    "booksReaderBookmarkRemove": "Снять закладку",
+    "booksReaderBookmarksEmpty": "Закладок пока нет. Нажмите на ленту в углу страницы, чтобы поставить первую.",
+    "booksReaderBookmarkPage": "стр. {page}",
+    "booksReaderBookmarkLabel": "Метка закладки",
+    "booksReaderBookmarkRename": "Переименовать",
+    "booksReaderBookmarkDelete": "Удалить закладку",
+    "booksReaderBookmarkSave": "Сохранить",
+    "booksReaderClose": "Закрыть",
+    "booksReaderResumed": "Продолжаем со стр. {page}",
+    "booksReaderFromStart": "С начала",
+    "booksReaderPageAria": "Страница {page}",
+    "booksReaderMarkAria": "Страница {page}: читатели ({names})",
+    "booksReaderStoppedHere": "остановился здесь",
+    "booksReaderReadAt": "читал(а) {date}",
+    "booksReaderErrorTitle": "Не удалось открыть книгу",
+    "booksReaderErrorText": "Файл повреждён или недоступен. Попробуйте скачать его.",
+    "booksReaderOpenFailed": "Не получилось загрузить книгу. Попробуйте обновить страницу.",
+    "booksReaderPageError": "Не удалось показать страницу {page}. Попробуйте перелистнуть или обновить.",
+    "booksReaderDownload": "Скачать",
+    "booksReaderClosedTitle": "Доступ закрыт",
+    "booksReaderClosedText": "У вас больше нет доступа к этой книге. Попросите репетитора открыть её снова.",
+    "booksReaderToLibrary": "К моим файлам",
+    "booksHlColorYellow": "Жёлтый",
+    "booksHlColorGreen": "Зелёный",
+    "booksHlColorPink": "Розовый",
+    "booksHlColorBlue": "Голубой",
+    "booksHlColors": "Цвет выделения",
+    "booksHlMarkerAria": "Комментарий: {note}",
+    "booksHlBarAria": "Действия с выделенным текстом",
+    "booksHlComment": "Комментарий",
+    "booksHlCopy": "Копировать",
+    "booksHlCopied": "Скопировано",
+    "booksHlCopyFailed": "Не удалось скопировать",
+    "booksHlPopupAria": "Выделение",
+    "booksHlNoteLabel": "Комментарий к выделению",
+    "booksHlNotePlaceholder": "Добавьте комментарий…",
+    "booksHlNoteSave": "Сохранить",
+    "booksHlEditNote": "Изменить комментарий",
+    "booksHlDelete": "Удалить",
+    "booksHlEmpty": "Выделений пока нет. Выделите текст на странице и выберите цвет — он сохранится здесь.",
+    "booksHlNoTextLayer": "На этой странице нет текстового слоя (похоже на скан), выделить текст нельзя.",
+    "booksHlNoText": "Нет текстового слоя — текст не выделить",
+    "booksHlGoto": "Перейти на страницу {page}",
+    "booksHlTabPages": "Страницы",
+    "booksHlTabHighlights": "Выделения",
+    "booksHlSaveFailed": "Не удалось сохранить выделение. Попробуйте ещё раз.",
+    "booksHlLimit": "В этой книге уже максимум выделений (500). Удалите ненужные.",
+    "booksHlTooBig": "Выделение слишком большое. Выберите фрагмент поменьше.",
+    "booksHlUpdateFailed": "Не удалось изменить выделение.",
+    "booksHlDeleteFailed": "Не удалось удалить выделение.",
+    "booksHlLoadFailed": "Не удалось загрузить ваши выделения.",
     "myFiles": "Мои файлы",
     "sharedWithMe": "Доступно мне",
     "foldersSection": "Папки",
     "filesSection": "Файлы",
+    "booksShellUpload": "Загрузить книгу",
+    "booksShellEmptyHint": "Загрузите первый PDF — он появится в «Книгах».",
+    "booksShellSection": "Книги",
+    "booksShellAll": "Все книги",
+    "booksShellShareTitle": "Доступ к книге «{name}»",
     "actions": "Действия",
     "cover": "Обложка",
     "coverTitle": "Обложка папки",
@@ -3707,6 +3869,14 @@
     "openedAt": "Открыто {date}",
     "notOpened": "Ещё не открыто",
     "openedSummary": "Открыли {opened} из {total}",
+    "progressDone": "Сделано",
+    "progressWaiting": "Ждёт одобрения",
+    "progressWorking": "Идёт выполнение",
+    "progressNotStarted": "Не начато",
+    "progressNothing": "Ещё ничего не сдано",
+    "progressByStudents": "Сдача по ученикам",
+    "progressByFiles": "Сдача по файлам",
+    "progressTotalItems": "Всего элементов: {count}",
     "previewLoading": "Открываем файл…",
     "previewTruncated": "Показано начало файла — весь текст в скачанной версии",
     "previewFailed": "Не получилось показать этот файл здесь — скачайте его",
@@ -3768,6 +3938,1185 @@
     "editDocx": "Редактировать",
     "editSaved": "Сохранено",
     "saveButton": "Сохранить",
-    "reviewedAt": "Проверено {date}"
+    "reviewedAt": "Проверено {date}",
+    "booksKitRibbonAria": "Сохранить книгу «{title}»",
+    "booksKitSave": "Сохранить книгу",
+    "booksKitUnsave": "Убрать из «Мои книги»",
+    "booksKitOpenAria": "Открыть «{title}»",
+    "booksKitMeta": "{teacher} · {pages} стр.",
+    "booksKitPagesShort": "{pages} стр.",
+    "booksKitProgressAria": "Прогресс чтения",
+    "booksKitProgressDone": "Прочитано",
+    "booksKitNotOpened": "Ещё не открывали",
+    "booksKitQuickTitle": "Быстрый просмотр",
+    "booksKitRead": "Читать",
+    "booksKitChangeCover": "Сменить обложку",
+    "booksKitShare": "Поделиться",
+    "booksKitDeleteConfirm": "Удалить книгу «{title}»? Она исчезнет и у учеников, которым вы открыли доступ.",
+    "booksKitFormat": "Формат",
+    "booksKitSize": "Размер",
+    "booksKitPagesLabel": "Страниц",
+    "booksKitAdded": "Добавлена",
+    "booksKitCoverLabel": "Обложка",
+    "booksKitCoverFound": "Обложка из PDF",
+    "booksKitCoverPage1": "Страница 1 PDF",
+    "booksKitCoverPhoto": "Своё фото",
+    "booksKitCoverGenerated": "Типографская",
+    "booksKitProgressLabel": "Прогресс чтения",
+    "booksKitProgressDoneLabel": "Книга прочитана",
+    "booksKitProgressPage": "стр. {page} из {pages}",
+    "booksKitNeverOpened": "Вы ещё не открывали эту книгу",
+    "booksKitCoverModalTitle": "Обложка · {title}",
+    "booksKitApply": "Применить",
+    "booksKitSaving": "Сохраняем…",
+    "booksKitUploadTitle": "Загрузить книгу",
+    "booksKitDropTitle": "Перетащите PDF сюда",
+    "booksKitDropText": "Перед загрузкой мы проверим первую страницу и подскажем, годится ли она в обложку.",
+    "booksKitPickPdf": "Выбрать PDF",
+    "booksKitNotPdf": "Нужен файл PDF. Файл «{name}» не подходит.",
+    "booksKitCheckTitle": "Проверка первой страницы",
+    "booksKitChecking": "Проверяем первую страницу…",
+    "booksKitCheckingText": "Смотрим, есть ли на ней название и оформление, чтобы взять её обложкой. Обычно это пара секунд.",
+    "booksKitCancelUpload": "Отменить загрузку",
+    "booksKitFoundTitle": "Нашли обложку",
+    "booksKitFoundText": "На первой странице есть название и оформление — она станет обложкой книги.",
+    "booksKitPlainTitle": "Похоже, это обычная страница",
+    "booksKitPlainText": "На первой странице нет титула или оформления. Пока книга получила цветную обложку — можно загрузить своё фото, выбрать цвет или всё же взять эту страницу.",
+    "booksKitUnavailTitle": "Не удалось проверить",
+    "booksKitUnavailText": "Не получили ответ при проверке первой страницы. Покажем превью — выберите обложку сами.",
+    "booksKitUse": "Использовать",
+    "booksKitUseOther": "Выбрать другую",
+    "booksKitUsePage": "Использовать эту страницу",
+    "booksKitPhoto": "Загрузить обложку",
+    "booksKitPhotoReplace": "Заменить фото",
+    "booksKitPhotoRemove": "Убрать картинку",
+    "booksKitPickColor": "Выбрать цвет",
+    "booksKitRetry": "Проверить ещё раз",
+    "booksKitPageAlt": "Первая страница PDF",
+    "booksKitEditTitle": "Обложка книги",
+    "booksKitConfirmTitle": "Загрузить в «Книги»",
+    "booksKitNameLabel": "Название",
+    "booksKitSubmit": "Загрузить в «Книги»",
+    "booksKitUploading": "Загружаем…",
+    "booksKitBack": "Назад",
+    "booksKitDone": "Готово",
+    "booksKitCoverRejected": "Не удалось принять обложку. Выберите другую картинку.",
+    "booksKitCoverRenderFailed": "Не удалось подготовить обложку. Выберите другую картинку или цвет.",
+    "booksKitPreviewCaption": "Так книга выглядит в витрине и списке",
+    "booksKitColorTitle": "Цвет книги",
+    "booksKitColorHint": "Цвет корешка, нижней плашки и подписи на обложке. У книги без фото он же становится обложкой.",
+    "booksKitColorCustom": "Свой цвет",
+    "booksKitColor0": "Синий",
+    "booksKitColor1": "Красный",
+    "booksKitColor2": "Графитовый",
+    "booksKitColor3": "Зелёный",
+    "booksKitColor4": "Фиолетовый",
+    "booksKitColor5": "Охра",
+    "booksKitColor6": "Бирюзовый",
+    "booksKitColor7": "Терракотовый",
+    "booksKitColor8": "Розовый",
+    "booksKitColor9": "Тёмно-синий",
+    "booksKitPhotoTitle": "Фото обложки",
+    "booksKitPhotoHint": "Фото кадрируется под рамку 2:3, а цвет книги остаётся на корешке и плашке с названием.",
+    "booksKitPhotoNotImage": "Нужна картинка: JPG, PNG или WebP. Файл «{name}» не подходит.",
+    "booksKitPhotoTooBig": "Фото больше 10 МБ. Выберите файл поменьше.",
+    "booksKitPhotoOpenFailed": "Не удалось открыть изображение. Выберите другой файл.",
+    "booksKitZoom": "Масштаб",
+    "booksKitShiftX": "Сдвиг по X",
+    "booksKitShiftY": "Сдвиг по Y",
+    "booksKitResetPage1": "Сбросить на страницу 1",
+    "booksKitPage1Failed": "Не удалось получить первую страницу PDF. Попробуйте ещё раз.",
+    "booksKitLoading": "Готовим страницу…",
+    "driveTitle": "Мои файлы",
+    "driveNavLabel": "Разделы хранилища",
+    "driveNewLecture": "Конспект лекции",
+    "driveVipBanner": "Своё хранилище — часть VIP. Без VIP файлы можно смотреть, скачивать и удалять, но не добавлять.",
+    "driveErrVip": "Нужен VIP, чтобы добавлять файлы в своё хранилище",
+    "driveEmptyTitle": "Здесь пока пусто",
+    "driveEmptyText": "Сохраняйте сюда конспекты лекций и свои файлы — они считаются в вашу квоту, а не репетитора.",
+    "driveLectureHint": "Конспект — откроется в редакторе лекций",
+    "lectureFlag": "Конспект",
+    "lectureContinue": "Продолжить редактирование",
+    "subjectFilter": "Предмет",
+    "subjectAll": "Все предметы",
+    "subjectEmpty": "По предмету «{subject}» пока ничего нет",
+    "driveSearchPlaceholder": "Поиск по моим файлам"
+  },
+  "lecture": {
+    "pageTitle": "Конспект лекции",
+    "homeTitle": "Конспект лекции",
+    "homeSubtitle": "Нажмите и положите телефон на стол. ИИ услышит преподавателя, отсеет посторонние разговоры и сам соберёт конспект с формулами.",
+    "titlePlaceholder": "Название (например, «Матанализ — производные»)",
+    "defaultTitle": "Лекция {date}",
+    "keepAudio": "Сохранять аудио",
+    "keepAudioHint": "Можно переслушать и скачать; занимает место в вашем хранилище",
+    "start": "Начать запись",
+    "starting": "Включаю микрофон…",
+    "resume": "Продолжить запись",
+    "stop": "Стоп",
+    "vipRequired": "Нужен VIP",
+    "vipRequiredLong": "Конспекты лекций доступны с VIP",
+    "vipOnly": "Это доступно с VIP",
+    "sttNotConfigured": "Сервис распознавания речи не настроен",
+    "tip1": "Лучше всего — телефон ближе к преподавателю, микрофоном к нему",
+    "tip2": "Не блокируйте экран — на iPhone запись в фоне останавливается",
+    "tip3": "Нет сети? Запись не потеряется — куски дошлются сами",
+    "myLectures": "Мои лекции",
+    "noLectures": "Пока нет ни одной лекции",
+    "untitled": "Без названия",
+    "statusReady": "Готово",
+    "statusFinalizing": "Дочищается",
+    "statusDraft": "Черновик",
+    "inFiles": "В файлах",
+    "delete": "Удалить",
+    "deleteConfirm": "Удалить лекцию? Сохранённый в файлы .docx останется.",
+    "deleteFailed": "Не удалось удалить",
+    "createFailed": "Не удалось начать лекцию",
+    "micDenied": "Нет доступа к микрофону — разрешите его в настройках браузера",
+    "micUnsupported": "Этот браузер не умеет записывать звук",
+    "micFailed": "Не удалось включить микрофон",
+    "allLectures": "Все лекции",
+    "backToList": "К списку лекций",
+    "loadFailed": "Не удалось открыть лекцию",
+    "stateIdle": "Готов слушать",
+    "stateListening": "Слушаю лекцию",
+    "stateStructuring": "ИИ пишет конспект…",
+    "stateStopping": "Завершаю запись…",
+    "stateFinalizing": "Дочищаю точной моделью…",
+    "stateRefining": "Обновляю конспект по чистовой расшифровке…",
+    "stateOffline": "Нет сети — в очереди {n}",
+    "stateSttBusy": "Распознавание занято, повторяю…",
+    "stateReady": "Готово",
+    "stateError": "Микрофон отключился",
+    "aiControls": "Управление ИИ",
+    "autoStructure": "Авто-конспект",
+    "structureNow": "Законспектировать сейчас",
+    "finalizeNow": "Дочистить точной моделью",
+    "liveTranscript": "Живая расшифровка",
+    "feedWaiting": "Первые слова появятся через ~20 секунд",
+    "feedEmpty": "Расшифровки пока нет",
+    "fullTranscript": "Вся расшифровка",
+    "transcriptHint": "Сырая расшифровка по кускам. Серым — места, в которых распознаватель не уверен.",
+    "replay": "Переслушать",
+    "doubtful": "Распознаватель не уверен",
+    "hiddenWarning": "Вкладка уходила в фон — на телефоне запись там могла прерваться.",
+    "ok": "Понятно",
+    "queued": "Ждут отправки: {n}",
+    "stillQueued": "Часть записи ещё не отправлена — дождитесь сети",
+    "dailyLimit": "Дневной лимит записи ({min} мин) исчерпан",
+    "audioQuotaHit": "Хранилище заполнено — аудио дальше не сохраняется (конспект пишется)",
+    "structureFailed": "ИИ не смог обработать запись — нажмите «Законспектировать сейчас», чтобы повторить",
+    "structureEmpty": "ИИ не нашёл в записи речи преподавателя по делу — только шум",
+    "refined": "Уточнено разделов: {n}",
+    "crumb": "Конспекты",
+    "titleLabel": "Название лекции",
+    "saving": "Сохраняю…",
+    "saved": "Сохранено",
+    "unsaved": "Изменения…",
+    "saveError": "Не сохранено — повторю",
+    "recording": "Запись",
+    "statDuration": "Длительность",
+    "statChunks": "Кусков",
+    "statFinal": "чистовых {n}",
+    "statAudio": "Аудио",
+    "statAudioKept": "Хранится",
+    "statAudioTemp": "До чистовой",
+    "statWords": "Слов",
+    "statFormulas": "Формул",
+    "statCost": "Стоимость",
+    "costAdmin": "Без ограничений",
+    "costNotCharged": "пока не списывается",
+    "export": "Экспорт",
+    "saveToFiles": "Сохранить в файлы",
+    "updateInFiles": "Обновить в файлах",
+    "savedToFiles": "Сохранено в файлы",
+    "savedToFilesAudio": "Сохранено в файлы. Аудио (.m4a) появится рядом через минуту",
+    "openFiles": "Открыть",
+    "exportFailed": "Не удалось экспортировать",
+    "quotaExceeded": "Хранилище заполнено",
+    "audio": "Аудио",
+    "noAudio": "Аудио не сохранялось",
+    "textTools": "Текст",
+    "notes": "Заметки",
+    "notesEmpty": "Выделите текст → «Заметка», чтобы оставить заметку на полях",
+    "editorPlaceholder": "Конспект появится здесь, пока идёт лекция. Можно писать и самому.",
+    "toolbar": "Форматирование",
+    "bold": "Жирный",
+    "italic": "Курсив",
+    "underline": "Подчёркнутый",
+    "strike": "Зачёркнутый",
+    "heading2": "Заголовок",
+    "heading3": "Подзаголовок",
+    "bulletList": "Список",
+    "orderedList": "Нумерация",
+    "quote": "Цитата",
+    "formulaInline": "Формула",
+    "formulaBlock": "Блок формулы",
+    "undo": "Отменить",
+    "redo": "Повторить",
+    "menuActions": "Действия",
+    "menuRewrite": "Переписать",
+    "menuStyle": "Оформление",
+    "askTitle": "Спросить ИИ",
+    "askPlaceholder": "Что сделать с фрагментом?",
+    "askRun": "Спросить",
+    "askChipFix": "Исправить ошибки распознавания",
+    "askChipShorter": "Сократить",
+    "askChipSimpler": "Объяснить проще",
+    "askChipFormulas": "Оформить формулы",
+    "askChipList": "Сделать списком",
+    "askBefore": "Было",
+    "askAfter": "ИИ предлагает",
+    "askEmpty": "Напишите просьбу или выберите вариант выше",
+    "askAgain": "Ещё вариант",
+    "askApply": "Применить",
+    "aiFailed": "ИИ не ответил — попробуйте ещё раз",
+    "aiThinking": "Думаю…",
+    "photoFix": "Поправить по фото доски",
+    "photoWorking": "ИИ сверяет фрагмент с фото…",
+    "photoDone": "Фрагмент исправлен по фото",
+    "photoNothing": "На фото не нашлось ничего к этому фрагменту",
+    "photoFailed": "Не удалось обработать фото",
+    "photoTargetGone": "Фрагмент удалили, пока ИИ работал",
+    "noteAdd": "Заметка",
+    "noteEdit": "Изменить заметку",
+    "noteTitle": "Заметка на полях",
+    "notePlaceholder": "Ваш комментарий к этому месту…",
+    "noteDelete": "Удалить",
+    "toFormula": "Сделать формулой",
+    "copy": "Копировать",
+    "copied": "Скопировано",
+    "textColor": "Цвет текста",
+    "highlight": "Маркер",
+    "clearStyle": "Убрать цвет и маркер",
+    "formulaTitle": "Формула",
+    "formulaAi": "ИИ",
+    "formulaEdit": "Изменить формулу",
+    "copyLatex": "Копировать LaTeX",
+    "latexCopied": "LaTeX скопирован",
+    "formulaModeDescribe": "Словами",
+    "formulaModeEdit": "Изменить",
+    "formulaModePhoto": "По фото",
+    "formulaModeExplain": "Объяснить",
+    "formulaDescribePh": "Например: интеграл от нуля до пи синуса икс",
+    "formulaEditPh": "Например: добавь предел при n → ∞",
+    "formulaPhotoPh": "Уточнение (необязательно): какую формулу взять",
+    "formulaRun": "Сгенерировать",
+    "formulaTakePhoto": "Сфотографировать",
+    "formulaTake": "Взять",
+    "formulaAiNeedText": "Опишите, что нужно",
+    "formulaAiNeedFormula": "Сначала введите формулу",
+    "reject": "Не то",
+    "apply": "Готово",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "close": "Закрыть",
+    "insertFromPhoto": "Вставить с фото",
+    "cropSheet": "Обрезать лист",
+    "cropNotFound": "Лист на фото не найден — оставил как есть",
+    "cropDone": "Фото обрезано по листу",
+    "cropApplied": "Обрезано по листу",
+    "cropping": "Ищу лист и выравниваю…",
+    "preparing": "Готовлю фото…",
+    "reading": "Распознаю…",
+    "photoToText": "В текст",
+    "photoFull": "На всю ширину",
+    "photoHalf": "Половина ширины",
+    "optInsertImage": "Вставить само фото",
+    "optRecognise": "Распознать и вставить текст и формулы",
+    "insert": "Вставить",
+    "processPhoto": "Обработать фото доски",
+    "mergeThinking": "ИИ сверяет фото с конспектом…",
+    "mergeHint": "Формулы, которые уже есть, не продублируются; продолжения встанут на своё место.",
+    "mergeKind_duplicate": "Уже есть",
+    "mergeKind_continuation": "Продолжение",
+    "mergeKind_new": "Новое",
+    "mergeFound": "На фото:",
+    "fragment_text": "текст",
+    "fragment_formula": "формулы",
+    "fragment_figure": "фигуры",
+    "fragment_graph": "графики",
+    "processPhotoSub": "Текст, формулы, фигуры и графики — сверит с конспектом и допишет",
+    "askInsert": "Вставить",
+    "askInsertAfter": "Вставить результат после выделенного текста",
+    "compression": "Сжатие конспекта",
+    "compression_none": "Без сжатия",
+    "compression_medium": "Среднее",
+    "compression_strong": "Сильное",
+    "compressionHint_none": "Подробно: все мысли, объяснения и примеры",
+    "compressionHint_medium": "Как хороший студенческий конспект",
+    "compressionHint_strong": "Только суть: определения, формулы, выводы",
+    "photosTooMany": "Можно до {n} фото за раз — взяли первые {n}",
+    "panels": "Панели",
+    "tabAi": "ИИ",
+    "tabTools": "Инструменты",
+    "panelsShow": "Показать панели",
+    "panelsHide": "Скрыть панели",
+    "mergeDuplicate": "в «{text}»",
+    "mergeContinuation": "после «{text}»",
+    "mergeNew": "в конец конспекта",
+    "mergeApply": "Добавить в конспект",
+    "mergeApplied": "Добавлено фрагментов: {n}",
+    "ctxEmpty": "ИИ определит предмет и тему по ходу лекции",
+    "ctxSet": "Указать",
+    "ctxEdit": "Изменить предмет и тему",
+    "ctxPinned": "Закреплено вами — ИИ не меняет",
+    "ctxSubject": "Предмет",
+    "ctxTopic": "Тема лекции",
+    "ctxSubtopics": "Подтемы (через «;»)",
+    "ctxSubjectPh": "Математический анализ",
+    "ctxTopicPh": "Производная сложной функции",
+    "ctxSubtopicsPh": "Цепное правило; примеры",
+    "ctxEditHint": "ИИ учитывает это во всех подсказках и расшифровке; то, что вы исправите, он больше не меняет.",
+    "board": "Доска",
+    "boardOpen": "Открыть доску",
+    "boardEditTitle": "Доска",
+    "boardEditHint": "Та же доска, что в звонке: 3D-фигуры, построения, углы, формулы",
+    "boardDone": "Сохранить в конспект",
+    "boardClose": "Закрыть",
+    "boardBuilding": "ИИ строит доску…",
+    "boardEmpty": "Пустая доска — откройте, чтобы рисовать",
+    "boardSaveFailed": "Не удалось сохранить доску",
+    "boardSize": "Размер доски",
+    "boardSize_s": "Маленькая — половина ширины",
+    "boardSize_m": "Средняя — три четверти",
+    "boardSize_l": "Большая — во всю ширину",
+    "boardLive": "Крутить здесь",
+    "boardFullscreen": "На весь экран",
+    "boardLiveHint": "Двигайте и вращайте фигуры прямо в конспекте",
+    "boardDoneShort": "Готово",
+    "graph": "График",
+    "graphEdit": "Изменить",
+    "graphEditTitle": "График",
+    "graphTypePlot": "Функции",
+    "graphTypeBar": "Диаграмма",
+    "graphAiPh": "Опишите график: «парабола y = x² − 4 и прямая y = 2x», «sin x на [−2π; 2π]»…",
+    "graphAiRun": "Построить",
+    "graphAiPhoto": "С фото",
+    "graphAiNeedText": "Опишите, какой график нужен",
+    "graphAiNothing": "ИИ не нашёл, что построить",
+    "graphName": "Название",
+    "graphNamePh": "необязательно",
+    "graphFrom": "от",
+    "graphTo": "до",
+    "graphYAuto": "y — авто",
+    "graphXLabel": "Подпись оси x",
+    "graphYLabel": "Подпись оси y",
+    "graphSeries": "На графике",
+    "graphKind": "Тип",
+    "graphKind_fn": "Функция",
+    "graphKind_area": "Площадь",
+    "graphKind_points": "Точки",
+    "graphKind_line": "По данным",
+    "graphKind_vline": "x = a",
+    "graphKind_hline": "y = b",
+    "graphBadExpr": "Не понимаю выражение — пример: 2x^2 - 3, sin(x), sqrt(x)",
+    "graphPieceFrom": "Кусок: x от",
+    "graphAreaFrom": "Закрасить от",
+    "graphPoints": "Точки: x; y; подпись — по строке",
+    "graphLabel": "Подпись",
+    "graphDashed": "пунктир",
+    "graphCategories": "Категории (через запятую)",
+    "graphValues": "Значения (через ;)",
+    "graphBarKind_bar": "Столбцы",
+    "graphBarKind_line": "Линия",
+    "graphEmpty": "Пока нечего рисовать — добавьте функцию или данные",
+    "matrix": "Матрица",
+    "matrixTitle": "Матрица",
+    "matrixName": "Имя",
+    "matrixRows": "Строки",
+    "matrixCols": "Столбцы",
+    "matrixBrackets": "Скобки",
+    "matrixOps": "Вычислить",
+    "matrixOpT": "Транспонировать",
+    "matrixOpDet": "Определитель",
+    "matrixOpInv": "Обратная",
+    "matrixOpRank": "Ранг",
+    "matrixOpGauss": "Метод Гаусса",
+    "matrixOpRref": "Гаусс–Жордан",
+    "matrixSingular": "Матрица вырожденная — обратной не существует",
+    "matrixGaussNote": "Ступенчатый вид (прямой ход метода Гаусса)",
+    "matrixRrefNote": "Приведённый ступенчатый вид",
+    "matrixSymbolic": "В матрице есть буквы — вычисления доступны только для чисел и дробей (1/2, 0,25)",
+    "matrixInsertResult": "Вставить в конспект",
+    "matrixInsert": "Вставить матрицу",
+    "matrixAsFormula": "Редактировать как формулу",
+    "sizeDown": "Меньше",
+    "sizeUp": "Больше",
+    "alignLeft": "По левому краю",
+    "alignCenter": "По центру",
+    "alignRight": "По правому краю",
+    "alignJustify": "По ширине",
+    "sizeAndAlign": "Размер и выравнивание",
+    "formulaSize": "Размер формулы",
+    "fontSize": "Размер шрифта",
+    "fontSizeNormal": "обычный",
+    "share": "Поделиться",
+    "shareView": "Только просмотр",
+    "shareEdit": "Просмотр и редактирование",
+    "shareViewHint": "Любой, у кого есть ссылка, увидит конспект — он обновляется вживую",
+    "shareEditHint": "Может править текст, формулы, графики и доску (без ИИ)",
+    "shareLink": "Ссылка",
+    "shareCopy": "Скопировать ссылку",
+    "shareCopyPrompt": "Скопируйте ссылку",
+    "shareFailed": "Не удалось изменить ссылку",
+    "shareConflict": "Конспект только что изменили по ссылке — показана последняя версия",
+    "shareGoneTitle": "Ссылка не работает",
+    "shareGoneText": "Автор конспекта выключил её или удалил лекцию.",
+    "photoN": "Фото {n}",
+    "photoReady": "Готово",
+    "photoRetry": "Повторить",
+    "photosSomeFailed": "Открылись {ok} из {total} фото. Повторите сломанные или продолжите без них.",
+    "photosAllFailed": "Ни одно фото не открылось — повторите или выберите другие.",
+    "photosContinueWithout": "Продолжить без них",
+    "photosUploadFailed": "Не все фото загрузились — повторите или снимите галочку «Вставить фото».",
+    "photoErr_UNREADABLE": "Не открывается: формат не поддерживается (например, HEIC) или файл повреждён",
+    "photoErr_PHOTO_TOO_LARGE": "Слишком большое — больше 15 МБ даже после сжатия",
+    "photoErr_UNSUPPORTED_PHOTO": "Формат не поддерживается — нужен JPG, PNG или WebP",
+    "photoErr_UPLOAD_FAILED": "Не удалось загрузить фото",
+    "photoErr_AI_FAILED": "ИИ не смог разобрать фото — попробуйте ещё раз",
+    "photoErr_TOO_MANY_PHOTOS": "Слишком много фото за раз — не больше 6",
+    "structureAddedTo": "Это дополнение к разделу «{title}» — вставил сразу после него",
+    "language": "Язык лекции",
+    "language_ru": "Русский",
+    "language_en": "English",
+    "language_auto": "Смешанный",
+    "languageHint_ru": "Лекция на русском",
+    "languageHint_en": "Лекция на английском — конспект тоже на английском",
+    "languageHint_auto": "Два языка, например пара английского: язык каждого куска записи определяется сам, примеры и лексика остаются на английском"
+  },
+  "lecturePromo": {
+    "eyebrow": "Новый инструмент · VIP",
+    "h2": "Конспект, который",
+    "h2_hl": "пишется сам",
+    "lead": "Нажмите одну кнопку и слушайте лекцию. ИИ разберёт речь даже в шумной аудитории и соберёт аккуратный конспект — со всем, что нужно по предмету.",
+    "tool_formulas": "Формулы",
+    "tool_graphs": "Графики",
+    "tool_matrices": "Матрицы",
+    "tool_board3d": "3D-доска",
+    "tool_photo": "Фото доски",
+    "tool_export": "Word и PDF",
+    "cta_start": "Начать запись",
+    "vip_note": "доступно в VIP",
+    "rec": "Идёт запись",
+    "raw": "<x>так тише там</x> значит функция игрек равно икс квадрат минус четыре <x>а ты вчера</x> и прямая игрек равно два икс <x>э-э ну</x> найдём площадь между ними <x>продолжение следует</x>",
+    "arrow": "ИИ чистит и конспектирует",
+    "note_title": "Площадь между кривыми",
+    "note_text": "Даны <d>y = x² − 4</d> и <d>y = 2x</d>. Пределы — корни уравнения <h>x² − 2x − 4 = 0</h>."
+  },
+  "lectureLanding": {
+    "metaTitle": "Конспект лекции — ИИ пишет конспект за вас | GoodWorker",
+    "metaDescription": "Положите телефон на стол: ИИ слышит преподавателя, отсеивает шум и собирает конспект с формулами, графиками, матрицами и досками. Конспекты сами раскладываются по папкам предметов.",
+    "eyebrow": "Конспект лекции",
+    "h1": "Положите телефон на стол.",
+    "h1Hl": "Конспект напишется сам.",
+    "lead": "ИИ слушает преподавателя, выкидывает шум и болтовню с задних парт и прямо во время пары собирает конспект — с формулами, графиками, матрицами и досками.",
+    "cta": "Начать запись",
+    "ctaNote": "Входит в VIP · работает в браузере телефона",
+    "ctaFiles": "Мои конспекты",
+    "files": {
+      "eyebrow": "Конспект + Файлы",
+      "h2": "Каждая лекция сама ложится",
+      "h2Hl": "на полку своего предмета",
+      "lead": "Нажали «Сохранить в файлы» — и конспект уже в папке «Конспекты лекций / Линейная алгебра»: документ Word и запись пары с главами. Ничего не нужно сортировать.",
+      "points": [
+        {
+          "t": "Папки по предметам",
+          "d": "Предмет ИИ определяет сам. Есть своя папка «Физика» — конспект ляжет туда."
+        },
+        {
+          "t": "Фильтр «Предмет»",
+          "d": "Один клик — и перед вами все лекции, фото и файлы по предмету."
+        },
+        {
+          "t": "Word + аудио с главами",
+          "d": "Рядом с .docx — запись пары, размеченная по темам, формулам и доскам."
+        },
+        {
+          "t": "Ссылки для группы",
+          "d": "Только просмотр или совместная правка — одногруппники видят конспект вживую."
+        }
+      ],
+      "tree": "Конспекты лекций",
+      "all": "Все предметы",
+      "subjects": [
+        "Линейная алгебра",
+        "Матанализ",
+        "Физика"
+      ],
+      "items": [
+        {
+          "s": 0,
+          "name": "СЛАУ и метод Крамера.docx",
+          "kind": "doc",
+          "meta": "12 стр. · 28 формул"
+        },
+        {
+          "s": 0,
+          "name": "СЛАУ и метод Крамера.m4a",
+          "kind": "audio",
+          "meta": "1:24:10 · 9 глав"
+        },
+        {
+          "s": 0,
+          "name": "Обратная матрица.docx",
+          "kind": "doc",
+          "meta": "8 стр. · 3 матрицы"
+        },
+        {
+          "s": 1,
+          "name": "Площадь между кривыми.docx",
+          "kind": "doc",
+          "meta": "9 стр. · 2 графика"
+        },
+        {
+          "s": 1,
+          "name": "Площадь между кривыми.m4a",
+          "kind": "audio",
+          "meta": "1:18:42 · 7 глав"
+        },
+        {
+          "s": 2,
+          "name": "Кинематика точки.docx",
+          "kind": "doc",
+          "meta": "6 стр. · 1 доска"
+        }
+      ],
+      "chapters": "Главы записи",
+      "chapterList": [
+        "04:12 · СЛАУ: матричный вид",
+        "23:40 · Формула Крамера",
+        "51:05 · Пример 2×2",
+        "78:30 · Доска"
+      ],
+      "share": "Поделиться",
+      "shareView": "Только просмотр",
+      "shareEdit": "Просмотр и редактирование",
+      "tutor": "Репетитору: откройте папку предмета ученикам — они получат ваши конспекты в «Доступно мне».",
+      "noteTag": "Конспект"
+    },
+    "examples": {
+      "eyebrow": "Примеры",
+      "h2": "Так выглядят готовые конспекты",
+      "lead": "Не расшифровка слово в слово, а конспект: заголовки, определения, формулы, графики и чертежи — как у лучшего студента потока.",
+      "tabs": [
+        "Матанализ",
+        "Линейная алгебра",
+        "Физика",
+        "История"
+      ],
+      "docs": [
+        [
+          {
+            "t": "h",
+            "v": "Производная сложной функции"
+          },
+          {
+            "t": "def",
+            "v": "Если $y = f(g(x))$, то производная равна произведению производных:"
+          },
+          {
+            "t": "math",
+            "v": "\\bigl(f(g(x))\\bigr)' = f'(g(x))\\cdot g'(x)"
+          },
+          {
+            "t": "p",
+            "v": "Пример: $\\bigl(\\sin x^2\\bigr)' = \\cos x^2 \\cdot 2x$."
+          },
+          {
+            "t": "graph"
+          }
+        ],
+        [
+          {
+            "t": "h",
+            "v": "Обратная матрица"
+          },
+          {
+            "t": "def",
+            "v": "$A^{-1}$ существует, только если ==$\\det A \\neq 0$==."
+          },
+          {
+            "t": "math",
+            "v": "A = \\begin{pmatrix} 2 & 1 \\\\ 5 & 3 \\end{pmatrix},\\quad A^{-1} = \\begin{pmatrix} 3 & -1 \\\\ -5 & 2 \\end{pmatrix}"
+          },
+          {
+            "t": "table",
+            "v": [
+              [
+                "Операция",
+                "Результат"
+              ],
+              [
+                "$\\det A$",
+                "$1$"
+              ],
+              [
+                "$\\operatorname{rank} A$",
+                "$2$"
+              ],
+              [
+                "$A\\cdot A^{-1}$",
+                "$E$"
+              ]
+            ]
+          }
+        ],
+        [
+          {
+            "t": "h",
+            "v": "Объём и центр масс пирамиды"
+          },
+          {
+            "t": "board"
+          },
+          {
+            "t": "math",
+            "v": "V = \\dfrac{1}{3}\\,S\\,h = \\dfrac{1}{3}\\cdot 36 \\cdot 8 = 96\\ \\text{см}^3"
+          },
+          {
+            "t": "warn",
+            "v": "Центр масс лежит на высоте, на $\\tfrac{1}{4}h$ от основания — не путать с центром вписанной сферы."
+          }
+        ],
+        [
+          {
+            "t": "h",
+            "v": "Реформы Петра I"
+          },
+          {
+            "t": "li",
+            "v": [
+              "1699 — городская реформа, Бурмистерская палата",
+              "1711 — учреждён Сенат",
+              "1718–1721 — коллегии вместо приказов"
+            ]
+          },
+          {
+            "t": "table",
+            "v": [
+              [
+                "Сфера",
+                "Что изменилось"
+              ],
+              [
+                "Армия",
+                "Рекрутская повинность, регулярная армия"
+              ],
+              [
+                "Управление",
+                "Сенат, коллегии, губернии"
+              ],
+              [
+                "Церковь",
+                "Синод вместо патриаршества"
+              ]
+            ]
+          },
+          {
+            "t": "p",
+            "v": "Главная мысль лектора: ==реформы шли из военных нужд==, а не из готового плана."
+          }
+        ]
+      ],
+      "exports": "Экспорт: Word с настоящими формулами · PDF · аудио с главами"
+    },
+    "how": {
+      "eyebrow": "Как это работает",
+      "h2": "Четыре шага, и один из них — ваш",
+      "steps": [
+        {
+          "t": "Запишите",
+          "d": "Нажмите «Начать запись» и положите телефон на парту. Запись идёт кусками и не потеряется, даже если пропадёт сеть."
+        },
+        {
+          "t": "ИИ чистит",
+          "d": "Исправляет ошибки распознавания, выкидывает болтовню, «откройте окно» и галлюцинации микрофона."
+        },
+        {
+          "t": "Конспект пишется",
+          "d": "Заголовки, определения, формулы, графики — по ходу пары. Новая тема встаёт в конец, возврат к старой — к своему разделу."
+        },
+        {
+          "t": "Допишите по доске",
+          "d": "Сфотографируйте доску — ИИ сам поймёт, что уже есть, а что дописать и куда."
+        }
+      ]
+    },
+    "features": {
+      "eyebrow": "Возможности",
+      "h2": "Всё, что обычно пишут от руки — и то, что не успевают",
+      "items": [
+        {
+          "i": "sigma",
+          "t": "Формулы",
+          "d": "Настоящие формулы, в Word — редактируемые, а не картинки."
+        },
+        {
+          "i": "chart",
+          "t": "Графики",
+          "d": "Функции, площади, точки и данные — из речи преподавателя или с доски."
+        },
+        {
+          "i": "grid",
+          "t": "Матрицы",
+          "d": "Определитель, обратная, ранг, Гаусс — точно, в дробях."
+        },
+        {
+          "i": "box",
+          "t": "3D-доска",
+          "d": "Пирамиды и призмы, которые можно покрутить прямо в тексте."
+        },
+        {
+          "i": "camera",
+          "t": "Фото доски",
+          "d": "До шести фото за раз — ИИ дописывает только то, чего нет."
+        },
+        {
+          "i": "sparkles",
+          "t": "Спросить ИИ",
+          "d": "Объяснить проще, сократить, сделать таблицей — по выделенному тексту."
+        },
+        {
+          "i": "layers",
+          "t": "Сжатие",
+          "d": "Подробно, как хороший конспект или только формулы и выводы."
+        },
+        {
+          "i": "audio",
+          "t": "Аудио с главами",
+          "d": "Запись пары с метками тем, формул и досок — легко найти нужное место."
+        },
+        {
+          "i": "link",
+          "t": "Ссылки",
+          "d": "Поделитесь конспектом для просмотра или совместной правки."
+        }
+      ]
+    },
+    "who": {
+      "student": {
+        "t": "Студенту",
+        "d": "Слушайте лекцию, а не стенографируйте. Конспект, формулы и запись пары — в одном месте, по предметам."
+      },
+      "tutor": {
+        "t": "Репетитору",
+        "d": "Записывайте занятия и объяснения — конспекты сами лягут в папки и откроются ученикам."
+      }
+    },
+    "final": {
+      "h2": "Следующая пара — уже с конспектом",
+      "lead": "Откройте GoodWorker на телефоне перед лекцией и нажмите одну кнопку.",
+      "cta": "Начать запись"
+    },
+    "hero": {
+      "hint": "Нажмите на запись или сфотографируйте доску",
+      "recording": "Идёт запись",
+      "paused": "Пауза",
+      "pause": "Поставить запись на паузу",
+      "resume": "Продолжить запись",
+      "snap": "Сфотографировать доску",
+      "scanning": "Читаю доску…",
+      "added": "В конспекте",
+      "notesTitle": "Матанализ · Площадь между кривыми",
+      "writing": "ИИ пишет",
+      "ready": "Готово",
+      "empty": "Конспект появится, как только преподаватель начнёт говорить…",
+      "replay": "Сначала",
+      "chalk": [
+        "y = x² − 4,  y = 2x",
+        "x² − 2x − 4 = 0",
+        "S = ∫ (2x − x² + 4) dx"
+      ],
+      "notes": [
+        {
+          "t": "h",
+          "v": "Площадь между кривыми"
+        },
+        {
+          "t": "def",
+          "v": "Площадь фигуры между графиками $f$ и $g$ на отрезке $[a;\\,b]$ — это ==интеграл их разности==, где $f$ лежит выше $g$:"
+        },
+        {
+          "t": "math",
+          "v": "S = \\int_a^b \\bigl(f(x) - g(x)\\bigr)\\,dx"
+        },
+        {
+          "t": "p",
+          "v": "Пример: $f(x) = 2x$, $g(x) = x^2 - 4$. Пределы интегрирования — точки пересечения графиков."
+        }
+      ],
+      "fromBoard": [
+        {
+          "t": "p",
+          "v": "Точки пересечения: $x^2 - 2x - 4 = 0$, отсюда $x = 1 \\pm \\sqrt{5}$."
+        },
+        {
+          "t": "graph"
+        },
+        {
+          "t": "math",
+          "v": "S = \\int_{1-\\sqrt{5}}^{1+\\sqrt{5}} \\bigl(2x - x^2 + 4\\bigr)\\,dx = \\dfrac{20\\sqrt{5}}{3}"
+        }
+      ],
+      "heardTitle": "Слышно сейчас",
+      "heard": [
+        {
+          "v": "так, продолжаем — площадь между кривыми"
+        },
+        {
+          "v": "тише там на задних партах",
+          "noise": true
+        },
+        {
+          "v": "если эф лежит выше же на отрезке от а до бэ"
+        },
+        {
+          "v": "то площадь — это интеграл от эф минус же"
+        },
+        {
+          "v": "Субтитры сделал DimaTorzok",
+          "noise": true
+        },
+        {
+          "v": "пример: эф равно два икс, же — икс квадрат минус четыре"
+        },
+        {
+          "v": "пределы — точки пересечения, смотрите на доску"
+        }
+      ]
+    },
+    "seo": {
+      "keywords": [
+        "конспект лекции",
+        "автоматический конспект",
+        "конспект лекций с помощью ИИ",
+        "расшифровка лекции в текст",
+        "запись лекции на телефон",
+        "распознавание формул с фото доски",
+        "конспект в Word",
+        "нейросеть для конспектов",
+        "конспект для студентов"
+      ],
+      "h": "Автоматический конспект лекций с помощью ИИ",
+      "intro": [
+        "GoodWorker превращает запись лекции в готовый конспект. Вы кладёте телефон на стол и нажимаете «Начать запись» — дальше нейросеть сама слушает преподавателя, расшифровывает речь в текст и прямо во время пары собирает структурированный конспект с заголовками, определениями, формулами и графиками.",
+        "Это не просто расшифровка аудио: из текста уходят оговорки, шум аудитории и разговоры с задних парт, а смысл раскладывается по разделам — так, как его записал бы внимательный студент с первой парты."
+      ],
+      "blocks": [
+        {
+          "h": "Формулы, графики и матрицы — не картинкой, а по-настоящему",
+          "p": [
+            "Математику ИИ записывает формулами: интегралы, дроби, пределы и матрицы остаются редактируемыми, их можно поправить, увеличить или выровнять. Графики функций строятся по уравнению, площадь под кривой закрашивается, а у матрицы в один клик считаются определитель, обратная матрица и ранг — в точных дробях.",
+            "Если преподаватель пишет на доске, сфотографируйте её: нейросеть прочитает формулы и чертежи, сверит их с конспектом и допишет только новое — продолжение встанет после нужного раздела, а повторы будут отброшены."
+          ]
+        },
+        {
+          "h": "Конспект, который удобно учить",
+          "p": [
+            "Готовый конспект можно сжать до главного одним переключателем, спросить ИИ о непонятном абзаце, вставить пояснение или таблицу, оставить свои заметки на полях. Всё редактируется как обычный документ."
+          ]
+        },
+        {
+          "h": "Экспорт в Word, PDF и аудио с главами",
+          "p": [
+            "Конспект скачивается в .docx с настоящими формулами Word, в PDF или сохраняется в «Мои файлы» — в папку предмета, созданную автоматически. Запись лекции сохраняется в .m4a с главами по разделам конспекта, чтобы переслушать нужное место за секунды."
+          ]
+        },
+        {
+          "h": "Для студентов и репетиторов",
+          "p": [
+            "Студенту — конспект каждой пары без ручного переписывания и без пропусков. Репетитору — запись занятия, из которой получается аккуратный материал для ученика: его можно открыть по ссылке для просмотра или для совместной правки."
+          ]
+        }
+      ],
+      "faqTitle": "Частые вопросы",
+      "faq": [
+        {
+          "q": "Как сделать конспект лекции автоматически?",
+          "a": "Откройте раздел «Конспект лекции», нажмите «Начать запись» и положите телефон на стол. ИИ расшифрует речь преподавателя и соберёт конспект прямо во время лекции; после остановки записи текст уточнится более точной моделью распознавания."
+        },
+        {
+          "q": "Распознаёт ли ИИ формулы и графики?",
+          "a": "Да. Формулы записываются в математической разметке и остаются редактируемыми, графики строятся по уравнениям. Формулы и чертежи с доски можно добавить по фотографии."
+        },
+        {
+          "q": "Можно ли скачать конспект в Word?",
+          "a": "Да, конспект скачивается в формате .docx с формулами Word, а также в PDF. Его можно сохранить в «Мои файлы» — он сам ляжет в папку своего предмета."
+        },
+        {
+          "q": "Что будет, если в аудитории шумно?",
+          "a": "Посторонние разговоры, шум и ошибки распознавания отсеиваются: ИИ сначала восстанавливает сказанное преподавателем, а уже потом пишет конспект."
+        },
+        {
+          "q": "Кому доступна функция?",
+          "a": "Конспект лекций доступен VIP-ученикам и VIP-репетиторам GoodWorker."
+        }
+      ]
+    }
+  },
+  "filesPromo": {
+    "eyebrow": "Хранилище файлов",
+    "h2": "Все материалы —",
+    "h2_hl": "в одной папке",
+    "lead": "Любые файлы — PDF, Word, презентации, фото, видео, аудио и конспекты — с доступом для нужных учеников и на нужный срок. У каждого ученика своя папка для сдачи ДЗ: дедлайн, проверка пером и видно, кто уже открыл материалы.",
+    "points": [
+      "Доступ по ученикам и по сроку",
+      "Личная сдача ДЗ с дедлайном и проверкой",
+      "Поиск по тексту внутри файлов"
+    ],
+    "cta": "Открыть файлы",
+    "vip": "Входит в VIP · 15 ГБ на репетитора",
+    "library": "Библиотека",
+    "quota": "3,2 из 15 ГБ",
+    "filesIn": "Файлы",
+    "share": "Доступ к папке",
+    "until": "до 31 мая",
+    "done": "Готово",
+    "opened": "Просмотрено: {name}",
+    "students": [
+      "Аня К.",
+      "Дима С.",
+      "Миша Л.",
+      "Катя Р."
+    ],
+    "folders": [
+      {
+        "name": "Алгебра · 9 «А»",
+        "cover": "preset:aurora",
+        "files": [
+          {
+            "name": "Учебник, глава 4.pdf",
+            "kind": "pdf",
+            "size": 39845888
+          },
+          {
+            "name": "Квадратные уравнения.docx",
+            "kind": "docx",
+            "size": 1258291
+          },
+          {
+            "name": "Разбор ошибок.m4a",
+            "kind": "audio",
+            "size": 11534336
+          }
+        ]
+      },
+      {
+        "name": "ДЗ №7 · Производные",
+        "cover": "preset:sunset",
+        "deadline": true,
+        "files": [
+          {
+            "name": "Задание.pdf",
+            "kind": "pdf",
+            "size": 317440
+          },
+          {
+            "name": "Аня К. — решение.pdf",
+            "kind": "pdf",
+            "size": 2202009,
+            "student": true,
+            "review": "ACCEPTED",
+            "grade": "5"
+          },
+          {
+            "name": "Миша Л. — решение.pdf",
+            "kind": "pdf",
+            "size": 1782579,
+            "student": true,
+            "late": true,
+            "review": "REVISION"
+          }
+        ]
+      },
+      {
+        "name": "Физика · ЕГЭ",
+        "cover": "preset:peach",
+        "files": [
+          {
+            "name": "Кинематика — шпаргалка.pdf",
+            "kind": "pdf",
+            "size": 2202009
+          },
+          {
+            "name": "Вариант 12 с решениями.pdf",
+            "kind": "pdf",
+            "size": 5662310
+          },
+          {
+            "name": "Кинематика — презентация.pptx",
+            "kind": "pptx",
+            "size": 8912896
+          }
+        ]
+      },
+      {
+        "name": "Конспекты лекций",
+        "cover": "preset:meadow",
+        "files": [
+          {
+            "name": "Площадь между кривыми.docx",
+            "kind": "lecture",
+            "size": 845824
+          },
+          {
+            "name": "Площадь между кривыми.m4a",
+            "kind": "audio",
+            "size": 34603008
+          },
+          {
+            "name": "Пределы функций.docx",
+            "kind": "lecture",
+            "size": 612352
+          }
+        ]
+      }
+    ]
+  },
+  "StorageLanding": {
+    "meta_title": "Файловое хранилище — материалы для репетиторов и учеников",
+    "meta_description": "Храните учебные материалы в одном месте: папки по ученикам, доступ на время, сдача и проверка работ, поиск внутри файлов.",
+    "badge": "Файловое хранилище",
+    "hero_title": "Все учебные материалы — <hl>в одном месте</hl>",
+    "hero_lead": "Хранилище GoodWorker помогает удобно организовать файлы, конспекты и материалы по предметам, ученикам и курсам.",
+    "hero_cta1": "Попробовать бесплатно",
+    "hero_cta2": "Как это работает",
+    "hero_sig": "Удобно и структурно",
+    "win_aria": "Превью интерфейса хранилища",
+    "win_title": "Мои файлы",
+    "folders_aria": "Папки",
+    "search_label": "Поиск по файлам",
+    "quota": "2,4 ГБ из 15 ГБ",
+    "folder_1": "Конспекты лекций",
+    "folder_2": "Домашние задания",
+    "folder_3": "Материалы",
+    "folder_4": "Курсы",
+    "file_1": "Линейная алгебра — Конспект.pdf",
+    "file_2": "Лекция 3 — Аудиозапись.mp3",
+    "file_3": "Домашнее задание.docx",
+    "file_4": "Таблица формул.xlsx",
+    "size_1": "1,2 МБ",
+    "size_2": "18 МБ",
+    "size_3": "84 КБ",
+    "size_4": "46 КБ",
+    "type_pdf": "PDF-документ",
+    "type_mp3": "Аудиозапись MP3",
+    "type_docx": "Документ Word",
+    "type_xlsx": "Таблица Excel",
+    "student_anna": "Анна",
+    "student_ilya": "Илья",
+    "student_maria": "Мария",
+    "student_kirill": "Кирилл",
+    "gen_anna": "Анны",
+    "gen_ilya": "Ильи",
+    "gen_maria": "Марии",
+    "gen_kirill": "Кирилла",
+    "crumb_root": "Мои файлы",
+    "crumbs_aria": "Путь",
+    "folders_heading": "Папки",
+    "folders_count": "{count, plural, one {# папка} few {# папки} many {# папок} other {# папки}}",
+    "files_count": "{count, plural, one {# файл} few {# файла} many {# файлов} other {# файла}}",
+    "personal_sub": "Личная подпапка",
+    "personal_sub_files": "Личная подпапка · {files}",
+    "open_sub_aria": "Открыть подпапку: {name}",
+    "open_folder_aria": "Открыть папку {name}",
+    "open_file_aria": "Открыть файл {name}",
+    "back_aria": "Назад к папке «{name}»",
+    "access": "Доступ",
+    "give_access": "Дать доступ",
+    "whom_open": "Кому открыть",
+    "students_aria": "Ученики",
+    "badge_open": "открыт",
+    "badge_closed": "закрыт",
+    "close_panel_aria": "Закрыть панель",
+    "close": "Закрыть",
+    "panel_folder": "Папка",
+    "panel_status": "Статус",
+    "note_sub": "Файл виден ученику — {name}.",
+    "note_open": "Файл виден ученикам, у которых есть доступ к папке.",
+    "note_hidden": "Файл скрыт: ученики его не видят, даже если у них есть доступ к папке.",
+    "close_access": "Закрыть доступ",
+    "open_access": "Открыть доступ",
+    "toast_granted_f": "{name} получила доступ",
+    "toast_granted_m": "{name} получил доступ",
+    "toast_revoked": "Доступ у {name} закрыт",
+    "toast_file_open": "Файл открыт для учеников",
+    "toast_file_closed": "Доступ к файлу закрыт",
+    "toast_file_sub_f": "{name} получила доступ к файлу",
+    "toast_file_sub_m": "{name} получил доступ к файлу",
+    "how_title": "Всё для учёбы",
+    "th1_t": "Папки по ученикам",
+    "th1_d": "Личная подпапка у каждого: материалы видны только тому, кому вы их открыли.",
+    "th2_t": "Доступ на время",
+    "th2_d": "Откройте папку на нужный срок — и закройте одним кликом.",
+    "th3_t": "Сдача работ",
+    "th3_d": "Ученик загружает работу в папку с дедлайном, вы проверяете и возвращаете.",
+    "th4_t": "Поиск внутри файлов",
+    "th4_d": "Находите конспект по слову из самого документа, а не только по названию.",
+    "locked": "закрыто",
+    "pill_open": "Открыт",
+    "pill_closed": "Закрыт",
+    "wd1": "Пн",
+    "wd2": "Вт",
+    "wd3": "Ср",
+    "wd4": "Чт",
+    "wd5": "Пт",
+    "wd6": "Сб",
+    "wd7": "Вс",
+    "deadline": "Дедлайн · пт",
+    "upload_work": "Загрузить работу",
+    "st_wait": "Ожидает",
+    "st_sent": "Сдано",
+    "st_checked": "Проверено",
+    "search_query": "определитель",
+    "res1": "…если <m>определитель</m> матрицы равен нулю, система либо несовместна, либо имеет бесконечно много решений…",
+    "res2": "…<m>определитель</m> второго порядка: ad − bc…",
+    "steps_title": "Как это работает",
+    "steps_lead": "Три шага от пустого хранилища до сданной и проверенной работы.",
+    "step1_t": "Создайте папки",
+    "step1_d": "Разложите материалы по предметам и курсам. У каждого ученика — своя личная подпапка.",
+    "step2_t": "Откройте доступ",
+    "step2_d": "Выберите, кому и на какой срок. Закрыть доступ можно одним кликом.",
+    "step3_t": "Принимайте работы",
+    "step3_d": "Ученик загружает работу в папку с дедлайном, вы проверяете и возвращаете.",
+    "aud_title": "Репетитору — порядок, ученику — ясность",
+    "aud_t_title": "Для репетиторов",
+    "aud_t_sub": "Порядок в материалах и контроль над тем, кто что видит.",
+    "aud_t1_b": "Папки по предметам и ученикам",
+    "aud_t1_d": "Личная подпапка у каждого: материалы видны только тому, кому вы их открыли.",
+    "aud_t2_b": "Доступ на время",
+    "aud_t2_d": "Откройте папку на нужный срок и закройте её одним кликом.",
+    "aud_t3_b": "Проверка работ",
+    "aud_t3_d": "Ученик сдаёт работу в папку с дедлайном, вы проверяете и возвращаете. Файлы .docx можно править прямо в хранилище.",
+    "aud_t4_b": "Учёт места",
+    "aud_t4_d": "Видно, сколько места занято и сколько осталось.",
+    "aud_s_title": "Для учеников",
+    "aud_s_sub": "Всё нужное для занятий — под рукой, без пересылки файлов.",
+    "aud_s1_b": "Материалы от репетитора в одном месте",
+    "aud_s1_d": "Конспекты, задания и записи лежат в папках по предметам, а не теряются в переписке.",
+    "aud_s2_b": "Понятно, что сдавать и когда",
+    "aud_s2_d": "Дедлайн виден в папке и в календаре, а статус работы — сдана она или уже проверена.",
+    "aud_s3_b": "Поиск внутри файлов",
+    "aud_s3_d": "Находите нужный конспект по слову из самого документа, а не только по названию.",
+    "mf_aria": "Принцип",
+    "mf_a": "Материалы должны лежать там, где их ждут, — и быть видны",
+    "mf_b": "только тем, кому вы их открыли.",
+    "faq_title": "Частые вопросы",
+    "faq_lead": "Коротко о том, как устроено хранилище.",
+    "faq1_q": "Кто видит файлы в личной подпапке?",
+    "faq1_a": "Только ученик, которому она принадлежит, и вы. Другие ученики эту подпапку не видят.",
+    "faq2_q": "Можно ли открыть папку на время?",
+    "faq2_a": "Да. Откройте папку на нужный срок, а закрыть доступ можно в любой момент одним кликом.",
+    "faq3_q": "Как ученик сдаёт работу?",
+    "faq3_a": "Загружает файл в папку с дедлайном. Вы видите, кто уже сдал, проверяете работу и возвращаете её ученику.",
+    "faq4_q": "Можно ли найти файл по тексту внутри него?",
+    "faq4_a": "Да. Поиск работает по содержимому документов, а не только по названиям файлов.",
+    "faq5_q": "Можно ли править документы в самом хранилище?",
+    "faq5_a": "Файлы .docx можно редактировать прямо в хранилище. Исправленная версия сохраняется рядом с оригиналом.",
+    "faq6_q": "Как узнать, сколько места осталось?",
+    "faq6_a": "Занятое и доступное место показано в верхней панели хранилища — вы всегда видите, сколько осталось.",
+    "cta_title": "Соберите учебные материалы в одном месте",
+    "cta_text": "Папки по ученикам, доступ на время и сдача работ — в одном хранилище GoodWorker."
   }
 }

@@ -53,6 +53,7 @@
     "roadmaps": "कोर्स",
     "games": "गेम्स",
     "pomodoro": "पोमोडोरो",
+    "lecture": "व्याख्यान नोट्स",
     "videoCall": "वीडियो कॉल",
     "posts": "पोस्ट",
     "vip": "VIP"
@@ -1889,7 +1890,9 @@
     "storageReindexRunning": "इंडेक्स हो रहा है… {n} बाकी",
     "storageReindexDone": "इंडेक्सिंग पूरी",
     "storageAdminBadge": "एडमिन",
-    "storageAdminQuotaHint": "एडमिन को VIP के बिना {gb} GB मिलते हैं।"
+    "storageAdminQuotaHint": "एडमिन को VIP के बिना {gb} GB मिलते हैं।",
+    "storageStudentQuota": "छात्र कोटा (मेरी फ़ाइलें)",
+    "storageStudentQuotaHint": "VIP छात्र की अपनी ड्राइव: लेक्चर नोट्स और उनके अपलोड। ट्यूटर के फ़ोल्डर में होमवर्क ट्यूटर के कोटा में गिना जाता है।"
   },
   "tutorial": {
     "prev": "पीछे",
@@ -2043,6 +2046,34 @@
     "hero_today": "आज 3 कक्षाएं और 18:00 बजे कॉल।",
     "hero_h1": "ज्ञान दें। ज्ञान पाएं।",
     "hero_h1_hl": "रूटीन का काम हम संभालते हैं",
+    "hero_teacher_btn_calendar": "कैलेंडर",
+    "hero_student_btn_teacher": "शिक्षक खोजें",
+    "hero_student_btn_course": "कोर्स खोजें",
+    "hero_teacher_h1": "पाठ के लिए सब कुछ —",
+    "hero_teacher_h1_hl": "मुफ़्त, एक ही जगह",
+    "hero_teacher_phrase1": "वीडियो कॉल — नोट्स तुरंत तैयार।",
+    "hero_teacher_phrase2": "फ़ाइल — 60 सेकंड में तैयार टेस्ट।",
+    "hero_teacher_phrase3": "छात्र की गलतियाँ — प्रोफ़ाइल में, विषय के अनुसार।",
+    "hero_teacher_phrase4": "शेड्यूल और रिमाइंडर — Telegram में।",
+    "hero_teacher_desc": "हर कॉल के बाद ऑटो-नोट्स, किसी भी PDF से टेस्ट, रिमाइंडर वाला कैलेंडर और हर छात्र की गलतियों की प्रोफ़ाइल — सब एक जगह, शुरुआत मुफ़्त।",
+    "hero_student_h1": "ज्ञान पाइए —",
+    "hero_student_h1_hl": "झंझट हम संभालेंगे",
+    "hero_student_phrase1": "ट्यूटर और कोर्स — एक ही जगह।",
+    "hero_student_phrase2": "मुफ़्त कोर्स — अभी शुरू करें।",
+    "hero_student_phrase3": "आपकी गलतियाँ सहेजी जाती हैं और विषय के अनुसार छाँटी जाती हैं।",
+    "hero_student_phrase4": "क्लास का शेड्यूल और रिमाइंडर — Telegram में।",
+    "hero_student_desc": "ट्यूटर खोजें, ऑनलाइन कोर्स और टेस्ट करें। ऑटो-नोट्स वाले वीडियो पाठ, रिमाइंडर वाला शेड्यूल और विषय के अनुसार आपकी गलतियों का विश्लेषण — शुरुआत मुफ़्त।",
+    "promo_eyebrow": "प्लेटफ़ॉर्म वीडियो",
+    "promo_title": "GoodWorker <word></word> की नज़र से",
+    "promo_word_teacher": "ट्यूटर",
+    "promo_word_student": "छात्र",
+    "promo_btn_teacher": "मैं ट्यूटर हूँ",
+    "promo_btn_student": "मैं छात्र हूँ",
+    "promo_roles_aria": "आप कौन हैं",
+    "promo_watch_aria": "{who} के लिए वीडियो देखें, {time}",
+    "promo_dialog_aria": "GoodWorker वीडियो",
+    "promo_close": "वीडियो बंद करें",
+    "promo_error": "वीडियो लोड नहीं हुआ",
     "hero_phrase1": "ऑटो-ट्रांसक्रिप्ट के साथ वीडियो कॉल।",
     "hero_phrase2": "कोर्स और टेस्ट — मिनटों में तैयार।",
     "hero_phrase3": "फ़ाइल से तैयार टेस्ट, 60 सेकंड में।",
@@ -2063,6 +2094,7 @@
     "sub_more_storage": "स्टोरेज के बारे में",
     "sub_more_lecture": "लेक्चर के बारे में",
     "sub_more_chess": "शतरंज के बारे में",
+    "sub_lecture": "व्याख्यान नोट्स",
     "sub_pdf_from": "फ़ाइल",
     "sub_pdf_to": "टेस्ट",
     "btn_create": "कोर्स बनाएं",
@@ -2590,7 +2622,8 @@
     "n_file_title": "Hooks चीटशीट",
     "n_post_title": "React Flow व्यवहार में",
     "n_audio_title": "कोड वॉकथ्रू",
-    "n_test_title": "टेस्ट: React मूल बातें"
+    "n_test_title": "टेस्ट: React मूल बातें",
+    "center_btn": "केंद्र में लाएँ"
   },
   "PdfInfoPage": {
     "qtype_single": "एकल विकल्प",
@@ -3625,6 +3658,8 @@
     "errMaxDepth": "और गहराई संभव नहीं: अधिकतम {max} स्तर",
     "errTooLarge": "“{name}” 50 MB से बड़ी है",
     "errUpload": "“{name}” अपलोड नहीं हो सकी। कनेक्शन जाँचें और फिर कोशिश करें",
+    "pageCropped": "{count, plural, one {पेज की फ़ोटो को शीट के किनारों तक काटा गया} other {पेजों की फ़ोटो को शीट के किनारों तक काटा गया}}",
+    "pageCropUndo": "मूल फ़ोटो रखें",
     "errVip": "यह क्रिया केवल VIP के साथ उपलब्ध है",
     "errGeneric": "कुछ गलत हो गया। फिर कोशिश करें",
     "errLoad": "लाइब्रेरी नहीं खुल सकी",
@@ -3655,10 +3690,137 @@
     "overageWallet": "वॉलेट खोलें",
     "overageOk": "ठीक है",
     "pageTitle": "फ़ाइलें",
+    "booksPageTitle": "सभी किताबें",
+    "booksPageCrumbsAria": "पथ",
+    "booksPageCrumb": "किताबें",
+    "booksPageSearch": "शीर्षक से किताब खोजें",
+    "booksPageSearchClear": "खोज साफ़ करें",
+    "booksPageUpload": "किताब अपलोड करें",
+    "booksPageViewsAria": "अनुभाग",
+    "booksPageViewShelf": "शोकेस",
+    "booksPageViewMine": "मेरी किताबें",
+    "booksPageShelvesAria": "शेल्फ़",
+    "booksPageTabAll": "सभी",
+    "booksPageTabSaved": "सहेजी गई",
+    "booksPageTabNew": "नई",
+    "booksPageCarAria": "संग्रह",
+    "booksPageCarRecent": "हाल में खोली गई",
+    "booksPageShowAll": "सभी दिखाएँ",
+    "booksPageScrollPrev": "पिछला",
+    "booksPageScrollNext": "अगला",
+    "booksPageCarEmpty": "अभी दिखाने को कुछ नहीं: कोई भी किताब खोलें, वह यहाँ दिखेगी।",
+    "booksPageHeroTitle": "पढ़ना जारी रखें",
+    "booksPageHeroPage": "पृष्ठ {page} / {pages}",
+    "booksPageHeroPageOnly": "पृष्ठ {page}",
+    "booksPageHeroDetails": "विवरण",
+    "booksPageMiniAria": "संग्रह",
+    "booksPageMiniNew": "नई",
+    "booksPageMiniWithCover": "कवर वाली",
+    "booksPageMiniNeedCover": "कवर चाहिए",
+    "booksPageMiniDone": "पूरी पढ़ी",
+    "booksPageCount": "{count, plural, one {# किताब} other {# किताबें}}",
+    "booksPageLibrary": "पूरी लाइब्रेरी",
+    "booksPageResults": "मिलीं",
+    "booksPageReset": "रीसेट",
+    "booksPageResetAll": "खोज और फ़िल्टर रीसेट करें",
+    "booksPageSortAria": "क्रम",
+    "booksPageSortRecent": "हाल की",
+    "booksPageSortTitle": "शीर्षक से",
+    "booksPageSortProgress": "प्रगति से",
+    "booksPageEmptyLibTitleT": "अपनी पहली PDF अपलोड करें",
+    "booksPageEmptyLibTextT": "वह यहाँ किताब की तरह दिखेगी: कवर, जिल्द और छात्रों के लिए रिबन बुकमार्क के साथ।",
+    "booksPageEmptyLibTitleS": "शिक्षक ने अभी कुछ अपलोड नहीं किया है",
+    "booksPageEmptyLibTextS": "PDF आने पर वे यहाँ किताबों की तरह सजेंगी।",
+    "booksPageEmptyMineTitle": "यहाँ अभी कुछ नहीं है",
+    "booksPageEmptyMineText": "किताबों को रिबन बुकमार्क से सहेजें — वे यहाँ दिखेंगी।",
+    "booksPageEmptyMineGo": "शोकेस पर जाएँ",
+    "booksPageEmptyNoneTitle": "कुछ नहीं मिला",
+    "booksPageEmptyNoneQuery": "“{query}” के लिए कोई किताब नहीं है। शीर्षक जाँचें या फ़िल्टर रीसेट करें।",
+    "booksPageEmptyNoneFilter": "इस संग्रह में अभी कोई किताब नहीं है।",
+    "booksPageLoadError": "किताबें लोड नहीं हो सकीं",
+    "booksPageLoading": "किताबें लोड हो रही हैं…",
+    "booksPageToastSaved": "मेरी किताबों में जोड़ी गई",
+    "booksPageToastUnsaved": "मेरी किताबों से हटाई गई",
+    "booksPageUndo": "पूर्ववत करें",
+    "booksPageUploaded": "“{title}” अपलोड हो गई",
+    "booksPageRefreshFailed": "किताबों की सूची अपडेट नहीं हो सकी — पिछला लोड किया गया डेटा दिख रहा है।",
+    "booksReaderPageTitle": "किताब पढ़ना",
+    "booksReaderBack": "लाइब्रेरी पर वापस",
+    "booksReaderLoading": "किताब खुल रही है…",
+    "booksReaderModeLabel": "देखने का तरीका",
+    "booksReaderModeSingle": "एक पेज",
+    "booksReaderModeDouble": "दो पेज",
+    "booksReaderPrev": "पिछला पेज",
+    "booksReaderNext": "अगला पेज",
+    "booksReaderPageLabel": "पेज नंबर",
+    "booksReaderOfTotal": "/ {total}",
+    "booksReaderZoomIn": "बड़ा करें",
+    "booksReaderZoomOut": "छोटा करें",
+    "booksReaderZoomReset": "ज़ूम रीसेट करें",
+    "booksReaderFullscreen": "पूरी स्क्रीन",
+    "booksReaderFullscreenExit": "पूरी स्क्रीन से बाहर निकलें",
+    "booksReaderBookmarks": "बुकमार्क",
+    "booksReaderBookmarkAdd": "बुकमार्क लगाएँ",
+    "booksReaderBookmarkRemove": "बुकमार्क हटाएँ",
+    "booksReaderBookmarksEmpty": "अभी कोई बुकमार्क नहीं है। पहला बुकमार्क लगाने के लिए पेज के कोने के रिबन पर क्लिक करें।",
+    "booksReaderBookmarkPage": "पेज {page}",
+    "booksReaderBookmarkLabel": "बुकमार्क का नाम",
+    "booksReaderBookmarkRename": "नाम बदलें",
+    "booksReaderBookmarkDelete": "बुकमार्क हटाएँ",
+    "booksReaderBookmarkSave": "सहेजें",
+    "booksReaderClose": "बंद करें",
+    "booksReaderResumed": "पेज {page} से जारी",
+    "booksReaderFromStart": "शुरू से",
+    "booksReaderPageAria": "पेज {page}",
+    "booksReaderMarkAria": "पेज {page}: पाठक ({names})",
+    "booksReaderStoppedHere": "यहीं रुके",
+    "booksReaderReadAt": "{date} को पढ़ा",
+    "booksReaderErrorTitle": "किताब नहीं खुल सकी",
+    "booksReaderErrorText": "फ़ाइल खराब है या उपलब्ध नहीं है। इसे डाउनलोड करके देखें।",
+    "booksReaderOpenFailed": "किताब लोड नहीं हो सकी। पेज रीफ़्रेश करके देखें।",
+    "booksReaderPageError": "पृष्ठ {page} दिखाया नहीं जा सका। पृष्ठ पलटकर या पुनः लोड करके देखें।",
+    "booksReaderDownload": "डाउनलोड",
+    "booksReaderClosedTitle": "पहुँच बंद है",
+    "booksReaderClosedText": "अब आपकी इस किताब तक पहुँच नहीं है। शिक्षक से इसे फिर से खोलने के लिए कहें।",
+    "booksReaderToLibrary": "मेरी फ़ाइलों पर",
+    "booksHlColorYellow": "पीला",
+    "booksHlColorGreen": "हरा",
+    "booksHlColorPink": "गुलाबी",
+    "booksHlColorBlue": "नीला",
+    "booksHlColors": "हाइलाइट का रंग",
+    "booksHlMarkerAria": "टिप्पणी: {note}",
+    "booksHlBarAria": "चुने हुए टेक्स्ट की क्रियाएँ",
+    "booksHlComment": "टिप्पणी",
+    "booksHlCopy": "कॉपी करें",
+    "booksHlCopied": "कॉपी हो गया",
+    "booksHlCopyFailed": "कॉपी नहीं हो सका",
+    "booksHlPopupAria": "हाइलाइट",
+    "booksHlNoteLabel": "हाइलाइट पर टिप्पणी",
+    "booksHlNotePlaceholder": "टिप्पणी जोड़ें…",
+    "booksHlNoteSave": "सहेजें",
+    "booksHlEditNote": "टिप्पणी बदलें",
+    "booksHlDelete": "हटाएँ",
+    "booksHlEmpty": "अभी कोई हाइलाइट नहीं है। पेज पर टेक्स्ट चुनें और रंग चुनें — वह यहाँ सहेज लिया जाएगा।",
+    "booksHlNoTextLayer": "इस पेज में टेक्स्ट लेयर नहीं है (स्कैन जैसा लगता है), इसलिए टेक्स्ट नहीं चुना जा सकता।",
+    "booksHlNoText": "टेक्स्ट लेयर नहीं — टेक्स्ट चुना नहीं जा सकता",
+    "booksHlGoto": "पेज {page} पर जाएँ",
+    "booksHlTabPages": "पेज",
+    "booksHlTabHighlights": "हाइलाइट",
+    "booksHlSaveFailed": "हाइलाइट सहेजा नहीं जा सका। कृपया फिर से कोशिश करें।",
+    "booksHlLimit": "इस किताब में हाइलाइट की अधिकतम संख्या (500) हो चुकी है। गैर-ज़रूरी हाइलाइट हटाएँ।",
+    "booksHlTooBig": "चुना हुआ अंश बहुत बड़ा है। छोटा अंश चुनें।",
+    "booksHlUpdateFailed": "हाइलाइट बदला नहीं जा सका।",
+    "booksHlDeleteFailed": "हाइलाइट हटाया नहीं जा सका।",
+    "booksHlLoadFailed": "आपके हाइलाइट लोड नहीं हो सके।",
     "myFiles": "मेरी फ़ाइलें",
     "sharedWithMe": "मेरे साथ साझा",
     "foldersSection": "फ़ोल्डर",
     "filesSection": "फ़ाइलें",
+    "booksShellUpload": "किताब अपलोड करें",
+    "booksShellEmptyHint": "अपनी पहली PDF अपलोड करें — वह “किताबें” में दिखेगी।",
+    "booksShellSection": "किताबें",
+    "booksShellAll": "सभी किताबें",
+    "booksShellShareTitle": "किताब “{name}” तक पहुँच",
     "actions": "क्रियाएँ",
     "cover": "कवर",
     "coverTitle": "फ़ोल्डर कवर",
@@ -3679,6 +3841,14 @@
     "openedAt": "{date} को खोला",
     "notOpened": "अभी नहीं खोला",
     "openedSummary": "{total} में से {opened} ने खोला",
+    "progressDone": "पूर्ण",
+    "progressWaiting": "मंज़ूरी की प्रतीक्षा",
+    "progressWorking": "प्रगति में",
+    "progressNotStarted": "शुरू नहीं हुआ",
+    "progressNothing": "अभी कुछ जमा नहीं हुआ",
+    "progressByStudents": "छात्र के अनुसार जमा",
+    "progressByFiles": "फ़ाइल के अनुसार जमा",
+    "progressTotalItems": "कुल आइटम: {count}",
     "previewLoading": "फ़ाइल खुल रही है…",
     "previewTruncated": "शुरुआत दिखाई गई है — पूरा टेक्स्ट डाउनलोड में",
     "previewFailed": "यह फ़ाइल यहाँ नहीं दिख सकती — डाउनलोड करें",
@@ -3740,6 +3910,1184 @@
     "editDocx": "संपादित करें",
     "editSaved": "सहेजा गया",
     "saveButton": "सहेजें",
-    "reviewedAt": "{date} को जाँचा गया"
+    "reviewedAt": "{date} को जाँचा गया",
+    "booksKitRibbonAria": "किताब “{title}” सहेजें",
+    "booksKitSave": "किताब सहेजें",
+    "booksKitUnsave": "मेरी किताबों से हटाएं",
+    "booksKitOpenAria": "“{title}” खोलें",
+    "booksKitMeta": "{teacher} · {pages} पृष्ठ",
+    "booksKitPagesShort": "{pages} पृष्ठ",
+    "booksKitProgressAria": "पढ़ने की प्रगति",
+    "booksKitProgressDone": "पूरी पढ़ ली",
+    "booksKitNotOpened": "अभी खोली नहीं गई",
+    "booksKitQuickTitle": "त्वरित झलक",
+    "booksKitRead": "पढ़ें",
+    "booksKitChangeCover": "कवर बदलें",
+    "booksKitShare": "साझा करें",
+    "booksKitDeleteConfirm": "“{title}” हटाएं? जिन छात्रों को आपने एक्सेस दिया है, उनके लिए भी यह गायब हो जाएगी।",
+    "booksKitFormat": "फ़ॉर्मैट",
+    "booksKitSize": "आकार",
+    "booksKitPagesLabel": "पृष्ठ",
+    "booksKitAdded": "जोड़ी गई",
+    "booksKitCoverLabel": "कवर",
+    "booksKitCoverFound": "PDF का कवर",
+    "booksKitCoverPage1": "PDF का पृष्ठ 1",
+    "booksKitCoverPhoto": "आपकी फ़ोटो",
+    "booksKitCoverGenerated": "टाइपोग्राफ़िक",
+    "booksKitProgressLabel": "पढ़ने की प्रगति",
+    "booksKitProgressDoneLabel": "किताब पूरी पढ़ ली गई",
+    "booksKitProgressPage": "पृष्ठ {page} / {pages}",
+    "booksKitNeverOpened": "आपने यह किताब अभी नहीं खोली है",
+    "booksKitCoverModalTitle": "कवर · {title}",
+    "booksKitApply": "लागू करें",
+    "booksKitSaving": "सहेजा जा रहा है…",
+    "booksKitUploadTitle": "किताब अपलोड करें",
+    "booksKitDropTitle": "PDF यहाँ खींचकर छोड़ें",
+    "booksKitDropText": "अपलोड से पहले हम पहला पृष्ठ जाँचेंगे और बताएँगे कि वह कवर के लिए ठीक है या नहीं।",
+    "booksKitPickPdf": "PDF चुनें",
+    "booksKitNotPdf": "PDF फ़ाइल चाहिए। “{name}” उपयुक्त नहीं है।",
+    "booksKitCheckTitle": "पहले पृष्ठ की जाँच",
+    "booksKitChecking": "पहला पृष्ठ जाँचा जा रहा है…",
+    "booksKitCheckingText": "हम देखते हैं कि उसमें शीर्षक और डिज़ाइन है या नहीं, ताकि उसे कवर बनाया जा सके। आमतौर पर कुछ ही सेकंड लगते हैं।",
+    "booksKitCancelUpload": "अपलोड रद्द करें",
+    "booksKitFoundTitle": "कवर मिल गया",
+    "booksKitFoundText": "पहले पृष्ठ पर शीर्षक और डिज़ाइन है — वही किताब का कवर बनेगा।",
+    "booksKitPlainTitle": "यह एक सामान्य पृष्ठ जैसा लगता है",
+    "booksKitPlainText": "पहले पृष्ठ पर शीर्षक या डिज़ाइन नहीं है। फ़िलहाल किताब का रंगीन कवर है — आप अपनी फ़ोटो अपलोड कर सकते हैं, रंग चुन सकते हैं या यही पृष्ठ ले सकते हैं।",
+    "booksKitUnavailTitle": "जाँच नहीं हो सकी",
+    "booksKitUnavailText": "पहले पृष्ठ की जाँच का उत्तर नहीं मिला। यह पूर्वावलोकन है — कवर आप स्वयं चुनें।",
+    "booksKitUse": "यही उपयोग करें",
+    "booksKitUseOther": "दूसरा चुनें",
+    "booksKitUsePage": "यह पृष्ठ उपयोग करें",
+    "booksKitPhoto": "कवर अपलोड करें",
+    "booksKitPhotoReplace": "फ़ोटो बदलें",
+    "booksKitPhotoRemove": "चित्र हटाएं",
+    "booksKitPickColor": "रंग चुनें",
+    "booksKitRetry": "फिर से जाँचें",
+    "booksKitPageAlt": "PDF का पहला पृष्ठ",
+    "booksKitEditTitle": "किताब का कवर",
+    "booksKitConfirmTitle": "“किताबें” में अपलोड करें",
+    "booksKitNameLabel": "शीर्षक",
+    "booksKitSubmit": "“किताबें” में अपलोड करें",
+    "booksKitUploading": "अपलोड हो रहा है…",
+    "booksKitBack": "वापस",
+    "booksKitDone": "हो गया",
+    "booksKitCoverRejected": "कवर स्वीकार नहीं हुआ। कोई दूसरा चित्र चुनें।",
+    "booksKitCoverRenderFailed": "कवर तैयार नहीं हो सका। कोई दूसरा चित्र या रंग चुनें।",
+    "booksKitPreviewCaption": "किताब शेल्फ़ और सूची में ऐसी दिखेगी",
+    "booksKitColorTitle": "किताब का रंग",
+    "booksKitColorHint": "स्पाइन, शीर्षक पट्टी और अक्षरों का रंग। फ़ोटो के बिना यही कवर बन जाता है।",
+    "booksKitColorCustom": "अपना रंग",
+    "booksKitColor0": "नीला",
+    "booksKitColor1": "लाल",
+    "booksKitColor2": "ग्रेफ़ाइट",
+    "booksKitColor3": "हरा",
+    "booksKitColor4": "बैंगनी",
+    "booksKitColor5": "गेरुआ",
+    "booksKitColor6": "फ़िरोज़ी",
+    "booksKitColor7": "टेराकोटा",
+    "booksKitColor8": "गुलाबी",
+    "booksKitColor9": "गहरा नीला",
+    "booksKitPhotoTitle": "कवर फ़ोटो",
+    "booksKitPhotoHint": "फ़ोटो 2:3 फ़्रेम में काटी जाती है; किताब का रंग स्पाइन और शीर्षक पट्टी पर रहता है।",
+    "booksKitPhotoNotImage": "चित्र चाहिए: JPG, PNG या WebP। “{name}” उपयुक्त नहीं है।",
+    "booksKitPhotoTooBig": "फ़ोटो 10 MB से बड़ी है। कोई छोटी फ़ाइल चुनें।",
+    "booksKitPhotoOpenFailed": "चित्र नहीं खुल सका। कोई दूसरी फ़ाइल चुनें।",
+    "booksKitZoom": "ज़ूम",
+    "booksKitShiftX": "X में खिसकाएं",
+    "booksKitShiftY": "Y में खिसकाएं",
+    "booksKitResetPage1": "पृष्ठ 1 पर रीसेट करें",
+    "booksKitPage1Failed": "PDF का पहला पृष्ठ नहीं मिल सका। फिर से प्रयास करें।",
+    "booksKitLoading": "पृष्ठ तैयार हो रहा है…",
+    "driveTitle": "मेरी फ़ाइलें",
+    "driveNavLabel": "स्टोरेज अनुभाग",
+    "driveNewLecture": "लेक्चर नोट्स",
+    "driveVipBanner": "अपनी ड्राइव VIP का हिस्सा है। VIP के बिना आप फ़ाइलें देख, डाउनलोड और हटा सकते हैं, पर नई नहीं जोड़ सकते।",
+    "driveErrVip": "अपनी ड्राइव में फ़ाइलें जोड़ने के लिए VIP चाहिए",
+    "driveEmptyTitle": "यहाँ अभी कुछ नहीं है",
+    "driveEmptyText": "अपने लेक्चर नोट्स और फ़ाइलें यहाँ रखें — ये आपके कोटा में गिनी जाती हैं, ट्यूटर के नहीं।",
+    "driveLectureHint": "लेक्चर नोट्स — लेक्चर एडिटर में खुलेगा",
+    "lectureFlag": "लेक्चर नोट्स",
+    "lectureContinue": "संपादन जारी रखें",
+    "subjectFilter": "विषय",
+    "subjectAll": "सभी विषय",
+    "subjectEmpty": "“{subject}” के लिए अभी कुछ नहीं है",
+    "driveSearchPlaceholder": "मेरी फ़ाइलों में खोजें"
+  },
+  "lecture": {
+    "pageTitle": "लेक्चर नोट्स",
+    "homeTitle": "लेक्चर नोट्स",
+    "homeSubtitle": "टैप करें और फ़ोन मेज़ पर रख दें। AI शिक्षक को सुनेगा, बाकी बातचीत छाँटेगा और सूत्रों के साथ नोट्स बनाएगा।",
+    "titlePlaceholder": "शीर्षक (जैसे \"कैलकुलस — अवकलज\")",
+    "defaultTitle": "लेक्चर {date}",
+    "keepAudio": "ऑडियो सहेजें",
+    "keepAudioHint": "बाद में सुनें और डाउनलोड करें; आपका स्टोरेज लेता है",
+    "start": "रिकॉर्डिंग शुरू करें",
+    "starting": "माइक चालू हो रहा है…",
+    "resume": "रिकॉर्डिंग जारी रखें",
+    "stop": "रोकें",
+    "vipRequired": "VIP चाहिए",
+    "vipRequiredLong": "लेक्चर नोट्स VIP में उपलब्ध हैं",
+    "vipOnly": "यह VIP सुविधा है",
+    "sttNotConfigured": "वाक् पहचान सेवा कॉन्फ़िगर नहीं है",
+    "tip1": "सबसे अच्छा: फ़ोन शिक्षक के पास, माइक उनकी ओर",
+    "tip2": "स्क्रीन लॉक न करें — iPhone पृष्ठभूमि में रिकॉर्डिंग रोक देता है",
+    "tip3": "नेटवर्क नहीं? कुछ नहीं खोएगा — बाद में अपलोड होगा",
+    "myLectures": "मेरे लेक्चर",
+    "noLectures": "अभी कोई लेक्चर नहीं",
+    "untitled": "बिना शीर्षक",
+    "statusReady": "तैयार",
+    "statusFinalizing": "सुधार हो रहा है",
+    "statusDraft": "ड्राफ़्ट",
+    "inFiles": "फ़ाइलों में",
+    "delete": "हटाएँ",
+    "deleteConfirm": "लेक्चर हटाएँ? फ़ाइलों में सहेजा .docx बना रहेगा।",
+    "deleteFailed": "हटाया नहीं जा सका",
+    "createFailed": "लेक्चर शुरू नहीं हो सका",
+    "micDenied": "माइक्रोफ़ोन की अनुमति नहीं — ब्राउज़र सेटिंग्स में अनुमति दें",
+    "micUnsupported": "यह ब्राउज़र ऑडियो रिकॉर्ड नहीं कर सकता",
+    "micFailed": "माइक्रोफ़ोन चालू नहीं हो सका",
+    "allLectures": "सभी लेक्चर",
+    "backToList": "लेक्चर सूची पर",
+    "loadFailed": "लेक्चर नहीं खुला",
+    "stateIdle": "सुनने के लिए तैयार",
+    "stateListening": "सुन रहा हूँ",
+    "stateStructuring": "AI नोट्स लिख रहा है…",
+    "stateStopping": "रिकॉर्डिंग समाप्त हो रही है…",
+    "stateFinalizing": "सटीक मॉडल से सुधार रहा हूँ…",
+    "stateRefining": "अंतिम ट्रांसक्रिप्ट से नोट्स अपडेट हो रहे हैं…",
+    "stateOffline": "नेटवर्क नहीं — कतार में {n}",
+    "stateSttBusy": "पहचान सेवा व्यस्त, फिर प्रयास…",
+    "stateReady": "पूरा हुआ",
+    "stateError": "माइक्रोफ़ोन बंद हो गया",
+    "aiControls": "AI नियंत्रण",
+    "autoStructure": "स्वचालित नोट्स",
+    "structureNow": "अभी नोट्स बनाएँ",
+    "finalizeNow": "सटीक मॉडल से सुधारें",
+    "liveTranscript": "लाइव ट्रांसक्रिप्ट",
+    "feedWaiting": "पहले शब्द ~20 सेकंड में दिखेंगे",
+    "feedEmpty": "अभी कोई ट्रांसक्रिप्ट नहीं",
+    "fullTranscript": "पूरी ट्रांसक्रिप्ट",
+    "transcriptHint": "कच्ची ट्रांसक्रिप्ट, टुकड़ों में। धूसर — जहाँ पहचान अनिश्चित है।",
+    "replay": "फिर सुनें",
+    "doubtful": "पहचान अनिश्चित है",
+    "hiddenWarning": "टैब पृष्ठभूमि में गया था — फ़ोन पर रिकॉर्डिंग रुक सकती है।",
+    "ok": "ठीक है",
+    "queued": "अपलोड की प्रतीक्षा: {n}",
+    "stillQueued": "रिकॉर्डिंग का कुछ हिस्सा अभी अपलोड होना है",
+    "dailyLimit": "दैनिक रिकॉर्डिंग सीमा ({min} मिनट) पूरी",
+    "audioQuotaHit": "स्टोरेज भरा — ऑडियो अब सहेजा नहीं जा रहा (नोट्स जारी)",
+    "structureFailed": "AI रिकॉर्डिंग संसाधित नहीं कर सका — फिर से प्रयास करने के लिए «अभी नोट्स बनाएँ» दबाएँ",
+    "structureEmpty": "AI को रिकॉर्डिंग में व्याख्यान की सामग्री नहीं मिली — केवल शोर",
+    "refined": "सुधारे गए अनुभाग: {n}",
+    "crumb": "नोट्स",
+    "titleLabel": "लेक्चर शीर्षक",
+    "saving": "सहेज रहा है…",
+    "saved": "सहेजा गया",
+    "unsaved": "बदलाव…",
+    "saveError": "सहेजा नहीं — फिर प्रयास",
+    "recording": "रिकॉर्डिंग",
+    "statDuration": "अवधि",
+    "statChunks": "टुकड़े",
+    "statFinal": "{n} अंतिम",
+    "statAudio": "ऑडियो",
+    "statAudioKept": "सहेजा",
+    "statAudioTemp": "अंतिम तक",
+    "statWords": "शब्द",
+    "statFormulas": "सूत्र",
+    "statCost": "लागत",
+    "costAdmin": "असीमित",
+    "costNotCharged": "अभी नहीं काटा जाता",
+    "export": "निर्यात",
+    "saveToFiles": "फ़ाइलों में सहेजें",
+    "updateInFiles": "फ़ाइलों में अपडेट करें",
+    "savedToFiles": "फ़ाइलों में सहेजा गया",
+    "savedToFilesAudio": "फ़ाइलों में सहेजा गया। ऑडियो (.m4a) एक मिनट में साथ में दिखेगा",
+    "openFiles": "खोलें",
+    "exportFailed": "निर्यात विफल",
+    "quotaExceeded": "स्टोरेज भरा है",
+    "audio": "ऑडियो",
+    "noAudio": "कोई ऑडियो नहीं सहेजा गया",
+    "textTools": "पाठ",
+    "notes": "टिप्पणियाँ",
+    "notesEmpty": "टेक्स्ट चुनें → \"टिप्पणी\" से हाशिये पर नोट जोड़ें",
+    "editorPlaceholder": "लेक्चर के दौरान नोट्स यहाँ दिखेंगे। आप खुद भी लिख सकते हैं।",
+    "toolbar": "फ़ॉर्मैटिंग",
+    "bold": "बोल्ड",
+    "italic": "इटैलिक",
+    "underline": "रेखांकित",
+    "strike": "काटा हुआ",
+    "heading2": "शीर्षक",
+    "heading3": "उपशीर्षक",
+    "bulletList": "सूची",
+    "orderedList": "क्रमांकित",
+    "quote": "उद्धरण",
+    "formulaInline": "सूत्र",
+    "formulaBlock": "सूत्र ब्लॉक",
+    "undo": "पूर्ववत",
+    "redo": "फिर करें",
+    "menuActions": "क्रियाएँ",
+    "menuRewrite": "फिर लिखें",
+    "menuStyle": "शैली",
+    "askTitle": "AI से पूछें",
+    "askPlaceholder": "इस अंश के साथ क्या करें?",
+    "askRun": "पूछें",
+    "askChipFix": "पहचान की गलतियाँ सुधारें",
+    "askChipShorter": "छोटा करें",
+    "askChipSimpler": "सरल समझाएँ",
+    "askChipFormulas": "सूत्र फ़ॉर्मैट करें",
+    "askChipList": "सूची बनाएँ",
+    "askBefore": "पहले",
+    "askAfter": "AI सुझाव",
+    "askEmpty": "अनुरोध लिखें या ऊपर से चुनें",
+    "askAgain": "दूसरा विकल्प",
+    "askApply": "लागू करें",
+    "aiFailed": "AI ने उत्तर नहीं दिया — फिर प्रयास करें",
+    "aiThinking": "सोच रहा हूँ…",
+    "photoFix": "बोर्ड की फ़ोटो से सुधारें",
+    "photoWorking": "AI फ़ोटो से मिलान कर रहा है…",
+    "photoDone": "फ़ोटो से सुधारा गया",
+    "photoNothing": "फ़ोटो में इस अंश से जुड़ा कुछ नहीं मिला",
+    "photoFailed": "फ़ोटो संसाधित नहीं हो सकी",
+    "photoTargetGone": "इस बीच अंश हटा दिया गया",
+    "noteAdd": "टिप्पणी",
+    "noteEdit": "टिप्पणी बदलें",
+    "noteTitle": "हाशिये की टिप्पणी",
+    "notePlaceholder": "इस अंश पर आपकी टिप्पणी…",
+    "noteDelete": "हटाएँ",
+    "toFormula": "सूत्र बनाएँ",
+    "copy": "कॉपी",
+    "copied": "कॉपी हो गया",
+    "textColor": "टेक्स्ट रंग",
+    "highlight": "हाइलाइट",
+    "clearStyle": "रंग और हाइलाइट हटाएँ",
+    "formulaTitle": "सूत्र",
+    "formulaAi": "AI",
+    "formulaEdit": "सूत्र बदलें",
+    "copyLatex": "LaTeX कॉपी करें",
+    "latexCopied": "LaTeX कॉपी हुआ",
+    "formulaModeDescribe": "शब्दों में",
+    "formulaModeEdit": "बदलें",
+    "formulaModePhoto": "फ़ोटो से",
+    "formulaModeExplain": "समझाएँ",
+    "formulaDescribePh": "जैसे: 0 से π तक sin x का समाकल",
+    "formulaEditPh": "जैसे: n → ∞ पर सीमा जोड़ें",
+    "formulaPhotoPh": "संकेत (वैकल्पिक): कौन-सा सूत्र लें",
+    "formulaRun": "बनाएँ",
+    "formulaTakePhoto": "फ़ोटो लें",
+    "formulaTake": "उपयोग करें",
+    "formulaAiNeedText": "बताएँ क्या चाहिए",
+    "formulaAiNeedFormula": "पहले सूत्र दर्ज करें",
+    "reject": "नहीं",
+    "apply": "पूरा",
+    "cancel": "रद्द करें",
+    "save": "सहेजें",
+    "close": "बंद करें",
+    "insertFromPhoto": "फ़ोटो से डालें",
+    "cropSheet": "पन्ने तक काटें",
+    "cropNotFound": "पन्ना नहीं मिला — जैसा है वैसा रखा",
+    "cropDone": "पन्ने तक काटा गया",
+    "cropApplied": "पन्ने तक काटा",
+    "cropping": "पन्ना ढूँढकर सीधा कर रहा हूँ…",
+    "preparing": "फ़ोटो तैयार हो रही है…",
+    "reading": "पढ़ रहा हूँ…",
+    "photoToText": "टेक्स्ट में",
+    "photoFull": "पूरी चौड़ाई",
+    "photoHalf": "आधी चौड़ाई",
+    "optInsertImage": "फ़ोटो भी डालें",
+    "optRecognise": "टेक्स्ट और सूत्र पहचानकर डालें",
+    "insert": "डालें",
+    "processPhoto": "बोर्ड की फ़ोटो संसाधित करें",
+    "mergeThinking": "AI फ़ोटो को नोट्स से मिला रहा है…",
+    "mergeHint": "जो सूत्र पहले से हैं वे दोहराए नहीं जाएँगे; आगे का हिस्सा सही जगह जाएगा।",
+    "mergeKind_duplicate": "पहले से है",
+    "mergeKind_continuation": "आगे का हिस्सा",
+    "mergeKind_new": "नया",
+    "mergeFound": "फ़ोटो पर:",
+    "fragment_text": "पाठ",
+    "fragment_formula": "सूत्र",
+    "fragment_figure": "आकृतियाँ",
+    "fragment_graph": "ग्राफ़",
+    "processPhotoSub": "पाठ, सूत्र, आकृतियाँ और ग्राफ़ — नोट्स से मिलाकर जोड़ देगा",
+    "askInsert": "डालें",
+    "askInsertAfter": "परिणाम चुने गए पाठ के बाद डालें",
+    "compression": "नोट्स संक्षेपण",
+    "compression_none": "बिना संक्षेप",
+    "compression_medium": "मध्यम",
+    "compression_strong": "अधिक",
+    "compressionHint_none": "विस्तृत: हर बात, व्याख्या और उदाहरण",
+    "compressionHint_medium": "अच्छे छात्र नोट्स की तरह",
+    "compressionHint_strong": "केवल सार: परिभाषाएँ, सूत्र, निष्कर्ष",
+    "photosTooMany": "एक बार में {n} फ़ोटो तक — पहली {n} ली गईं",
+    "panels": "पैनल",
+    "tabAi": "AI",
+    "tabTools": "टूल",
+    "panelsShow": "पैनल दिखाएँ",
+    "panelsHide": "पैनल छिपाएँ",
+    "mergeDuplicate": "“{text}” में",
+    "mergeContinuation": "“{text}” के बाद",
+    "mergeNew": "नोट्स के अंत में",
+    "mergeApply": "नोट्स में जोड़ें",
+    "mergeApplied": "जोड़े गए अंश: {n}",
+    "ctxEmpty": "AI लेक्चर के दौरान विषय और टॉपिक पहचानेगा",
+    "ctxSet": "बताएँ",
+    "ctxEdit": "विषय और टॉपिक बदलें",
+    "ctxPinned": "आपने तय किया — AI नहीं बदलेगा",
+    "ctxSubject": "विषय",
+    "ctxTopic": "लेक्चर का टॉपिक",
+    "ctxSubtopics": "उप-टॉपिक (“;” से अलग)",
+    "ctxSubjectPh": "कैलकुलस",
+    "ctxTopicPh": "संयुक्त फलन का अवकलज",
+    "ctxSubtopicsPh": "चेन रूल; उदाहरण",
+    "ctxEditHint": "AI इसे हर सुझाव और वाक् पहचान में इस्तेमाल करता है; जो आप सुधारेंगे वह वैसा ही रहेगा।",
+    "board": "बोर्ड",
+    "boardOpen": "बोर्ड खोलें",
+    "boardEditTitle": "बोर्ड",
+    "boardEditHint": "कॉल वाला ही बोर्ड: 3D आकृतियाँ, रचनाएँ, कोण, सूत्र",
+    "boardDone": "नोट्स में सहेजें",
+    "boardClose": "बंद करें",
+    "boardBuilding": "AI बोर्ड बना रहा है…",
+    "boardEmpty": "खाली बोर्ड — बनाने के लिए खोलें",
+    "boardSaveFailed": "बोर्ड सहेजा नहीं जा सका",
+    "boardSize": "बोर्ड का आकार",
+    "boardSize_s": "छोटा — आधी चौड़ाई",
+    "boardSize_m": "मध्यम — तीन-चौथाई",
+    "boardSize_l": "बड़ा — पूरी चौड़ाई",
+    "boardLive": "यहीं घुमाएँ",
+    "boardFullscreen": "पूर्ण स्क्रीन",
+    "boardLiveHint": "आकृतियों को सीधे नोट्स में खिसकाएँ और घुमाएँ",
+    "boardDoneShort": "हो गया",
+    "graph": "ग्राफ़",
+    "graphEdit": "बदलें",
+    "graphEditTitle": "ग्राफ़",
+    "graphTypePlot": "फ़ंक्शन",
+    "graphTypeBar": "चार्ट",
+    "graphAiPh": "ग्राफ़ का वर्णन करें: \"परवलय y = x² − 4 और रेखा y = 2x\"…",
+    "graphAiRun": "बनाएँ",
+    "graphAiPhoto": "फ़ोटो से",
+    "graphAiNeedText": "बताएँ कि कौन-सा ग्राफ़ चाहिए",
+    "graphAiNothing": "AI को बनाने के लिए कुछ नहीं मिला",
+    "graphName": "शीर्षक",
+    "graphNamePh": "वैकल्पिक",
+    "graphFrom": "से",
+    "graphTo": "तक",
+    "graphYAuto": "y — स्वतः",
+    "graphXLabel": "x-अक्ष लेबल",
+    "graphYLabel": "y-अक्ष लेबल",
+    "graphSeries": "ग्राफ़ पर",
+    "graphKind": "प्रकार",
+    "graphKind_fn": "फ़ंक्शन",
+    "graphKind_area": "क्षेत्रफल",
+    "graphKind_points": "बिंदु",
+    "graphKind_line": "डेटा से",
+    "graphKind_vline": "x = a",
+    "graphKind_hline": "y = b",
+    "graphBadExpr": "अभिव्यक्ति समझ नहीं आई — उदाहरण: 2x^2 - 3, sin(x), sqrt(x)",
+    "graphPieceFrom": "खंड: x से",
+    "graphAreaFrom": "छायांकन से",
+    "graphPoints": "बिंदु: x; y; लेबल — प्रति पंक्ति एक",
+    "graphLabel": "लेबल",
+    "graphDashed": "डैश्ड",
+    "graphCategories": "श्रेणियाँ (अल्पविराम से)",
+    "graphValues": "मान (; से अलग)",
+    "graphBarKind_bar": "स्तंभ",
+    "graphBarKind_line": "रेखा",
+    "graphEmpty": "अभी बनाने को कुछ नहीं — फ़ंक्शन या डेटा जोड़ें",
+    "matrix": "मैट्रिक्स",
+    "matrixTitle": "मैट्रिक्स",
+    "matrixName": "नाम",
+    "matrixRows": "पंक्तियाँ",
+    "matrixCols": "स्तंभ",
+    "matrixBrackets": "कोष्ठक",
+    "matrixOps": "गणना करें",
+    "matrixOpT": "ट्रांसपोज़",
+    "matrixOpDet": "सारणिक",
+    "matrixOpInv": "व्युत्क्रम",
+    "matrixOpRank": "रैंक",
+    "matrixOpGauss": "गाउसीय विलोपन",
+    "matrixOpRref": "गाउस–जॉर्डन",
+    "matrixSingular": "मैट्रिक्स अव्युत्क्रमणीय है — व्युत्क्रम नहीं है",
+    "matrixGaussNote": "पंक्ति सोपान रूप",
+    "matrixRrefNote": "घटित पंक्ति सोपान रूप",
+    "matrixSymbolic": "मैट्रिक्स में अक्षर हैं — गणना केवल संख्याओं और भिन्नों के लिए",
+    "matrixInsertResult": "नोट्स में डालें",
+    "matrixInsert": "मैट्रिक्स डालें",
+    "matrixAsFormula": "सूत्र के रूप में संपादित करें",
+    "sizeDown": "छोटा",
+    "sizeUp": "बड़ा",
+    "alignLeft": "बाएँ संरेखित",
+    "alignCenter": "केंद्र में",
+    "alignRight": "दाएँ संरेखित",
+    "alignJustify": "दोनों ओर संरेखित",
+    "sizeAndAlign": "आकार और संरेखण",
+    "formulaSize": "सूत्र का आकार",
+    "fontSize": "फ़ॉन्ट आकार",
+    "fontSizeNormal": "सामान्य",
+    "share": "साझा करें",
+    "shareView": "केवल देखें",
+    "shareEdit": "देखें और संपादित करें",
+    "shareViewHint": "लिंक वाला कोई भी नोट्स देख सकेगा — ये लाइव अपडेट होते हैं",
+    "shareEditHint": "टेक्स्ट, सूत्र, ग्राफ़ और बोर्ड संपादित कर सकता है (AI के बिना)",
+    "shareLink": "लिंक",
+    "shareCopy": "लिंक कॉपी करें",
+    "shareCopyPrompt": "लिंक कॉपी करें",
+    "shareFailed": "लिंक नहीं बदला जा सका",
+    "shareConflict": "नोट्स अभी लिंक से बदले गए — नवीनतम संस्करण दिखाया गया है",
+    "shareGoneTitle": "यह लिंक काम नहीं करता",
+    "shareGoneText": "लेखक ने इसे बंद कर दिया या लेक्चर हटा दिया।",
+    "photoN": "फ़ोटो {n}",
+    "photoReady": "तैयार",
+    "photoRetry": "फिर से करें",
+    "photosSomeFailed": "{total} में से {ok} फ़ोटो खुलीं। टूटी हुई फ़ोटो फिर से आज़माएँ या उनके बिना जारी रखें।",
+    "photosAllFailed": "कोई भी फ़ोटो नहीं खुली — फिर से आज़माएँ या दूसरी चुनें।",
+    "photosContinueWithout": "उनके बिना जारी रखें",
+    "photosUploadFailed": "सभी फ़ोटो अपलोड नहीं हुईं — फिर से आज़माएँ या “फ़ोटो डालें” हटाएँ।",
+    "photoErr_UNREADABLE": "खुल नहीं रही: फ़ॉर्मैट समर्थित नहीं (जैसे HEIC) या फ़ाइल खराब है",
+    "photoErr_PHOTO_TOO_LARGE": "बहुत बड़ी — संपीड़न के बाद भी 15 MB से अधिक",
+    "photoErr_UNSUPPORTED_PHOTO": "फ़ॉर्मैट समर्थित नहीं — JPG, PNG या WebP चाहिए",
+    "photoErr_UPLOAD_FAILED": "फ़ोटो अपलोड नहीं हो सकी",
+    "photoErr_AI_FAILED": "AI फ़ोटो नहीं पढ़ सका — फिर से आज़माएँ",
+    "photoErr_TOO_MANY_PHOTOS": "एक बार में बहुत अधिक फ़ोटो — अधिकतम 6",
+    "structureAddedTo": "यह “{title}” का पूरक है — ठीक उसके बाद जोड़ा गया",
+    "language": "लेक्चर की भाषा",
+    "language_ru": "Русский",
+    "language_en": "English",
+    "language_auto": "मिश्रित",
+    "languageHint_ru": "लेक्चर रूसी में है",
+    "languageHint_en": "लेक्चर अंग्रेज़ी में है — नोट्स भी अंग्रेज़ी में",
+    "languageHint_auto": "दो भाषाएँ, जैसे अंग्रेज़ी की क्लास: रिकॉर्डिंग के हर हिस्से की भाषा अपने-आप पहचानी जाती है, उदाहरण और शब्दावली अंग्रेज़ी में रहते हैं"
+  },
+  "lecturePromo": {
+    "eyebrow": "नया टूल · VIP",
+    "h2": "नोट्स जो",
+    "h2_hl": "ख़ुद लिखे जाते हैं",
+    "lead": "एक बटन दबाएँ और व्याख्यान सुनें। AI शोरगुल वाली कक्षा में भी भाषण समझकर साफ़ नोट्स बनाता है — विषय की हर ज़रूरी चीज़ के साथ।",
+    "tool_formulas": "सूत्र",
+    "tool_graphs": "ग्राफ़",
+    "tool_matrices": "मैट्रिक्स",
+    "tool_board3d": "3D बोर्ड",
+    "tool_photo": "बोर्ड की फ़ोटो",
+    "tool_export": "Word और PDF",
+    "cta_start": "रिकॉर्डिंग शुरू करें",
+    "vip_note": "VIP में उपलब्ध",
+    "rec": "रिकॉर्डिंग जारी",
+    "raw": "<x>शांत रहो</x> तो फलन y बराबर x वर्ग घटा चार <x>तुमने कल</x> और रेखा y बराबर दो x <x>अँ</x> उनके बीच का क्षेत्रफल निकालें <x>जारी रहेगा</x>",
+    "arrow": "AI साफ़ करता है और नोट्स बनाता है",
+    "note_title": "वक्रों के बीच क्षेत्रफल",
+    "note_text": "दिए गए <d>y = x² − 4</d> और <d>y = 2x</d>। सीमाएँ <h>x² − 2x − 4 = 0</h> के मूल हैं।"
+  },
+  "lectureLanding": {
+    "metaTitle": "व्याख्यान नोट्स — AI आपके लिए नोट्स लिखता है | GoodWorker",
+    "metaDescription": "फ़ोन को मेज़ पर रखें: AI शिक्षक को सुनता है, शोर छांटता है और सूत्रों, ग्राफ़, आव्यूहों और बोर्डों के साथ नोट्स बनाता है। नोट्स स्वयं विषय फ़ोल्डरों में व्यवस्थित हो जाते हैं।",
+    "eyebrow": "व्याख्यान नोट्स",
+    "h1": "फ़ोन को मेज़ पर रखें।",
+    "h1Hl": "नोट्स स्वयं लिखे जाएंगे।",
+    "lead": "AI शिक्षक को सुनता है, पीछे की बेंचों से आने वाला शोर और बकबक हटाता है और कक्षा के दौरान ही नोट्स बनाता है — सूत्रों, ग्राफ़, आव्यूहों और बोर्डों के साथ।",
+    "cta": "रिकॉर्डिंग शुरू करें",
+    "ctaNote": "VIP में शामिल · फ़ोन ब्राउज़र में काम करता है",
+    "ctaFiles": "मेरे नोट्स",
+    "files": {
+      "eyebrow": "नोट्स + फ़ाइलें",
+      "h2": "हर व्याख्यान स्वयं अपनी",
+      "h2Hl": "विषय की शेल्फ़ पर रखा जाता है",
+      "lead": "«फ़ाइलों में सहेजें» दबाएँ — और नोट्स पहले से «व्याख्यान नोट्स / रैखिक बीजगणित» फ़ोल्डर में हैं: Word दस्तावेज़ और अध्यायों के साथ कक्षा की रिकॉर्डिंग। कुछ भी क्रमबद्ध करने की ज़रूरत नहीं।",
+      "points": [
+        {
+          "t": "विषय के अनुसार फ़ोल्डर",
+          "d": "AI विषय स्वयं निर्धारित करता है। «भौतिकी» का अपना फ़ोल्डर है — नोट्स वहीं जाएंगे।"
+        },
+        {
+          "t": "«विषय» फ़िल्टर",
+          "d": "एक क्लिक — और आपके सामने विषय के सभी व्याख्यान, फ़ोटो और फ़ाइलें।"
+        },
+        {
+          "t": "Word + अध्यायों वाला ऑडियो",
+          "d": ".docx के साथ — विषयों, सूत्रों और बोर्डों के अनुसार चिह्नित कक्षा की रिकॉर्डिंग।"
+        },
+        {
+          "t": "समूह के लिए लिंक",
+          "d": "केवल देखने या साथ में संपादन के लिए — सहपाठी नोट्स लाइव देखते हैं।"
+        }
+      ],
+      "tree": "व्याख्यान नोट्स",
+      "all": "सभी विषय",
+      "subjects": [
+        "रैखिक बीजगणित",
+        "गणितीय विश्लेषण",
+        "भौतिकी"
+      ],
+      "items": [
+        {
+          "s": 0,
+          "name": "रैखिक समीकरण और क्रेमर का नियम.docx",
+          "kind": "doc",
+          "meta": "12 पृष्ठ · 28 सूत्र"
+        },
+        {
+          "s": 0,
+          "name": "रैखिक समीकरण और क्रेमर का नियम.m4a",
+          "kind": "audio",
+          "meta": "1:24:10 · 9 अध्याय"
+        },
+        {
+          "s": 0,
+          "name": "व्युत्क्रम आव्यूह.docx",
+          "kind": "doc",
+          "meta": "8 पृष्ठ · 3 आव्यूह"
+        },
+        {
+          "s": 1,
+          "name": "वक्रों के बीच का क्षेत्रफल.docx",
+          "kind": "doc",
+          "meta": "9 पृष्ठ · 2 ग्राफ़"
+        },
+        {
+          "s": 1,
+          "name": "वक्रों के बीच का क्षेत्रफल.m4a",
+          "kind": "audio",
+          "meta": "1:18:42 · 7 अध्याय"
+        },
+        {
+          "s": 2,
+          "name": "बिंदु की गतिकी.docx",
+          "kind": "doc",
+          "meta": "6 पृष्ठ · 1 बोर्ड"
+        }
+      ],
+      "chapters": "रिकॉर्डिंग के अध्याय",
+      "chapterList": [
+        "04:12 · स्लाउ: आव्यूह रूप",
+        "23:40 · क्रेमर का सूत्र",
+        "51:05 · उदाहरण 2×2",
+        "78:30 · बोर्ड"
+      ],
+      "share": "साझा करें",
+      "shareView": "केवल देखने के लिए",
+      "shareEdit": "देखने और संपादन के लिए",
+      "tutor": "शिक्षक के लिए: छात्रों के लिए विषय फ़ोल्डर खोलें — उन्हें आपके नोट्स «मेरे लिए उपलब्ध» में मिलेंगे।",
+      "noteTag": "नोट्स"
+    },
+    "examples": {
+      "eyebrow": "उदाहरण",
+      "h2": "तैयार नोट्स ऐसे दिखते हैं",
+      "lead": "शब्द-दर-शब्द प्रतिलेख नहीं, बल्कि नोट्स: शीर्षक, परिभाषाएँ, सूत्र, ग्राफ़ और चित्र — जैसे कक्षा के सर्वश्रेष्ठ छात्र के।",
+      "tabs": [
+        "गणितीय विश्लेषण",
+        "रैखिक बीजगणित",
+        "भौतिकी",
+        "इतिहास"
+      ],
+      "docs": [
+        [
+          {
+            "t": "h",
+            "v": "संयुक्त फलन का अवकलज"
+          },
+          {
+            "t": "def",
+            "v": "यदि $y = f(g(x))$, तो अवकलज अवकलजों के गुणनफल के बराबर है:"
+          },
+          {
+            "t": "math",
+            "v": "\\bigl(f(g(x))\\bigr)' = f'(g(x))\\cdot g'(x)"
+          },
+          {
+            "t": "p",
+            "v": "उदाहरण: $\\bigl(\\sin x^2\\bigr)' = \\cos x^2 \\cdot 2x$।"
+          },
+          {
+            "t": "graph"
+          }
+        ],
+        [
+          {
+            "t": "h",
+            "v": "व्युत्क्रम आव्यूह"
+          },
+          {
+            "t": "def",
+            "v": "$A^{-1}$ अस्तित्व में है, केवल यदि ==$\\det A \\neq 0$==।"
+          },
+          {
+            "t": "math",
+            "v": "A = \\begin{pmatrix} 2 & 1 \\\\ 5 & 3 \\end{pmatrix},\\quad A^{-1} = \\begin{pmatrix} 3 & -1 \\\\ -5 & 2 \\end{pmatrix}"
+          },
+          {
+            "t": "table",
+            "v": [
+              [
+                "संक्रिया",
+                "परिणाम"
+              ],
+              [
+                "$\\det A$",
+                "$1$"
+              ],
+              [
+                "$\\operatorname{rank} A$",
+                "$2$"
+              ],
+              [
+                "$A\\cdot A^{-1}$",
+                "$E$"
+              ]
+            ]
+          }
+        ],
+        [
+          {
+            "t": "h",
+            "v": "पिरामिड का आयतन और द्रव्यमान केंद्र"
+          },
+          {
+            "t": "board"
+          },
+          {
+            "t": "math",
+            "v": "V = \\dfrac{1}{3}\\,S\\,h = \\dfrac{1}{3}\\cdot 36 \\cdot 8 = 96\\ \\text{см}^3"
+          },
+          {
+            "t": "warn",
+            "v": "द्रव्यमान केंद्र ऊँचाई पर, आधार से $\\tfrac{1}{4}h$ पर स्थित है — अंतःगोल के केंद्र से भ्रमित न हों।"
+          }
+        ],
+        [
+          {
+            "t": "h",
+            "v": "पीटर I के सुधार"
+          },
+          {
+            "t": "li",
+            "v": [
+              "1699 — नगर सुधार, बर्मिस्टर चैंबर",
+              "1711 — सीनेट की स्थापना",
+              "1718–1721 — प्रिकाज़ों के स्थान पर कॉलेजियम"
+            ]
+          },
+          {
+            "t": "table",
+            "v": [
+              [
+                "क्षेत्र",
+                "क्या बदला"
+              ],
+              [
+                "सेना",
+                "भर्ती कर्तव्य, नियमित सेना"
+              ],
+              [
+                "प्रशासन",
+                "सीनेट, कॉलेजियम, गवर्नरेट"
+              ],
+              [
+                "चर्च",
+                "पैट्रियार्क के स्थान पर सिनॉड"
+              ]
+            ]
+          },
+          {
+            "t": "p",
+            "v": "व्याख्याता का मुख्य विचार: ==सुधार सैन्य आवश्यकताओं से आए==, किसी तैयार योजना से नहीं।"
+          }
+        ]
+      ],
+      "exports": "निर्यात: असली सूत्रों के साथ Word · PDF · अध्यायों वाला ऑडियो"
+    },
+    "how": {
+      "eyebrow": "यह कैसे काम करता है",
+      "h2": "चार चरण, और उनमें से एक आपका",
+      "steps": [
+        {
+          "t": "रिकॉर्ड करें",
+          "d": "«रिकॉर्डिंग शुरू करें» दबाएँ और फ़ोन को डेस्क पर रखें। रिकॉर्डिंग टुकड़ों में होती है और नेटवर्क जाने पर भी नहीं खोएगी।"
+        },
+        {
+          "t": "AI साफ़ करता है",
+          "d": "पहचान की त्रुटियाँ सुधारता है, बकबक, «खिड़की खोलो» और माइक्रोफ़ोन के भ्रम हटाता है।"
+        },
+        {
+          "t": "नोट्स लिखे जाते हैं",
+          "d": "शीर्षक, परिभाषाएँ, सूत्र, ग्राफ़ — कक्षा के दौरान। नया विषय अंत में जुड़ता है, पुराने पर वापसी — अपने अनुभाग में।"
+        },
+        {
+          "t": "बोर्ड से पूरा करें",
+          "d": "बोर्ड की फ़ोटो लें — AI स्वयं समझेगा कि क्या पहले से है और क्या कहाँ जोड़ना है।"
+        }
+      ]
+    },
+    "features": {
+      "eyebrow": "विशेषताएँ",
+      "h2": "वह सब जो आमतौर पर हाथ से लिखा जाता है — और जो पूरा नहीं होता",
+      "items": [
+        {
+          "i": "sigma",
+          "t": "सूत्र",
+          "d": "असली सूत्र, Word में — संपादन योग्य, चित्र नहीं।"
+        },
+        {
+          "i": "chart",
+          "t": "ग्राफ़",
+          "d": "फलन, क्षेत्रफल, बिंदु और आँकड़े — शिक्षक के भाषण या बोर्ड से।"
+        },
+        {
+          "i": "grid",
+          "t": "आव्यूह",
+          "d": "सारणिक, व्युत्क्रम, रैंक, गाउस — सटीक, भिन्नों में।"
+        },
+        {
+          "i": "box",
+          "t": "3D-बोर्ड",
+          "d": "पिरामिड और प्रिज़्म, जिन्हें पाठ में ही घुमाया जा सकता है।"
+        },
+        {
+          "i": "camera",
+          "t": "बोर्ड की फ़ोटो",
+          "d": "एक बार में छह फ़ोटो तक — AI केवल वह जोड़ता है जो नहीं है।"
+        },
+        {
+          "i": "sparkles",
+          "t": "AI से पूछें",
+          "d": "आसान समझाएं, छोटा करें, तालिका बनाएं — चयनित पाठ पर।"
+        },
+        {
+          "i": "layers",
+          "t": "संपीड़न",
+          "d": "विस्तृत, अच्छे नोट्स की तरह या केवल सूत्र और निष्कर्ष।"
+        },
+        {
+          "i": "audio",
+          "t": "अध्यायों वाला ऑडियो",
+          "d": "विषयों, सूत्रों और बोर्डों के निशानों के साथ कक्षा की रिकॉर्डिंग — आवश्यक स्थान आसानी से खोजें।"
+        },
+        {
+          "i": "link",
+          "t": "लिंक",
+          "d": "नोट्स देखने या साथ में संपादन के लिए साझा करें।"
+        }
+      ]
+    },
+    "who": {
+      "student": {
+        "t": "छात्र के लिए",
+        "d": "व्याख्यान सुनें, शॉर्टहैंड न लिखें। नोट्स, सूत्र और कक्षा की रिकॉर्डिंग — एक ही जगह, विषयों के अनुसार।"
+      },
+      "tutor": {
+        "t": "शिक्षक के लिए",
+        "d": "कक्षाएँ और व्याख्याएँ रिकॉर्ड करें — नोट्स स्वयं फ़ोल्डरों में जाएंगे और छात्रों के लिए खुलेंगे।"
+      }
+    },
+    "final": {
+      "h2": "अगली कक्षा — पहले से नोट्स के साथ",
+      "lead": "व्याख्यान से पहले फ़ोन पर GoodWorker खोलें और एक बटन दबाएँ।",
+      "cta": "रिकॉर्डिंग शुरू करें"
+    },
+    "hero": {
+      "hint": "रिकॉर्ड दबाएँ या बोर्ड की फ़ोटो लें",
+      "recording": "रिकॉर्डिंग जारी",
+      "paused": "रुका हुआ",
+      "pause": "रिकॉर्डिंग रोकें",
+      "resume": "रिकॉर्डिंग जारी रखें",
+      "snap": "बोर्ड की फ़ोटो लें",
+      "scanning": "बोर्ड पढ़ रहा हूँ…",
+      "added": "नोट्स में जुड़ा",
+      "notesTitle": "कलन · वक्रों के बीच का क्षेत्रफल",
+      "writing": "AI लिख रहा है",
+      "ready": "तैयार",
+      "empty": "जैसे ही शिक्षक बोलना शुरू करेंगे, नोट्स दिखने लगेंगे…",
+      "replay": "फिर से",
+      "chalk": [
+        "y = x² − 4,  y = 2x",
+        "x² − 2x − 4 = 0",
+        "S = ∫ (2x − x² + 4) dx"
+      ],
+      "notes": [
+        {
+          "t": "h",
+          "v": "वक्रों के बीच का क्षेत्रफल"
+        },
+        {
+          "t": "def",
+          "v": "अंतराल $[a;\\,b]$ पर $f$ और $g$ के ग्राफ़ों के बीच के क्षेत्र का क्षेत्रफल ==उनके अंतर का समाकल== है, जहाँ $f$ ऊपर है $g$ से:"
+        },
+        {
+          "t": "math",
+          "v": "S = \\int_a^b \\bigl(f(x) - g(x)\\bigr)\\,dx"
+        },
+        {
+          "t": "p",
+          "v": "उदाहरण: $f(x) = 2x$, $g(x) = x^2 - 4$. समाकलन की सीमाएँ ग्राफ़ों के प्रतिच्छेद बिंदु हैं।"
+        }
+      ],
+      "fromBoard": [
+        {
+          "t": "p",
+          "v": "प्रतिच्छेद बिंदु: $x^2 - 2x - 4 = 0$, अतः $x = 1 \\pm \\sqrt{5}$."
+        },
+        {
+          "t": "graph"
+        },
+        {
+          "t": "math",
+          "v": "S = \\int_{1-\\sqrt{5}}^{1+\\sqrt{5}} \\bigl(2x - x^2 + 4\\bigr)\\,dx = \\dfrac{20\\sqrt{5}}{3}"
+        }
+      ],
+      "heardTitle": "अभी सुना जा रहा है",
+      "heard": [
+        {
+          "v": "तो, आगे बढ़ते हैं — वक्रों के बीच का क्षेत्रफल"
+        },
+        {
+          "v": "पीछे वाले थोड़ा शांत रहें",
+          "noise": true
+        },
+        {
+          "v": "अगर a से b तक f, g के ऊपर है"
+        },
+        {
+          "v": "तो क्षेत्रफल f माइनस g का समाकल है"
+        },
+        {
+          "v": "उपशीर्षक: समुदाय द्वारा",
+          "noise": true
+        },
+        {
+          "v": "उदाहरण: f बराबर दो x, g है x वर्ग माइनस चार"
+        },
+        {
+          "v": "सीमाएँ प्रतिच्छेद बिंदु हैं, बोर्ड देखिए"
+        }
+      ]
+    },
+    "seo": {
+      "keywords": [
+        "लेक्चर नोट्स",
+        "ऑटोमैटिक लेक्चर नोट्स",
+        "AI से लेक्चर नोट्स",
+        "लेक्चर ट्रांसक्रिप्शन",
+        "फ़ोन पर लेक्चर रिकॉर्ड करें",
+        "बोर्ड की फ़ोटो से फ़ॉर्मूले पहचानें",
+        "Word में लेक्चर नोट्स",
+        "छात्रों के लिए AI नोट्स"
+      ],
+      "h": "AI के साथ ऑटोमैटिक लेक्चर नोट्स",
+      "intro": [
+        "GoodWorker लेक्चर की रिकॉर्डिंग को तैयार नोट्स में बदल देता है। फ़ोन डेस्क पर रखें और “रिकॉर्डिंग शुरू करें” दबाएँ — AI शिक्षक को सुनता है, भाषण को टेक्स्ट में बदलता है और क्लास के दौरान ही शीर्षक, परिभाषाएँ, फ़ॉर्मूले और ग्राफ़ के साथ व्यवस्थित नोट्स बनाता है।",
+        "यह सिर्फ़ ट्रांसक्रिप्ट नहीं है: ज़ुबान की फिसलन, क्लास का शोर और पीछे की बेंचों की बातें हट जाती हैं, और सामग्री खंडों में बँट जाती है — वैसे ही जैसे आगे की बेंच का ध्यान देने वाला छात्र लिखता।"
+      ],
+      "blocks": [
+        {
+          "h": "फ़ॉर्मूले, ग्राफ़ और मैट्रिक्स — असली, तस्वीर नहीं",
+          "p": [
+            "AI गणित को फ़ॉर्मूलों के रूप में लिखता है: समाकल, भिन्न, सीमाएँ और मैट्रिक्स संपादन योग्य रहते हैं — उन्हें ठीक करें, बड़ा करें या संरेखित करें। फ़ंक्शन के ग्राफ़ समीकरण से बनते हैं और वक्र के नीचे का क्षेत्र रंगा जाता है, और मैट्रिक्स का सारणिक, व्युत्क्रम और रैंक एक क्लिक में — सटीक भिन्नों में।",
+            "अगर शिक्षक बोर्ड पर लिखते हैं, तो उसकी फ़ोटो लें: AI फ़ॉर्मूले और चित्र पढ़ता है, उन्हें आपके नोट्स से मिलाता है और सिर्फ़ नया जोड़ता है — आगे की बात सही खंड के बाद जाती है, दोहराव हटा दिए जाते हैं।"
+          ]
+        },
+        {
+          "h": "नोट्स जिनसे पढ़ना आसान है",
+          "p": [
+            "एक स्विच से नोट्स को मुख्य बातों तक छोटा करें, समझ न आए पैराग्राफ़ के बारे में AI से पूछें, व्याख्या या तालिका जोड़ें, हाशिये पर अपने नोट्स छोड़ें। सब कुछ सामान्य दस्तावेज़ की तरह संपादित होता है।"
+          ]
+        },
+        {
+          "h": "Word, PDF और अध्यायों वाले ऑडियो में निर्यात",
+          "p": [
+            "नोट्स को Word के असली समीकरणों के साथ .docx या PDF में डाउनलोड करें, या “मेरी फ़ाइलें” में सहेजें — अपने-आप बने विषय फ़ोल्डर में। लेक्चर का ऑडियो हर खंड के अध्यायों के साथ .m4a में सहेजा जाता है, ताकि ज़रूरी हिस्सा सेकंडों में दोबारा सुन सकें।"
+          ]
+        },
+        {
+          "h": "छात्रों और ट्यूटरों के लिए",
+          "p": [
+            "छात्रों को हर क्लास के नोट्स — बिना दोबारा लिखे और बिना कुछ छूटे। ट्यूटर पाठ की रिकॉर्डिंग से छात्र के लिए साफ़-सुथरी सामग्री बनाते हैं और उसे लिंक से साझा करते हैं — केवल देखने या साथ में संपादन के लिए।"
+          ]
+        }
+      ],
+      "faqTitle": "अक्सर पूछे जाने वाले प्रश्न",
+      "faq": [
+        {
+          "q": "लेक्चर नोट्स अपने-आप कैसे बनाएँ?",
+          "a": "“लेक्चर नोट्स” खोलें, “रिकॉर्डिंग शुरू करें” दबाएँ और फ़ोन डेस्क पर रखें। AI शिक्षक की बात को टेक्स्ट में बदलकर लेक्चर के दौरान ही नोट्स बनाता है; रिकॉर्डिंग रोकने पर टेक्स्ट को अधिक सटीक पहचान मॉडल से सुधारा जाता है।"
+        },
+        {
+          "q": "क्या AI फ़ॉर्मूले और ग्राफ़ पहचानता है?",
+          "a": "हाँ। फ़ॉर्मूले गणितीय मार्कअप में लिखे जाते हैं और संपादन योग्य रहते हैं, ग्राफ़ समीकरणों से बनते हैं। बोर्ड के फ़ॉर्मूले और चित्र फ़ोटो से जोड़े जा सकते हैं।"
+        },
+        {
+          "q": "क्या नोट्स Word में डाउनलोड हो सकते हैं?",
+          "a": "हाँ, नोट्स Word समीकरणों के साथ .docx में और PDF में डाउनलोड होते हैं। उन्हें “मेरी फ़ाइलें” में भी सहेज सकते हैं — वे अपने-आप अपने विषय के फ़ोल्डर में चले जाते हैं।"
+        },
+        {
+          "q": "अगर क्लास में शोर हो तो?",
+          "a": "बगल की बातचीत, शोर और पहचान की गलतियाँ छँट जाती हैं: AI पहले शिक्षक की कही बात बहाल करता है और फिर नोट्स लिखता है।"
+        },
+        {
+          "q": "यह किसके लिए उपलब्ध है?",
+          "a": "लेक्चर नोट्स GoodWorker के VIP छात्रों और VIP ट्यूटरों के लिए उपलब्ध हैं।"
+        }
+      ]
+    }
+  },
+  "filesPromo": {
+    "eyebrow": "फ़ाइल स्टोरेज",
+    "h2": "सारी सामग्री —",
+    "h2_hl": "एक ही फ़ोल्डर में",
+    "lead": "कोई भी फ़ाइल — PDF, Word, प्रेज़ेंटेशन, फ़ोटो, वीडियो, ऑडियो और नोट्स — सही छात्रों के लिए, सही अवधि तक। हर छात्र के पास होमवर्क जमा करने का अपना फ़ोल्डर है: डेडलाइन, पेन से जाँच, और आप देखते हैं कि किसने सामग्री खोल ली है।",
+    "points": [
+      "छात्रवार और अवधि के हिसाब से पहुँच",
+      "डेडलाइन और जाँच के साथ निजी होमवर्क जमा",
+      "फ़ाइलों के अंदर टेक्स्ट से खोज"
+    ],
+    "cta": "फ़ाइलें खोलें",
+    "vip": "VIP में शामिल · हर ट्यूटर के लिए 15 GB",
+    "library": "लाइब्रेरी",
+    "quota": "15 में से 3.2 GB",
+    "filesIn": "फ़ाइलें",
+    "share": "फ़ोल्डर की पहुँच",
+    "until": "31 मई तक",
+    "done": "हो गया",
+    "opened": "{name} ने देखा",
+    "students": [
+      "अन्या क.",
+      "दीमा स.",
+      "मीशा ल.",
+      "कात्या र."
+    ],
+    "folders": [
+      {
+        "name": "बीजगणित · कक्षा 9A",
+        "cover": "preset:aurora",
+        "files": [
+          {
+            "name": "पाठ्यपुस्तक, अध्याय 4.pdf",
+            "kind": "pdf",
+            "size": 39845888
+          },
+          {
+            "name": "द्विघात समीकरण.docx",
+            "kind": "docx",
+            "size": 1258291
+          },
+          {
+            "name": "गलतियों का विश्लेषण.m4a",
+            "kind": "audio",
+            "size": 11534336
+          }
+        ]
+      },
+      {
+        "name": "होमवर्क #7 · अवकलज",
+        "cover": "preset:sunset",
+        "deadline": true,
+        "files": [
+          {
+            "name": "असाइनमेंट.pdf",
+            "kind": "pdf",
+            "size": 317440
+          },
+          {
+            "name": "अन्या क. — हल.pdf",
+            "kind": "pdf",
+            "size": 2202009,
+            "student": true,
+            "review": "ACCEPTED",
+            "grade": "5"
+          },
+          {
+            "name": "मीशा ल. — हल.pdf",
+            "kind": "pdf",
+            "size": 1782579,
+            "student": true,
+            "late": true,
+            "review": "REVISION"
+          }
+        ]
+      },
+      {
+        "name": "भौतिकी · परीक्षा तैयारी",
+        "cover": "preset:peach",
+        "files": [
+          {
+            "name": "गतिकी — नोट्स.pdf",
+            "kind": "pdf",
+            "size": 2202009
+          },
+          {
+            "name": "प्रैक्टिस टेस्ट 12 हल सहित.pdf",
+            "kind": "pdf",
+            "size": 5662310
+          },
+          {
+            "name": "गतिकी — प्रेज़ेंटेशन.pptx",
+            "kind": "pptx",
+            "size": 8912896
+          }
+        ]
+      },
+      {
+        "name": "लेक्चर नोट्स",
+        "cover": "preset:meadow",
+        "files": [
+          {
+            "name": "वक्रों के बीच क्षेत्रफल.docx",
+            "kind": "lecture",
+            "size": 845824
+          },
+          {
+            "name": "वक्रों के बीच क्षेत्रफल.m4a",
+            "kind": "audio",
+            "size": 34603008
+          },
+          {
+            "name": "फलनों की सीमाएँ.docx",
+            "kind": "lecture",
+            "size": 612352
+          }
+        ]
+      }
+    ]
+  },
+  "StorageLanding": {
+    "meta_title": "फ़ाइल स्टोरेज — ट्यूटर और छात्रों के लिए अध्ययन सामग्री",
+    "meta_description": "सारी अध्ययन सामग्री एक जगह रखें: हर छात्र के लिए फ़ोल्डर, समय-सीमित एक्सेस, काम जमा करना और जाँचना, फ़ाइलों के अंदर खोज।",
+    "badge": "फ़ाइल स्टोरेज",
+    "hero_title": "सारी अध्ययन सामग्री — <hl>एक ही जगह</hl>",
+    "hero_lead": "GoodWorker स्टोरेज विषयों, छात्रों और कोर्स के अनुसार फ़ाइलें, नोट्स और सामग्री को सुविधाजनक तरीके से व्यवस्थित करने में मदद करता है।",
+    "hero_cta1": "मुफ़्त में आज़माएँ",
+    "hero_cta2": "यह कैसे काम करता है",
+    "hero_sig": "आसान और व्यवस्थित",
+    "win_aria": "स्टोरेज इंटरफ़ेस का पूर्वावलोकन",
+    "win_title": "मेरी फ़ाइलें",
+    "folders_aria": "फ़ोल्डर",
+    "search_label": "फ़ाइलों में खोजें",
+    "quota": "15 GB में से 2.4 GB",
+    "folder_1": "लेक्चर नोट्स",
+    "folder_2": "होमवर्क",
+    "folder_3": "सामग्री",
+    "folder_4": "कोर्स",
+    "file_1": "रैखिक बीजगणित — नोट्स.pdf",
+    "file_2": "लेक्चर 3 — ऑडियो.mp3",
+    "file_3": "होमवर्क.docx",
+    "file_4": "सूत्र तालिका.xlsx",
+    "size_1": "1.2 MB",
+    "size_2": "18 MB",
+    "size_3": "84 KB",
+    "size_4": "46 KB",
+    "type_pdf": "PDF दस्तावेज़",
+    "type_mp3": "MP3 ऑडियो",
+    "type_docx": "Word दस्तावेज़",
+    "type_xlsx": "Excel तालिका",
+    "student_anna": "अन्ना",
+    "student_ilya": "इल्या",
+    "student_maria": "मारिया",
+    "student_kirill": "किरिल",
+    "gen_anna": "अन्ना",
+    "gen_ilya": "इल्या",
+    "gen_maria": "मारिया",
+    "gen_kirill": "किरिल",
+    "crumb_root": "मेरी फ़ाइलें",
+    "crumbs_aria": "पथ",
+    "folders_heading": "फ़ोल्डर",
+    "folders_count": "{count, plural, one {# फ़ोल्डर} other {# फ़ोल्डर}}",
+    "files_count": "{count, plural, one {# फ़ाइल} other {# फ़ाइलें}}",
+    "personal_sub": "निजी सबफ़ोल्डर",
+    "personal_sub_files": "निजी सबफ़ोल्डर · {files}",
+    "open_sub_aria": "सबफ़ोल्डर खोलें: {name}",
+    "open_folder_aria": "फ़ोल्डर खोलें {name}",
+    "open_file_aria": "फ़ाइल खोलें {name}",
+    "back_aria": "फ़ोल्डर «{name}» पर वापस",
+    "access": "एक्सेस",
+    "give_access": "एक्सेस दें",
+    "whom_open": "किसके लिए खोलें",
+    "students_aria": "छात्र",
+    "badge_open": "खुला",
+    "badge_closed": "बंद",
+    "close_panel_aria": "पैनल बंद करें",
+    "close": "बंद करें",
+    "panel_folder": "फ़ोल्डर",
+    "panel_status": "स्थिति",
+    "note_sub": "फ़ाइल छात्र को दिखती है — {name}।",
+    "note_open": "फ़ाइल उन छात्रों को दिखती है जिनके पास फ़ोल्डर का एक्सेस है।",
+    "note_hidden": "फ़ाइल छिपी है: फ़ोल्डर का एक्सेस होने पर भी छात्र उसे नहीं देख सकते।",
+    "close_access": "एक्सेस बंद करें",
+    "open_access": "एक्सेस खोलें",
+    "toast_granted_f": "{name} को एक्सेस मिला",
+    "toast_granted_m": "{name} को एक्सेस मिला",
+    "toast_revoked": "{name} का एक्सेस बंद किया गया",
+    "toast_file_open": "फ़ाइल छात्रों के लिए खुली है",
+    "toast_file_closed": "फ़ाइल का एक्सेस बंद किया गया",
+    "toast_file_sub_f": "{name} को फ़ाइल का एक्सेस मिला",
+    "toast_file_sub_m": "{name} को फ़ाइल का एक्सेस मिला",
+    "how_title": "पढ़ाई के लिए सब कुछ",
+    "th1_t": "छात्रों के अनुसार फ़ोल्डर",
+    "th1_d": "हर किसी का अपना सबफ़ोल्डर: सामग्री केवल उसी को दिखती है जिसके लिए आपने उसे खोला है।",
+    "th2_t": "समय-सीमित एक्सेस",
+    "th2_d": "फ़ोल्डर को ज़रूरी अवधि के लिए खोलें — और एक क्लिक में बंद करें।",
+    "th3_t": "काम जमा करना",
+    "th3_d": "छात्र डेडलाइन वाले फ़ोल्डर में काम अपलोड करता है, आप जाँचकर लौटा देते हैं।",
+    "th4_t": "फ़ाइलों के अंदर खोज",
+    "th4_d": "दस्तावेज़ के किसी शब्द से नोट्स खोजें, सिर्फ़ नाम से नहीं।",
+    "locked": "बंद",
+    "pill_open": "खुला",
+    "pill_closed": "बंद",
+    "wd1": "सोम",
+    "wd2": "मंगल",
+    "wd3": "बुध",
+    "wd4": "गुरु",
+    "wd5": "शुक्र",
+    "wd6": "शनि",
+    "wd7": "रवि",
+    "deadline": "डेडलाइन · शुक्र",
+    "upload_work": "काम अपलोड करें",
+    "st_wait": "प्रतीक्षा में",
+    "st_sent": "जमा किया",
+    "st_checked": "जाँचा गया",
+    "search_query": "सारणिक",
+    "res1": "…यदि किसी आव्यूह का <m>सारणिक</m> शून्य है, तो निकाय या तो असंगत है या उसके अनंत हल हैं…",
+    "res2": "…दूसरे क्रम का <m>सारणिक</m>: ad − bc…",
+    "steps_title": "यह कैसे काम करता है",
+    "steps_lead": "खाली स्टोरेज से लेकर जमा और जाँचे गए काम तक तीन कदम।",
+    "step1_t": "फ़ोल्डर बनाएँ",
+    "step1_d": "सामग्री को विषयों और कोर्स के अनुसार रखें। हर छात्र का अपना निजी सबफ़ोल्डर होता है।",
+    "step2_t": "एक्सेस खोलें",
+    "step2_d": "चुनें किसे और कितने समय के लिए। एक्सेस एक क्लिक में बंद किया जा सकता है।",
+    "step3_t": "काम स्वीकार करें",
+    "step3_d": "छात्र डेडलाइन वाले फ़ोल्डर में काम अपलोड करता है, आप जाँचकर लौटा देते हैं।",
+    "aud_title": "ट्यूटर के लिए व्यवस्था, छात्र के लिए स्पष्टता",
+    "aud_t_title": "ट्यूटर के लिए",
+    "aud_t_sub": "सामग्री में व्यवस्था और इस पर नियंत्रण कि कौन क्या देखे।",
+    "aud_t1_b": "विषयों और छात्रों के अनुसार फ़ोल्डर",
+    "aud_t1_d": "हर किसी का अपना सबफ़ोल्डर: सामग्री केवल उसी को दिखती है जिसके लिए आपने उसे खोला है।",
+    "aud_t2_b": "समय-सीमित एक्सेस",
+    "aud_t2_d": "फ़ोल्डर को ज़रूरी अवधि के लिए खोलें और एक क्लिक में बंद करें।",
+    "aud_t3_b": "काम की जाँच",
+    "aud_t3_d": "छात्र डेडलाइन वाले फ़ोल्डर में काम जमा करता है, आप जाँचकर लौटा देते हैं। .docx फ़ाइलें सीधे स्टोरेज में संपादित की जा सकती हैं।",
+    "aud_t4_b": "जगह का हिसाब",
+    "aud_t4_d": "दिखता है कि कितनी जगह भरी है और कितनी बची है।",
+    "aud_s_title": "छात्रों के लिए",
+    "aud_s_sub": "कक्षाओं के लिए ज़रूरी सब कुछ हाथ में — फ़ाइलें भेजने की ज़रूरत नहीं।",
+    "aud_s1_b": "ट्यूटर की सामग्री एक जगह",
+    "aud_s1_d": "नोट्स, असाइनमेंट और रिकॉर्डिंग विषयों के फ़ोल्डरों में रहती हैं, चैट में खोती नहीं।",
+    "aud_s2_b": "साफ़ पता है क्या और कब जमा करना है",
+    "aud_s2_d": "डेडलाइन फ़ोल्डर और कैलेंडर में दिखती है, साथ ही काम की स्थिति — जमा हुआ या जाँचा जा चुका।",
+    "aud_s3_b": "फ़ाइलों के अंदर खोज",
+    "aud_s3_d": "दस्तावेज़ के किसी शब्द से ज़रूरी नोट्स खोजें, सिर्फ़ नाम से नहीं।",
+    "mf_aria": "सिद्धांत",
+    "mf_a": "सामग्री वहीं होनी चाहिए जहाँ उसकी प्रतीक्षा हो — और दिखनी चाहिए",
+    "mf_b": "केवल उन्हें जिनके लिए आपने उसे खोला है।",
+    "faq_title": "अक्सर पूछे जाने वाले प्रश्न",
+    "faq_lead": "स्टोरेज कैसे काम करता है, संक्षेप में।",
+    "faq1_q": "निजी सबफ़ोल्डर की फ़ाइलें कौन देखता है?",
+    "faq1_a": "केवल वह छात्र जिसका वह है, और आप। अन्य छात्र यह सबफ़ोल्डर नहीं देखते।",
+    "faq2_q": "क्या फ़ोल्डर को कुछ समय के लिए खोला जा सकता है?",
+    "faq2_a": "हाँ। फ़ोल्डर को ज़रूरी अवधि के लिए खोलें, और एक्सेस किसी भी क्षण एक क्लिक में बंद किया जा सकता है।",
+    "faq3_q": "छात्र काम कैसे जमा करता है?",
+    "faq3_a": "वह डेडलाइन वाले फ़ोल्डर में फ़ाइल अपलोड करता है। आप देखते हैं कि किसने जमा कर दिया, काम जाँचते हैं और छात्र को लौटा देते हैं।",
+    "faq4_q": "क्या फ़ाइल को उसके अंदर के पाठ से खोजा जा सकता है?",
+    "faq4_a": "हाँ। खोज दस्तावेज़ों की सामग्री में काम करती है, सिर्फ़ फ़ाइल के नामों में नहीं।",
+    "faq5_q": "क्या स्टोरेज में ही दस्तावेज़ संपादित किए जा सकते हैं?",
+    "faq5_a": ".docx फ़ाइलें सीधे स्टोरेज में संपादित की जा सकती हैं। सुधारा हुआ संस्करण मूल फ़ाइल के बगल में सहेजा जाता है।",
+    "faq6_q": "कैसे पता चले कि कितनी जगह बची है?",
+    "faq6_a": "भरी हुई और उपलब्ध जगह स्टोरेज के ऊपरी पैनल में दिखाई जाती है — आप हमेशा देखते हैं कि कितनी बची है।",
+    "cta_title": "अध्ययन सामग्री को एक जगह इकट्ठा करें",
+    "cta_text": "छात्रों के अनुसार फ़ोल्डर, समय-सीमित एक्सेस और काम जमा करना — एक ही GoodWorker स्टोरेज में।"
   }
 }

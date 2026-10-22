@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Archivo, Bodoni_Moda } from 'next/font/google'
+import Footer from '@/widgets/Footer/Footer'
 
 // Neither family ships Cyrillic glyphs on Google Fonts — ru/other Cyrillic text falls back to the
 // web-safe stack in the page CSS (Georgia / Helvetica), matching the prototype's fallback design.
@@ -12,5 +13,10 @@ export const metadata: Metadata = {
 }
 
 export default function PdfInfoLayout({ children }: { children: React.ReactNode }) {
-  return <div className={`${archivo.variable} ${bodoni.variable}`} style={{ isolation: 'isolate' }}>{children}</div>
+  return (
+    <>
+      <div className={`${archivo.variable} ${bodoni.variable}`} style={{ isolation: 'isolate' }}>{children}</div>
+      <Footer />
+    </>
+  )
 }

@@ -1,60 +1,51 @@
+// Every AI request in the app goes to DeepSeek — text via `deepseek-chat`,
+// photos via the vision model. There is deliberately no fallback provider:
+// without DEEPSEEK_API_KEY a call fails loudly instead of silently switching.
 const DEEPSEEK_MODEL        = 'deepseek-chat'
 const DEEPSEEK_VISION_MODEL = 'deepseek-v4-flash-vision-exp'
 const DEEPSEEK_ENDPOINT     = 'https://api.deepseek.com/chat/completions'
-
-const OR_MODEL    = 'openrouter/free'
-const OR_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions'
-const SITE_URL    = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://goodworker.ru'
 const TIMEOUT_MS  = 120_000
 
-type Provider = 'deepseek' | 'openrouter'
-
-function getProvider(): Provider {
-  return process.env.DEEPSEEK_API_KEY ? 'deepseek' : 'openrouter'
+// `json: false` drops response_format so the model can answer in plain
+// text / markdown (e.g. lecture notes); default stays JSON for older callers.
+type CallOpts = {
+  temperature?: number
+  maxTokens?: number
+  json?: boolean
+  onUsage?: (usage: AIUsage) => void
+  /** Vision only: an answer this rejects counts as a failed try (the next model gets the photo). */
+  validate?: (content: string) => boolean
 }
 
-function buildRequest(systemPrompt: string, userPrompt: string, opts: { temperature?: number; maxTokens?: number }): { endpoint: string; headers: Record<string, string>; body: string } {
-  const provider = getProvider()
+// A photo gets three tries: the vision model twice, then deepseek-chat — the vision model
+// sometimes streams back an empty answer for a photo deepseek-chat reads at once. Each try
+// has its own, shorter, timeout so all three fit into one request.
+const VISION_TIMEOUT_MS = 50_000
 
-  if (provider === 'deepseek') {
-    return {
-      endpoint: DEEPSEEK_ENDPOINT,
-      headers: {
-        Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: DEEPSEEK_MODEL,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-        temperature: opts.temperature ?? 0.1,
-        ...(opts.maxTokens ? { max_tokens: opts.maxTokens } : {}),
-        response_format: { type: 'json_object' },
-        stream: true,
-      }),
-    }
-  }
+export interface AIUsage { promptTokens: number; completionTokens: number }
 
+function deepseekHeaders(): Record<string, string> {
   return {
-    endpoint: OR_ENDPOINT,
-    headers: {
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': SITE_URL,
-      'X-Title': 'GoodWorker',
-    },
+    Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+    'Content-Type': 'application/json',
+  }
+}
+
+function buildRequest(systemPrompt: string, userPrompt: string, opts: CallOpts): { endpoint: string; headers: Record<string, string>; body: string } {
+  return {
+    endpoint: DEEPSEEK_ENDPOINT,
+    headers: deepseekHeaders(),
     body: JSON.stringify({
-      model: OR_MODEL,
+      model: DEEPSEEK_MODEL,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
       temperature: opts.temperature ?? 0.1,
       ...(opts.maxTokens ? { max_tokens: opts.maxTokens } : {}),
-      response_format: { type: 'json_object' },
+      ...(opts.json === false ? {} : { response_format: { type: 'json_object' } }),
       stream: true,
+      stream_options: { include_usage: true },
     }),
   }
 }
@@ -65,16 +56,14 @@ function buildVisionRequest(
   systemPrompt: string,
   images: VisionImage[],
   userPrompt: string,
-  opts: { temperature?: number; maxTokens?: number },
+  opts: CallOpts,
+  model: string = DEEPSEEK_VISION_MODEL,
 ): { endpoint: string; headers: Record<string, string>; body: string } {
   return {
     endpoint: DEEPSEEK_ENDPOINT,
-    headers: {
-      Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
+    headers: deepseekHeaders(),
     body: JSON.stringify({
-      model: DEEPSEEK_VISION_MODEL,
+      model,
       messages: [
         { role: 'system', content: systemPrompt },
         {
@@ -87,8 +76,9 @@ function buildVisionRequest(
       ],
       temperature: opts.temperature ?? 0.1,
       ...(opts.maxTokens ? { max_tokens: opts.maxTokens } : {}),
-      response_format: { type: 'json_object' },
+      ...(opts.json === false ? {} : { response_format: { type: 'json_object' } }),
       stream: true,
+      stream_options: { include_usage: true },
     }),
   }
 }
@@ -96,39 +86,64 @@ function buildVisionRequest(
 export async function callAI(
   systemPrompt: string,
   userPrompt: string,
-  opts: { temperature?: number; maxTokens?: number } = {},
+  opts: CallOpts = {},
 ): Promise<string> {
-  const provider = getProvider()
-  if (provider === 'deepseek' && !process.env.DEEPSEEK_API_KEY) throw new Error('DEEPSEEK_API_KEY is not set')
-  if (provider === 'openrouter' && !process.env.OPENROUTER_API_KEY) throw new Error('OPENROUTER_API_KEY is not set')
+  if (!process.env.DEEPSEEK_API_KEY) throw new Error('DEEPSEEK_API_KEY is not set')
 
   const { endpoint, headers, body } = buildRequest(systemPrompt, userPrompt, opts)
   const promptPreview = userPrompt.slice(0, 120).replace(/\n/g, ' ')
-  console.log(`[AI] provider=${provider} prompt="${promptPreview}..."`)
+  console.log(`[AI] provider=deepseek prompt="${promptPreview}..."`)
 
-  return sendChatRequest(endpoint, headers, body, provider)
+  return sendChatRequest(endpoint, headers, body, 'deepseek', opts.onUsage)
 }
 
-// DeepSeek-only: the free OpenRouter fallback model has no vision support, so
-// this feature is simply unavailable when DEEPSEEK_API_KEY isn't configured.
 export async function callVisionAI(
   systemPrompt: string,
   images: VisionImage[],
   userPrompt: string,
-  opts: { temperature?: number; maxTokens?: number } = {},
+  opts: CallOpts = {},
 ): Promise<string> {
   if (!process.env.DEEPSEEK_API_KEY) throw new Error('DEEPSEEK_API_KEY is not set — photo analysis requires the DeepSeek vision model')
 
-  const { endpoint, headers, body } = buildVisionRequest(systemPrompt, images, userPrompt, opts)
-  console.log(`[AI] provider=deepseek-vision images=${images.length}`)
-
-  return sendChatRequest(endpoint, headers, body, 'deepseek-vision')
+  const plan = [DEEPSEEK_VISION_MODEL, DEEPSEEK_VISION_MODEL, DEEPSEEK_MODEL]
+  let lastError: unknown = null
+  for (const [i, model] of plan.entries()) {
+    const { endpoint, headers, body } = buildVisionRequest(systemPrompt, images, userPrompt, opts, model)
+    console.log(`[AI] provider=deepseek-vision try=${i + 1}/${plan.length} model=${model} images=${images.length}`)
+    try {
+      const content = await sendChatRequest(endpoint, headers, body, `deepseek-vision(${model})`, opts.onUsage, { timeoutMs: VISION_TIMEOUT_MS, attempts: 1 })
+      if (!usableAnswer(content, opts)) throw new Error(`${model} returned an unusable answer`)
+      return content
+    } catch (err) {
+      lastError = err
+      console.warn(`[AI] vision try ${i + 1}/${plan.length} failed: ${(err as Error).message?.slice(0, 200)}`)
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error('deepseek-vision: all tries failed')
 }
 
-async function sendChatRequest(endpoint: string, headers: Record<string, string>, body: string, providerLabel: string): Promise<string> {
-  for (let attempt = 0; attempt < 3; attempt++) {
+/** Non-empty; valid JSON when JSON was asked for; and whatever the caller checks on top. */
+function usableAnswer(content: string, opts: CallOpts): boolean {
+  if (!content.trim()) return false
+  if (opts.json !== false) {
+    try { JSON.parse(content.trim().replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim()) } catch { return false }
+  }
+  return opts.validate ? opts.validate(content) : true
+}
+
+async function sendChatRequest(
+  endpoint: string,
+  headers: Record<string, string>,
+  body: string,
+  providerLabel: string,
+  onUsage?: (usage: AIUsage) => void,
+  limits: { timeoutMs?: number; attempts?: number } = {},
+): Promise<string> {
+  const timeoutMs = limits.timeoutMs ?? TIMEOUT_MS
+  const attempts = limits.attempts ?? 3
+  for (let attempt = 0; attempt < attempts; attempt++) {
     const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(new Error(`AI timed out after ${TIMEOUT_MS / 1000}s`)), TIMEOUT_MS)
+    const timer = setTimeout(() => controller.abort(new Error(`AI timed out after ${timeoutMs / 1000}s`)), timeoutMs)
     const t0 = Date.now()
 
     let res: Response
@@ -137,14 +152,14 @@ async function sendChatRequest(endpoint: string, headers: Record<string, string>
     } catch (err) {
       clearTimeout(timer)
       console.warn(`[AI] attempt=${attempt + 1} network error: ${(err as Error).message}`)
-      if (attempt < 2) { await sleep(3000 * (attempt + 1)); continue }
+      if (attempt < attempts - 1) { await sleep(3000 * (attempt + 1)); continue }
       throw new Error(`${providerLabel} network error: ${(err as Error).message}`)
     }
 
     if (res.status === 429) {
       clearTimeout(timer)
       console.warn(`[AI] attempt=${attempt + 1} rate limited (429)`)
-      if (attempt < 2) { await sleep(2000 * (attempt + 1)); continue }
+      if (attempt < attempts - 1) { await sleep(2000 * (attempt + 1)); continue }
       const text = await res.text()
       throw new Error(`${providerLabel} 429 (rate limit): ${text}`)
     }
@@ -157,7 +172,7 @@ async function sendChatRequest(endpoint: string, headers: Record<string, string>
     }
 
     try {
-      const content = await readStream(res)
+      const content = await readStream(res, onUsage)
       clearTimeout(timer)
       if (!content) throw new Error(`${providerLabel} returned empty content`)
       console.log(`[AI] ok attempt=${attempt + 1} ms=${Date.now() - t0} chars=${content.length}`)
@@ -166,7 +181,7 @@ async function sendChatRequest(endpoint: string, headers: Record<string, string>
       clearTimeout(timer)
       const msg = (err as Error).message ?? ''
       console.warn(`[AI] attempt=${attempt + 1} stream error: ${msg}`)
-      if (attempt < 2 && (msg.includes('timed out') || msg.includes('abort') || msg.includes('TIMEOUT'))) {
+      if (attempt < attempts - 1 && (msg.includes('timed out') || msg.includes('abort') || msg.includes('TIMEOUT'))) {
         await sleep(3000 * (attempt + 1))
         continue
       }
@@ -177,7 +192,7 @@ async function sendChatRequest(endpoint: string, headers: Record<string, string>
   throw new Error(`${providerLabel}: all retries exhausted`)
 }
 
-async function readStream(res: Response): Promise<string> {
+async function readStream(res: Response, onUsage?: (usage: AIUsage) => void): Promise<string> {
   const reader = res.body!.getReader()
   const decoder = new TextDecoder()
   let content = ''
@@ -198,6 +213,8 @@ async function readStream(res: Response): Promise<string> {
       try {
         const parsed = JSON.parse(data)
         content += parsed.choices?.[0]?.delta?.content ?? ''
+        // With stream_options.include_usage the last chunk carries the totals.
+        if (parsed.usage && onUsage) onUsage({ promptTokens: parsed.usage.prompt_tokens ?? 0, completionTokens: parsed.usage.completion_tokens ?? 0 })
       } catch {
         // ignore malformed SSE chunks
       }
@@ -212,7 +229,7 @@ function sleep(ms: number) {
 }
 
 export function hasAIProvider(): boolean {
-  return !!(process.env.DEEPSEEK_API_KEY || process.env.OPENROUTER_API_KEY)
+  return !!process.env.DEEPSEEK_API_KEY
 }
 
 export function parseJSON<T>(raw: string): T {

@@ -29,6 +29,8 @@ export const NOTIFICATION_TYPES = {
   REFERRAL_REWARD: 'REFERRAL_REWARD',
   // Teacher scheduled a video call/meeting with this student
   MEETING_SCHEDULED: 'MEETING_SCHEDULED',
+  // Video-call auto-notes filed into this user's storage (payload {lectureNoteId, folderId, href})
+  CALL_NOTES_SAVED: 'CALL_NOTES_SAVED',
 } as const
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[keyof typeof NOTIFICATION_TYPES]
@@ -44,6 +46,7 @@ export const DEFAULT_SUBSCRIPTIONS: Record<string, NotificationType[]> = {
     NOTIFICATION_TYPES.VIDEO_CALL_INVITE,
     NOTIFICATION_TYPES.SYSTEM,
     NOTIFICATION_TYPES.REFERRAL_REWARD,
+    NOTIFICATION_TYPES.CALL_NOTES_SAVED,
   ],
   STUDENT: [
     NOTIFICATION_TYPES.COMPLAINT_REPLIED,
@@ -54,6 +57,7 @@ export const DEFAULT_SUBSCRIPTIONS: Record<string, NotificationType[]> = {
     NOTIFICATION_TYPES.SYSTEM,
     NOTIFICATION_TYPES.REFERRAL_REWARD,
     NOTIFICATION_TYPES.MEETING_SCHEDULED,
+    NOTIFICATION_TYPES.CALL_NOTES_SAVED,
   ],
   ADMIN: Object.values(NOTIFICATION_TYPES) as NotificationType[],
 }

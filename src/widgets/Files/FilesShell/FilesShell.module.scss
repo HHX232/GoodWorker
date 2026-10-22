@@ -61,6 +61,37 @@
   letter-spacing: 0;
 }
 
+.driveNav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 6px 0 4px;
+}
+
+.driveNavItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #4A4B57;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover { background: #F4F4F8; }
+}
+
+.driveNavActive {
+  background: #F0EFFB;
+  color: #1E1E24;
+  font-weight: 600;
+}
+
 .sidebarLabel {
   margin: 10px 10px 4px;
   font-size: 11px;
@@ -281,6 +312,35 @@
   font-weight: 600;
 }
 
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 0 0 14px;
+
+  .sectionTitle { margin: 0; }
+}
+
+.allLink {
+  color: #6b6e80; // ≥4.5:1 on white at 13px
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.15s;
+
+  &:hover { color: #534AB7; }
+  &:focus-visible { outline: 2px solid #534AB7; outline-offset: 2px; border-radius: 4px; }
+}
+
+// Books are 3D covers ≈150px wide (BookCard md), so the grid packs tighter than folders.
+.bookGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  justify-items: start;
+  gap: 22px 16px;
+}
+
 .folderGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -435,7 +495,7 @@
   .kbd { display: none; }
   .title { font-size: 22px; }
   .pillLabel { display: none; }
-  .folderGrid, .fileGrid, .skeletonGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 10px; }
+  .folderGrid, .fileGrid, .skeletonGrid, .bookGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 10px; }
 }
 
 @container (max-width: 360px) {
@@ -457,6 +517,7 @@
   .pill { border-color: rgba(255, 255, 255, 0.1); background: transparent; color: #e8eaf0; svg { color: #9ea4b5; } &:hover:not(:disabled) { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.18); } }
   .pillPrimary { border-color: #e8eaf0; background: #e8eaf0; color: #14151c; svg { color: #14151c; } &:hover:not(:disabled) { background: #818cf8; border-color: #818cf8; color: #fff; svg { color: #fff; } } }
   .count { background: rgba(255, 255, 255, 0.07); color: #9ea4b5; }
+  .allLink { color: #9ea4b5; &:hover { color: #818cf8; } }
   .group + .group { border-color: rgba(255, 255, 255, 0.07); }
   .groupAvatar { background: rgba(129, 140, 248, 0.18); color: #c7cbff; }
   .banner { background: rgba(52, 211, 153, 0.1); color: #6ee7b7; }
@@ -470,4 +531,6 @@
   .emptyIcon { background: rgba(129, 140, 248, 0.14); color: #a5b4fc; }
   .upsellIcon { background: rgba(251, 191, 36, 0.12); color: #FCD34D; }
   .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 100%); background-size: 200% 100%; }
+  .driveNavItem { color: rgba(255, 255, 255, 0.72); &:hover { background: rgba(255, 255, 255, 0.05); } }
+  .driveNavActive { background: rgba(124, 116, 230, 0.18); color: #fff; }
 }

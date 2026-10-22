@@ -53,6 +53,7 @@
     "roadmaps": "Courses",
     "games": "Games",
     "pomodoro": "Pomodoro",
+    "lecture": "Lecture notes",
     "videoCall": "Video call",
     "posts": "Posts",
     "vip": "VIP"
@@ -2153,7 +2154,9 @@
     "storageReindexRunning": "Indexing… {n} left",
     "storageReindexDone": "Indexing complete",
     "storageAdminBadge": "Admin",
-    "storageAdminQuotaHint": "Admins get {gb} GB without VIP."
+    "storageAdminQuotaHint": "Admins get {gb} GB without VIP.",
+    "storageStudentQuota": "Student quota (My files)",
+    "storageStudentQuotaHint": "A VIP student's own drive: lecture notes and their own uploads. Homework in a tutor's folders counts toward the tutor's quota."
   },
   "tutorial": {
     "prev": "Back",
@@ -2307,6 +2310,34 @@
     "hero_today": "Today: 3 lessons and a call at 18:00.",
     "hero_h1": "Teach. Learn.",
     "hero_h1_hl": "We handle the busywork",
+    "hero_teacher_btn_calendar": "Calendar",
+    "hero_student_btn_teacher": "Find a tutor",
+    "hero_student_btn_course": "Find a course",
+    "hero_teacher_h1": "Everything for your lesson —",
+    "hero_teacher_h1_hl": "free, in one place",
+    "hero_teacher_phrase1": "Video call — notes ready right after.",
+    "hero_teacher_phrase2": "A file — a ready test in 60 seconds.",
+    "hero_teacher_phrase3": "Student mistakes — in their profile, by topic.",
+    "hero_teacher_phrase4": "Schedule and reminders — in Telegram.",
+    "hero_teacher_desc": "Auto-notes after every call, a test from any PDF, a calendar with reminders and a mistake profile for each student — all in one place, free to start.",
+    "hero_student_h1": "Get the knowledge —",
+    "hero_student_h1_hl": "we handle the routine",
+    "hero_student_phrase1": "A tutor and courses — in one place.",
+    "hero_student_phrase2": "Free courses — start right now.",
+    "hero_student_phrase3": "Your mistakes are saved and sorted by topic.",
+    "hero_student_phrase4": "Lesson schedule and reminders — in Telegram.",
+    "hero_student_desc": "Find a tutor, take courses and tests online. Video lessons with auto-notes, a schedule with reminders and a breakdown of your mistakes by topic — free to start.",
+    "promo_eyebrow": "Platform video",
+    "promo_title": "GoodWorker through the eyes of a <word></word>",
+    "promo_word_teacher": "tutor",
+    "promo_word_student": "student",
+    "promo_btn_teacher": "I'm a tutor",
+    "promo_btn_student": "I'm a student",
+    "promo_roles_aria": "Who are you",
+    "promo_watch_aria": "Watch the video for a {who}, {time}",
+    "promo_dialog_aria": "GoodWorker video",
+    "promo_close": "Close video",
+    "promo_error": "The video failed to load",
     "hero_phrase1": "Video calls with an auto-transcript.",
     "hero_phrase2": "Courses and tests — built in minutes.",
     "hero_phrase3": "A file — a ready test in 60 seconds.",
@@ -2327,6 +2358,7 @@
     "sub_more_storage": "About storage",
     "sub_more_lecture": "About lectures",
     "sub_more_chess": "About chess",
+    "sub_lecture": "Lecture notes",
     "sub_pdf_from": "File",
     "sub_pdf_to": "Test",
     "btn_create": "Create course",
@@ -2854,7 +2886,8 @@
     "n_file_title": "Hooks cheatsheet",
     "n_post_title": "React Flow in practice",
     "n_audio_title": "Code walkthrough",
-    "n_test_title": "Test: React basics"
+    "n_test_title": "Test: React basics",
+    "center_btn": "Center view"
   },
   "PdfInfoPage": {
     "qtype_single": "SINGLE CHOICE",
@@ -3653,6 +3686,8 @@
     "errMaxDepth": "Can't go deeper: at most {max} levels of nesting",
     "errTooLarge": "“{name}” is larger than 50 MB",
     "errUpload": "Couldn't upload “{name}”. Check your connection and try again",
+    "pageCropped": "{count, plural, one {Page photo cropped to the sheet} other {Page photos cropped to the sheet}}",
+    "pageCropUndo": "Keep original",
     "errVip": "This action requires VIP",
     "errGeneric": "Something went wrong. Please try again",
     "errLoad": "Couldn't open the library",
@@ -3683,10 +3718,137 @@
     "overageWallet": "Open Wallet",
     "overageOk": "Got it",
     "pageTitle": "Files",
+    "booksPageTitle": "All books",
+    "booksPageCrumbsAria": "Path",
+    "booksPageCrumb": "Books",
+    "booksPageSearch": "Find a book by title",
+    "booksPageSearchClear": "Clear search",
+    "booksPageUpload": "Upload a book",
+    "booksPageViewsAria": "Section",
+    "booksPageViewShelf": "Showcase",
+    "booksPageViewMine": "My books",
+    "booksPageShelvesAria": "Shelves",
+    "booksPageTabAll": "All",
+    "booksPageTabSaved": "Saved",
+    "booksPageTabNew": "New",
+    "booksPageCarAria": "Collection",
+    "booksPageCarRecent": "Recently opened",
+    "booksPageShowAll": "Show all",
+    "booksPageScrollPrev": "Previous",
+    "booksPageScrollNext": "Next",
+    "booksPageCarEmpty": "Nothing to show yet: open any book and it will appear here.",
+    "booksPageHeroTitle": "Continue reading",
+    "booksPageHeroPage": "p. {page} of {pages}",
+    "booksPageHeroPageOnly": "p. {page}",
+    "booksPageHeroDetails": "Details",
+    "booksPageMiniAria": "Collections",
+    "booksPageMiniNew": "New",
+    "booksPageMiniWithCover": "With a cover",
+    "booksPageMiniNeedCover": "Need a cover",
+    "booksPageMiniDone": "Finished",
+    "booksPageCount": "{count, plural, one {# book} other {# books}}",
+    "booksPageLibrary": "Whole library",
+    "booksPageResults": "Found",
+    "booksPageReset": "Reset",
+    "booksPageResetAll": "Reset search and filter",
+    "booksPageSortAria": "Sort",
+    "booksPageSortRecent": "Recent",
+    "booksPageSortTitle": "By title",
+    "booksPageSortProgress": "By progress",
+    "booksPageEmptyLibTitleT": "Upload your first PDF",
+    "booksPageEmptyLibTextT": "It will show up here as a book: with a cover, a spine and a ribbon bookmark for your students.",
+    "booksPageEmptyLibTitleS": "Your tutor hasn't uploaded anything yet",
+    "booksPageEmptyLibTextS": "Once PDFs appear, they will line up here as books.",
+    "booksPageEmptyMineTitle": "Nothing here yet",
+    "booksPageEmptyMineText": "Save books with the ribbon bookmark and they will appear here.",
+    "booksPageEmptyMineGo": "Go to the showcase",
+    "booksPageEmptyNoneTitle": "Nothing found",
+    "booksPageEmptyNoneQuery": "No books match “{query}”. Check the title or reset the filter.",
+    "booksPageEmptyNoneFilter": "There are no books in this collection yet.",
+    "booksPageLoadError": "Couldn't load the books",
+    "booksPageLoading": "Loading books…",
+    "booksPageToastSaved": "Added to My books",
+    "booksPageToastUnsaved": "Removed from My books",
+    "booksPageUndo": "Undo",
+    "booksPageUploaded": "“{title}” uploaded",
+    "booksPageRefreshFailed": "Couldn't refresh the book list — showing the last loaded data.",
+    "booksReaderPageTitle": "Reading",
+    "booksReaderBack": "Back to library",
+    "booksReaderLoading": "Opening the book…",
+    "booksReaderModeLabel": "View mode",
+    "booksReaderModeSingle": "Single page",
+    "booksReaderModeDouble": "Two pages",
+    "booksReaderPrev": "Previous page",
+    "booksReaderNext": "Next page",
+    "booksReaderPageLabel": "Page number",
+    "booksReaderOfTotal": "of {total}",
+    "booksReaderZoomIn": "Zoom in",
+    "booksReaderZoomOut": "Zoom out",
+    "booksReaderZoomReset": "Reset zoom",
+    "booksReaderFullscreen": "Full screen",
+    "booksReaderFullscreenExit": "Exit full screen",
+    "booksReaderBookmarks": "Bookmarks",
+    "booksReaderBookmarkAdd": "Bookmark this page",
+    "booksReaderBookmarkRemove": "Remove bookmark",
+    "booksReaderBookmarksEmpty": "No bookmarks yet. Click the ribbon in a page corner to add the first one.",
+    "booksReaderBookmarkPage": "p. {page}",
+    "booksReaderBookmarkLabel": "Bookmark label",
+    "booksReaderBookmarkRename": "Rename",
+    "booksReaderBookmarkDelete": "Delete bookmark",
+    "booksReaderBookmarkSave": "Save",
+    "booksReaderClose": "Close",
+    "booksReaderResumed": "Continuing from page {page}",
+    "booksReaderFromStart": "From the start",
+    "booksReaderPageAria": "Page {page}",
+    "booksReaderMarkAria": "Page {page}: readers ({names})",
+    "booksReaderStoppedHere": "stopped here",
+    "booksReaderReadAt": "read {date}",
+    "booksReaderErrorTitle": "Couldn't open the book",
+    "booksReaderErrorText": "The file is damaged or unavailable. Try downloading it.",
+    "booksReaderOpenFailed": "Couldn't load the book. Try refreshing the page.",
+    "booksReaderPageError": "Couldn't display page {page}. Try turning the page or reloading.",
+    "booksReaderDownload": "Download",
+    "booksReaderClosedTitle": "Access closed",
+    "booksReaderClosedText": "You no longer have access to this book. Ask your tutor to open it again.",
+    "booksReaderToLibrary": "To my files",
+    "booksHlColorYellow": "Yellow",
+    "booksHlColorGreen": "Green",
+    "booksHlColorPink": "Pink",
+    "booksHlColorBlue": "Blue",
+    "booksHlColors": "Highlight colour",
+    "booksHlMarkerAria": "Comment: {note}",
+    "booksHlBarAria": "Selected text actions",
+    "booksHlComment": "Comment",
+    "booksHlCopy": "Copy",
+    "booksHlCopied": "Copied",
+    "booksHlCopyFailed": "Couldn't copy",
+    "booksHlPopupAria": "Highlight",
+    "booksHlNoteLabel": "Comment on the highlight",
+    "booksHlNotePlaceholder": "Add a comment…",
+    "booksHlNoteSave": "Save",
+    "booksHlEditNote": "Edit comment",
+    "booksHlDelete": "Delete",
+    "booksHlEmpty": "No highlights yet. Select text on a page and pick a colour — it will be saved here.",
+    "booksHlNoTextLayer": "This page has no text layer (looks like a scan), so its text can't be selected.",
+    "booksHlNoText": "No text layer — can't select text",
+    "booksHlGoto": "Go to page {page}",
+    "booksHlTabPages": "Pages",
+    "booksHlTabHighlights": "Highlights",
+    "booksHlSaveFailed": "Couldn't save the highlight. Please try again.",
+    "booksHlLimit": "This book already has the maximum number of highlights (500). Delete some you don't need.",
+    "booksHlTooBig": "That selection is too large. Pick a smaller passage.",
+    "booksHlUpdateFailed": "Couldn't update the highlight.",
+    "booksHlDeleteFailed": "Couldn't delete the highlight.",
+    "booksHlLoadFailed": "Couldn't load your highlights.",
     "myFiles": "My files",
     "sharedWithMe": "Shared with me",
     "foldersSection": "Folders",
     "filesSection": "Files",
+    "booksShellUpload": "Upload a book",
+    "booksShellEmptyHint": "Upload your first PDF — it will appear under “Books”.",
+    "booksShellSection": "Books",
+    "booksShellAll": "All books",
+    "booksShellShareTitle": "Access to the book “{name}”",
     "actions": "Actions",
     "cover": "Cover",
     "coverTitle": "Folder cover",
@@ -3707,6 +3869,14 @@
     "openedAt": "Opened {date}",
     "notOpened": "Not opened yet",
     "openedSummary": "Opened by {opened} of {total}",
+    "progressDone": "Done",
+    "progressWaiting": "Awaiting approval",
+    "progressWorking": "In progress",
+    "progressNotStarted": "Not started",
+    "progressNothing": "Nothing submitted yet",
+    "progressByStudents": "Submissions by student",
+    "progressByFiles": "Submissions by file",
+    "progressTotalItems": "Total items: {count}",
     "previewLoading": "Opening the file…",
     "previewTruncated": "Showing the beginning — download for the full text",
     "previewFailed": "This file can't be shown here — download it",
@@ -3768,6 +3938,1184 @@
     "editDocx": "Edit",
     "editSaved": "Saved",
     "saveButton": "Save",
-    "reviewedAt": "Reviewed {date}"
+    "reviewedAt": "Reviewed {date}",
+    "booksKitRibbonAria": "Save book “{title}”",
+    "booksKitSave": "Save book",
+    "booksKitUnsave": "Remove from My books",
+    "booksKitOpenAria": "Open “{title}”",
+    "booksKitMeta": "{teacher} · {pages} pp.",
+    "booksKitPagesShort": "{pages} pp.",
+    "booksKitProgressAria": "Reading progress",
+    "booksKitProgressDone": "Finished",
+    "booksKitNotOpened": "Not opened yet",
+    "booksKitQuickTitle": "Quick look",
+    "booksKitRead": "Read",
+    "booksKitChangeCover": "Change cover",
+    "booksKitShare": "Share",
+    "booksKitDeleteConfirm": "Delete “{title}”? It will also disappear for the students you shared it with.",
+    "booksKitFormat": "Format",
+    "booksKitSize": "Size",
+    "booksKitPagesLabel": "Pages",
+    "booksKitAdded": "Added",
+    "booksKitCoverLabel": "Cover",
+    "booksKitCoverFound": "Cover from the PDF",
+    "booksKitCoverPage1": "PDF page 1",
+    "booksKitCoverPhoto": "Your photo",
+    "booksKitCoverGenerated": "Typographic",
+    "booksKitProgressLabel": "Reading progress",
+    "booksKitProgressDoneLabel": "Book finished",
+    "booksKitProgressPage": "page {page} of {pages}",
+    "booksKitNeverOpened": "You haven’t opened this book yet",
+    "booksKitCoverModalTitle": "Cover · {title}",
+    "booksKitApply": "Apply",
+    "booksKitSaving": "Saving…",
+    "booksKitUploadTitle": "Upload a book",
+    "booksKitDropTitle": "Drop a PDF here",
+    "booksKitDropText": "Before uploading we check the first page and tell you whether it works as a cover.",
+    "booksKitPickPdf": "Choose a PDF",
+    "booksKitNotPdf": "A PDF is required. “{name}” won’t work.",
+    "booksKitCheckTitle": "First page check",
+    "booksKitChecking": "Checking the first page…",
+    "booksKitCheckingText": "We look for a title and artwork to see if it can be the cover. Usually it takes a couple of seconds.",
+    "booksKitCancelUpload": "Cancel upload",
+    "booksKitFoundTitle": "Found a cover",
+    "booksKitFoundText": "The first page has a title and artwork — it will become the book’s cover.",
+    "booksKitPlainTitle": "This looks like a regular page",
+    "booksKitPlainText": "The first page has no title or artwork. For now the book has a coloured cover — you can upload your own photo, pick a colour or still use this page.",
+    "booksKitUnavailTitle": "Couldn’t check",
+    "booksKitUnavailText": "We got no answer when checking the first page. Here is a preview — pick the cover yourself.",
+    "booksKitUse": "Use it",
+    "booksKitUseOther": "Choose another",
+    "booksKitUsePage": "Use this page",
+    "booksKitPhoto": "Upload a cover",
+    "booksKitPhotoReplace": "Replace photo",
+    "booksKitPhotoRemove": "Remove picture",
+    "booksKitPickColor": "Pick a colour",
+    "booksKitRetry": "Check again",
+    "booksKitPageAlt": "First page of the PDF",
+    "booksKitEditTitle": "Book cover",
+    "booksKitConfirmTitle": "Upload to Books",
+    "booksKitNameLabel": "Title",
+    "booksKitSubmit": "Upload to Books",
+    "booksKitUploading": "Uploading…",
+    "booksKitBack": "Back",
+    "booksKitDone": "Done",
+    "booksKitCoverRejected": "The cover was rejected. Choose another picture.",
+    "booksKitCoverRenderFailed": "Could not prepare the cover. Choose another picture or colour.",
+    "booksKitPreviewCaption": "This is how the book looks on the shelf and in lists",
+    "booksKitColorTitle": "Book colour",
+    "booksKitColorHint": "The colour of the spine, the title plate and the lettering. Without a photo it becomes the cover itself.",
+    "booksKitColorCustom": "Custom colour",
+    "booksKitColor0": "Blue",
+    "booksKitColor1": "Red",
+    "booksKitColor2": "Graphite",
+    "booksKitColor3": "Green",
+    "booksKitColor4": "Purple",
+    "booksKitColor5": "Ochre",
+    "booksKitColor6": "Teal",
+    "booksKitColor7": "Terracotta",
+    "booksKitColor8": "Pink",
+    "booksKitColor9": "Navy",
+    "booksKitPhotoTitle": "Cover photo",
+    "booksKitPhotoHint": "The photo is cropped to a 2:3 frame; the book colour stays on the spine and the title plate.",
+    "booksKitPhotoNotImage": "A picture is required: JPG, PNG or WebP. “{name}” won’t work.",
+    "booksKitPhotoTooBig": "The photo is larger than 10 MB. Choose a smaller file.",
+    "booksKitPhotoOpenFailed": "Couldn’t open the image. Choose another file.",
+    "booksKitZoom": "Zoom",
+    "booksKitShiftX": "Shift X",
+    "booksKitShiftY": "Shift Y",
+    "booksKitResetPage1": "Reset to page 1",
+    "booksKitPage1Failed": "Couldn’t get the first page of the PDF. Try again.",
+    "booksKitLoading": "Preparing the page…",
+    "driveTitle": "My files",
+    "driveNavLabel": "Storage sections",
+    "driveNewLecture": "Lecture notes",
+    "driveVipBanner": "Your own drive is part of VIP. Without VIP you can view, download and delete files, but not add new ones.",
+    "driveErrVip": "VIP is required to add files to your drive",
+    "driveEmptyTitle": "Nothing here yet",
+    "driveEmptyText": "Keep your lecture notes and your own files here — they count toward your quota, not your tutor's.",
+    "driveLectureHint": "Lecture notes — opens in the lecture editor",
+    "lectureFlag": "Lecture notes",
+    "lectureContinue": "Continue editing",
+    "subjectFilter": "Subject",
+    "subjectAll": "All subjects",
+    "subjectEmpty": "Nothing for “{subject}” yet",
+    "driveSearchPlaceholder": "Search my files"
+  },
+  "lecture": {
+    "pageTitle": "Lecture notes",
+    "homeTitle": "Lecture notes",
+    "homeSubtitle": "Tap and put your phone on the desk. The AI listens to the lecturer, filters out side talk and builds the notes with formulas.",
+    "titlePlaceholder": "Title (e.g. \"Calculus — derivatives\")",
+    "defaultTitle": "Lecture {date}",
+    "keepAudio": "Keep the audio",
+    "keepAudioHint": "Replay and download it later; uses your storage",
+    "start": "Start recording",
+    "starting": "Starting the mic…",
+    "resume": "Resume recording",
+    "stop": "Stop",
+    "vipRequired": "VIP required",
+    "vipRequiredLong": "Lecture notes are part of VIP",
+    "vipOnly": "This is a VIP feature",
+    "sttNotConfigured": "Speech recognition is not configured",
+    "tip1": "Best: phone closer to the lecturer, mic facing them",
+    "tip2": "Don't lock the screen — iPhone stops recording in the background",
+    "tip3": "No network? Nothing is lost — pieces upload later",
+    "myLectures": "My lectures",
+    "noLectures": "No lectures yet",
+    "untitled": "Untitled",
+    "statusReady": "Ready",
+    "statusFinalizing": "Refining",
+    "statusDraft": "Draft",
+    "inFiles": "In files",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this lecture? A .docx saved to files stays.",
+    "deleteFailed": "Couldn't delete",
+    "createFailed": "Couldn't start the lecture",
+    "micDenied": "No microphone access — allow it in browser settings",
+    "micUnsupported": "This browser can't record audio",
+    "micFailed": "Couldn't start the microphone",
+    "allLectures": "All lectures",
+    "backToList": "Back to lectures",
+    "loadFailed": "Couldn't open the lecture",
+    "stateIdle": "Ready to listen",
+    "stateListening": "Listening",
+    "stateStructuring": "AI is writing notes…",
+    "stateStopping": "Wrapping up…",
+    "stateFinalizing": "Refining with the precise model…",
+    "stateRefining": "Updating notes from the final transcript…",
+    "stateOffline": "Offline — {n} queued",
+    "stateSttBusy": "Recognition busy, retrying…",
+    "stateReady": "Done",
+    "stateError": "Microphone lost",
+    "aiControls": "AI controls",
+    "autoStructure": "Auto notes",
+    "structureNow": "Write notes now",
+    "finalizeNow": "Refine with the precise model",
+    "liveTranscript": "Live transcript",
+    "feedWaiting": "First words appear in ~20 seconds",
+    "feedEmpty": "No transcript yet",
+    "fullTranscript": "Full transcript",
+    "transcriptHint": "The raw transcript, piece by piece. Grey — places the recogniser is unsure about.",
+    "replay": "Replay",
+    "doubtful": "The recogniser is unsure",
+    "hiddenWarning": "The tab went to the background — on a phone recording may have paused.",
+    "ok": "Got it",
+    "queued": "Waiting to upload: {n}",
+    "stillQueued": "Part of the recording is still waiting to upload",
+    "dailyLimit": "Daily recording limit ({min} min) reached",
+    "audioQuotaHit": "Storage is full — audio is no longer kept (notes continue)",
+    "structureFailed": "The AI couldn't process the recording — press “Write notes now” to retry",
+    "structureEmpty": "The AI found no lecture content in the recording — only noise",
+    "refined": "Sections refined: {n}",
+    "crumb": "Notes",
+    "titleLabel": "Lecture title",
+    "saving": "Saving…",
+    "saved": "Saved",
+    "unsaved": "Editing…",
+    "saveError": "Not saved — will retry",
+    "recording": "Recording",
+    "statDuration": "Duration",
+    "statChunks": "Pieces",
+    "statFinal": "{n} final",
+    "statAudio": "Audio",
+    "statAudioKept": "Kept",
+    "statAudioTemp": "Until final",
+    "statWords": "Words",
+    "statFormulas": "Formulas",
+    "statCost": "Cost",
+    "costAdmin": "Unlimited",
+    "costNotCharged": "not charged yet",
+    "export": "Export",
+    "saveToFiles": "Save to files",
+    "updateInFiles": "Update in files",
+    "savedToFiles": "Saved to files",
+    "savedToFilesAudio": "Saved to files. The audio (.m4a) will appear next to it in a minute",
+    "openFiles": "Open",
+    "exportFailed": "Export failed",
+    "quotaExceeded": "Storage is full",
+    "audio": "Audio",
+    "noAudio": "No audio was kept",
+    "textTools": "Text",
+    "notes": "Notes",
+    "notesEmpty": "Select text → \"Note\" to pin a margin note",
+    "editorPlaceholder": "Notes appear here as the lecture goes. You can type too.",
+    "toolbar": "Formatting",
+    "bold": "Bold",
+    "italic": "Italic",
+    "underline": "Underline",
+    "strike": "Strike",
+    "heading2": "Heading",
+    "heading3": "Subheading",
+    "bulletList": "Bullets",
+    "orderedList": "Numbered",
+    "quote": "Quote",
+    "formulaInline": "Formula",
+    "formulaBlock": "Formula block",
+    "undo": "Undo",
+    "redo": "Redo",
+    "menuActions": "Actions",
+    "menuRewrite": "Rewrite",
+    "menuStyle": "Style",
+    "askTitle": "Ask AI",
+    "askPlaceholder": "What should I do with this?",
+    "askRun": "Ask",
+    "askChipFix": "Fix recognition errors",
+    "askChipShorter": "Make it shorter",
+    "askChipSimpler": "Explain simpler",
+    "askChipFormulas": "Format the formulas",
+    "askChipList": "Turn into a list",
+    "askBefore": "Before",
+    "askAfter": "AI suggests",
+    "askEmpty": "Type a request or pick one above",
+    "askAgain": "Another take",
+    "askApply": "Apply",
+    "aiFailed": "The AI didn't answer — try again",
+    "aiThinking": "Thinking…",
+    "photoFix": "Fix from a board photo",
+    "photoWorking": "The AI is checking the photo…",
+    "photoDone": "Fixed from the photo",
+    "photoNothing": "Nothing on the photo matched this fragment",
+    "photoFailed": "Couldn't process the photo",
+    "photoTargetGone": "The fragment was removed meanwhile",
+    "noteAdd": "Note",
+    "noteEdit": "Edit note",
+    "noteTitle": "Margin note",
+    "notePlaceholder": "Your note on this passage…",
+    "noteDelete": "Delete",
+    "toFormula": "Make a formula",
+    "copy": "Copy",
+    "copied": "Copied",
+    "textColor": "Text colour",
+    "highlight": "Highlight",
+    "clearStyle": "Clear colour and highlight",
+    "formulaTitle": "Formula",
+    "formulaAi": "AI",
+    "formulaEdit": "Edit formula",
+    "copyLatex": "Copy LaTeX",
+    "latexCopied": "LaTeX copied",
+    "formulaModeDescribe": "In words",
+    "formulaModeEdit": "Change",
+    "formulaModePhoto": "From photo",
+    "formulaModeExplain": "Explain",
+    "formulaDescribePh": "E.g. integral from 0 to pi of sin x",
+    "formulaEditPh": "E.g. add a limit as n → ∞",
+    "formulaPhotoPh": "Hint (optional): which formula to take",
+    "formulaRun": "Generate",
+    "formulaTakePhoto": "Take a photo",
+    "formulaTake": "Use it",
+    "formulaAiNeedText": "Describe what you need",
+    "formulaAiNeedFormula": "Enter a formula first",
+    "reject": "Discard",
+    "apply": "Done",
+    "cancel": "Cancel",
+    "save": "Save",
+    "close": "Close",
+    "insertFromPhoto": "Insert from a photo",
+    "cropSheet": "Crop to the sheet",
+    "cropNotFound": "No sheet found — kept as is",
+    "cropDone": "Cropped to the sheet",
+    "cropApplied": "Cropped to the sheet",
+    "cropping": "Finding and straightening the sheet…",
+    "preparing": "Preparing the photo…",
+    "reading": "Reading…",
+    "photoToText": "To text",
+    "photoFull": "Full width",
+    "photoHalf": "Half width",
+    "optInsertImage": "Insert the photo itself",
+    "optRecognise": "Recognise and insert text and formulas",
+    "insert": "Insert",
+    "processPhoto": "Process a board photo",
+    "mergeThinking": "The AI is comparing the photo with your notes…",
+    "mergeHint": "Formulas already in the notes won’t be duplicated; continuations go where they belong.",
+    "mergeKind_duplicate": "Already there",
+    "mergeKind_continuation": "Continuation",
+    "mergeKind_new": "New",
+    "mergeFound": "On the photo:",
+    "fragment_text": "text",
+    "fragment_formula": "formulas",
+    "fragment_figure": "figures",
+    "fragment_graph": "graphs",
+    "processPhotoSub": "Text, formulas, figures and graphs — checked against your notes",
+    "askInsert": "Insert",
+    "askInsertAfter": "Insert the result after the selected text",
+    "compression": "Note compression",
+    "compression_none": "None",
+    "compression_medium": "Medium",
+    "compression_strong": "Strong",
+    "compressionHint_none": "Detailed: every point, explanation and example",
+    "compressionHint_medium": "Like good student notes",
+    "compressionHint_strong": "Just the essentials: definitions, formulas, conclusions",
+    "photosTooMany": "Up to {n} photos at a time — took the first {n}",
+    "panels": "Panels",
+    "tabAi": "AI",
+    "tabTools": "Tools",
+    "panelsShow": "Show panels",
+    "panelsHide": "Hide panels",
+    "mergeDuplicate": "in “{text}”",
+    "mergeContinuation": "after “{text}”",
+    "mergeNew": "at the end of the notes",
+    "mergeApply": "Add to notes",
+    "mergeApplied": "Fragments added: {n}",
+    "ctxEmpty": "The AI will pick up the subject and topic as the lecture goes",
+    "ctxSet": "Set",
+    "ctxEdit": "Edit subject and topic",
+    "ctxPinned": "Pinned by you — the AI won’t change it",
+    "ctxSubject": "Subject",
+    "ctxTopic": "Lecture topic",
+    "ctxSubtopics": "Subtopics (separated by “;”)",
+    "ctxSubjectPh": "Calculus",
+    "ctxTopicPh": "Derivative of a composite function",
+    "ctxSubtopicsPh": "Chain rule; examples",
+    "ctxEditHint": "The AI uses this in every suggestion and in speech recognition; what you correct stays as you set it.",
+    "board": "Board",
+    "boardOpen": "Open the board",
+    "boardEditTitle": "Board",
+    "boardEditHint": "The same board as in calls: 3D figures, constructions, angles, formulas",
+    "boardDone": "Save to notes",
+    "boardClose": "Close",
+    "boardBuilding": "The AI is building the board…",
+    "boardEmpty": "Empty board — open it to draw",
+    "boardSaveFailed": "Couldn’t save the board",
+    "boardSize": "Board size",
+    "boardSize_s": "Small — half width",
+    "boardSize_m": "Medium — three quarters",
+    "boardSize_l": "Large — full width",
+    "boardLive": "Rotate here",
+    "boardFullscreen": "Full screen",
+    "boardLiveHint": "Move and rotate figures right in the notes",
+    "boardDoneShort": "Done",
+    "graph": "Graph",
+    "graphEdit": "Edit",
+    "graphEditTitle": "Graph",
+    "graphTypePlot": "Functions",
+    "graphTypeBar": "Chart",
+    "graphAiPh": "Describe the graph: \"parabola y = x² − 4 and line y = 2x\"…",
+    "graphAiRun": "Build",
+    "graphAiPhoto": "From photo",
+    "graphAiNeedText": "Describe the graph you need",
+    "graphAiNothing": "The AI found nothing to plot",
+    "graphName": "Title",
+    "graphNamePh": "optional",
+    "graphFrom": "from",
+    "graphTo": "to",
+    "graphYAuto": "y — auto",
+    "graphXLabel": "x-axis label",
+    "graphYLabel": "y-axis label",
+    "graphSeries": "On the graph",
+    "graphKind": "Type",
+    "graphKind_fn": "Function",
+    "graphKind_area": "Area",
+    "graphKind_points": "Points",
+    "graphKind_line": "From data",
+    "graphKind_vline": "x = a",
+    "graphKind_hline": "y = b",
+    "graphBadExpr": "Can't read this — e.g. 2x^2 - 3, sin(x), sqrt(x)",
+    "graphPieceFrom": "Piece: x from",
+    "graphAreaFrom": "Shade from",
+    "graphPoints": "Points: x; y; label — one per line",
+    "graphLabel": "Label",
+    "graphDashed": "dashed",
+    "graphCategories": "Categories (comma-separated)",
+    "graphValues": "Values (separated by ;)",
+    "graphBarKind_bar": "Bars",
+    "graphBarKind_line": "Line",
+    "graphEmpty": "Nothing to draw yet — add a function or data",
+    "matrix": "Matrix",
+    "matrixTitle": "Matrix",
+    "matrixName": "Name",
+    "matrixRows": "Rows",
+    "matrixCols": "Columns",
+    "matrixBrackets": "Brackets",
+    "matrixOps": "Compute",
+    "matrixOpT": "Transpose",
+    "matrixOpDet": "Determinant",
+    "matrixOpInv": "Inverse",
+    "matrixOpRank": "Rank",
+    "matrixOpGauss": "Gaussian elimination",
+    "matrixOpRref": "Gauss–Jordan",
+    "matrixSingular": "The matrix is singular — no inverse exists",
+    "matrixGaussNote": "Row echelon form (forward elimination)",
+    "matrixRrefNote": "Reduced row echelon form",
+    "matrixSymbolic": "The matrix has symbols — computing works only with numbers and fractions (1/2, 0.25)",
+    "matrixInsertResult": "Insert into notes",
+    "matrixInsert": "Insert matrix",
+    "matrixAsFormula": "Edit as a formula",
+    "sizeDown": "Smaller",
+    "sizeUp": "Larger",
+    "alignLeft": "Align left",
+    "alignCenter": "Center",
+    "alignRight": "Align right",
+    "alignJustify": "Justify",
+    "sizeAndAlign": "Size and alignment",
+    "formulaSize": "Formula size",
+    "fontSize": "Font size",
+    "fontSizeNormal": "normal",
+    "share": "Share",
+    "shareView": "View only",
+    "shareEdit": "View and edit",
+    "shareViewHint": "Anyone with the link sees the notes, updated live",
+    "shareEditHint": "Can edit text, formulas, graphs and the board (no AI)",
+    "shareLink": "Link",
+    "shareCopy": "Copy link",
+    "shareCopyPrompt": "Copy the link",
+    "shareFailed": "Couldn't change the link",
+    "shareConflict": "The notes were just changed via the link — showing the latest version",
+    "shareGoneTitle": "This link doesn't work",
+    "shareGoneText": "The author turned it off or deleted the lecture.",
+    "photoN": "Photo {n}",
+    "photoReady": "Ready",
+    "photoRetry": "Retry",
+    "photosSomeFailed": "{ok} of {total} photos opened. Retry the broken ones or continue without them.",
+    "photosAllFailed": "None of the photos opened — retry or pick others.",
+    "photosContinueWithout": "Continue without them",
+    "photosUploadFailed": "Some photos didn’t upload — retry or untick “Insert photo”.",
+    "photoErr_UNREADABLE": "Can't open it: unsupported format (e.g. HEIC) or a damaged file",
+    "photoErr_PHOTO_TOO_LARGE": "Too large — over 15 MB even after compression",
+    "photoErr_UNSUPPORTED_PHOTO": "Unsupported format — use JPG, PNG or WebP",
+    "photoErr_UPLOAD_FAILED": "Couldn't upload the photo",
+    "photoErr_AI_FAILED": "The AI couldn't read the photos — try again",
+    "photoErr_TOO_MANY_PHOTOS": "Too many photos at once — 6 at most",
+    "structureAddedTo": "This adds to “{title}” — inserted right after it",
+    "language": "Lecture language",
+    "language_ru": "Русский",
+    "language_en": "English",
+    "language_auto": "Mixed",
+    "languageHint_ru": "The lecture is in Russian",
+    "languageHint_en": "The lecture is in English — so are the notes",
+    "languageHint_auto": "Two languages, e.g. an English class: each piece of the recording is detected on its own, examples and vocabulary stay in English"
+  },
+  "lecturePromo": {
+    "eyebrow": "New tool · VIP",
+    "h2": "Lecture notes that",
+    "h2_hl": "write themselves",
+    "lead": "Press one button and listen to the lecture. The AI understands speech even in a noisy hall and builds tidy notes — with everything your subject needs.",
+    "tool_formulas": "Formulas",
+    "tool_graphs": "Graphs",
+    "tool_matrices": "Matrices",
+    "tool_board3d": "3D board",
+    "tool_photo": "Board photos",
+    "tool_export": "Word and PDF",
+    "cta_start": "Start recording",
+    "vip_note": "available with VIP",
+    "rec": "Recording",
+    "raw": "<x>quiet over there</x> so the function y equals x squared minus four <x>did you yesterday</x> and the line y equals two x <x>uh well</x> let's find the area between them <x>to be continued</x>",
+    "arrow": "AI cleans up and takes notes",
+    "note_title": "Area between curves",
+    "note_text": "Given <d>y = x² − 4</d> and <d>y = 2x</d>. The limits are the roots of <h>x² − 2x − 4 = 0</h>."
+  },
+  "lectureLanding": {
+    "metaTitle": "Lecture notes — AI writes notes for you | GoodWorker",
+    "metaDescription": "Put your phone on the desk: AI hears the professor, filters out noise, and builds notes with formulas, graphs, matrices, and boards. Notes file themselves into subject folders.",
+    "eyebrow": "Lecture notes",
+    "h1": "Put your phone on the desk.",
+    "h1Hl": "Notes write themselves.",
+    "lead": "AI listens to the professor, drops the noise and chatter from the back rows, and builds notes right during class — with formulas, graphs, matrices, and boards.",
+    "cta": "Start recording",
+    "ctaNote": "Included in VIP · works in your phone browser",
+    "ctaFiles": "My notes",
+    "files": {
+      "eyebrow": "Notes + Files",
+      "h2": "Every lecture files itself",
+      "h2Hl": "onto its subject shelf",
+      "lead": "You tap 'Save to files' — and the notes are already in the folder 'Lecture notes / Linear algebra': a Word document and a class recording with chapters. Nothing to sort.",
+      "points": [
+        {
+          "t": "Folders by subject",
+          "d": "AI determines the subject itself. If you have a 'Physics' folder, the notes go there."
+        },
+        {
+          "t": "'Subject' filter",
+          "d": "One click — and you see all lectures, photos, and files for the subject."
+        },
+        {
+          "t": "Word + audio with chapters",
+          "d": "Next to the .docx — a class recording marked by topics, formulas, and boards."
+        },
+        {
+          "t": "Links for the group",
+          "d": "View only or collaborative editing — classmates see the notes live."
+        }
+      ],
+      "tree": "Lecture notes",
+      "all": "All subjects",
+      "subjects": [
+        "Linear algebra",
+        "Calculus",
+        "Physics"
+      ],
+      "items": [
+        {
+          "s": 0,
+          "name": "SLE and Cramer's rule.docx",
+          "kind": "doc",
+          "meta": "12 pages · 28 formulas"
+        },
+        {
+          "s": 0,
+          "name": "SLE and Cramer's rule.m4a",
+          "kind": "audio",
+          "meta": "1:24:10 · 9 chapters"
+        },
+        {
+          "s": 0,
+          "name": "Inverse matrix.docx",
+          "kind": "doc",
+          "meta": "8 pages · 3 matrices"
+        },
+        {
+          "s": 1,
+          "name": "Area between curves.docx",
+          "kind": "doc",
+          "meta": "9 pages · 2 graphs"
+        },
+        {
+          "s": 1,
+          "name": "Area between curves.m4a",
+          "kind": "audio",
+          "meta": "1:18:42 · 7 chapters"
+        },
+        {
+          "s": 2,
+          "name": "Kinematics of a point.docx",
+          "kind": "doc",
+          "meta": "6 pages · 1 board"
+        }
+      ],
+      "chapters": "Recording chapters",
+      "chapterList": [
+        "04:12 · SLE: matrix form",
+        "23:40 · Cramer's formula",
+        "51:05 · 2×2 example",
+        "78:30 · Board"
+      ],
+      "share": "Share",
+      "shareView": "View only",
+      "shareEdit": "View and edit",
+      "tutor": "For tutors: open the subject folder to your students — they'll get your notes in 'Available to me'.",
+      "noteTag": "Notes"
+    },
+    "examples": {
+      "eyebrow": "Examples",
+      "h2": "This is what finished notes look like",
+      "lead": "Not a word-for-word transcript, but notes: headings, definitions, formulas, graphs, and drawings — like the best student in the class.",
+      "tabs": [
+        "Calculus",
+        "Linear algebra",
+        "Physics",
+        "History"
+      ],
+      "docs": [
+        [
+          {
+            "t": "h",
+            "v": "Derivative of a composite function"
+          },
+          {
+            "t": "def",
+            "v": "If $y = f(g(x))$, the derivative equals the product of derivatives:"
+          },
+          {
+            "t": "math",
+            "v": "\\bigl(f(g(x))\\bigr)' = f'(g(x))\\cdot g'(x)"
+          },
+          {
+            "t": "p",
+            "v": "Example: $\\bigl(\\sin x^2\\bigr)' = \\cos x^2 \\cdot 2x$."
+          },
+          {
+            "t": "graph"
+          }
+        ],
+        [
+          {
+            "t": "h",
+            "v": "Inverse matrix"
+          },
+          {
+            "t": "def",
+            "v": "$A^{-1}$ exists only if ==$\\det A \\neq 0$==."
+          },
+          {
+            "t": "math",
+            "v": "A = \\begin{pmatrix} 2 & 1 \\\\ 5 & 3 \\end{pmatrix},\\quad A^{-1} = \\begin{pmatrix} 3 & -1 \\\\ -5 & 2 \\end{pmatrix}"
+          },
+          {
+            "t": "table",
+            "v": [
+              [
+                "Operation",
+                "Result"
+              ],
+              [
+                "$\\det A$",
+                "$1$"
+              ],
+              [
+                "$\\operatorname{rank} A$",
+                "$2$"
+              ],
+              [
+                "$A\\cdot A^{-1}$",
+                "$E$"
+              ]
+            ]
+          }
+        ],
+        [
+          {
+            "t": "h",
+            "v": "Volume and center of mass of a pyramid"
+          },
+          {
+            "t": "board"
+          },
+          {
+            "t": "math",
+            "v": "V = \\dfrac{1}{3}\\,S\\,h = \\dfrac{1}{3}\\cdot 36 \\cdot 8 = 96\\ \\text{см}^3"
+          },
+          {
+            "t": "warn",
+            "v": "The center of mass lies on the height, at $\\tfrac{1}{4}h$ from the base — don't confuse it with the center of the inscribed sphere."
+          }
+        ],
+        [
+          {
+            "t": "h",
+            "v": "Reforms of Peter I"
+          },
+          {
+            "t": "li",
+            "v": [
+              "1699 — city reform, Burmister Chamber",
+              "1711 — Senate established",
+              "1718–1721 — collegia instead of prikazes"
+            ]
+          },
+          {
+            "t": "table",
+            "v": [
+              [
+                "Sphere",
+                "What changed"
+              ],
+              [
+                "Army",
+                "Recruitment duty, regular army"
+              ],
+              [
+                "Administration",
+                "Senate, collegia, governorates"
+              ],
+              [
+                "Church",
+                "Synod instead of patriarchate"
+              ]
+            ]
+          },
+          {
+            "t": "p",
+            "v": "The lecturer's main point: ==reforms came from military needs==, not from a ready plan."
+          }
+        ]
+      ],
+      "exports": "Export: Word with real formulas · PDF · audio with chapters"
+    },
+    "how": {
+      "eyebrow": "How it works",
+      "h2": "Four steps, and one of them is yours",
+      "steps": [
+        {
+          "t": "Record",
+          "d": "Tap 'Start recording' and put your phone on the desk. Recording goes in chunks and won't be lost even if the network drops."
+        },
+        {
+          "t": "AI cleans",
+          "d": "Fixes recognition errors, drops chatter, 'open a window', and mic hallucinations."
+        },
+        {
+          "t": "Notes are written",
+          "d": "Headings, definitions, formulas, graphs — as the class goes. A new topic goes to the end, a return to an old one goes to its section."
+        },
+        {
+          "t": "Add from the board",
+          "d": "Take a photo of the board — AI figures out what's already there and what to add and where."
+        }
+      ]
+    },
+    "features": {
+      "eyebrow": "Features",
+      "h2": "Everything usually written by hand — and what you don't have time for",
+      "items": [
+        {
+          "i": "sigma",
+          "t": "Formulas",
+          "d": "Real formulas, editable in Word — not images."
+        },
+        {
+          "i": "chart",
+          "t": "Graphs",
+          "d": "Functions, areas, points, and data — from the professor's speech or from the board."
+        },
+        {
+          "i": "grid",
+          "t": "Matrices",
+          "d": "Determinant, inverse, rank, Gauss — precisely, in fractions."
+        },
+        {
+          "i": "box",
+          "t": "3D board",
+          "d": "Pyramids and prisms you can rotate right in the text."
+        },
+        {
+          "i": "camera",
+          "t": "Board photo",
+          "d": "Up to six photos at once — AI adds only what's missing."
+        },
+        {
+          "i": "sparkles",
+          "t": "Ask AI",
+          "d": "Explain simpler, shorten, make a table — based on selected text."
+        },
+        {
+          "i": "layers",
+          "t": "Compression",
+          "d": "Detailed like good notes or just formulas and conclusions."
+        },
+        {
+          "i": "audio",
+          "t": "Audio with chapters",
+          "d": "Class recording with markers for topics, formulas, and boards — easy to find the right spot."
+        },
+        {
+          "i": "link",
+          "t": "Links",
+          "d": "Share notes for viewing or collaborative editing."
+        }
+      ]
+    },
+    "who": {
+      "student": {
+        "t": "For students",
+        "d": "Listen to the lecture instead of taking shorthand. Notes, formulas, and the class recording — in one place, by subject."
+      },
+      "tutor": {
+        "t": "For tutors",
+        "d": "Record lessons and explanations — notes file themselves into folders and open to students."
+      }
+    },
+    "final": {
+      "h2": "Next class — already with notes",
+      "lead": "Open GoodWorker on your phone before the lecture and tap one button.",
+      "cta": "Start recording"
+    },
+    "hero": {
+      "hint": "Tap record or take a photo of the board",
+      "recording": "Recording",
+      "paused": "Paused",
+      "pause": "Pause recording",
+      "resume": "Resume recording",
+      "snap": "Photograph the board",
+      "scanning": "Reading the board…",
+      "added": "In your notes",
+      "notesTitle": "Calculus · Area between curves",
+      "writing": "AI is writing",
+      "ready": "Done",
+      "empty": "Notes appear as soon as the lecturer starts speaking…",
+      "replay": "Start over",
+      "chalk": [
+        "y = x² − 4,  y = 2x",
+        "x² − 2x − 4 = 0",
+        "S = ∫ (2x − x² + 4) dx"
+      ],
+      "notes": [
+        {
+          "t": "h",
+          "v": "Area between curves"
+        },
+        {
+          "t": "def",
+          "v": "The area of the region between the graphs of $f$ and $g$ on $[a;\\,b]$ is ==the integral of their difference==, where $f$ lies above $g$:"
+        },
+        {
+          "t": "math",
+          "v": "S = \\int_a^b \\bigl(f(x) - g(x)\\bigr)\\,dx"
+        },
+        {
+          "t": "p",
+          "v": "Example: $f(x) = 2x$, $g(x) = x^2 - 4$. The limits of integration are the points where the graphs intersect."
+        }
+      ],
+      "fromBoard": [
+        {
+          "t": "p",
+          "v": "Intersection points: $x^2 - 2x - 4 = 0$, so $x = 1 \\pm \\sqrt{5}$."
+        },
+        {
+          "t": "graph"
+        },
+        {
+          "t": "math",
+          "v": "S = \\int_{1-\\sqrt{5}}^{1+\\sqrt{5}} \\bigl(2x - x^2 + 4\\bigr)\\,dx = \\dfrac{20\\sqrt{5}}{3}"
+        }
+      ],
+      "heardTitle": "Hearing now",
+      "heard": [
+        {
+          "v": "okay, moving on — the area between curves"
+        },
+        {
+          "v": "quiet down at the back, please",
+          "noise": true
+        },
+        {
+          "v": "if f lies above g on the interval from a to b"
+        },
+        {
+          "v": "then the area is the integral of f minus g"
+        },
+        {
+          "v": "Subtitles by the Amara.org community",
+          "noise": true
+        },
+        {
+          "v": "example: f equals two x, g is x squared minus four"
+        },
+        {
+          "v": "the limits are the intersection points, look at the board"
+        }
+      ]
+    },
+    "seo": {
+      "keywords": [
+        "lecture notes",
+        "automatic lecture notes",
+        "AI note taker for lectures",
+        "lecture transcription",
+        "record lectures on your phone",
+        "recognize formulas from a whiteboard photo",
+        "lecture notes to Word",
+        "AI notes for students"
+      ],
+      "h": "Automatic lecture notes with AI",
+      "intro": [
+        "GoodWorker turns a lecture recording into finished notes. Put your phone on the desk and tap “Start recording” — the AI listens to the lecturer, transcribes the speech and builds structured notes during the class: headings, definitions, formulas and graphs.",
+        "It is more than a transcript: slips of the tongue, classroom noise and back-row chatter are left out, and the content is organised into sections — the way an attentive student in the front row would write it down."
+      ],
+      "blocks": [
+        {
+          "h": "Formulas, graphs and matrices — real ones, not pictures",
+          "p": [
+            "The AI writes maths as formulas: integrals, fractions, limits and matrices stay editable, so you can fix, enlarge or align them. Function graphs are plotted from the equation with the area under the curve shaded, and a matrix gets its determinant, inverse and rank in one click — in exact fractions.",
+            "If the lecturer writes on the board, take a photo: the AI reads the formulas and drawings, compares them with your notes and adds only what is new — a continuation goes right after its section, repeats are dropped."
+          ]
+        },
+        {
+          "h": "Notes that are easy to study from",
+          "p": [
+            "Shrink the notes down to the essentials with one switch, ask the AI about a paragraph you did not get, insert an explanation or a table, leave your own notes in the margin. Everything is editable like a normal document."
+          ]
+        },
+        {
+          "h": "Export to Word, PDF and audio with chapters",
+          "p": [
+            "Download the notes as .docx with native Word equations or as a PDF, or save them to “My files” — into a subject folder created automatically. The lecture audio is saved as .m4a with chapters for each section, so you can replay the right moment in seconds."
+          ]
+        },
+        {
+          "h": "For students and tutors",
+          "p": [
+            "Students get notes for every class without rewriting anything or missing a word. Tutors turn a lesson recording into neat material for their student and share it by link — view-only or for editing together."
+          ]
+        }
+      ],
+      "faqTitle": "FAQ",
+      "faq": [
+        {
+          "q": "How do I make lecture notes automatically?",
+          "a": "Open “Lecture notes”, tap “Start recording” and put your phone on the desk. The AI transcribes the lecturer and builds the notes during the lecture; when you stop, the text is refined by a more accurate speech recognition model."
+        },
+        {
+          "q": "Does the AI recognize formulas and graphs?",
+          "a": "Yes. Formulas are written in math markup and stay editable, graphs are plotted from equations. Formulas and drawings from the board can be added from a photo."
+        },
+        {
+          "q": "Can I download the notes in Word?",
+          "a": "Yes, the notes download as .docx with Word equations, and as PDF. You can also save them to “My files” — they go into their subject folder by themselves."
+        },
+        {
+          "q": "What if the lecture hall is noisy?",
+          "a": "Side conversations, noise and recognition errors are filtered out: the AI first restores what the lecturer said and only then writes the notes."
+        },
+        {
+          "q": "Who can use it?",
+          "a": "Lecture notes are available to GoodWorker VIP students and VIP tutors."
+        }
+      ]
+    }
+  },
+  "filesPromo": {
+    "eyebrow": "File storage",
+    "h2": "All your materials —",
+    "h2_hl": "in one folder",
+    "lead": "Any files — PDF, Word, slides, photos, video, audio and lecture notes — shared with the right students for the right period. Every student gets a personal folder to hand in homework: a deadline, a pen review, and you see who has already opened the materials.",
+    "points": [
+      "Access per student and per period",
+      "Personal homework hand-in with a deadline and review",
+      "Search the text inside files"
+    ],
+    "cta": "Open files",
+    "vip": "Included in VIP · 15 GB per tutor",
+    "library": "Library",
+    "quota": "3.2 of 15 GB",
+    "filesIn": "Files",
+    "share": "Folder access",
+    "until": "until May 31",
+    "done": "Done",
+    "opened": "Opened by {name}",
+    "students": [
+      "Anya K.",
+      "Dima S.",
+      "Misha L.",
+      "Katya R."
+    ],
+    "folders": [
+      {
+        "name": "Algebra · Grade 9A",
+        "cover": "preset:aurora",
+        "files": [
+          {
+            "name": "Textbook, chapter 4.pdf",
+            "kind": "pdf",
+            "size": 39845888
+          },
+          {
+            "name": "Quadratic equations.docx",
+            "kind": "docx",
+            "size": 1258291
+          },
+          {
+            "name": "Mistakes review.m4a",
+            "kind": "audio",
+            "size": 11534336
+          }
+        ]
+      },
+      {
+        "name": "Homework #7 · Derivatives",
+        "cover": "preset:sunset",
+        "deadline": true,
+        "files": [
+          {
+            "name": "Assignment.pdf",
+            "kind": "pdf",
+            "size": 317440
+          },
+          {
+            "name": "Anya K. — solution.pdf",
+            "kind": "pdf",
+            "size": 2202009,
+            "student": true,
+            "review": "ACCEPTED",
+            "grade": "5"
+          },
+          {
+            "name": "Misha L. — solution.pdf",
+            "kind": "pdf",
+            "size": 1782579,
+            "student": true,
+            "late": true,
+            "review": "REVISION"
+          }
+        ]
+      },
+      {
+        "name": "Physics · Exam prep",
+        "cover": "preset:peach",
+        "files": [
+          {
+            "name": "Kinematics cheat sheet.pdf",
+            "kind": "pdf",
+            "size": 2202009
+          },
+          {
+            "name": "Practice test 12 with solutions.pdf",
+            "kind": "pdf",
+            "size": 5662310
+          },
+          {
+            "name": "Kinematics — slides.pptx",
+            "kind": "pptx",
+            "size": 8912896
+          }
+        ]
+      },
+      {
+        "name": "Lecture notes",
+        "cover": "preset:meadow",
+        "files": [
+          {
+            "name": "Area between curves.docx",
+            "kind": "lecture",
+            "size": 845824
+          },
+          {
+            "name": "Area between curves.m4a",
+            "kind": "audio",
+            "size": 34603008
+          },
+          {
+            "name": "Limits of functions.docx",
+            "kind": "lecture",
+            "size": 612352
+          }
+        ]
+      }
+    ]
+  },
+  "StorageLanding": {
+    "meta_title": "File storage — study materials for tutors and students",
+    "meta_description": "Keep all study materials in one place: folders per student, time-limited access, submitting and reviewing work, search inside files.",
+    "badge": "File storage",
+    "hero_title": "All your study materials — <hl>in one place</hl>",
+    "hero_lead": "GoodWorker storage helps you organize files, notes and materials by subject, student and course.",
+    "hero_cta1": "Try it for free",
+    "hero_cta2": "How it works",
+    "hero_sig": "Simple and structured",
+    "win_aria": "Storage interface preview",
+    "win_title": "My files",
+    "folders_aria": "Folders",
+    "search_label": "Search files",
+    "quota": "2.4 GB of 15 GB",
+    "folder_1": "Lecture notes",
+    "folder_2": "Homework",
+    "folder_3": "Materials",
+    "folder_4": "Courses",
+    "file_1": "Linear Algebra — Notes.pdf",
+    "file_2": "Lecture 3 — Audio.mp3",
+    "file_3": "Homework.docx",
+    "file_4": "Formula table.xlsx",
+    "size_1": "1.2 MB",
+    "size_2": "18 MB",
+    "size_3": "84 KB",
+    "size_4": "46 KB",
+    "type_pdf": "PDF document",
+    "type_mp3": "MP3 audio",
+    "type_docx": "Word document",
+    "type_xlsx": "Excel spreadsheet",
+    "student_anna": "Anna",
+    "student_ilya": "Ilya",
+    "student_maria": "Maria",
+    "student_kirill": "Kirill",
+    "gen_anna": "Anna",
+    "gen_ilya": "Ilya",
+    "gen_maria": "Maria",
+    "gen_kirill": "Kirill",
+    "crumb_root": "My files",
+    "crumbs_aria": "Path",
+    "folders_heading": "Folders",
+    "folders_count": "{count, plural, one {# folder} other {# folders}}",
+    "files_count": "{count, plural, one {# file} other {# files}}",
+    "personal_sub": "Personal subfolder",
+    "personal_sub_files": "Personal subfolder · {files}",
+    "open_sub_aria": "Open subfolder: {name}",
+    "open_folder_aria": "Open folder {name}",
+    "open_file_aria": "Open file {name}",
+    "back_aria": "Back to folder “{name}”",
+    "access": "Access",
+    "give_access": "Share",
+    "whom_open": "Share with",
+    "students_aria": "Students",
+    "badge_open": "open",
+    "badge_closed": "closed",
+    "close_panel_aria": "Close panel",
+    "close": "Close",
+    "panel_folder": "Folder",
+    "panel_status": "Status",
+    "note_sub": "The file is visible to the student — {name}.",
+    "note_open": "The file is visible to students who have access to the folder.",
+    "note_hidden": "The file is hidden: students can’t see it, even if they have access to the folder.",
+    "close_access": "Close access",
+    "open_access": "Open access",
+    "toast_granted_f": "{name} got access",
+    "toast_granted_m": "{name} got access",
+    "toast_revoked": "Access for {name} closed",
+    "toast_file_open": "File is open to students",
+    "toast_file_closed": "Access to the file closed",
+    "toast_file_sub_f": "{name} got access to the file",
+    "toast_file_sub_m": "{name} got access to the file",
+    "how_title": "Everything for studying",
+    "th1_t": "Folders per student",
+    "th1_d": "Each student has a personal subfolder: materials are visible only to the person you opened them for.",
+    "th2_t": "Time-limited access",
+    "th2_d": "Open a folder for as long as you need — and close it with one click.",
+    "th3_t": "Submitting work",
+    "th3_d": "The student uploads work to a folder with a deadline; you review it and send it back.",
+    "th4_t": "Search inside files",
+    "th4_d": "Find a note by a word from the document itself, not just by its name.",
+    "locked": "closed",
+    "pill_open": "Open",
+    "pill_closed": "Closed",
+    "wd1": "Mon",
+    "wd2": "Tue",
+    "wd3": "Wed",
+    "wd4": "Thu",
+    "wd5": "Fri",
+    "wd6": "Sat",
+    "wd7": "Sun",
+    "deadline": "Deadline · Fri",
+    "upload_work": "Upload work",
+    "st_wait": "Pending",
+    "st_sent": "Submitted",
+    "st_checked": "Reviewed",
+    "search_query": "determinant",
+    "res1": "…if the <m>determinant</m> of a matrix is zero, the system is either inconsistent or has infinitely many solutions…",
+    "res2": "…second-order <m>determinant</m>: ad − bc…",
+    "steps_title": "How it works",
+    "steps_lead": "Three steps from an empty storage to submitted and reviewed work.",
+    "step1_t": "Create folders",
+    "step1_d": "Sort materials by subject and course. Every student gets a personal subfolder.",
+    "step2_t": "Open access",
+    "step2_d": "Choose who and for how long. Access can be closed with one click.",
+    "step3_t": "Receive work",
+    "step3_d": "The student uploads work to a folder with a deadline; you review it and send it back.",
+    "aud_title": "Order for tutors, clarity for students",
+    "aud_t_title": "For tutors",
+    "aud_t_sub": "Order in your materials and control over who sees what.",
+    "aud_t1_b": "Folders by subject and student",
+    "aud_t1_d": "Each student has a personal subfolder: materials are visible only to the person you opened them for.",
+    "aud_t2_b": "Time-limited access",
+    "aud_t2_d": "Open a folder for as long as you need and close it with one click.",
+    "aud_t3_b": "Reviewing work",
+    "aud_t3_d": "The student submits work to a folder with a deadline; you review it and send it back. .docx files can be edited right in the storage.",
+    "aud_t4_b": "Space usage",
+    "aud_t4_d": "See how much space is used and how much is left.",
+    "aud_s_title": "For students",
+    "aud_s_sub": "Everything you need for lessons is at hand — no forwarding files.",
+    "aud_s1_b": "Tutor’s materials in one place",
+    "aud_s1_d": "Notes, assignments and recordings live in folders by subject instead of getting lost in chats.",
+    "aud_s2_b": "Clear what to submit and when",
+    "aud_s2_d": "The deadline is visible in the folder and in the calendar, along with the status — submitted or already reviewed.",
+    "aud_s3_b": "Search inside files",
+    "aud_s3_d": "Find the note you need by a word from the document itself, not just by its name.",
+    "mf_aria": "Principle",
+    "mf_a": "Materials should be where they are expected — and visible",
+    "mf_b": "only to those you opened them for.",
+    "faq_title": "Frequently asked questions",
+    "faq_lead": "A short overview of how the storage works.",
+    "faq1_q": "Who sees the files in a personal subfolder?",
+    "faq1_a": "Only the student it belongs to, and you. Other students can’t see this subfolder.",
+    "faq2_q": "Can I open a folder for a limited time?",
+    "faq2_a": "Yes. Open a folder for as long as you need, and close access at any moment with one click.",
+    "faq3_q": "How does a student submit work?",
+    "faq3_a": "They upload a file to a folder with a deadline. You see who has already submitted, review the work and send it back to the student.",
+    "faq4_q": "Can I find a file by the text inside it?",
+    "faq4_a": "Yes. Search works on the contents of documents, not just on file names.",
+    "faq5_q": "Can I edit documents in the storage itself?",
+    "faq5_a": ".docx files can be edited right in the storage. The corrected version is saved next to the original.",
+    "faq6_q": "How do I know how much space is left?",
+    "faq6_a": "Used and available space is shown in the storage’s top bar — you always see how much is left.",
+    "cta_title": "Bring your study materials together in one place",
+    "cta_text": "Folders per student, time-limited access and submitting work — in a single GoodWorker storage."
   }
 }

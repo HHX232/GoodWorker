@@ -1,0 +1,299 @@
+// Call notes slide-out panel. Same palette as VideoCallPage.module.scss (light first, dark at the end).
+
+$bg-card: #ffffff;
+$border: rgba(0, 0, 0, 0.08);
+$accent: #7c3aed;
+$success: #16a34a;
+$warn: #d97706;
+$text: #0f172a;
+$text-dim: #475569;
+$text-muted: #94a3b8;
+$ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+$dur: 0.34s;
+
+.root {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+
+  &[data-open] { pointer-events: auto; }
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.22);
+  opacity: 0;
+  transition: opacity $dur $ease-out;
+
+  .root[data-open] & { opacity: 1; }
+}
+
+.panel {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  bottom: 12px;
+  width: 420px;
+  max-width: calc(100% - 24px);
+  display: flex;
+  flex-direction: column;
+  background: $bg-card;
+  border: 1px solid $border;
+  border-radius: 20px;
+  box-shadow: 0 24px 56px -16px rgba(15, 23, 42, 0.32), 0 2px 6px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+  outline: none;
+  transform: translateX(calc(100% + 24px));
+  visibility: hidden;
+  transition: transform $dur $ease-out, visibility 0s linear $dur;
+
+  .root[data-open] & {
+    transform: none;
+    visibility: visible;
+    transition: transform $dur $ease-out, visibility 0s;
+  }
+
+  @media (max-width: 768px) {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    max-width: none;
+    height: min(86%, 720px);
+    border-radius: 20px 20px 0 0;
+    border-bottom: none;
+    transform: translateY(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop, .panel, .root[data-open] .panel { transition: none; }
+  .dot, .docLoading span { animation: none !important; }
+}
+
+// ── Header ──
+.head {
+  flex-shrink: 0;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid $border;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: $text;
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 9px;
+  background: rgba(0, 0, 0, 0.05);
+  color: $text-dim;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover { background: rgba(0, 0, 0, 0.1); color: $text; }
+  &:focus-visible { outline: 2px solid $accent; outline-offset: 2px; }
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: $text-dim;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: $text-muted;
+
+  [data-tone='wait'] > & { background: rgba(124, 58, 237, 0.45); }
+  [data-tone='busy'] > & { background: $accent; animation: notesPulse 1.2s ease-in-out infinite; }
+  [data-tone='ok'] > & { background: $success; }
+  [data-tone='warn'] > & { background: $warn; }
+}
+.status[data-tone='busy'] { color: $accent; }
+.status[data-tone='warn'] { color: #b45309; }
+
+@keyframes notesPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.72); }
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  margin: 4px 0 0 16px;
+  font-size: 12px;
+  color: $text-muted;
+}
+
+.saved {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  margin-top: 14px;
+  padding: 3px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.045);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 34px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: $text-dim;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+
+  &:hover { color: $text; }
+  &:focus-visible { outline: 2px solid $accent; outline-offset: 1px; }
+  &[aria-selected='true'] {
+    background: $bg-card;
+    color: $text;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1), 0 1px 1px rgba(15, 23, 42, 0.04);
+    svg { color: $accent; }
+  }
+}
+
+// ── Body ──
+.body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  &[hidden] { display: none; }
+}
+
+.doc {
+  padding: 6px 22px 24px;
+
+  // The lecture editor is sized for a full page — fit it to the panel.
+  :global(.tiptap.ProseMirror) {
+    min-height: 0;
+    padding-bottom: 8px;
+    font-size: 15.5px;
+    line-height: 1.65;
+
+    > :first-child { margin-top: 0.5em; }
+    h2 { font-size: 1.32em; }
+    h3 { font-size: 1.12em; }
+  }
+}
+
+.docLoading {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px;
+
+  span {
+    height: 12px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.09) 50%, rgba(0, 0, 0, 0.05) 100%);
+    background-size: 200% 100%;
+    animation: notesShimmer 1.4s ease-in-out infinite;
+  }
+  span:first-child { width: 55%; height: 18px; }
+  span:last-child { width: 80%; }
+}
+
+@keyframes notesShimmer { to { background-position: -200% 0; } }
+
+.empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 40px 32px;
+  text-align: center;
+
+  p {
+    margin: 0;
+    max-width: 250px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: $text-dim;
+  }
+}
+
+.emptyIcon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(124, 58, 237, 0.08);
+  color: $accent;
+}
+
+// ── Dark theme ──
+:global(html.theme-dark), :global(html.pomodoro-dark) {
+  .backdrop { background: rgba(6, 5, 12, 0.45); }
+  .panel { background: #16141f; border-color: #2c2942; box-shadow: 0 24px 56px -16px rgba(0, 0, 0, 0.7); }
+  .head { border-bottom-color: #262338; }
+  .title { color: #fff; }
+  .close { background: #221f30; color: #c9c6d8; &:hover { background: #2b2740; color: #fff; } }
+  .status { color: rgba(255, 255, 255, 0.7); }
+  .status[data-tone='busy'] { color: #b9a6ff; }
+  .status[data-tone='warn'] { color: #fbbf24; }
+  .dot { background: rgba(255, 255, 255, 0.3); }
+  [data-tone='wait'] > .dot { background: rgba(185, 166, 255, 0.5); }
+  [data-tone='busy'] > .dot { background: #b9a6ff; }
+  [data-tone='ok'] > .dot { background: #4ade80; }
+  [data-tone='warn'] > .dot { background: #fbbf24; }
+  .meta { color: rgba(255, 255, 255, 0.42); }
+  .tabs { background: rgba(255, 255, 255, 0.05); }
+  .tab {
+    color: rgba(255, 255, 255, 0.55);
+    &:hover { color: #fff; }
+    &[aria-selected='true'] { background: #221f30; color: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4); svg { color: #b9a6ff; } }
+  }
+  .docLoading span { background: linear-gradient(90deg, #1d1a29 0%, #26223a 50%, #1d1a29 100%); background-size: 200% 100%; }
+  .empty p { color: rgba(255, 255, 255, 0.55); }
+  .emptyIcon { background: rgba(91, 63, 214, 0.2); color: #b9a6ff; }
+}

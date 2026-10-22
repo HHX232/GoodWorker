@@ -326,6 +326,8 @@
   }
 }
 
+.openNoteBtn { margin-left: auto; }
+
 // ─── Dark theme ───────────────────────────────────────────────────────────────
 :global(html.theme-dark), :global(html.pomodoro-dark) {
   .modal { background: #1e2030; box-shadow: 0 16px 56px rgba(0,0,0,0.5); }
