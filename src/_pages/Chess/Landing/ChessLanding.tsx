@@ -7,6 +7,7 @@ import Footer from '@/widgets/Footer/Footer'
 import { getSkin } from '@/widgets/Chess/Board'
 import { HeroScene } from './HeroScene'
 import { Features } from './Features'
+import { ChessHeader } from './ChessHeader'
 import s from './ChessLanding.module.scss'
 
 /*
@@ -36,8 +37,9 @@ export function ChessLanding() {
   const t = useTranslations('chess.landing')
   return (
     <div className={s.root}>
+      <ChessHeader />
       <main>
-        <section className={s.hero} aria-labelledby="gwl-title">
+        <section id="gwl-top" className={s.hero} aria-labelledby="gwl-title">
           <div className={s.haze} aria-hidden="true">
             <i />
             <i />
@@ -60,8 +62,8 @@ export function ChessLanding() {
 
         <Features />
 
-        <section className={s.faq} aria-labelledby="gwl-faq">
-          <h2 id="gwl-faq" className={s.h2}>
+        <section id="gwl-faq" className={s.faq} aria-labelledby="gwl-faq-h">
+          <h2 id="gwl-faq-h" className={s.h2}>
             {t('faq_title')}
           </h2>
           <div className={s.faqList}>

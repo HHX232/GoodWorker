@@ -1,5 +1,5 @@
 {
-  "meta_title": "带 AI 教练的国际象棋 — GoodWorker",
+  "meta_title": "GoodChess — 带 AI 教练的国际象棋",
   "meta_description": "与 Stockfish 引擎和 13 个机器人对弈，练习 50,000 道 Lichess 谜题，在线进行 Elo 等级分对局。AI 教练用平实的语言讲解每一步。",
   "hero_title_a": "会讲解",
   "hero_title_b": "每一步的",
@@ -28,7 +28,6 @@
   "note_25": "以车换马，打开 d 线。第二个车已经在路上。",
   "note_31": "弃后，把 d7 的马引开。你看到一步杀了吗？",
   "note_33": "将死。开局两步弱着——对局在第 17 回合结束。",
-
   "feats_title": "对手、教练和谜题，尽在一处",
   "feats_sub": "下面展示的都是本栏目真实的组件，而不是图片。",
   "f_coach_t": "用语言讲解的教练",
@@ -53,7 +52,6 @@
   "f_tutor_you": "你",
   "f_tutor_teacher": "家教",
   "demo": "示例",
-
   "faq_title": "常见问题",
   "q1": "免费吗？",
   "a1": "是的。与机器人对弈、谜题、在线对局和复盘都免费。VIP 订阅只取消教练讲解的每日限额。",
@@ -67,9 +65,16 @@
   "a5": "可以。目录中有国际象棋家教，视频通话中会打开共享棋盘：局面和着法对双方同步。",
   "q6": "支持哪些设备？",
   "a6": "任何现代浏览器——电脑、平板和手机。无需安装：引擎直接在页面中运行。",
-
   "final_title": "一分钟后开始第一局",
   "final_sub": "选择对手，打开教练，看着你的棋艺发生变化。",
-  "credit": "谜题来自 Lichess 数据库（CC0）· Stockfish 引擎",
-  "hub_link": "关于"
+  "credit": "GoodChess — GoodWorker 中的国际象棋 · 谜题来自 Lichess 数据库（CC0）· Stockfish 引擎",
+  "hub_link": "关于",
+  "nav_label": "页面栏目",
+  "nav_game": "对局",
+  "nav_features": "功能",
+  "nav_faq": "常见问题",
+  "nav_theme": "切换主题",
+  "nav_login": "登录",
+  "nav_play": "开始下棋",
+  "nav_menu": "菜单"
 }

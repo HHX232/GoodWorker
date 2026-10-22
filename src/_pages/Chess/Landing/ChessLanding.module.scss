@@ -3,7 +3,8 @@
 // Motion: only the hero's game (transform / opacity), paused off screen; reduced motion = one still frame.
 
 .root {
-  --hh: 86px; // global site header + its gap
+  --hh: 0px; // the GoodChess bar floats over the hero (ChessHeader), the site header is hidden here
+  --bar: 64px;
   --gut: clamp(16px, 4vw, 56px);
   --display: var(--font-forum), 'Forum', Georgia, 'Times New Roman', serif;
   --text: var(--font-onest), 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -30,6 +31,10 @@
 
   font-family: var(--text);
   overflow-x: clip;
+
+  section[id] {
+    scroll-margin-top: var(--bar);
+  }
 
   :focus-visible {
     outline: 2px solid var(--ember);
@@ -104,7 +109,7 @@
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   gap: 8px;
-  padding: clamp(20px, 3.2vh, 40px) var(--gut) clamp(12px, 2vh, 24px);
+  padding: calc(var(--bar) + clamp(16px, 3vh, 36px)) var(--gut) clamp(12px, 2vh, 24px);
   color: var(--s-ink);
   background:
     radial-gradient(ellipse 46% 42% at 50% 84%, rgba(255, 146, 82, 0.16), transparent 72%),

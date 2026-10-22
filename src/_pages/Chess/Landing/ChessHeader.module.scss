@@ -1,0 +1,254 @@
+// GoodChess bar. Lives on the night stage: hairline at the bottom, mono nav captions, one ember action.
+
+// The page brings its own bar: the site header steps aside only while the landing is on screen.
+:global(body):has(.bar) :global(header):not(.bar) {
+  display: none;
+}
+
+.bar {
+  --ink: #f4ede5;
+  --soft: #aba6a0;
+  --line: rgba(255, 255, 255, 0.12);
+  --ember: #ff7a3d;
+
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: 64px;
+  margin-bottom: -64px; // floats over the hero instead of pushing it down
+  color: var(--ink);
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  transition: background-color 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease;
+
+  &[data-solid] {
+    background: rgba(9, 10, 14, 0.82);
+    backdrop-filter: blur(14px) saturate(1.2);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  a {
+    display: inline-flex; // the site styles bare links as display: contents
+    align-items: center;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ember);
+    outline-offset: 3px;
+  }
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  height: 100%;
+  max-width: calc(1400px + 2 * var(--gut, 56px));
+  margin: 0 auto;
+  padding: 0 var(--gut, 56px);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+
+.mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: var(--ember);
+  box-shadow: 0 8px 18px -10px rgba(255, 122, 61, 0.9);
+}
+
+.markPiece {
+  width: 26px;
+  height: 26px;
+}
+
+.word {
+  font: 400 1.45rem/1 var(--display, Georgia, serif) !important;
+  letter-spacing: -0.01em;
+
+  b {
+    font: inherit;
+    color: var(--ember);
+  }
+}
+
+.nav {
+  display: flex;
+  gap: 28px;
+  margin-left: 16px;
+
+  a {
+    position: relative;
+    font: 400 0.74rem/1 var(--mono, monospace);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--soft);
+    transition: color 0.2s;
+
+    &:hover {
+      color: var(--ink);
+    }
+  }
+}
+
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.07);
+  }
+}
+
+// the site's language switcher, restyled for the night bar
+.lang {
+  > button {
+    padding: 0 12px;
+    height: 36px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: transparent;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    span {
+      font: 400 0.74rem/1 var(--mono, monospace) !important;
+      letter-spacing: 0.06em;
+      color: var(--ink);
+    }
+    img {
+      filter: invert(1);
+      opacity: 0.7;
+    }
+  }
+}
+
+.login {
+  padding: 0 6px;
+  font: 400 0.74rem/1 var(--mono, monospace);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--soft) !important;
+
+  &:hover {
+    color: var(--ink) !important;
+  }
+}
+
+.me {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #1d2029;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  span {
+    font: 600 0.72rem/1 var(--text, sans-serif) !important;
+  }
+}
+
+.play {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 9px;
+  background: var(--ember);
+  color: #1b0b03 !important;
+  font-weight: 600;
+  font-size: 0.88rem;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: #ff9160;
+  }
+}
+
+
+.mobile {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.sheet {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .nav,
+  .tools {
+    display: none;
+  }
+  .mobile {
+    display: flex;
+  }
+  .inner {
+    gap: 12px;
+  }
+  .sheet {
+    display: grid;
+    gap: 4px;
+    padding: 8px var(--gut, 16px) 18px;
+    background: #0a0b0f;
+    box-shadow: 0 24px 40px -20px rgba(0, 0, 0, 0.8);
+    border-bottom: 1px solid var(--line);
+
+    > a {
+      display: block;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      font: 400 0.8rem/1 var(--mono, monospace);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--soft);
+    }
+  }
+  .sheetRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    transition: none;
+  }
+}

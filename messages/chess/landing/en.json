@@ -1,5 +1,5 @@
 {
-  "meta_title": "Chess with an AI coach — GoodWorker",
+  "meta_title": "GoodChess — chess with an AI coach",
   "meta_description": "Play the Stockfish engine and 13 bots, solve 50,000 Lichess puzzles, play rated games online. An AI coach explains every move in plain words.",
   "hero_title_a": "Chess",
   "hero_title_b": "that explains",
@@ -28,7 +28,6 @@
   "note_25": "The rook is given for the knight to open the d-file. The second rook is on its way.",
   "note_31": "The queen is given to lure the knight away from d7. Can you see mate in one?",
   "note_33": "Mate. Two weak opening moves — and the game is over on move 17.",
-
   "feats_title": "Opponent, coach and puzzles — in one place",
   "feats_sub": "Everything below is a working piece of the section, not a picture.",
   "f_coach_t": "A coach that explains in words",
@@ -53,7 +52,6 @@
   "f_tutor_you": "You",
   "f_tutor_teacher": "Tutor",
   "demo": "sample",
-
   "faq_title": "Questions",
   "q1": "Is it free?",
   "a1": "Yes. Bot games, puzzles, online play and game review are free. A VIP subscription only lifts the daily limit on coach explanations.",
@@ -67,9 +65,16 @@
   "a5": "Yes. The catalogue has chess tutors, and the video call opens a shared board: the position and moves stay in sync for both of you.",
   "q6": "Which devices does it work on?",
   "a6": "Any modern browser — desktop, tablet and phone. Nothing to install: the engine runs right on the page.",
-
   "final_title": "Your first game is a minute away",
   "final_sub": "Pick an opponent, switch on the coach and watch your game change.",
-  "credit": "Puzzles — Lichess database (CC0) · Stockfish engine",
-  "hub_link": "About"
+  "credit": "GoodChess — chess in GoodWorker · Puzzles — Lichess database (CC0) · Stockfish engine",
+  "hub_link": "About",
+  "nav_label": "Landing sections",
+  "nav_game": "The game",
+  "nav_features": "Features",
+  "nav_faq": "Questions",
+  "nav_theme": "Switch theme",
+  "nav_login": "Sign in",
+  "nav_play": "Play",
+  "nav_menu": "Menu"
 }

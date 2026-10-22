@@ -49,7 +49,7 @@ export function Features() {
   const special = BOTS.filter((b) => b.opening)
 
   return (
-    <section className={s.feats} aria-labelledby="gwl-feats">
+    <section id="gwl-features" className={s.feats} aria-labelledby="gwl-feats">
       <div className={s.featsHead}>
         <h2 id="gwl-feats" className={s.h2}>
           {t('feats_title')}

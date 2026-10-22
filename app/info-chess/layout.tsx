@@ -12,9 +12,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = t('meta_title')
   const description = t('meta_description')
   return {
-    title,
+    title: { absolute: title }, // the site template would append "| GoodWorker"
     description,
-    openGraph: { title, description, url: '/info-chess', type: 'website', siteName: 'GoodWorker' },
+    openGraph: { title, description, url: '/info-chess', type: 'website', siteName: 'GoodChess' },
   }
 }
 
