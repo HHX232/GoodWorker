@@ -98,4 +98,32 @@ assert.equal(validateCoachInput(null).ok, false)
   assert.equal(r.input.pvUci.length, 8)
 }
 
+// G43: мотивы. Белые Ke1 Ra1 Bf2 Ph2, чёрные Kh8 Nd4. После h3? чёрные Nc2+ — вилка короля e1 и ладьи a1, Nxa1.
+// Клиент присылает только линию опровержения; мотив сервер считает сам из позиции.
+{
+  const FORK = '7k/8/8/8/3n4/8/5B1P/R3K3 w Q - 0 1'
+  const fork = { ...base, fen: FORK, playedUci: 'h2h3', bestUci: 'f2d4', pvUci: ['f2d4'], classification: 'blunder', evalBeforeCp: 300, evalAfterCp: -250 }
+  const r = validateCoachInput({ ...fork, refutationUci: ['d4c2', 'e1d2', 'c2a1'], refutationMate: null })
+  assert.ok(r.ok)
+  assert.equal(r.facts.why?.reply?.san, 'Nc2+')
+  assert.equal(r.facts.why?.motif?.k, 'fork')
+  const { system, user } = buildCoachPrompt(r.input, r.facts)
+  assert.match(user, /Opponent's best reply: Nc2\+/)
+  assert.match(user, /fork: knight on c2 attacks king on e1 and rook on a1/)
+  assert.match(user, /loses 5/)
+  assert.match(user, /Bxd4\+ .*captures the knight on d4/)
+  assert.match(system, /cause .* consequence/i)
+  // мусор отсекается: нелегальная линия, не массив, мат не целым числом, слишком длинная линия
+  assert.equal(validateCoachInput({ ...fork, refutationUci: ['a1a8'] }).ok, false)
+  assert.equal(validateCoachInput({ ...fork, refutationUci: 'd4c2' }).ok, false)
+  assert.equal(validateCoachInput({ ...fork, refutationUci: ['d4c2'], refutationMate: 'mate' }).ok, false)
+  assert.equal(validateCoachInput({ ...fork, refutationUci: ['d4c2'], refutationMate: 1.5 }).ok, false)
+  assert.equal(validateCoachInput({ ...fork, refutationUci: Array(65).fill('d4c2') }).ok, false)
+  // без линии опровержения — как раньше: мотивов нет, в промпте нет и строки о них
+  const old = validateCoachInput(fork)
+  assert.ok(old.ok)
+  assert.equal(old.facts.why, null)
+  assert.doesNotMatch(buildCoachPrompt(old.input, old.facts).user, /Tactic/)
+}
+
 console.log('coachInput ok')

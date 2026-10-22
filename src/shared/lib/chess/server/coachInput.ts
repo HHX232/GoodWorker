@@ -1,6 +1,7 @@
 // Чистый шов POST /api/chess/coach: валидация тела запроса и факты chess.js для промпта (spec §3).
 // LLM запрещено считать шахматы — она только пересказывает то, что здесь посчитано.
 import { Chess, validateFen, type Color, type PieceSymbol, type Square } from 'chess.js'
+import { whyMove, type Motif, type MoveWhy, type PieceAt } from '../motifs'
 
 export const MOVE_CLASSES = ['best', 'good', 'inaccuracy', 'mistake', 'blunder'] as const
 export const COACH_CONTEXTS = ['game', 'puzzle', 'opening', 'tactic', 'engine-move'] as const
@@ -17,6 +18,9 @@ export type CoachInput = {
   evalAfterCp: number
   context: (typeof COACH_CONTEXTS)[number]
   locale: (typeof COACH_LOCALES)[number]
+  /** G43: engine line after the played move (opponent first) and its mate score for the opponent; optional */
+  refutationUci: string[]
+  refutationMate: number | null
 }
 
 export type CoachFacts = {
@@ -32,6 +36,8 @@ export type CoachFacts = {
   materialAfter: number
   /** Фигуры сходившей стороны под боем соперника после хода (без короля). */
   attackedAfter: { square: Square; piece: PieceSymbol; defended: boolean }[]
+  /** Мотивы (G43), посчитанные здесь же из позиции и линии опровержения; null — линии не прислали. */
+  why: MoveWhy | null
 }
 
 const VALUE: Record<PieceSymbol, number> = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 }
@@ -64,6 +70,8 @@ export function validateCoachInput(body: unknown): { ok: true; input: CoachInput
   if (!oneOf(MOVE_CLASSES, b.classification) || !oneOf(COACH_CONTEXTS, b.context) || !oneOf(COACH_LOCALES, b.locale)) return { ok: false }
   if (!Number.isFinite(b.evalBeforeCp) || !Number.isFinite(b.evalAfterCp)) return { ok: false }
   if (!Array.isArray(b.pvUci) || b.pvUci.length > 64) return { ok: false }
+  if (b.refutationUci !== undefined && (!Array.isArray(b.refutationUci) || b.refutationUci.length > 64)) return { ok: false }
+  if (b.refutationMate != null && !Number.isInteger(b.refutationMate)) return { ok: false }
 
   const fen = b.fen
   const best = playUci(new Chess(fen), b.bestUci)
@@ -82,6 +90,16 @@ export function validateCoachInput(body: unknown): { ok: true; input: CoachInput
   const played = playUci(chess, b.playedUci)
   if (!played) return { ok: false }
 
+  const refutation = ((b.refutationUci as string[] | undefined) ?? []).slice(0, MAX_PV)
+  const refBoard = new Chess(chess.fen())
+  for (const uci of refutation) if (!playUci(refBoard, uci)) return { ok: false }
+  const refutationMate = (b.refutationMate as number | null | undefined) ?? null
+  const pvUci = (b.pvUci as string[]).slice(0, MAX_PV)
+  const why = b.refutationUci === undefined ? null : whyMove({
+    fen, played: b.playedUci as string, reply: refutation, replyMate: refutationMate,
+    best: pvUci[0] === b.bestUci ? pvUci : [b.bestUci as string], bestMate: null,
+  })
+
   const side = played.color
   const enemy: Color = side === 'w' ? 'b' : 'w'
   const attackedAfter: CoachFacts['attackedAfter'] = []
@@ -95,19 +113,52 @@ export function validateCoachInput(body: unknown): { ok: true; input: CoachInput
   return {
     ok: true,
     input: {
-      fen, playedUci: b.playedUci as string, bestUci: b.bestUci as string, pvUci: (b.pvUci as string[]).slice(0, MAX_PV),
+      fen, playedUci: b.playedUci as string, bestUci: b.bestUci as string, pvUci,
       classification: b.classification, evalBeforeCp: b.evalBeforeCp as number, evalAfterCp: b.evalAfterCp as number,
-      context: b.context, locale: b.locale,
+      context: b.context, locale: b.locale, refutationUci: refutation, refutationMate,
     },
     facts: {
       side, playedSan: played.san, bestSan: best.san, pvSan, captured: played.captured ?? null,
-      check: chess.inCheck(), mate: chess.isCheckmate(), materialBefore, materialAfter: material(chess), attackedAfter,
+      check: chess.inCheck(), mate: chess.isCheckmate(), materialBefore, materialAfter: material(chess), attackedAfter, why,
     },
   }
 }
 
 const LANG: Record<CoachInput['locale'], string> = { ru: 'русском', en: 'English', hi: 'Hindi (हिन्दी)', zh: 'Chinese (简体中文)' }
 const PIECE: Record<PieceSymbol, string> = { p: 'pawn', n: 'knight', b: 'bishop', r: 'rook', q: 'queen', k: 'king' }
+
+const pc = (p: PieceAt) => `${PIECE[p.piece]} on ${p.square}`
+
+function describeMotif(m: Motif): string {
+  switch (m.k) {
+    case 'mate': return `checkmate in ${m.n}`
+    case 'fork': return `fork: ${pc(m.by)} attacks ${m.targets.map(pc).join(' and ')}`
+    case 'pin': return `pin: ${pc(m.by)} pins the ${pc(m.pinned)} to the ${pc(m.behind)} — it cannot move away`
+    case 'skewer': return `skewer: ${pc(m.by)} attacks the ${pc(m.front)}; when it moves, the ${pc(m.behind)} behind it falls`
+    case 'discovered': return `discovered attack: the moved piece opens the line, and the ${pc(m.by)} hits the ${pc(m.target)}`
+    case 'overload': return `overloaded defender: the ${pc(m.defender)} is the only guard of both the ${pc(m.target)} and the ${pc(m.also)}`
+    case 'hanging': return `the ${pc(m.target)} is ${m.defended ? 'taken by a cheaper piece' : 'left undefended'}`
+    case 'material': return 'it simply wins material'
+  }
+}
+
+/** Строки фактов о мотивах для промпта (пустой массив — мотивов нет). */
+function motifLines(why: MoveWhy | null): string[] {
+  if (!why?.reply) return []
+  const out = [`Opponent's best reply: ${why.reply.san}.`]
+  if (why.motif) out.push(`Tactic of that reply: ${describeMotif(why.motif)}.`)
+  if (why.loss >= 1) out.push(`With it the student loses ${why.loss} pawns of material${why.lost ? ` (the ${PIECE[why.lost]})` : ''}.`)
+  const b = why.best
+  if (b?.fix) {
+    out.push(`The strongest move ${b.san} ${
+      b.fix.k === 'takes' ? `captures the ${pc(b.fix.target)} first`
+        : b.fix.k === 'saves' ? `moves the ${PIECE[b.fix.piece.piece]} away from ${b.fix.piece.square} in advance`
+          : 'makes this reply no longer work'
+    }.`)
+  }
+  if (b?.motif) out.push(`The strongest move ${b.san} itself carries a tactic: ${describeMotif(b.motif)}.`)
+  return out
+}
 
 function fmtEval(cp: number): string {
   if (Math.abs(cp) >= 90000) return cp > 0 ? 'white mates' : 'black mates'
@@ -142,6 +193,7 @@ export function buildCoachPrompt(input: CoachInput, facts: CoachFacts): { system
     'Return JSON exactly like {"text": "<your explanation>"}.',
     'Use ONLY the facts given below. Do not calculate or invent any other moves or variations.',
     'Write moves exactly in the SAN given (e.g. Nf3, Qxf7#).',
+    'When tactic facts are given, build the answer on them as cause → consequence: which piece does what to which pieces and what is lost, then how the strongest move prevents it.',
     input.context === 'opening'
       ? "This is a book move of the opening's main line. Explain its purpose: which idea or plan it carries. Do not compare it with other moves, do not judge or grade it."
       : opponentMove
@@ -164,6 +216,7 @@ export function buildCoachPrompt(input: CoachInput, facts: CoachFacts): { system
         `Strongest move in this position: ${facts.bestSan}. Its continuation: ${facts.pvSan.join(' ') || facts.bestSan}.`,
         `Score for reference only, never quote numbers: before ${fmtEval(input.evalBeforeCp)}; after the played move ${fmtEval(input.evalAfterCp)}.`,
       ]),
+    ...(input.context === 'opening' ? [] : motifLines(facts.why)),
     facts.captured ? `The played move captures a ${PIECE[facts.captured]}.` : 'The played move captures nothing.',
     facts.mate ? 'The played move is checkmate.' : facts.check ? 'The played move gives check.' : '',
     `Material balance (white minus black, pawns): before ${facts.materialBefore}, after ${facts.materialAfter}.`,

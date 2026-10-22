@@ -26,7 +26,7 @@ export function ChessPlayPage(props: { initialFen?: string; initialColor?: strin
   const router = useRouter()
   const g = useBotGame(props)
   const { history, turn, start, fen, lastMove, bot, color, orientation, setFlipped, thinking, engineDown, review, reviewing, noAnalysis } = g
-  const { evalCp, note, ready, badFen, pending, setPending, vsAi, coachOn, coachPick, reason, gameOver, arrows, coach } = g
+  const { evalCp, note, ready, badFen, pending, setPending, vsAi, coachOn, coachPick, reason, gameOver, arrows, highlights, coach } = g
   const { onMove, play, newGame, undo, resign, startBot, startDuo } = g
   const [modal, setModal] = useState<{ kind: 'new'; tab: NewGameTab } | null>(null)
   // the shell's Play / N open this page's own modal: a new game here starts in place, without navigation
@@ -154,6 +154,7 @@ export function ChessPlayPage(props: { initialFen?: string; initialColor?: strin
               lastMove={pending?.move ?? lastMove}
               check={checkSquare(pending?.fen ?? fen)}
               arrows={arrows}
+              highlights={highlights}
             />
           </div>
           {strip(orientation)}

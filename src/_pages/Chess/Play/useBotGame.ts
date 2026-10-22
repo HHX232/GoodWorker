@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Chess, validateFen, DEFAULT_POSITION } from 'chess.js'
-import type { BoardMove } from '@/widgets/Chess/Board'
+import type { BoardArrow, BoardMove } from '@/widgets/Chess/Board'
 import { REVIEW_ANALYSIS, useMoveCoach, type MoveReview } from '@/widgets/Chess/Coach'
 import { hintArrows, type HintArrow } from '@/shared/lib/chess/hintArrows'
+import { coachMarks } from '@/shared/lib/chess/motifs'
 import { getEngine, type EngineLine } from '@/shared/lib/chess/engine'
 import { playMoveSound } from '@/shared/lib/chess/sound'
 import { readPref, useLocalPref } from '@/shared/lib/chess/localPref'
@@ -284,11 +285,25 @@ export function useBotGame({ initialFen, initialColor, startNew }: { initialFen?
 
 
   const orientation: Side = (vsAi ? color === 'b' : false) !== flipped ? 'b' : 'w'
-  const arrows = hintOn && !pending && hint?.fen === fen ? hint.arrows : []
+  // G42: after an inexact move the coach draws why — red refutation, orange lines of attack, green best move, the hit
+  // pieces lit — until the player's next move clears the review; the hint arrows step aside meanwhile.
+  const marks = coachOn && !pending && review?.why && review.classification !== 'best' && review.classification !== 'good'
+    ? coachMarks(review.why) : null
+  const arrows: BoardArrow[] = marks?.arrows.length
+    ? marks.arrows.map((a) => ({ from: a.from, to: a.to, ...MARK_STYLE[a.kind] }))
+    : hintOn && !pending && hint?.fen === fen ? hint.arrows : []
+  const highlights = marks?.highlights.length ? Object.fromEntries(marks.highlights.map((sq) => [sq, HIT_FILL])) : undefined
 
   return {
     history: chess.history(), turn: chess.turn(), start, fen, lastMove, mode, bot, color, orientation, setFlipped, thinking, engineDown, review, reviewing, noAnalysis,
-    evalCp, note, ready, badFen, pending, setPending, vsAi, coachOn, coachPick, reason, gameOver, arrows, coach,
+    evalCp, note, ready, badFen, pending, setPending, vsAi, coachOn, coachPick, reason, gameOver, arrows, highlights, coach,
     onMove, play, newGame, undo, resign, startBot, startDuo,
   }
 }
+
+const MARK_STYLE = {
+  reply: { color: '#d6453d', opacity: 0.9 },
+  line: { color: '#f08c1a', opacity: 0.8 },
+  best: { color: '#2f8f5b', opacity: 0.85 },
+} as const
+const HIT_FILL = 'rgba(214, 69, 61, 0.42)'

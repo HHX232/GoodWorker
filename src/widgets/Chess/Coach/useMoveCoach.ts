@@ -5,6 +5,7 @@ import { useLocale } from 'next-intl'
 import { Chess } from 'chess.js'
 import { getEngine, type EngineLine } from '@/shared/lib/chess/engine'
 import { classifyMove, toWhiteCp, type MoveClass } from '@/shared/lib/chess/coachModel'
+import { whyMove, type MoveWhy } from '@/shared/lib/chess/motifs'
 
 export type CoachContext = 'game' | 'puzzle' | 'opening' | 'tactic' | 'engine-move'
 
@@ -21,6 +22,11 @@ export type MoveReview = {
   /** extra to the contract: what `explain` needs to send */
   playedUci: string
   context: CoachContext
+  /** G41 (optional: hand-built reviews — analysis, openings — have none): engine line after the played move (opponent first) and its mate score for the opponent */
+  refutationUci?: string[]
+  refutationMate?: number | null
+  /** G41: why the move loses / what the best move does (motifs.ts); null when it could not be worked out */
+  why?: MoveWhy | null
 }
 
 export type ExplainResult =
@@ -77,6 +83,14 @@ export function useMoveCoach() {
 
       const classification = classifyMove(before, after, playedUci) // throws NO_ANALYSIS
       const top = before[0]
+      const refutationUci = after.pv ?? []
+      const refutationMate = after.mate ?? null
+      let why: MoveWhy | null = null
+      try {
+        why = whyMove({ fen: fenBefore, played: playedUci, reply: refutationUci, replyMate: refutationMate, best: top.pv?.length ? top.pv : [top.uci], bestMate: top.mate })
+      } catch {
+        why = null // an odd engine line: the coach falls back to the plain sentence
+      }
       return {
         classification,
         bestUci: top.uci,
@@ -88,6 +102,9 @@ export function useMoveCoach() {
         fenBefore,
         playedUci,
         context,
+        refutationUci,
+        refutationMate,
+        why,
       }
     },
     []
@@ -108,6 +125,8 @@ export function useMoveCoach() {
             evalBeforeCp: r.evalBeforeCp,
             evalAfterCp: r.evalAfterCp,
             context: r.context,
+            refutationUci: r.refutationUci?.slice(0, 8),
+            refutationMate: r.refutationMate,
             locale: ['ru', 'en', 'hi', 'zh'].includes(locale) ? locale : 'en',
           }),
         })

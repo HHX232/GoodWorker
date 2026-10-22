@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 import { CloudOff, Lock, MessageCircleQuestion, RotateCw } from 'lucide-react'
 import { engineMoveFacts, type MoveFact } from '@/shared/lib/chess/gameFacts'
 import type { ExplainResult, MoveReview } from './useMoveCoach'
+import { bestLine, mistakeLine } from './coachSay'
 import { CoachSays, type CoachMood } from './CoachAvatar'
 import styles from './Coach.module.scss'
 
@@ -71,13 +72,16 @@ export function CoachPanel({ review, explain, onExplain, autoExplain, analysing,
     const fact = facts.slice(0, 2).map(factText).join(t('say_and'))
     return t(`say_fact_${(state.turn % FACT_VARIANTS) + 1}`, { played: r.playedSan, fact })
   }
+  // G41/G42: a tactic the best move carries (for `best` that is the played move itself) is said instead of a plain fact
+  const own = review?.why ? bestLine(review.why, t, tp) : null
   const sayText = !review
     ? ''
     : cls === 'best'
-      ? factLine(review) ?? ''
+      ? own ?? factLine(review) ?? ''
       : cls === 'good'
-        ? [factLine(review), t('say_good', { best: review.bestSan })].filter(Boolean).join(' ')
-        : t(`say_${cls}`, { played: review.playedSan, best: review.bestSan })
+        ? [factLine(review), own ?? t('say_good', { best: review.bestSan })].filter(Boolean).join(' ')
+        : (review.why && mistakeLine(review.why, cls!, review.playedSan, t, tp, state.turn)) ||
+          t(`say_${cls}`, { played: review.playedSan, best: review.bestSan })
 
   const mood: CoachMood = analysing || state.loading ? 'thinking' : noAnalysis || (result && !result.ok) ? 'concerned' : 'idle'
 
