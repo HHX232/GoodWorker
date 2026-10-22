@@ -1725,6 +1725,46 @@ function Divider() {
 }
 
 // ─── SubNav ─────────────────────────────────────────────────────
+function SubNavMore() {
+  const t = useTranslations('LandingPage')
+  const ref = useRef<HTMLDetailsElement>(null)
+  const [open, setOpen] = useState(false)
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: PointerEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) ref.current.open = false
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || !ref.current) return
+      ref.current.open = false
+      ref.current.querySelector('summary')?.focus()
+    }
+    document.addEventListener('pointerdown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('pointerdown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+  const close = () => { if (ref.current) ref.current.open = false }
+  return (
+    <details ref={ref} className={s.subnav_more} onToggle={e => setOpen(e.currentTarget.open)}>
+      <summary className={s.subnav_link} aria-expanded={open} aria-controls='subnav-more-list'>
+        <span className={s.subnav_dot} />
+        {t('sub_more')}
+        <svg className={s.subnav_chev} width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' aria-hidden='true'>
+          <path d='M6 9l6 6 6-6' />
+        </svg>
+      </summary>
+      <div id='subnav-more-list' className={s.subnav_menu} onClick={close}>
+        <Link href='/info-storage' className={s.subnav_menu_link}>{t('sub_more_storage')}</Link>
+        <Link href='/#lecture-promo-title' className={s.subnav_menu_link}>{t('sub_more_lecture')}</Link>
+        <Link href='/info-chess' className={s.subnav_menu_link}>{t('sub_more_chess')}</Link>
+      </div>
+    </details>
+  )
+}
+
 function SubNav() {
   const t = useTranslations('LandingPage')
   const links = [
@@ -1741,6 +1781,7 @@ function SubNav() {
           <span className={s.subnav_dot} />
           {l.label}
         </Link>
+      <SubNavMore />
       ))}
       <Link href='/info-pdf-to-test' className={s.subnav_link}>
         <span className={s.subnav_dot} />

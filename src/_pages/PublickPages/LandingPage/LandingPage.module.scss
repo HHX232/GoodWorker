@@ -1067,6 +1067,56 @@ $border: #ececf2;
   flex-shrink: 0;
 }
 
+.subnav_more {
+  position: relative;
+  z-index: 20;
+
+  > summary {
+    list-style: none;
+    cursor: pointer;
+    &::-webkit-details-marker { display: none; }
+    &:focus-visible { outline: 2px solid $red; outline-offset: 2px; }
+  }
+  &[open] > summary { background: #f4f3f7; color: $ink; }
+  &[open] .subnav_chev { transform: rotate(180deg); }
+}
+
+.subnav_chev { transition: transform 0.14s; }
+
+.subnav_menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid #ececf2;
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(20, 20, 40, 0.12);
+
+  @media (max-width: 600px) {
+    position: fixed;
+    top: auto;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+  }
+}
+
+.subnav_menu_link {
+  display: block; // глобальный `a { display: contents }` (main.scss) убирает бокс
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #5a5a64;
+  text-decoration: none;
+
+  &:hover, &:focus-visible { background: #f4f3f7; color: $ink; outline: none; }
+}
+
 // ─── Keyframes ───────────────────────────────────────
 @keyframes rd_caret {
   0%, 100% { opacity: 1; }
@@ -1087,6 +1137,9 @@ $border: #ececf2;
 
   .subnav        { &::after { background: rgba(255,255,255,0.07); } }
   .subnav_link   { color: #7a7a90; &:hover { background: #1a1c24; color: #d8dae8; } }
+  .subnav_more[open] > summary { background: #1a1c24; color: #d8dae8; }
+  .subnav_menu   { background: #15161d; border-color: rgba(255,255,255,0.08); box-shadow: 0 12px 32px rgba(0,0,0,0.5); }
+  .subnav_menu_link { color: #9a9ab0; &:hover, &:focus-visible { background: #1a1c24; color: #d8dae8; } }
 
   .hero_greeting_name { color: #e0e2ec; }
   .hero_greeting_sub  { color: #5a5a74; }
