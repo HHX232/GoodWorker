@@ -1834,7 +1834,6 @@ function SubNav() {
           {l.label}
         </Link>
       ))}
-      <SubNavMore />
       <Link href='/info-pdf-to-test' className={s.subnav_link}>
         <span className={s.subnav_dot} />
         {t('sub_pdf_from')}
@@ -1844,6 +1843,7 @@ function SubNav() {
         </svg>
         {t('sub_pdf_to')}
       </Link>
+      <SubNavMore />
     </div>
   )
 }
